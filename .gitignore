@@ -104,6 +104,10 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.env_mH36
+env_mH36/
+.python=3.6.8
+python=3.6.8/
 
 # Spyder project settings
 .spyderproject
