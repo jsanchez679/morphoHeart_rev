@@ -12,7 +12,7 @@ import pathlib
 from pathlib import Path
 import numpy as np
 import vedo as vedo
-from skimage import measure
+from skimage import measure, io
 
 # from tkinter import filedialog
 # from pathlib import Path
@@ -29,37 +29,76 @@ __website__    = 'https://github.com/jsanchez679/morphoHeart'
 
 
 #%% ##### - Class definition - ###############################################
+class Project(): 
+    'Project class'
+    def __init__(self, user_projName:str, proj_notes:str=None):
+        
+        self.create_mHName()
+        self.user_projName = user_projName.replace(' ', '_')
+        self.dict_projInfo = {'user_projName': user_projName,
+                              'mH_projName': self.mH_projName, 
+                              'proj_notes': proj_notes,
+                                }
+        # Project status
+        self.dict_Workflow = {'ImProc': {},
+                              'MeshesProc': {}}
+
+        # User selected analysis parameters 
+        self.dict_UserPipeline = {'ns': 
+                                    {'layer_btw_chs': False,
+                                    'ch_ext': None,
+                                    'ch_int': None,
+                                    'mH_nsChName': None,
+                                    'user_nsChName': None},
+                                'segments': 
+                                    {'cutLayersIn2Segments':False,
+                                    'segments_no': None, 
+                                    'user_segName1': None, 
+                                    'mH_segName1': None,
+                                    'user_segName2': None,
+                                    'mH_segName2': None,},
+                                'params2measure': None,
+                                }
+
+        self.organ = Organ(self)
+
+    def create_mHName(self):
+        now_str = datetime.now().strftime('%Y%m%d%H%M')
+        self.mH_projName = 'mH_Proj-'+now_str
+    
+    def create_folders(self, dir_res:pathlib.WindowsPath):
+        # set_dir_res()
+        folder_name = 'R_'+self.user_projName
+        self.dir_out = Path(os.path.join(dir_res,folder_name))
+        self.dir_out.mkdir(parents=True, exist_ok=True)
 
 class Organ():
     'Organ Class'
     
-    def __init__(self, 
-                 user_name_in:str, dir_channels:pathlib.WindowsPath, dir_res:pathlib.WindowsPath,
-                 no_chs:int, stage = '', strain='', genotype=''):
-        
-        now_str = datetime.now().strftime('%Y%m%d%H%M')
-        self.mH_organName = 'mH_'+now_str
-        
-        user_organName = user_name_in.replace(' ', '_')
-        self.user_organName = user_organName
-        self.dir_channels = Path(dir_channels)
+    def __init__(self, project:Project):
+        self.mH_organName = self.create_mHName()
+        self.parent_project = project
+                 
+    def updateOrgan(self, no_chs:int, stage='', strain='', genotype=''):
+    
         self.no_chs = no_chs
-        
+        # Optional
         self.stage = stage
         self.strain = strain
         self.genotype = genotype
-        
-        # set_dir_res()
-        self.dir_parent_out = 'Results_'+self.user_organName
-        dir_parent_out = Path(os.path.join(dir_res,self.dir_parent_out))
-        dir_parent_out.mkdir(parents=True, exist_ok=True)
-        
+
+        self.create_folders()
+
+    def create_folders(self):
         dirResults = ['dicts', 'stacks_npy', 'meshes', 'centreline', 'imgs_videos', 'csv_all']
         for num, direc in enumerate(dirResults):
-            dir2create = dir_parent_out / direc
+            dir2create = self.parent_project.dir_out / direc
             dir2create.mkdir(parents=True, exist_ok=True)
+        self.dir_res = self.parent_project.dir_out
 
-        self.dir_res = Path(dir_parent_out)
+    def create_mHName(self):
+        now_str = datetime.now().strftime('%Y%m%d%H%M')
+        self.mH_organName = 'mH_Organ-'+now_str
 
     #Get all the set mH variables in __init__
     def get_mH_organName(self):
@@ -89,7 +128,6 @@ class Organ():
     def get_meshes_dict(self):
         return self.meshes_dict
         
-        
 class ImChannel(): #channel
     'morphoHeart Image Channel Class'
     
@@ -107,8 +145,8 @@ class ImChannel(): #channel
         self.dir_cho = dir_cho
         self.to_mask = to_mask
         self.masked = False
-        
-        # self.get_images_o(Organ)
+
+        self.get_images_o()
         
     def get_channel_no(self):
         return self.channel_no
@@ -123,7 +161,7 @@ class ImChannel(): #channel
         self.user_chName = new_user_chName
     
     def get_images_o(self) -> 'np.ndarray':
-        images_o = np.load(str(self.dir_cho))
+        images_o = io.imread(str(self.dir_cho))
         self.images_o = images_o
         self.images_pr = images_o
         self.stack_shape = images_o.shape
@@ -154,28 +192,80 @@ class ImChannel(): #channel
             self.masked = True
         else: 
             print('self.stack_shape != maskSt.shape')
-        
         return stack_masked
-    
-    def s3_create (self, contours_type:str, heartLayer:dict):
 
+    def create_chS3s (self, organ:Organ, layerDict:dict):
+        s3_int = ContStack(organ, self, cont_type='int')
+        print(s3_int.__dict__)
+        s3_int.s3_create(layerDict, self.cont_type)
+        self.s3_int = s3_int
+
+        s3_ext = ContStack(organ, self, cont_type='ext')
+        print(s3_ext.__dict__)
+        s3_ext.s3_create(layerDict, self.cont_type)
+        self.s3_ext = s3_ext
+
+        s3_tiss = ContStack(organ, self, cont_type='all')
+        print(s3_tiss.__dict__)
+        s3_tiss.s3_create(layerDict, self.cont_type)
+        self.s3_tiss = s3_tiss
+
+    def load_chS3s (self, organ:Organ):
+        s3_int = ContStack(organ, self.channel_no, cont_type='int')
+        print(s3_int.__dict__)
+        s3_int.loadContStack(organ, self.channel_no, s3_int.cont_type)
+        self.s3_int = s3_int
+
+        s3_ext = ContStack(organ, self.channel_no, cont_type='ext')
+        print(s3_ext.__dict__)
+        s3_ext.loadContStack(organ, self.channel_no, s3_ext.cont_type)
+        self.s3_ext = s3_ext
+
+        s3_tiss = ContStack(organ, self.channel_no, cont_type='all')
+        print(s3_tiss.__dict__)
+        s3_tiss.loadContStack(organ, self.channel_no, s3_tiss.cont_type)
+        self.s3_tiss = s3_tiss
+
+class ContStack(): 
+    'morphoHeart Contour Stack Class'
+    def __init__(self, organ:Organ, channel_no:int, 
+                 cont_type:str):
+
+        self.cont_type = cont_type
+        self.cont_name = str(channel_no)+'_'+self.cont_type
+        print(self.cont_name)
+        
+    def s3_create(self, layerDict:dict, cont_type:str):
         x_dim = self.stack_shape[0]
         y_dim = self.stack_shape[1]
         z_dim = self.stack_shape[2]
         
         s3 = np.empty((x_dim,y_dim,z_dim+2))
-    
-        for pos, keySlc in enumerate(heartLayer.keys()):
+        for pos, keySlc in enumerate(layerDict.keys()):
             if keySlc[0:3] == "slc":
                 slcNum = int(keySlc[3:6])
-                im_FilledCont = heartLayer[keySlc][contours_type]
+                im_FilledCont = layerDict[keySlc][cont_type]
                 s3[:,:,slcNum+1] = im_FilledCont
     
         s3 = s3.astype('uint8')
-    
-        return s3
-    
-    
+        if cont_type == 'int':
+            self.s3 = s3
+        elif cont_type == 'ext':
+            self.s3 = s3
+        elif cont_type == 'all' or cont_type == 'tiss':
+            self.s3 = s3
+
+    def loadContStack(self, organ:Organ, channel_no:int, cont_type:str):
+        filename = organ.user_organName + '_s3_' + str(channel_no) + '_' + cont_type + '.npy'
+        s3_dir = organ.dir_res / 'stacks_npy' / filename
+        s3 = np.load(s3_dir)
+        if cont_type == 'int':
+            self.s3 = s3
+        elif cont_type == 'ext':
+            self.s3 = s3
+        elif cont_type == 'all' or cont_type == 'tiss':
+            self.s3 = s3
+
 class Mesh_mH():
     'morphoHeart Mesh Class'
     
@@ -215,7 +305,6 @@ class Mesh_mH():
     
     def get_organ(self):
         return self.organ
-    
     
     def set_contours_source(self, contours_source):
         self.contours_source = contours_source
