@@ -25,13 +25,420 @@ from modules import mH_funcMeshes as fcMeshes
 
 #%% Info coming from the gui (user's selection)
 # Load Project Module 
-# - Project information - change project to organ!
+# - Project information
 if sys.platform == 'darwin':
+    dir_proj_res = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
     dir_channels = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/')
     dir_res = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/')
 else: #== 'win32'
+    dir_proj_res == Path('D:/Documents JSP/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
     dir_channels = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/')
     dir_res = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/')
+
+user_projName = 'Project A-B'
+user_projNotes = 'Proyect to compare embryos A and B'
+no_chs = 2
+name_chs = ['myocardium', 'endocardium']
+color_chs_tiss_ext_int = [['lightseagreen','gold','crimson'],['darkmagenta','deepskyblue','deeppink']]
+layer_btw_chs = True
+ch_ext = 'ch1'
+ch_int = 'ch2'
+user_nsChName = 'cardiac jelly'
+color_chns_tiss_ext_int = ['darkorange','crimson','deepskyblue']
+cutLayersIn2Segments = True
+# By default the volume and surface area of the segments per tissue selected will be measured
+no_segments = 2
+name_segments = ['atrium', 'ventricle']
+ch_segments = {'ch1':['tissue', 'ext'],'ch2':['tissue', 'int'],'chNS':['tissue']}
+proj_dir = dir_proj_res
+
+user_proj_settings = {'project_dir': dir_res,
+                    'user_projName': user_projName,
+                    'user_projNotes' : user_projNotes,
+                    'no_chs': no_chs,
+                    'name_chs': name_chs,
+                    'color_chs': color_chs_tiss_ext_int,
+                    'ns': 
+                        {'layer_btw_chs': layer_btw_chs,
+                        'ch_ext': ch_ext,
+                        'ch_int': ch_int,
+                        'user_nsChName': user_nsChName,
+                        'color_chns': color_chns_tiss_ext_int},
+                    'segments': 
+                        {'cutLayersIn2Segments': cutLayersIn2Segments,
+                        'no_segments': no_segments,
+                        'name_segments': name_segments,
+                        'ch_segments': ch_segments}, 
+                        }
+
+
+
+#%% Set parameters to measure from each tissue and segment
+user_params2meas = {'ch1': {'tissue': {'whole': {'volume': True,
+                                            'surf_area': False,
+                                            'thickness int>ext': True,
+                                            'thickness ext>int': False,
+                                            'centreline': True,
+                                            'centreline_linlength': True,
+                                            'centreline_looplength': True},
+                                        'segm1': {'volume': True,
+                                            'surf_area': False,
+                                            'thickness int>ext': False,
+                                            'thickness ext>int': False},
+                                        'segm2': {'volume': True,
+                                            'surf_area': False,
+                                            'thickness int>ext': False,
+                                            'thickness ext>int': False}},
+                            'int': {'whole': {'volume': True,
+                                            'surf_area': True,
+                                            'centreline': True,
+                                            'centreline_linlength': True,
+                                            'centreline_looplength': True}},
+                            'ext': {'whole': {'volume': True,
+                                            'surf_area': True,
+                                            'centreline': True,
+                                            'centreline_linlength': True,
+                                            'centreline_looplength': True},
+                                    'segm1': {'volume': True, 'surf_area': True},
+                                    'segm2': {'volume': True, 'surf_area': True}}},
+                    'ch2': {'tissue': {'whole': {'volume': True,
+                                            'surf_area': False,
+                                            'thickness int>ext': True,
+                                            'thickness ext>int': False,
+                                            'centreline': True,
+                                            'centreline_linlength': True,
+                                            'centreline_looplength': True},
+                                        'segm1': {'volume': True,
+                                            'surf_area': False,
+                                            'thickness int>ext': False,
+                                            'thickness ext>int': False},
+                                        'segm2': {'volume': True,
+                                            'surf_area': False,
+                                            'thickness int>ext': False,
+                                            'thickness ext>int': False}},
+                            'int': {'whole': {'volume': True,
+                                            'surf_area': True,
+                                            'centreline': True,
+                                            'centreline_linlength': True,
+                                            'centreline_looplength': True},
+                                    'segm1': {'volume': True, 'surf_area': True},
+                                    'segm2': {'volume': True, 'surf_area': True}},
+                            'ext': {'whole': {'volume': True,
+                                'surf_area': True,
+                                'centreline': True,
+                                'centreline_linlength': True,
+                                'centreline_looplength': True}}},
+                    'chNS': {'tissue': {'whole': {'volume': True,
+                                        'surf_area': False,
+                                        'thickness int>ext': True,
+                                        'thickness ext>int': False,
+                                        'centreline': True,
+                                        'centreline_linlength': True,
+                                        'centreline_looplength': True},
+                                        'segm1': {'volume': True,
+                                            'surf_area': False,
+                                            'thickness int>ext': False,
+                                            'thickness ext>int': False},
+                                        'segm2': {'volume': True,
+                                            'surf_area': False,
+                                            'thickness int>ext': False,
+                                            'thickness ext>int': False}},
+                            'int': {'whole': {'volume': True,
+                                    'surf_area': True,
+                                    'centreline': True,
+                                    'centreline_linlength': True,
+                                    'centreline_looplength': True}},
+                            'ext': {'whole': {'volume': True,
+                                    'surf_area': True,
+                                    'centreline': True,
+                                    'centreline_linlength': True,
+                                    'centreline_looplength': True}}}}
+
+
+
+
+                    {'tissue': 
+                        {'whole':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True, 
+                            'cutIn2Segments': True},
+                        'segm1':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True, 
+                            'ballooning': True},
+                        'segm2':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'ballooning': True, 
+                            'thck_ext2int': True,
+                            'ballooning': True}
+                        },
+                    'int': 
+                        {'all':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True, 
+                            'ballooning': True, 
+                            'cutIn2Segments': True},
+                        'segm1':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True},
+                        'segm2':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True, }
+                        },                      
+                    'ext': 
+                        {'all':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True, 
+                            'ballooning': True, 
+                            'cutIn2Segments': True},
+                        'segm1':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True},
+                        'segm2':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True}
+                        }
+                    }, 
+                'ch2':
+                    {'tissue': 
+                        {'all':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True, 
+                            'cutIn2Segments': True},
+                        'segm1':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True, 
+                            'ballooning': True},
+                        'segm2':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'ballooning': True, 
+                            'thck_ext2int': True,
+                            'ballooning': True}
+                        },
+                    'int': 
+                        {'all':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True, 
+                            'ballooning': True, 
+                            'cutIn2Segments': True},
+                        'segm1':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True},
+                        'segm2':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True, }
+                        },                      
+                    'ext': 
+                        {'all':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True, 
+                            'ballooning': True, 
+                            'cutIn2Segments': True},
+                        'segm1':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True},
+                        'segm2':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True}
+                        }
+                    }, 
+                'chNS':
+                    {'tissue': 
+                        {'all':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True, 
+                            'cutIn2Segments': True},
+                        'segm1':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True, 
+                            'ballooning': True},
+                        'segm2':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'ballooning': True, 
+                            'thck_ext2int': True,
+                            'ballooning': True}
+                        },
+                    'int': 
+                        {'all':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True, 
+                            'ballooning': True, 
+                            'cutIn2Segments': True},
+                        'segm1':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True},
+                        'segm2':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True, }
+                        },                      
+                    'ext': 
+                        {'all':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True, 
+                            'ballooning': True, 
+                            'cutIn2Segments': True},
+                        'segm1':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True},
+                        'segm2':
+                            {'surf_area' : True, 
+                            'volume': True, 
+                            'centreline': True, 
+                            'centreline_legnth': True,
+                            'linear_length': True,
+                            'thck_int2ext': True,
+                            'thck_ext2int': True,
+                            'ballooning': True}
+                        }
+                    }, 
+                }
+
+
+#%%
 user_projName = 'LS52_F02_V_SR_1029'
 mH_projName = 'LS52_F02_V_SR_1029'
 proj_notes = 'Experiment to quantify cardiac jelly from wild-type heart at 48-50hpf'
