@@ -6,11 +6,14 @@ Version: Dec 01, 2022
 
 '''
 #%% Imports 
+import os
 from pathlib import Path
 from playsound import playsound
 import json
 import numpy as np 
 
+path_fcBasics = os.path.abspath(__file__)
+print(path_fcBasics)
 
 #%% morphoHeart Imports 
 from .mH_classes import Organ, Mesh_mH, ImChannel
@@ -46,7 +49,8 @@ def alert(sound:str, alert_all=True):
     mp3_basic = ['connection','woohoo']
     
     if alert_all or sound in mp3_basic:
-        path = Path.cwd().parent
+        path = Path(path_fcBasics).parent.parent.parent
+        print(path)
         sound_mp3= sound+'.mp3'
         path = path / 'sounds' / sound_mp3
         playsound(str(path))
