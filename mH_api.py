@@ -35,12 +35,8 @@ proj.__dict__
 # settings for the project
 if sys.platform == 'darwin':
     dir_proj_res = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
-    dir_channels = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/')
-    dir_res = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/')
-else: #== 'win32'
-    dir_proj_res == Path('D:/Documents JSP/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
-    dir_channels = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/')
-    dir_res = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/')
+elif sys.platform == 'win32':
+    dir_proj_res = Path('D:/Documents JSP/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
 
 user_projName = 'Project A-B'
 user_projNotes = 'Proyect to compare embryos A and B'
@@ -48,12 +44,12 @@ no_chs = 2
 name_chs = ['myocardium', 'endocardium']
 color_chs_tiss_ext_int = [['lightseagreen','gold','crimson'],['darkmagenta','deepskyblue','deeppink']]
 layer_btw_chs = True
-ch_ext = 'ch1'
-ch_int = 'ch2'
+ch_ext = ('ch1', 'int')
+ch_int = ('ch2', 'ext')
 user_nsChName = 'cardiac jelly'
 color_chns_tiss_ext_int = ['darkorange','crimson','deepskyblue']
-cutLayersIn2Segments = True
 # By default the volume and surface area of the segments per tissue selected will be measured
+cutLayersIn2Segments = True
 no_segments = 2
 name_segments = ['atrium', 'ventricle']
 # channels/meshes that will be divided into segments 
@@ -149,9 +145,9 @@ user_params2meas = {'ch1': {'tissue': {'whole': {'volume': True,
                                             'surf_area': False,
                                             'thickness int>ext': True,
                                             'thickness ext>int': False,
-                                            'centreline': True,
-                                            'centreline_linlength': True,
-                                            'centreline_looplength': True},
+                                            'centreline': False,
+                                            'centreline_linlength': False,
+                                            'centreline_looplength': False},
                                         'segm1': {'volume': True,
                                             'surf_area': False,
                                             'thickness int>ext': False,
@@ -162,14 +158,14 @@ user_params2meas = {'ch1': {'tissue': {'whole': {'volume': True,
                                             'thickness ext>int': False}},
                             'int': {'whole': {'volume': True,
                                             'surf_area': True,
-                                            'centreline': True,
-                                            'centreline_linlength': True,
-                                            'centreline_looplength': True}},
+                                            'centreline': False,
+                                            'centreline_linlength': False,
+                                            'centreline_looplength': False}},
                             'ext': {'whole': {'volume': True,
                                             'surf_area': True,
-                                            'centreline': True,
-                                            'centreline_linlength': True,
-                                            'centreline_looplength': True}}}}
+                                            'centreline': False,
+                                            'centreline_linlength': False,
+                                            'centreline_looplength': False}}}}
 
 user_ball_settings = {'ballooning': True, 'ball_settings': {
                             'ball_op1': {'to_mesh': 'ch1', 'to_mesh_type': 'int', 'from_cl': 'ch2', 'from_cl_type': 'int'},
@@ -182,9 +178,9 @@ proj.set_project_status()
 
 #%% Having created the project an organ is created as part of the project
 
-user_projName = 'LS52_F02_V_SR_1029'
-mH_projName = 'LS52_F02_V_SR_1029'
-proj_notes = 'Experiment to quantify cardiac jelly from wild-type heart at 48-50hpf'
+project = proj
+user_organName = 'LS52_F02_V_SR_1029'
+user_organNotes = 'Wild-type heart 1'
 im_orientation = 'ventral'
 custom_angle = 0
 pix_x = 0.22832596445005054
@@ -199,40 +195,48 @@ stage = '72-74hpf'
 strain = 'myl7:lifeActGFP, fli1a:AcTag-RFP'
 genotype = 'wt'
 
-dict_projInfo = {'dir_channels': dir_channels,
-                'dir_res': dir_res,
-                'user_projName': user_projName,
-                'mH_projName': mH_projName, 
-                'proj_notes': proj_notes, 
-                'im_orientation': im_orientation,
-                'custom_angle': custom_angle,
-                'resolution': [pix_x, pix_y, pix_z],
-                'units_resolution': [units_x, units_y, units_z],
-                'stage': stage, 
-                'strain': strain, 
-                'genotype': genotype,
-                }
+user_organ_settings = {'project': project,
+                        'user_organName': user_projName,
+                        'proj_notes': user_organNotes, 
+                        'im_orientation': im_orientation,
+                        'custom_angle': custom_angle,
+                        'resolution': [pix_x, pix_y, pix_z],
+                        'units_resolution': [units_x, units_y, units_z],
+                        'stage': stage, 
+                        'strain': strain, 
+                        'genotype': genotype,
+                        }
 
 # - Load Channels
 no_chs = 2
 
 mH_chName1 = 'ch1'
 user_chName1 = 'myocardium'
-dir_cho1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_EDC.tif')
+if sys.platform == 'darwin':
+    dir_cho1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_EDC.tif')
+    dir_mkch1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_mask.tif')
+elif sys.platform == 'win32':
+    dir_cho1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_EDC.tif')
+    dir_mkch1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_mask.tif')
+
 colorCh_tiss1 = 'teal'
 colorCh_int1 = 'gold'
 colorCh_ext1 = 'red'
 mask_ch1 = True
-dir_mkch1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_mask.tif')
 
 mH_chName2 = 'ch2'
 user_chName2 = 'endocardium'
-dir_cho2 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_EDC.tif')
+if sys.platform == 'darwin':
+    dir_cho2 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_EDC.tif')
+    dir_mkch2 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_mask.tif')
+elif sys.platform == 'win32': 
+    dir_cho2 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_EDC.tif')
+    dir_mkch2 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_mask.tif')
+
 colorCh_tiss2 = 'magenta'
 colorCh_int2 = 'darkblue'
 colorCh_ext2 = 'pink'
 mask_ch2 = True
-dir_mkch2 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_mask.tif')
 
 dict_loadCh = {'no_chs': 2,
                 'ch1': {'mH_chName':mH_chName1,
@@ -252,6 +256,8 @@ dict_loadCh = {'no_chs': 2,
                         'mask_ch': mask_ch2,
                         'dir_mk': dir_mkch2},   
                }
+
+
 
 # Try loading files of dictLoadChannels before creating dict
 import pathlib
