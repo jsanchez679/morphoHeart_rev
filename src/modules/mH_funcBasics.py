@@ -16,7 +16,7 @@ path_fcBasics = os.path.abspath(__file__)
 print(path_fcBasics)
 
 #%% morphoHeart Imports 
-from .mH_classes import Organ, Mesh_mH, ImChannel
+# from .mH_classes import Organ, Mesh_mH, ImChannel
 
 #%% class - NumpyArrayEncoder
 # Definition of class to save dictionary
@@ -49,21 +49,22 @@ def alert(sound:str, alert_all=True):
     mp3_basic = ['connection','woohoo']
     
     if alert_all or sound in mp3_basic:
-        path = Path(path_fcBasics).parent.parent.parent
-        print(path)
-        sound_mp3= sound+'.mp3'
-        path = path / 'sounds' / sound_mp3
+        path_parentSounds = Path(path_fcBasics).parent.parent.parent
+        # print(path_parentSounds)
+        sound_mp3= sound +'.mp3'
+        path = path_parentSounds / 'sounds' / sound_mp3
+        # print(path,'-', type(path))
         playsound(str(path))
 
 
-def save_mHProject(dicts:list, organ:Organ):
-    jsonDict_name = 'mH_'+organ.user_organName+'_project.json'
-    json2save_dir = organ.dir_res / jsonDict_name
+# def save_mHProject(dicts:list, organ:Organ):
+#     jsonDict_name = 'mH_'+organ.user_organName+'_project.json'
+#     json2save_dir = organ.dir_res / jsonDict_name
 
-    with open(str(json2save_dir), "w") as write_file:
-        json.dump(str(organ.dir_res), write_file, cls=NumpyArrayEncoder)
-        print('\t>> Dictionary saved correctly!\n\t>> File: '+jsonDict_name)
-        alert('countdown')
+#     with open(str(json2save_dir), "w") as write_file:
+#         json.dump(str(organ.dir_res), write_file, cls=NumpyArrayEncoder)
+#         print('\t>> Dictionary saved correctly!\n\t>> File: '+jsonDict_name)
+#         alert('countdown')
 
 #%% func - load_npy_stack
     # def load_npy_stack(organ:Organ, name:str):

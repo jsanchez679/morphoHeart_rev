@@ -36,10 +36,10 @@ proj.__dict__
 if sys.platform == 'darwin':
     dir_proj_res = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
 elif sys.platform == 'win32':
-    dir_proj_res = Path('D:/Documents JSP/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
+    dir_proj_res = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
 
 user_projName = 'Project A-B'
-user_projNotes = 'Proyect to compare embryos A and B'
+user_projNotes = 'Project to compare embryos A and B'
 no_chs = 2
 name_chs = ['myocardium', 'endocardium']
 color_chs_tiss_ext_int = [['lightseagreen','gold','crimson'],['darkmagenta','deepskyblue','deeppink']]
@@ -83,7 +83,7 @@ user_proj_settings = {'project_dir': proj_dir,
 proj.create_gralprojWF(user_proj_settings=user_proj_settings)
 # Create project directory
 proj.create_proj_dir(dir_proj_res)
-proj.__dict__
+print('>>proj.dict_projInfo: ', proj.dict_info)
 
 #%% The result of the modification of such table is shown in the dict 
 # called user_params2meas.
@@ -172,13 +172,16 @@ user_ball_settings = {'ballooning': True, 'ball_settings': {
                             'ball_op2': {'to_mesh': 'ch2', 'to_mesh_type': 'ext', 'from_cl': 'ch2', 'from_cl_type': 'ext'}}}
 
 proj.set_measure_param(user_params2meas=user_params2meas, user_ball_settings=user_ball_settings)
-proj.__dict__
+print('>>proj.dict_info:', proj.dict_info)
+
 # And a project status dictionary is created
 proj.set_project_status()
+print('>>proj.dict_workflow:', proj.dict_workflow)
+
+#%% Save project 
+proj.save_mHProject()
 
 #%% Having created the project an organ is created as part of the project
-
-project = proj
 user_organName = 'LS52_F02_V_SR_1029'
 user_organNotes = 'Wild-type heart 1'
 im_orientation = 'ventral'
@@ -195,9 +198,11 @@ stage = '72-74hpf'
 strain = 'myl7:lifeActGFP, fli1a:AcTag-RFP'
 genotype = 'wt'
 
-user_organ_settings = {'project': project,
-                        'user_organName': user_projName,
-                        'proj_notes': user_organNotes, 
+user_organ_settings = {'project': {'user': proj.user_projName,
+                                    'mH': proj.mH_projName,
+                                    'dict_info_dir': proj.info_dir},
+                        'user_organName': user_organName,
+                        'user_organNotes': user_organNotes,
                         'im_orientation': im_orientation,
                         'custom_angle': custom_angle,
                         'resolution': [pix_x, pix_y, pix_z],
@@ -208,55 +213,36 @@ user_organ_settings = {'project': project,
                         }
 
 # - Load Channels
-no_chs = 2
-
-mH_chName1 = 'ch1'
-user_chName1 = 'myocardium'
+# mH_chName1 = 'ch1'
 if sys.platform == 'darwin':
     dir_cho1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_EDC.tif')
     dir_mkch1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_mask.tif')
 elif sys.platform == 'win32':
-    dir_cho1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_EDC.tif')
-    dir_mkch1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_mask.tif')
+    dir_cho1 = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_EDC.tif')
+    dir_mkch1 = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_mask.tif')
 
-colorCh_tiss1 = 'teal'
-colorCh_int1 = 'gold'
-colorCh_ext1 = 'red'
 mask_ch1 = True
 
-mH_chName2 = 'ch2'
-user_chName2 = 'endocardium'
+# mH_chName2 = 'ch2'
 if sys.platform == 'darwin':
     dir_cho2 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_EDC.tif')
     dir_mkch2 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_mask.tif')
 elif sys.platform == 'win32': 
-    dir_cho2 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_EDC.tif')
-    dir_mkch2 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_mask.tif')
+    dir_cho2 = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_EDC.tif')
+    dir_mkch2 = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch1_mask.tif')
 
-colorCh_tiss2 = 'magenta'
-colorCh_int2 = 'darkblue'
-colorCh_ext2 = 'pink'
 mask_ch2 = True
 
-dict_loadCh = {'no_chs': 2,
-                'ch1': {'mH_chName':mH_chName1,
-                        'user_chName':user_chName1,
-                        'dir_cho': dir_cho1, 
-                        'colorCh_tiss': colorCh_tiss1,
-                        'colorCh_int': colorCh_int1,
-                        'colorCh_ext': colorCh_ext1,
+info_loadCh = {'ch1':{'dir_cho': dir_cho1, 
                         'mask_ch': mask_ch1,
                         'dir_mk': dir_mkch1},
-                'ch2': {'mH_chName':mH_chName2,
-                        'user_chName':user_chName2,
-                        'dir_cho': dir_cho2, 
-                        'colorCh_tiss': colorCh_tiss2,
-                        'colorCh_int': colorCh_int2,
-                        'colorCh_ext': colorCh_ext2,
+                'ch2':{'dir_cho': dir_cho2, 
                         'mask_ch': mask_ch2,
                         'dir_mk': dir_mkch2},   
                }
 
+organ = mHC.Organ(project=proj, user_settings = user_organ_settings,
+                        info_loadCh = info_loadCh)
 
 
 # Try loading files of dictLoadChannels before creating dict
