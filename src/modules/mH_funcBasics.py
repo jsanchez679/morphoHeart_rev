@@ -18,19 +18,6 @@ print(path_fcBasics)
 #%% morphoHeart Imports 
 # from .mH_classes import Organ, Mesh_mH, ImChannel
 
-#%% class - NumpyArrayEncoder
-# Definition of class to save dictionary
-class NumpyArrayEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-        else:
-            return super(NumpyArrayEncoder, self).default(obj)
-
 #%% -Functions
 #%% func - alert
 def alert(sound:str, alert_all=True):

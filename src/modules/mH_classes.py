@@ -15,6 +15,8 @@ import vedo as vedo
 from skimage import measure, io
 import copy
 import json
+import collections
+import pprint
 
 #%% ##### - Other Imports - ##################################################
 from .mH_funcBasics import alert
@@ -64,6 +66,7 @@ class Project():
             self.mH_projName = 'mH_Proj-'+now_str
 
         create_mHName(self)
+        self.organs = {}
 
     def create_gralprojWF(self, user_proj_settings:dict):
         '''
@@ -411,268 +414,279 @@ class Project():
 
     def save_mHProject(self):
         jsonDict_name = 'mH_'+self.user_projName+'_project.json'
-        json2save_dir = self.dir_proj / jsonDict_name
-        dict_info = copy.deepcopy(self.dict_info)
-        
-        # encoded = json.dumps(dict_info, indent=4, cls=NumpyArrayEncoder)
-        # print(encoded)
+        json2save_par = self.dir_proj / 'settings'
+        json2save_par.mkdir(parents=True, exist_ok=True)
+        if not json2save_par.is_dir():
+            print('>> Error: Settings directory could not be created!\n>> Directory: '+jsonDict_name)
+            alert('error_beep')
+        else: 
+            json2save_dir = json2save_par / jsonDict_name
+            dict_info = copy.deepcopy(self.dict_info)
 
-        with open(str(json2save_dir), "w") as write_file:
-        # with open('AAA.json', "w") as write_file:
-            json.dump(dict_info, write_file, cls=NumpyArrayEncoder)
+            with open(str(json2save_dir), "w") as write_file:
+            # with open('AAA.json', "w") as write_file:
+                json.dump(dict_info, write_file, cls=NumpyArrayEncoder)
 
-        self.info_dir = self.dir_proj / jsonDict_name
-        print('>> Dictionary saved correctly!\n>> File: '+jsonDict_name)
-        print('>> Directory: '+ str(json2save_dir))
-        alert('countdown')
+            if not json2save_dir.is_file():
+                print('>> Error: Project settings file was not saved correctly!\n>> File: '+jsonDict_name)
+                alert('error_beep')
+            else: 
+                self.info_dir = self.dir_proj / 'settings' / jsonDict_name
+                print('>> Project settings file saved correctly!\n>> File: '+jsonDict_name)
+                print('>> File: '+ str(json2save_dir))
+                alert('countdown')
     
-    # def addOrgan2Proj(self, user_organ_settings):
+    def addOrgan(self, organ):
+        dict_organ = copy.deepcopy(organ.dict_info)
+        dict_organ.pop('project', None)
+        dict_organ['dir_res'] = organ.dir_res
+        self.organs[organ.mH_organName] = dict_organ
 
-    #     #fill!!
-    
+    def removeOrgan(self, organ):
+        organs = copy.deepcopy(self.organs)
+        organs.pop(organ.mH_organName, None)
+        self.organs = organs
 
 class Organ():
     'Organ Class'
     
     def __init__(self, project:Project, user_settings:dict, info_loadCh:dict):
-        self.mH_organName = self.create_mHName()
+        
+        self.create_mHName()
+        self.user_organName = user_settings['user_organName'].replace(' ', '_')
         self.parent_project = project
 
         self.settings = copy.deepcopy(project.dict_settings)
         self.workflow = copy.deepcopy(project.dict_workflow)
         self.dict_info = {}
-        self.dict_info['Organ'] = user_settings
+        self.dict_info = user_settings
 
-        self.loadChannels(project, info_loadCh)
+        self.checkChannels(project, info_loadCh)
                  
-    def loadChannels(self, project:Project, info_loadCh:dict):
-        no_chs = len([x for x in project.channels if x != 'chNS'])
-        check_chs = False
-        if no_chs > 1:
-            check_chs = True
-        
-        array_sizes = np.zeros((2, no_chs))
-        # ch1 ¦ ch2
-        # mk1 ¦ mk2
-        for ch in project.channels:
+    def checkChannels(self, project:Project, info_loadCh:dict):
+        chs = [x for x in project.channels if x != 'chNS']    
+        array_sizes = {}
+        sizes = []
+        for ch in chs:
             try:
-                images_o = io.imread(str(info_loadCh[ch]['dir']))
-                success = True
-                array_sizes.append(images_o.shape)
+                images_o = io.imread(str(info_loadCh[ch]['dir_cho']))
+                array_sizes[ch]= {'cho': images_o.shape}
+                # print(ch,',cho-',str(images_o.shape))
+                sizes.append(images_o.shape)
             except: 
-                print('something went wrong opening the files')
-        
-        
-        for ch in project.channels:
-            check_mask = False
+                print('>> Error: Something went wrong opening the file -',ch)
+                alert('error_beep')
+            
             if info_loadCh[ch]['mask_ch']:
-                check_mask = True
-            for param in ['dir_cho','mask_ch','dir_mk']:
-                if 'dir' in param:
-                    #First load files and get size
-                    try:
-                        images_o = io.imread(str(info_loadCh[ch][param]))
-                        success = True
-                        
-                        array_sizes.append(images_o.shape)
-                    except: 
-                        print('dir not working!')
-
-        if check_chs and success_ch and check_mask and success_mask:  
-            for ch in project.channels:
+                try:
+                    images_mk = io.imread(str(info_loadCh[ch]['dir_mk']))
+                    array_sizes[ch]['mask']= images_mk.shape
+                    # print(ch,',mask-',str(images_mk.shape))
+                    sizes.append(images_mk.shape)
+                except: 
+                    print('>> Error: Something went wrong opening the mask -',ch)
+                    alert('error_beep')
+            
+        unique_size = list(set(sizes))
+        if len(unique_size) != 1: 
+            counter = collections.defaultdict(int)
+            for elem in unique_size:
+                counter[elem] += 1
+            print('>> Error: Dimensions of imported images do not match! Please check! \n Imported Data: ')
+            pprint.pprint(array_sizes)
+            alert('error_beep')
+        
+        else:      
+            for ch in chs:
                 for param in ['dir_cho','mask_ch','dir_mk']:
                     self.settings[ch]['general_info'][param] = info_loadCh[ch][param]
-
-
-        self.no_chs = no_chs
-        # Optional
-        self.stage = stage
-        self.strain = strain
-        self.genotype = genotype
+            print('>> Files have been checked! \n>> Images shape:')
+            pprint.pprint(array_sizes)
 
         self.create_folders()
 
     def create_folders(self):
-        dirResults = ['dicts', 'stacks_npy', 'meshes', 'centreline', 'imgs_videos', 'csv_all']
-        for num, direc in enumerate(dirResults):
-            dir2create = self.parent_project.dir_out / direc
+        dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'centreline', 'settings']
+        organ_folder = self.user_organName
+        for direc in dirResults:
+            dir2create = self.parent_project.dir_proj / organ_folder / direc
             dir2create.mkdir(parents=True, exist_ok=True)
-        self.dir_res = self.parent_project.dir_out
+            if dir2create.is_dir():
+                self.settings['dirs'][direc] = dir2create
+            else: 
+                print('Error: Directory ', self.user_organName, '/', direc, ' could not be created!')
+                alert('error_beep')
+        self.dir_res = self.parent_project.dir_proj / organ_folder
+
+    def save_organProject(self):
+        jsonDict_name = 'mH_'+self.user_organName+'_organ.json'
+        json2save_dir = self.settings['dirs']['settings'] / jsonDict_name
+        self.all_info = {}
+        self.all_info['Organ'] = self.dict_info
+        self.all_info['dict_settings'] = self.settings
+        self.all_info['dict_workflow'] = self.workflow
+
+        with open(str(json2save_dir), "w") as write_file:
+            json.dump(self.all_info, write_file, cls=NumpyArrayEncoder)
+
+        if not json2save_dir.is_file():
+            print('>> Error: Organ settings file was not saved correctly!\n>> File: '+jsonDict_name)
+            alert('error_beep')
+        else: 
+            self.info_dir = self.dir_res / 'settings' / jsonDict_name
+            print('>> Organ settings file saved correctly!\n>> File: '+jsonDict_name)
+            print('>> Directory: '+ str(json2save_dir))
+            alert('countdown')
 
     def create_mHName(self):
         now_str = datetime.now().strftime('%Y%m%d%H%M')
         self.mH_organName = 'mH_Organ-'+now_str
 
     #Get all the set mH variables in __init__
-    def get_mH_organName(self):
-        return self.mH_organName
+    def get_notes(self):
+        return self.dict_info['user_organNotes']
 
-    def get_user_organName(self):
-        return self.user_organName
+    def get_orientation(self):
+        return self.dict_info['im_orientation']
+
+    def get_custom_angle(self):
+        return self.dict_info['custom_angle']
+    
+    def get_resolution(self):
+        return self.dict_info['resolution']
+
+    def get_units_resolution(self):
+        return self.dict_info['units_resolution']
 
     def get_stage(self):
-        return self.stage
+        return self.dict_info['stage']
 
     def get_strain(self):
-        return self.strain
+        return self.dict_info['strain']
 
     def get_genotype(self):
-        return self.genotype
-
-    def get_dir_channels(self):
-        return self.dir_channels
+        return self.dict_info['genotype']
 
     def get_dir_res(self):
         return self.dir_res
 
-    def set_meshes_dict(self, meshes_dict):
-        self.meshes_dict = meshes_dict
+    def get_direc(self, name:str):
+        return self.settings['dirs'][name]
 
-    def get_meshes_dict(self):
-        return self.meshes_dict
+    def loadTIFF(self, ch_name:str):
+        image = ImChannel(organ=self, ch_name=ch_name)
+        return image
 
-    
+    def update_workflow(self, process):
+        print('Update workflow!')
 
-    def loadTIF(dir_in:pathlib.PosixPath, test=False):
-        if test: 
-            try: 
-                images_o = io.imread(str(dir_in))
-                success = True
-            except FileNotFoundError:
-                success = False
-                print(f'Error: Invalid file {dir_in}')
-            return success
-        
 class ImChannel(): #channel
     'morphoHeart Image Channel Class'
     
-    def __init__(self, channel_no:int, organ:Organ, user_chName:str, 
-                 resolution:list, im_orientation:str, to_mask:bool,
-                 dir_cho:pathlib.WindowsPath):
-        
-        self.channel_no = channel_no
-        self.mH_chName = organ.mH_organName+'_ch0'+str(self.channel_no)
-        self.user_chName = user_chName
-        
-        self.resolution = resolution
-        self.im_orientation = im_orientation
-        
-        self.dir_cho = dir_cho
-        self.to_mask = to_mask
-        self.masked = False
+    def __init__(self, organ:Organ, ch_name:str):
 
-        self.get_images_o()
+        dir_im = organ.settings[ch_name]['general_info']['dir_cho']
+        im = io.imread(str(dir_im))
+        if not isinstance(im, np.ndarray):
+            print('>> Error: morphoHeart was unable to load tiff.\n>> Directory: ',str(dir_im))
+            alert('error_beep')
+        self.im = im
+        self.parent_organ = organ
+        self.channel_no = ch_name
+        self.to_mask = organ.settings[ch_name]['general_info']['mask_ch']
+        self.resolution = organ.dict_info['resolution']
+        self.dir_cho = organ.settings[ch_name]['general_info']['dir_cho']
+        if self.to_mask:
+            self.dir_mk = organ.settings[ch_name]['general_info']['dir_mk']
+        self.masked = False
+        self.im_shape = im.shape
         
     def get_channel_no(self):
         return self.channel_no
-    
-    def get_mH_chName(self):
-        return self.mH_chName
-    
-    def get_user_chName(self):
-        return self.user_chName
-    
-    def change_user_chName(self, new_user_chName):
-        self.user_chName = new_user_chName
-    
-    def get_images_o(self) -> 'np.ndarray':
-        images_o = io.imread(str(self.dir_cho))
-        self.images_o = images_o
-        self.images_pr = images_o
-        self.stack_shape = images_o.shape
-    
-    def get_images_pr(self):
-        return self.images_pr
-    
+
     def get_resolution(self):
         return self.resolution
-    
-    def get_im_orientation(self):
-        return self.im_orientation
+
+    def get_im_shape(self):
+        return self.im_shape
         
-    def get_stack_shape(self):
-        return self.stack_shape
-    
-    def get_dir_cho(self):
-        return self.dir_cho
-        
-    def mask_tissue(self, dir_mask:str):
+    def maskIm(self):
         #Check better this function
-        self.maskIm_dir = Path(dir_mask)
-        maskSt = np.load(Path(self.maskIm_dir))
-        if self.stack_shape == maskSt.shape:
+        im_o = np.copy(self.im)
+        im_mask = io.imread(str(self.dir_mk))
+        if self.im_shape == im_mask.shape:
             #Check the dimensions of the mask with those of the image
-            stack_masked = np.copy(self.stack_npy_o)
-            stack_masked[maskSt == False] = 0
+            im_o[im_mask == False] = 0
             self.masked = True
+            self.im_masked = im_o
         else: 
-            print('self.stack_shape != maskSt.shape')
-        return stack_masked
+            print('>> Error: Stack could not be masked (stack shapes did not match).')
+            alert('error_beep')
 
-    def create_chS3s (self, organ:Organ, layerDict:dict):
-        s3_int = ContStack(organ, self, cont_type='int')
-        print(s3_int.__dict__)
-        s3_int.s3_create(layerDict, self.cont_type)
+    def create_chS3s (self, layerDict:dict):
+        s3_int = ContStack(im_channel = self, layerDict = layerDict, cont_type = 'int')
         self.s3_int = s3_int
 
-        s3_ext = ContStack(organ, self, cont_type='ext')
-        print(s3_ext.__dict__)
-        s3_ext.s3_create(layerDict, self.cont_type)
+        s3_ext = ContStack(im_channel = self, layerDict = layerDict, cont_type ='ext')
         self.s3_ext = s3_ext
 
-        s3_tiss = ContStack(organ, self, cont_type='all')
-        print(s3_tiss.__dict__)
-        s3_tiss.s3_create(layerDict, self.cont_type)
+        s3_tiss = ContStack(im_channel = self, layerDict = layerDict, cont_type ='all')
         self.s3_tiss = s3_tiss
 
-    def load_chS3s (self, organ:Organ):
-        s3_int = ContStack(organ, self.channel_no, cont_type='int')
-        print(s3_int.__dict__)
-        s3_int.loadContStack(organ, self.channel_no, s3_int.cont_type)
-        self.s3_int = s3_int
+    # def load_chS3s (self, organ:Organ):
+    #     s3_int = ContStack(organ, self.channel_no, cont_type='int')
+    #     print(s3_int.__dict__)
+    #     s3_int.loadContStack(organ, self.channel_no, s3_int.cont_type)
+    #     self.s3_int = s3_int
 
-        s3_ext = ContStack(organ, self.channel_no, cont_type='ext')
-        print(s3_ext.__dict__)
-        s3_ext.loadContStack(organ, self.channel_no, s3_ext.cont_type)
-        self.s3_ext = s3_ext
+    #     s3_ext = ContStack(organ, self.channel_no, cont_type='ext')
+    #     print(s3_ext.__dict__)
+    #     s3_ext.loadContStack(organ, self.channel_no, s3_ext.cont_type)
+    #     self.s3_ext = s3_ext
 
-        s3_tiss = ContStack(organ, self.channel_no, cont_type='all')
-        print(s3_tiss.__dict__)
-        s3_tiss.loadContStack(organ, self.channel_no, s3_tiss.cont_type)
-        self.s3_tiss = s3_tiss
+    #     s3_tiss = ContStack(organ, self.channel_no, cont_type='all')
+    #     print(s3_tiss.__dict__)
+    #     s3_tiss.loadContStack(organ, self.channel_no, s3_tiss.cont_type)
+    #     self.s3_tiss = s3_tiss
 
 class ContStack(): 
     'morphoHeart Contour Stack Class'
-    def __init__(self, organ:Organ, channel_no:int, 
-                 cont_type:str):
+    def __init__(self, im_channel:ImChannel, layerDict:dict, cont_type:str):
 
         self.cont_type = cont_type
-        self.cont_name = str(channel_no)+'_'+self.cont_type
-        print(self.cont_name)
-        
-    def s3_create(self, layerDict:dict, cont_type:str):
-        x_dim = self.stack_shape[0]
-        y_dim = self.stack_shape[1]
-        z_dim = self.stack_shape[2]
+        self.im_channel = im_channel
+        self.cont_name = im_channel.channel_no+'_'+self.cont_type
+        self.s3 = self.s3_create(layerDict = layerDict)
+        self.s3_save()
+    
+    def s3_create(self, layerDict:dict):
+        x_dim = self.im_channel.im_shape[0]
+        y_dim = self.im_channel.im_shape[1]
+        z_dim = self.im_channel.im_shape[2]
         
         s3 = np.empty((x_dim,y_dim,z_dim+2))
         for pos, keySlc in enumerate(layerDict.keys()):
             if keySlc[0:3] == "slc":
                 slcNum = int(keySlc[3:6])
-                im_FilledCont = layerDict[keySlc][cont_type]
+                im_FilledCont = layerDict[keySlc][self.cont_type]
                 s3[:,:,slcNum+1] = im_FilledCont
-    
         s3 = s3.astype('uint8')
-        if cont_type == 'int':
-            self.s3 = s3
-        elif cont_type == 'ext':
-            self.s3 = s3
-        elif cont_type == 'all' or cont_type == 'tiss':
-            self.s3 = s3
+        return s3
+
+    def s3_save(self):
+        im_channel = self.im_channel
+        organ = im_channel.parent_organ
+        s3_name = organ.user_organName + '_s3_' + im_channel.channel_no + '_' + self.cont_type + '.npy'
+        self.s3_file = s3_name
+        dir2save = organ.settings['dirs']['s3_numpy'] / s3_name
+        np.save(dir2save, self.s3)
+        print('>> s3 files saved correctly!')
+        print('>> Directory: '+ str(dir2save))
+        alert('countdown')
 
     def loadContStack(self, organ:Organ, channel_no:int, cont_type:str):
-        filename = organ.user_organName + '_s3_' + str(channel_no) + '_' + cont_type + '.npy'
-        s3_dir = organ.dir_res / 'stacks_npy' / filename
+        s3_name = organ.user_organName + '_s3_' + str(channel_no) + '_' + cont_type + '.npy'
+        s3_dir = organ.dir_res / 'stacks_npy' / s3_name
         s3 = np.load(s3_dir)
         if cont_type == 'int':
             self.s3 = s3

@@ -25,6 +25,14 @@ from src.modules import mH_classes as mHC
 from src.modules import mH_funcBasics as fcBasics
 from src.modules import mH_funcMeshes as fcMeshes
 
+#%% GUI related
+alert_all=True
+heart_default=False
+
+dict_gui = {'alert_all': alert_all,
+            'heart_default': heart_default}
+fcBasics.alert('woohoo', dict_gui['alert_all'])
+
 #%% Info coming from the gui (user's selection)
 # 1. Click: Create new project
 proj = mHC.Project()
@@ -243,399 +251,27 @@ info_loadCh = {'ch1':{'dir_cho': dir_cho1,
 
 organ = mHC.Organ(project=proj, user_settings = user_organ_settings,
                         info_loadCh = info_loadCh)
+# print('organ.settings:',organ.settings)
+# print('organ.workflow:', organ.workflow)
 
+#%% Save initial organ project
+organ.save_organProject()
+proj.addOrgan(organ)
 
-# Try loading files of dictLoadChannels before creating dict
-import pathlib
-from skimage import io
+#%% Test to load TIFFS - code A
+im_ch1 = organ.loadTIFF(ch_name='ch1')
+im_ch1mk = im_ch1.maskIm()
 
-def loadTIF(dir_in:pathlib.PosixPath, test=False):
-    if test: 
-        try: 
-            images_o = io.imread(str(dir_in))
-            success = True
-        except FileNotFoundError:
-            success = False
-            print(f'Error: Invalid file {dir_in}')
-        return success
+im_ch2 = organ.loadTIFF(ch_name='ch2')
+im_ch2mk = im_ch2.maskIm()
 
-errors = []
-for ch in ['ch1', 'ch2']: 
-    for name in ['cho', 'mk']:
-        dir_in = dict_loadCh[ch]['dir_'+name]
-        print(dir_in)
-        success = loadTIF(dir_in = dir_in, test=True)
-        errors.append((dir_in, success))
+# CODE A
 
-# - Analsysis Pipeline
-# -- segment layer between channels
-layer_btw_chs = True
-ch_ext = 'ch1-myocardium'
-ch_int = 'ch2-endocardium'
-mH_nsChName = 'chNS'
-user_nsChName = 'cardiac jelly'
+#Create s3s
+layerDict = {}
+im_ch1.create_chS3s(layerDict=layerDict)
 
-# -- cut layers into segments
-cutLayersIn2Segments = True
-segments_no = 2
-user_segName1 = 'atrium'
-mH_segName1 = 'segm1'
-user_segName2 = 'ventricle'
-mH_segName2 = 'segm2'
-
-# -- parameters to measure
-params2measure = {'ch1':
-                    {'tiss': 
-                        {'all':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True, 
-                            'cutIn2Segments': True},
-                        'segm1':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True, 
-                            'ballooning': True},
-                        'segm2':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'ballooning': True, 
-                            'thck_ext2int': True,
-                            'ballooning': True}
-                        },
-                    'int': 
-                        {'all':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True, 
-                            'ballooning': True, 
-                            'cutIn2Segments': True},
-                        'segm1':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True},
-                        'segm2':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True, }
-                        },                      
-                    'ext': 
-                        {'all':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True, 
-                            'ballooning': True, 
-                            'cutIn2Segments': True},
-                        'segm1':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True},
-                        'segm2':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True}
-                        }
-                    }, 
-                'ch2':
-                    {'tiss': 
-                        {'all':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True, 
-                            'cutIn2Segments': True},
-                        'segm1':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True, 
-                            'ballooning': True},
-                        'segm2':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'ballooning': True, 
-                            'thck_ext2int': True,
-                            'ballooning': True}
-                        },
-                    'int': 
-                        {'all':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True, 
-                            'ballooning': True, 
-                            'cutIn2Segments': True},
-                        'segm1':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True},
-                        'segm2':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True, }
-                        },                      
-                    'ext': 
-                        {'all':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True, 
-                            'ballooning': True, 
-                            'cutIn2Segments': True},
-                        'segm1':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True},
-                        'segm2':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True}
-                        }
-                    }, 
-                'chNS':
-                    {'tiss': 
-                        {'all':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True, 
-                            'cutIn2Segments': True},
-                        'segm1':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True, 
-                            'ballooning': True},
-                        'segm2':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'ballooning': True, 
-                            'thck_ext2int': True,
-                            'ballooning': True}
-                        },
-                    'int': 
-                        {'all':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True, 
-                            'ballooning': True, 
-                            'cutIn2Segments': True},
-                        'segm1':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True},
-                        'segm2':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True, }
-                        },                      
-                    'ext': 
-                        {'all':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True, 
-                            'ballooning': True, 
-                            'cutIn2Segments': True},
-                        'segm1':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True},
-                        'segm2':
-                            {'surf_area' : True, 
-                            'volume': True, 
-                            'centreline': True, 
-                            'centreline_legnth': True,
-                            'linear_length': True,
-                            'thck_int2ext': True,
-                            'thck_ext2int': True,
-                            'ballooning': True}
-                        }
-                    }, 
-                }
-
-dict_AnPipeline = {'ns': 
-                        {'layer_btw_chs': layer_btw_chs,
-                        'ch_ext': ch_ext,
-                        'ch_int': ch_int,
-                        'mH_nsChName': mH_nsChName,
-                        'user_nsChName': user_nsChName},
-                    'segments': 
-                        {'cutLayersIn2Segments':cutLayersIn2Segments,
-                        'segments_no': segments_no, 
-                        'user_segName1': user_segName1, 
-                        'mH_segName1': mH_segName1,
-                        'user_segName2': user_segName2,
-                        'mH_segName2': mH_segName2,},
-                    'params2measure': params2measure,
-                    }
-
-#%% GUI related
-alert_all=True
-heart_default=False
-
-dict_gui = {'alert_all': alert_all,
-            'heart_default': heart_default}
-
-# Analysis Progress Dict
-# ADDD!!!
 #%% 
-# connection = 24
-fcBasics.alert('woohoo', dict_gui['alert_all'])
-
-#%% Create instances of classes based on initial set-up
-organ1 = mHC.Organ(user_name_in=dict_projInfo['mH_projName'],
-                   dir_channels=dict_projInfo['dir_channels'],
-                   dir_res=dict_projInfo['dir_res'], 
-                   no_chs = dict_loadCh['no_chs'],
-                   stage=dict_projInfo['stage'],
-                   strain=dict_projInfo['strain'], 
-                   genotype=dict_projInfo['genotype'])
-
-print(organ1.__dict__)
-
-#%%
-fcBasics.save_mHProject(dicts={'dict_projInfo':dict_projInfo, 'dict_loadCh':dict_loadCh,
-                                'dict_AnPipeline':dict_AnPipeline, 'dict_gui':dict_gui}, organ= organ1)
-
-
-#%%  Create Channel 1 - Myocardium (external)
-ch01 = mHC.ImChannel(channel_no=dict_loadCh['ch1']['mH_chName'], 
-                      organ=organ1,
-                      user_chName=dict_loadCh['ch1']['user_chName'], 
-                      resolution= dict_projInfo['resolution'],
-                      im_orientation=dict_projInfo['im_orientation'], 
-                      to_mask=dict_loadCh['ch1']['mask_ch'], 
-                      dir_cho=dict_loadCh['ch1']['dir_cho'])
-print(ch01.__dict__)
-ch01.load_chS3s(organ=organ1)
-
-#%%  Create Channel 2 - Endocardium (internal)
-ch02 = mHC.ImChannel(channel_no=dict_loadCh['ch2']['mH_chName'], 
-                      organ=organ1,
-                      user_chName=dict_loadCh['ch2']['user_chName'], 
-                      resolution= dict_projInfo['resolution'],
-                      im_orientation=dict_projInfo['im_orientation'], 
-                      to_mask=dict_loadCh['ch2']['mask_ch'], 
-                      dir_cho=dict_loadCh['ch2']['dir_cho'])
-print(ch02.__dict__)
-ch02.load_chS3s(organ=organ1)
-
-#%% Clean endocardium
-clean_ch2wch1 = True
-if clean_ch2wch1:
-    pass
 
 #%%
 user_meshName = 'myocardium'
