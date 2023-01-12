@@ -43,6 +43,57 @@ def alert(sound:str, alert_all=True):
         # print(path,'-', type(path))
         playsound(str(path))
 
+def ask4input(text:str, type_response:type, keep = False):
+    """
+    Function that ask for user input and transforms it into the expected type
+
+    Parameters
+    ----------
+    text : str
+        Text asking the question and giving possible options.
+    type_response : data types int/str/float/boolean
+        data type of the expected response
+    keep : Boolean
+        If True, leaves the string as it is (with upper and lower cases), else, changes the whole string to lower case.
+
+    Returns
+    -------
+    response : int/str/float/bool
+        returns an object with the corresponding type_response given as input.
+
+    """
+    alert('error_beep')
+    exit_now = False
+    while exit_now == False:
+        response = input('> '+text+' ')
+        if type_response == int:
+            try:
+                response = int(response)
+                exit_now = True
+            except:
+                print('ERROR: -'+response+'- The number entered needs to be an integer!')
+                pass
+        elif type_response == float:
+            try:
+                response = float(response)
+                exit_now = True
+            except:
+                print('ERROR: -'+response+'- The number entered needs to be a float!')
+                pass
+        elif type_response == str:
+            if keep == False:
+                response = response.lower()
+            exit_now = True
+        elif type_response == bool:
+            try:
+                if int(response) in [0,1]:
+                    response = bool(int(response))
+                    exit_now = True
+            except:
+                print('ERROR: -'+response+'- The number entered needs to be a [0]:no or [1]:yes!')
+                pass
+
+    return response
 
 # def save_mHProject(dicts:list, organ:Organ):
 #     jsonDict_name = 'mH_'+organ.user_organName+'_project.json'
@@ -55,7 +106,88 @@ def alert(sound:str, alert_all=True):
 
 #%% func - load_npy_stack
     # def load_npy_stack(organ:Organ, name:str):
+from collections import defaultdict        
+class NestedDict(defaultdict):
+
+    # def __getitem__(self,keytuple):
+    #     # if key is not a tuple then access as normal
+    #     if not isinstance(keytuple, tuple):
+    #         return super(NestedDict,self).__getitem__(keytuple)
+    #     d = self
+    #     for key in keytuple:
+    #         d = d[key]
+    #     return d
+    
+
+    def __getitem__(self, key):
+        if isinstance(key, list):
+            d = self
+            for i in key:
+                d = defaultdict.__getitem__(d, i)
+            return d
+        else:
+            return defaultdict.__getitem__(self, key)
+
+    def __setitem__(self, key, value):
+        if isinstance(key, list):
+            d = self[key[:-1]]
+            defaultdict.__setitem__(d, key[-1], value)
+        else:
+            defaultdict.__setitem__(self, key, value)
+
+def nested_dict(n, type):
+    if n == 1:
+        return NestedDict(type)
+    else:
+        return NestedDict(lambda: nested_dict(n-1, type))
+
+#https://stackoverflow.com/questions/30648317/programmatically-accessing-arbitrarily-deeply-nested-values-in-a-dictionary
+#https://stackoverflow.com/questions/13687924/setting-a-value-in-a-nested-python-dictionary-given-a-list-of-indices-and-value
+#https://www.geeksforgeeks.org/python-update-nested-dictionary/
+
+
+# terms = ['person', 'address', 'city'] 
+# result = nested_dict(3, str)
+# result[terms] = 'New York'  # as easy as it can be
+
+
+# class NestedDict(dict):
+
+#     def __getitem__(self,keytuple):
+#         # if key is not a tuple then access as normal
+#         if not isinstance(keytuple, tuple):
+#             return super(NestedDict,self).__getitem__(keytuple)
+#         d = self
+#         print('d:', d)
+#         for key in keytuple:
+#             d = d[key]
+#             print('key:',key, d)
+#         return d
+    
+#     def __setitem__(self, keylist, value):
+#         if isinstance(keylist, list):
+#             d = self[keylist[:-1]]
+#             super(NestedDict).__setitem__(d, key[-1], value)
         
+    
+#         return super().__setitem__(__key, __value)
+
+# x = {
+#      'key1' : 'value1',
+#      'key2' : {
+#                'key21' : {
+#                           'key211': 'value211'
+#                          },
+#                'key22' : 'value22'
+#               },
+#      'key3' : 'value3'
+#     }
+    
+# nd = NestedDict(x)
+# nd['key2']
+
+
+
 
 
 #%% Module loaded
