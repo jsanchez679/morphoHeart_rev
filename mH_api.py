@@ -14,6 +14,7 @@ from pathlib import Path
 import numpy as np
 import os
 import vedo as vedo
+#embedWindow(False)
 
 
 print('package:', __package__)
@@ -23,7 +24,7 @@ print('name:', __name__)
 # import src.mH_exceptions as mHExcp
 from src.modules import mH_classes as mHC
 from src.modules import mH_funcBasics as fcBasics
-from src.modules import mH_funcMeshes as fcMeshes
+# from src.modules import mH_funcMeshes as fcMeshes
 
 #%% GUI related
 alert_all=True
@@ -32,8 +33,8 @@ dict_gui = {'alert_all': alert_all,
             'heart_default': heart_default}
 fcBasics.alert('woohoo', dict_gui['alert_all'])
 
-partA = False
-partB = True
+partA = True
+partB = False
 partC = True
 if partA:
     #%
@@ -280,16 +281,29 @@ if partA:
     im_ch1.create_chS3s(layerDict=layerDict)
     organ.addChannel(im_ch1)
 
+
     ## CHANNEL 2
-    # im_ch2 = organ.loadTIFF(ch_name='ch2')
-    # im_ch2.maskIm()
-    # im_ch2.saveChannel()
-    # organ.addChannel(im_ch2)
+    im_ch2 = organ.loadTIFF(ch_name='ch2')
+    im_ch2.maskIm()
+    im_ch2.saveChannel()
+    organ.addChannel(im_ch2)
+
+    im_ch2.closeContours_auto()
+    im_ch2.closeContours_manual()
+    im_ch2.closeInfOutf()
+    im_ch2.selectContours()
+    layerDict = {}
+    im_ch2.create_chS3s(layerDict=layerDict)
+    organ.addChannel(im_ch2)
     
     #%
     # Save amended organ project 
     proj.save_mHProject()
     organ.save_organProject()
+
+    # Load channels 
+    # To load channels to continue processing and closing/selecting contours
+    # im_ch1_new = mHC.ImChannel(organ=organ, ch_name='ch1', new=False, s3s=False)
 
     #%
     # Delete organ and project
@@ -309,51 +323,29 @@ if partB:
     organName2Load = 'LS52_F02_V_SR_1029'
     organ_new = proj_new.loadOrgan(user_organName = organName2Load)
 
-    #%
-    im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False)
-    im_ch1_new.loadContStack(cont_type='int')
-    im_ch1_new.loadContStack(cont_type='ext')
-    
+    im_ch1 = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False, s3s=True)
+    im_ch2 = mHC.ImChannel(organ=organ_new, ch_name='ch2', new=False, s3s=True)
+
+    im_ch2.ch_clean(s3=im_ch2.s3_ext, s3_mask=im_ch1.s3_ext, option='clean')
+
+    msh1_int = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='int', extractLargest=True, rotateZ_90=True)
+    msh1_ext = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='ext', extractLargest=True, rotateZ_90=True)
+    msh1_tiss = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
+
+    # If loading meshes
+    # msh1_int = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='int', extractLargest=True, rotateZ_90=True, new=False)
+    # msh1_ext = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='ext', extractLargest=True, rotateZ_90=True, new=False)
+    # msh1_tiss = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='tiss', extractLargest=True, rotateZ_90=True, new=False)
 
 
-
+    vp = vedo.Plotter(N=3, axes=1)
+    vp.show(msh1_int.mesh, at=0, zoom=1.2)
+    vp.show(msh1_ext.mesh, at=1)
+    vp.show(msh1_tiss.mesh, at=2, interactive=True)
 
 
 
 #%%
-user_meshName = 'myocardium'
-mesh_type = 'tissue'
-mesh_color = 'teal'
-mesh_alpha = 0.1
-contours_source = np.array(range(10))
-
-extractLargest = False
-npy_mesh = np.load(os.path.join(str(organ1.dir_res), 'stacks_npy','LS52_F02_V_SR_1029_s3_ch0_all.npy'))
-rotateZ_90 = True
-chMyoc = 'AA'
-m_Myoc = mHC.Mesh_mH(organ=organ1, 
-                     imChannel=chMyoc,
-                     user_meshName = user_meshName,
-                     mesh_type=mesh_type, 
-                     npy_mesh=npy_mesh,
-                     extractLargest=extractLargest, 
-                     rotateZ_90=rotateZ_90)
-
-print(m_Myoc.__dict__)
-
-vp = vedo.Plotter(N=1, axes=1)
-vp.show(m_Myoc.mesh, at=0, zoom=1.2, interactive=True)
-
-# m_Myoc.set_mesh_alpha(0.1)
-m_Myoc.set_mesh_color('Teal')
-m_Myoc.set_mesh_alpha(0.1)
-        
-vp = vedo.Plotter(N=1, axes=1)
-vp.show(m_Myoc.mesh, at=0, zoom=1.2, interactive=True)
-
-myoc = m_Myoc.mesh
-m_Myoc.mesh.volume()
-m_Myoc.mesh.area()
 
 
 # %%
