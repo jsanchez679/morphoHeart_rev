@@ -33,8 +33,8 @@ dict_gui = {'alert_all': alert_all,
             'heart_default': heart_default}
 fcBasics.alert('woohoo', dict_gui['alert_all'])
 
-partA = True
-partB = False
+partA = False
+partB = True
 partC = True
 if partA:
     #%
@@ -270,7 +270,7 @@ if partA:
     ## CHANNEL 1
     im_ch1 = organ.loadTIFF(ch_name='ch1')
     im_ch1.maskIm()
-    im_ch1.saveChannel()
+    # im_ch1.saveChannel()
     organ.addChannel(im_ch1)
 
     im_ch1.closeContours_auto()
@@ -285,7 +285,7 @@ if partA:
     ## CHANNEL 2
     im_ch2 = organ.loadTIFF(ch_name='ch2')
     im_ch2.maskIm()
-    im_ch2.saveChannel()
+    # im_ch2.saveChannel()
     organ.addChannel(im_ch2)
 
     im_ch2.closeContours_auto()
@@ -325,23 +325,33 @@ if partB:
 
     im_ch1 = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False, s3s=True)
     im_ch2 = mHC.ImChannel(organ=organ_new, ch_name='ch2', new=False, s3s=True)
+    organ_new.save_organProject()
 
-    im_ch2.ch_clean(s3=im_ch2.s3_ext, s3_mask=im_ch1.s3_ext, option='clean')
+    im_ch2.ch_clean(s3=im_ch2.s3_ext, s3_mask=im_ch1.s3_ext, option='clean', plot=True)
+    im_ch2.ch_clean(s3=im_ch2.s3_tiss, s3_mask=im_ch1.s3_ext, option='clean', plot=True)
+
+    
 
     msh1_int = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='int', extractLargest=True, rotateZ_90=True)
     msh1_ext = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='ext', extractLargest=True, rotateZ_90=True)
     msh1_tiss = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
 
     # If loading meshes
-    # msh1_int = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='int', extractLargest=True, rotateZ_90=True, new=False)
-    # msh1_ext = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='ext', extractLargest=True, rotateZ_90=True, new=False)
-    # msh1_tiss = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='tiss', extractLargest=True, rotateZ_90=True, new=False)
-
+    # msh1_int2 = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='int', extractLargest=True, rotateZ_90=True, new=False)
+    # msh1_ext2 = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='ext', extractLargest=True, rotateZ_90=True, new=False)
+    # msh1_tiss2 = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='tiss', extractLargest=True, rotateZ_90=True, new=False)
 
     vp = vedo.Plotter(N=3, axes=1)
     vp.show(msh1_int.mesh, at=0, zoom=1.2)
     vp.show(msh1_ext.mesh, at=1)
     vp.show(msh1_tiss.mesh, at=2, interactive=True)
+
+    # vp = vedo.Plotter(N=3, axes=1)
+    # vp.show(msh1_int2.mesh, at=0, zoom=1.2)
+    # vp.show(msh1_ext2.mesh, at=1)
+    # vp.show(msh1_tiss2.mesh, at=2, interactive=True)
+
+
 
 
 

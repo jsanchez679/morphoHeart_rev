@@ -17,6 +17,7 @@ import copy
 import json
 import collections
 import pprint
+import matplotlib.pyplot as plt
 
 #%% ##### - Other Imports - ##################################################
 from .mH_funcBasics import alert, ask4input
@@ -712,8 +713,9 @@ class ImChannel(): #channel
         else: 
             self.loadChannel(organ=organ, ch_name=ch_name, s3s=s3s)
             if s3s:
-                for cont_type in ['ext', 'int', 'tiss']:
-                    self.loadContStack(cont_type=cont_type)
+                self.s3_int = ContStack(im_channel = self, cont_type = 'int', new=False, layerDict = {})
+                self.s3_ext = ContStack(im_channel = self, cont_type = 'ext', new=False, layerDict = {})
+                self.s3_tiss = ContStack(im_channel = self, cont_type = 'tiss', new=False, layerDict = {})
 
         organ.addChannel(imChannel=self)
         
@@ -773,6 +775,7 @@ class ImChannel(): #channel
             self.im_proc = im_o
             self.parent_organ.update_workflow(process = ('ImProc', self.channel_no, 'A-MaskChannel','Status'), update = 'DONE')
             self.parent_organ.workflow['ImProc'][self.channel_no]['A-MaskChannel']['Status'] = 'DONE'
+            self.saveChannel()
         else: 
             print('>> Error: Stack could not be masked (stack shapes did not match).')
             alert('error_beep')
@@ -830,32 +833,15 @@ class ImChannel(): #channel
         self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Info']['tissue']['Status'] = 'DONE'
 
         if int_bool and ext_bool and tiss_bool:
-            if self.s3_int.shape == self.s3_ext.shape == self.s3_tiss.shape:
-                self.shape_s3 = s3_int.shape
+            if self.s3_int.shape_s3 == self.s3_ext.shape_s3 == self.s3_tiss.shape_s3:
+                self.shape_s3 = s3_int.shape_s3
             else: 
                 print('self.shape_s3 = s3_int.shape')
             self.parent_organ.update_workflow(process = (), update = 'DONE')
             self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] = 'DONE'
             self.parent_organ.workflow['ImProc']['Status'] = 'DONE'
     
-    def loadContStack(self, cont_type:str):
-        parent_organ = self.parent_organ
-        s3_name = parent_organ.user_organName + '_s3_' + self.channel_no + '_' + cont_type + '.npy'
-        s3_dir = parent_organ.dir_res / 's3_numpy' / s3_name
-        if s3_dir.is_file():
-            s3 = np.load(s3_dir)
-            if cont_type == 'int':
-                self.s3_int = s3
-            elif cont_type == 'ext':
-                self.s3_ext = s3
-            elif cont_type == 'all' or cont_type == 'tiss':
-                self.s3_tiss = s3
-        else: 
-            print('>> Error: morphoHeart was not able to load s3!\n>> File: '+s3_name)
-            alert('error_beep')
-    
-    def ch_clean (self, s3, s3_mask, option): # check!!! shapes and how are they getting saved 
-        #differences between shape of tiffs and s3s?
+    def ch_clean (self, s3, s3_mask, option, inverted=True, plot=False, im_every=15): 
         """
         Function to clean channel using the other as a mask
         """
@@ -865,22 +851,101 @@ class ImChannel(): #channel
         elif option == "clean":
             print('- Cleaning endocardium')
 
-        s3_bits = np.empty((self.shape[0],self.shape[1],self.shape[2]))
-        s3_new = np.empty((self.shape[0],self.shape[1],self.shape[2]))
+        if inverted:
+            s3_inv = np.zeros_like(s3.s3, dtype='uint8')#np.empty((s3.shape_s3[0],s3.shape_s3[1],s3.shape_s3[2]))
 
-        for slc in range(self.shape[0]):
-            mask_slc = s3_mask[:,:,slc]
-            toClean_slc = s3[:,:,slc]
+        s3_bits = np.empty((s3.shape_s3[0],s3.shape_s3[1],s3.shape_s3[2]))
+        s3_new = np.empty((s3.shape_s3[0],s3.shape_s3[1],s3.shape_s3[2]))
 
-            toRemove_slc = np.logical_and(toClean_slc, mask_slc)
-            cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
+        index = list(s3.shape_s3).index(min(s3.shape_s3))
+        if index == 2:
+            for slc in range(s3.shape_s3[2]):
+                mask_slc = s3_mask.s3[:,:,slc]
+                toClean_slc = s3.s3[:,:,slc]
 
-            s3_bits[slc,:,slc] = toRemove_slc
-            s3_new[slc,:,slc] = cleaned_slc
-            
-        #toRemove_s3 = toRemove_s3.astype('uint8')
-        s3_new = s3_new.astype('uint8')
-        self.s3 = s3_new
+                if inverted:
+                    # Invert ch0_ext
+                    inv_slc = np.where((mask_slc==0)|(mask_slc==1), mask_slc^1, mask_slc)
+                else: 
+                    inv_slc = np.copy(mask_slc)
+
+                # inverted_mask or mask AND ch1_2clean
+                toRemove_slc = np.logical_and(toClean_slc, inv_slc)
+                # Keep only the clean bit
+                cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
+
+                if plot and slc in list(range(0,s3.shape_s3[0],im_every)):
+                    self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, option, inverted)
+
+                s3_bits[:,:,slc] = toRemove_slc
+                s3_new[:,:,slc] = cleaned_slc
+                
+            #toRemove_s3 = toRemove_s3.astype('uint8')
+            s3_new = s3_new.astype('uint8')
+            self.s3 = s3_new
+        
+        else:
+            print('>> Index different to 2, check!')
+            alert('error_beep')
+        
+    #             fcCont.ch_clean_plt(mask_s3 = s3_invIntMyoc, toClean_s3 = s3_ch1, toRemove_s3 = s3_endo_rem,
+    #                                       cleaned_s3 = s3_ch1_cl, plotshow = plotshow, im_every = 15, option = "clean")
+    #             fcCont.ch_clean_plt(mask_s3 = s3_ch0, toClean_s3 = s3_ch1, toRemove_s3 = s3_endo_rem, 
+    #                                       cleaned_s3 = s3_ch1_cl, plotshow = plotshow, im_every = 15, option = "clean")
+
+
+    #     ch0_ext_inv_s3 = np.empty((s3_ch0_ext.shape[0],s3_ch0_ext.shape[1],s3_ch0_ext.shape[2]), dtype = 'uint8')
+    # s1_ch1_clean_s3 = np.empty((s1_ch1_2clean.shape[0],s1_ch1_2clean.shape[1],s1_ch1_2clean.shape[2]), dtype = 'uint8')
+    # toRemove_s3 = np.empty((s1_ch1_2clean.shape[0],s1_ch1_2clean.shape[1],s1_ch1_2clean.shape[2]), dtype = 'uint8')
+
+    # for slc in range(s1_ch1_2clean.shape[2]):
+    #     ch0_ext_slc = s3_ch0_ext[:,:,slc]
+    #     ch1_orig_slc = s1_ch1_2clean[:,:,slc]
+
+    #     # Invert ch0_ext
+    #     ch0_inv_slc = np.where((ch0_ext_slc==0)|(ch0_ext_slc==1), ch0_ext_slc^1, ch0_ext_slc)
+    #     # inverted_ch0_ext AND ch1_2clean
+    #     toRemove_slc = np.logical_and(ch1_orig_slc, ch0_inv_slc)
+    #     # Keep only the clean bit
+    #     cleaned_slc = np.logical_xor(ch1_orig_slc, toRemove_slc)
+
+    #     ch0_ext_inv_s3[:,:,slc] = ch0_inv_slc
+    #     s1_ch1_clean_s3[:,:,slc] = cleaned_slc
+    #     toRemove_s3[:,:,slc] = toRemove_slc
+
+
+    # ch0_ext_inv_s3 = ch0_ext_inv_s3.astype('uint8')
+    # s1_ch1_clean_s3 = s1_ch1_clean_s3.astype('uint8')
+    # toRemove_s3 = toRemove_s3.astype('uint8')
+
+
+    def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc, option, inverted):
+        """
+        Function to plot mask, original image and result
+        """
+        if option == 'clean':
+            if inverted: 
+                txt = ['ch0_inv','ch1','ch0_inv AND ch1','ch0_inv AND ch1\nxOR ch1']
+            else: 
+                txt = ['ch0','ch1','ch0 AND ch1','ch0 AND ch1\nxOR ch1']
+        else:
+            txt = ['ch0_int','ch1_ext','ch0_int AND ch1_ext','layer in between']
+
+        #Plot
+        fig, ax = plt.subplots(1, 4, figsize = (10,2.5))
+        fig.suptitle("Slice:"+str(slc), y=1.05, weight="semibold")
+        ax[0].imshow(mask_slc)
+        ax[1].imshow(toClean_slc)
+        ax[2].imshow(toRemove_slc)
+        ax[3].imshow(cleaned_slc)
+        for num in range(0,4,1):
+            ax[num].set_title(txt[num])
+            ax[num].set_xticks([])
+            ax[num].set_yticks([])
+
+        plt.show()
+        print('>> DONE!')
+
 
 
 class ContStack(): 
@@ -894,12 +959,12 @@ class ContStack():
         self.cont_type = cont_type
         self.imfilled_name = names[index]
         self.im_channel = im_channel
-        self.shape = self.im_channel.shape
         self.cont_name = im_channel.channel_no+'_'+self.cont_type
         if new: 
             self.s3 = self.s3_create(layerDict = layerDict)
         else: 
-            self.s3 = im_channel.loadContStack(cont_type=cont_type)
+            self.s3 = self.s3_load()
+        self.shape_s3 = self.s3.shape
     
     def s3_create(self, layerDict:dict):
         x_dim = self.im_channel.shape[0]
@@ -913,6 +978,18 @@ class ContStack():
                 im_FilledCont = layerDict[keySlc][self.cont_type]
                 s3[:,:,slcNum+1] = im_FilledCont
         s3 = s3.astype('uint8')
+        return s3
+
+    def s3_load(self):
+        parent_organ = self.im_channel.parent_organ
+        s3_name = parent_organ.user_organName + '_s3_' + self.im_channel.channel_no + '_' + self.cont_type + '.npy'
+        s3_dir = parent_organ.dir_res / 's3_numpy' / s3_name
+        if s3_dir.is_file():
+            s3 = np.load(s3_dir)
+        else: 
+            print('>> Error: s3 file does not exist!\n>> File: '+s3_name)
+            alert('error_beep')
+            s3 = None
         return s3
 
     def s3_save(self):
@@ -945,11 +1022,11 @@ class Mesh_mH():
         self.resolution = imChannel.get_resolution()
         if new: 
             if mesh_type == 'int':
-                self.s3 = imChannel.s3_int
+                self.s3 = imChannel.s3_int.s3
             elif mesh_type == 'ext':
-                self.s3 = imChannel.s3_ext
+                self.s3 = imChannel.s3_ext.s3
             elif mesh_type == 'tiss':
-                self.s3 = imChannel.s3_tiss
+                self.s3 = imChannel.s3_tiss.s3
             self.create_mesh(npy_mesh = self.s3, resolution = self.resolution, 
                             extractLargest = extractLargest, rotateZ_90 = rotateZ_90)
         else: 
@@ -976,9 +1053,14 @@ class Mesh_mH():
         parent_organ = self.parent_organ
         mesh_name = parent_organ.user_organName+'_'+self.user_meshName+'.vtk'
         mesh_dir = parent_organ.settings['dirs']['meshes'] / mesh_name
-        print(str(mesh_dir))
         mesh_out = vedo.load(str(mesh_dir))
         self.mesh = mesh_out
+        if self.mesh_type == 'int':
+            self.s3 = self.imChannel.s3_int.s3
+        elif self.mesh_type == 'ext':
+            self.s3 = self.imChannel.s3_ext.s3
+        elif self.mesh_type == 'tiss':
+            self.s3 = self.imChannel.s3_tiss.s3
         
     def get_channel_no(self):
         return self.channel_no
