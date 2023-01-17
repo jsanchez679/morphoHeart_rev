@@ -12,6 +12,7 @@ import pathlib
 from pathlib import Path
 import numpy as np
 import vedo as vedo
+from vedo import write
 from skimage import measure, io
 import copy
 import json
@@ -334,7 +335,8 @@ class Project():
         # Project status
         for ch in channels:
             if 'NS' not in ch:
-                dict_ImProc[ch] = {'A-MaskChannel': {'Status': 'NotInitialised'},
+                dict_ImProc[ch] = {'Status': 'NotInitialised',
+                                    'A-MaskChannel': {'Status': 'NotInitialised'},
                                     'B-CloseCont':{'Status': 'NotInitialised',
                                                     'Steps':{'A-Autom': {'Status': 'NotInitialised',
                                                                         'Range': None, 
@@ -365,7 +367,8 @@ class Project():
                                                 'ext':{'Status': 'NotInitialised', 
                                                             'Info':{}}}}}
             else: 
-                dict_ImProc[ch] = {'D-S3Create':{'Status': 'NotInitialised',
+                dict_ImProc[ch] = {'Status': 'NotInitialised',
+                                    'D-S3Create':{'Status': 'NotInitialised',
                                                 'Info':{'tissue':{'Status': 'NotInitialised', 
                                                             'Info':{}},
                                                         'int':{'Status': 'NotInitialised', 
@@ -473,20 +476,20 @@ class Project():
                 print('>> File: '+ str(json2save_dir)+'\n')
                 alert('countdown')
     
-    def addOrgan(self, organ):
+    def add_organ(self, organ):
         dict_organ = copy.deepcopy(organ.dict_info)
         dict_organ.pop('project', None)
         dict_organ['dir_res'] = organ.dir_res
         self.organs[organ.user_organName] = dict_organ
         self.save_mHProject()
 
-    def removeOrgan(self, organ):
+    def remove_organ(self, organ):
         organs = copy.deepcopy(self.organs)
         organs.pop(organ.user_organName, None)
         self.organs = organs
         self.save_mHProject()
 
-    def loadOrgan(self, user_organName:str):
+    def load_organ(self, user_organName:str):
         dir_res = self.organs[user_organName]['dir_res']
         jsonDict_name = 'mH_'+self.organs[user_organName]['user_organName']+'_organ.json'
         json2open_dir = Path(dir_res) / 'settings' / jsonDict_name
@@ -517,11 +520,11 @@ class Organ():
             self.meshes = {}
             self.objects = {}
         else: 
-            self.loadOrgan(load_dict=load_dict)
+            self.load_organ(load_dict=load_dict)
 
-        self.checkChannels(project, info_loadCh)
+        self.check_channels(project, info_loadCh)
 
-    def loadOrgan(self, load_dict:dict):
+    def load_organ(self, load_dict:dict):
         self.dict_info['project']['dict_info_dir'] = Path(self.dict_info['project']['dict_info_dir'])
         for ch in self.info_loadCh:
             for key in self.info_loadCh[ch]:
@@ -547,7 +550,7 @@ class Organ():
         now_str = datetime.now().strftime('%Y%m%d%H%M')
         self.mH_organName = 'mH_Organ-'+now_str
                  
-    def checkChannels(self, project:Project, info_loadCh:dict):
+    def check_channels(self, project:Project, info_loadCh:dict):
         chs = [x for x in project.channels if x != 'chNS']    
         array_sizes = {}
         sizes = []
@@ -602,11 +605,37 @@ class Organ():
                 alert('error_beep')
         self.dir_res = self.parent_project.dir_proj / organ_folder
 
-    def addChannel(self, imChannel):
-        channel_dict = copy.deepcopy(imChannel.__dict__)
-        self.imChannels[imChannel.channel_no] = channel_dict
+    def add_channel(self, imChannel, new:bool):
+        if new: 
+            channel_dict = copy.deepcopy(imChannel.__dict__)
+            self.imChannels[imChannel.channel_no] = channel_dict
+        else: # just update im_proc 
+            self.imChannels[imChannel.channel_no]['im_proc'] = imChannel.im_proc
+            self.imChannels[imChannel.channel_no]['process'] = imChannel.process
+            if imChannel.dir_stckproc.is_file():
+                self.imChannels[imChannel.channel_no]['dir_stckproc'] = imChannel.dir_stckproc
 
-    def loadTIFF(self, ch_name:str):
+    def add_mesh(self, mesh, new:bool):
+        if new: 
+            self.meshes[mesh.legend] = {}
+            self.meshes[mesh.legend]['parent_organ'] = mesh.parent_organ.user_organName
+            self.meshes[mesh.legend]['channel_no'] = mesh.imChannel.channel_no
+            self.meshes[mesh.legend]['user_meshName'] = mesh.user_meshName
+            self.meshes[mesh.legend]['mesh_type'] = mesh.mesh_type
+            self.meshes[mesh.legend]['legend'] = mesh.legend
+            self.meshes[mesh.legend]['resolution'] = mesh.resolution
+            self.meshes[mesh.legend]['color'] = mesh.color
+            self.meshes[mesh.legend]['alpha'] = mesh.alpha
+            if hasattr(mesh,'dir_out'):
+                self.meshes[mesh.legend]['dir_out'] = mesh.dir_out
+            
+        # else: # just update im_proc 
+        #     self.imChannels[imChannel.channel_no]['im_proc'] = imChannel.im_proc
+        #     self.imChannels[imChannel.channel_no]['process'] = imChannel.process
+        #     if imChannel.dir_stckproc.is_file():
+        #         self.imChannels[imChannel.channel_no]['dir_stckproc'] = imChannel.dir_stckproc
+
+    def load_TIFF(self, ch_name:str):
         image = ImChannel(organ=self, ch_name=ch_name)
         return image
 
@@ -646,6 +675,29 @@ class Organ():
             print('>> Directory: '+ str(json2save_dir)+'\n')
             alert('countdown')
 
+    def check_status(self, process:str):
+        keys_wf = {'ImProc': ['A-MaskChannel', 'B-CloseCont','C-SelectCont','D-S3Create','E-TrimS3'], 
+                    'MeshesProc': ['A-Create3DMesh','B-TrimMesh','C-Centreline','D-Thickness','E-Segments']}
+
+        if process=='ImProc':
+            for ch in self.imChannels.keys():
+                # First check close contours
+                close_done = []
+                for key_a in ['A-Autom', 'B-Manual']:
+                    close_done.append(self.workflow[process][ch]['B-CloseCont']['Steps'][key_a]['Status'])
+                print('channel:',ch, '-CloseCont:', close_done)
+                if all(flag == 'DONE' for flag in close_done):
+                    self.workflow[process][ch]['B-CloseCont']['Status'] = 'DONE'
+
+                # Now update all the workflow
+                proc_done = []
+                for key_b in keys_wf[process]:
+                    proc_done.append(self.workflow[process][ch][key_b]['Status'])
+                print('channel:',ch, '-ImProc:', proc_done)
+                if all(flag == 'DONE' for flag in proc_done):
+                    self.workflow[process][ch]['Status'] = 'DONE'
+
+        
     def update_workflow(self, process, update):
         # updated_workflow = copy.deepcopy(self.workflow)
         # wf = copy.deepcopy(self.workflow)
@@ -710,20 +762,22 @@ class ImChannel(): #channel
                 self.dir_mk = organ.settings[ch_name]['general_info']['dir_mk']
             self.masked = False
             self.shape = im.shape
+            self.process = ['Init']
         else: 
-            self.loadChannel(organ=organ, ch_name=ch_name, s3s=s3s)
+            self.load_channel(organ=organ, ch_name=ch_name, s3s=s3s)
             if s3s:
                 self.s3_int = ContStack(im_channel = self, cont_type = 'int', new=False, layerDict = {})
                 self.s3_ext = ContStack(im_channel = self, cont_type = 'ext', new=False, layerDict = {})
                 self.s3_tiss = ContStack(im_channel = self, cont_type = 'tiss', new=False, layerDict = {})
 
-        organ.addChannel(imChannel=self)
+        organ.add_channel(imChannel=self, new=True)
         
-    def loadChannel(self, organ:Organ, ch_name:str, s3s:bool):
+    def load_channel(self, organ:Organ, ch_name:str, s3s:bool):
         self.to_mask = organ.imChannels[ch_name]['to_mask']
         self.resolution = organ.imChannels[ch_name]['resolution']
         self.dir_cho = organ.imChannels[ch_name]['dir_cho']
         dir_improc = organ.imChannels[ch_name]['dir_stckproc']
+        self.process = organ.imChannels[ch_name]['process']
         if not s3s: 
             im = io.imread(str(self.dir_cho))
             if not isinstance(im, np.ndarray):
@@ -753,7 +807,7 @@ class ImChannel(): #channel
             if len(s3_keys)>0:
                 for key in s3_keys:
                     organ.imChannels[ch][key] = 'LOAD'
-        organ.addChannel(imChannel=self)
+        organ.add_channel(imChannel=self, new=False)
 
     def get_channel_no(self):
         return self.channel_no
@@ -776,41 +830,41 @@ class ImChannel(): #channel
             self.parent_organ.update_workflow(process = ('ImProc', self.channel_no, 'A-MaskChannel','Status'), update = 'DONE')
             self.parent_organ.workflow['ImProc'][self.channel_no]['A-MaskChannel']['Status'] = 'DONE'
             self.saveChannel()
+            self.parent_organ.imChannels[self.channel_no]['masked'] = True
+            self.parent_organ.add_channel(self, new=False)
+            self.process.append('Masked')
         else: 
             print('>> Error: Stack could not be masked (stack shapes did not match).')
             alert('error_beep')
     
     def closeContours_auto(self):
+        self.saveChannel()
         self.parent_organ.update_workflow(process = (), update = 'DONE')
+        self.process.append('ClosedCont-Auto')
         self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Steps']['A-Autom']['Status'] = 'DONE'
+        self.parent_organ.add_channel(self, new=False)
 
     def closeContours_manual(self):
+        self.saveChannel()
         self.parent_organ.update_workflow(process = (), update = 'DONE')
+        self.process.append('ClosedCont-Manual')
         self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Steps']['B-Manual']['Status'] = 'DONE'
-        #Update status of B-CloseCont to Done when confirmed
+        #Update general status of B-CloseCont to Done when confirmed
+        self.parent_organ.add_channel(self, new=False)
 
     def closeInfOutf(self):
+        self.saveChannel()
         self.parent_organ.update_workflow(process = (), update = 'DONE')
+        self.process.append('ClosedInfOutf')
         self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Steps']['C-CloseInOut']['Status'] = 'DONE'
         #Update status of B-CloseCont to Done when confirmed
-    
+        self.parent_organ.add_channel(self, new=False)
+
     def selectContours(self):
         self.parent_organ.update_workflow(process = (), update = 'DONE')
+        self.process.append('SelectCont')
         self.parent_organ.workflow['ImProc'][self.channel_no]['C-SelectCont']['Status'] = 'DONE'
-
-    def saveChannel(self):
-        im2save = self.im_proc
-        im_name = self.parent_organ.user_organName + '_StckProc_' + self.channel_no + '.npy'
-        im_dir = self.parent_organ.settings['dirs']['s3_numpy'] / im_name
-        np.save(im_dir, im2save)
-        if not im_dir.is_file():
-            print('>> Error: Processed channel was not saved correctly!\n>> File: '+im_name)
-            alert('error_beep')
-        else: 
-            print('>> Processed channel saved correctly! - ', im_name)
-            print('>> Directory: '+ str(im_dir)+'\n')
-            alert('countdown')
-            self.dir_stckproc = im_dir
+        self.parent_organ.add_channel(self, new=False)
 
     def create_chS3s (self, layerDict:dict):
         s3_int = ContStack(im_channel = self, cont_type = 'int', new=True, layerDict = layerDict,)
@@ -839,9 +893,30 @@ class ImChannel(): #channel
                 print('self.shape_s3 = s3_int.shape')
             self.parent_organ.update_workflow(process = (), update = 'DONE')
             self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] = 'DONE'
-            self.parent_organ.workflow['ImProc']['Status'] = 'DONE'
+            self.parent_organ.workflow['ImProc'][self.channel_no]['Status'] = 'DONE'
+        self.process.append('CreateS3')
+
+    def trimS3(self):
+        self.parent_organ.update_workflow(process = (), update = 'DONE')
+        self.process.append('TrimS3')
+        self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Status'] = 'DONE'
+        self.parent_organ.add_channel(self, new=False)
+
+    def saveChannel(self):
+        im2save = self.im_proc
+        im_name = self.parent_organ.user_organName + '_StckProc_' + self.channel_no + '.npy'
+        im_dir = self.parent_organ.settings['dirs']['s3_numpy'] / im_name
+        np.save(im_dir, im2save)
+        if not im_dir.is_file():
+            print('>> Error: Processed channel was not saved correctly!\n>> File: '+im_name)
+            alert('error_beep')
+        else: 
+            print('>> Processed channel saved correctly! - ', im_name)
+            print('>> Directory: '+ str(im_dir)+'\n')
+            alert('countdown')
+            self.dir_stckproc = im_dir
     
-    def ch_clean (self, s3, s3_mask, option, inverted=True, plot=False, im_every=15): 
+    def ch_clean (self, s3, s3_mask, option, inverted=True, plot=False, im_every=25): 
         """
         Function to clean channel using the other as a mask
         """
@@ -849,13 +924,10 @@ class ImChannel(): #channel
         if option == "cj":
             print('- Extracting cardiac jelly')
         elif option == "clean":
-            print('- Cleaning endocardium')
+            print('- Cleaning endocardium ('+ self.channel_no + '-' + s3.cont_type)
 
-        if inverted:
-            s3_inv = np.zeros_like(s3.s3, dtype='uint8')#np.empty((s3.shape_s3[0],s3.shape_s3[1],s3.shape_s3[2]))
-
-        s3_bits = np.empty((s3.shape_s3[0],s3.shape_s3[1],s3.shape_s3[2]))
-        s3_new = np.empty((s3.shape_s3[0],s3.shape_s3[1],s3.shape_s3[2]))
+        s3_bits = np.zeros_like(s3.s3, dtype='uint8')
+        s3_new =  np.zeros_like(s3.s3, dtype='uint8')
 
         index = list(s3.shape_s3).index(min(s3.shape_s3))
         if index == 2:
@@ -864,9 +936,10 @@ class ImChannel(): #channel
                 toClean_slc = s3.s3[:,:,slc]
 
                 if inverted:
-                    # Invert ch0_ext
+                    # Invert ch to use as mask 
                     inv_slc = np.where((mask_slc==0)|(mask_slc==1), mask_slc^1, mask_slc)
                 else: 
+                    # Keep ch to use as mask as it is
                     inv_slc = np.copy(mask_slc)
 
                 # inverted_mask or mask AND ch1_2clean
@@ -880,44 +953,13 @@ class ImChannel(): #channel
                 s3_bits[:,:,slc] = toRemove_slc
                 s3_new[:,:,slc] = cleaned_slc
                 
-            #toRemove_s3 = toRemove_s3.astype('uint8')
             s3_new = s3_new.astype('uint8')
             self.s3 = s3_new
+            alert('whistle')            
         
         else:
             print('>> Index different to 2, check!')
             alert('error_beep')
-        
-    #             fcCont.ch_clean_plt(mask_s3 = s3_invIntMyoc, toClean_s3 = s3_ch1, toRemove_s3 = s3_endo_rem,
-    #                                       cleaned_s3 = s3_ch1_cl, plotshow = plotshow, im_every = 15, option = "clean")
-    #             fcCont.ch_clean_plt(mask_s3 = s3_ch0, toClean_s3 = s3_ch1, toRemove_s3 = s3_endo_rem, 
-    #                                       cleaned_s3 = s3_ch1_cl, plotshow = plotshow, im_every = 15, option = "clean")
-
-
-    #     ch0_ext_inv_s3 = np.empty((s3_ch0_ext.shape[0],s3_ch0_ext.shape[1],s3_ch0_ext.shape[2]), dtype = 'uint8')
-    # s1_ch1_clean_s3 = np.empty((s1_ch1_2clean.shape[0],s1_ch1_2clean.shape[1],s1_ch1_2clean.shape[2]), dtype = 'uint8')
-    # toRemove_s3 = np.empty((s1_ch1_2clean.shape[0],s1_ch1_2clean.shape[1],s1_ch1_2clean.shape[2]), dtype = 'uint8')
-
-    # for slc in range(s1_ch1_2clean.shape[2]):
-    #     ch0_ext_slc = s3_ch0_ext[:,:,slc]
-    #     ch1_orig_slc = s1_ch1_2clean[:,:,slc]
-
-    #     # Invert ch0_ext
-    #     ch0_inv_slc = np.where((ch0_ext_slc==0)|(ch0_ext_slc==1), ch0_ext_slc^1, ch0_ext_slc)
-    #     # inverted_ch0_ext AND ch1_2clean
-    #     toRemove_slc = np.logical_and(ch1_orig_slc, ch0_inv_slc)
-    #     # Keep only the clean bit
-    #     cleaned_slc = np.logical_xor(ch1_orig_slc, toRemove_slc)
-
-    #     ch0_ext_inv_s3[:,:,slc] = ch0_inv_slc
-    #     s1_ch1_clean_s3[:,:,slc] = cleaned_slc
-    #     toRemove_s3[:,:,slc] = toRemove_slc
-
-
-    # ch0_ext_inv_s3 = ch0_ext_inv_s3.astype('uint8')
-    # s1_ch1_clean_s3 = s1_ch1_clean_s3.astype('uint8')
-    # toRemove_s3 = toRemove_s3.astype('uint8')
-
 
     def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc, option, inverted):
         """
@@ -944,9 +986,6 @@ class ImChannel(): #channel
             ax[num].set_yticks([])
 
         plt.show()
-        print('>> DONE!')
-
-
 
 class ContStack(): 
     'morphoHeart Contour Stack Class'
@@ -1016,9 +1055,10 @@ class Mesh_mH():
         
         self.parent_organ = imChannel.parent_organ
         self.imChannel = imChannel
-        self.channel_no = imChannel.channel_no 
+        self.channel_no = imChannel.channel_no
         self.user_meshName = self.parent_organ.settings[self.channel_no]['general_info']['user_chName']
         self.mesh_type = mesh_type
+        self.legend = self.user_meshName+'_'+self.mesh_type
         self.resolution = imChannel.get_resolution()
         if new: 
             if mesh_type == 'int':
@@ -1027,18 +1067,18 @@ class Mesh_mH():
                 self.s3 = imChannel.s3_ext.s3
             elif mesh_type == 'tiss':
                 self.s3 = imChannel.s3_tiss.s3
-            self.create_mesh(npy_mesh = self.s3, resolution = self.resolution, 
-                            extractLargest = extractLargest, rotateZ_90 = rotateZ_90)
+            self.create_mesh(extractLargest = extractLargest, rotateZ_90 = rotateZ_90)
         else: 
-            self.loadMesh()
+            self.load_mesh()
         self.color = self.parent_organ.settings[self.channel_no]['general_info']['colorCh_'+self.mesh_type]
         self.set_color(self.color)
-        self.mesh_alpha = 1
-        self.set_alpha(self.mesh_alpha)
+        self.alpha = 1
+        self.set_alpha(self.alpha)
+        self.parent_organ.add_mesh(self, new=True)
     
-    def create_mesh(self, npy_mesh, resolution:list, extractLargest:bool, rotateZ_90:bool):
+    def create_mesh(self, extractLargest:bool, rotateZ_90:bool):
         # Extract vertices, faces, normals and values of each mesh
-        verts, faces, _, _ = measure.marching_cubes_lewiner(npy_mesh, spacing=resolution)
+        verts, faces, _, _ = measure.marching_cubes_lewiner(self.s3, spacing=self.resolution)
     
         # Create meshes
         mesh = vedo.Mesh([verts, faces])
@@ -1046,10 +1086,10 @@ class Mesh_mH():
             mesh = mesh.extractLargestRegion()
         if rotateZ_90:
             mesh.rotateZ(-90)
-        mesh.legend(self.user_meshName).wireframe()
+        mesh.legend(self.legend).wireframe()
         self.mesh = mesh
     
-    def loadMesh(self):
+    def load_mesh(self):
         parent_organ = self.parent_organ
         mesh_name = parent_organ.user_organName+'_'+self.user_meshName+'.vtk'
         mesh_dir = parent_organ.settings['dirs']['meshes'] / mesh_name
@@ -1061,12 +1101,26 @@ class Mesh_mH():
             self.s3 = self.imChannel.s3_ext.s3
         elif self.mesh_type == 'tiss':
             self.s3 = self.imChannel.s3_tiss.s3
-        
+
+    def save_mesh(self):
+        parent_organ = self.parent_organ
+        mesh_name = parent_organ.user_organName+'_'+self.user_meshName+'.vtk'
+        mesh_dir = parent_organ.settings['dirs']['meshes'] / mesh_name
+        self.dir_out = mesh_dir
+        mesh_out = self.mesh
+        mesh_out.write(str(mesh_dir))
+        print('>> Mesh '+mesh_name+' has been saved!')
+        alert('countdown')        
+        self.parent_organ.add_mesh(self, new=True)
+
     def get_channel_no(self):
         return self.channel_no
     
     def get_user_meshName(self):
         return self.user_meshName
+    
+    def get_legend(self):
+        return self.mesh.legend
     
     def change_user_meshName(self, new_user_meshName):
         self.user_meshName = new_user_meshName
@@ -1081,26 +1135,24 @@ class Mesh_mH():
         return self.parent_organ
     
     def set_alpha(self, mesh_alpha):
-        self.mesh_alpha = mesh_alpha
-        self.mesh.alpha(self.mesh_alpha)
+        self.alpha = mesh_alpha
+        self.mesh.alpha(self.alpha)
     
     def get_alpha(self):
         return self.mesh_alpha
         
     def set_color(self, mesh_color):
-        self.mesh_color = mesh_color
-        self.mesh.color(self.mesh_color)
+        self.color = mesh_color
+        self.mesh.color(self.color)
         
     def get_color(self):
-        return self.mesh_color
-        
-   
+        return self.mesh_color   
         
     def get_mesh(self):
         try: 
             return self.mesh 
         except:
-            self.loadMesh()
+            self.load_mesh()
             return self.mesh
     
     def getCentreline(self): 

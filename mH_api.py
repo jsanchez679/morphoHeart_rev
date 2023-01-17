@@ -36,10 +36,13 @@ fcBasics.alert('woohoo', dict_gui['alert_all'])
 partA = False
 partB = True
 partC = True
+print('partA:',partA,'- partB:',partB,'- partC:',partC)
+
 if partA:
     #%
     # Info coming from the gui (user's selection)
     # 1. Click: Create new project
+    print('\n---CREATING PROJECT----')
     proj = mHC.Project()
     proj.__dict__
 
@@ -190,12 +193,12 @@ if partA:
     proj.set_project_status()
     # print('>>proj.dict_workflow:', proj.dict_workflow)
 
-    #%
     # Save project 
     proj.save_mHProject()
 
     #%
     # Having created the project an organ is created as part of the project
+    print('\n---CREATING ORGAN----')
     user_organName = 'LS52_F02_V_SR_1029'
     user_organNotes = 'Wild-type heart 1'
     im_orientation = 'ventral'
@@ -227,6 +230,7 @@ if partA:
                             }
 
     # - Load Channels
+    print('\n---CREATING CHANNELS 1 AND 2----')
     # mH_chName1 = 'ch1'
     if sys.platform == 'darwin':
         dir_cho1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_EDC.tif')
@@ -260,18 +264,18 @@ if partA:
     # print('organ.settings:',organ.settings)
     # print('organ.workflow:', organ.workflow)
 
-    #%
+    print('\n---SAVING PROJECT AND ORGAN----')
     # Save initial organ project
-    proj.addOrgan(organ)
+    proj.add_organ(organ)
     organ.save_organProject()
 
     #%
     # CODE A ---------------------------------------------------------
     ## CHANNEL 1
-    im_ch1 = organ.loadTIFF(ch_name='ch1')
+    print('\n---PROCESSING CHANNEL 1----')
+    im_ch1 = organ.load_TIFF(ch_name='ch1')
     im_ch1.maskIm()
-    # im_ch1.saveChannel()
-    organ.addChannel(im_ch1)
+    im_ch1.saveChannel()
 
     im_ch1.closeContours_auto()
     im_ch1.closeContours_manual()
@@ -279,14 +283,13 @@ if partA:
     im_ch1.selectContours()
     layerDict = {}
     im_ch1.create_chS3s(layerDict=layerDict)
-    organ.addChannel(im_ch1)
+    im_ch1.trimS3()
 
-
-    ## CHANNEL 2
-    im_ch2 = organ.loadTIFF(ch_name='ch2')
+    # CHANNEL 2
+    print('\n---PROCESSING CHANNEL 2----')
+    im_ch2 = organ.load_TIFF(ch_name='ch2')
     im_ch2.maskIm()
     # im_ch2.saveChannel()
-    organ.addChannel(im_ch2)
 
     im_ch2.closeContours_auto()
     im_ch2.closeContours_manual()
@@ -294,7 +297,8 @@ if partA:
     im_ch2.selectContours()
     layerDict = {}
     im_ch2.create_chS3s(layerDict=layerDict)
-    organ.addChannel(im_ch2)
+    im_ch2.trimS3()
+    organ.check_status(process='ImProc')
     
     #%
     # Save amended organ project 
@@ -314,37 +318,76 @@ if partA:
 if partB: 
     #% CODE B
     # Load organ and project
+    print('\n---LOADING PROJECT----')
     projName2Load = 'Project_A-B'
     folder_name = 'R_'+projName2Load
     dir2load = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart') / folder_name
     load_dict = {'name': projName2Load, 'dir': dir2load}
     proj_new = mHC.Project(new = False, load_dict = load_dict)
 
+    print('\n---LOADING ORGAN----')
     organName2Load = 'LS52_F02_V_SR_1029'
-    organ_new = proj_new.loadOrgan(user_organName = organName2Load)
+    organ_new = proj_new.load_organ(user_organName = organName2Load)
 
-    im_ch1 = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False, s3s=True)
-    im_ch2 = mHC.ImChannel(organ=organ_new, ch_name='ch2', new=False, s3s=True)
+    print('\n---LOADING CHANNEL 1 AND 2----')
+    im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False, s3s=True)
+    im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2', new=False, s3s=True)
     organ_new.save_organProject()
 
-    im_ch2.ch_clean(s3=im_ch2.s3_ext, s3_mask=im_ch1.s3_ext, option='clean', plot=True)
-    im_ch2.ch_clean(s3=im_ch2.s3_tiss, s3_mask=im_ch1.s3_ext, option='clean', plot=True)
+    print('\n---CREATING MESHES CHANNEL 1---')
+    msh1_int = mHC.Mesh_mH(imChannel=im_ch1_new, mesh_type='int', extractLargest=True, rotateZ_90=True)
+    msh1_ext = mHC.Mesh_mH(imChannel=im_ch1_new, mesh_type='ext', extractLargest=True, rotateZ_90=True)
+    msh1_tiss = mHC.Mesh_mH(imChannel=im_ch1_new, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
 
+    print('\n---CREATING MESHES CHANNEL 2---')
+    msh2_int = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='int', extractLargest=True, rotateZ_90=True)
+    msh2_ext = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='ext', extractLargest=True, rotateZ_90=True)
+    msh2_tiss = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
+
+    organ_new.save_organProject()
+    #%%
+    vp = vedo.Plotter(N=6, axes=1)
+    vp.show(msh1_int.mesh, at=0, zoom=1.2)
+    vp.show(msh1_ext.mesh, at=1)
+    vp.show(msh1_tiss.mesh, at=2)
+    vp.show(msh2_int.mesh, at=3)
+    vp.show(msh2_ext.mesh, at=4)
+    vp.show(msh2_tiss.mesh, at=5, interactive=True)
+    print('>> Done!')
+
+    inverted = fcBasics.ask4input('Select the mask you would like to use to clean the endocardial layer: \n\t[0]: Just the myocardial tissue layer \n\t[1]: (Recommended) The inverted internal myocardium (more profound cleaning). >>>: ', bool)
+    im_ch2_new.ch_clean(s3=im_ch2_new.s3_int, s3_mask=im_ch1_new.s3_ext, option='clean', inverted=inverted, plot=True)
+    im_ch2_new.s3_int.s3_save()
+    im_ch2_new.ch_clean(s3=im_ch2_new.s3_ext, s3_mask=im_ch1_new.s3_ext, option='clean', inverted=inverted, plot=True)
+    im_ch2_new.s3_ext.s3_save()
+    im_ch2_new.ch_clean(s3=im_ch2_new.s3_tiss, s3_mask=im_ch1_new.s3_ext, option='clean', inverted=inverted, plot=True)
+    im_ch2_new.s3_tiss.s3_save()
+
+    print('\n---RECREATING MESHES CHANNEL 2 WITH CLEANED ENDOCARDIUM---')
+    msh2_int2 = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='int', extractLargest=True, rotateZ_90=True)
+    msh2_ext2 = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='ext', extractLargest=True, rotateZ_90=True)
+    msh2_tiss2 = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
+    msh2_tiss2.save_mesh()
+
+    vp = vedo.Plotter(N=6, axes=1)
+    vp.show(msh2_int.mesh, at=0, zoom=1.2)
+    vp.show(msh2_ext.mesh, at=1)
+    vp.show(msh2_tiss.mesh, at=2)
+    vp.show(msh2_int2.mesh, at=3)
+    vp.show(msh2_ext2.mesh, at=4)
+    vp.show(msh2_tiss2.mesh, at=5, interactive=True)
+    print('>> Done!')
     
-
-    msh1_int = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='int', extractLargest=True, rotateZ_90=True)
-    msh1_ext = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='ext', extractLargest=True, rotateZ_90=True)
-    msh1_tiss = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
-
     # If loading meshes
-    # msh1_int2 = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='int', extractLargest=True, rotateZ_90=True, new=False)
-    # msh1_ext2 = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='ext', extractLargest=True, rotateZ_90=True, new=False)
-    # msh1_tiss2 = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='tiss', extractLargest=True, rotateZ_90=True, new=False)
+    msh2_int2 = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='int', extractLargest=True, rotateZ_90=True, new=False)
+    msh2_ext2 = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='ext', extractLargest=True, rotateZ_90=True, new=False)
+    msh2_tiss2 = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='tiss', extractLargest=True, rotateZ_90=True, new=False)
 
     vp = vedo.Plotter(N=3, axes=1)
     vp.show(msh1_int.mesh, at=0, zoom=1.2)
     vp.show(msh1_ext.mesh, at=1)
     vp.show(msh1_tiss.mesh, at=2, interactive=True)
+    print('>> Done!')
 
     # vp = vedo.Plotter(N=3, axes=1)
     # vp.show(msh1_int2.mesh, at=0, zoom=1.2)
