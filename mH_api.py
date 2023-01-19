@@ -33,8 +33,8 @@ dict_gui = {'alert_all': alert_all,
             'heart_default': heart_default}
 fcBasics.alert('woohoo', dict_gui['alert_all'])
 
-partA = False
-partB = True
+partA = True
+partB = False
 partC = True
 print('partA:',partA,'- partB:',partB,'- partC:',partC)
 
@@ -98,7 +98,7 @@ if partA:
     proj.create_gralprojWF(user_proj_settings=user_proj_settings)
     # Create project directory
     proj.create_proj_dir(dir_proj_res)
-    print('>> proj.dict_projInfo: ', proj.dict_info)
+    print('>> proj.dict_projInfo: ', proj.info)
 
     # The result of the modification of such table is shown in the dict 
     # called user_params2meas.
@@ -194,9 +194,18 @@ if partA:
     # print('>>proj.dict_workflow:', proj.dict_workflow)
 
     # Save project 
-    proj.save_mHProject()
+    proj.save_project()
+    # Load project and check parameters 
+    print('\n---LOADING PROJECT----')
+    proj_name = 'Project_A-B'
+    folder_name = 'R_'+proj_name
+    proj_dir = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart') / folder_name
+    load_dict = {'name': proj_name, 'dir': proj_dir}
+    proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
 
-    #%
+    print('>> Check Project: \n',fcBasics.compare_dictionaries(proj.__dict__,proj_new.__dict__,'proj','new'))
+    
+    #% ------------------------------------------------------------------------------
     # Having created the project an organ is created as part of the project
     print('\n---CREATING ORGAN----')
     user_organName = 'LS52_F02_V_SR_1029'
@@ -217,7 +226,7 @@ if partA:
 
     user_organ_settings = {'project': {'user': proj.user_projName,
                                         'mH': proj.mH_projName,
-                                        'dict_info_dir': proj.info_dir},
+                                        'dict_dir_info': proj.dir_info},
                             'user_organName': user_organName,
                             'user_organNotes': user_organNotes,
                             'im_orientation': im_orientation,
@@ -230,7 +239,6 @@ if partA:
                             }
 
     # - Load Channels
-    print('\n---CREATING CHANNELS 1 AND 2----')
     # mH_chName1 = 'ch1'
     if sys.platform == 'darwin':
         dir_cho1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_EDC.tif')
@@ -256,8 +264,7 @@ if partA:
                             'dir_mk': dir_mkch1},
                     'ch2':{'dir_cho': dir_cho2, 
                             'mask_ch': mask_ch2,
-                            'dir_mk': dir_mkch2},   
-                }
+                            'dir_mk': dir_mkch2}}
 
     organ = mHC.Organ(project=proj, user_settings = user_organ_settings,
                             info_loadCh = info_loadCh)
@@ -267,16 +274,34 @@ if partA:
     print('\n---SAVING PROJECT AND ORGAN----')
     # Save initial organ project
     proj.add_organ(organ)
-    organ.save_organProject()
+    organ.save_organ()
+    
+    print('\n---LOADING ORGAN----')
+    organName2Load = 'LS52_F02_V_SR_1029'
+    organ_new = proj.load_organ(user_organName = organName2Load)
+    
+    print('>> Check Organ: \n',fcBasics.compare_dictionaries(organ.__dict__,organ_new.__dict__,'proj','new'))
+    
+    # Save project 
+    proj.save_project()
+    # Load project and check parameters 
+    print('\n---LOADING PROJECT----')
+    proj_name = 'Project_A-B'
+    folder_name = 'R_'+proj_name
+    proj_dir = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart') / folder_name
+    load_dict = {'name': proj_name, 'dir': proj_dir}
+    proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
 
-    #%
+    print('>> Check Project: \n',fcBasics.compare_dictionaries(proj.__dict__,proj_new.__dict__,'proj','new'))
+
+
+    #%%
     # CODE A ---------------------------------------------------------
+    print('\n---CREATING CHANNELS 1 AND 2----')
     ## CHANNEL 1
     print('\n---PROCESSING CHANNEL 1----')
     im_ch1 = organ.load_TIFF(ch_name='ch1')
     im_ch1.maskIm()
-    im_ch1.saveChannel()
-
     im_ch1.closeContours_auto()
     im_ch1.closeContours_manual()
     im_ch1.closeInfOutf()
@@ -284,7 +309,18 @@ if partA:
     layerDict = {}
     im_ch1.create_chS3s(layerDict=layerDict)
     im_ch1.trimS3()
-
+    
+    organ.save_organ()
+    print('\n---LOADING ORGAN----')
+    organName2Load = 'LS52_F02_V_SR_1029'
+    organ_new = proj.load_organ(user_organName = organName2Load)
+    
+    print('>> Check Organ: \n',fcBasics.compare_dictionaries(organ.__dict__,organ_new.__dict__,'proj','new'))
+    
+    im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False)
+    print('>> Check Project: \n',fcBasics.compare_dictionaries(im_ch1.__dict__,im_ch1_new.__dict__,'proj','new'))
+    
+#%%
     # CHANNEL 2
     print('\n---PROCESSING CHANNEL 2----')
     im_ch2 = organ.load_TIFF(ch_name='ch2')
@@ -302,8 +338,8 @@ if partA:
     
     #%
     # Save amended organ project 
-    proj.save_mHProject()
-    organ.save_organProject()
+    proj.save_project()
+    organ.save_organ()
 
     # Load channels 
     # To load channels to continue processing and closing/selecting contours
@@ -319,11 +355,11 @@ if partB:
     #% CODE B
     # Load organ and project
     print('\n---LOADING PROJECT----')
-    projName2Load = 'Project_A-B'
-    folder_name = 'R_'+projName2Load
-    dir2load = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart') / folder_name
-    load_dict = {'name': projName2Load, 'dir': dir2load}
-    proj_new = mHC.Project(new = False, load_dict = load_dict)
+    proj_name = 'Project_A-B'
+    folder_name = 'R_'+proj_name
+    proj_dir = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart') / folder_name
+    load_dict = {'name': proj_name, 'dir': proj_dir}
+    proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
 
     print('\n---LOADING ORGAN----')
     organName2Load = 'LS52_F02_V_SR_1029'
@@ -332,7 +368,7 @@ if partB:
     print('\n---LOADING CHANNEL 1 AND 2----')
     im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False, s3s=True)
     im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2', new=False, s3s=True)
-    organ_new.save_organProject()
+    organ_new.save_organ()
 
     print('\n---CREATING MESHES CHANNEL 1---')
     msh1_int = mHC.Mesh_mH(imChannel=im_ch1_new, mesh_type='int', extractLargest=True, rotateZ_90=True)
@@ -344,7 +380,7 @@ if partB:
     msh2_ext = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='ext', extractLargest=True, rotateZ_90=True)
     msh2_tiss = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
 
-    organ_new.save_organProject()
+    organ_new.save_organ()
     #%%
     vp = vedo.Plotter(N=6, axes=1)
     vp.show(msh1_int.mesh, at=0, zoom=1.2)

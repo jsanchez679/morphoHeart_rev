@@ -43,6 +43,7 @@ def alert(sound:str, alert_all=True):
         # print(path,'-', type(path))
         playsound(str(path))
 
+#%% func - ask4input
 def ask4input(text:str, type_response:type, keep = False):
     """
     Function that ask for user input and transforms it into the expected type
@@ -94,6 +95,43 @@ def ask4input(text:str, type_response:type, keep = False):
                 pass
 
     return response
+
+#%% func - compare_dictionaries
+def compare_dictionaries(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
+    """Compare two dictionaries recursively to find non mathcing elements
+
+    Args:
+        dict_1: dictionary 1
+        dict_2: dictionary 2
+
+    Returns:
+
+    """
+    err = ''
+    key_err = ''
+    value_err = ''
+    old_path = path
+    for k in dict_1.keys():
+        path = old_path + "[%s]" % k
+        if not k in dict_2:
+            key_err += "Key %s%s not in %s\n" % (dict_1_name, path, dict_2_name)
+        else:
+            if isinstance(dict_1[k], dict) and isinstance(dict_2[k], dict):
+                err += compare_dictionaries(dict_1[k],dict_2[k],'d1','d2', path)
+            else:
+                if dict_1[k] != dict_2[k]:
+                    value_err += "Value of %s%s (%s) not same as %s%s (%s)\n"\
+                        % (dict_1_name, path, dict_1[k], dict_2_name, path, dict_2[k])
+
+    for k in dict_2.keys():
+        path = old_path + "[%s]" % k
+        if not k in dict_1:
+            key_err += "Key %s%s not in %s\n" % (dict_2_name, path, dict_1_name)
+
+    res = key_err + value_err + err
+    return res
+
+#%% 
 
 # def save_mHProject(dicts:list, organ:Organ):
 #     jsonDict_name = 'mH_'+organ.user_organName+'_project.json'

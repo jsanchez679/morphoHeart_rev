@@ -30,7 +30,6 @@ __maintainer__ = 'J. Sanchez-Posada'
 __email__      = 'julianasanchezposada@gmail.com'
 __website__    = 'https://github.com/jsanchez679/morphoHeart'
 
-
 #%% ##### - Class definition - ###############################################
 # Definition of class to save dictionary
 class NumpyArrayEncoder(json.JSONEncoder):
@@ -56,7 +55,7 @@ class Project():
     process all the organs contained in a project are set up when starting a 
     new project and can be amended if needed as the organs are processed.
     '''
-    def __init__(self, new=True, load_dict={}):
+    def __init__(self, new=True, proj_name=None, proj_dir=None):
 
         def create_mHName(self):
             '''
@@ -70,17 +69,31 @@ class Project():
             create_mHName(self)
             self.organs = {}
         else: 
-            self.loadProject(load_dict=load_dict)
+            load_dict = {'name': proj_name, 'dir': proj_dir}
+            self.load_project(load_dict=load_dict)
     
-    def loadProject(self, load_dict:dict):
+    
+    def load_project(self, load_dict:dict):
         dir_res = load_dict['dir']
         jsonDict_name = 'mH_'+load_dict['name']+'_project.json'
         json2open_dir = dir_res / 'settings' / jsonDict_name
         with open(json2open_dir, "r") as read_file:
             print(">> "+jsonDict_name+": Opening JSON encoded data")
             dict_out = json.load(read_file)
-        self.dict_info = dict_out['info']
-        self.dict_info['dir_proj'] = Path(self.dict_info['dir_proj'])
+        self.info = dict_out['info']
+        self.user_projName = dict_out['info']['user_projName']
+        self.mH_projName = dict_out['info']['mH_projName']
+        self.info['dir_proj'] = Path(self.info['dir_proj'])
+        self.info['dir_info'] = Path(self.info['dir_info'])
+        
+        if 'chNS' in dict_out['settings'].keys():
+            dict_out['settings']['chNS']['general_info']['ch_ext'] = tuple(dict_out['settings']['chNS']['general_info']['ch_ext'])
+            dict_out['settings']['chNS']['general_info']['ch_int'] = tuple(dict_out['settings']['chNS']['general_info']['ch_int'])
+        
+        if 'chNS' in dict_out['workflow']['ImProc'].keys():
+            dict_out['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['ext_mesh'] = tuple(dict_out['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['ext_mesh'])
+            dict_out['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['int_mesh'] = tuple(dict_out['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['int_mesh'])
+         
         self.settings = dict_out['settings']
         self.workflow = dict_out['workflow']
         self.channels = dict_out['channels']
@@ -91,9 +104,11 @@ class Project():
                 self.organs[key]['dir_res'] = Path(self.organs[key]['dir_res'])
         except: 
             pass
-        self.gral_meas_keys = dict_out['tuples']['gral_meas_keys']
-        self.gral_meas_param = dict_out['tuples']['gral_meas_param']
+        # self.gral_meas_keys = dict_out['tuples']['gral_meas_keys']
+        
+        self.gral_meas_param = [tuple(item) for item in dict_out['gral_meas_param']]
         self.dir_proj = Path(dict_out['info']['dir_proj'])
+        self.dir_info = Path(dict_out['info']['dir_info'])
         #self.all_info = dict_out
 
     def create_gralprojWF(self, user_proj_settings:dict):
@@ -107,8 +122,8 @@ class Project():
         '''
 
         self.user_projName = user_proj_settings['user_projName'].replace(' ', '_')
-        self.dict_info = {}
-        self.dict_info = {'mH_projName': self.mH_projName,
+        self.info = {}
+        self.info = {'mH_projName': self.mH_projName,
                             'user_projName': self.user_projName,
                             'user_projNotes': user_proj_settings['user_projNotes'], 
                             }
@@ -177,9 +192,9 @@ class Project():
         self.channels = channels
         segments_new = list(set(segments))
         self.segments = sorted(segments_new) 
-        # self.dict_info['channels'] = self.channels
-        # self.dict_info['segments'] = self.segments
-        # self.dict_info['organs'] = {}
+        # self.info['channels'] = self.channels
+        # self.info['segments'] = self.segments
+        # self.info['organs'] = {}
             
         self.create_table2select_meas_param()
 
@@ -234,7 +249,7 @@ class Project():
                 gral_meas_param.append((ch,cont,segm,'centreline_looplength'))
 
         self.gral_meas_param = gral_meas_param
-        self.dict_params_deflt = dict_params_deflt
+        #self.dict_params_deflt = dict_params_deflt
         #Use this two result variables to create selecting table in the GUI
 
     def set_measure_param(self, user_params2meas:dict, user_ball_settings:dict):
@@ -278,6 +293,7 @@ class Project():
         # Note: Make sure the info being transferred from the dict to the wf is right 
         self.gral_meas_param = gral_meas_param
         self.clean_False(settings_updated=settings_updated)
+        delattr(self, 'gral_meas_keys')
         
     def clean_False(self, settings_updated:dict):
         gral_meas_param = copy.deepcopy(self.gral_meas_param)
@@ -300,7 +316,7 @@ class Project():
         folder_name = 'R_'+self.user_projName
         self.dir_proj = dir_proj / folder_name
         self.dir_proj.mkdir(parents=True, exist_ok=True)
-        self.dict_info['dir_proj'] = self.dir_proj
+        self.info['dir_proj'] = self.dir_proj
 
     def set_project_status(self):
         '''
@@ -439,55 +455,63 @@ class Project():
         workflow['MeshesProc'] = dict_MeshesProc
         self.workflow = workflow
 
-    def save_mHProject(self):
+    def save_project(self):
         #Create a new dictionary that contains all the settings
+        jsonDict_name = 'mH_'+self.user_projName+'_project.json'
+        json2save_par = self.dir_proj / 'settings'
+        json2save_par.mkdir(parents=True, exist_ok=True)
+        
+        self.dir_info = self.dir_proj / 'settings' / jsonDict_name
+        self.info['dir_info'] = self.dir_info
         all_info = {}
-        all_info['info'] = self.dict_info
+        all_info['info'] = self.info
         all_info['settings'] = self.settings
         all_info['workflow'] = self.workflow
         all_info['channels'] = self.channels
         all_info['segments'] = self.segments
-        # self.dict_info['organs'] = {}
+        # self.info['organs'] = {}
         all_info['organs'] = self.organs
-        all_info['tuples'] = {}
-        all_info['tuples']['gral_meas_keys'] = self.gral_meas_keys
-        all_info['tuples']['gral_meas_param'] = self.gral_meas_param
-        self.all_info = all_info
+        all_info['gral_meas_param'] = self.gral_meas_param
+        # all_info['tuples'] = {}
+        # all_info['tuples']['gral_meas_keys'] = self.gral_meas_keys
+        # all_info['tuples']['gral_meas_param'] = self.gral_meas_param
+        # self.all_info = all_info
         
-        jsonDict_name = 'mH_'+self.user_projName+'_project.json'
-        json2save_par = self.dir_proj / 'settings'
-        json2save_par.mkdir(parents=True, exist_ok=True)
         if not json2save_par.is_dir():
             print('>> Error: Settings directory could not be created!\n>> Directory: '+jsonDict_name)
             alert('error_beep')
         else: 
             json2save_dir = json2save_par / jsonDict_name
-
             with open(str(json2save_dir), "w") as write_file:
             # with open('AAA.json', "w") as write_file:
-                json.dump(self.all_info, write_file, cls=NumpyArrayEncoder)
+                json.dump(all_info, write_file, cls=NumpyArrayEncoder)
 
             if not json2save_dir.is_file():
                 print('>> Error: Project settings file was not saved correctly!\n>> File: '+jsonDict_name)
                 alert('error_beep')
             else: 
-                self.info_dir = self.dir_proj / 'settings' / jsonDict_name
                 print('>> Project settings file saved correctly!\n>> File: '+jsonDict_name)
                 print('>> File: '+ str(json2save_dir)+'\n')
                 alert('countdown')
     
     def add_organ(self, organ):
-        dict_organ = copy.deepcopy(organ.dict_info)
+        dict_organ = copy.deepcopy(organ.info)
+
+        dict_organ = {'user_organName': organ.user_organName, 
+                        'parent_projectName': organ.parent_project.user_projName,
+                        'info': organ.info,
+                        }
+        dict_organ['user_organName']
         dict_organ.pop('project', None)
         dict_organ['dir_res'] = organ.dir_res
         self.organs[organ.user_organName] = dict_organ
-        self.save_mHProject()
+        self.save_project()
 
     def remove_organ(self, organ):
         organs = copy.deepcopy(self.organs)
         organs.pop(organ.user_organName, None)
         self.organs = organs
-        self.save_mHProject()
+        self.save_project()
 
     def load_organ(self, user_organName:str):
         dir_res = self.organs[user_organName]['dir_res']
@@ -509,7 +533,7 @@ class Organ():
         
         self.user_organName = user_settings['user_organName'].replace(' ', '_')
         self.parent_project = project
-        self.dict_info = user_settings
+        self.info = user_settings
         self.info_loadCh = info_loadCh
 
         if new:
@@ -525,26 +549,45 @@ class Organ():
         self.check_channels(project, info_loadCh)
 
     def load_organ(self, load_dict:dict):
-        self.dict_info['project']['dict_info_dir'] = Path(self.dict_info['project']['dict_info_dir'])
+        self.info['project']['dict_dir_info'] = Path(self.info['project']['dict_dir_info'])
         for ch in self.info_loadCh:
-            for key in self.info_loadCh[ch]:
-                if 'dir' in key:
-                    self.info_loadCh[ch][key] = Path(self.info_loadCh[ch][key])  
+            for key_a in self.info_loadCh[ch]:
+                if 'dir' in key_a:
+                    self.info_loadCh[ch][key_a] = Path(self.info_loadCh[ch][key_a])  
+                    
+        if 'chNS' in load_dict['settings'].keys():
+            load_dict['settings']['chNS']['general_info']['ch_ext'] = tuple(load_dict['settings']['chNS']['general_info']['ch_ext'])
+            load_dict['settings']['chNS']['general_info']['ch_int'] = tuple(load_dict['settings']['chNS']['general_info']['ch_int'])
+        
+        if 'chNS' in load_dict['workflow']['ImProc'].keys():
+            load_dict['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['ext_mesh'] = tuple(load_dict['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['ext_mesh'])
+            load_dict['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['int_mesh'] = tuple(load_dict['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['int_mesh'])
+         
         self.settings = load_dict['settings']
         for ch in self.settings:
-            for key in self.settings[ch]:
-                if 'dir' in key:
-                    self.settings[ch][key] = Path(self.settings[ch][key])
-        for key in self.settings['dirs']:
-            self.settings['dirs'][key] = Path(self.settings['dirs'][key])
+            for key_b in self.settings[ch]:
+                if 'dir' in key_b:
+                    self.settings[ch][key_b] = Path(self.settings[ch][key_b])
+        for key_c in self.settings['dirs']:
+            self.settings['dirs'][key_c] = Path(self.settings['dirs'][key_c])
         self.workflow = load_dict['workflow']
         self.imChannels = load_dict['imChannels']
-        for ch in self.imChannels:
-            for key in self.imChannels[ch]:
-                if 'dir' in key:
-                    self.imChannels[ch][key] = Path(self.imChannels[ch][key])
+        for ch in self.imChannels.keys():
+            for key_d in self.imChannels[ch].keys():
+                if 'dir' in key_d:
+                    self.imChannels[ch][key_d] = Path(self.imChannels[ch][key_d])
+            for key_e in self.imChannels[ch]['contStack'].keys():
+                self.imChannels[ch]['contStack'][key_e]['shape_s3'] = tuple(self.imChannels[ch]['contStack'][key_e]['shape_s3'])
         self.meshes = load_dict['meshes']
         self.objects = load_dict['objects']
+        self.dir_info = Path(load_dict['dir_info'])
+        self.mH_organName = load_dict['mH_organName']
+        
+        #Create all imChannels 
+        
+        
+        #Create all contStacks
+        
 
     def create_mHName(self):
         now_str = datetime.now().strftime('%Y%m%d%H%M')
@@ -587,8 +630,8 @@ class Organ():
             for ch in chs:
                 for param in ['dir_cho','mask_ch','dir_mk']:
                     self.settings[ch]['general_info'][param] = info_loadCh[ch][param]
-            print('>> Files have been checked! \n>> Images shape:')
-            pprint.pprint(array_sizes)
+            # print('>> Files have been checked! \n>> Images shape:')
+            # pprint.pprint(array_sizes)
 
         self.create_folders()
 
@@ -605,13 +648,19 @@ class Organ():
                 alert('error_beep')
         self.dir_res = self.parent_project.dir_proj / organ_folder
 
-    def add_channel(self, imChannel, new:bool):
+    def add_channel(self, imChannel):
+        # Check first if the channel has been already added to the organ
+        new = False
+        if imChannel.channel_no not in self.imChannels.keys():
+            new = True
+            
         if new: 
             channel_dict = copy.deepcopy(imChannel.__dict__)
+            channel_dict.pop('parent_organ', None)
             self.imChannels[imChannel.channel_no] = channel_dict
         else: # just update im_proc 
-            self.imChannels[imChannel.channel_no]['im_proc'] = imChannel.im_proc
             self.imChannels[imChannel.channel_no]['process'] = imChannel.process
+            self.imChannels[imChannel.channel_no]['contStack'] = imChannel.contStack
             if imChannel.dir_stckproc.is_file():
                 self.imChannels[imChannel.channel_no]['dir_stckproc'] = imChannel.dir_stckproc
 
@@ -636,18 +685,19 @@ class Organ():
         #         self.imChannels[imChannel.channel_no]['dir_stckproc'] = imChannel.dir_stckproc
 
     def load_TIFF(self, ch_name:str):
+        print('---- Loading TIFF! ----')
         image = ImChannel(organ=self, ch_name=ch_name)
         return image
 
-    def save_organProject(self):
+    def save_organ(self):
         jsonDict_name = 'mH_'+self.user_organName+'_organ.json'
         json2save_dir = self.settings['dirs']['settings'] / jsonDict_name
-        self.all_info = {}
-        self.all_info['Organ'] = self.dict_info
-        self.all_info['info_loadCh'] = self.info_loadCh
-        self.all_info['settings'] = self.settings
-        self.all_info['workflow'] = self.workflow
-
+        all_info = {}
+        all_info['Organ'] = self.info
+        all_info['info_loadCh'] = self.info_loadCh
+        all_info['settings'] = self.settings
+        all_info['workflow'] = self.workflow
+    
         image_dict = copy.deepcopy(self.imChannels)
         ch_keys = list(image_dict.keys())
         for ch in ch_keys:
@@ -659,18 +709,20 @@ class Organ():
             for key in s3_keys:
                 image_dict[ch][key] = 'LOAD'
 
-        self.all_info['imChannels'] = image_dict
-        self.all_info['meshes'] = self.meshes
-        self.all_info['objects'] = self.objects
+        all_info['imChannels'] = image_dict
+        all_info['meshes'] = self.meshes
+        all_info['objects'] = self.objects
+        self.dir_info = self.dir_res / 'settings' / jsonDict_name
+        all_info['dir_info'] = self.dir_info
+        all_info['mH_organName'] = self.mH_organName
 
         with open(str(json2save_dir), "w") as write_file:
-            json.dump(self.all_info, write_file, cls=NumpyArrayEncoder)
+            json.dump(all_info, write_file, cls=NumpyArrayEncoder)
 
         if not json2save_dir.is_file():
             print('>> Error: Organ settings file was not saved correctly!\n>> File: '+jsonDict_name)
             alert('error_beep')
         else: 
-            self.info_dir = self.dir_res / 'settings' / jsonDict_name
             print('>> Organ settings file saved correctly!\n>> File: '+jsonDict_name)
             print('>> Directory: '+ str(json2save_dir)+'\n')
             alert('countdown')
@@ -710,28 +762,28 @@ class Organ():
     
     #Get all the set mH variables in __init__
     def get_notes(self):
-        return self.dict_info['user_organNotes']
+        return self.info['user_organNotes']
 
     def get_orientation(self):
-        return self.dict_info['im_orientation']
+        return self.info['im_orientation']
 
     def get_custom_angle(self):
-        return self.dict_info['custom_angle']
+        return self.info['custom_angle']
     
     def get_resolution(self):
-        return self.dict_info['resolution']
+        return self.info['resolution']
 
     def get_units_resolution(self):
-        return self.dict_info['units_resolution']
+        return self.info['units_resolution']
 
     def get_stage(self):
-        return self.dict_info['stage']
+        return self.info['stage']
 
     def get_strain(self):
-        return self.dict_info['strain']
+        return self.info['strain']
 
     def get_genotype(self):
-        return self.dict_info['genotype']
+        return self.info['genotype']
 
     def get_dir_res(self):
         return self.dir_res
@@ -743,71 +795,63 @@ class ImChannel(): #channel
     'morphoHeart Image Channel Class (this class will be used to contain the images as tiffs that have been'
     'closed and the resulting s3s that come up from each channel'
     
-    def __init__(self, organ:Organ, ch_name:str, new=True, s3s=False):
+    def __init__(self, organ:Organ, ch_name:str, new=True):
 
         self.parent_organ = organ
         self.parent_organ_name = organ.user_organName
         self.channel_no = ch_name
         if new:            
             self.to_mask = organ.settings[ch_name]['general_info']['mask_ch']
-            self.resolution = organ.dict_info['resolution']
-            self.dir_cho = organ.settings[ch_name]['general_info']['dir_cho']
-            im = io.imread(str(self.dir_cho))
-            if not isinstance(im, np.ndarray):
-                print('>> Error: morphoHeart was unable to load tiff.\n>> Directory: ',str(self.dir_cho))
-                alert('error_beep')
-            self.im = im
-            self.im_proc =  np.copy(self.im)
+            self.resolution = organ.info['resolution']
+            self.dir_cho = organ.settings[ch_name]['general_info']['dir_cho']            
             if self.to_mask:
                 self.dir_mk = organ.settings[ch_name]['general_info']['dir_mk']
             self.masked = False
-            self.shape = im.shape
+            self.shape = self.im().shape
             self.process = ['Init']
+            self.contStack = {}
+            self.save_channel(im_proc=self.im_proc())
+            organ.add_channel(imChannel=self)
         else: 
-            self.load_channel(organ=organ, ch_name=ch_name, s3s=s3s)
-            if s3s:
-                self.s3_int = ContStack(im_channel = self, cont_type = 'int', new=False, layerDict = {})
-                self.s3_ext = ContStack(im_channel = self, cont_type = 'ext', new=False, layerDict = {})
-                self.s3_tiss = ContStack(im_channel = self, cont_type = 'tiss', new=False, layerDict = {})
+            self.load_channel(organ=organ, ch_name=ch_name)
 
-        organ.add_channel(imChannel=self, new=True)
+    def im(self):
+        im = io.imread(str(self.dir_cho))
+        if not isinstance(im, np.ndarray):
+            print('>> Error: morphoHeart was unable to load tiff.\n>> Directory: ',str(self.dir_cho))
+            alert('error_beep')
+        return im
+    
+    def im_proc(self, new=True):
+        if new: 
+            im_proc =  np.copy(self.im())  
+        else: 
+            if hasattr(self, 'dir_stckproc'):
+                im_proc = io.imread(str(self.dir_stckproc))
+                if not isinstance(im_proc, np.ndarray):
+                    print('>> Error: morphoHeart was unable to load processed tiff.\n>> Directory: ',str(self.dir_stckproc))
+                    alert('error_beep')
+            else: 
+                im_proc =  np.copy(self.im())      
+        return im_proc
         
-    def load_channel(self, organ:Organ, ch_name:str, s3s:bool):
+    def load_channel(self, organ:Organ, ch_name:str):
+        
         self.to_mask = organ.imChannels[ch_name]['to_mask']
         self.resolution = organ.imChannels[ch_name]['resolution']
-        self.dir_cho = organ.imChannels[ch_name]['dir_cho']
-        dir_improc = organ.imChannels[ch_name]['dir_stckproc']
-        self.process = organ.imChannels[ch_name]['process']
-        if not s3s: 
-            im = io.imread(str(self.dir_cho))
-            if not isinstance(im, np.ndarray):
-                print('>> Error: morphoHeart was unable to load tiff.\n>> Directory: ',str(self.dir_cho))
-                alert('error_beep')
-            self.im = im
-            if isinstance(organ.imChannels[ch_name]['dir_stckproc'], Path) and Path(organ.imChannels[ch_name]['dir_stckproc']).is_file():
-                cont = ask4input('You have already started processing this file, do you want to continue processing it? \n\t[0]:no, open original file\n\t[1]: yes! >>>: ', bool)
-                if cont: 
-                    im_proc = np.load(str(dir_improc))
-                    if not isinstance(im_proc, np.ndarray):
-                        print('>> Error: morphoHeart was unable to load processed tiff.\n>> Directory: ',str(dir_improc))
-                        alert('error_beep')
-                    self.im_proc = im_proc
-                else: 
-                    self.im_proc =  np.copy(self.im)
-        else: 
-            self.im = 'LOAD'
-            self.im_proc = 'LOAD'
-        self.dir_stckproc = dir_improc
+        self.dir_cho = Path(organ.imChannels[ch_name]['dir_cho'])
         if self.to_mask:
-            self.dir_mk = organ.imChannels[ch_name]['dir_mk']
+                self.dir_mk = Path(organ.imChannels[ch_name]['dir_mk'])
         self.masked = organ.imChannels[ch_name]['masked']
-        self.shape = organ.imChannels[ch_name]['shape']
-        for ch in organ.imChannels.keys():
-            s3_keys = [x for x in list(organ.imChannels[ch].keys()) if 's3' in x] 
-            if len(s3_keys)>0:
-                for key in s3_keys:
-                    organ.imChannels[ch][key] = 'LOAD'
-        organ.add_channel(imChannel=self, new=False)
+        self.shape = tuple(organ.imChannels[ch_name]['shape'])
+        self.process = organ.imChannels[ch_name]['process']
+        contStack_dict = organ.imChannels[ch_name]['contStack']
+        for cont in contStack_dict.keys():
+            contStack_dict[cont]['s3_dir'] = Path(contStack_dict[cont]['s3_dir'])
+        self.contStack = contStack_dict
+        self.dir_stckproc = organ.imChannels[ch_name]['dir_stckproc']
+
+        # organ.add_channel(imChannel=self)
 
     def get_channel_no(self):
         return self.channel_no
@@ -817,96 +861,183 @@ class ImChannel(): #channel
 
     def get_shape(self):
         return self.shape
-        
+    
+    def add_contStack(self, contStack):
+        # Check first if the contStack has been already added to the channel
+        new = False
+        if contStack.cont_type not in self.contStack.keys():
+            new = True
+            
+        if new: 
+            contStack_dict = copy.deepcopy(contStack.__dict__)
+            contStack_dict.pop('im_channel', None)
+            self.contStack[contStack.cont_type] = contStack_dict
+        else: # just update im_proc 
+            self.contStack[contStack.cont_type]['process'] = contStack.process
+     
     def maskIm(self):
-        #Check better this function
-        im_o = np.copy(self.im)
+        #Load images
+        im_o = np.copy(self.im())
         im_mask = io.imread(str(self.dir_mk))
+        
+        #Process
+        print('---- Masking! ----')
         if self.shape == im_mask.shape:
             #Check the dimensions of the mask with those of the image
             im_o[im_mask == False] = 0
             self.masked = True
-            self.im_proc = im_o
+            self.save_channel(im_proc=im_o)
+            
+            #Update organ workflow
             self.parent_organ.update_workflow(process = ('ImProc', self.channel_no, 'A-MaskChannel','Status'), update = 'DONE')
             self.parent_organ.workflow['ImProc'][self.channel_no]['A-MaskChannel']['Status'] = 'DONE'
-            self.saveChannel()
-            self.parent_organ.imChannels[self.channel_no]['masked'] = True
-            self.parent_organ.add_channel(self, new=False)
+            if self.parent_organ.workflow['ImProc'][self.channel_no]['Status'] == 'NotInitialised':
+                self.parent_organ.workflow['ImProc'][self.channel_no]['Status'] = 'Initialised'
+            
+            #Update channel process
             self.process.append('Masked')
+            
+            #Update organ imChannels
+            self.parent_organ.imChannels[self.channel_no]['masked'] = True
+            self.parent_organ.add_channel(self)
+            
         else: 
             print('>> Error: Stack could not be masked (stack shapes did not match).')
             alert('error_beep')
     
     def closeContours_auto(self):
-        self.saveChannel()
+        # Load image
+        im_proc = self.im_proc()
+        self.save_channel(im_proc=im_proc)
+        
+        #Process
+        print('---- Closing Contours Auto! ----')
+        
+        #Update organ workflow
         self.parent_organ.update_workflow(process = (), update = 'DONE')
-        self.process.append('ClosedCont-Auto')
         self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Steps']['A-Autom']['Status'] = 'DONE'
-        self.parent_organ.add_channel(self, new=False)
+        
+        #Update channel process
+        self.process.append('ClosedCont-Auto')
+        
+        #Update organ imChannels
+        self.parent_organ.add_channel(self)
+        
 
     def closeContours_manual(self):
-        self.saveChannel()
+        # Load image
+        im_proc = self.im_proc()
+        self.save_channel(im_proc=im_proc)
+        
+        #Process
+        print('---- Closing Contours Manually! ----')
+        
+                
+        #Update organ workflow
         self.parent_organ.update_workflow(process = (), update = 'DONE')
-        self.process.append('ClosedCont-Manual')
         self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Steps']['B-Manual']['Status'] = 'DONE'
-        #Update general status of B-CloseCont to Done when confirmed
-        self.parent_organ.add_channel(self, new=False)
-
+        
+        #Update channel process
+        self.process.append('ClosedCont-Manual')
+                
+        #Update organ imChannels
+        self.parent_organ.add_channel(self)
+        
     def closeInfOutf(self):
-        self.saveChannel()
+        # Load image
+        im_proc = self.im_proc()
+        self.save_channel(im_proc=im_proc)
+        
+        #Process
+        print('---- Closing Inf/Ouft! ----')
+        
+        
+        #Update organ workflow
         self.parent_organ.update_workflow(process = (), update = 'DONE')
-        self.process.append('ClosedInfOutf')
         self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Steps']['C-CloseInOut']['Status'] = 'DONE'
-        #Update status of B-CloseCont to Done when confirmed
-        self.parent_organ.add_channel(self, new=False)
+        
+        # Update channel process
+        self.process.append('ClosedInfOutf')
+        
+        #Update organ imChannels
+        self.parent_organ.add_channel(self)
+        
+        #TO DO: Update general status of B-CloseCont to Done when confirmed
+        self.parent_organ.check_status(process = 'ImProc')
 
     def selectContours(self):
+        # Load image
+        im_proc = self.im_proc()
+        self.save_channel(im_proc=im_proc)
+        
+        #Process
+        print('---- Selecting Contours! ----')
+        
+        #Update organ workflow
         self.parent_organ.update_workflow(process = (), update = 'DONE')
-        self.process.append('SelectCont')
         self.parent_organ.workflow['ImProc'][self.channel_no]['C-SelectCont']['Status'] = 'DONE'
-        self.parent_organ.add_channel(self, new=False)
+        
+        #Update channel process
+        self.process.append('SelectCont')
+                
+        #Update organ imChannels
+        self.parent_organ.add_channel(self)
 
     def create_chS3s (self, layerDict:dict):
-        s3_int = ContStack(im_channel = self, cont_type = 'int', new=True, layerDict = layerDict,)
-        self.s3_int = s3_int
-        s3_int.s3_save()
-        int_bool = True
-        self.parent_organ.update_workflow(process = (), update = 'DONE')
+        s3_int = ContStack(im_channel=self, cont_type='int', new=True, layerDict=layerDict)
+        #self.s3_int = s3_int
+        self.add_contStack(s3_int)
+        #Update organ workflow
         self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Info']['int']['Status'] = 'DONE'
-
-        s3_ext = ContStack(im_channel = self, cont_type ='ext', new=True, layerDict = layerDict,)
-        self.s3_ext = s3_ext
-        s3_ext.s3_save()
-        ext_bool = True
+        
+        s3_ext = ContStack(im_channel=self, cont_type='ext', new=True, layerDict=layerDict)
+        #self.s3_ext = s3_ext
+        self.add_contStack(s3_ext)
+        #Update organ workflow
         self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Info']['ext']['Status'] = 'DONE'
-
-        s3_tiss = ContStack(im_channel = self, cont_type ='tiss', new=True, layerDict = layerDict,)
-        self.s3_tiss = s3_tiss
-        s3_tiss.s3_save()
-        tiss_bool = True
+        
+        s3_tiss = ContStack(im_channel=self, cont_type='tiss', new=True, layerDict=layerDict)
+        #self.s3_tiss = s3_tiss
+        self.add_contStack(s3_tiss)
+        #Update organ workflow
         self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Info']['tissue']['Status'] = 'DONE'
-
-        if int_bool and ext_bool and tiss_bool:
-            if self.s3_int.shape_s3 == self.s3_ext.shape_s3 == self.s3_tiss.shape_s3:
+      
+        #Update organ workflow
+        if s3_int.s3_dir.is_file() and s3_ext.s3_dir.is_file() and s3_tiss.s3_dir.is_file():
+            if s3_int.shape_s3 == s3_ext.shape_s3 == s3_tiss.shape_s3:
                 self.shape_s3 = s3_int.shape_s3
             else: 
                 print('self.shape_s3 = s3_int.shape')
             self.parent_organ.update_workflow(process = (), update = 'DONE')
             self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] = 'DONE'
-            self.parent_organ.workflow['ImProc'][self.channel_no]['Status'] = 'DONE'
+            # self.parent_organ.workflow['ImProc'][self.channel_no]['Status'] = 'DONE'
+        
+        #Update channel process
         self.process.append('CreateS3')
+        
+        #Update organ imChannel
+        self.parent_organ.add_channel(self)
 
     def trimS3(self):
+        #Load s3s
+        
+        #Process
+        print('---- Trimming S3s! ----')
+        
+        #Update organ workflow        
         self.parent_organ.update_workflow(process = (), update = 'DONE')
-        self.process.append('TrimS3')
         self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Status'] = 'DONE'
-        self.parent_organ.add_channel(self, new=False)
+        
+        #Update channel process
+        self.process.append('TrimS3')
+        
+        #Update organ imChannels
+        self.parent_organ.add_channel(self)
 
-    def saveChannel(self):
-        im2save = self.im_proc
+    def save_channel(self, im_proc):
         im_name = self.parent_organ.user_organName + '_StckProc_' + self.channel_no + '.npy'
         im_dir = self.parent_organ.settings['dirs']['s3_numpy'] / im_name
-        np.save(im_dir, im2save)
+        np.save(im_dir, im_proc)
         if not im_dir.is_file():
             print('>> Error: Processed channel was not saved correctly!\n>> File: '+im_name)
             alert('error_beep')
@@ -989,7 +1120,7 @@ class ImChannel(): #channel
 
 class ContStack(): 
     'morphoHeart Contour Stack Class'
-    def __init__(self, im_channel:ImChannel, cont_type:str, new=False, layerDict={},):
+    def __init__(self, im_channel:ImChannel, cont_type:str, new=False, layerDict={}):
         
         cont_types = ['int', 'ext', 'tiss']
         names = ['imIntFilledCont', 'imExtFilledCont', 'imAllFilledCont']
@@ -999,11 +1130,18 @@ class ContStack():
         self.imfilled_name = names[index]
         self.im_channel = im_channel
         self.cont_name = im_channel.channel_no+'_'+self.cont_type
+        
+        parent_organ = im_channel.parent_organ
+        self.s3_file = parent_organ.user_organName + '_s3_' + im_channel.channel_no + '_' + self.cont_type + '.npy'
+        self.s3_dir = parent_organ.dir_res / 's3_numpy' / self.s3_file
+        
         if new: 
-            self.s3 = self.s3_create(layerDict = layerDict)
+            s3 = self.s3_create(layerDict = layerDict)
+            self.s3_save(s3)
+            self.shape_s3 = self.s3().shape
+            self.process = ['Init']
         else: 
-            self.s3 = self.s3_load()
-        self.shape_s3 = self.s3.shape
+            self.load_s3(im_channel = im_channel, cont_type=cont_type)
     
     def s3_create(self, layerDict:dict):
         x_dim = self.im_channel.shape[0]
@@ -1017,29 +1155,32 @@ class ContStack():
                 im_FilledCont = layerDict[keySlc][self.cont_type]
                 s3[:,:,slcNum+1] = im_FilledCont
         s3 = s3.astype('uint8')
-        return s3
-
-    def s3_load(self):
         parent_organ = self.im_channel.parent_organ
-        s3_name = parent_organ.user_organName + '_s3_' + self.im_channel.channel_no + '_' + self.cont_type + '.npy'
-        s3_dir = parent_organ.dir_res / 's3_numpy' / s3_name
-        if s3_dir.is_file():
-            s3 = np.load(s3_dir)
+        parent_organ.workflow['ImProc'][self.im_channel.channel_no]['D-S3Create']['Status'] = 'DONE'
+        
+        return s3
+    
+    def s3(self):
+        if self.s3_dir.is_file():
+            s3 = np.load(self.s3_dir)
         else: 
-            print('>> Error: s3 file does not exist!\n>> File: '+s3_name)
+            print('>> Error: s3 file does not exist!\n>> File: '+self.s3_file)
             alert('error_beep')
             s3 = None
+            
         return s3
 
-    def s3_save(self):
-        im_channel = self.im_channel
-        organ = im_channel.parent_organ
-        s3_name = organ.user_organName + '_s3_' + im_channel.channel_no + '_' + self.cont_type + '.npy'
-        self.s3_file = s3_name
-        dir2save = organ.settings['dirs']['s3_numpy'] / s3_name
-        np.save(dir2save, self.s3)
+    def load_s3(self):
+        s3 = self.s3()
+        
+        
+        
+    def s3_save(self, s3):
+        organ = self.im_channel.parent_organ
+        dir2save = organ.settings['dirs']['s3_numpy'] / self.s3_file
+        np.save(dir2save, s3)
         if not dir2save.is_file():
-            print('>> Error: s3 file was not saved correctly!\n>> File: '+s3_name)
+            print('>> Error: s3 file was not saved correctly!\n>> File: '+self.s3_file)
             alert('error_beep')
         else: 
             print('>> s3 file saved correctly! - ', self.cont_type)
