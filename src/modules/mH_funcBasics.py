@@ -44,7 +44,7 @@ def alert(sound:str, alert_all=True):
         playsound(str(path))
 
 #%% func - ask4input
-def ask4input(text:str, type_response:type, keep = False):
+def ask4input(text:str, type_response:type, keep=False):
     """
     Function that ask for user input and transforms it into the expected type
 
@@ -99,6 +99,7 @@ def ask4input(text:str, type_response:type, keep = False):
 #%% func - compare_dictionaries
 def compare_dictionaries(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
     """Compare two dictionaries recursively to find non mathcing elements
+    https://stackoverflow.com/questions/27265939/comparing-python-dictionaries-and-nested-dictionaries
 
     Args:
         dict_1: dictionary 1

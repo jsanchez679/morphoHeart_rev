@@ -6,8 +6,12 @@ Version: Dec 01, 2022
 
 '''
 #%% ##### - Imports - ########################################################
+import os
+from pathlib import Path
 import vedo as vedo
 
+path_fcMeshes = os.path.abspath(__file__)
+path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
 
 #%% ##### - morphoHeart Imports - ##################################################
 # from .mH_funcBasics import *
@@ -15,24 +19,37 @@ import vedo as vedo
 
 
 #%%
-man = vedo.Mesh(vedo.dataurl+'man.vtk').c('white').lighting('glossy')
-
-p1 = vedo.Point([1,0,1], c='y')
-p2 = vedo.Point([0,0,2], c='r')
-p3 = vedo.Point([-1,-0.5,-1], c='b')
-p4 = vedo.Point([0,1,0], c='k')
-
-# Add light sources at the given positions
-l1 = vedo.Light(p1, c='y') # p1 can simply be [1,0,1]
-l2 = vedo.Light(p2, c='r')
-l3 = vedo.Light(p3, c='b')
-l4 = vedo.Light(p4, c='w', intensity=0.5)
-
-# vedo.show(man, l1, l2, l3, l4, p1, p2, p3, p4, __doc__, axes=1, viewup='z').close()
-
-plt = vedo.Plotter(axes=1)
-plt += [man, p1, p2, p3, p4, l1, l2, l3, l4]
-plt.show(viewup='z')
-
+def plot_grid(obj:list, txt =[], axes=1, font='LogoType', width=0.25):
+    
+    # Load logo
+    path_logo = path_mHImages / 'logo-07.jpg'
+    logo = vedo.Picture(str(path_logo))
+    
+    # Set logo position
+    if len(obj)>3:
+        pos = (0.1,2)
+    else:
+        pos = (0.1,1)
+    
+    # Create tuples for text
+    post = [tup[0] for tup in txt]; txt_out = []; n = 0
+    for num in range(len(obj)):
+        if num in post:
+            txt_out.append(vedo.Text2D(txt[n][1], c='#696969', font='Dalim', s=0.8))
+            n += 1
+        else: 
+            txt_out.append(vedo.Text2D('', c='#696969', font='Dalim', s=0.8))
+    
+    # Now plot
+    lbox = []
+    vp = vedo.Plotter(N=len(obj), axes=axes)
+    vp.add_icon(logo, pos=pos, size=0.25)
+    for num in range(len(obj)):
+        lbox.append(vedo.LegendBox([obj[num]], font=font, width=width))
+        if num != len(obj)-1:
+            vp.show(obj[num], lbox[num], txt_out[num], at=num)
+        else: 
+            vp.show(obj[num], lbox[num], txt_out[num], at=num, interactive=True)
+            
 #%% Module loaded
 print('morphoHeart! - Loaded funcMeshes')
