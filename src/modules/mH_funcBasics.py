@@ -11,6 +11,7 @@ from pathlib import Path
 from playsound import playsound
 import json
 import numpy as np 
+import flatdict
 
 path_fcBasics = os.path.abspath(__file__)
 print(path_fcBasics)
@@ -96,8 +97,10 @@ def ask4input(text:str, type_response:type, keep=False):
 
     return response
 
-#%% func - compare_dictionaries
-def compare_dictionaries(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
+#%% func - check_dict_lines
+
+#%% func - compare_dicts
+def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
     """Compare two dictionaries recursively to find non mathcing elements
     https://stackoverflow.com/questions/27265939/comparing-python-dictionaries-and-nested-dictionaries
 
@@ -118,7 +121,7 @@ def compare_dictionaries(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
             key_err += "Key %s%s not in %s\n" % (dict_1_name, path, dict_2_name)
         else:
             if isinstance(dict_1[k], dict) and isinstance(dict_2[k], dict):
-                err += compare_dictionaries(dict_1[k],dict_2[k],'d1','d2', path)
+                err += compare_dicts(dict_1[k],dict_2[k],'d1','d2', path)
             else:
                 if dict_1[k] != dict_2[k]:
                     value_err += "Value of %s%s (%s) not same as %s%s (%s)\n"\
@@ -132,6 +135,15 @@ def compare_dictionaries(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
     res = key_err + value_err + err
     return res
 
+#%% func - compare_nested_dicts
+def compare_nested_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
+    
+    res = compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="")
+    if len(res) ==0:
+        return 'No differences!'
+    else: 
+        return res
+        
 #%% 
 
 # def save_mHProject(dicts:list, organ:Organ):

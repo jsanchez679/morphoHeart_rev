@@ -19,9 +19,11 @@ import json
 import collections
 import pprint
 import matplotlib.pyplot as plt
+import flatdict
 
 #%% ##### - Other Imports - ##################################################
-from .mH_funcBasics import alert, ask4input
+from .mH_funcBasics import alert #, ask4input
+from .mH_funcMeshes import unit_vector
 
 #%% ##### - Authorship - #####################################################
 __author__     = 'Juliana Sanchez-Posada'
@@ -137,6 +139,7 @@ class Project():
             dict_info_ch = {'mH_chName':ch_str,
                             'user_chName':user_proj_settings['name_chs'][ch_num].replace(' ', '_'),
                             'dir_cho': None, 
+                            'ch_relation': user_proj_settings['chs_relation'][ch_num],
                             'colorCh_tiss': user_proj_settings['color_chs'][ch_num][0],
                             'colorCh_ext': user_proj_settings['color_chs'][ch_num][1],
                             'colorCh_int': user_proj_settings['color_chs'][ch_num][2],
@@ -145,7 +148,7 @@ class Project():
             settings[ch_str] = {}
             settings[ch_str]['general_info'] = dict_info_ch
             settings[ch_str]['measure'] = {}
-            for cont in ['tissue', 'int', 'ext']:
+            for cont in ['tiss', 'int', 'ext']:
                 settings[ch_str]['measure'][cont] = {}
                 settings[ch_str]['measure'][cont]['whole'] ={} 
                 gral_meas_keys.append((ch_str,cont,'whole'))
@@ -162,7 +165,7 @@ class Project():
                                             'colorCh_ext': user_proj_settings['ns']['color_chns'][1],
                                             'colorCh_int': user_proj_settings['ns']['color_chns'][2]}
             settings[ch_str]['measure'] = {}
-            for cont in ['tissue', 'int', 'ext']:
+            for cont in ['tiss', 'int', 'ext']:
                 settings[ch_str]['measure'][cont] = {}
                 settings[ch_str]['measure'][cont]['whole'] = {} 
                 gral_meas_keys.append((ch_str,cont,'whole'))
@@ -208,7 +211,7 @@ class Project():
         will help to set up the GUI table for the user to select the parameters to measure. 
         '''
         channels = self.channels
-        conts = ['tissue', 'int', 'ext']
+        conts = ['tiss', 'int', 'ext']
         gral_meas_param = []
         dict_params_deflt = {}
         for ch_b in channels: 
@@ -226,7 +229,7 @@ class Project():
 
             if cont in ['int', 'ext']:
                 dict_params_deflt[ch][cont][segm]['surf_area'] = True 
-            if cont == 'tissue':
+            if cont == 'tiss':
                 if segm == 'whole': 
                     dict_params_deflt[ch][cont][segm]['thickness int>ext'] = True
                     dict_params_deflt[ch][cont][segm]['thickness ext>int'] = False
@@ -302,7 +305,8 @@ class Project():
         for tup in gral_meas_param:
             ch, cont, segm, var = tup
             if not settings_updated[ch]['measure'][cont][segm][var]:
-                remove_var = settings_updated[ch]['measure'][cont][segm].pop(var, None)
+                #remove_var = 
+                settings_updated[ch]['measure'][cont][segm].pop(var, None)
                 # if remove_var != None:
                 #     print('Tuple: '+str(tup)+' was removed!')
             else: 
@@ -354,29 +358,29 @@ class Project():
                 dict_ImProc[ch] = {'Status': 'NotInitialised',
                                     'A-MaskChannel': {'Status': 'NotInitialised'},
                                     'B-CloseCont':{'Status': 'NotInitialised',
-                                                    'Steps':{'A-Autom': {'Status': 'NotInitialised',
-                                                                        'Range': None, 
-                                                                        'Range_completed': None}, 
-                                                            'B-Manual': {'Status': 'NotInitialised',
-                                                                        'Range': None, 
-                                                                        'Range_completed': None}, 
-                                                            'C-CloseInOut': {'Status': 'NotSet'}}},
+                                                    'Steps':{'A-Autom': {'Status': 'NotInitialised'},
+                                                                        # 'Range': None, 
+                                                                        # 'Range_completed': None}, 
+                                                            'B-Manual': {'Status': 'NotInitialised'},
+                                                                        # 'Range': None, 
+                                                                        # 'Range_completed': None}, 
+                                                            'C-CloseInOut': {'Status': 'NotInitialised'}}},
 
-                                    'C-SelectCont':{'Status': 'NotInitialised',
-                                                    'Info': {'tuple_slices': None,
-                                                            'number_contours': None,
-                                                            'range': None}},
+                                    'C-SelectCont':{'Status': 'NotInitialised'},
+                                                    # 'Info': {'tuple_slices': None,
+                                                    #         'number_contours': None,
+                                                    #         'range': None}},
 
                                     'D-S3Create':{'Status': 'NotInitialised',
-                                                'Info': {'tissue':{'Status': 'NotInitialised', 
-                                                                    'Info':{}},
-                                                        'int':{'Status': 'NotInitialised', 
-                                                                    'Info':{}},
-                                                        'ext':{'Status': 'NotInitialised', 
-                                                                    'Info':{}}}}, 
+                                                'Info': {'tiss':{'Status': 'NotInitialised'}, 
+                                                                    # 'Info':{}},
+                                                        'int':{'Status': 'NotInitialised'}, 
+                                                                    # 'Info':{}},
+                                                        'ext':{'Status': 'NotInitialised'}}}, 
+                                                                    # 'Info':{}}}}, 
 
                                     'E-TrimS3': {'Status': 'NotInitialised',
-                                                'Info':{'tissue':{'Status': 'NotInitialised', 
+                                                'Info':{'tiss':{'Status': 'NotInitialised', 
                                                             'Info':{}},
                                                 'int':{'Status': 'NotInitialised', 
                                                             'Info':{}},
@@ -385,17 +389,17 @@ class Project():
             else: 
                 dict_ImProc[ch] = {'Status': 'NotInitialised',
                                     'D-S3Create':{'Status': 'NotInitialised',
-                                                'Info':{'tissue':{'Status': 'NotInitialised', 
-                                                            'Info':{}},
-                                                        'int':{'Status': 'NotInitialised', 
-                                                                    'Info':{}},
-                                                        'ext':{'Status': 'NotInitialised', 
-                                                                    'Info':{}}},
+                                                'Info':{'tiss':{'Status': 'NotInitialised'}, 
+                                                                    # 'Info':{}},
+                                                        'int':{'Status': 'NotInitialised'}, 
+                                                                    # 'Info':{}},
+                                                        'ext':{'Status': 'NotInitialised'}}, 
+                                                                    # 'Info':{}}},
                                                 'Settings':{'ext_mesh': self.settings[ch]['general_info']['ch_ext'],
                                                             'int_mesh': self.settings[ch]['general_info']['ch_int']}}} 
              
             dict_MeshesProc[ch] = {}
-            for cont in ['tissue', 'int', 'ext']:
+            for cont in ['tiss', 'int', 'ext']:
                 if 'NS' not in ch:
                     dict_MeshesProc[ch][cont]={'A-Create3DMesh': {'Status': 'NotInitialised',
                                                                 'original_stack_dir':None,
@@ -414,7 +418,7 @@ class Project():
                                                                 'keep_largest': True,
                                                                 'mesh_dir': None},
                                                 }
-                if cont == 'tissue' and 'NS' in ch:
+                if cont == 'tiss' and 'NS' in ch:
                     dict_MeshesProc[ch][cont]['A-Create3DMesh']['keep_largest'] = False
 
                 if (ch,cont,'whole','centreline') in item_centreline:
@@ -541,8 +545,11 @@ class Organ():
             self.settings = copy.deepcopy(project.settings)
             self.workflow = copy.deepcopy(project.workflow)
             self.imChannels = {}
+            self.obj_imChannels = {}
             self.meshes = {}
+            self.obj_meshes = {}
             self.objects = {}
+
         else: 
             self.load_organ(load_dict=load_dict)
 
@@ -579,19 +586,23 @@ class Organ():
             self.imChannels[ch]['shape'] = tuple(self.imChannels[ch]['shape'])
             if 'shape_s3' in self.imChannels[ch].keys():
                 self.imChannels[ch]['shape_s3'] = tuple(self.imChannels[ch]['shape_s3'])
-            
             for key_e in self.imChannels[ch]['contStack'].keys():
                 self.imChannels[ch]['contStack'][key_e]['shape_s3'] = tuple(self.imChannels[ch]['contStack'][key_e]['shape_s3'])
+                self.imChannels[ch]['contStack'][key_e]['s3_dir'] = Path(self.imChannels[ch]['contStack'][key_e]['s3_dir'])
         self.meshes = load_dict['meshes']
+        for mesh in self.meshes.keys():
+            self.meshes[mesh]['dir_out']=Path(self.meshes[mesh]['dir_out'])
         self.objects = load_dict['objects']
         self.dir_info = Path(load_dict['dir_info'])
         self.mH_organName = load_dict['mH_organName']
         
         #Create all imChannels 
+        # load obj_imChannel
         
+            #Create all contStacks
         
-        #Create all contStacks
-        
+        #Create meshes
+        # load obj_meshes
 
     def create_mHName(self):
         now_str = datetime.now().strftime('%Y%m%d%H%M')
@@ -669,26 +680,23 @@ class Organ():
                 self.imChannels[imChannel.channel_no]['dir_stckproc'] = imChannel.dir_stckproc
             if hasattr(imChannel, 'shape_s3'):
                 self.imChannels[imChannel.channel_no]['shape_s3'] = imChannel.shape_s3
+        self.obj_imChannels[imChannel.channel_no] = imChannel
 
     def add_mesh(self, mesh, new:bool): # mesh: Mesh_mH
         if new: 
-            self.meshes[mesh.legend] = {}
-            self.meshes[mesh.legend]['parent_organ'] = mesh.parent_organ.user_organName
-            self.meshes[mesh.legend]['channel_no'] = mesh.imChannel.channel_no
-            self.meshes[mesh.legend]['user_meshName'] = mesh.user_meshName
-            self.meshes[mesh.legend]['mesh_type'] = mesh.mesh_type
-            self.meshes[mesh.legend]['legend'] = mesh.legend
-            self.meshes[mesh.legend]['resolution'] = mesh.resolution
-            self.meshes[mesh.legend]['color'] = mesh.color
-            self.meshes[mesh.legend]['alpha'] = mesh.alpha
+            self.meshes[mesh.name] = {}
+            self.meshes[mesh.name]['parent_organ'] = mesh.parent_organ.user_organName
+            self.meshes[mesh.name]['channel_no'] = mesh.imChannel.channel_no
+            self.meshes[mesh.name]['user_meshName'] = mesh.user_meshName
+            self.meshes[mesh.name]['mesh_type'] = mesh.mesh_type
+            self.meshes[mesh.name]['legend'] = mesh.legend
+            self.meshes[mesh.name]['name'] = mesh.name
+            self.meshes[mesh.name]['resolution'] = mesh.resolution
+            self.meshes[mesh.name]['color'] = mesh.color
+            self.meshes[mesh.name]['alpha'] = mesh.alpha
             if hasattr(mesh,'dir_out'):
-                self.meshes[mesh.legend]['dir_out'] = mesh.dir_out
-            
-        # else: # just update im_proc 
-        #     self.imChannels[imChannel.channel_no]['im_proc'] = imChannel.im_proc
-        #     self.imChannels[imChannel.channel_no]['process'] = imChannel.process
-        #     if imChannel.dir_stckproc.is_file():
-        #         self.imChannels[imChannel.channel_no]['dir_stckproc'] = imChannel.dir_stckproc
+                self.meshes[mesh.name]['dir_out'] = mesh.dir_out
+        self.obj_meshes[mesh.name] = mesh
 
     def load_TIFF(self, ch_name:str):
         print('---- Loading TIFF! ----')
@@ -799,6 +807,8 @@ class ImChannel(): #channel
         self.parent_organ = organ
         self.parent_organ_name = organ.user_organName
         self.channel_no = ch_name
+        self.user_chName = organ.settings[ch_name]['general_info']['user_chName']
+        self.ch_relation = organ.settings[ch_name]['general_info']['ch_relation']
         if new:            
             self.to_mask = organ.settings[ch_name]['general_info']['mask_ch']
             self.resolution = organ.info['resolution']
@@ -1027,7 +1037,7 @@ class ImChannel(): #channel
         #self.s3_tiss = s3_tiss
         self.add_contStack(s3_tiss)
         #Update organ workflow
-        self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Info']['tissue']['Status'] = 'DONE'
+        self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Info']['tiss']['Status'] = 'DONE'
       
         #Update organ workflow
         if s3_int.s3_dir.is_file() and s3_ext.s3_dir.is_file() and s3_tiss.s3_dir.is_file():
@@ -1074,11 +1084,19 @@ class ImChannel(): #channel
         
         return
 
-    def trimS3(self): # Not sure what this is! Check if it is part of the process
+    def trimS3(self, cuts): 
         #Load s3s
+        self.load_chS3s(cont_types=['int', 'ext', 'tiss'])
+        
+        # if 
         
         #Process
         print('---- Trimming S3s! ----')
+        filename = self.parent_organ_name
+        
+   #Fix this with function fcmeshes.trim_top_bottom_S3s so that here only the 
+   #s3s are cut 
+                
         
         #Update organ workflow        
         self.parent_organ.update_workflow(process = (), update = 'DONE')
@@ -1247,6 +1265,134 @@ class ContStack():
             print('>> s3 file saved correctly! - ', self.cont_type)
             # print('>> Directory: '+ str(dir2save)+'\n')
             alert('countdown')
+            
+        
+    def cutW2Planes(self, pl1, pl2):
+        """
+        Function used to cut inflow AND outflow tract of the s3 mask (s3_cut) given as input
+    
+        """
+        #Load s3 and resolution
+        s32cut = self.s3()
+        resolution = self.im_channel.resolution
+        
+        # Get dimensions of external stack
+        xdim, ydim, zdim = s32cut.shape
+        # Reshape stacks as a vector
+        s3_cut_v = s32cut.reshape(-1)
+    
+        # Get vectors of x,y and z positions
+        pix_coord_pos = np.where(s32cut >= 0)
+        del s32cut
+        # Trasform coordinate positions to um using resolution
+        pix_um = np.transpose(np.asarray([pix_coord_pos[i]*resolution[i] for i in range(len(resolution))]))
+        del pix_coord_pos
+    
+        normal_inf = unit_vector(pl1['pl_normal'])#pls_normal[0])
+        normal_outf = unit_vector(pl2['pl_normal'])#pls_normal[1])
+    
+        # Find all the d values of pix_um
+        d_pix_um_Inf = np.dot(np.subtract(pix_um,np.array(pl1['pl_centre'])),np.array(normal_inf))
+        d_pix_um_Outf = np.dot(np.subtract(pix_um,np.array(pl2['pl_centre'])),np.array(normal_outf))
+        del pix_um
+    
+        # Clear vector d_pix_um using only those that are 1 in stack
+        d_pve_pix_um_Inf = s3_cut_v*d_pix_um_Inf
+        d_pve_pix_um_Outf = s3_cut_v*d_pix_um_Outf
+        del d_pix_um_Inf, d_pix_um_Outf
+    
+        # Duplicate s3f_v to initialise stacks without inflow
+        s3f_all_v = np.copy(s3_cut_v)
+        s3f_all_v.astype('uint8')
+        del s3_cut_v
+    
+        # Find all positions in d_pve_pix_um that are at either side of the planes (outside of mesh)
+        pos_outside_inf = np.where(d_pve_pix_um_Inf < 0)[0]
+        pos_outside_outf = np.where(d_pve_pix_um_Outf > 0)[0]
+        del d_pve_pix_um_Inf, d_pve_pix_um_Outf
+    
+        # Remove the points that are outside of the mesh (inflow)
+        s3f_all_v[pos_outside_inf] = 0
+        del pos_outside_inf
+    
+        # Remove the points that are outside of the mesh (ouflow)
+        s3f_all_v[pos_outside_outf] = 0
+        del pos_outside_outf
+    
+        # Reshape vector into matrix/stack
+        s3f_cut = s3f_all_v.reshape((xdim, ydim, zdim))
+        
+        # Save new s3
+        self.s3_save(s3f_cut)
+        workflow = self.im_channel.parent_organ.workflow
+        workflow['ImProc'][self.im_channel.channel_no]['E-TrimS3']['Info'][self.cont_type]['Status'] = 'DONE'
+        workflow['ImProc'][self.im_channel.channel_no]['E-TrimS3']['Info'][self.cont_type]['Info']['pl1'] = pl1
+        workflow['ImProc'][self.im_channel.channel_no]['E-TrimS3']['Info'][self.cont_type]['Info']['pl2'] = pl2
+        # alert('wohoo',1)
+    
+        # return s3f_cut
+    
+    # func - cutInfOrOutfOptMx
+    def cutW1Plane (self, pl, cut):
+        """
+        Function used to cut inflow OR outflow tract of the s3 mask (s3_cut) given as input
+    
+        """
+    
+        # print('- Cutting s3 - ' + option+' '+mesh_name)
+        #Load s3 and resolution
+        s32cut = self.s3()
+        resolution = self.im_channel.resolution
+    
+        # Get dimensions of external stack
+        xdim, ydim, zdim = s32cut.shape
+        # Reshape stacks as a vector
+        s3_cut_v = s32cut.reshape(-1)
+    
+        # Get vectors of x,y and z positions
+        pix_coord_pos = np.where(s32cut >= 0)
+        del s32cut
+        # Trasform coordinate positions to um using resolution
+        pix_um = np.transpose(np.asarray([pix_coord_pos[i]*resolution[i] for i in range(len(resolution))]))
+        del pix_coord_pos
+    
+        normal  = unit_vector(pl['pl_normal'])
+        # Find all the d values of pix_um
+        d_pix_um = np.dot(np.subtract(pix_um,np.array(pl['pl_centre'])),np.array(normal))
+    
+        # Clear vector d_pix_um using only those that are 1 in stack
+        d_pve_pix_um = s3_cut_v*d_pix_um
+        del pix_um
+    
+        # Duplicate s3f_v to initialise stacks without inflow/outflow
+        s3f_all_v = np.copy(s3_cut_v)
+        s3f_all_v.astype('uint8')
+        del s3_cut_v
+    
+        # Find all positions in d_pve_pix_um that are at either side of the planes (outside of mesh)
+        if cut == 'inflow tract' or cut == 'bottom':
+            pos_outside = np.where(d_pve_pix_um < 0)[0]
+        elif cut == 'outflow tract' or cut == 'top':
+            pos_outside = np.where(d_pve_pix_um > 0)[0]
+        del d_pve_pix_um
+    
+        # Remove the points that are outside of the mesh (inflow/outflow)
+        s3f_all_v[pos_outside] = 0
+        del pos_outside
+    
+        # Reshape vector into matrix/stack
+        s3f_cut = s3f_all_v.reshape((xdim, ydim, zdim))
+        del s3f_all_v
+        
+        # Save new s3
+        self.s3_save(s3f_cut)
+        workflow = self.im_channel.parent_organ.workflow
+        workflow['ImProc'][self.im_channel.channel_no]['E-TrimS3']['Info'][self.cont_type]['Status'] = 'DONE'
+        workflow['ImProc'][self.im_channel.channel_no]['E-TrimS3']['Info'][self.cont_type]['Info']['pl'] = pl
+       
+        # alert('wohoo',1)
+    
+        #return s3f_cut
 
    
 class Mesh_mH():
@@ -1261,9 +1407,13 @@ class Mesh_mH():
         self.user_meshName = self.parent_organ.settings[self.channel_no]['general_info']['user_chName']
         self.mesh_type = mesh_type
         self.legend = self.user_meshName+'_'+self.mesh_type
+        self.name = self.channel_no +'_'+self.mesh_type
         self.resolution = imChannel.get_resolution()
         if new: 
             self.create_mesh(extractLargest = extractLargest, rotateZ_90 = rotateZ_90)
+            self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['Status'] = 'DONE'
+            self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['original_stack_dir'] = imChannel.contStack[self.mesh_type]['s3_dir']
+            self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['keep_largest'] = extractLargest
         else: 
             self.load_mesh()
         self.color = self.parent_organ.settings[self.channel_no]['general_info']['colorCh_'+self.mesh_type]
@@ -1273,6 +1423,7 @@ class Mesh_mH():
         self.parent_organ.add_mesh(self, new=True)
         if new: 
             self.save_mesh()
+            self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['mesh_dir'] = self.dir_out
     
     def create_mesh(self, extractLargest:bool, rotateZ_90:bool):
         # Extract vertices, faces, normals and values of each mesh
