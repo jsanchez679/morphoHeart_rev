@@ -27,26 +27,30 @@ txt_color = '#696969'
 txt_slider_size = 0.8
 
 #%% ##### - Other Imports - ##################################################
+# from ...config import dict_gui
 from .mH_funcBasics import alert, ask4input
+
+
+alert_all=True
+heart_default=False
+dict_gui = {'alert_all': alert_all,
+            'heart_default': heart_default}
 
 #%% - morphoHeart B functions
 #%% func - trim_top_bottom_S3s
-def trim_top_bottom_S3s(organ, chs, cuts, meshes, dict_gui):
+def trim_top_bottom_S3s(organ, cuts, meshes):
     
     filename = organ.user_organName
     # User user input to select which meshes need to be cut
-    cuts_out = {'top':
-                    {'name': {'heart_def': 'outflow tract',
-                              'other': 'top'}},
-                'bottom':
-                    {'name': {'heart_def': 'inflow tract',
-                              'other': 'bottom'}}}
-    for ch in chs:
-        cuts_out['top'][ch] = cuts['top'][ch]
-        cuts_out['bottom'][ch] = cuts['bottom'][ch]
-        
+    cuts_names = {'top': {'heart_def': 'outflow tract','other': 'top'},
+                'bottom': {'heart_def': 'inflow tract','other': 'bottom'}}
+    cuts_out = {'top': {'chs': {}},
+                'bottom': {'chs': {}}}
+    
     cut_top = []; cut_bott = []; cut_chs = {}
-    for ch in chs: 
+    for ch in organ.imChannels.keys():
+        cuts_out['top']['chs'][ch] = cuts['top']['chs'][ch]
+        cuts_out['bottom']['chs'][ch] = cuts['bottom']['chs'][ch] 
         cut_chs[ch] = []
         
     cuts_flat = flatdict.FlatDict(cuts)
@@ -55,11 +59,11 @@ def trim_top_bottom_S3s(organ, chs, cuts, meshes, dict_gui):
             cut_top.append(cuts_flat[key])
         if 'bot' in key: 
             cut_bott.append(cuts_flat[key])
-        for ch in chs: 
+        for ch in organ.imChannels.keys(): 
             if ch in key:
                 if cuts_flat[key]:
                     cut_chs[ch].append(key.split(':')[0])
-                    
+                               
     print('cut_chs:', cut_chs)
     print('cut_top:', cut_top)
     print('cut_bott:', cut_bott)
@@ -73,49 +77,42 @@ def trim_top_bottom_S3s(organ, chs, cuts, meshes, dict_gui):
     if any(cut_bott):
         #Define plane to cut bottom
         plane_bott, pl_dict_bott = getPlane(filename=filename, 
-                                               txt = 'cut '+cuts_out['bottom']['name'][name_dict],
-                                               meshes = meshes)    
+                                            txt = 'cut '+cuts_names['bottom'][name_dict],
+                                            meshes = meshes)    
         cuts_out['bottom']['plane_info_mesh'] = pl_dict_bott
         # Reorient plane to images (s3)
         plane_bottIm, pl_dict_bottIm = rotatePlane2Images(pl_dict_bott['pl_centre'], 
-                                                                           pl_dict_bott['pl_normal'])
+                                                          pl_dict_bott['pl_normal'])
         cuts_out['bottom']['plane_info_image'] = pl_dict_bottIm
         
     #Define plane to cut top
     if any(cut_top):
         #Define plane to cut top
         plane_top, pl_dict_top = getPlane(filename=filename, 
-                                               txt = 'cut '+cuts_out['top']['name'][name_dict],
-                                               meshes = meshes)
+                                          txt = 'cut '+cuts_names['top'][name_dict],
+                                          meshes = meshes)
         cuts_out['top']['plane_info_mesh'] = pl_dict_top
         # Reorient plane to images (s3)
         plane_topIm, pl_dict_topIm = rotatePlane2Images(pl_dict_top['pl_centre'], 
-                                                                           pl_dict_top['pl_normal'])
+                                                        pl_dict_top['pl_normal'])
         cuts_out['top']['plane_info_image'] = pl_dict_topIm
-    
-    
+        
     # Get the channels from the meshes to cut
     ch_meshes = {}
     for mesh in meshes:
         ch_meshes[mesh.imChannel.channel_no] = mesh.imChannel
     
+    #Here!!
+    print(ch_meshes)
+    print(cuts_out, cut_chs)
+    
     #Cut ch1 s3s
-    for ch in chs: 
+    for ch in organ.imChannels.keys(): 
         im_ch = ch_meshes[ch]
-        if len(cut_chs[ch]) == 1:
-            pl = cuts_out[cut_chs[ch][0]]['plane_info_image']
-            im_ch.s3_tiss.cutW1Plane(pl, cut_chs[ch])
-            im_ch.s3_int.cutW1Plane(pl, cut_chs[ch])
-            im_ch.s3_ext.cutW1Plane(pl, cut_chs[ch])
-            
-        if len(cut_chs[ch]) == 2:
-            pl1 = cuts_out['bottom']['plane_info_image']
-            pl2 = cuts_out['top']['plane_info_image']
-            im_ch.s3_tiss.cutW2Planes(pl1, pl2)
-            im_ch.s3_int.cutW2Planes(pl1, pl2)
-            im_ch.s3_ext.cutW2Planes(pl1, pl2)
-            
+        print(im_ch)
+        im_ch.trimS3(cuts=cut_chs[ch], cuts_out=cuts_out)
         
+    
  
 #%% - Plotting functions
 #%% func - plot_grid
@@ -181,7 +178,7 @@ def getPlane(filename, txt:str, meshes:list, def_pl = None,
         normal_corrected = newNormal3DRot(normal, rotX, rotY, rotZ)
         # Get central point of new plane and create sphere
         pl_centre = plane.pos()
-        sph_centre = vedo.Sphere(pos=pl_centre,r=2,c='purple')
+        sph_centre = vedo.Sphere(pos=pl_centre,r=2,c='tomato')
         # Build new plane to confirm
         plane_new = vedo.Plane(pos=pl_centre,normal=normal_corrected).color('green').alpha(1).legend('New Plane')
 
@@ -194,7 +191,7 @@ def getPlane(filename, txt:str, meshes:list, def_pl = None,
         vp = vedo.Plotter(N=1, axes=4)
         vp.show(meshes_mesh, plane, plane_new, sph_centre, txt2D, at=0, viewup='y', azimuth=0, elevation=0, interactive=True)
 
-        happy = ask4input('Are you happy with the defined plane to '+txt+'? \n\t - [0]:no, I would like to define a new plane. \n\t - [1]:yes, continue!: ', bool)
+        happy = ask4input('Are you happy with the defined plane to '+txt+'? \n\t [0]:no, I would like to define a new plane. \n\t [1]:yes, continue! >>>:', bool)
         if happy:
             pl_dict = {'pl_normal': normal_corrected,
                        'pl_centre': pl_centre}

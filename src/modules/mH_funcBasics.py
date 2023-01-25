@@ -17,11 +17,17 @@ path_fcBasics = os.path.abspath(__file__)
 print(path_fcBasics)
 
 #%% morphoHeart Imports 
+# from ...config import dict_gui
 # from .mH_classes import Organ, Mesh_mH, ImChannel
+
+alert_all=True
+heart_default=False
+dict_gui = {'alert_all': alert_all,
+            'heart_default': heart_default}
 
 #%% -Functions
 #%% func - alert
-def alert(sound:str, alert_all=True):
+def alert(sound:str):
     '''
     bubble:
     clown:
@@ -36,6 +42,7 @@ def alert(sound:str, alert_all=True):
     '''
     mp3_basic = ['connection','woohoo']
     
+    alert_all = True#dict_gui['allert_all']
     if alert_all or sound in mp3_basic:
         path_parentSounds = Path(path_fcBasics).parent.parent.parent
         # print(path_parentSounds)

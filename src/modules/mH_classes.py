@@ -22,7 +22,8 @@ import matplotlib.pyplot as plt
 import flatdict
 
 #%% ##### - Other Imports - ##################################################
-from .mH_funcBasics import alert #, ask4input
+#from ...config import dict_gui
+from .mH_funcBasics import alert, ask4input
 from .mH_funcMeshes import unit_vector
 
 #%% ##### - Authorship - #####################################################
@@ -352,6 +353,21 @@ class Project():
         item_thickness_intext = [item for item in self.gral_meas_param if 'thickness int>ext' in item]
         item_thickness_extint = [item for item in self.gral_meas_param if 'thickness ext>int' in item]
 
+        #Check the external channel
+        for ch in channels:
+            if 'NS' not in ch:
+                if self.settings[ch]['general_info']['ch_relation'] == 'external':
+                    ch_ext = ch
+
+        dict_MeshesProc = {'Status' : 'NotInitialised',
+                           'A-Create3DMesh': {'Status': 'NotInitialised'},
+                           'B-TrimMesh': {'Status': 'NotInitialised'},
+                           'C-Centreline': {'Status': 'NotInitialised'},
+                           'D-Ballooning': {'Status': 'NotInitialised'}, 
+                           'D-Thickness_int>ext': {'Status': 'NotInitialised'},
+                           'D-Thickness_ext>int': {'Status': 'NotInitialised'},
+                           'E-Segments': {'Status': 'NotInitialised'}}
+                           
         # Project status
         for ch in channels:
             if 'NS' not in ch:
@@ -376,84 +392,96 @@ class Project():
                                                                     # 'Info':{}},
                                                         'int':{'Status': 'NotInitialised'}, 
                                                                     # 'Info':{}},
-                                                        'ext':{'Status': 'NotInitialised'}}}, 
-                                                                    # 'Info':{}}}}, 
-
-                                    'E-TrimS3': {'Status': 'NotInitialised',
-                                                'Info':{'tiss':{'Status': 'NotInitialised', 
-                                                            'Info':{}},
-                                                'int':{'Status': 'NotInitialised', 
-                                                            'Info':{}},
-                                                'ext':{'Status': 'NotInitialised', 
-                                                            'Info':{}}}}}
+                                                        'ext':{'Status': 'NotInitialised'}}}}
+                if ch != ch_ext:
+                    dict_ImProc[ch]['E-CleanCh'] = {'Status': 'NotInitialised',
+                                                      'Info': {'tiss':{'Status': 'NotInitialised'}, 
+                                                                          # 'Info':{}},
+                                                              'int':{'Status': 'NotInitialised'}, 
+                                                                          # 'Info':{}},
+                                                              'ext':{'Status': 'NotInitialised'}}}
+                    dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NotInitialised',
+                                                     'Info':{'tiss':{'Status': 'NotInitialised'}, 
+                                                             'int':{'Status': 'NotInitialised'},
+                                                             'ext':{'Status': 'NotInitialised'}}, 
+                                                     'Planes':{}}
+                else: 
+                    dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NotInitialised',
+                                                     'Info':{'tiss':{'Status': 'NotInitialised'}, 
+                                                             'int':{'Status': 'NotInitialised'},
+                                                             'ext':{'Status': 'NotInitialised'}}, 
+                                                     'Planes':{}}
+                    
             else: 
                 dict_ImProc[ch] = {'Status': 'NotInitialised',
                                     'D-S3Create':{'Status': 'NotInitialised',
-                                                'Info':{'tiss':{'Status': 'NotInitialised'}, 
-                                                                    # 'Info':{}},
-                                                        'int':{'Status': 'NotInitialised'}, 
-                                                                    # 'Info':{}},
-                                                        'ext':{'Status': 'NotInitialised'}}, 
-                                                                    # 'Info':{}}},
                                                 'Settings':{'ext_mesh': self.settings[ch]['general_info']['ch_ext'],
                                                             'int_mesh': self.settings[ch]['general_info']['ch_int']}}} 
              
-            dict_MeshesProc[ch] = {}
-            for cont in ['tiss', 'int', 'ext']:
+            #Update this so that proc-ch-cont-
+            for process in ['A-Create3DMesh','B-TrimMesh','C-Centreline']:
                 if 'NS' not in ch:
-                    dict_MeshesProc[ch][cont]={'A-Create3DMesh': {'Status': 'NotInitialised',
-                                                                'original_stack_dir':None,
-                                                                'keep_largest': None,
-                                                                'mesh_dir': None},
-                                                'B-TrimMesh': {'Status': 'NotInitialised',
-                                                                'original_stack_dir':None,
-                                                                'keep_largest': None,
-                                                                'trim-settings': {'no_cuts': 0},
-                                                                'mesh_dir': None},
-                                                'C-Centreline': {}
-                                                }
+                    dict_MeshesProc[process][ch] = {}
+                    for cont in ['tiss', 'int', 'ext']:
+                        dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
+                        if process == 'A-Create3DMesh':
+                            dict_MeshesProc[process][ch][cont]['stack_dir'] = None
+                            if cont == 'tiss':
+                                dict_MeshesProc[process][ch][cont]['keep_largest'] = False
+                            else: 
+                                dict_MeshesProc[process][ch][cont]['keep_largest'] = None
+                        if process == 'B-TrimMesh':
+                            dict_MeshesProc[process][ch][cont]['stack_dir'] = None
+                            if cont == 'tiss':
+                                dict_MeshesProc[process][ch][cont]['keep_largest'] = False
+                            else: 
+                                dict_MeshesProc[process][ch][cont]['keep_largest'] = None
+                            dict_MeshesProc[process][ch][cont]['trim_settings'] =  {'no_cuts': 0}
+                        
+                        if process == 'C-Centreline':
+                            if (ch,cont,'whole','centreline') in item_centreline:
+                                 dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised',
+                                                                        'dir_cleanMesh': None, 
+                                                                        'dir_meshLabMesh': None, 
+                                                                        'vmtk_cl': {'Status': 'NotInitialised',
+                                                                                    'vmtktxt': 'NotInitialised'},
+                                                                        'connect_cl': {'Status': 'NotInitialised',
+                                                                                    'Settings': 'NotInitialised'},
+                                                                        'measure':{'Status': 'NotInitialised',
+                                                                                    'parameters': []}}
                 else: 
-                    dict_MeshesProc[ch][cont]={'A-Create3DMesh': {'Status': 'NotInitialised',
-                                                                'original_stack_dir':None,
-                                                                'keep_largest': True,
-                                                                'mesh_dir': None},
-                                                }
-                if cont == 'tiss' and 'NS' in ch:
-                    dict_MeshesProc[ch][cont]['A-Create3DMesh']['keep_largest'] = False
-
-                if (ch,cont,'whole','centreline') in item_centreline:
-                     dict_MeshesProc[ch][cont]['C-Centreline'] = {'Status': 'NotInitialised',
-                                                                    'dir_cleanMesh': None, 
-                                                                    'dir_meshLabMesh': None, 
-                                                                    'vmtk_cl': {'Status': 'NotInitialised',
-                                                                                'Settings': 'NotInitialised'},
-                                                                    'connect_cl': {'Status': 'NotInitialised',
-                                                                                'Settings': 'NotInitialised'},
-                                                                    'measure':{'Status': 'NotInitialised',
-                                                                                'Settings': 'NotInitialised'}}
+                    if process == 'A-Create3DMesh':
+                        dict_MeshesProc[process][ch] = {}
+                        dict_MeshesProc[process][ch]['keep_largest'] = False
+            
+            for cont in ['tiss', 'int', 'ext']:
                 if (ch,cont,'whole','ballooning') in item_ballooning:
-                     dict_MeshesProc[ch][cont]['D-Ballooning'] = {'Status': 'NotInitialised',
-                            'Settings': {'from_cl': self.settings[ch]['measure'][cont]['whole']['ballooning']['from_cl'],
-                                        'from_cl_type': self.settings[ch]['measure'][cont]['whole']['ballooning']['from_cl_type']}}
+                    dict_MeshesProc['D-Ballooning'][ch] = {}
+                    dict_MeshesProc['D-Ballooning'][ch][cont] =  {'Status': 'NotInitialised',
+                           'Settings': {'from_cl': self.settings[ch]['measure'][cont]['whole']['ballooning']['from_cl'],
+                                       'from_cl_type': self.settings[ch]['measure'][cont]['whole']['ballooning']['from_cl_type']}}
 
                 if (ch,cont,'whole','thickness int>ext') in item_thickness_intext:
-                     dict_MeshesProc[ch][cont]['D-Thickness'] = {'Status': 'NotInitialised',
-                                                                        'Settings': {}}    
+                    dict_MeshesProc['D-Thickness_int>ext'][ch] = {}
+                    dict_MeshesProc['D-Thickness_int>ext'][ch][cont] = {'Status': 'NotInitialised',
+                                                                 'Parameters': {'actual_values' : {'min_val': None,
+                                                                                                 'max_val': None}}}    
                 if (ch,cont,'whole','thickness ext>int') in item_thickness_extint:
-                     dict_MeshesProc[ch][cont]['D-Thickness'] = {'Status': 'NotInitialised',
-                                                                        'Settings': {}}                                                       
+                     dict_MeshesProc['D-Thickness_ext>int'][ch] = {}
+                     dict_MeshesProc['D-Thickness_ext>int'][ch][cont] = {'Status': 'NotInitialised',
+                                                                 'Parameters': {'actual_values' : {'min_val': None,
+                                                                                                 'max_val': None}}}                                                       
                                                                     
                 if len(self.segments) > 0:
-                    # print('IN!!', ch, cont)
                     if (ch,cont,'segm1','volume') in item_segment:
-                        # print('In2!',ch,cont)
-                        dict_MeshesProc[ch][cont]['E-Segments'] = {'Status': 'NotInitialised',
-                                                                    'Settings': {},
-                                                                    'Segments': {}}
-
+                        dict_MeshesProc['E-Segments'][ch] = {}
+                        dict_MeshesProc['E-Segments'][ch][cont] = {'Status': 'NotInitialised',
+                                                                   'Segments': {}}
+    
                         for segm in ['whole']+segments:
-                            dict_MeshesProc[ch][cont]['E-Segments']['Segments'][segm]={'Status': 'NotInitialised',
-                                                                                        'measure': None}
+                            dict_MeshesProc['E-Segments'][ch][cont]['Segments'][segm]={'Status': 'NotInitialised',
+                                                                                        'measure': {'Status': 'NotInitialised',
+                                                                                                    'parameters': []}}
 
         workflow['ImProc'] = dict_ImProc
         workflow['MeshesProc'] = dict_MeshesProc
@@ -593,16 +621,19 @@ class Organ():
         for mesh in self.meshes.keys():
             self.meshes[mesh]['dir_out']=Path(self.meshes[mesh]['dir_out'])
         self.objects = load_dict['objects']
+
         self.dir_info = Path(load_dict['dir_info'])
         self.mH_organName = load_dict['mH_organName']
         
         #Create all imChannels 
         # load obj_imChannel
-        
+        self.obj_imChannels = {}#load_dict['obj_imChannels']
+
             #Create all contStacks
         
         #Create meshes
         # load obj_meshes
+        self.obj_meshes = {}#load_dict['obj_meshes']
 
     def create_mHName(self):
         now_str = datetime.now().strftime('%Y%m%d%H%M')
@@ -1084,19 +1115,24 @@ class ImChannel(): #channel
         
         return
 
-    def trimS3(self, cuts): 
+    def trimS3(self, cuts, cuts_out): 
         #Load s3s
         self.load_chS3s(cont_types=['int', 'ext', 'tiss'])
         
-        # if 
-        
         #Process
-        print('---- Trimming S3s! ----')
-        filename = self.parent_organ_name
-        
-   #Fix this with function fcmeshes.trim_top_bottom_S3s so that here only the 
-   #s3s are cut 
+        print('---- Trimming S3s! ----')                             
+        if len(cuts) == 1:
+            pl = cuts_out[cuts[0]]['plane_info_image']
+            for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
+                s3.cutW1Plane(pl, cuts)
+                self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Info'][s3.cont_type]['Status'] = 'DONE'
                 
+        if len(cuts) == 2:
+            for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
+                pl1 = cuts_out['bottom']['plane_info_image']
+                pl2 = cuts_out['top']['plane_info_image']
+                s3.cutW2Planes(pl1, pl2)
+                self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Info'][s3.cont_type]['Status'] = 'DONE'
         
         #Update organ workflow        
         self.parent_organ.update_workflow(process = (), update = 'DONE')
@@ -1125,59 +1161,84 @@ class ImChannel(): #channel
             alert('countdown')
             self.dir_stckproc = im_dir
     
-    def ch_clean (self, s3, s3_mask, option, inverted=True, plot=False, im_every=25): 
+    def ch_clean (self, s3_mask, inverted=True, plot=False, im_every=25): 
         """
         Function to clean channel using the other as a mask
         """
+        workflow = self.parent_organ.workflow
         
-        if option == "cj":
-            print('- Extracting cardiac jelly')
-        elif option == "clean":
-            print('- Cleaning endocardium ('+ self.channel_no + '-' + s3.cont_type +')')
-
-        s3_s = s3.s3()
-        s3_mask_s = s3_mask.s3()
+        if self.channel_no == 'chNS':
+            print('- Extracting '+self.user_chName+'!')
+            s3s = [self.s3_tiss]
+            if workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] != 'DONE':
+                proceed = True
+            else: 
+                proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t [0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:')
+        else: 
+            s3s = [self.s3_int, self.s3_ext, self.s3_tiss]
+            if workflow['ImProc'][self.channel_no]['E-CleanCh']['Status'] != 'DONE':
+                proceed = True
+            else: 
+                proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t [0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:')
         
-        s3_bits = np.zeros_like(s3_s, dtype='uint8')
-        s3_new =  np.zeros_like(s3_s, dtype='uint8')
-
-        index = list(s3.shape_s3).index(min(s3.shape_s3))
-        if index == 2:
-            for slc in range(s3.shape_s3[2]):
-                mask_slc = s3_mask_s[:,:,slc]
-                toClean_slc = s3_s[:,:,slc]
-
-                if inverted:
-                    # Invert ch to use as mask 
-                    inv_slc = np.where((mask_slc==0)|(mask_slc==1), mask_slc^1, mask_slc)
-                else: 
-                    # Keep ch to use as mask as it is
-                    inv_slc = np.copy(mask_slc)
-
-                # inverted_mask or mask AND ch1_2clean
-                toRemove_slc = np.logical_and(toClean_slc, inv_slc)
-                # Keep only the clean bit
-                cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
-
-                if plot and slc in list(range(0,s3.shape_s3[0],im_every)):
-                    self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, option, inverted)
-
-                s3_bits[:,:,slc] = toRemove_slc
-                s3_new[:,:,slc] = cleaned_slc
+        if proceed: 
+            for s3 in s3s:
+                if self.channel_no != 'chNS':
+                    print('- Cleaning '+self.user_chName+' ('+ self.channel_no + '-' + s3.cont_type +')')
+                    
+                s3_s = s3.s3()
+                s3_mask_s = s3_mask.s3()
                 
-            s3_new = s3_new.astype('uint8')
-            s3.s3_save(s3_new)
-            alert('whistle')            
+                s3_bits = np.zeros_like(s3_s, dtype='uint8')
+                s3_new =  np.zeros_like(s3_s, dtype='uint8')
         
-        else:
-            print('>> Index different to 2, check!')
-            alert('error_beep')
-
-    def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc, option, inverted):
+                index = list(s3.shape_s3).index(min(s3.shape_s3))
+                if index == 2:
+                    for slc in range(s3.shape_s3[2]):
+                        mask_slc = s3_mask_s[:,:,slc]
+                        toClean_slc = s3_s[:,:,slc]
+        
+                        if inverted:
+                            # Invert ch to use as mask 
+                            inv_slc = np.where((mask_slc==0)|(mask_slc==1), mask_slc^1, mask_slc)
+                        else: 
+                            # Keep ch to use as mask as it is
+                            inv_slc = np.copy(mask_slc)
+        
+                        # inverted_mask or mask AND ch1_2clean
+                        toRemove_slc = np.logical_and(toClean_slc, inv_slc)
+                        # Keep only the clean bit
+                        cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
+        
+                        if plot and slc in list(range(0,s3.shape_s3[0],im_every)):
+                            self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted)
+        
+                        s3_bits[:,:,slc] = toRemove_slc
+                        s3_new[:,:,slc] = cleaned_slc
+                        
+                    s3_new = s3_new.astype('uint8')
+                    s3.s3_save(s3_new)
+                    alert('whistle')   
+                    
+                else:
+                    print('>> Index different to 2, check!')
+                    alert('error_beep')
+                
+                if self.channel_no != 'chNS':
+                    workflow['ImProc'][self.channel_no]['E-CleanCh']['Info'][s3.cont_type]['Status'] = 'DONE'
+                                                               
+            if self.channel_no != 'chNS':
+                workflow['ImProc'][self.channel_no]['E-CleanCh']['Status'] = 'DONE'
+            else: 
+                workflow['ImProc'][self.channel_no]['Status'] = 'DONE'
+                workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] = 'DONE'
+                 
+                  
+    def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted):
         """
         Function to plot mask, original image and result
         """
-        if option == 'clean':
+        if self.channel_no != 'chNS':#option == 'clean':
             if inverted: 
                 txt = ['ch0_inv','ch1','ch0_inv AND ch1','ch0_inv AND ch1\nxOR ch1']
             else: 
@@ -1412,7 +1473,7 @@ class Mesh_mH():
         if new: 
             self.create_mesh(extractLargest = extractLargest, rotateZ_90 = rotateZ_90)
             self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['Status'] = 'DONE'
-            self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['original_stack_dir'] = imChannel.contStack[self.mesh_type]['s3_dir']
+            self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['stack_dir'] = imChannel.contStack[self.mesh_type]['s3_dir']
             self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['keep_largest'] = extractLargest
         else: 
             self.load_mesh()
@@ -1423,7 +1484,6 @@ class Mesh_mH():
         self.parent_organ.add_mesh(self, new=True)
         if new: 
             self.save_mesh()
-            self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['mesh_dir'] = self.dir_out
     
     def create_mesh(self, extractLargest:bool, rotateZ_90:bool):
         # Extract vertices, faces, normals and values of each mesh
@@ -1508,4 +1568,5 @@ class Mesh_mH():
     def getCentreline(self): 
         pass
 
+#%%
 print('morphoHeart! - Loaded Module Classes')

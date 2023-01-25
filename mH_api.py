@@ -9,13 +9,11 @@ Version: Dec 01, 2022
 #%% ##### - Imports - ########################################################
 # import pathlib
 import sys
-
 from pathlib import Path
 import numpy as np
 import os
 import vedo as vedo
 #embedWindow(False)
-
 
 print('package:', __package__)
 print('name:', __name__)
@@ -27,12 +25,7 @@ from src.modules import mH_funcBasics as fcBasics
 from src.modules import mH_funcMeshes as fcMeshes
 
 #%% GUI related
-alert_all=True
-heart_default=False
-dict_gui = {'alert_all': alert_all,
-            'heart_default': heart_default}
-
-fcBasics.alert('woohoo', dict_gui['alert_all'])
+fcBasics.alert('woohoo')
 
 partA = True
 partB = True
@@ -195,7 +188,7 @@ if partA:
     # And a project status dictionary is created
     proj.set_project_status()
     # print('>>proj.dict_workflow:', proj.dict_workflow)
-
+#%%
     # Save project 
     proj.save_project()
     # Load project and check parameters 
@@ -373,9 +366,6 @@ if partB:
     msh2_int = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='int', extractLargest=True, rotateZ_90=True)
     msh2_ext = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='ext', extractLargest=True, rotateZ_90=True)
     msh2_tiss = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
-
-    # organ.obj_imChannels['ch1'] = im_ch1
-    # organ.obj_imChannels['ch2'] = im_ch2
     
     # Save organ
     organ.save_organ()
@@ -384,6 +374,7 @@ if partB:
     obj = [(msh1_ext.mesh),(msh1_int.mesh),(msh1_tiss.mesh),(msh2_ext.mesh),(msh2_int.mesh),(msh2_tiss.mesh)]
     fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
     
+    # Clean channels
     chs = list(organ.imChannels.keys())
     if len(chs)>1:
         for ch in chs:
@@ -396,10 +387,8 @@ if partB:
     if clean_ch:
         inverted = fcBasics.ask4input('Select the mask you would like to use to clean the '+ch_int.user_chName+': \n\t[0]: Just the tissue layer of the '+ch_ext.user_chName+'\n\t[1]: (Recommended) The inverted internal segmentation of the '+ch_ext.user_chName+' (more profound cleaning). >>>: ', bool)
         plot = False
-        ch_int.ch_clean(s3=ch_int.s3_int, s3_mask=ch_ext.s3_ext, option='clean', inverted=inverted, plot=True)
-        ch_int.ch_clean(s3=ch_int.s3_ext, s3_mask=ch_ext.s3_ext, option='clean', inverted=inverted, plot=plot)
-        ch_int.ch_clean(s3=ch_int.s3_tiss, s3_mask=ch_ext.s3_ext, option='clean', inverted=inverted, plot=plot)
-    
+        ch_int.ch_clean(s3_mask=ch_ext.s3_ext, inverted=inverted, plot=True)
+        
         print('>> Check Ch2 vs ChInt: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,ch_int.__dict__,'ch2','int'))
         
         print('\n---RECREATING MESHES CHANNEL 2 WITH CLEANED ENDOCARDIUM---')
@@ -414,10 +403,6 @@ if partB:
         
         msh2_int = msh2_int2; msh2_ext = msh2_ext2; msh2_tiss = msh2_tiss2
         del msh2_int2, msh2_ext2, msh2_tiss2
-                
-        for mesh in [msh1_ext,msh1_int,msh1_tiss,msh2_ext,msh2_int,msh2_tiss]:
-            mesh.name = mesh.channel_no +'_'+mesh.mesh_type
-            organ.add_mesh(mesh, new=True)
             
     organ.save_organ()
     organ_new = proj_new.load_organ(user_organName = organName2Load)    
@@ -435,32 +420,20 @@ if partB:
     # vp.show(msh2_tiss22.mesh, at=2, interactive=True)
 
     #%% Cut meshes inflow and outflow tracts 
-    
-
-    obj = [(msh1_tiss.mesh),(msh2_tiss2.mesh),(msh1_tiss.mesh, msh2_tiss2.mesh)]
+    obj = [(msh1_tiss.mesh),(msh2_tiss.mesh),(msh1_tiss.mesh, msh2_tiss.mesh)]
     text = organ.user_organName+"\n\nTake a closer look at both meshes and decide from which layer to cut\n the inflow and outflow. >> [0]:ch1 / [1]:ch2 / [2]:both / [3]:none.\nClose the window when done"
     txt = [(0, text)]
     fcMeshes.plot_grid(obj=obj, txt=txt, axes=5, lg_pos='bottom-right')
 
     # User user input to select which meshes need to be cut
-    cuts = {'top':
-                {'ch1': 
-                        {'selected': False},
-                'ch2':
-                        {'selected': True}},
-            'bottom':
-                 {'ch1': 
-                        {'selected': True},
-                 'ch2':
-                        {'selected': True}}}
-    
-   #Fix this with function fcmeshes.trim_top_bottom_S3s
-    
-    im_ch1.trimS3()
-    im_ch2.trimS3()
+    cuts = {'top':    {'chs': {'ch1': False, 'ch2': True}},
+            'bottom': {'chs': {'ch1': True, 'ch2': True}}}
+    meshes = [msh1_tiss, msh2_tiss]
+  
+    fcMeshes.trim_top_bottom_S3s(organ=organ, cuts=cuts, meshes=meshes)
     
     
-    meshes = [msh1_tiss, msh2_tiss2]
+
     chs = list(organ.imChannels.keys())
 
         
