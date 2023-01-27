@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 import os
 import vedo as vedo
+import copy
 #embedWindow(False)
 
 print('package:', __package__)
@@ -188,7 +189,7 @@ if partA:
     # And a project status dictionary is created
     proj.set_project_status()
     # print('>>proj.dict_workflow:', proj.dict_workflow)
-#%%
+
     # Save project 
     proj.save_project()
     # Load project and check parameters 
@@ -199,7 +200,7 @@ if partA:
     # load_dict = {'name': proj_name, 'dir': proj_dir}
     proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
 
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
+    print('>> Check Project: \n\t',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
     
     #% ------------------------------------------------------------------------------
     # Having created the project an organ is created as part of the project
@@ -276,7 +277,7 @@ if partA:
     organName2Load = 'LS52_F02_V_SR_1029'
     organ_new = proj.load_organ(user_organName = organName2Load)
     
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))
+    print('>> Check Organ: \n\t',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))
     
     # Save project 
     proj.save_project()
@@ -288,7 +289,7 @@ if partA:
     load_dict = {'name': proj_name, 'dir': proj_dir}
     proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
 
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
+    print('>> Check Project: \n\t',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
 
     # CODE A ---------------------------------------------------------
     print('\n---CREATING CHANNELS 1 AND 2----')
@@ -311,9 +312,9 @@ if partA:
     organ_new = proj_new.load_organ(user_organName = organName2Load)
     im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False)
     
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    print('>> Check im_ch1: \n',fcBasics.compare_nested_dicts(im_ch1.__dict__,im_ch1_new.__dict__,'imCh1','new')) 
+    print('>> Check Project: \n\t',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
+    print('>> Check Organ: \n\t',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
+    print('>> Check im_ch1: \n\t',fcBasics.compare_nested_dicts(im_ch1.__dict__,im_ch1_new.__dict__,'imCh1','new')) 
     
     # CHANNEL 2
     print('\n---PROCESSING CHANNEL 2----')
@@ -334,9 +335,9 @@ if partA:
     organ_new = proj_new.load_organ(user_organName = organName2Load)
     im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2', new=False)
     
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    print('>> Check im_ch2: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,im_ch2_new.__dict__,'imCh2','new'))
+    print('>> Check Project: \n\t',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
+    print('>> Check Organ: \n\t',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
+    print('>> Check im_ch2: \n\t',fcBasics.compare_nested_dicts(im_ch2.__dict__,im_ch2_new.__dict__,'imCh2','new'))
     
 #%%
 if partB: 
@@ -357,15 +358,12 @@ if partB:
         
     #% CODE B
     # Load contStacks? 
+    gui_keep_largest = {'ch1': {'int': False, 'ext': False, 'tiss': False}, 'ch2': {'int': False, 'ext': False, 'tiss': False}}
     print('\n---CREATING MESHES CHANNEL 1---')
-    msh1_int = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='int', extractLargest=True, rotateZ_90=True)
-    msh1_ext = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='ext', extractLargest=True, rotateZ_90=True)
-    msh1_tiss = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
-    
+    [msh1_int, msh1_ext, msh1_tiss] = fcMeshes.s32Meshes(imChannel=im_ch1, keep_largest=gui_keep_largest['ch1'])
+   
     print('\n---CREATING MESHES CHANNEL 2---')
-    msh2_int = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='int', extractLargest=True, rotateZ_90=True)
-    msh2_ext = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='ext', extractLargest=True, rotateZ_90=True)
-    msh2_tiss = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
+    [msh2_int, msh2_ext, msh2_tiss] = fcMeshes.s32Meshes(imChannel=im_ch2, keep_largest=gui_keep_largest['ch2'])
     
     # Save organ
     organ.save_organ()
@@ -374,7 +372,7 @@ if partB:
     obj = [(msh1_ext.mesh),(msh1_int.mesh),(msh1_tiss.mesh),(msh2_ext.mesh),(msh2_int.mesh),(msh2_tiss.mesh)]
     fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
     
-    # Clean channels
+  #%% Clean channels
     chs = list(organ.imChannels.keys())
     if len(chs)>1:
         for ch in chs:
@@ -392,10 +390,8 @@ if partB:
         print('>> Check Ch2 vs ChInt: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,ch_int.__dict__,'ch2','int'))
         
         print('\n---RECREATING MESHES CHANNEL 2 WITH CLEANED ENDOCARDIUM---')
-        msh2_int2 = mHC.Mesh_mH(imChannel=ch_int, mesh_type='int', extractLargest=True, rotateZ_90=True)
-        msh2_ext2 = mHC.Mesh_mH(imChannel=ch_int, mesh_type='ext', extractLargest=True, rotateZ_90=True)
-        msh2_tiss2 = mHC.Mesh_mH(imChannel=ch_int, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
-    
+        [msh2_int2, msh2_ext2, msh2_tiss2] = fcMeshes.s32Meshes(imChannel=im_ch2, keep_largest=gui_keep_largest['ch2'])
+        
         # Plot cleaned ch2
         obj = [(msh2_ext.mesh),(msh2_int.mesh),(msh2_tiss.mesh),(msh2_ext2.mesh),(msh2_int2.mesh),(msh2_tiss2.mesh)]
         txt = [(0, organ.user_organName + ' - Original'), (3,'Cleaned Meshes')]
@@ -410,9 +406,9 @@ if partB:
     
     #%%
     # If loading meshes
-    # msh2_int22 = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='int', extractLargest=True, rotateZ_90=True, new=False)
-    # msh2_ext22 = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='ext', extractLargest=True, rotateZ_90=True, new=False)
-    # msh2_tiss22 = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='tiss', extractLargest=True, rotateZ_90=True, new=False)
+    # msh2_int22 = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='int', keep_largest=True, rotateZ_90=True, new=False)
+    # msh2_ext22 = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='ext', keep_largest=True, rotateZ_90=True, new=False)
+    # msh2_tiss22 = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='tiss', keep_largest=True, rotateZ_90=True, new=False)
 
     # vp = vedo.Plotter(N=3, axes=1)
     # vp.show(msh2_int22.mesh, at=0, zoom=1.2)
@@ -430,26 +426,62 @@ if partB:
             'bottom': {'chs': {'ch1': True, 'ch2': True}}}
     meshes = [msh1_tiss, msh2_tiss]
   
-    fcMeshes.trim_top_bottom_S3s(organ=organ, cuts=cuts, meshes=meshes)
+    cut_chs = fcMeshes.trim_top_bottom_S3s(organ=organ, cuts=cuts, meshes=meshes)
     
+    gui_keep_largest = {'ch1': {'int': False, 'ext': False, 'tiss': False}, 'ch2': {'int': False, 'ext': False, 'tiss': False}}
+    print('\n---RECREATING MESHES CHANNEL 1 AFTER TRIMMING---')
+    [msh1_int, msh1_ext, msh1_tiss] = fcMeshes.createNewMeshes(imChannel = im_ch1, 
+                                            keep_largest = gui_keep_largest['ch1'], 
+                                            process = 'AfterTrimming',
+                                            info = cut_chs,
+                                            rotateZ_90 = True, new = True)
+    print('\n---CREATING MESHES CHANNEL 2 AFTER TRIMMING---')
+    [msh2_int, msh2_ext, msh2_tiss] = fcMeshes.createNewMeshes(imChannel = im_ch2, 
+                                            keep_largest = gui_keep_largest['ch2'], 
+                                            process = 'AfterTrimming',
+                                            info = cut_chs,
+                                            rotateZ_90 = True, new = True)
     
-
-    chs = list(organ.imChannels.keys())
-
+    # Plot
+    txt = [(0, organ.user_organName  + ' - Meshes after trimming')]
+    obj = [(msh1_ext.mesh),(msh1_int.mesh),(msh1_tiss.mesh),(msh2_ext.mesh),(msh2_int.mesh),(msh2_tiss.mesh)]
+    fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
+    
+    #%% Create Cardiac Jelly
+    if 'chNS' in organ.settings.keys():
+        # how to call the cj , channel? cont-stack? 
+        image = mHC.ImChannel(organ=organ, ch_name='chNS')
         
-    fcMeshes.trim_top_bottom_S3s(filename=organ.user_organName, 
-                                 chs=chs, cuts=cuts, meshes=meshes, dict_gui=dict_gui)
-            
-    print('\n---CREATING MESHES CHANNEL 1---')
-    msh1_int = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='int', extractLargest=True, rotateZ_90=True)
-    msh1_ext = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='ext', extractLargest=True, rotateZ_90=True)
-    msh1_tiss = mHC.Mesh_mH(imChannel=im_ch1, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
-
-    print('\n---CREATING MESHES CHANNEL 2---')
-    msh2_int = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='int', extractLargest=True, rotateZ_90=True)
-    msh2_ext = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='ext', extractLargest=True, rotateZ_90=True)
-    msh2_tiss = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='tiss', extractLargest=True, rotateZ_90=True)
-
+        chNS_settings = organ.settings['chNS']['general_info']
+        ns_name = chNS_settings['user_chName']
+        ext_s3_name = chNS_settings['ch_ext'][0]
+        ext_s3_type = chNS_settings['ch_ext'][1]
+        if ext_s3_type == 'int':
+            ext_s3 = copy.deepcopy(organ.obj_imChannels[ext_s3_name].s3_int)
+        elif ext_s3_type == 'ext':
+            ext_s3 = copy.deepcopy(organ.obj_imChannels[ext_s3_name].s3_ext)
+        elif ext_s3_type == 'tiss':
+            ext_s3 = copy.deepcopy(organ.obj_imChannels[ext_s3_name].s3_tiss)
+        
+        
+        int_s3_name = chNS_settings['ch_int'][0]
+        int_s3_type = chNS_settings['ch_int'][1]
+        if int_s3_type == 'int':
+            int_s3 = organ.obj_imChannels[int_s3_name].s3_int
+        elif int_s3_type == 'ext':
+            int_s3 = organ.obj_imChannels[int_s3_name].s3_ext
+        elif int_s3_type == 'tiss':
+            int_s3 = organ.obj_imChannels[int_s3_name].s3_tiss
+        
+        ext_s3.ch_clean(s3_mask=int_s3, inverted=inverted, plot=True)
+        
+        # Get cardiac jelly per slice
+        s3_endo_rem, s3_ch1_cl = fcCont.ch_clean(s3_ch0, s3_ch1, option = "clean")
+        s3_cjIn, s3_cj = fcCont.ch_clean(mask_s3 = int_s3, toClean_s3 = ext_s3, option = "cardiacjelly")
+        
+        = organ.obj_imChannels
+        
+    
     # organ_new.save_organ()
     
     # # Plot

@@ -21,7 +21,8 @@ path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
 #%% Set default fonts and sizes for plots
 txt_font = 'Dalim'
 leg_font = 'LogoType' # 'Quikhand' 'LogoType'  'Dalim'
-leg_width = 0.25
+leg_width = 0.18
+leg_height = 0.2
 txt_size = 0.7
 txt_color = '#696969'
 txt_slider_size = 0.8
@@ -29,13 +30,43 @@ txt_slider_size = 0.8
 #%% ##### - Other Imports - ##################################################
 # from ...config import dict_gui
 from .mH_funcBasics import alert, ask4input
-
+from .mH_classes import Organ, ImChannel, ContStack, Mesh_mH
 
 alert_all=True
 heart_default=False
 dict_gui = {'alert_all': alert_all,
             'heart_default': heart_default}
 
+#%% - General - Create Meshes after different processes
+#%% func - s32Meshes
+def s32Meshes(imChannel:ImChannel, keep_largest, rotateZ_90, new):
+    
+    ch_no = imChannel.channel_no
+    meshes_out = []
+    for mesh_type in ['int', 'ext', 'tiss']:
+        mesh = Mesh_mH(imChannel, mesh_type, keep_largest[mesh_type], rotateZ_90, new)
+        meshes_out.append(mesh)
+        
+    return meshes_out
+
+#%% func - createNewMeshes
+def createNewMeshes(imChannel:ImChannel, keep_largest:bool, process:str, info, rotateZ_90:bool, new:bool):
+    
+    workflow = imChannel.parent_organ.workflow
+    ch_no = imChannel.channel_no
+    meshes_out = s32Meshes(imChannel, keep_largest, rotateZ_90, new)
+    if process == 'AfterTrimming':
+        for mesh_type in ['int', 'ext', 'tiss']:
+            workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['Status'] = 'DONE'
+            workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['stack_dir'] = imChannel.contStack[mesh_type]['s3_dir']
+            workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['keep_largest'] = keep_largest[mesh_type]
+            workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['trim_settings'] = info[ch_no]
+            
+    # Save organ
+    imChannel.parent_organ.save_organ()   
+    
+    return meshes_out
+            
 #%% - morphoHeart B functions
 #%% func - trim_top_bottom_S3s
 def trim_top_bottom_S3s(organ, cuts, meshes):
@@ -101,19 +132,14 @@ def trim_top_bottom_S3s(organ, cuts, meshes):
     ch_meshes = {}
     for mesh in meshes:
         ch_meshes[mesh.imChannel.channel_no] = mesh.imChannel
-    
-    #Here!!
-    print(ch_meshes)
-    print(cuts_out, cut_chs)
-    
+        
     #Cut ch1 s3s
     for ch in organ.imChannels.keys(): 
         im_ch = ch_meshes[ch]
-        print(im_ch)
         im_ch.trimS3(cuts=cut_chs[ch], cuts_out=cuts_out)
         
+    return cut_chs
     
- 
 #%% - Plotting functions
 #%% func - plot_grid
 def plot_grid(obj:list, txt =[], axes=1, lg_pos='top-left'):
@@ -151,9 +177,9 @@ def plot_grid(obj:list, txt =[], axes=1, lg_pos='top-left'):
     vp.add_icon(logo, pos=pos, size=0.25)
     for num in range(len(obj)):
         if isinstance(obj[num], tuple):
-            lbox.append(vedo.LegendBox(list(obj[num]), font=leg_font, width=leg_width))
+            lbox.append(vedo.LegendBox(list(obj[num]), font=leg_font, width=leg_width, height=leg_height))
         else: 
-            lbox.append(vedo.LegendBox([obj[num]], font=leg_font, width=leg_width))
+            lbox.append(vedo.LegendBox([obj[num]], font=leg_font, width=leg_width, height=leg_height))
         if num != len(obj)-1:
             vp.show(obj[num], lbox[num], txt_out[num], at=num)
         else: 
@@ -167,6 +193,11 @@ def getPlane(filename, txt:str, meshes:list, def_pl = None,
     Function that creates a plane defined by the user
 
     '''
+    
+    # Load logo
+    path_logo = path_mHImages / 'logo-07.jpg'
+    logo = vedo.Picture(str(path_logo))
+    
     while True:
         # Create plane
         if def_pl != None:
@@ -178,7 +209,7 @@ def getPlane(filename, txt:str, meshes:list, def_pl = None,
         normal_corrected = newNormal3DRot(normal, rotX, rotY, rotZ)
         # Get central point of new plane and create sphere
         pl_centre = plane.pos()
-        sph_centre = vedo.Sphere(pos=pl_centre,r=2,c='tomato')
+        sph_centre = vedo.Sphere(pos=pl_centre,r=2,c='black')
         # Build new plane to confirm
         plane_new = vedo.Plane(pos=pl_centre,normal=normal_corrected).color('green').alpha(1).legend('New Plane')
 
@@ -188,7 +219,10 @@ def getPlane(filename, txt:str, meshes:list, def_pl = None,
         txt2D = vedo.Text2D(text, c=txt_color, font=txt_font)
 
         meshes_mesh = [mesh.mesh for mesh in meshes]
+        meshes_all = [plane, plane_new, sph_centre] + meshes_mesh
+        # lbox = vedo.LegendBox(meshes_all, font=leg_font, width=leg_width, height=leg_height)
         vp = vedo.Plotter(N=1, axes=4)
+        vp.add_icon(logo, pos=(0.8,0.05), size=0.25)
         vp.show(meshes_mesh, plane, plane_new, sph_centre, txt2D, at=0, viewup='y', azimuth=0, elevation=0, interactive=True)
 
         happy = ask4input('Are you happy with the defined plane to '+txt+'? \n\t [0]:no, I would like to define a new plane. \n\t [1]:yes, continue! >>>:', bool)
@@ -208,6 +242,10 @@ def getPlanePos (filename, txt, meshes, option,
     meshes: list (outer mesh in position 0, inner mesh in position 1 or 2)
 
     '''
+    
+    # Load logo
+    path_logo = path_mHImages / 'logo-07.jpg'
+    logo = vedo.Picture(str(path_logo))
     
     meshes_mesh = [mesh.mesh for mesh in meshes]
     xmin, xmax, ymin, ymax, zmin, zmax = meshes_mesh[0].bounds()
@@ -259,11 +297,12 @@ def getPlanePos (filename, txt, meshes, option,
         valueAlpha = widget.GetRepresentation().GetValue()
         meshes_mesh[0].alpha(valueAlpha)
 
+    lbox = vedo.LegendBox(meshes_mesh, font=leg_font, width=leg_width, padding=1)
     #vedo.settings.legendSize = .2
     vp = vedo.Plotter(N=1, axes=8)
+    vp.add_icon(logo, pos=(0.85,0.75), size=0.10)
     plane = vedo.Plane(pos=centre, normal=normal, 
                        s=(box_size*1.5, box_size*1.5)).color('gainsboro').alpha(1)
-
     if option[0]: #sliderX
         vp.addSlider2D(sliderX, xval[0], xval[1], value=centre[0],
                     pos=[(0.1,0.15), (0.3,0.15)], title='- > x position > +', 
@@ -295,7 +334,7 @@ def getPlanePos (filename, txt, meshes, option,
 
     text = filename+'\n\nDefine plane position to '+txt+'. \nClose the window when done'
     txt = vedo.Text2D(text, c=txt_color, font=txt_font)
-    vp.show(meshes_mesh, plane, txt, viewup='y', zoom=1, interactive=True)
+    vp.show(meshes_mesh, plane, lbox, txt, viewup='y', zoom=1, interactive=True)
 
     return plane, normal, rotX, rotY, rotZ
 

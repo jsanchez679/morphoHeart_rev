@@ -766,14 +766,12 @@ class Organ():
             alert('countdown')
 
     def check_status(self, process:str):
-        keys_wf = {'ImProc': ['A-MaskChannel', 'B-CloseCont','C-SelectCont','D-S3Create','E-TrimS3'], 
-                    'MeshesProc': ['A-Create3DMesh','B-TrimMesh','C-Centreline','D-Thickness','E-Segments']}
-
+ 
         if process=='ImProc':
             for ch in self.imChannels.keys():
                 # First check close contours
                 close_done = []
-                for key_a in ['A-Autom', 'B-Manual']:
+                for key_a in ['A-Autom', 'B-Manual', 'C-CloseInOut']:
                     close_done.append(self.workflow[process][ch]['B-CloseCont']['Steps'][key_a]['Status'])
                 print('channel:',ch, '-CloseCont:', close_done)
                 if all(flag == 'DONE' for flag in close_done):
@@ -781,8 +779,9 @@ class Organ():
 
                 # Now update all the workflow
                 proc_done = []
-                for key_b in keys_wf[process]:
-                    proc_done.append(self.workflow[process][ch][key_b]['Status'])
+                for key_b in self.workflow[process][ch].keys():
+                    if key_b != 'Status':
+                        proc_done.append(self.workflow[process][ch][key_b]['Status'])
                 print('channel:',ch, '-ImProc:', proc_done)
                 if all(flag == 'DONE' for flag in proc_done):
                     self.workflow[process][ch]['Status'] = 'DONE'
@@ -1009,7 +1008,6 @@ class ImChannel(): #channel
         #Process
         print('---- Closing Inf/Ouft! ----')
         
-        
         #Update organ workflow
         self.parent_organ.update_workflow(process = (), update = 'DONE')
         self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Steps']['C-CloseInOut']['Status'] = 'DONE'
@@ -1112,8 +1110,7 @@ class ImChannel(): #channel
         #Update organ imChannel
         self.parent_organ.add_channel(self)
         self.parent_organ.save_organ()
-        
-        return
+
 
     def trimS3(self, cuts, cuts_out): 
         #Load s3s
@@ -1123,17 +1120,27 @@ class ImChannel(): #channel
         print('---- Trimming S3s! ----')                             
         if len(cuts) == 1:
             pl = cuts_out[cuts[0]]['plane_info_image']
+            plm = cuts_out[cuts[0]]['plane_info_mesh']
             for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
-                s3.cutW1Plane(pl, cuts)
+                s3.cutW1Plane(pl, cuts[0])
                 self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Info'][s3.cont_type]['Status'] = 'DONE'
-                
+                self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Planes'][cuts[0]] = {'cut_image' : pl,
+                                                                                                        'cut_mesh' : plm}
+                                
         if len(cuts) == 2:
             for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
                 pl1 = cuts_out['bottom']['plane_info_image']
+                pl1m = cuts_out['bottom']['plane_info_mesh']
                 pl2 = cuts_out['top']['plane_info_image']
+                pl2m = cuts_out['top']['plane_info_mesh']
                 s3.cutW2Planes(pl1, pl2)
                 self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Info'][s3.cont_type]['Status'] = 'DONE'
-        
+                self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Planes']['bottom'] = {'cut_image' : pl1,
+                                                                                                        'cut_mesh' : pl1m}
+                                
+                self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Planes']['top'] = {'cut_image' : pl2,
+                                                                                                        'cut_mesh' : pl2m}
+                                
         #Update organ workflow        
         self.parent_organ.update_workflow(process = (), update = 'DONE')
         self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Status'] = 'DONE'
@@ -1143,11 +1150,14 @@ class ImChannel(): #channel
         
         #Update organ imChannels
         self.parent_organ.add_channel(self)
-        self.parent_organ.save_organ()
-        
         if self.parent_organ.workflow['ImProc']['Status'] == 'NotInitialised':
             self.parent_organ.workflow['ImProc']['Status'] = 'Initialised'
-
+        
+        # Save organ
+        self.parent_organ.save_organ()
+        # Update status 
+        self.parent_organ.check_status(process = 'ImProc')
+        
     def save_channel(self, im_proc):
         im_name = self.parent_organ.user_organName + '_StckProc_' + self.channel_no + '.npy'
         im_dir = self.parent_organ.settings['dirs']['s3_numpy'] / im_name
@@ -1173,13 +1183,13 @@ class ImChannel(): #channel
             if workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] != 'DONE':
                 proceed = True
             else: 
-                proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t [0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:')
+                proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t[0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:', bool)
         else: 
             s3s = [self.s3_int, self.s3_ext, self.s3_tiss]
             if workflow['ImProc'][self.channel_no]['E-CleanCh']['Status'] != 'DONE':
                 proceed = True
             else: 
-                proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t [0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:')
+                proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t[0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:', bool)
         
         if proceed: 
             for s3 in s3s:
@@ -1232,7 +1242,64 @@ class ImChannel(): #channel
             else: 
                 workflow['ImProc'][self.channel_no]['Status'] = 'DONE'
                 workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] = 'DONE'
-                 
+    
+    def create_chNS (self, s3_mask, plot=False, im_every=25): 
+        """
+        Function to extract the negative space channel
+        """
+        workflow = self.parent_organ.workflow
+        if self.channel_no == 'chNS':
+            print('- Extracting '+self.user_chName+'!')
+            s3s = [self.s3_tiss]
+            if workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] != 'DONE':
+                proceed = True
+            else: 
+                proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t[0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:', bool)
+
+        if proceed: 
+            for s3 in s3s:
+                s3_s = s3.s3()
+                s3_mask_s = s3_mask.s3()
+                
+                s3_bits = np.zeros_like(s3_s, dtype='uint8')
+                s3_new =  np.zeros_like(s3_s, dtype='uint8')
+        
+                index = list(s3.shape_s3).index(min(s3.shape_s3))
+                if index == 2:
+                    for slc in range(s3.shape_s3[2]):
+                        mask_slc = s3_mask_s[:,:,slc]
+                        toClean_slc = s3_s[:,:,slc]
+                        # Keep ch to use as mask as it is
+                        inv_slc = np.copy(mask_slc)
+        
+                        # inverted_mask or mask AND ch1_2clean
+                        toRemove_slc = np.logical_and(toClean_slc, inv_slc)
+                        # Keep only the clean bit
+                        cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
+        
+                        if plot and slc in list(range(0,s3.shape_s3[0],im_every)):
+                            self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted=False)
+        
+                        s3_bits[:,:,slc] = toRemove_slc
+                        s3_new[:,:,slc] = cleaned_slc
+                        
+                    s3_new = s3_new.astype('uint8')
+                    s3.s3_save(s3_new)
+                    alert('whistle')   
+                    
+                else:
+                    print('>> Index different to 2, check!')
+                    alert('error_beep')
+                
+                if self.channel_no != 'chNS':
+                    workflow['ImProc'][self.channel_no]['E-CleanCh']['Info'][s3.cont_type]['Status'] = 'DONE'
+                                                               
+            if self.channel_no != 'chNS':
+                workflow['ImProc'][self.channel_no]['E-CleanCh']['Status'] = 'DONE'
+            else: 
+                workflow['ImProc'][self.channel_no]['Status'] = 'DONE'
+                workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] = 'DONE'
+                
                   
     def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted):
         """
@@ -1385,11 +1452,7 @@ class ContStack():
         
         # Save new s3
         self.s3_save(s3f_cut)
-        workflow = self.im_channel.parent_organ.workflow
-        workflow['ImProc'][self.im_channel.channel_no]['E-TrimS3']['Info'][self.cont_type]['Status'] = 'DONE'
-        workflow['ImProc'][self.im_channel.channel_no]['E-TrimS3']['Info'][self.cont_type]['Info']['pl1'] = pl1
-        workflow['ImProc'][self.im_channel.channel_no]['E-TrimS3']['Info'][self.cont_type]['Info']['pl2'] = pl2
-        # alert('wohoo',1)
+        alert('woohoo')
     
         # return s3f_cut
     
@@ -1447,20 +1510,14 @@ class ContStack():
         
         # Save new s3
         self.s3_save(s3f_cut)
-        workflow = self.im_channel.parent_organ.workflow
-        workflow['ImProc'][self.im_channel.channel_no]['E-TrimS3']['Info'][self.cont_type]['Status'] = 'DONE'
-        workflow['ImProc'][self.im_channel.channel_no]['E-TrimS3']['Info'][self.cont_type]['Info']['pl'] = pl
-       
-        # alert('wohoo',1)
-    
-        #return s3f_cut
+        alert('woohoo')
 
    
 class Mesh_mH():
     'morphoHeart Mesh Class'
     
     def __init__(self, imChannel:ImChannel, mesh_type:str, 
-                 extractLargest:bool, rotateZ_90:bool, new=True):
+                 keep_largest:bool, rotateZ_90:bool, new=True):
         
         self.parent_organ = imChannel.parent_organ
         self.imChannel = imChannel
@@ -1471,10 +1528,10 @@ class Mesh_mH():
         self.name = self.channel_no +'_'+self.mesh_type
         self.resolution = imChannel.get_resolution()
         if new: 
-            self.create_mesh(extractLargest = extractLargest, rotateZ_90 = rotateZ_90)
-            self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['Status'] = 'DONE'
-            self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['stack_dir'] = imChannel.contStack[self.mesh_type]['s3_dir']
-            self.parent_organ.workflow['MeshesProc'][imChannel.channel_no][mesh_type]['A-Create3DMesh']['keep_largest'] = extractLargest
+            self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
+            self.parent_organ.workflow['MeshesProc']['A-Create3DMesh'][imChannel.channel_no][mesh_type]['Status'] = 'DONE'
+            self.parent_organ.workflow['MeshesProc']['A-Create3DMesh'][imChannel.channel_no][mesh_type]['stack_dir'] = imChannel.contStack[self.mesh_type]['s3_dir']
+            self.parent_organ.workflow['MeshesProc']['A-Create3DMesh'][imChannel.channel_no][mesh_type]['keep_largest'] = keep_largest
         else: 
             self.load_mesh()
         self.color = self.parent_organ.settings[self.channel_no]['general_info']['colorCh_'+self.mesh_type]
@@ -1485,7 +1542,7 @@ class Mesh_mH():
         if new: 
             self.save_mesh()
     
-    def create_mesh(self, extractLargest:bool, rotateZ_90:bool):
+    def create_mesh(self, keep_largest:bool, rotateZ_90:bool):
         # Extract vertices, faces, normals and values of each mesh
         if self.mesh_type == 'int':
             s3 = self.imChannel.s3_int.s3()
@@ -1498,7 +1555,7 @@ class Mesh_mH():
     
         # Create meshes
         mesh = vedo.Mesh([verts, faces])
-        if extractLargest:
+        if keep_largest:
             mesh = mesh.extractLargestRegion()
         if rotateZ_90:
             mesh.rotateZ(-90)
