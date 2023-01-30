@@ -21,9 +21,10 @@ print('name:', __name__)
 
 #%% ##### - morphoHeart Imports - ##################################################
 # import src.mH_exceptions as mHExcp
+from src.modules import mH_funcMeshes as fcMeshes
 from src.modules import mH_classes as mHC
 from src.modules import mH_funcBasics as fcBasics
-from src.modules import mH_funcMeshes as fcMeshes
+
 
 #%% GUI related
 fcBasics.alert('woohoo')
@@ -360,10 +361,12 @@ if partB:
     # Load contStacks? 
     gui_keep_largest = {'ch1': {'int': False, 'ext': False, 'tiss': False}, 'ch2': {'int': False, 'ext': False, 'tiss': False}}
     print('\n---CREATING MESHES CHANNEL 1---')
-    [msh1_int, msh1_ext, msh1_tiss] = fcMeshes.s32Meshes(imChannel=im_ch1, keep_largest=gui_keep_largest['ch1'])
+    [msh1_int, msh1_ext, msh1_tiss] = fcMeshes.s32Meshes(imChannel=im_ch1, keep_largest=gui_keep_largest['ch1'],
+                                                         rotateZ_90 = True, new = True)
    
     print('\n---CREATING MESHES CHANNEL 2---')
-    [msh2_int, msh2_ext, msh2_tiss] = fcMeshes.s32Meshes(imChannel=im_ch2, keep_largest=gui_keep_largest['ch2'])
+    [msh2_int, msh2_ext, msh2_tiss] = fcMeshes.s32Meshes(imChannel=im_ch2, keep_largest=gui_keep_largest['ch2'],
+                                                         rotateZ_90 = True, new = True)
     
     # Save organ
     organ.save_organ()
@@ -390,7 +393,8 @@ if partB:
         print('>> Check Ch2 vs ChInt: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,ch_int.__dict__,'ch2','int'))
         
         print('\n---RECREATING MESHES CHANNEL 2 WITH CLEANED ENDOCARDIUM---')
-        [msh2_int2, msh2_ext2, msh2_tiss2] = fcMeshes.s32Meshes(imChannel=im_ch2, keep_largest=gui_keep_largest['ch2'])
+        [msh2_int2, msh2_ext2, msh2_tiss2] = fcMeshes.s32Meshes(imChannel=im_ch2, keep_largest=gui_keep_largest['ch2'],
+                                                             rotateZ_90 = True, new = True)
         
         # Plot cleaned ch2
         obj = [(msh2_ext.mesh),(msh2_int.mesh),(msh2_tiss.mesh),(msh2_ext2.mesh),(msh2_int2.mesh),(msh2_tiss2.mesh)]
@@ -404,6 +408,10 @@ if partB:
     organ_new = proj_new.load_organ(user_organName = organName2Load)    
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
     
+    # for key in organ.__dict__.keys():
+    #     print(key)
+    #     pprint.pprint(organ.__dict__[key])
+    #     input()
     #%%
     # If loading meshes
     # msh2_int22 = mHC.Mesh_mH(imChannel=im_ch2, mesh_type='int', keep_largest=True, rotateZ_90=True, new=False)
@@ -450,37 +458,9 @@ if partB:
     #%% Create Cardiac Jelly
     if 'chNS' in organ.settings.keys():
         # how to call the cj , channel? cont-stack? 
-        image = mHC.ImChannel(organ=organ, ch_name='chNS')
+        im_ns = mHC.ImChannelNS(organ=organ, ch_name='chNS')
         
-        chNS_settings = organ.settings['chNS']['general_info']
-        ns_name = chNS_settings['user_chName']
-        ext_s3_name = chNS_settings['ch_ext'][0]
-        ext_s3_type = chNS_settings['ch_ext'][1]
-        if ext_s3_type == 'int':
-            ext_s3 = copy.deepcopy(organ.obj_imChannels[ext_s3_name].s3_int)
-        elif ext_s3_type == 'ext':
-            ext_s3 = copy.deepcopy(organ.obj_imChannels[ext_s3_name].s3_ext)
-        elif ext_s3_type == 'tiss':
-            ext_s3 = copy.deepcopy(organ.obj_imChannels[ext_s3_name].s3_tiss)
-        
-        
-        int_s3_name = chNS_settings['ch_int'][0]
-        int_s3_type = chNS_settings['ch_int'][1]
-        if int_s3_type == 'int':
-            int_s3 = organ.obj_imChannels[int_s3_name].s3_int
-        elif int_s3_type == 'ext':
-            int_s3 = organ.obj_imChannels[int_s3_name].s3_ext
-        elif int_s3_type == 'tiss':
-            int_s3 = organ.obj_imChannels[int_s3_name].s3_tiss
-        
-        ext_s3.ch_clean(s3_mask=int_s3, inverted=inverted, plot=True)
-        
-        # Get cardiac jelly per slice
-        s3_endo_rem, s3_ch1_cl = fcCont.ch_clean(s3_ch0, s3_ch1, option = "clean")
-        s3_cjIn, s3_cj = fcCont.ch_clean(mask_s3 = int_s3, toClean_s3 = ext_s3, option = "cardiacjelly")
-        
-        = organ.obj_imChannels
-        
+       
     
     # organ_new.save_organ()
     

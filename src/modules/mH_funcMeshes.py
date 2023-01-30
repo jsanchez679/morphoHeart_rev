@@ -29,8 +29,8 @@ txt_slider_size = 0.8
 
 #%% ##### - Other Imports - ##################################################
 # from ...config import dict_gui
-from .mH_funcBasics import alert, ask4input
-from .mH_classes import Organ, ImChannel, ContStack, Mesh_mH
+from .mH_funcBasics import ask4input # , alert
+from .mH_classes import ImChannel, Mesh_mH
 
 alert_all=True
 heart_default=False
@@ -39,9 +39,8 @@ dict_gui = {'alert_all': alert_all,
 
 #%% - General - Create Meshes after different processes
 #%% func - s32Meshes
-def s32Meshes(imChannel:ImChannel, keep_largest, rotateZ_90, new):
+def s32Meshes(imChannel, keep_largest, rotateZ_90, new):
     
-    ch_no = imChannel.channel_no
     meshes_out = []
     for mesh_type in ['int', 'ext', 'tiss']:
         mesh = Mesh_mH(imChannel, mesh_type, keep_largest[mesh_type], rotateZ_90, new)
@@ -50,7 +49,7 @@ def s32Meshes(imChannel:ImChannel, keep_largest, rotateZ_90, new):
     return meshes_out
 
 #%% func - createNewMeshes
-def createNewMeshes(imChannel:ImChannel, keep_largest:bool, process:str, info, rotateZ_90:bool, new:bool):
+def createNewMeshes(imChannel, keep_largest:bool, process:str, info, rotateZ_90:bool, new:bool):
     
     workflow = imChannel.parent_organ.workflow
     ch_no = imChannel.channel_no
@@ -219,7 +218,7 @@ def getPlane(filename, txt:str, meshes:list, def_pl = None,
         txt2D = vedo.Text2D(text, c=txt_color, font=txt_font)
 
         meshes_mesh = [mesh.mesh for mesh in meshes]
-        meshes_all = [plane, plane_new, sph_centre] + meshes_mesh
+        # meshes_all = [plane, plane_new, sph_centre] + meshes_mesh
         # lbox = vedo.LegendBox(meshes_all, font=leg_font, width=leg_width, height=leg_height)
         vp = vedo.Plotter(N=1, axes=4)
         vp.add_icon(logo, pos=(0.8,0.05), size=0.25)

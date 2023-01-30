@@ -828,6 +828,8 @@ class Organ():
     def get_direc(self, name:str):
         return self.settings['dirs'][name]
 
+
+        
 class ImChannel(): #channel
     'morphoHeart Image Channel Class (this class will be used to contain the images as tiffs that have been'
     'closed and the resulting s3s that come up from each channel'
@@ -1111,7 +1113,6 @@ class ImChannel(): #channel
         self.parent_organ.add_channel(self)
         self.parent_organ.save_organ()
 
-
     def trimS3(self, cuts, cuts_out): 
         #Load s3s
         self.load_chS3s(cont_types=['int', 'ext', 'tiss'])
@@ -1176,25 +1177,16 @@ class ImChannel(): #channel
         Function to clean channel using the other as a mask
         """
         workflow = self.parent_organ.workflow
-        
-        if self.channel_no == 'chNS':
-            print('- Extracting '+self.user_chName+'!')
-            s3s = [self.s3_tiss]
-            if workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] != 'DONE':
-                proceed = True
-            else: 
-                proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t[0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:', bool)
+    
+        s3s = [self.s3_int, self.s3_ext, self.s3_tiss]
+        if workflow['ImProc'][self.channel_no]['E-CleanCh']['Status'] != 'DONE':
+            proceed = True
         else: 
-            s3s = [self.s3_int, self.s3_ext, self.s3_tiss]
-            if workflow['ImProc'][self.channel_no]['E-CleanCh']['Status'] != 'DONE':
-                proceed = True
-            else: 
-                proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t[0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:', bool)
-        
+            proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t[0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:', bool)
+    
         if proceed: 
             for s3 in s3s:
-                if self.channel_no != 'chNS':
-                    print('- Cleaning '+self.user_chName+' ('+ self.channel_no + '-' + s3.cont_type +')')
+                print('- Cleaning '+self.user_chName+' ('+ self.channel_no + '-' + s3.cont_type +')')
                     
                 s3_s = s3.s3()
                 s3_mask_s = s3_mask.s3()
@@ -1234,71 +1226,8 @@ class ImChannel(): #channel
                     print('>> Index different to 2, check!')
                     alert('error_beep')
                 
-                if self.channel_no != 'chNS':
-                    workflow['ImProc'][self.channel_no]['E-CleanCh']['Info'][s3.cont_type]['Status'] = 'DONE'
-                                                               
-            if self.channel_no != 'chNS':
+                workflow['ImProc'][self.channel_no]['E-CleanCh']['Info'][s3.cont_type]['Status'] = 'DONE'
                 workflow['ImProc'][self.channel_no]['E-CleanCh']['Status'] = 'DONE'
-            else: 
-                workflow['ImProc'][self.channel_no]['Status'] = 'DONE'
-                workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] = 'DONE'
-    
-    def create_chNS (self, s3_mask, plot=False, im_every=25): 
-        """
-        Function to extract the negative space channel
-        """
-        workflow = self.parent_organ.workflow
-        if self.channel_no == 'chNS':
-            print('- Extracting '+self.user_chName+'!')
-            s3s = [self.s3_tiss]
-            if workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] != 'DONE':
-                proceed = True
-            else: 
-                proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t[0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:', bool)
-
-        if proceed: 
-            for s3 in s3s:
-                s3_s = s3.s3()
-                s3_mask_s = s3_mask.s3()
-                
-                s3_bits = np.zeros_like(s3_s, dtype='uint8')
-                s3_new =  np.zeros_like(s3_s, dtype='uint8')
-        
-                index = list(s3.shape_s3).index(min(s3.shape_s3))
-                if index == 2:
-                    for slc in range(s3.shape_s3[2]):
-                        mask_slc = s3_mask_s[:,:,slc]
-                        toClean_slc = s3_s[:,:,slc]
-                        # Keep ch to use as mask as it is
-                        inv_slc = np.copy(mask_slc)
-        
-                        # inverted_mask or mask AND ch1_2clean
-                        toRemove_slc = np.logical_and(toClean_slc, inv_slc)
-                        # Keep only the clean bit
-                        cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
-        
-                        if plot and slc in list(range(0,s3.shape_s3[0],im_every)):
-                            self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted=False)
-        
-                        s3_bits[:,:,slc] = toRemove_slc
-                        s3_new[:,:,slc] = cleaned_slc
-                        
-                    s3_new = s3_new.astype('uint8')
-                    s3.s3_save(s3_new)
-                    alert('whistle')   
-                    
-                else:
-                    print('>> Index different to 2, check!')
-                    alert('error_beep')
-                
-                if self.channel_no != 'chNS':
-                    workflow['ImProc'][self.channel_no]['E-CleanCh']['Info'][s3.cont_type]['Status'] = 'DONE'
-                                                               
-            if self.channel_no != 'chNS':
-                workflow['ImProc'][self.channel_no]['E-CleanCh']['Status'] = 'DONE'
-            else: 
-                workflow['ImProc'][self.channel_no]['Status'] = 'DONE'
-                workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] = 'DONE'
                 
                   
     def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted):
@@ -1326,9 +1255,178 @@ class ImChannel(): #channel
             ax[num].set_yticks([])
 
         plt.show()
+        
+class ImChannelNS(): #channel
+    'morphoHeart Image Channel Negative Space'
+    
+    def __init__(self, organ:Organ, ch_name:str, new=True):
 
+        self.parent_organ = organ
+        self.parent_organ_name = organ.user_organName
+        self.channel_no = ch_name
+        self.user_chName = organ.settings[ch_name]['general_info']['user_chName']
+        self.ch_relation = 'negative-space'
+        if new:
+            self.resolution = organ.info['resolution']
+            # self.shape = self.im().shape
+            self.process = ['Init']
+            self.contStack = {}
+            
+            # external contour
+            ext_s3_name = organ.settings[ch_name]['general_info']['ch_ext'][0]
+            ext_s3_type = organ.settings[ch_name]['general_info']['ch_ext'][1]
+            if ext_s3_type == 'int':
+                ext_s3 = ContStack(im_channel=organ.obj_imChannels[ext_s3_name], 
+                                   cont_type='int', new=False)
+            elif ext_s3_type == 'ext':
+                ext_s3 = ContStack(im_channel=organ.obj_imChannels[ext_s3_name], 
+                                   cont_type='ext', new=False)
+            elif ext_s3_type == 'tiss':
+                ext_s3 = ContStack(im_channel=organ.obj_imChannels[ext_s3_name], 
+                                   cont_type='tiss', new=False)
+            self.s3_ext = ext_s3
+            self.add_contStack(ext_s3)
+            
+            #internal contour
+            int_s3_name = organ.settings[ch_name]['general_info']['ch_int'][0]
+            int_s3_type = organ.settings[ch_name]['general_info']['ch_int'][1]
+            if int_s3_type == 'int':
+                int_s3 = ContStack(im_channel=organ.obj_imChannels[int_s3_name], 
+                                   cont_type='int', new=False)
+            elif int_s3_type == 'ext':
+                int_s3 = ContStack(im_channel=organ.obj_imChannels[int_s3_name], 
+                                   cont_type='ext', new=False)
+            elif int_s3_type == 'tiss':
+                int_s3 = ContStack(im_channel=organ.obj_imChannels[int_s3_name], 
+                                   cont_type='tiss', new=False)
+            self.s3_int = int_s3
+            self.add_contStack(int_s3)
+            
+            tiss_s3 = ContStack(im_channel = self, cont_type = 'tiss', 
+                                     new = new)
+            self.s3_tiss = tiss_s3
+            self.add_contStack(tiss_s3)
+            organ.add_channel(imChannel=self)
+            organ.save_organ()
+        # else: 
+        #     self.load_channel(organ=organ, ch_name=ch_name)
+    
+    def load_channel(self, organ:Organ, ch_name:str):
+        
+        self.resolution = organ.imChannels[ch_name]['resolution']
+        # if 'shape_s3' in organ.imChannels[ch_name].keys():
+        #     self.shape_s3 = tuple(organ.imChannels[ch_name]['shape_s3'])
+        self.process = organ.imChannels[ch_name]['process']
+        contStack_dict = organ.imChannels[ch_name]['contStack']
+        for cont in contStack_dict.keys():
+            contStack_dict[cont]['s3_dir'] = Path(contStack_dict[cont]['s3_dir'])
+        self.contStack = contStack_dict
+        
+        # organ.add_channel(imChannel=self)
+
+    def get_channel_no(self):
+        return self.channel_no
+
+    def get_resolution(self):
+        return self.resolution
+
+    def get_shape(self):
+        return self.shape
+    
+    def add_contStack(self, contStack):
+        # Check first if the contStack has been already added to the channel
+        new = False
+        if contStack.cont_type not in self.contStack.keys():
+            new = True
+            
+        if new: 
+            contStack_dict = copy.deepcopy(contStack.__dict__)
+            contStack_dict.pop('im_channel', None)
+            self.contStack[contStack.cont_type] = contStack_dict
+        else: # just update im_proc 
+            self.contStack[contStack.cont_type]['process'] = contStack.process
+     
+    
+    def create_s3_tiss (self, plot=False, im_every=25): 
+        """
+        Function to extract the negative space channel
+        """
+        workflow = self.parent_organ.workflow
+        
+        print('- Extracting '+self.user_chName+'!')
+        if workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] != 'DONE':
+            proceed = True
+        else: 
+            proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t[0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:', bool)
+
+        if proceed: 
+            s3 = self.s3_ext.s3()
+            s3_mask = self.s3_int.s3()
+            
+            s3_bits = np.zeros_like(s3, dtype='uint8')
+            s3_new =  np.zeros_like(s3, dtype='uint8')
+    
+            index = list(s3.shape).index(min(s3.shape))
+            if index == 2:
+                for slc in range(s3.shape[2]):
+                    mask_slc = s3_mask[:,:,slc]
+                    toClean_slc = s3[:,:,slc]
+                    # Keep ch to use as mask as it is
+                    inv_slc = np.copy(mask_slc)
+    
+                    # inverted_mask or mask AND ch1_2clean
+                    toRemove_slc = np.logical_and(toClean_slc, inv_slc)
+                    # Keep only the clean bit
+                    cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
+    
+                    if plot and slc in list(range(0,s3.shape[0],im_every)):
+                        self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted=False)
+    
+                    s3_bits[:,:,slc] = toRemove_slc
+                    s3_new[:,:,slc] = cleaned_slc
+                    
+                s3_new = s3_new.astype('uint8')
+                alert('whistle')   
+                
+            else:
+                print('>> Index different to 2, check!')
+                alert('error_beep')
+
+        workflow['ImProc'][self.channel_no]['Status'] = 'DONE'
+        workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] = 'DONE'
+        
+        return s3_new
+        
+
+    def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted):
+        """
+        Function to plot mask, original image and result
+        """
+        if self.channel_no != 'chNS':#option == 'clean':
+            if inverted: 
+                txt = ['ch0_inv','ch1','ch0_inv AND ch1','ch0_inv AND ch1\nxOR ch1']
+            else: 
+                txt = ['ch0','ch1','ch0 AND ch1','ch0 AND ch1\nxOR ch1']
+        else:
+            txt = ['ch0_int','ch1_ext','ch0_int AND ch1_ext','layer in between']
+
+        #Plot
+        fig, ax = plt.subplots(1, 4, figsize = (10,2.5))
+        fig.suptitle("Slice:"+str(slc), y=1.05, weight="semibold")
+        ax[0].imshow(mask_slc)
+        ax[1].imshow(toClean_slc)
+        ax[2].imshow(toRemove_slc)
+        ax[3].imshow(cleaned_slc)
+        for num in range(0,4,1):
+            ax[num].set_title(txt[num])
+            ax[num].set_xticks([])
+            ax[num].set_yticks([])
+
+        plt.show()
+        
 class ContStack(): 
     'morphoHeart Contour Stack Class'
+    
     def __init__(self, im_channel:ImChannel, cont_type:str, new=False, layerDict={}):
         
         cont_types = ['int', 'ext', 'tiss']
@@ -1345,7 +1443,10 @@ class ContStack():
         self.s3_dir = parent_organ.dir_res / 's3_numpy' / self.s3_file
         
         if new: 
-            s3 = self.s3_create(layerDict = layerDict)
+            if im_channel.channel_no != 'chNS':
+                s3 = self.s3_create(layerDict = layerDict)
+            else: 
+                s3 = im_channel.create_s3_tiss(plot=True)
             self.s3_save(s3)
             self.shape_s3 = s3.shape
             self.process = ['Init']
