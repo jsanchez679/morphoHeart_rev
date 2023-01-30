@@ -30,7 +30,7 @@ txt_slider_size = 0.8
 #%% ##### - Other Imports - ##################################################
 # from ...config import dict_gui
 from .mH_funcBasics import ask4input # , alert
-from .mH_classes import ImChannel, Mesh_mH
+# from .mH_classes import ImChannel, Mesh_mH
 
 alert_all=True
 heart_default=False
@@ -38,33 +38,33 @@ dict_gui = {'alert_all': alert_all,
             'heart_default': heart_default}
 
 #%% - General - Create Meshes after different processes
-#%% func - s32Meshes
-def s32Meshes(imChannel, keep_largest, rotateZ_90, new):
+# #%% func - s32Meshes
+# def s32Meshes(imChannel, keep_largest, rotateZ_90, new):
     
-    meshes_out = []
-    for mesh_type in ['int', 'ext', 'tiss']:
-        mesh = Mesh_mH(imChannel, mesh_type, keep_largest[mesh_type], rotateZ_90, new)
-        meshes_out.append(mesh)
+#     meshes_out = []
+#     for mesh_type in ['int', 'ext', 'tiss']:
+#         mesh = Mesh_mH(imChannel, mesh_type, keep_largest[mesh_type], rotateZ_90, new)
+#         meshes_out.append(mesh)
         
-    return meshes_out
+#     return meshes_out
 
-#%% func - createNewMeshes
-def createNewMeshes(imChannel, keep_largest:bool, process:str, info, rotateZ_90:bool, new:bool):
+# #%% func - createNewMeshes
+# def createNewMeshes(imChannel, keep_largest:bool, process:str, info, rotateZ_90:bool, new:bool):
     
-    workflow = imChannel.parent_organ.workflow
-    ch_no = imChannel.channel_no
-    meshes_out = s32Meshes(imChannel, keep_largest, rotateZ_90, new)
-    if process == 'AfterTrimming':
-        for mesh_type in ['int', 'ext', 'tiss']:
-            workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['Status'] = 'DONE'
-            workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['stack_dir'] = imChannel.contStack[mesh_type]['s3_dir']
-            workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['keep_largest'] = keep_largest[mesh_type]
-            workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['trim_settings'] = info[ch_no]
+#     workflow = imChannel.parent_organ.workflow
+#     ch_no = imChannel.channel_no
+#     meshes_out = s32Meshes(imChannel, keep_largest, rotateZ_90, new)
+#     if process == 'AfterTrimming':
+#         for mesh_type in ['int', 'ext', 'tiss']:
+#             workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['Status'] = 'DONE'
+#             workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['stack_dir'] = imChannel.contStack[mesh_type]['s3_dir']
+#             workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['keep_largest'] = keep_largest[mesh_type]
+#             workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['trim_settings'] = info[ch_no]
             
-    # Save organ
-    imChannel.parent_organ.save_organ()   
+#     # Save organ
+#     imChannel.parent_organ.save_organ()   
     
-    return meshes_out
+#     return meshes_out
             
 #%% - morphoHeart B functions
 #%% func - trim_top_bottom_S3s
@@ -176,9 +176,9 @@ def plot_grid(obj:list, txt =[], axes=1, lg_pos='top-left'):
     vp.add_icon(logo, pos=pos, size=0.25)
     for num in range(len(obj)):
         if isinstance(obj[num], tuple):
-            lbox.append(vedo.LegendBox(list(obj[num]), font=leg_font, width=leg_width, height=leg_height))
+            lbox.append(vedo.LegendBox(list(obj[num]), font=leg_font, width=leg_width))
         else: 
-            lbox.append(vedo.LegendBox([obj[num]], font=leg_font, width=leg_width, height=leg_height))
+            lbox.append(vedo.LegendBox([obj[num]], font=leg_font, width=leg_width))
         if num != len(obj)-1:
             vp.show(obj[num], lbox[num], txt_out[num], at=num)
         else: 

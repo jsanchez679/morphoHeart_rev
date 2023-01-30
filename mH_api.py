@@ -25,11 +25,10 @@ from src.modules import mH_funcMeshes as fcMeshes
 from src.modules import mH_classes as mHC
 from src.modules import mH_funcBasics as fcBasics
 
-
 #%% GUI related
 fcBasics.alert('woohoo')
 
-partA = True
+partA = False
 partB = True
 partC = True
 print('partA:',partA,'- partB:',partB,'- partC:',partC)
@@ -361,11 +360,11 @@ if partB:
     # Load contStacks? 
     gui_keep_largest = {'ch1': {'int': False, 'ext': False, 'tiss': False}, 'ch2': {'int': False, 'ext': False, 'tiss': False}}
     print('\n---CREATING MESHES CHANNEL 1---')
-    [msh1_int, msh1_ext, msh1_tiss] = fcMeshes.s32Meshes(imChannel=im_ch1, keep_largest=gui_keep_largest['ch1'],
+    [msh1_int, msh1_ext, msh1_tiss] = im_ch1.s32Meshes(keep_largest=gui_keep_largest['ch1'],
                                                          rotateZ_90 = True, new = True)
    
     print('\n---CREATING MESHES CHANNEL 2---')
-    [msh2_int, msh2_ext, msh2_tiss] = fcMeshes.s32Meshes(imChannel=im_ch2, keep_largest=gui_keep_largest['ch2'],
+    [msh2_int, msh2_ext, msh2_tiss] = im_ch2.s32Meshes(keep_largest=gui_keep_largest['ch2'],
                                                          rotateZ_90 = True, new = True)
     
     # Save organ
@@ -393,7 +392,7 @@ if partB:
         print('>> Check Ch2 vs ChInt: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,ch_int.__dict__,'ch2','int'))
         
         print('\n---RECREATING MESHES CHANNEL 2 WITH CLEANED ENDOCARDIUM---')
-        [msh2_int2, msh2_ext2, msh2_tiss2] = fcMeshes.s32Meshes(imChannel=im_ch2, keep_largest=gui_keep_largest['ch2'],
+        [msh2_int2, msh2_ext2, msh2_tiss2] = im_ch2.s32Meshes(keep_largest=gui_keep_largest['ch2'],
                                                              rotateZ_90 = True, new = True)
         
         # Plot cleaned ch2
@@ -438,14 +437,12 @@ if partB:
     
     gui_keep_largest = {'ch1': {'int': False, 'ext': False, 'tiss': False}, 'ch2': {'int': False, 'ext': False, 'tiss': False}}
     print('\n---RECREATING MESHES CHANNEL 1 AFTER TRIMMING---')
-    [msh1_int, msh1_ext, msh1_tiss] = fcMeshes.createNewMeshes(imChannel = im_ch1, 
-                                            keep_largest = gui_keep_largest['ch1'], 
+    [msh1_int, msh1_ext, msh1_tiss] = im_ch1.createNewMeshes(keep_largest = gui_keep_largest['ch1'], 
                                             process = 'AfterTrimming',
                                             info = cut_chs,
                                             rotateZ_90 = True, new = True)
     print('\n---CREATING MESHES CHANNEL 2 AFTER TRIMMING---')
-    [msh2_int, msh2_ext, msh2_tiss] = fcMeshes.createNewMeshes(imChannel = im_ch2, 
-                                            keep_largest = gui_keep_largest['ch2'], 
+    [msh2_int, msh2_ext, msh2_tiss] = im_ch2.createNewMeshes(keep_largest = gui_keep_largest['ch2'], 
                                             process = 'AfterTrimming',
                                             info = cut_chs,
                                             rotateZ_90 = True, new = True)
@@ -460,7 +457,19 @@ if partB:
         # how to call the cj , channel? cont-stack? 
         im_ns = mHC.ImChannelNS(organ=organ, ch_name='chNS')
         
+        gui_keep_largest = {'int': False, 'ext': False, 'tiss': False}
+        [mshNS_int, mshNS_ext, mshNS_tiss] = im_ns.s32Meshes(keep_largest=gui_keep_largest,
+                                                             rotateZ_90 = True, new = True)
        
+        txt = [(0, organ.user_organName  + ' - Extracted ' + im_ns.user_chName)]
+        obj = [(mshNS_ext.mesh),(mshNS_int.mesh),(mshNS_tiss.mesh)]
+        fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
+        
+        txt = [(0, organ.user_organName  + ' - Final reconstructed meshes')]
+        obj = [(msh1_tiss.mesh),(msh2_tiss.mesh),(mshNS_tiss.mesh),(msh1_tiss.mesh, msh2_tiss.mesh, mshNS_tiss.mesh)]
+        fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
+        
+    #%% Create meshes to extract CL
     
     # organ_new.save_organ()
     
