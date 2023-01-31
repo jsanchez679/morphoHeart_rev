@@ -12,13 +12,15 @@ from playsound import playsound
 import json
 import numpy as np 
 import flatdict
+# from typing import Union
 
 path_fcBasics = os.path.abspath(__file__)
 print(path_fcBasics)
 
 #%% morphoHeart Imports 
 # from ...config import dict_gui
-# from .mH_classes import Organ, Mesh_mH, ImChannel
+# from .mH_classes import Project, Organ, ImChannel, ImChannelNS, ContStack, Mesh_mH
+import vedo as vedo
 
 alert_all=True
 heart_default=False
@@ -107,7 +109,7 @@ def ask4input(text:str, type_response:type, keep=False):
 #%% func - check_dict_lines
 
 #%% func - compare_dicts
-def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
+def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=False):
     """Compare two dictionaries recursively to find non mathcing elements
     https://stackoverflow.com/questions/27265939/comparing-python-dictionaries-and-nested-dictionaries
 
@@ -118,6 +120,8 @@ def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
     Returns:
 
     """
+    from .mH_classes import Project, Organ, ImChannel, ImChannelNS, ContStack, Mesh_mH
+    
     err = ''
     key_err = ''
     value_err = ''
@@ -125,19 +129,48 @@ def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
     for k in dict_1.keys():
         path = old_path + "[%s]" % k
         if not k in dict_2:
-            key_err += "Key %s%s not in %s\n" % (dict_1_name, path, dict_2_name)
+            key_err += "\tKey %s%s not in %s\n" % (dict_1_name, path, dict_2_name)
         else:
             if isinstance(dict_1[k], dict) and isinstance(dict_2[k], dict):
                 err += compare_dicts(dict_1[k],dict_2[k],'d1','d2', path)
             else:
-                if dict_1[k] != dict_2[k]:
-                    value_err += "Value of %s%s (%s) not same as %s%s (%s)\n"\
-                        % (dict_1_name, path, dict_1[k], dict_2_name, path, dict_2[k])
+                if 'dir' in k: 
+                    if str(dict_1[k]) != str(dict_2[k]):
+                        value_err += "Value of %s%s (%s) not same as \n\t %s%s (%s)\n"\
+                            % (dict_1_name, path, dict_1[k], dict_2_name, path, dict_2[k])
+                            
+                elif isinstance(dict_1[k], np.ndarray) or isinstance(dict_2[k], np.ndarray):
+                    # print(k)
+                    if not isinstance(dict_1[k], np.ndarray):
+                        dd1 = np.array(dict_1[k])
+                    else: 
+                        dd1 = dict_1[k]
+                        
+                    if not isinstance(dict_2[k], np.ndarray):
+                        dd2 = np.array(dict_2[k])
+                    else: 
+                        dd2 = dict_2[k]
+
+                    comparison = dd1 == dd2
+                    equal_arrays = comparison.all()
+                    if not equal_arrays: 
+                        value_err += "Value of %s%s (%s) not same as \n\t %s%s (%s)\n"\
+                            % (dict_1_name, path, dict_1[k], dict_2_name, path, dict_2[k])
+                            
+                else: 
+                    if not isinstance(dict_1[k], (Project, Organ, ImChannel, ImChannelNS, ContStack, Mesh_mH, vedo.Mesh)):
+                        # print(k)
+                        if dict_1[k] != dict_2[k]:
+                            value_err += "Value of %s%s (%s) not same as \n\t %s%s (%s)\n"\
+                                % (dict_1_name, path, dict_1[k], dict_2_name, path, dict_2[k])
+                    # else: 
+                    #     print(type(dict_1[k]))
+
 
     for k in dict_2.keys():
         path = old_path + "[%s]" % k
         if not k in dict_1:
-            key_err += "Key %s%s not in %s\n" % (dict_2_name, path, dict_1_name)
+            key_err += "\tKey %s%s not in %s\n" % (dict_2_name, path, dict_1_name)
 
     res = key_err + value_err + err
     return res
@@ -147,7 +180,7 @@ def compare_nested_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
     
     res = compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="")
     if len(res) ==0:
-        return 'No differences!'
+        return '\tNo differences!'
     else: 
         return res
         
