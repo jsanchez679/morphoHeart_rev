@@ -108,7 +108,8 @@ def trim_top_bottom_S3s(organ, cuts, meshes):
         im_ch = ch_meshes[ch]
         im_ch.trimS3(cuts=cut_chs[ch], cuts_out=cuts_out)
         
-    return cut_chs
+    organ.settings['cut_ch'] = cut_chs
+    # return cut_chs
     
 #%% - Plotting functions
 #%% func - plot_grid

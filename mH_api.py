@@ -29,8 +29,8 @@ elif sys.platform == 'win32':
     dir_proj_res = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
     #dir_proj_res = Path('C://Users//pallo//Desktop//cosas juli//mh//project')
     
-partA = True
-partB = False
+partA = False
+partB = True
 partB_vmtk = True
 partC = True
 print('partA:',partA,'- partB:',partB,'- partB_vmtk:',partB_vmtk,'- partC:',partC)
@@ -93,7 +93,7 @@ if partA:
     # Create project directory
     proj.create_proj_dir(dir_proj_res)
     print('>> proj.dict_projInfo: ', proj.info)
-#%%
+
     # The result of the modification of such table is shown in the dict 
     # called user_params2meas.
     user_params2meas = {'ch1': {'tiss': {'whole': {'volume': True,
@@ -118,9 +118,9 @@ if partA:
                                                 'centreline_looplength': True}},
                                 'ext':    {'whole': {'volume': True,
                                                 'surf_area': True,
-                                                'centreline': True,
-                                                'centreline_linlength': True,
-                                                'centreline_looplength': True},
+                                                'centreline': False,
+                                                'centreline_linlength': False,
+                                                'centreline_looplength': False},
                                             'segm1': {'volume': True, 'surf_area': True},
                                             'segm2': {'volume': True, 'surf_area': True}}},
                         'ch2': {'tiss': {'whole': {'volume': True,
@@ -150,13 +150,14 @@ if partA:
                                                 'centreline': True,
                                                 'centreline_linlength': True,
                                                 'centreline_looplength': True}}},
+                        #Remove cl measurements from chNS
                         'chNS': {'tiss': {'whole': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': True,
-                                                'thickness ext>int': False,
-                                                'centreline': False,
-                                                'centreline_linlength': False,
-                                                'centreline_looplength': False},
+                                                'thickness ext>int': False,},
+                                                # 'centreline': False,
+                                                # 'centreline_linlength': False,
+                                                # 'centreline_looplength': False},
                                             'segm1': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': False,
@@ -166,21 +167,24 @@ if partA:
                                                 'thickness int>ext': False,
                                                 'thickness ext>int': False}},
                                 'int': {'whole': {'volume': True,
-                                                'surf_area': True,
-                                                'centreline': False,
-                                                'centreline_linlength': False,
-                                                'centreline_looplength': False}},
+                                                'surf_area': True,}},
+                                                # 'centreline': False,
+                                                # 'centreline_linlength': False,
+                                                # 'centreline_looplength': False}},
                                 'ext': {'whole': {'volume': True,
-                                                'surf_area': True,
-                                                'centreline': False,
-                                                'centreline_linlength': False,
-                                                'centreline_looplength': False}}}}
+                                                'surf_area': True,}}}}
+                                                # 'centreline': False,
+                                                # 'centreline_linlength': False,
+                                                # 'centreline_looplength': False}}}}
 
     user_ball_settings = {'ballooning': True, 'ball_settings': {
                                 'ball_op1': {'to_mesh': 'ch1', 'to_mesh_type': 'int', 'from_cl': 'ch2', 'from_cl_type': 'int'},
                                 'ball_op2': {'to_mesh': 'ch2', 'to_mesh_type': 'ext', 'from_cl': 'ch2', 'from_cl_type': 'ext'}}}
-#%%
+    
+    aaa = proj.gral_meas_param.copy()
+    
     proj.set_measure_param(user_params2meas=user_params2meas, user_ball_settings=user_ball_settings)
+    bbb = proj.gral_meas_param
     # print('>>proj.dict_info:', proj.dict_info)
 
     # And a project status dictionary is created
@@ -326,7 +330,7 @@ if partA:
     
     # Save project
     proj.save_project()
-    print('\n---LOADING ORGAN----')
+    print('\n---LOADING PROJECT AND ORGAN----')
     # Load project, organ and channel and check parameters
     proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
     organ_new = proj_new.load_organ(user_organName = organName2Load)
@@ -371,6 +375,7 @@ if partB:
     fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
     
     # Load project, organ, channels and meshes and check parameters
+    print('\n---LOADING PROJECT, ORGAN, CHANNEL AND MESHES----')
     proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
     organ_new = proj_new.load_organ(user_organName = organName2Load)
     im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False)
@@ -394,6 +399,7 @@ if partB:
             if organ.settings[ch]['general_info']['ch_relation'] == 'internal':
                 ch_int = organ.obj_imChannels[ch]
                 
+    #check the process has not been donde even before asking if you want to clean the channel         
     clean_ch = fcBasics.ask4input('Do you want to clean the '+ch_int.user_chName+' with the '+ch_ext.user_chName+'?\n\t[0]: no, thanks\n\t[1]: yes, please! >>>:', bool)
     if clean_ch:
         inverted = fcBasics.ask4input('Select the mask you would like to use to clean the '+ch_int.user_chName+': \n\t[0]: Just the tissue layer of the '+ch_ext.user_chName+'\n\t[1]: (Recommended) The inverted internal segmentation of the '+ch_ext.user_chName+' (more profound cleaning). >>>: ', bool)
@@ -415,6 +421,7 @@ if partB:
     # Save organ
     organ.save_organ()
     # Load project, organ
+    print('\n---LOADING PROJECT AND ORGAN----')
     proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
     organ_new = proj_new.load_organ(user_organName = organName2Load)    
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
@@ -431,17 +438,17 @@ if partB:
             'bottom': {'chs': {'ch1': True, 'ch2': True}}}
     meshes = [msh1_tiss, msh2_tiss]
   
-    cut_chs = fcMeshes.trim_top_bottom_S3s(organ=organ, cuts=cuts, meshes=meshes)
+    # cut_chs = 
+    fcMeshes.trim_top_bottom_S3s(organ=organ, cuts=cuts, meshes=meshes)
     gui_keep_largest = {'ch1': {'int': False, 'ext': False, 'tiss': False}, 'ch2': {'int': False, 'ext': False, 'tiss': False}}
+
     print('\n---RECREATING MESHES CHANNEL 1 AFTER TRIMMING---')
     [msh1_int, msh1_ext, msh1_tiss] = im_ch1.createNewMeshes(keep_largest = gui_keep_largest['ch1'], 
                                             process = 'AfterTrimming',
-                                            info = cut_chs,
                                             rotateZ_90 = True, new = True)
     print('\n---CREATING MESHES CHANNEL 2 AFTER TRIMMING---')
     [msh2_int, msh2_ext, msh2_tiss] = im_ch2.createNewMeshes(keep_largest = gui_keep_largest['ch2'], 
                                             process = 'AfterTrimming',
-                                            info = cut_chs,
                                             rotateZ_90 = True, new = True)
     # Plot
     txt = [(0, organ.user_organName  + ' - Meshes after trimming')]
@@ -451,6 +458,7 @@ if partB:
     # Save organ
     organ.save_organ()
     # Load project, organ
+    print('\n---LOADING PROJECT AND ORGAN----')
     proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
     organ_new = proj_new.load_organ(user_organName = organName2Load)    
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
@@ -492,8 +500,21 @@ if partB_vmtk:
         organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
         
-    msh4cl = [item for item in organ.parent_project.gral_meas_param if 'centreline' in item]
-      
+    cl_names = [item for item in organ.parent_project.gral_meas_param if 'centreline' in item]
+    msh4cl = []
+    for name in cl_names: 
+        mesh = organ.obj_meshes[name[0]+'_'+name[1]]
+        mesh_out = mesh.mesh4CL()
+        msh4cl.append(mesh_out)
+    
+    txt = [(0, organ.user_organName  + ' - Smoothed meshes')]
+    obj = [(mesh) for mesh in msh4cl]
+    fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
+    
+    
+    
+        
+    
     
     
     

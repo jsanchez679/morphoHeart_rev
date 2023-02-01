@@ -137,14 +137,21 @@ class Project():
                             'user_chName':user_proj_settings['name_chs'][ch_num].replace(' ', '_'),
                             'dir_cho': None, 
                             'ch_relation': user_proj_settings['chs_relation'][ch_num],
-                            'colorCh_tiss': user_proj_settings['color_chs'][ch_num][0],
-                            'colorCh_ext': user_proj_settings['color_chs'][ch_num][1],
-                            'colorCh_int': user_proj_settings['color_chs'][ch_num][2],
                             'mask_ch': None,
                             'dir_mk': None}
+            dict_setup = {'tiss': {'color': user_proj_settings['color_chs'][ch_num][0], 
+                                   'keep_largest' : False, 
+                                   'measure': None},
+                          'ext': {'color': user_proj_settings['color_chs'][ch_num][1], 
+                                  'keep_largest' : False,
+                                  'measure': None},
+                          'int': {'color': user_proj_settings['color_chs'][ch_num][2], 
+                                  'keep_largest' : False, 
+                                  'measure': None}}
             settings[ch_str] = {}
             settings[ch_str]['general_info'] = dict_info_ch
-            settings[ch_str]['measure'] = {}
+            settings[ch_str]['setup'] = dict_setup
+            
             for cont in ['tiss', 'int', 'ext']:
                 settings[ch_str]['measure'][cont] = {}
                 settings[ch_str]['measure'][cont]['whole'] ={} 
@@ -235,7 +242,7 @@ class Project():
 
                     gral_meas_param.append((ch,cont,segm,'thickness int>ext'))
                     gral_meas_param.append((ch,cont,segm,'thickness ext>int'))
-            if segm == 'whole':
+            if segm == 'whole' and ch != 'chNS':
                 dict_params_deflt[ch][cont][segm]['centreline'] = True
                 dict_params_deflt[ch][cont][segm]['centreline_linlength'] = True
                 dict_params_deflt[ch][cont][segm]['centreline_looplength'] = True
@@ -337,12 +344,6 @@ class Project():
         item_thickness_intext = [item for item in self.gral_meas_param if 'thickness int>ext' in item]
         item_thickness_extint = [item for item in self.gral_meas_param if 'thickness ext>int' in item]
 
-        #Check the external channel
-        for ch in channels:
-            if 'NS' not in ch:
-                if self.settings[ch]['general_info']['ch_relation'] == 'external':
-                    ch_ext = ch
-
         dict_MeshesProc = {'Status' : 'NotInitialised',
                            'A-Create3DMesh': {'Status': 'NotInitialised'},
                            'B-TrimMesh': {'Status': 'NotInitialised'},
@@ -368,7 +369,8 @@ class Project():
                                                 'Info': {'tiss':{'Status': 'NotInitialised'}, 
                                                         'int':{'Status': 'NotInitialised'}, 
                                                         'ext':{'Status': 'NotInitialised'}}}}
-
+                
+                #Check the external channel
                 if self.settings[ch]['general_info']['ch_relation'] == 'external':
                     dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NotInitialised',
                                                      'Info':{'tiss':{'Status': 'NotInitialised'}, 
@@ -396,32 +398,32 @@ class Project():
                 if 'NS' not in ch:
                     dict_MeshesProc[process][ch] = {}
                     for cont in ['tiss', 'int', 'ext']:
-                        dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
                         if process == 'A-Create3DMesh':
+                            dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
                             dict_MeshesProc[process][ch][cont]['stack_dir'] = None
                             if cont == 'tiss':
                                 dict_MeshesProc[process][ch][cont]['keep_largest'] = False
                             else: 
                                 dict_MeshesProc[process][ch][cont]['keep_largest'] = None
                         if process == 'B-TrimMesh':
+                            dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
                             dict_MeshesProc[process][ch][cont]['stack_dir'] = None
                             if cont == 'tiss':
                                 dict_MeshesProc[process][ch][cont]['keep_largest'] = False
                             else: 
                                 dict_MeshesProc[process][ch][cont]['keep_largest'] = None
-                            dict_MeshesProc[process][ch][cont]['trim_settings'] =  {'no_cuts': 0}
                         
                         if process == 'C-Centreline':
                             if (ch,cont,'whole','centreline') in item_centreline:
-                                 dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised',
-                                                                        'dir_cleanMesh': None, 
-                                                                        'dir_meshLabMesh': None, 
-                                                                        'vmtk_cl': {'Status': 'NotInitialised',
-                                                                                    'vmtktxt': 'NotInitialised'},
-                                                                        'connect_cl': {'Status': 'NotInitialised',
-                                                                                    'Settings': 'NotInitialised'},
-                                                                        'measure':{'Status': 'NotInitialised',
-                                                                                    'parameters': []}}
+                                dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised',
+                                                                       'dir_cleanMesh': None, 
+                                                                       'dir_meshLabMesh': None, 
+                                                                       'vmtk_cl': {'Status': 'NotInitialised',
+                                                                                   'vmtktxt': 'NotInitialised'},
+                                                                       'connect_cl': {'Status': 'NotInitialised',
+                                                                                   'Settings': 'NotInitialised'},
+                                                                       'measure':{'Status': 'NotInitialised',
+                                                                                   'parameters': []}}
                 else: 
                     if process == 'A-Create3DMesh':
                         dict_MeshesProc[process][ch] = {'Status': 'NotInitialised', 
@@ -564,7 +566,8 @@ class Organ():
         if 'chNS' in load_dict['workflow']['ImProc'].keys():
             load_dict['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['ext_mesh'] = tuple(load_dict['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['ext_mesh'])
             load_dict['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['int_mesh'] = tuple(load_dict['workflow']['ImProc']['chNS']['D-S3Create']['Settings']['int_mesh'])
-         
+        
+        # Settings
         self.settings = load_dict['settings']
         for ch in self.settings:
             for key_b in self.settings[ch]:
@@ -572,8 +575,18 @@ class Organ():
                     self.settings[ch][key_b] = Path(self.settings[ch][key_b])
         for key_c in self.settings['dirs']:
             self.settings['dirs'][key_c] = Path(self.settings['dirs'][key_c])
+            
+        # Workflow
         self.workflow = load_dict['workflow']
-        
+        for proc in ['A-Create3DMesh', 'B-TrimMesh']:
+            for ch in self.workflow['MeshesProc'][proc]:
+                if ch != 'Status':
+                    for cont in self.workflow['MeshesProc'][proc][ch]:
+                        if isinstance(self.workflow['MeshesProc'][proc][ch][cont],dict):
+                            for key_f in self.workflow['MeshesProc'][proc][ch][cont]:
+                                if 'dir' in key_f:
+                                    self.workflow['MeshesProc'][proc][ch][cont][key_f] = Path(self.workflow['MeshesProc'][proc][ch][cont][key_f])
+        # imChannels
         self.imChannels = load_dict['imChannels']
         for ch in self.imChannels.keys():
             for key_d in self.imChannels[ch].keys():
@@ -586,8 +599,11 @@ class Organ():
                 self.imChannels[ch]['contStack'][key_e]['shape_s3'] = tuple(self.imChannels[ch]['contStack'][key_e]['shape_s3'])
                 self.imChannels[ch]['contStack'][key_e]['s3_dir'] = Path(self.imChannels[ch]['contStack'][key_e]['s3_dir'])
         
+        # imChannelNS
         self.imChannelNS = load_dict['imChannelNS']
         # things related to imChannelNS
+        
+        # meshes
         self.meshes = load_dict['meshes']
         for mesh in self.meshes.keys():
             self.meshes[mesh]['dir_out']=Path(self.meshes[mesh]['dir_out'])
@@ -1190,6 +1206,8 @@ class ImChannel(): #channel
                 self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Info'][s3.cont_type]['Status'] = 'DONE'
                 self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Planes'][cuts[0]] = {'cut_image' : pl,
                                                                                                         'cut_mesh' : plm}
+                # self.parent_organ.workflow['MeshesProc'][self.channel_no]['E-TrimS3']['Planes'][cuts[0]] = {'cut_image' : pl,
+                #                                                                                         'cut_mesh' : plm}
         if len(cuts) == 2:
             for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
                 pl1 = cuts_out['bottom']['plane_info_image']
@@ -1223,14 +1241,17 @@ class ImChannel(): #channel
     
     def s32Meshes(self, keep_largest, rotateZ_90, new):
         
+        workflow = self.parent_organ.workflow
         meshes_out = []
         for mesh_type in ['int', 'ext', 'tiss']:
+            # if not new: 
+            #     keep_largest = workflow['MeshesProc']['A-Create3DMesh'][self.channel_no]['mesh_type']
             mesh = Mesh_mH(self, mesh_type, keep_largest[mesh_type], rotateZ_90, new)
             meshes_out.append(mesh)
             
         return meshes_out
     
-    def createNewMeshes(self, keep_largest:dict, process:str, info, rotateZ_90:bool, new:bool):
+    def createNewMeshes(self, keep_largest:dict, process:str, rotateZ_90:bool, new:bool):
         
         workflow = self.parent_organ.workflow
         ch_no = self.channel_no
@@ -1240,7 +1261,11 @@ class ImChannel(): #channel
                 workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['Status'] = 'DONE'
                 workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['stack_dir'] = self.contStack[mesh_type]['s3_dir']
                 workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['keep_largest'] = keep_largest[mesh_type]
-                workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['trim_settings'] = info[ch_no]
+                # workflow['MeshesProc']['B-TrimMesh'][ch_no][mesh_type]['trim_settings'] = info[ch_no]
+            
+                workflow['MeshesProc']['B-TrimMesh'][ch_no]['trim_settings'] = {}
+                dict_pl = workflow['ImProc'][ch_no]['E-TrimS3']['Planes']
+                workflow['MeshesProc']['B-TrimMesh'][ch_no]['trim_settings'] = dict_pl
                 
         # Save organ
         self.parent_organ.save_organ()   
@@ -1810,6 +1835,30 @@ class Mesh_mH():
         print('>> Mesh '+mesh_name+' has been saved!')
         alert('countdown')        
         self.parent_organ.add_mesh(self, new=True)
+        
+    def mesh4CL(self):
+        """
+        Function that cleans and smooths meshes given as input to get centreline using VMTK
+    
+        """
+        
+        mesh4cl = self.mesh.clone()
+        print('- Cleaning mesh '+self.legend)
+        print("\t- Original number of points making up mesh: ", mesh4cl.NPoints())
+        # Reduce the number of points that make up the mesh
+        mesh4cl.subsample(fraction = 0.005)#tol=0.005)
+        print("\t- Number of points after cleaning surface: ",mesh4cl.NPoints(),'\n- Smoothing mesh...', self.legend)
+        
+        # vp = vedo.Plotter(N=1, axes=5)
+        # vp.show(mesh4cl, at=0, interactive=True)
+        
+        # Smooth mesh
+        mesh4cl_cut = mesh4cl.clone().smooth_mls_2d(f=0.2)
+        mesh4cl_cut.legend(self.legend+"-C&S").color(self.color)
+        print('- Mesh smoothed!')
+        alert('woohoo')
+
+        return mesh4cl_cut
 
     def get_channel_no(self):
         return self.channel_no
