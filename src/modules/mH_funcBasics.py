@@ -12,6 +12,8 @@ from playsound import playsound
 import json
 import numpy as np 
 import flatdict
+from functools import reduce  # forward compatibility for Python 3
+import operator
 # from typing import Union
 
 path_fcBasics = os.path.abspath(__file__)
@@ -184,6 +186,27 @@ def compare_nested_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
     else: 
         return res
         
+#%% func - get_by_path
+def get_by_path(root_dict, items):
+    """Access a nested object in root_dict by item sequence.
+    by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
+    """
+    return reduce(operator.getitem, items, root_dict)
+
+#%% func - set_by_path
+def set_by_path(root_dict, items, value):
+    """Set a value in a nested object in root_dict by item sequence.
+    by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
+    """
+    get_by_path(root_dict, items[:-1])[items[-1]] = value
+    
+#%% func - del_by_path
+def del_by_path(root_dict, items):
+    """Delete a key-value in a nested object in root_dict by item sequence.
+    by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
+    """
+    del get_by_path(root_dict, items[:-1])[items[-1]]
+    
 #%% 
 
 # def save_mHProject(dicts:list, organ:Organ):

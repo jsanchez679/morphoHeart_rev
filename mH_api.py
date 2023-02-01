@@ -29,7 +29,7 @@ elif sys.platform == 'win32':
     dir_proj_res = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
     #dir_proj_res = Path('C://Users//pallo//Desktop//cosas juli//mh//project')
     
-partA = False
+partA = True
 partB = True
 partB_vmtk = True
 partC = True
@@ -89,11 +89,10 @@ if partA:
     # Additionally, based on the number of segments and channels selected, 
     # a dictionary with predefined measurement parameters is created with 
     # which a table in the GUI will be created for the user to modify
-    proj.create_gralprojWF(user_proj_settings=user_proj_settings)
+    proj.set_settings(user_proj_settings=user_proj_settings)
     # Create project directory
     proj.create_proj_dir(dir_proj_res)
     print('>> proj.dict_projInfo: ', proj.info)
-
     # The result of the modification of such table is shown in the dict 
     # called user_params2meas.
     user_params2meas = {'ch1': {'tiss': {'whole': {'volume': True,
@@ -181,6 +180,7 @@ if partA:
                                 'ball_op1': {'to_mesh': 'ch1', 'to_mesh_type': 'int', 'from_cl': 'ch2', 'from_cl_type': 'int'},
                                 'ball_op2': {'to_mesh': 'ch2', 'to_mesh_type': 'ext', 'from_cl': 'ch2', 'from_cl_type': 'ext'}}}
     
+    
     aaa = proj.gral_meas_param.copy()
     
     proj.set_measure_param(user_params2meas=user_params2meas, user_ball_settings=user_ball_settings)
@@ -188,7 +188,7 @@ if partA:
     # print('>>proj.dict_info:', proj.dict_info)
 
     # And a project status dictionary is created
-    proj.set_project_status()
+    proj.set_workflow()
     # print('>>proj.dict_workflow:', proj.dict_workflow)
 
     # Save project 
@@ -201,7 +201,7 @@ if partA:
     proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
 
     print('>> Check Project: \n\t',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    
+    #%%
     #% ------------------------------------------------------------------------------
     # Having created the project an organ is created as part of the project
     print('\n---CREATING ORGAN----')
@@ -269,7 +269,7 @@ if partA:
                             info_loadCh = info_loadCh)
     # print('organ.settings:',organ.settings)
     # print('organ.workflow:', organ.workflow)
-
+#%%
     print('\n---SAVING PROJECT AND ORGAN----')
     # Save initial organ project
     proj.add_organ(organ)
@@ -304,7 +304,7 @@ if partA:
     im_ch1.selectContours()
     layerDict = {}
     im_ch1.create_chS3s(layerDict=layerDict)
-    
+    #%%
     # Save project
     proj.save_project()
     print('\n---LOADING ORGAN----')
@@ -316,7 +316,7 @@ if partA:
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
     print('>> Check im_ch1: \n',fcBasics.compare_nested_dicts(im_ch1.__dict__,im_ch1_new.__dict__,'imCh1','new')) 
     del proj_new, organ_new, im_ch1_new
-    
+    #%%
     # CHANNEL 2
     print('\n---PROCESSING CHANNEL 2----')
     im_ch2 = organ.load_TIFF(ch_name='ch2')
