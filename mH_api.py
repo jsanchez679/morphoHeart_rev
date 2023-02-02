@@ -41,58 +41,121 @@ if partA:
     # Info coming from the gui (user's selection)
     # 1. Click: Create new project
     print('\n---CREATING PROJECT----')
-    proj = mHC.Project()
-    proj.__dict__
-
-    # Once the project is created a new window will appear to select all the settings for the project
     user_projName = 'Project A-B'
     user_projNotes = 'Project to compare embryos A and B'
-    no_chs = 2
-    name_chs = ['myocardium', 'endocardium']
-    chs_relation = ['external', 'internal']
-    color_chs_tiss_ext_int = [['lightseagreen','gold','crimson'],['darkmagenta','deepskyblue','deeppink']]
-    layer_btw_chs = True
-    ch_ext = ('ch1', 'int')
-    ch_int = ('ch2', 'ext')
-    user_nsChName = 'cardiac jelly'
-    color_chns_tiss_ext_int = ['darkorange','crimson','deepskyblue']
-    # By default the volume and surface area of the segments per tissue selected will be measured
-    cutLayersIn2Segments = True
-    no_segments = 2
-    name_segments = ['atrium', 'ventricle']
-    # channels/meshes that will be divided into segments 
-    ch_segments = {'ch1':['tiss', 'ext'],'ch2':['tiss', 'int'],'chNS':['tiss']}
-    proj_dir = dir_proj_res
+    # Morphological analysis - morphoHeart
+    mH_analysis = True
+    # Cellular analysis - morphoCell
+    mC_analysis = False
+    user_analysis = {'morphoHeart': mH_analysis, 'morphoCell': mC_analysis}
+    dir_proj = dir_proj_res
+    
+    proj = mHC.Project(name=user_projName, notes=user_projNotes, 
+                               analysis=user_analysis, dir_proj = dir_proj)
+    proj.__dict__
 
-    user_proj_settings = {'project_dir': proj_dir,
-                        'user_projName': user_projName,
-                        'user_projNotes' : user_projNotes,
-                        'no_chs': no_chs,
+    # Once the project is created a new window will appear to select all the 
+    # settings for the project
+    # >> Settings for morphological analysis
+    if proj.analysis['morphoHeart']: 
+        print('>> Setting up morphoHeart')
+        # Ask for settings the settings for morphoHeart
+        no_chs = 2
+        name_chs = {'ch1': 'myocardium', 'ch2': 'endocardium'}
+        chs_relation =  {'ch1': 'external', 'ch2': 'internal'}
+        color_chs = {'ch1':{'tiss':'lightseagreen','int':'gold','ext':'crimson'}, 
+                     'ch2':{'tiss':'darkmagenta','int':'deepskyblue','ext':'deeppink'}}
+        layer_btw_chs = True
+        ch_ext = ('ch1', 'int')
+        ch_int = ('ch2', 'ext')
+        user_nsChName = 'cardiac jelly'
+        color_chNS = {'tiss':'darkorange','ext':'crimson', 'int':'deepskyblue'}
+        # By default the volume and surface area of the segments per tissue selected will be measured
+        cutLayersIn2Segments = True
+        no_segments = 2
+        name_segments = {'ch1': 'atrium', 'ch2': 'ventricle'}
+        # channels/meshes that will be divided into segments 
+        ch_segments = {'ch1':['tiss', 'ext'],'ch2':['tiss', 'int'],'chNS':['tiss']}
+        
+        mH_settings = {'no_chs': no_chs,
                         'name_chs': name_chs,
                         'chs_relation': chs_relation,
-                        'color_chs': color_chs_tiss_ext_int,
+                        'color_chs': color_chs,
                         'ns': 
                             {'layer_btw_chs': layer_btw_chs,
                             'ch_ext': ch_ext,
                             'ch_int': ch_int,
                             'user_nsChName': user_nsChName,
-                            'color_chns': color_chns_tiss_ext_int},
+                            'color_chns': color_chNS},
                         'segments': 
                             {'cutLayersIn2Segments': cutLayersIn2Segments,
                             'no_segments': no_segments,
                             'name_segments': name_segments,
-                            'ch_segments': ch_segments}, 
-                            }
-
+                            'ch_segments': ch_segments}}
+    else: 
+        mH_settings = {}
+            
+    if proj.analysis['morphoCell']:  
+        # Ask for settings the settings for morphoCell
+        print('>> Setting up morphoCell')
+        if not proj.analysis['morphoHeart']:
+            # Ask for settings of the myocardial channel to use as guidance 
+            # when positioning cells
+            print('set-up process only analysis of cells')
+            no_chs = 2
+            name_chs = {'ch1':'myocardium', 'ch2':'myoc_nuclei'}
+            link2mH = {'ch1': False, 'ch2': False}
+            chs_relation =  {'ch1': 'tissue', 'ch2': 'cells'}
+            color_chs = {'ch1':'lightseagreen', 
+                         'ch2':'darkmagenta'}
+            cutLayersIn2Segments = True
+            no_segments = 3
+            name_segments = {'ch1': 'atrium', 'ch2': 'ventricle'}
+            mC_settings = {'no_chs': no_chs,
+                           'name_chs': name_chs,
+                           'link2mH': link2mH,
+                           'chs_relation': chs_relation,
+                           'color_chs': color_chs,
+                           'segments': 
+                               {'cutLayersIn2Segments': cutLayersIn2Segments,
+                               'no_segments': no_segments,
+                               'name_segments': name_segments}}
+        else: 
+            # Ask if cells are from one of the channels processed in
+            # morphoHeart, if so, link them to the tissue? 
+            print('link cells to channel')
+            no_chs = 2
+            name_chs = {'ch1':'myocardium', 'ch2':'myoc_nuclei'}
+            link2mH = {'ch1': True, 'ch2': False}
+            chs_relation =  {'ch1': 'tissue', 'ch2': 'cells'}
+            color_chs = {'ch1':'lightseagreen', 
+                         'ch2':'darkmagenta'}
+            cutLayersIn2Segments = True
+            no_segments = 3
+            name_segments = {'ch1': 'atrium', 'ch2': 'ventricle'}
+            mC_settings = {'no_chs': no_chs,
+                           'name_chs': name_chs,
+                           'link2mH': link2mH,
+                           'chs_relation': chs_relation,
+                           'color_chs': color_chs,
+                           'segments': 
+                               {'cutLayersIn2Segments': cutLayersIn2Segments,
+                               'no_segments': no_segments,
+                               'name_segments': name_segments}}
+    else: 
+        mC_settings = {}
+        
     # This will create attributes within the instance of the project
     # containing information of the settings selected by the user
     # Additionally, based on the number of segments and channels selected, 
     # a dictionary with predefined measurement parameters is created with 
     # which a table in the GUI will be created for the user to modify
-    proj.set_settings(user_proj_settings=user_proj_settings)
+    proj.set_settings(mH_settings=mH_settings, mC_settings=mC_settings)
     # Create project directory
-    proj.create_proj_dir(dir_proj_res)
+    proj.create_dir_proj(dir_proj_res)
     print('>> proj.dict_projInfo: ', proj.info)
+    
+    #%%
     # The result of the modification of such table is shown in the dict 
     # called user_params2meas.
     user_params2meas = {'ch1': {'tiss': {'whole': {'volume': True,
@@ -153,10 +216,7 @@ if partA:
                         'chNS': {'tiss': {'whole': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': True,
-                                                'thickness ext>int': False,},
-                                                # 'centreline': False,
-                                                # 'centreline_linlength': False,
-                                                # 'centreline_looplength': False},
+                                                'thickness ext>int': False},
                                             'segm1': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': False,
@@ -167,29 +227,19 @@ if partA:
                                                 'thickness ext>int': False}},
                                 'int': {'whole': {'volume': True,
                                                 'surf_area': True,}},
-                                                # 'centreline': False,
-                                                # 'centreline_linlength': False,
-                                                # 'centreline_looplength': False}},
                                 'ext': {'whole': {'volume': True,
                                                 'surf_area': True,}}}}
-                                                # 'centreline': False,
-                                                # 'centreline_linlength': False,
-                                                # 'centreline_looplength': False}}}}
 
     user_ball_settings = {'ballooning': True, 'ball_settings': {
-                                'ball_op1': {'to_mesh': 'ch1', 'to_mesh_type': 'int', 'from_cl': 'ch2', 'from_cl_type': 'int'},
-                                'ball_op2': {'to_mesh': 'ch2', 'to_mesh_type': 'ext', 'from_cl': 'ch2', 'from_cl_type': 'ext'}}}
-    
-    
-    aaa = proj.gral_meas_param.copy()
-    
-    proj.set_measure_param(user_params2meas=user_params2meas, user_ball_settings=user_ball_settings)
-    bbb = proj.gral_meas_param
-    # print('>>proj.dict_info:', proj.dict_info)
+                                'ball_op1': {'to_mesh': 'ch1', 'to_mesh_type': 'int',
+                                             'from_cl': 'ch2', 'from_cl_type': 'int'},
+                                'ball_op2': {'to_mesh': 'ch2', 'to_mesh_type': 'ext', 
+                                             'from_cl': 'ch2', 'from_cl_type': 'ext'}}}
+
+    proj.set_mH_meas(user_params2meas=user_params2meas, user_ball_settings=user_ball_settings)
 
     # And a project status dictionary is created
     proj.set_workflow()
-    # print('>>proj.dict_workflow:', proj.dict_workflow)
 
     # Save project 
     proj.save_project()
@@ -197,11 +247,10 @@ if partA:
     print('\n---LOADING PROJECT----')
     proj_name = 'Project_A-B'
     folder_name = 'R_'+proj_name
-    proj_dir = dir_proj_res / folder_name 
-    proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
-
+    dir_proj = dir_proj_res / folder_name 
+    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     print('>> Check Project: \n\t',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    #%%
+#%%
     #% ------------------------------------------------------------------------------
     # Having created the project an organ is created as part of the project
     print('\n---CREATING ORGAN----')
@@ -267,30 +316,25 @@ if partA:
 
     organ = mHC.Organ(project=proj, user_settings = user_organ_settings,
                             info_loadCh = info_loadCh)
-    # print('organ.settings:',organ.settings)
-    # print('organ.workflow:', organ.workflow)
-#%%
+
     print('\n---SAVING PROJECT AND ORGAN----')
     # Save initial organ project
     proj.add_organ(organ)
     organ.save_organ()
     
-    print('\n---LOADING ORGAN----')
-    organName2Load = 'LS52_F02_V_SR_1029'
-    organ_new = proj.load_organ(user_organName = organName2Load)
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))
-    del organ_new
-    
     # Save project 
     proj.save_project()
     # Load project and check parameters 
-    print('\n---LOADING PROJECT----')
+    print('\n---LOADING PROJECT AND ORGAN----')
     proj_name = 'Project_A-B'
     folder_name = 'R_'+proj_name
-    proj_dir = dir_proj_res / folder_name
-    proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
+    dir_proj = dir_proj_res / folder_name
+    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
+    organName2Load = 'LS52_F02_V_SR_1029'
+    organ_new = proj.load_organ(user_organName = organName2Load)
     print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    del proj_new
+    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))
+    del proj_new, organ_new
     
     # CODE A ---------------------------------------------------------
     print('\n---CREATING CHANNELS 1 AND 2----')
@@ -309,7 +353,7 @@ if partA:
     proj.save_project()
     print('\n---LOADING ORGAN----')
     # Load project, organ and channel and check parameters
-    proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
+    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     organ_new = proj_new.load_organ(user_organName = organName2Load)
     im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False)
     print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
@@ -332,7 +376,7 @@ if partA:
     proj.save_project()
     print('\n---LOADING PROJECT AND ORGAN----')
     # Load project, organ and channel and check parameters
-    proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
+    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     organ_new = proj_new.load_organ(user_organName = organName2Load)
     im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2', new=False)
     print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
@@ -346,8 +390,8 @@ if partB:
     if not partA: 
         proj_name = 'Project_A-B'
         folder_name = 'R_'+proj_name
-        proj_dir = dir_proj_res / folder_name
-        proj = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
+        dir_proj = dir_proj_res / folder_name
+        proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
         organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
         im_ch1 = mHC.ImChannel(organ=organ, ch_name='ch1', new=False)
@@ -376,7 +420,7 @@ if partB:
     
     # Load project, organ, channels and meshes and check parameters
     print('\n---LOADING PROJECT, ORGAN, CHANNEL AND MESHES----')
-    proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
+    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     organ_new = proj_new.load_organ(user_organName = organName2Load)
     im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False)
     im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2', new=False)
@@ -422,7 +466,7 @@ if partB:
     organ.save_organ()
     # Load project, organ
     print('\n---LOADING PROJECT AND ORGAN----')
-    proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
+    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     organ_new = proj_new.load_organ(user_organName = organName2Load)    
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
     del proj_new, organ_new
@@ -459,7 +503,7 @@ if partB:
     organ.save_organ()
     # Load project, organ
     print('\n---LOADING PROJECT AND ORGAN----')
-    proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
+    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     organ_new = proj_new.load_organ(user_organName = organName2Load)    
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
     del proj_new, organ_new
@@ -484,7 +528,7 @@ if partB:
         # Save organ
         organ.save_organ()
         # Load project, organ
-        proj_new = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
+        proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
         organ_new = proj_new.load_organ(user_organName = organName2Load)    
         print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
         del proj_new, organ_new
@@ -495,12 +539,12 @@ if partB_vmtk:
     if not partA and not partB: 
         proj_name = 'Project_A-B'
         folder_name = 'R_'+proj_name
-        proj_dir = dir_proj_res / folder_name
-        proj = mHC.Project(new = False, proj_name = proj_name, proj_dir = proj_dir)
+        dir_proj = dir_proj_res / folder_name
+        proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
         organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
         
-    cl_names = [item for item in organ.parent_project.gral_meas_param if 'centreline' in item]
+    cl_names = [item for item in organ.parent_project.mH_param2meas if 'centreline' in item]
     msh4cl = []
     for name in cl_names: 
         mesh = organ.obj_meshes[name[0]+'_'+name[1]]

@@ -206,7 +206,34 @@ def del_by_path(root_dict, items):
     by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
     """
     del get_by_path(root_dict, items[:-1])[items[-1]]
+
+#%% func - make_Paths
+def make_Paths(load_dict):
     
+    flat_dict = flatdict.FlatDict(load_dict)
+    # Make all paths into Path
+    dir_keys = [key.split(':') for key in flat_dict.keys() if 'dir' in key]
+    for key in dir_keys:
+        value = get_by_path(load_dict, key)
+        if value != None and value != 'NotAssigned':
+            set_by_path(load_dict, key, Path(value))
+    
+    return load_dict
+            
+#%% func - make_tuples
+def make_tuples(load_dict, tuple_keys): 
+    flat_dict = flatdict.FlatDict(load_dict)
+    #Make all keys from input list into tuples
+    separator = ':'
+    for tup in tuple_keys:
+        str_tup = separator.join(tup)
+        if str_tup in flat_dict.keys(): 
+            value = get_by_path(load_dict, tup)
+            if value != None:
+                set_by_path(load_dict, tup, tuple(value))
+        
+    return load_dict
+                
 #%% 
 
 # def save_mHProject(dicts:list, organ:Organ):
