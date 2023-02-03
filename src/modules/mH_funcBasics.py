@@ -56,7 +56,7 @@ def alert(sound:str):
         playsound(str(path))
 
 #%% func - ask4input
-def ask4input(text:str, type_response:type, keep=False):
+def ask4input(text:str, res:dict, type_response:type, keep=False):
     """
     Function that ask for user input and transforms it into the expected type
 
@@ -78,7 +78,15 @@ def ask4input(text:str, type_response:type, keep=False):
     alert('error_beep')
     exit_now = False
     while exit_now == False:
-        response = input('> '+text+' ')
+        res_text = '> '+text+' \n\t'
+        res_len = len(res)
+        for n, r in enumerate(res.keys()): 
+            if n != res_len-1:
+                r_text = '['+str(r)+']: '+res[r] +'\n\t'
+            else: 
+                r_text = '['+str(r)+']: '+res[r] +' >> : '
+            res_text += r_text
+        response = input(res_text)
         if type_response == int:
             try:
                 response = int(response)

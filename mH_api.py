@@ -152,7 +152,7 @@ if partA:
     # which a table in the GUI will be created for the user to modify
     proj.set_settings(mH_settings=mH_settings, mC_settings=mC_settings)
     # Create project directory
-    proj.create_dir_proj(dir_proj_res)
+    proj.create_proj_dir(dir_proj_res)
     print('>> proj.dict_projInfo: ', proj.info)
     
     #%%
@@ -348,7 +348,7 @@ if partA:
     im_ch1.selectContours()
     layerDict = {}
     im_ch1.create_chS3s(layerDict=layerDict)
-    #%%
+    
     # Save project
     proj.save_project()
     print('\n---LOADING ORGAN----')
@@ -406,8 +406,9 @@ if partB:
     # Load contStacks? 
     gui_keep_largest = {'ch1': {'int': False, 'ext': False, 'tiss': False}, 'ch2': {'int': False, 'ext': False, 'tiss': False}}
     print('\n---CREATING MESHES CHANNEL 1---')
-    [msh1_int, msh1_ext, msh1_tiss] = im_ch1.s32Meshes(keep_largest=gui_keep_largest['ch1'],
-                                                         rotateZ_90 = True, new = True)
+    [msh1_int, msh1_ext, msh1_tiss] = im_ch1.s32Meshes(cont_types=['int', 'ext', 'tiss'],
+                                                       keep_largest=gui_keep_largest['ch1'],
+                                                       rotateZ_90 = True, new = True)
     print('\n---CREATING MESHES CHANNEL 2---')
     [msh2_int, msh2_ext, msh2_tiss] = im_ch2.s32Meshes(keep_largest=gui_keep_largest['ch2'],
                                                          rotateZ_90 = True, new = True)
@@ -443,10 +444,14 @@ if partB:
             if organ.settings[ch]['general_info']['ch_relation'] == 'internal':
                 ch_int = organ.obj_imChannels[ch]
                 
-    #check the process has not been donde even before asking if you want to clean the channel         
-    clean_ch = fcBasics.ask4input('Do you want to clean the '+ch_int.user_chName+' with the '+ch_ext.user_chName+'?\n\t[0]: no, thanks\n\t[1]: yes, please! >>>:', bool)
+    #check the process has not been donde even before asking if you want to clean the channel
+    q = 'Do you want to clean the '+ch_int.user_chName+' with the '+ch_ext.user_chName+'?'
+    res = {0: 'no, thanks',1: 'yes, please!'}
+    clean_ch = fcBasics.ask4input(q, res, bool)
     if clean_ch:
-        inverted = fcBasics.ask4input('Select the mask you would like to use to clean the '+ch_int.user_chName+': \n\t[0]: Just the tissue layer of the '+ch_ext.user_chName+'\n\t[1]: (Recommended) The inverted internal segmentation of the '+ch_ext.user_chName+' (more profound cleaning). >>>: ', bool)
+        q = 'Select the mask you would like to use to clean the '+ch_int.user_chName+':'
+        res = {0: 'Just the tissue layer of the '+ch_ext.user_chName,1: '(Recommended) The inverted internal segmentation of the '+ch_ext.user_chName+' (more profound cleaning).'}
+        inverted = fcBasics.ask4input(q, res, bool)
         plot = False
         ch_int.ch_clean(s3_mask=ch_ext.s3_ext, inverted=inverted, plot=plot)
         print('>> Check Ch2 vs ChInt: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,ch_int.__dict__,'ch2','int'))

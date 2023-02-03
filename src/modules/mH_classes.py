@@ -27,6 +27,11 @@ from typing import Union
 from .mH_funcBasics import alert, ask4input, make_Paths, make_tuples, get_by_path, set_by_path
 from .mH_funcMeshes import unit_vector
 
+alert_all=True
+heart_default=False
+dict_gui = {'alert_all': alert_all,
+            'heart_default': heart_default}
+
 #%% ##### - Authorship - #####################################################
 __author__     = 'Juliana Sanchez-Posada'
 __license__    = 'MIT'
@@ -76,7 +81,8 @@ class Project():
             self.user_projName = name.replace(' ', '_')
             self.info = {'mH_projName': self.mH_projName,
                             'user_projName': self.user_projName,
-                            'user_projNotes': notes}
+                            'user_projNotes': notes, 
+                            'dirs': []}
             self.analysis = analysis
             self.dir_proj = Path(dir_proj)
             self.organs = {}
@@ -199,7 +205,7 @@ class Project():
                                 mH_set[ch_str]['setup'][cont]['measure'][segm_str] = {} 
                                 mH_meas_keys.append((ch_str,cont,segm_str))
     
-            mH_set['dirs'] = {'meshes': 'NotAssigned', 
+            self.info['dirs'] = {'meshes': 'NotAssigned', 
                                 'csv_all': 'NotAssigned',
                                 'imgs_videos': 'NotAssigned', 
                                 's3_numpy': 'NotAssigned',
@@ -241,10 +247,13 @@ class Project():
                             segm_str = 'segm'+str(s_num+1)
                             mC_segments.append(segm_str)
                             mC_set[ch_str]['measure'][segm_str] = {} 
-        
-            mC_set['dirs'] = {'csv_all': 'NotAssigned',
-                                'imgs_videos': 'NotAssigned',
-                                'settings': 'NotAssigned'}
+                            
+            if self.info['dirs'] == []:
+                self.info['dirs'] = {'csv_all': 'NotAssigned',
+                                    'imgs_videos': 'NotAssigned',
+                                    'settings': 'NotAssigned'}
+            else: 
+                print('>> proj.info[dirs] had already been created!')
         
         
         self.mC_settings = mC_set
@@ -467,18 +476,18 @@ class Project():
                         for cont in ['tiss', 'int', 'ext']:
                             if process == 'A-Create3DMesh':
                                 dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
-                                dict_MeshesProc[process][ch][cont]['stack_dir'] = None
-                                if cont == 'tiss':
-                                    dict_MeshesProc[process][ch][cont]['keep_largest'] = False
-                                else: 
-                                    dict_MeshesProc[process][ch][cont]['keep_largest'] = None
+                                # dict_MeshesProc[process][ch][cont]['stack_dir'] = None
+                                # if cont == 'tiss':
+                                #     dict_MeshesProc[process][ch][cont]['keep_largest'] = False
+                                # else: 
+                                #     dict_MeshesProc[process][ch][cont]['keep_largest'] = None
                             if process == 'B-TrimMesh':
                                 dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
-                                dict_MeshesProc[process][ch][cont]['stack_dir'] = None
-                                if cont == 'tiss':
-                                    dict_MeshesProc[process][ch][cont]['keep_largest'] = False
-                                else: 
-                                    dict_MeshesProc[process][ch][cont]['keep_largest'] = None
+                                # dict_MeshesProc[process][ch][cont]['stack_dir'] = None
+                                # if cont == 'tiss':
+                                #     dict_MeshesProc[process][ch][cont]['keep_largest'] = False
+                                # else: 
+                                #     dict_MeshesProc[process][ch][cont]['keep_largest'] = None
                             
                             if process == 'C-Centreline':
                                 if (ch,cont,'whole','centreline') in item_centreline:
@@ -581,14 +590,9 @@ class Project():
     
     def add_organ(self, organ):
         dict_organ = copy.deepcopy(organ.info)
-
-        dict_organ = {'user_organName': organ.user_organName, 
-                        'parent_projectName': organ.parent_project.user_projName,
-                        'info': organ.info,
-                        }
-        dict_organ['user_organName']
         dict_organ.pop('project', None)
         dict_organ['dir_res'] = organ.dir_res
+        
         self.organs[organ.user_organName] = dict_organ
         self.save_project()
 
@@ -625,6 +629,7 @@ class Organ():
         if new:
             self.user_organName = user_settings['user_organName'].replace(' ', '_')
             self.info = user_settings
+            self.info['dirs'] = project.info['dirs']
             self.info_loadCh = info_loadCh
             self.create_mHName()
             self.analysis = copy.deepcopy(project.analysis)
@@ -663,8 +668,9 @@ class Organ():
         
         for ch in load_dict['imChannels'].keys():
             tuple_keys.append(['imChannels', ch, 'shape'])
+            tuple_keys.append(['imChannels', ch, 'shape_s3'])
             for cont in load_dict['imChannels'][ch]['contStack'].keys():
-                tuple_keys.append(['imChannels', ch, 'contStack', 'shape_s3'])
+                tuple_keys.append(['imChannels', ch, 'contStack',cont,'shape_s3'])
         
         load_dict = make_tuples(load_dict, tuple_keys)
      
@@ -735,7 +741,6 @@ class Organ():
             try:
                 images_o = io.imread(str(info_loadCh[ch]['dir_cho']))
                 array_sizes[ch]= {'cho': images_o.shape}
-                # print(ch,',cho-',str(images_o.shape))
                 sizes.append(images_o.shape)
             except: 
                 print('>> Error: Something went wrong opening the file -',ch)
@@ -745,7 +750,6 @@ class Organ():
                 try:
                     images_mk = io.imread(str(info_loadCh[ch]['dir_mk']))
                     array_sizes[ch]['mask']= images_mk.shape
-                    # print(ch,',mask-',str(images_mk.shape))
                     sizes.append(images_mk.shape)
                 except: 
                     print('>> Error: Something went wrong opening the mask -',ch)
@@ -776,7 +780,7 @@ class Organ():
             dir2create = self.parent_project.dir_proj / organ_folder / direc
             dir2create.mkdir(parents=True, exist_ok=True)
             if dir2create.is_dir():
-                self.mH_settings['dirs'][direc] = dir2create
+                self.info['dirs'][direc] = dir2create
             else: 
                 print('Error: Directory ', self.user_organName, '/', direc, ' could not be created!')
                 alert('error_beep')
@@ -789,9 +793,25 @@ class Organ():
             new = True
             
         if new: 
-            channel_dict = copy.deepcopy(imChannel.__dict__)
-            channel_dict.pop('parent_organ', None)
+            print('adding Channel')
+            channel_dict = {}
+            channel_dict['parent_organ_name'] = imChannel.parent_organ_name
+            channel_dict['channel_no'] = imChannel.channel_no
+            channel_dict['user_chName'] = imChannel.user_chName
+            channel_dict['ch_relation'] = imChannel.ch_relation
+            channel_dict['to_mask'] = imChannel.to_mask
+            channel_dict['resolution'] = imChannel.resolution
+            channel_dict['dir_cho'] = imChannel.dir_cho
+            if imChannel.to_mask:
+                channel_dict['dir_mk'] = imChannel.dir_mk
+            channel_dict['masked'] = imChannel.masked
+            channel_dict['shape'] = imChannel.shape
+            channel_dict['process'] = imChannel.process
+            channel_dict['contStack'] = imChannel.contStack
+            channel_dict['dir_stckproc'] = imChannel.dir_stckproc
+            
             self.imChannels[imChannel.channel_no] = channel_dict
+            
         else: # just update im_proc 
             self.imChannels[imChannel.channel_no]['process'] = imChannel.process
             self.imChannels[imChannel.channel_no]['contStack'] = imChannel.contStack
@@ -826,7 +846,11 @@ class Organ():
            
         self.obj_imChannelNS[imChannelNS.channel_no] = imChannelNS
 
-    def add_mesh(self, mesh, new:bool): # mesh: Mesh_mH
+    def add_mesh(self, mesh): # mesh: Mesh_mH
+        new = False
+        if mesh.name not in self.meshes.keys():
+            new = True
+            print('New mesh!')
         if new: 
             self.meshes[mesh.name] = {}
             self.meshes[mesh.name]['parent_organ'] = mesh.parent_organ.user_organName
@@ -856,8 +880,8 @@ class Organ():
         all_info['analysis'] = self.analysis
         
         jsonDict_name = 'mH_'+self.user_organName+'_organ.json'
+        json2save_dir = self.info['dirs']['settings'] / jsonDict_name
         if self.analysis['morphoHeart']:
-            json2save_dir = self.mH_settings['dirs']['settings'] / jsonDict_name
             all_info['mH_settings'] = self.mH_settings
             
             image_dict = copy.deepcopy(self.imChannels)
@@ -874,7 +898,6 @@ class Organ():
             all_info['objects'] = self.objects
             
         if self.analysis['morphoCell']:
-            json2save_dir = self.mC_settings['dirs']['settings'] / jsonDict_name
             all_info['mC_settings'] = self.mC_settings
         
         all_info['workflow'] = self.workflow
@@ -921,19 +944,13 @@ class Organ():
             if all(flag == 'DONE' for flag in ch_done):
                 self.workflow[process]['Status'] = 'DONE'
 
-        
     def update_workflow(self, process, update):
-        # updated_workflow = copy.deepcopy(self.workflow)
-        # wf = copy.deepcopy(self.workflow)
-        # count = 0
-        # while count < len(process):
-        #     wf = wf[process[count]]
-        #     print(wf)
-        # self.workflow['ImProc'][self.channel_no]['A-MaskChannel']['Status'] = 'DONE'
-        print('Update workflow!')
+        workflow = self.workflow
+        set_by_path(workflow, process, update)
     
     #Get all the set mH variables in __init__
     def get_notes(self):
+        
         return self.info['user_organNotes']
 
     def get_orientation(self):
@@ -961,7 +978,7 @@ class Organ():
         return self.dir_res
 
     def get_direc(self, name:str):
-        return self.settings['dirs'][name]
+        return self.info['dirs'][name]
 
 class ImChannel(): #channel
     'morphoHeart Image Channel Class (this class will be used to contain the images as tiffs that have been'
@@ -972,8 +989,8 @@ class ImChannel(): #channel
         self.parent_organ = organ
         self.parent_organ_name = organ.user_organName
         self.channel_no = ch_name
-        self.user_chName = organ.settings[ch_name]['general_info']['user_chName']
-        self.ch_relation = organ.settings[ch_name]['general_info']['ch_relation']
+        self.user_chName = organ.mH_settings[ch_name]['general_info']['user_chName']
+        self.ch_relation = organ.mH_settings[ch_name]['general_info']['ch_relation']
         if new:       
             self.new_ImChannel()
         else: 
@@ -983,11 +1000,11 @@ class ImChannel(): #channel
         organ = self.parent_organ
         ch_name = self.channel_no
         
-        self.to_mask = organ.settings[ch_name]['general_info']['mask_ch']
+        self.to_mask = organ.mH_settings[ch_name]['general_info']['mask_ch']
         self.resolution = organ.info['resolution']
-        self.dir_cho = organ.settings[ch_name]['general_info']['dir_cho']            
+        self.dir_cho = organ.mH_settings[ch_name]['general_info']['dir_cho']            
         if self.to_mask:
-            self.dir_mk = organ.settings[ch_name]['general_info']['dir_mk']
+            self.dir_mk = organ.mH_settings[ch_name]['general_info']['dir_mk']
         self.masked = False
         self.shape = self.im().shape
         self.process = ['Init']
@@ -1036,8 +1053,6 @@ class ImChannel(): #channel
         self.contStack = contStack_dict
         self.dir_stckproc = organ.imChannels[ch_name]['dir_stckproc']
 
-        # organ.add_channel(imChannel=self)
-
     def get_channel_no(self):
         return self.channel_no
 
@@ -1061,213 +1076,281 @@ class ImChannel(): #channel
             self.contStack[contStack.cont_type]['process'] = contStack.process
      
     def maskIm(self):
-        #Load images
-        im_o = np.copy(self.im())
-        im_mask = io.imread(str(self.dir_mk))
-        
-        #Process
-        print('---- Masking! ----')
-        if self.shape == im_mask.shape:
-            #Check the dimensions of the mask with those of the image
-            im_o[im_mask == False] = 0
-            self.masked = True
-            self.save_channel(im_proc=im_o)
+        #Check workflow status
+        workflow = self.parent_organ.workflow
+        process = ['ImProc', self.channel_no, 'A-MaskChannel','Status']
+        check_proc = get_by_path(workflow, process)
+        if check_proc == 'DONE':
+            q = 'You already masked this channel ('+ self.user_chName+'). Do you want to re-run it?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
+            proceed = ask4input(q, res, bool)
+        else: 
+            proceed = True
+                
+        if proceed: 
+            #Load images
+            im_o = np.copy(self.im())
+            im_mask = io.imread(str(self.dir_mk))
+            #Process
+            print('---- Masking! ----')
+            if self.shape == im_mask.shape:
+                #Check the dimensions of the mask with those of the image
+                im_o[im_mask == False] = 0
+                self.masked = True
+                self.save_channel(im_proc=im_o)
+                
+                #Update organ workflow
+                self.parent_organ.update_workflow(process, update = 'DONE')
+                
+                #self.parent_organ.workflow['ImProc'][self.channel_no]['A-MaskChannel']['Status'] = 'DONE'
+                process_up = ['ImProc', self.channel_no,'Status']
+                if get_by_path(workflow, process_up) == 'NotInitialised':
+                    self.parent_organ.update_workflow(process_up, update = 'Initialised')
+                
+                #Update channel process
+                self.process.append('Masked')
+                
+                #Update organ imChannels
+                self.parent_organ.imChannels[self.channel_no]['masked'] = True
+                self.parent_organ.add_channel(self)
+                self.parent_organ.save_organ()
+                
+            else: 
+                print('>> Error: Stack could not be masked (stack shapes did not match).')
+                alert('error_beep')
+                
+            process_up2 = ['ImProc','Status']
+            if get_by_path(workflow, process_up2) == 'NotInitialised':
+                self.parent_organ.update_workflow(process_up2, update = 'Initialised')
+            
+    def closeContours_auto(self):
+        #Check workflow status
+        workflow = self.parent_organ.workflow
+        process = ['ImProc', self.channel_no,'B-CloseCont','Steps','A-Autom','Status']
+        check_proc = get_by_path(workflow, process)
+        if check_proc == 'DONE':
+            q = 'You already closed automatically the contours of this channel ('+ self.user_chName+'). Do you want to re-run it?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
+            proceed = ask4input(q, res, bool)
+        else: 
+            proceed = True
+                
+        if proceed: 
+            # Load image
+            im_proc = self.im_proc()
+            self.save_channel(im_proc=im_proc)
+            workflow = self.parent_organ.workflow
+            
+            #Process
+            print('---- Closing Contours Auto! ----')
             
             #Update organ workflow
-            self.parent_organ.update_workflow(process = ('ImProc', self.channel_no, 'A-MaskChannel','Status'), update = 'DONE')
-            self.parent_organ.workflow['ImProc'][self.channel_no]['A-MaskChannel']['Status'] = 'DONE'
-            if self.parent_organ.workflow['ImProc'][self.channel_no]['Status'] == 'NotInitialised':
-                self.parent_organ.workflow['ImProc'][self.channel_no]['Status'] = 'Initialised'
+            self.parent_organ.update_workflow(process, update = 'DONE')
+
+            process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
+            if get_by_path(workflow, process_up) == 'NotInitialised':
+                self.parent_organ.update_workflow(process_up, update = 'Initialised')
             
             #Update channel process
-            self.process.append('Masked')
+            self.process.append('ClosedCont-Auto')
             
             #Update organ imChannels
-            self.parent_organ.imChannels[self.channel_no]['masked'] = True
             self.parent_organ.add_channel(self)
             self.parent_organ.save_organ()
             
-        else: 
-            print('>> Error: Stack could not be masked (stack shapes did not match).')
-            alert('error_beep')
-            
-        if self.parent_organ.workflow['ImProc']['Status'] == 'NotInitialised':
-            self.parent_organ.workflow['ImProc']['Status'] = 'Initialised'
-    
-    def closeContours_auto(self):
-        # Load image
-        im_proc = self.im_proc()
-        self.save_channel(im_proc=im_proc)
-        
-        #Process
-        print('---- Closing Contours Auto! ----')
-        
-        #Update organ workflow
-        self.parent_organ.update_workflow(process = (), update = 'DONE')
-        self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Steps']['A-Autom']['Status'] = 'DONE'
-        if self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Status'] == 'NotInitialised':
-            self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Status'] = 'Initialised'
-        
-        #Update channel process
-        self.process.append('ClosedCont-Auto')
-        
-        #Update organ imChannels
-        self.parent_organ.add_channel(self)
-        self.parent_organ.save_organ()
-        
-        if self.parent_organ.workflow['ImProc']['Status'] == 'NotInitialised':
-            self.parent_organ.workflow['ImProc']['Status'] = 'Initialised'
-            
-        #Update
-        # 'B-CloseCont':{'Status': 'NotInitialised',
-        #                 'Steps':{'A-Autom': {'Status': 'NotInitialised'},
-        #                                     # 'Range': None, 
-        #                                     # 'Range_completed': None}, 
+            process_up2 = ['ImProc','Status']
+            if get_by_path(workflow, process_up2) == 'NotInitialised':
+                self.parent_organ.update_workflow(process_up2, update = 'Initialised')
+                
+            #Update
+            # 'B-CloseCont':{'Status': 'NotInitialised',
+            #                 'Steps':{'A-Autom': {'Status': 'NotInitialised'},
+            #                                     # 'Range': None, 
+            #                                     # 'Range_completed': None}, 
         
     def closeContours_manual(self):
-        # Load image
-        im_proc = self.im_proc()
-        self.save_channel(im_proc=im_proc)
-        
-        #Process
-        print('---- Closing Contours Manually! ----')
-        
+        #Check workflow status
+        workflow = self.parent_organ.workflow
+        process = ['ImProc', self.channel_no,'B-CloseCont','Steps','B-Manual','Status']
+        check_proc = get_by_path(workflow, process)
+        if check_proc == 'DONE':
+            q = 'You already finished closing manually the contours of this channel ('+ self.user_chName+'). Do you want to re-run this process and close some more?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
+            proceed = ask4input(q, res, bool)
+        else: 
+            proceed = True
                 
-        #Update organ workflow
-        self.parent_organ.update_workflow(process = (), update = 'DONE')
-        self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Steps']['B-Manual']['Status'] = 'DONE'
-        if self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Status'] == 'NotInitialised':
-            self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Status'] = 'Initialised'
-        
-        #Update channel process
-        self.process.append('ClosedCont-Manual')
-                
-        #Update organ imChannels
-        self.parent_organ.add_channel(self)
-        self.parent_organ.save_organ()
-        
-        if self.parent_organ.workflow['ImProc']['Status'] == 'NotInitialised':
-            self.parent_organ.workflow['ImProc']['Status'] = 'Initialised'
-        
-        #Update
-        # 'B-CloseCont':{'Status': 'NotInitialised',
-        #                         'B-Manual': {'Status': 'NotInitialised'},
-        #                                     # 'Range': None, 
-        #                                     # 'Range_completed': None}, 
-        
-    def closeInfOutf(self):
-        # Load image
-        im_proc = self.im_proc()
-        self.save_channel(im_proc=im_proc)
-        
-        #Process
-        print('---- Closing Inf/Ouft! ----')
-        
-        #Update organ workflow
-        self.parent_organ.update_workflow(process = (), update = 'DONE')
-        self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Steps']['C-CloseInOut']['Status'] = 'DONE'
-        if self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Status'] == 'NotInitialised':
-            self.parent_organ.workflow['ImProc'][self.channel_no]['B-CloseCont']['Status'] = 'Initialised'
-        
-        # Update channel process
-        self.process.append('ClosedInfOutf')
-        
-        #Update organ imChannels
-        self.parent_organ.add_channel(self)
-        
-        #TO DO: Update general status of B-CloseCont to Done when confirmed
-        self.parent_organ.check_status(process = 'ImProc')
-        self.parent_organ.save_organ()
-        
-        if self.parent_organ.workflow['ImProc']['Status'] == 'NotInitialised':
-            self.parent_organ.workflow['ImProc']['Status'] = 'Initialised'
+        if proceed: 
+            # Load image
+            im_proc = self.im_proc()
+            self.save_channel(im_proc=im_proc)
             
-        #Update 
-        # 'B-CloseCont':{'Status': 'NotInitialised',
-        #                         'C-CloseInOut': {'Status': 'NotInitialised'}}},
+            #Process
+            print('---- Closing Contours Manually! ----')
+            
+                    
+            #Update organ workflow
+            self.parent_organ.update_workflow(process, update = 'DONE')
+            
+            process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
+            if get_by_path(workflow, process_up) == 'NotInitialised':
+                self.parent_organ.update_workflow(process_up, update = 'Initialised')
+            
+            
+            #Update channel process
+            self.process.append('ClosedCont-Manual')
+                    
+            #Update organ imChannels
+            self.parent_organ.add_channel(self)
+            self.parent_organ.save_organ()
+            
+            process_up2 = ['ImProc','Status']
+            if get_by_path(workflow, process_up2) == 'NotInitialised':
+                self.parent_organ.update_workflow(process_up2, update = 'Initialised')
+            
+            #Update
+            # 'B-CloseCont':{'Status': 'NotInitialised',
+            #                         'B-Manual': {'Status': 'NotInitialised'},
+            #                                     # 'Range': None, 
+            #                                     # 'Range_completed': None}, 
+            
+    def closeInfOutf(self):
+        #Check workflow status
+        workflow = self.parent_organ.workflow
+        process = ['ImProc', self.channel_no,'B-CloseCont','Steps','C-CloseInOut','Status']
+        check_proc = get_by_path(workflow, process)
+        if dict_gui['heart_default']:
+            txt_pr = 'inflow/outflow'
+        else: 
+            txt_pr = 'bottom/top'
+        if check_proc == 'DONE':
+            q = 'You already closed the '+txt_pr+' contours of this channel ('+ self.user_chName+'). Do you want to re-run this process and close some more?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
+            proceed = ask4input(q, res, bool)
+        else: 
+            proceed = True
+                
+        if proceed: 
+            # Load image
+            im_proc = self.im_proc()
+            self.save_channel(im_proc=im_proc)
+            
+            #Process
+            print('---- Closing Inf/Ouft! ----')
+            
+            #Update organ workflow
+            self.parent_organ.update_workflow(process, update = 'DONE')
+            
+            process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
+            if get_by_path(workflow, process_up) == 'NotInitialised':
+                self.parent_organ.update_workflow(process_up, update = 'Initialised')
+            
+            # Update channel process
+            self.process.append('ClosedInfOutf')
+            
+            #Update organ imChannels
+            self.parent_organ.add_channel(self)
+            
+            #TO DO: Update general status of B-CloseCont to Done when confirmed
+            self.parent_organ.check_status(process = 'ImProc')
+            self.parent_organ.save_organ()
+            
+            process_up2 = ['ImProc','Status']
+            if get_by_path(workflow, process_up2) == 'NotInitialised':
+                self.parent_organ.update_workflow(process_up2, update = 'Initialised')
+                
+            #Update 
+            # 'B-CloseCont':{'Status': 'NotInitialised',
+            #                         'C-CloseInOut': {'Status': 'NotInitialised'}}},
 
     def selectContours(self):
-        # Load image
-        im_proc = self.im_proc()
-        self.save_channel(im_proc=im_proc)
-        
-        #Process
-        print('---- Selecting Contours! ----')
-        
-        #Update organ workflow
-        self.parent_organ.update_workflow(process = (), update = 'DONE')
-        self.parent_organ.workflow['ImProc'][self.channel_no]['C-SelectCont']['Status'] = 'DONE'
-        
-        #Update channel process
-        self.process.append('SelectCont')
+        #Check workflow status
+        workflow = self.parent_organ.workflow
+        process = ['ImProc', self.channel_no,'C-SelectCont','Status']
+        check_proc = get_by_path(workflow, process)
+        if check_proc == 'DONE':
+            q = 'You already selected the contours for this channel ('+ self.user_chName+'). Do you want to re-select them?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
+            proceed = ask4input(q, res, bool)
+        else: 
+            proceed = True
                 
-        #Update organ imChannels
-        self.parent_organ.add_channel(self)
-        self.parent_organ.save_organ()
-        
-        if self.parent_organ.workflow['ImProc']['Status'] == 'NotInitialised':
-            self.parent_organ.workflow['ImProc']['Status'] = 'Initialised'
+        if proceed: 
+            # Load image
+            im_proc = self.im_proc()
+            self.save_channel(im_proc=im_proc)
             
-        #Update
-        # 'C-SelectCont':{'Status': 'NotInitialised'},
-        #                 # 'Info': {'tuple_slices': None,
-        #                 #         'number_contours': None,
-        #                 #         'range': None}},
+            #Process
+            print('---- Selecting Contours! ----')
+            
+            #Update organ workflow
+            self.parent_organ.update_workflow(process, update = 'DONE')
+
+            #Update channel process
+            self.process.append('SelectCont')
+                    
+            #Update organ imChannels
+            self.parent_organ.add_channel(self)
+            self.parent_organ.save_organ()
+            
+            process_up2 = ['ImProc','Status']
+            if get_by_path(workflow, process_up2) == 'NotInitialised':
+                self.parent_organ.update_workflow(process_up2, update = 'Initialised')
+                
+            #Update
+            # 'C-SelectCont':{'Status': 'NotInitialised'},
+            #                 # 'Info': {'tuple_slices': None,
+            #                 #         'number_contours': None,
+            #                 #         'range': None}},
 
     def create_chS3s (self, layerDict:dict):
-        s3_int = ContStack(im_channel=self, cont_type='int', new=True, layerDict=layerDict)
-        #self.s3_int = s3_int
-        self.add_contStack(s3_int)
-        #Update organ workflow
-        self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Info']['int']['Status'] = 'DONE'
-        
-        s3_ext = ContStack(im_channel=self, cont_type='ext', new=True, layerDict=layerDict)
-        #self.s3_ext = s3_ext
-        self.add_contStack(s3_ext)
-        #Update organ workflow
-        self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Info']['ext']['Status'] = 'DONE'
-        
-        s3_tiss = ContStack(im_channel=self, cont_type='tiss', new=True, layerDict=layerDict)
-        #self.s3_tiss = s3_tiss
-        self.add_contStack(s3_tiss)
-        #Update organ workflow
-        self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Info']['tiss']['Status'] = 'DONE'
-      
-        #Update organ workflow
-        if s3_int.s3_dir.is_file() and s3_ext.s3_dir.is_file() and s3_tiss.s3_dir.is_file():
-            if s3_int.shape_s3 == s3_ext.shape_s3 == s3_tiss.shape_s3:
-                self.shape_s3 = s3_int.shape_s3
-            else: 
-                print('self.shape_s3 = s3_int.shape')
-            self.parent_organ.update_workflow(process = (), update = 'DONE')
-            self.parent_organ.workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] = 'DONE'
-            # self.parent_organ.workflow['ImProc'][self.channel_no]['Status'] = 'DONE'
-        
-        if self.parent_organ.workflow['ImProc']['Status'] == 'NotInitialised':
-            self.parent_organ.workflow['ImProc']['Status'] = 'Initialised'
+        #Check workflow status
+        workflow = self.parent_organ.workflow
+        process = ['ImProc', self.channel_no, 'D-S3Create','Status']
+        check_proc = get_by_path(workflow, process)
+        if check_proc == 'DONE':
+            q = 'You already created the contour stacks (S3s) of this channel ('+ self.user_chName+'). Do you want to re-create them?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
+            proceed = ask4input(q, res, bool)
+        else: 
+            proceed = True
+                
+        if proceed: 
+            dirs_cont = []; shapes_s3 = []
+            for cont in ['int', 'ext', 'tiss']:
+                s3 = ContStack(im_channel=self, cont_type=cont, new=True, layerDict=layerDict)
+                self.add_contStack(s3)
+                dirs_cont.append(s3.s3_dir.is_file())
+                shapes_s3.append(s3.shape_s3)
+                #Update organ workflow
+                process_cont = ['ImProc',self.channel_no,'D-S3Create','Info',cont,'Status']
+                self.parent_organ.update_workflow(process_cont, update = 'DONE')
             
-        #Update channel process
-        self.process.append('CreateS3')
-        
-        #Update organ imChannel
-        self.parent_organ.add_channel(self)
-        self.parent_organ.save_organ()
-        
+            #Update organ workflow
+            if all(flag for flag in dirs_cont):
+                if shapes_s3.count(shapes_s3[0]) == len(shapes_s3):
+                    self.shape_s3 = s3.shape_s3
+                else: 
+                    print('self.shape_s3 = s3.shape')
+                self.parent_organ.update_workflow(process, update = 'DONE')
+
+            #Update channel process
+            self.process.append('CreateS3')
+            
+            #Update organ imChannel
+            self.parent_organ.add_channel(self)
+            self.parent_organ.save_organ()
+            
+            process_up2 = ['ImProc','Status']
+            if get_by_path(workflow, process_up2) == 'NotInitialised':
+                self.parent_organ.update_workflow(process_up2, update = 'Initialised')
+            
     def load_chS3s (self, cont_types:list):
-        if 'int' in cont_types:
-            s3_int = ContStack(im_channel=self, cont_type='int', new=False)
-            self.s3_int = s3_int
-            self.add_contStack(s3_int)
-        
-        if 'ext' in cont_types:
-            s3_ext = ContStack(im_channel=self, cont_type='ext', new=False)
-            self.s3_ext = s3_ext
-            self.add_contStack(s3_ext)
-            
-        if 'tiss' in cont_types:
-            s3_tiss = ContStack(im_channel=self, cont_type='tiss', new=False)
-            self.s3_tiss = s3_tiss
-            self.add_contStack(s3_tiss)
+        for cont in ['int', 'ext', 'tiss']:
+            if cont in cont_types:
+                s3 = ContStack(im_channel=self, cont_type=cont, new=False)
+                setattr(self, 's3_'+cont, s3)
+                self.add_contStack(s3)
         
         #Update channel process
         self.process.append('LoadS3')
@@ -1277,55 +1360,67 @@ class ImChannel(): #channel
         self.parent_organ.save_organ()
 
     def trimS3(self, cuts, cuts_out): 
-        #Load s3s
-        self.load_chS3s(cont_types=['int', 'ext', 'tiss'])
-        
-        #Process
-        print('---- Trimming S3s! ----')                             
-        if len(cuts) == 1:
-            pl = cuts_out[cuts[0]]['plane_info_image']
-            plm = cuts_out[cuts[0]]['plane_info_mesh']
-            for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
-                s3.cutW1Plane(pl, cuts[0])
-                self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Info'][s3.cont_type]['Status'] = 'DONE'
-                self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Planes'][cuts[0]] = {'cut_image' : pl,
-                                                                                                        'cut_mesh' : plm}
-                # self.parent_organ.workflow['MeshesProc'][self.channel_no]['E-TrimS3']['Planes'][cuts[0]] = {'cut_image' : pl,
-                #                                                                                         'cut_mesh' : plm}
-        if len(cuts) == 2:
-            for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
-                pl1 = cuts_out['bottom']['plane_info_image']
-                pl1m = cuts_out['bottom']['plane_info_mesh']
-                pl2 = cuts_out['top']['plane_info_image']
-                pl2m = cuts_out['top']['plane_info_mesh']
-                s3.cutW2Planes(pl1, pl2)
-                self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Info'][s3.cont_type]['Status'] = 'DONE'
-                self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Planes']['bottom'] = {'cut_image' : pl1,
-                                                                                                        'cut_mesh' : pl1m}
-                                
-                self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Planes']['top'] = {'cut_image' : pl2,
-                                                                                                        'cut_mesh' : pl2m}
-                                
-        #Update organ workflow        
-        self.parent_organ.update_workflow(process = (), update = 'DONE')
-        self.parent_organ.workflow['ImProc'][self.channel_no]['E-TrimS3']['Status'] = 'DONE'
-        
-        #Update channel process
-        self.process.append('TrimS3')
-        
-        #Update organ imChannels
-        self.parent_organ.add_channel(self)
-        if self.parent_organ.workflow['ImProc']['Status'] == 'NotInitialised':
-            self.parent_organ.workflow['ImProc']['Status'] = 'Initialised'
-        
-        # Save organ
-        self.parent_organ.save_organ()
-        # Update status 
-        self.parent_organ.check_status(process = 'ImProc')
-    
-    def s32Meshes(self, keep_largest, rotateZ_90, new):
-        
+        #Check workflow status
         workflow = self.parent_organ.workflow
+        process = ['ImProc', self.channel_no, 'E-TrimS3','Status']
+        check_proc = get_by_path(workflow, process)
+        if check_proc == 'DONE':
+            q = 'You already masked this channel ('+ self.user_chName+'). Do you want to re-run it?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
+            proceed = ask4input(q, res, bool)
+        else: 
+            proceed = True
+                
+        if proceed: 
+            #Load s3s
+            self.load_chS3s(cont_types=['int', 'ext', 'tiss'])
+            
+            #Process
+            print('---- Trimming S3s! ----')                             
+            if len(cuts) == 1:
+                pl = cuts_out[cuts[0]]['plane_info_image']
+                plm = cuts_out[cuts[0]]['plane_info_mesh']
+                for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
+                    s3.cutW1Plane(pl, cuts[0])
+                    process_cont = ['ImProc',self.channel_no,'E-TrimS3','Info',s3.cont_type,'Status']
+                    self.parent_organ.update_workflow(process_cont, update = 'DONE')
+                    planes_up = ['ImProc',self.channel_no,'E-TrimS3','Planes',cuts[0]]
+                    self.parent_organ.update_workflow(planes_up, update = {'cut_image' : pl,'cut_mesh' : plm})
+                    
+            if len(cuts) == 2:
+                for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
+                    pl1 = cuts_out['bottom']['plane_info_image']
+                    pl1m = cuts_out['bottom']['plane_info_mesh']
+                    pl2 = cuts_out['top']['plane_info_image']
+                    pl2m = cuts_out['top']['plane_info_mesh']
+                    s3.cutW2Planes(pl1, pl2)
+                    process_cont = ['ImProc',self.channel_no,'E-TrimS3','Info',s3.cont_type,'Status']
+                    self.parent_organ.update_workflow(process_cont, update = 'DONE')
+                    planes_bot = ['ImProc',self.channel_no,'E-TrimS3','Planes','bottom']
+                    self.parent_organ.update_workflow(planes_bot, update = {'cut_image' : pl1,'cut_mesh' : pl1m})
+                    planes_top = ['ImProc',self.channel_no,'E-TrimS3','Planes','top']
+                    self.parent_organ.update_workflow(planes_top, update = {'cut_image' : pl2,'cut_mesh' : pl2m})
+            
+            #Update organ workflow 
+            self.parent_organ.update_workflow(process, update = 'DONE')
+            
+            #Update channel process
+            self.process.append('TrimS3')
+            
+            #Update organ imChannels
+            self.parent_organ.add_channel(self)
+            
+            process_up2 = ['ImProc','Status']
+            if get_by_path(workflow, process_up2) == 'NotInitialised':
+                self.parent_organ.update_workflow(process_up2, update = 'Initialised')
+            
+            # Save organ
+            self.parent_organ.save_organ()
+            # Update status 
+            self.parent_organ.check_status(process = 'ImProc')
+        
+    def s32Meshes(self, cont_types:list, keep_largest, rotateZ_90, new):
+        
         meshes_out = []
         for mesh_type in ['int', 'ext', 'tiss']:
             # if not new: 
@@ -1358,7 +1453,7 @@ class ImChannel(): #channel
 
     def save_channel(self, im_proc):
         im_name = self.parent_organ.user_organName + '_StckProc_' + self.channel_no + '.npy'
-        im_dir = self.parent_organ.settings['dirs']['s3_numpy'] / im_name
+        im_dir = self.parent_organ.info['dirs']['s3_numpy'] / im_name
         np.save(im_dir, im_proc)
         if not im_dir.is_file():
             print('>> Error: Processed channel was not saved correctly!\n>> File: '+im_name)
@@ -1469,7 +1564,7 @@ class ImChannelNS(): #channel
         self.parent_organ = organ
         self.parent_organ_name = organ.user_organName
         self.channel_no = ch_name
-        self.user_chName = organ.settings[ch_name]['general_info']['user_chName']
+        self.user_chName = organ.mH_settings[ch_name]['general_info']['user_chName']
         self.ch_relation = 'negative-space'
         if new:
             self.new_ImChannelNS()
@@ -1486,12 +1581,12 @@ class ImChannelNS(): #channel
         self.contStack = {}
         
         # external contour
-        ext_s3_name = organ.settings[ch_name]['general_info']['ch_ext'][0]
-        ext_s3_type = organ.settings[ch_name]['general_info']['ch_ext'][1]
+        ext_s3_name = organ.mH_settings[ch_name]['general_info']['ch_ext'][0]
+        ext_s3_type = organ.mH_settings[ch_name]['general_info']['ch_ext'][1]
         
         #internal contour
-        int_s3_name = organ.settings[ch_name]['general_info']['ch_int'][0]
-        int_s3_type = organ.settings[ch_name]['general_info']['ch_int'][1]
+        int_s3_name = organ.mH_settings[ch_name]['general_info']['ch_int'][0]
+        int_s3_type = organ.mH_settings[ch_name]['general_info']['ch_int'][1]
         
         self.setup = {'ext':{'name': ext_s3_name, 'type': ext_s3_type}, 
                       'int':{'name': int_s3_name, 'type': int_s3_type}}
@@ -1652,7 +1747,7 @@ class ContStack():
     'morphoHeart Contour Stack Class'
     
     def __init__(self, im_channel:Union[ImChannel,ImChannelNS], 
-                             cont_type:str, new=False, layerDict={}):
+                             cont_type:str, new=True, layerDict={}):
         
         cont_types = ['int', 'ext', 'tiss']
         names = ['imIntFilledCont', 'imExtFilledCont', 'imAllFilledCont']
@@ -1710,7 +1805,7 @@ class ContStack():
 
     def s3_save(self, s3):
         organ = self.im_channel.parent_organ
-        dir2save = organ.settings['dirs']['s3_numpy'] / self.s3_file
+        dir2save = organ.info['dirs']['s3_numpy'] / self.s3_file
         np.save(dir2save, s3)
         if not dir2save.is_file():
             print('>> Error: s3 file was not saved correctly!\n>> File: '+self.s3_file)
@@ -1843,54 +1938,63 @@ class Mesh_mH():
     'morphoHeart Mesh Class'
     
     def __init__(self, imChannel:ImChannel, mesh_type:str, 
-                 keep_largest:bool, rotateZ_90:bool, new=True):
+                 keep_largest:bool, rotateZ_90=True, new=True):
         
         self.parent_organ = imChannel.parent_organ
         self.imChannel = imChannel
         self.channel_no = imChannel.channel_no
-        self.user_meshName = self.parent_organ.settings[self.channel_no]['general_info']['user_chName']
+        self.user_meshName = self.parent_organ.mH_settings[self.channel_no]['general_info']['user_chName']
         self.mesh_type = mesh_type
         self.legend = self.user_meshName+'_'+self.mesh_type
         self.name = self.channel_no +'_'+self.mesh_type
         self.resolution = imChannel.get_resolution()
 
+        wf = ['MeshesProc','A-Create3DMesh', imChannel.channel_no, mesh_type] 
         if new: 
             self.keep_largest = keep_largest
             self.rotateZ_90 = rotateZ_90
             self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
-            self.color = self.parent_organ.settings[self.channel_no]['general_info']['colorCh_'+self.mesh_type]
+            self.color = self.parent_organ.mH_settings[self.channel_no]['general_info']['colorCh_'+self.mesh_type]
             self.alpha = 0.05
             
+            # Update workflow
+            self.parent_organ.update_workflow(wf+['Status'], update = 'DONE')
             if 'NS' not in imChannel.channel_no:
-                self.parent_organ.workflow['MeshesProc']['A-Create3DMesh'][imChannel.channel_no][mesh_type]['Status'] = 'DONE'
-                self.parent_organ.workflow['MeshesProc']['A-Create3DMesh'][imChannel.channel_no][mesh_type]['stack_dir'] = imChannel.contStack[self.mesh_type]['s3_dir']
-                self.parent_organ.workflow['MeshesProc']['A-Create3DMesh'][imChannel.channel_no][mesh_type]['keep_largest'] = keep_largest
-            else: 
-                self.parent_organ.workflow['MeshesProc']['A-Create3DMesh'][imChannel.channel_no]['Status'] = 'DONE'
+                self.parent_organ.update_workflow(wf+['Stack_dir'], update = imChannel.contStack[self.mesh_type]['s3_dir'])
+                self.parent_organ.update_workflow(wf+['keep_largest'], update = keep_largest)
+                mH_settings = self.parent_organ.mH_settings
+                items = [imChannel.channel_no,'setup',self.mesh_type,'keep_largest']
+                set_by_path(mH_settings, items, keep_largest)
+            # else:  
         
         else: 
             self.load_mesh()
-            self.keep_largest = self.parent_organ.meshes[self.name]['keep_largest']
-            self.rotateZ_90 = self.parent_organ.meshes[self.name]['rotateZ_90']
+            workflow = self.parent_organ.workflow
+            self.keep_largest = get_by_path(workflow, wf+['keep_largest'])
+            self.rotateZ_90 = rotateZ_90
             self.color = self.parent_organ.meshes[self.name]['color']
             self.alpha = self.parent_organ.meshes[self.name]['alpha']
             
         self.mesh.color(self.color)
         self.mesh.alpha(self.alpha)
+        
         if new: 
-            self.parent_organ.add_mesh(self, new=True)
+            self.parent_organ.add_mesh(self)
             self.save_mesh()
     
     def create_mesh(self, keep_largest:bool, rotateZ_90:bool):
         # Extract vertices, faces, normals and values of each mesh
-        if self.mesh_type == 'int':
-            s3 = self.imChannel.s3_int.s3()
-        elif self.mesh_type == 'ext':
-            s3 = self.imChannel.s3_ext.s3()
-        elif self.mesh_type == 'tiss':
-            s3 = self.imChannel.s3_tiss.s3()
+        s3_type = 's3_'+self.mesh_type
+        s3 = getattr(self.imChannel, s3_type)
+        s3s3 = s3.s3()
+        # if self.mesh_type == 'int':
+        #     s3 = self.imChannel.s3_int.s3()
+        # elif self.mesh_type == 'ext':
+        #     s3 = self.imChannel.s3_ext.s3()
+        # elif self.mesh_type == 'tiss':
+        #     s3 = self.imChannel.s3_tiss.s3()
         # print(s3)
-        verts, faces, _, _ = measure.marching_cubes_lewiner(s3, spacing=self.resolution)
+        verts, faces, _, _ = measure.marching_cubes_lewiner(s3s3, spacing=self.resolution)
     
         # Create meshes
         mesh = vedo.Mesh([verts, faces])
@@ -1904,7 +2008,7 @@ class Mesh_mH():
     def load_mesh(self):
         parent_organ = self.parent_organ
         mesh_name = parent_organ.user_organName+'_'+self.legend+'.vtk'
-        mesh_dir = parent_organ.settings['dirs']['meshes'] / mesh_name
+        mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
         mesh_out = vedo.load(str(mesh_dir))
         self.dir_out = mesh_dir
         self.mesh = mesh_out
@@ -1912,13 +2016,13 @@ class Mesh_mH():
     def save_mesh(self):
         parent_organ = self.parent_organ
         mesh_name = parent_organ.user_organName+'_'+self.legend+'.vtk'
-        mesh_dir = parent_organ.settings['dirs']['meshes'] / mesh_name
+        mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
         self.dir_out = mesh_dir
         mesh_out = self.mesh
         mesh_out.write(str(mesh_dir))
         print('>> Mesh '+mesh_name+' has been saved!')
         alert('countdown')        
-        self.parent_organ.add_mesh(self, new=True)
+        self.parent_organ.add_mesh(self)
         
     def mesh4CL(self):
         """
