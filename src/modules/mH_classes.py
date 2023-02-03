@@ -129,7 +129,6 @@ class Project():
             self.organs = load_dict['organs']
             self.cellGroups = load_dict['cellGroups']
           
-            
             self.dir_proj = load_dict['info']['dir_proj']
             self.dir_info = load_dict['info']['dir_info']
         else: 
@@ -151,7 +150,7 @@ class Project():
         
     def set_mH_settings(self, mH_settings:dict):
         
-        mH_set = {}
+        mH_set = {'general_info':{}, 'setup': {}, 'measure': {}, 'wf_info': {}}
         mH_meas_keys = []
         mH_channels = []
         mH_segments = []
@@ -166,32 +165,36 @@ class Project():
                                 'mask_ch': None,
                                 'dir_mk': None}
                 dict_setup = {}
+                dict_meas = {}
                 for cont in ['tiss', 'ext', 'int']: 
                     dict_setup[cont] = {'color': mH_settings['color_chs'][ch_str][cont], 
                                         'keep_largest' : False, 
-                                        'measure': {'whole' : {}}}
+                                        'rotateZ_90': False}
+                    dict_meas[cont] = {'whole': {}}
                     mH_meas_keys.append((ch_str,cont,'whole'))
                     
-                mH_set[ch_str] = {}
-                mH_set[ch_str]['general_info'] = dict_info_ch
-                mH_set[ch_str]['setup'] = dict_setup
+                mH_set['general_info'][ch_str] = dict_info_ch
+                mH_set['setup'][ch_str] = dict_setup
+                mH_set['measure'][ch_str] = dict_meas
                 mH_channels.append(ch_str)
     
             if mH_settings['ns']['layer_btw_chs']:
                 ch_str = 'chNS'
-                mH_set['chNS']={}
-                mH_set['chNS']['general_info']={'mH_chName':ch_str,
+                mH_set['general_info']['chNS']={'mH_chName':ch_str,
                                                 'user_chName':mH_settings['ns']['user_nsChName'].replace(' ', '_'),
                                                 'ch_ext': mH_settings['ns']['ch_ext'],
                                                 'ch_int': mH_settings['ns']['ch_int']}
                 dict_setupNS = {}
+                dict_measNS = {}
                 for cont in ['tiss', 'ext', 'int']: 
                     dict_setupNS[cont] = {'color': mH_settings['ns']['color_chns'][cont], 
-                                        'keep_largest' : False, 
-                                        'measure': {'whole' : {}}}
+                                        'keep_largest' : False,
+                                        'rotateZ_90': False}
+                    dict_measNS[cont] = {'whole': {}}
                     mH_meas_keys.append((ch_str,cont,'whole'))
                 
-                mH_set[ch_str]['setup'] = dict_setupNS
+                mH_set['setup'][ch_str] = dict_setupNS
+                mH_set['measure'][ch_str] = dict_measNS
                 mH_channels.append(ch_str)
     
             if mH_settings['segments']['cutLayersIn2Segments']:
@@ -202,15 +205,8 @@ class Project():
                             segm_str = 'segm'+str(s_num+1)
                             mH_segments.append(segm_str)
                             for cont in mH_settings['segments']['ch_segments'][ch_str]:
-                                mH_set[ch_str]['setup'][cont]['measure'][segm_str] = {} 
+                                mH_set['measure'][ch_str][cont][segm_str] = {} 
                                 mH_meas_keys.append((ch_str,cont,segm_str))
-    
-            self.info['dirs'] = {'meshes': 'NotAssigned', 
-                                'csv_all': 'NotAssigned',
-                                'imgs_videos': 'NotAssigned', 
-                                's3_numpy': 'NotAssigned',
-                                'centreline': 'NotAssigned',
-                                'settings': 'NotAssigned'}
             
         self.mH_settings = mH_set
         self.mH_meas_keys = mH_meas_keys
@@ -248,13 +244,8 @@ class Project():
                             mC_segments.append(segm_str)
                             mC_set[ch_str]['measure'][segm_str] = {} 
                             
-            if self.info['dirs'] == []:
-                self.info['dirs'] = {'csv_all': 'NotAssigned',
-                                    'imgs_videos': 'NotAssigned',
-                                    'settings': 'NotAssigned'}
             else: 
                 print('>> proj.info[dirs] had already been created!')
-        
         
         self.mC_settings = mC_set
         self.mC_channels = mC_channels.sort()
@@ -330,10 +321,10 @@ class Project():
         settings_updated = copy.deepcopy(self.mH_settings)
         mH_param2meas = copy.deepcopy(self.mH_param2meas)
         gral_struct = self.mH_meas_keys
-
+        
         for tup in gral_struct: 
             ch, cont, segm = tup
-            settings_updated[ch]['setup'][cont]['measure'][segm] = user_params2meas[ch][cont][segm]
+            settings_updated['measure'][ch][cont][segm] = user_params2meas[ch][cont][segm]
 
         if user_ball_settings['ballooning']:
             ball_settings = user_ball_settings['ball_settings']
@@ -342,14 +333,14 @@ class Project():
                 cont = ball_settings[key]['to_mesh_type']
                 from_cl = ball_settings[key]['from_cl']
                 cl_type = ball_settings[key]['from_cl_type']
-                settings_updated[ch]['setup'][cont]['measure']['whole']['ballooning']= {'from_cl':from_cl,
-                                                                                        'from_cl_type': cl_type}
+                settings_updated['measure'][ch][cont]['whole']['ballooning']= {'from_cl':from_cl,
+                                                                               'from_cl_type': cl_type}
                 mH_param2meas.append((ch,cont,'whole','ballooning'))
 
-                if not settings_updated[from_cl]['setup'][cl_type]['measure']['whole']['centreline']:
-                    settings_updated[from_cl]['setup'][cl_type]['measure']['whole']['centreline'] = True
-                    settings_updated[from_cl]['setup'][cl_type]['measure']['whole']['centreline_linlength'] = True
-                    settings_updated[from_cl]['setup'][cl_type]['measure']['whole']['centreline_looplength'] = True
+                if not settings_updated['measure'][from_cl][cl_type]['whole']['centreline']:
+                    settings_updated['measure'][from_cl][cl_type]['whole']['centreline'] = True
+                    settings_updated['measure'][from_cl][cl_type]['whole']['centreline_linlength'] = True
+                    settings_updated['measure'][from_cl][cl_type]['whole']['centreline_looplength'] = True
                     
                 if (from_cl,cl_type,'whole','centreline') not in mH_param2meas:
                     mH_param2meas.append((from_cl,cl_type,'whole','centreline'))
@@ -361,6 +352,8 @@ class Project():
         self.mH_param2meas = mH_param2meas
         self.clean_False(settings_updated=settings_updated)
         delattr(self, 'mH_meas_keys')
+        self.set_mH_methods()
+        self.update_mH_settings()
         
     def clean_False(self, settings_updated:dict):
         mH_param2meas = copy.deepcopy(self.mH_param2meas)
@@ -368,14 +361,99 @@ class Project():
         
         for tup in mH_param2meas:
             ch, cont, segm, var = tup
-            if not settings_updated[ch]['setup'][cont]['measure'][segm][var]: 
-                settings_updated[ch]['setup'][cont]['measure'][segm].pop(var, None)
+            if not settings_updated['measure'][ch][cont][segm][var]: 
+                settings_updated['measure'][ch][cont][segm].pop(var, None)
                 # print('deleting: ', ch, cont, segm, var)
             else: 
                 mH_param2meas_new.append(tup)
         
         self.mH_settings = settings_updated
         self.mH_param2meas = sorted(mH_param2meas_new)
+    
+    def set_mH_methods(self):
+        mH_param2meas = self.mH_param2meas
+
+        if len(mH_param2meas)>0: 
+            methods = ['A-Create3DMesh','B-TrimMesh']
+        
+        if any(flag == 'ballooning' for (_,_,_,flag) in mH_param2meas):
+            methods.append('C-Centreline')
+            methods.append('D-Ballooning')
+        elif any(flag == 'centreline' for (_,_,_,flag) in mH_param2meas):
+            methods.append('C-Centreline')
+        if any(flag == 'thickness int>ext' for (_,_,_,flag) in mH_param2meas):
+            methods.append('D-Thickness_int>ext')
+        if any(flag == 'thickness ext>int' for (_,_,_,flag) in mH_param2meas):
+                methods.append('D-Thickness_ext>int')
+        if any('segm' in flag for (_,_,flag,_) in mH_param2meas):
+            methods.append('E-Segments')
+        
+        self.mH_methods = methods
+    
+    def update_mH_settings(self):
+        methods = self.mH_methods
+        mH_settings = self.mH_settings
+        mH_params = self.mH_param2meas
+        if len(methods)>0:
+            mH_settings['wf_info']={'ImProc':{'E-CleanCh': {'Settings': {'ch':None,
+                                                                         's3_mask': None,
+                                                                         'inverted': False}},
+                                              'E-TrimS3': {'Planes': None}},
+                                    'MeshesProc': {'B-TrimMesh': {'Planes': None}}}
+        if 'C-Centreline' in methods:
+            centreline = True
+            item_centreline = [item for item in mH_params if 'centreline' in item]
+            mH_settings['wf_info']['MeshesProc']['C-Centreline'] = {}
+            for tup in item_centreline:
+                ch, cont, _, _ = tup
+                if ch not in mH_settings['wf_info']['MeshesProc']['C-Centreline'].keys():
+                    mH_settings['wf_info']['MeshesProc']['C-Centreline'][ch] = {}
+                mH_settings['wf_info']['MeshesProc']['C-Centreline'][ch][cont] = {'dir_cleanMesh': None, 
+                                                                                   'dir_meshLabMesh': None, 
+                                                                                   'vmtktxt': None,
+                                                                                   'connect_cl': None}
+                
+        if 'D-Ballooning' in methods:
+            item_ball = [item for item in mH_params if 'ballooning' in item]
+            mH_settings['wf_info']['MeshesProc']['D-Ballooning'] = {}
+            for tup in item_ball:
+                ch, cont, _, _ = tup
+                if ch not in mH_settings['wf_info']['MeshesProc']['D-Ballooning'].keys():
+                    mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch] = {}
+                mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont] = {'Settings': self.mH_settings['measure'][ch][cont]['whole']['ballooning']}
+            
+        if 'D-Thickness_int>ext' in methods:
+            item_th = [item for item in mH_params if 'thickness int>ext' in item]
+            mH_settings['wf_info']['MeshesProc']['D-Thickness_int>ext'] = {}
+            for tup in item_th:
+                ch, cont, _, _ = tup
+                if ch not in mH_settings['wf_info']['MeshesProc']['D-Thickness_int>ext'].keys():
+                    mH_settings['wf_info']['MeshesProc']['D-Thickness_int>ext'][ch] = {}
+                mH_settings['wf_info']['MeshesProc']['D-Thickness_int>ext'][ch][cont] = {'range' : {'min_val': None,
+                                                                                                 'max_val': None}}
+                
+        if 'D-Thickness_ext>int' in methods:
+            item_th = [item for item in mH_params if 'thickness ext>int' in item]
+            mH_settings['wf_info']['MeshesProc']['D-Thickness_ext>int'] = {}
+            for tup in item_th:
+                ch, cont, _, _ = tup
+                if ch not in mH_settings['wf_info']['MeshesProc']['D-Thickness_ext>int'].keys():
+                    mH_settings['wf_info']['MeshesProc']['D-Thickness_ext>int'][ch] = {}
+                mH_settings['wf_info']['MeshesProc']['D-Thickness_ext>int'][ch][cont] = {'range' : {'min_val': None, 
+                                                                                                    'max_val': None}}
+                
+        if self.analysis['morphoHeart']:
+            self.info['dirs'] = {'meshes': 'NotAssigned', 
+                                'csv_all': 'NotAssigned',
+                                'imgs_videos': 'NotAssigned', 
+                                's3_numpy': 'NotAssigned',
+                                'settings': 'NotAssigned'}
+            if centreline:
+                self.info['dirs']['centreline'] = 'NotAssigned'
+        elif self.analysis['morphoCell']:
+            self.info['dirs'] = {'csv_all': 'NotAssigned',
+                                'imgs_videos': 'NotAssigned', 
+                                'settings': 'NotAssigned'}
 
     def create_proj_dir(self, dir_proj:Path):
         folder_name = 'R_'+self.user_projName
@@ -402,128 +480,98 @@ class Project():
             dict_ImProc['Status'] = 'NotInitialised'
             dict_MeshesProc = dict()
     
-             # Find the meas_param that include the extraction of a centreline
+            # Find the meas_param that include the extraction of a centreline
             item_centreline = [item for item in self.mH_param2meas if 'centreline' in item]
             # Find the meas_param that include the extraction of mH_segments
             segm_list = []
             for segm in mH_segments[0:1]:
                 segm_list.append([item for item in self.mH_param2meas if segm in item and 'volume' in item])
-            # print('segm_list:', segm_list)
             ch_segm = sorted(list(set([tup[0] for tup in segm_list[0]])))
-            # print('ch_segm:', ch_segm)
-            # item_segment = sorted([item for sublist in segm_list for item in sublist])
-            # print(item_segment)
-            
+        
             # Find the meas_param that include the extraction of ballooning
             item_ballooning = [item for item in self.mH_param2meas if 'ballooning' in item]
             # Find the meas_param that include the extraction of thickness
             item_thickness_intext = [item for item in self.mH_param2meas if 'thickness int>ext' in item]
             item_thickness_extint = [item for item in self.mH_param2meas if 'thickness ext>int' in item]
     
-            dict_MeshesProc = {'Status' : 'NotInitialised',
-                               'A-Create3DMesh': {'Status': 'NotInitialised'},
-                               'B-TrimMesh': {'Status': 'NotInitialised'},
-                               'C-Centreline': {'Status': 'NotInitialised'},
-                               'D-Ballooning': {'Status': 'NotInitialised'}, 
-                               'D-Thickness_int>ext': {'Status': 'NotInitialised'},
-                               'D-Thickness_ext>int': {'Status': 'NotInitialised'},
-                               'E-Segments': {'Status': 'NotInitialised'}}
+            dict_MeshesProc = {'Status' : 'NotInitialised'}
+            for met in self.mH_methods:
+                dict_MeshesProc[met] =  {'Status': 'NotInitialised'}
                                
             # Project status
             for ch in mH_channels:
-                if 'NS' not in ch:
-                    dict_ImProc[ch] = {'Status': 'NotInitialised',
-                                        'A-MaskChannel': {'Status': 'NotInitialised'},
-                                        'B-CloseCont':{'Status': 'NotInitialised',
-                                                        'Steps':{'A-Autom': {'Status': 'NotInitialised'},
-                                                                'B-Manual': {'Status': 'NotInitialised'},
-                                                                'C-CloseInOut': {'Status': 'NotInitialised'}}},
-    
-                                        'C-SelectCont':{'Status': 'NotInitialised'},
-    
-                                        'D-S3Create':{'Status': 'NotInitialised',
-                                                    'Info': {'tiss':{'Status': 'NotInitialised'}, 
-                                                            'int':{'Status': 'NotInitialised'}, 
-                                                            'ext':{'Status': 'NotInitialised'}}}}
-                    
-                    #Check the external channel
-                    if self.mH_settings[ch]['general_info']['ch_relation'] == 'external':
-                        dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NotInitialised',
-                                                         'Info':{'tiss':{'Status': 'NotInitialised'}, 
-                                                                 'int':{'Status': 'NotInitialised'},
-                                                                 'ext':{'Status': 'NotInitialised'}}, 
-                                                         'Planes':{}}
+                if 'A-Create3DMesh' in dict_MeshesProc.keys():
+                    if 'NS' not in ch:
+                        dict_ImProc[ch] = {'Status': 'NotInitialised',
+                                            'A-MaskChannel': {'Status': 'NotInitialised'},
+                                            'B-CloseCont':{'Status': 'NotInitialised',
+                                                            'Steps':{'A-Autom': {'Status': 'NotInitialised'},
+                                                                    'B-Manual': {'Status': 'NotInitialised'},
+                                                                    'C-CloseInOut': {'Status': 'NotInitialised'}}},
+        
+                                            'C-SelectCont':{'Status': 'NotInitialised'},
+        
+                                            'D-S3Create':{'Status': 'NotInitialised',
+                                                        'Info': {'tiss':{'Status': 'NotInitialised'}, 
+                                                                'int':{'Status': 'NotInitialised'}, 
+                                                                'ext':{'Status': 'NotInitialised'}}}}
+                        
+                        #Check the external channel
+                        if self.mH_settings['general_info'][ch]['ch_relation'] == 'external':
+                            dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NotInitialised',
+                                                             'Info':{'tiss':{'Status': 'NotInitialised'}, 
+                                                                     'int':{'Status': 'NotInitialised'},
+                                                                     'ext':{'Status': 'NotInitialised'}}}
+                        else: 
+                            dict_ImProc[ch]['E-CleanCh'] = {'Status': 'NotInitialised',
+                                                              'Info': {'tiss':{'Status': 'NotInitialised'}, 
+                                                                      'int':{'Status': 'NotInitialised'}, 
+                                                                      'ext':{'Status': 'NotInitialised'}}}
+                            dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NotInitialised',
+                                                             'Info':{'tiss':{'Status': 'NotInitialised'}, 
+                                                                     'int':{'Status': 'NotInitialised'},
+                                                                     'ext':{'Status': 'NotInitialised'}}}
                     else: 
-                        dict_ImProc[ch]['E-CleanCh'] = {'Status': 'NotInitialised',
-                                                          'Info': {'tiss':{'Status': 'NotInitialised'}, 
-                                                                  'int':{'Status': 'NotInitialised'}, 
-                                                                  'ext':{'Status': 'NotInitialised'}}}
-                        dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NotInitialised',
-                                                         'Info':{'tiss':{'Status': 'NotInitialised'}, 
-                                                                 'int':{'Status': 'NotInitialised'},
-                                                                 'ext':{'Status': 'NotInitialised'}}, 
-                                                         'Planes':{}}
-                else: 
-                    dict_ImProc[ch] = {'Status': 'NotInitialised',
-                                        'D-S3Create':{'Status': 'NotInitialised',
-                                                    'Settings':{'ext_mesh': self.mH_settings[ch]['general_info']['ch_ext'],
-                                                                'int_mesh': self.mH_settings[ch]['general_info']['ch_int']}}} 
+                        dict_ImProc[ch] = {'Status': 'NotInitialised',
+                                            'D-S3Create':{'Status': 'NotInitialised'}} 
                  
-    
+                    
+            for ch in mH_channels:
                 for process in ['A-Create3DMesh','B-TrimMesh','C-Centreline']:
                     if 'NS' not in ch:
                         dict_MeshesProc[process][ch] = {}
                         for cont in ['tiss', 'int', 'ext']:
-                            if process == 'A-Create3DMesh':
+                            if process == 'A-Create3DMesh' or process == 'B-TrimMesh':
                                 dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
-                                # dict_MeshesProc[process][ch][cont]['stack_dir'] = None
-                                # if cont == 'tiss':
-                                #     dict_MeshesProc[process][ch][cont]['keep_largest'] = False
-                                # else: 
-                                #     dict_MeshesProc[process][ch][cont]['keep_largest'] = None
-                            if process == 'B-TrimMesh':
-                                dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
-                                # dict_MeshesProc[process][ch][cont]['stack_dir'] = None
-                                # if cont == 'tiss':
-                                #     dict_MeshesProc[process][ch][cont]['keep_largest'] = False
-                                # else: 
-                                #     dict_MeshesProc[process][ch][cont]['keep_largest'] = None
-                            
-                            if process == 'C-Centreline':
+                         
+                            if process == 'C-Centreline' and 'C-Centreline' in dict_MeshesProc.keys():
                                 if (ch,cont,'whole','centreline') in item_centreline:
-                                    dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised',
-                                                                           'dir_cleanMesh': None, 
-                                                                           'dir_meshLabMesh': None, 
-                                                                           'vmtk_cl': {'Status': 'NotInitialised',
-                                                                                       'vmtktxt': 'NotInitialised'},
-                                                                           'connect_cl': {'Status': 'NotInitialised',
-                                                                                       'Settings': 'NotInitialised'},
-                                                                           'measure':{'Status': 'NotInitialised',
-                                                                                       'parameters': []}}
+                                    dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'},
+                                                                           # 'dir_cleanMesh': None, 
+                                                                           # 'dir_meshLabMesh': None, 
+                                                                           # 'vmtk_cl': {'Status': 'NotInitialised',
+                                                                           #             'vmtktxt': 'NotInitialised'},
+                                                                           # 'connect_cl': {'Status': 'NotInitialised',
+                                                                           #             'Settings': 'NotInitialised'},
+                                                                           # 'measure':{'Status': 'NotInitialised',
+                                                                           #             'parameters': []}}
                     else: 
                         if process == 'A-Create3DMesh':
-                            dict_MeshesProc[process][ch] = {'Status': 'NotInitialised', 
-                                                            'keep_largest': False}
+                            dict_MeshesProc[process][ch] = {'Status': 'NotInitialised'}
     
                 for cont in ['tiss', 'int', 'ext']:
                     if (ch,cont,'whole','ballooning') in item_ballooning:
                         dict_MeshesProc['D-Ballooning'][ch] = {}
-                        from_cl = self.mH_settings[ch]['setup'][cont]['measure']['whole']['ballooning']['from_cl']
-                        from_cl_type = self.mH_settings[ch]['setup'][cont]['measure']['whole']['ballooning']['from_cl_type']
-                        dict_MeshesProc['D-Ballooning'][ch][cont] =  {'Status': 'NotInitialised',
-                                                                       'Settings': {'from_cl': from_cl, 
-                                                                                   'from_cl_type': from_cl_type}}
+                        dict_MeshesProc['D-Ballooning'][ch][cont] =  {'Status': 'NotInitialised'}
     
                     if (ch,cont,'whole','thickness int>ext') in item_thickness_intext:
                         dict_MeshesProc['D-Thickness_int>ext'][ch] = {}
-                        dict_MeshesProc['D-Thickness_int>ext'][ch][cont] = {'Status': 'NotInitialised',
-                                                                     'Parameters': {'actual_values' : {'min_val': None,
-                                                                                                     'max_val': None}}}    
+                        dict_MeshesProc['D-Thickness_int>ext'][ch][cont] = {'Status': 'NotInitialised'}
+                        
                     if (ch,cont,'whole','thickness ext>int') in item_thickness_extint:
                          dict_MeshesProc['D-Thickness_ext>int'][ch] = {}
-                         dict_MeshesProc['D-Thickness_ext>int'][ch][cont] = {'Status': 'NotInitialised',
-                                                                     'Parameters': {'actual_values' : {'min_val': None,
-                                                                                                 'max_val': None}}}                                                       
+                         dict_MeshesProc['D-Thickness_ext>int'][ch][cont] = {'Status': 'NotInitialised'}
+                                                       
             # Project status
             for ch in ch_segm:
                 dict_MeshesProc['E-Segments'][ch] = {}
@@ -532,9 +580,8 @@ class Project():
                         dict_MeshesProc['E-Segments'][ch][cont] = {'Status': 'NotInitialised',
                                                                    'Segments': {}}
                         for segm in ['whole']+mH_segments:
-                            dict_MeshesProc['E-Segments'][ch][cont]['Segments'][segm]={'Status': 'NotInitialised',
-                                                                                        'measure': {'Status': 'NotInitialised',
-                                                                                                    'parameters': []}}
+                            dict_MeshesProc['E-Segments'][ch][cont]['Segments'][segm]={'Status': 'NotInitialised'}
+                                                                                       
             workflow['ImProc'] = dict_ImProc
             workflow['MeshesProc'] = dict_MeshesProc
         
@@ -557,6 +604,7 @@ class Project():
         all_info = {}
         all_info['info'] = self.info
         all_info['analysis'] = self.analysis
+        all_info['mH_methods'] = self.mH_methods
         all_info['mH_settings'] = self.mH_settings
         all_info['mH_channels'] = self.mH_channels
         all_info['mH_segments'] = self.mH_segments

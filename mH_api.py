@@ -155,7 +155,6 @@ if partA:
     proj.create_proj_dir(dir_proj_res)
     print('>> proj.dict_projInfo: ', proj.info)
     
-    #%%
     # The result of the modification of such table is shown in the dict 
     # called user_params2meas.
     user_params2meas = {'ch1': {'tiss': {'whole': {'volume': True,
@@ -250,7 +249,9 @@ if partA:
     dir_proj = dir_proj_res / folder_name 
     proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     print('>> Check Project: \n\t',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
+    
 #%%
+
     #% ------------------------------------------------------------------------------
     # Having created the project an organ is created as part of the project
     print('\n---CREATING ORGAN----')
