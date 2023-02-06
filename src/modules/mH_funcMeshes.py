@@ -29,7 +29,7 @@ txt_slider_size = 0.8
 
 #%% ##### - Other Imports - ##################################################
 # from ...config import dict_gui
-from .mH_funcBasics import ask4input # , alert
+from .mH_funcBasics import ask4input, get_by_path # , alert
 # from .mH_classes import ImChannel, Mesh_mH
 
 alert_all=True
@@ -100,16 +100,28 @@ def trim_top_bottom_S3s(organ, cuts, meshes):
         
     # Get the channels from the meshes to cut
     ch_meshes = {}
+    ch_planes = []
     for mesh in meshes:
         ch_meshes[mesh.imChannel.channel_no] = mesh.imChannel
+        ch_planes.append(mesh.imChannel.channel_no)
+    
+    #Update mH_settings with channels to be cut
+    update = {}
+    for ch in ch_planes: 
+        update[ch] = None
+    proc = ['wf_info','ImProc','E-TrimS3','Planes']
+    organ.update_settings(proc, update, 'mH')
+    # print('ch_planes:', ch_planes)
         
-    #Cut ch1 s3s
-    for ch in organ.imChannels.keys(): 
+    #Cut channel s3s
+    for ch in ch_meshes: 
         im_ch = ch_meshes[ch]
         im_ch.trimS3(cuts=cut_chs[ch], cuts_out=cuts_out)
         
-    organ.settings['cut_ch'] = cut_chs
-    # return cut_chs
+    organ.mH_settings['cut_ch'] = cut_chs
+    
+    
+    # return ch_meshes
     
 #%% - Plotting functions
 #%% func - plot_grid
@@ -195,8 +207,10 @@ def getPlane(filename, txt:str, meshes:list, def_pl = None,
         vp = vedo.Plotter(N=1, axes=4)
         vp.add_icon(logo, pos=(0.8,0.05), size=0.25)
         vp.show(meshes_mesh, plane, plane_new, sph_centre, txt2D, at=0, viewup='y', azimuth=0, elevation=0, interactive=True)
-
-        happy = ask4input('Are you happy with the defined plane to '+txt+'? \n\t [0]:no, I would like to define a new plane. \n\t [1]:yes, continue! >>>:', bool)
+        
+        q = 'Are you happy with the defined plane to '+txt+'?'
+        res = {0 :'no, I would like to define a new plane.', 1 :'yes, continue!'}
+        happy = ask4input(q, res, bool)
         if happy:
             pl_dict = {'pl_normal': normal_corrected,
                        'pl_centre': pl_centre}
@@ -301,7 +315,7 @@ def getPlanePos (filename, txt, meshes, option,
 
     vp.addSlider2D(sliderAlphaMeshOut, xmin=0.01, xmax=0.99, value=0.01,
                pos=[(0.95,0.25), (0.95,0.45)], c='blue', 
-               title=meshes[0].user_meshName+' Opacity', title_size=txt_slider_size)
+               title=meshes[0].user_meshName+' opacity', title_size=txt_slider_size)
 
     text = filename+'\n\nDefine plane position to '+txt+'. \nClose the window when done'
     txt = vedo.Text2D(text, c=txt_color, font=txt_font)
