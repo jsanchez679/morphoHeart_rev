@@ -34,7 +34,7 @@ elif sys.platform == 'win32':
     dir_proj_res = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
     #dir_proj_res = Path('C://Users//pallo//Desktop//cosas juli//mh//project')
     
-partA = False
+partA = True
 partB = True
 partB_vmtk = True
 partC = True
@@ -46,8 +46,8 @@ if partA:
     # Info coming from the gui (user's selection)
     # 1. Click: Create new project
     print('\n---CREATING PROJECT----')
-    user_projName = 'Project A-B'
-    user_projNotes = 'Project to compare embryos A and B'
+    user_projName = 'Project B-C'
+    user_projNotes = 'Project to compare embryos B and C'
     # Morphological analysis - morphoHeart
     mH_analysis = True
     # Cellular analysis - morphoCell
@@ -249,7 +249,7 @@ if partA:
     proj.save_project()
     # Load project and check parameters 
     print('\n---LOADING PROJECT----')
-    proj_name = 'Project_A-B'
+    proj_name = 'Project_B-C'
     folder_name = 'R_'+proj_name
     dir_proj = dir_proj_res / folder_name 
     proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
@@ -330,7 +330,7 @@ if partA:
     proj.save_project()
     # Load project and check parameters 
     print('\n---LOADING PROJECT AND ORGAN----')
-    proj_name = 'Project_A-B'
+    proj_name = 'Project_B-C'
     folder_name = 'R_'+proj_name
     dir_proj = dir_proj_res / folder_name
     proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
@@ -392,7 +392,7 @@ if partA:
 if partB: 
     # Load project, organ and channel and check parameters
     if not partA: 
-        proj_name = 'Project_A-B'
+        proj_name = 'Project_B-C'
         folder_name = 'R_'+proj_name
         dir_proj = dir_proj_res / folder_name
         proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
@@ -402,8 +402,8 @@ if partB:
         im_ch2 = mHC.ImChannel(organ=organ, ch_name='ch2', new=False)
         
     # Create s3_int, s3_ext, s3_tiss for each channel
-    im_ch1.load_chS3s(cont_types=['int', 'ext', 'tiss'])
-    im_ch2.load_chS3s(cont_types=['int', 'ext', 'tiss'])
+    # im_ch1.load_chS3s(cont_types=['int', 'ext', 'tiss'])
+    # im_ch2.load_chS3s(cont_types=['int', 'ext', 'tiss'])
         
     #% CODE B
     # First create meshes from selected contours (end part A beginning part B)
@@ -441,36 +441,7 @@ if partB:
     del proj_new, organ_new, im_ch1_new, im_ch2_new, msh1_tiss2, msh2_tiss2
     
     # Clean channels
-    chs = list(organ.imChannels.keys())
-    if len(chs)>1 and len(chs)<3:
-        for ch in chs:
-            if organ.mH_settings['general_info'][ch]['ch_relation'] == 'external':
-                ch_ext = organ.obj_imChannels[ch]
-            if organ.mH_settings['general_info'][ch]['ch_relation'] == 'internal':
-                ch_int = organ.obj_imChannels[ch]
-                
-    #check the process has not been donde even before asking if you want to clean the channel
-    q = 'Do you want to clean the '+ch_int.user_chName+' with the '+ch_ext.user_chName+'?'
-    res = {0: 'no, thanks',1: 'yes, please!'}
-    clean_ch = fcBasics.ask4input(q, res, bool)
-    if clean_ch:
-        q = 'Select the mask you would like to use to clean the '+ch_int.user_chName+':'
-        res = {0: 'Just the tissue layer of the '+ch_ext.user_chName,1: '(Recommended) The inverted internal segmentation of the '+ch_ext.user_chName+' (more profound cleaning).'}
-        inverted = fcBasics.ask4input(q, res, bool)
-        plot = False
-        ch_int.ch_clean(s3_mask=ch_ext.s3_ext, inverted=inverted, plot=plot)
-        print('>> Check Ch2 vs ChInt: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,ch_int.__dict__,'ch2','int'))
-        
-        print('\n---RECREATING MESHES CHANNEL 2 WITH CLEANED ENDOCARDIUM---')
-        [msh2_int2, msh2_ext2, msh2_tiss2] = im_ch2.s32Meshes(cont_types=['int', 'ext', 'tiss'])
-                                                             
-        # Plot cleaned ch2
-        obj = [(msh2_ext.mesh),(msh2_int.mesh),(msh2_tiss.mesh),(msh2_ext2.mesh),(msh2_int2.mesh),(msh2_tiss2.mesh)]
-        txt = [(0, organ.user_organName + ' - Original'), (3,'Cleaned Meshes')]
-        fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
-        
-        msh2_int = msh2_int2; msh2_ext = msh2_ext2; msh2_tiss = msh2_tiss2
-        del msh2_int2, msh2_ext2, msh2_tiss2
+    msh2_int, msh2_ext, msh2_tiss = fcMeshes.clean_intCh(organ)
             
     # Save organ
     organ.save_organ()
@@ -510,6 +481,7 @@ if partB:
     print('\n---LOADING PROJECT AND ORGAN----')
     proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     organ_new = proj_new.load_organ(user_organName = organName2Load)    
+    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
     del proj_new, organ_new
     
@@ -519,8 +491,9 @@ if partB:
         im_ns.create_chNSS3s(plot=True)
         
         gui_keep_largest = {'int': True, 'ext': True, 'tiss': False}
-        [mshNS_int, mshNS_ext, mshNS_tiss] = im_ns.s32Meshes(keep_largest=gui_keep_largest,
-                                                             rotateZ_90 = True, new = True)
+        [mshNS_int, mshNS_ext, mshNS_tiss] = im_ns.s32Meshes(cont_types=['int', 'ext', 'tiss'],
+                                                             keep_largest=gui_keep_largest,
+                                                             rotateZ_90 = True, new_set = True)
        
         txt = [(0, organ.user_organName  + ' - Extracted ' + im_ns.user_chName)]
         obj = [(mshNS_ext.mesh),(mshNS_int.mesh),(mshNS_tiss.mesh)]
@@ -535,34 +508,28 @@ if partB:
         # Load project, organ
         proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
         organ_new = proj_new.load_organ(user_organName = organName2Load)    
+        print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
         print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
         del proj_new, organ_new
         
 #%% Part B-vmtk
-# Create meshes to extract CL
+# Create meshes to extract CL and extract CL
 if partB_vmtk: 
     if not partA and not partB: 
-        proj_name = 'Project_A-B'
+        proj_name = 'Project_B-C'
         folder_name = 'R_'+proj_name
         dir_proj = dir_proj_res / folder_name
         proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
         organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
-        
-    cl_names = [item for item in organ.parent_project.mH_param2meas if 'centreline' in item]
-    msh4cl = []
-    for name in cl_names: 
-        mesh = organ.obj_meshes[name[0]+'_'+name[1]]
-        mesh_out = mesh.mesh4CL()
-        msh4cl.append(mesh_out)
     
-    txt = [(0, organ.user_organName  + ' - Smoothed meshes')]
-    obj = [(mesh) for mesh in msh4cl]
-    fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
+    # Create meshes to extract CL
+    plot = True
+    fcMeshes.cutMeshes4CL(organ, plot=plot)
     
+   
     
-    
-        
+
     
     
     
