@@ -296,7 +296,7 @@ class Project():
 
                     mH_param2meas.append((ch,cont,segm,'thickness int>ext'))
                     mH_param2meas.append((ch,cont,segm,'thickness ext>int'))
-            if segm == 'whole' and ch != 'chNS':
+            if segm == 'whole' and cont in ['ext','int'] and ch != 'chNS':
                 dict_params_deflt[ch][cont][segm]['centreline'] = True
                 dict_params_deflt[ch][cont][segm]['centreline_linlength'] = True
                 dict_params_deflt[ch][cont][segm]['centreline_looplength'] = True
@@ -415,7 +415,6 @@ class Project():
                                                                                    'dir_meshLabMesh': None, 
                                                                                    'vmtktxt': None,
                                                                                    'connect_cl': None}
-                
                 
         if 'D-Ballooning' in methods:
             item_ball = [item for item in mH_params if 'ballooning' in item]
@@ -1032,8 +1031,6 @@ class Organ():
             
             if all(flag == 'DONE' for flag in proc_done):
                 self.update_workflow([process,'Status'], 'DONE')
-            
-                        
 
     def update_workflow(self, process, update):
         workflow = self.workflow
@@ -1046,6 +1043,18 @@ class Organ():
             settings = self.mC_settings
         set_by_path(settings, process, update)
     
+    def get_extIntChs(self): 
+        chs = list(self.imChannels.keys())
+        ch_ext = []; ch_int = []
+        if len(chs)>1:# and len(chs)<3:
+            for ch in chs:
+                if self.mH_settings['general_info'][ch]['ch_relation'] == 'external':
+                    ch_ext = self.obj_imChannels[ch]
+                if self.mH_settings['general_info'][ch]['ch_relation'] == 'internal':
+                    ch_int = self.obj_imChannels[ch]
+                    
+        return ch_ext, ch_int
+                    
     #Get all the set mH variables in __init__
     def get_notes(self):
         
@@ -1783,16 +1792,20 @@ class ImChannelNS(): #channel
     def create_s3_tiss (self, plot=False, im_every=25): 
         """
         Function to extract the negative space channel
-        """
+        """        
+        #Check workflow status
         workflow = self.parent_organ.workflow
-        
-        print('- Extracting '+self.user_chName+'!')
-        if workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] != 'DONE':
-            proceed = True
+        process = ['ImProc', self.channel_no,'D-S3Create','Status']
+        check_proc = get_by_path(workflow, process)
+        if check_proc == 'DONE':
+            q = 'You already extracted the '+ self.user_chName+' from the negative space. Do you want to re-run this process?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
+            proceed = ask4input(q, res, bool)
         else: 
-            proceed = ask4input('You had already run this process. Do you want to re-run it?\n\t[0]: no, continue with next step\n\t[1]: yes, re-run it! >>>:', bool)
-
+            proceed = True
+                
         if proceed: 
+            print('- Extracting '+self.user_chName+'!')
             s3 = self.s3_ext.s3()
             s3_mask = self.s3_int.s3()
             
@@ -2110,6 +2123,7 @@ class Mesh_mH():
             self.parent_organ.check_status(process = 'MeshesProc')
         
         else: 
+            # print('> Loading ', self.name)
             self.load_mesh()
             self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['keep_largest']
             self.rotateZ_90 = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['rotateZ_90']

@@ -34,7 +34,7 @@ elif sys.platform == 'win32':
     dir_proj_res = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
     #dir_proj_res = Path('C://Users//pallo//Desktop//cosas juli//mh//project')
     
-partA = True
+partA = False
 partB = True
 partB_vmtk = True
 partC = True
@@ -165,10 +165,7 @@ if partA:
     user_params2meas = {'ch1': {'tiss': {'whole': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': True,
-                                                'thickness ext>int': False,
-                                                'centreline': True,
-                                                'centreline_linlength': True,
-                                                'centreline_looplength': True},
+                                                'thickness ext>int': False},
                                             'segm1': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': False,
@@ -192,10 +189,7 @@ if partA:
                         'ch2': {'tiss': {'whole': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': True,
-                                                'thickness ext>int': False,
-                                                'centreline': True,
-                                                'centreline_linlength': True,
-                                                'centreline_looplength': True},
+                                                'thickness ext>int': False},
                                             'segm1': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': False,
@@ -401,13 +395,15 @@ if partB:
         im_ch1 = mHC.ImChannel(organ=organ, ch_name='ch1', new=False)
         im_ch2 = mHC.ImChannel(organ=organ, ch_name='ch2', new=False)
         
-    # Create s3_int, s3_ext, s3_tiss for each channel
-    # im_ch1.load_chS3s(cont_types=['int', 'ext', 'tiss'])
-    # im_ch2.load_chS3s(cont_types=['int', 'ext', 'tiss'])
-        
     #% CODE B
     # First create meshes from selected contours (end part A beginning part B)
-    # Load contStacks? 
+    #Check workflow status
+    # process = ['MeshesProc','A-Create3DMesh','Status']
+    # check_proc = get_by_path(workflow, process)
+    # if check_proc != 'DONE':
+    #     proceed = True
+            
+    # if proceed: 
     gui_keep_largest = {'ch1': {'int': True, 'ext': True, 'tiss': False}, 'ch2': {'int': True, 'ext': True, 'tiss': False}}
     print('\n---CREATING MESHES CHANNEL 1---')
     [msh1_int, msh1_ext, msh1_tiss] = im_ch1.s32Meshes(cont_types=['int', 'ext', 'tiss'],
@@ -417,6 +413,7 @@ if partB:
     [msh2_int, msh2_ext, msh2_tiss] = im_ch2.s32Meshes(cont_types=['int', 'ext', 'tiss'],
                                                        keep_largest=gui_keep_largest['ch2'],
                                                          rotateZ_90 = True, new_set = True)
+    
     # Save organ
     organ.save_organ()
     # Plot
@@ -453,27 +450,27 @@ if partB:
     del proj_new, organ_new
 
     # Cut meshes inflow and outflow tracts 
-    obj = [(msh1_tiss.mesh),(msh2_tiss.mesh),(msh1_tiss.mesh, msh2_tiss.mesh)]
-    text = organ.user_organName+"\n\nTake a closer look at both meshes and decide from which layer to cut\n the inflow and outflow. \nClose the window when done"
-    txt = [(0, text)]
-    fcMeshes.plot_grid(obj=obj, txt=txt, axes=5, lg_pos='bottom-right')
-
+    # Function to decide which meshes to cut
+   
+    meshes = fcMeshes.select_meshes2trim(organ=organ)
+    # meshes = [msh1_tiss, msh2_tiss]
     # User user input to select which meshes need to be cut
     cuts = {'top':    {'chs': {'ch1': False, 'ch2': True}},
             'bottom': {'chs': {'ch1': True, 'ch2': True}}}
-    meshes = [msh1_tiss, msh2_tiss]
-  
-    fcMeshes.trim_top_bottom_S3s(organ=organ, cuts=cuts, meshes=meshes)
-    print('\n---RECREATING MESHES CHANNEL 1 AFTER TRIMMING---')
-    [msh1_int, msh1_ext, msh1_tiss] = im_ch1.createNewMeshes(cont_types=['int', 'ext', 'tiss'],
-                                            process = 'AfterTrimming')
-    print('\n---CREATING MESHES CHANNEL 2 AFTER TRIMMING---')
-    [msh2_int, msh2_ext, msh2_tiss] = im_ch2.createNewMeshes(cont_types=['int', 'ext', 'tiss'],
-                                            process = 'AfterTrimming')
-    # Plot
-    txt = [(0, organ.user_organName  + ' - Meshes after trimming')]
-    obj = [(msh1_ext.mesh),(msh1_int.mesh),(msh1_tiss.mesh),(msh2_ext.mesh),(msh2_int.mesh),(msh2_tiss.mesh)]
-    fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
+
+    meshes_out = fcMeshes.trim_top_bottom_S3s(organ=organ, cuts=cuts, meshes=meshes)
+
+    # print('\n---RECREATING MESHES CHANNEL 1 AFTER TRIMMING---')
+    # [msh1_int, msh1_ext, msh1_tiss] = im_ch1.createNewMeshes(cont_types=['int', 'ext', 'tiss'],
+    #                                         process = 'AfterTrimming')
+    # print('\n---CREATING MESHES CHANNEL 2 AFTER TRIMMING---')
+    # [msh2_int, msh2_ext, msh2_tiss] = im_ch2.createNewMeshes(cont_types=['int', 'ext', 'tiss'],
+    #                                         process = 'AfterTrimming')
+    
+    # # Plot
+    # txt = [(0, organ.user_organName  + ' - Meshes after trimming')]
+    # obj = [(msh1_ext.mesh),(msh1_int.mesh),(msh1_tiss.mesh),(msh2_ext.mesh),(msh2_int.mesh),(msh2_tiss.mesh)]
+    # fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
     
     # Save organ
     organ.save_organ()
@@ -526,8 +523,8 @@ if partB_vmtk:
     # Create meshes to extract CL
     plot = True
     fcMeshes.cutMeshes4CL(organ, plot=plot)
+    fcMeshes.extractCL(organ)
     
-   
     
 
     
