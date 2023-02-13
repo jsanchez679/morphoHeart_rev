@@ -1,5 +1,5 @@
 '''
-morphoHeart_funcBasics
+morphoHeart_funcMeshes
 
 Version: Dec 01, 2022
 @author: Juliana Sanchez-Posada
@@ -15,6 +15,8 @@ import math
 import flatdict
 from itertools import count
 import json
+import vmtk
+from vmtk import pypes, vmtkscripts
 
 path_fcMeshes = os.path.abspath(__file__)
 path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
@@ -49,8 +51,8 @@ class NumpyArrayEncoder(json.JSONEncoder):
 from .mH_funcBasics import ask4input, get_by_path, alert
 # from .mH_classes import ImChannel, Mesh_mH
 
-alert_all=True
-heart_default=False
+alert_all = True
+heart_default = False
 dict_gui = {'alert_all': alert_all,
             'heart_default': heart_default}
             
@@ -102,16 +104,47 @@ def clean_intCh(organ):
             if ch_int.channel_no in mesh:
                 meshes_out.append(organ.obj_meshes[mesh])
     
-    return meshes_out
+    # return meshes_out
+
+#%% func - s32Meshes
+def s32Meshes(organ, gui_keep_largest:dict, rotateZ_90=True):
+    
+    # Check workflow status
+    workflow = organ.workflow
+    meshes_out = []
+    for ch in organ.obj_imChannels.keys(): 
+        print('\n---CREATING MESHES ('+ch+')---')
+        im_ch = organ.obj_imChannels[ch]
+        process = ['MeshesProc','A-Create3DMesh', im_ch.channel_no]
+        mesh_done = [get_by_path(workflow, process+[cont]+['Status']) for cont in ['tiss', 'int', 'ext']]
+        if not all(flag == 'DONE' for flag in mesh_done):
+            new_set = True
+        else: 
+            new_set = False
+            
+        meshes = im_ch.s32Meshes(cont_types=['int', 'ext', 'tiss'],
+                                        keep_largest=gui_keep_largest[im_ch.channel_no],
+                                        rotateZ_90 = True, new_set = new_set)
+        meshes_out.append(meshes)
+      
+    txt = [(0, organ.user_organName)]
+    obj = []
+    for meshes in meshes_out:
+        for mesh in meshes: 
+            obj.append((mesh.mesh))
+            
+    plot_grid(obj=obj, txt=txt, axes=5)
+        
 
 #%% func - select_meshes2trim
 def select_meshes2trim(organ):
+    
     names_mesh_tiss = [name for name in organ.obj_meshes if 'tiss' in name and 'NS' not in name]
     obj = []
-    meshes = []
+    # meshes = []
     for name in names_mesh_tiss: 
         obj.append(organ.obj_meshes[name].mesh)
-        meshes.append(organ.obj_meshes[name])
+        # meshes.append(organ.obj_meshes[name])
     obj_t = tuple(obj)
     obj.append(obj_t)
     
@@ -120,10 +153,16 @@ def select_meshes2trim(organ):
     txt = [(0, text)]
     plot_grid(obj=obj, txt=txt, axes=5, lg_pos='bottom-right')
     
-    return meshes
+    # return meshes
 
 #%% func - trim_top_bottom_S3s
-def trim_top_bottom_S3s(organ, cuts, meshes):
+def trim_top_bottom_S3s(organ, cuts):
+    
+    #Get meshes to cut
+    meshes = []
+    for ch in organ.obj_imChannels.keys():
+            if cuts['top']['chs'][ch] or cuts['bottom']['chs'][ch]:
+                meshes.append(organ.obj_imChannels[ch])
     
     #Check workflow status
     workflow = organ.workflow
@@ -220,7 +259,7 @@ def trim_top_bottom_S3s(organ, cuts, meshes):
             im_ch.trimS3(cuts=cut_chs[ch], cuts_out=cuts_out)
             print('\n---RECREATING MESHES AFTER TRIMMING ('+ch+')---')
             meshes = im_ch.createNewMeshes(cont_types=['int', 'ext', 'tiss'],
-                                           process = 'AfterTrimming')
+                                           process = 'AfterTrimming', new_set=True)
             meshes_out.append(meshes)
         organ.mH_settings['cut_ch'] = cut_chs
         
@@ -486,7 +525,10 @@ def plot_grid(obj:list, txt=[], axes=1, zoom=2, lg_pos='top-left'):
     logo = vedo.Picture(str(path_logo))
     
     # Create ScaleCube
-    scale_cube = vedo.Cube(pos=obj[0].center_of_mass(), side=350, c='white', alpha=0.01).legend('ScaleCube')
+    if isinstance(obj[0], tuple):
+        scale_cube = vedo.Cube(pos=obj[0][0].center_of_mass(), side=350, c='white', alpha=0.01).legend('ScaleCube')
+    else: 
+        scale_cube = vedo.Cube(pos=obj[0].center_of_mass(), side=350, c='white', alpha=0.01).legend('ScaleCube')
     
     # Set logo position
     if lg_pos =='top-left':

@@ -9,11 +9,12 @@ Version: Dec 01, 2022
 import os
 from pathlib import Path
 from playsound import playsound
-import json
+# import json
 import numpy as np 
 import flatdict
-from functools import reduce  # forward compatibility for Python 3
+from functools import reduce  
 import operator
+from itertools import count
 # from typing import Union
 
 path_fcBasics = os.path.abspath(__file__)
@@ -115,6 +116,42 @@ def ask4input(text:str, res:dict, type_response:type, keep=False):
                 pass
 
     return response
+
+#%% func - ask4inputList
+def ask4inputList(text, res):
+
+    alert('error_beep')
+    exit_now = False
+    while exit_now == False:
+        res_text = '> '+text+' \n\t'
+        res_len = len(res)
+        for n, r in enumerate(res.keys()): 
+            if n != res_len-1:
+                r_text = '['+str(r)+']: '+res[r] +'\n\t'
+            else: 
+                r_text = '['+str(r)+']: '+res[r] +'\n\t[all]: All >> : '
+            res_text += r_text
+        response = input(res_text).lower()
+        
+        if response == 'all':
+            obj_num = list(range(0,len(res),1))
+    
+        else:
+            obj_num = []
+            comma_split = response.split(',')
+    
+            for string in comma_split:
+                if '-' in string:
+                    minus_split = string.split('-')
+                    #print(minus_split)
+                    for n in list(range(int(minus_split[0]),int(minus_split[1])+1,1)):
+                        #print(n)
+                        obj_num.append(n)
+                else:
+                    obj_num.append(int(string))
+        exit_now = True
+
+    return obj_num
 
 #%% func - check_dict_lines
 
@@ -242,7 +279,7 @@ def make_tuples(load_dict, tuple_keys):
         
     return load_dict
 
-#%% 
+#%%
 
 # def save_mHProject(dicts:list, organ:Organ):
 #     jsonDict_name = 'mH_'+organ.user_organName+'_project.json'

@@ -21,9 +21,10 @@ dict_gui = {'alert_all': alert_all,
 
 #%% ##### - morphoHeart Imports - ##################################################
 # import src.mH_exceptions as mHExcp
-from src.modules import mH_funcMeshes as fcMeshes
 from src.modules import mH_classes as mHC
 from src.modules import mH_funcBasics as fcBasics
+from src.modules import mH_funcContours as fcCont
+from src.modules import mH_funcMeshes as fcMeshes
 
 #%% GUI related
 fcBasics.alert('woohoo')
@@ -34,7 +35,7 @@ elif sys.platform == 'win32':
     dir_proj_res = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
     #dir_proj_res = Path('C://Users//pallo//Desktop//cosas juli//mh//project')
     
-partA = False
+partA = True
 partB = True
 partB_vmtk = True
 partC = True
@@ -78,7 +79,7 @@ if partA:
         # By default the volume and surface area of the segments per tissue selected will be measured
         cutLayersIn2Segments = True
         no_segments = 2
-        name_segments = {'ch1': 'atrium', 'ch2': 'ventricle'}
+        name_segments = {'segm1': 'atrium', 'segm2': 'ventricle'}
         # channels/meshes that will be divided into segments 
         ch_segments = {'ch1':['tiss', 'ext'],'ch2':['tiss', 'int'],'chNS':['tiss']}
         
@@ -162,6 +163,7 @@ if partA:
     
     # The result of the modification of such table is shown in the dict 
     # called user_params2meas.
+    
     user_params2meas = {'ch1': {'tiss': {'whole': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': True,
@@ -210,7 +212,6 @@ if partA:
                                                 'centreline': True,
                                                 'centreline_linlength': True,
                                                 'centreline_looplength': True}}},
-                        #Remove cl measurements from chNS
                         'chNS': {'tiss': {'whole': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': True,
@@ -282,7 +283,7 @@ if partA:
                             'genotype': genotype,
                             }
 
-    # - Load Channels
+    # - Set path to images
     # mH_chName1 = 'ch1'
     if sys.platform == 'darwin':
         dir_cho1 = Path('/Users/juliana/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/LS52_F02_V_SR_1029_2A/Im_LS52_F02_V_SR_1029/LS52_F02_V_SR_1029_ch0_EDC.tif')
@@ -338,22 +339,16 @@ if partA:
     print('\n---CREATING CHANNELS 1 AND 2----')
     ## CHANNEL 1
     print('\n---PROCESSING CHANNEL 1----')
-    im_ch1 = organ.load_TIFF(ch_name='ch1')
-    im_ch1.maskIm()
-    im_ch1.closeContours_auto()
-    im_ch1.closeContours_manual()
-    im_ch1.closeInfOutf()
-    im_ch1.selectContours()
-    layerDict = {}
-    im_ch1.create_chS3s(layerDict=layerDict)
-    
+    im_ch1 = fcCont.closeContours(organ=organ, ch_name='ch1')
+    im_ch1 = fcCont.selectContours(organ=organ, im_ch = im_ch1)
+
     # Save project
     proj.save_project()
     print('\n---LOADING ORGAN----')
     # Load project, organ and channel and check parameters
     proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     organ_new = proj_new.load_organ(user_organName = organName2Load)
-    im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False)
+    im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1')#, new=False)
     print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
     print('>> Check im_ch1: \n',fcBasics.compare_nested_dicts(im_ch1.__dict__,im_ch1_new.__dict__,'imCh1','new')) 
@@ -361,14 +356,8 @@ if partA:
 
     # CHANNEL 2
     print('\n---PROCESSING CHANNEL 2----')
-    im_ch2 = organ.load_TIFF(ch_name='ch2')
-    im_ch2.maskIm()
-    im_ch2.closeContours_auto()
-    im_ch2.closeContours_manual()
-    im_ch2.closeInfOutf()
-    im_ch2.selectContours()
-    layerDict = {}
-    im_ch2.create_chS3s(layerDict=layerDict)
+    im_ch2 = fcCont.closeContours(organ=organ, ch_name='ch2')
+    im_ch2 = fcCont.selectContours(organ=organ, im_ch = im_ch2)
     
     # Save project
     proj.save_project()
@@ -376,7 +365,7 @@ if partA:
     # Load project, organ and channel and check parameters
     proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     organ_new = proj_new.load_organ(user_organName = organName2Load)
-    im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2', new=False)
+    im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2')#, new=False)
     print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
     print('>> Check im_ch2: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,im_ch2_new.__dict__,'imCh2','new'))
@@ -392,43 +381,29 @@ if partB:
         proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
         organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
-        im_ch1 = mHC.ImChannel(organ=organ, ch_name='ch1', new=False)
-        im_ch2 = mHC.ImChannel(organ=organ, ch_name='ch2', new=False)
+        im_ch1 = mHC.ImChannel(organ=organ, ch_name='ch1')#, new=False)
+        im_ch2 = mHC.ImChannel(organ=organ, ch_name='ch2')#, new=False)
         
     #% CODE B
-    # First create meshes from selected contours (end part A beginning part B)
-    #Check workflow status
-    # process = ['MeshesProc','A-Create3DMesh','Status']
-    # check_proc = get_by_path(workflow, process)
-    # if check_proc != 'DONE':
-    #     proceed = True
-            
-    # if proceed: 
-    gui_keep_largest = {'ch1': {'int': True, 'ext': True, 'tiss': False}, 'ch2': {'int': True, 'ext': True, 'tiss': False}}
-    print('\n---CREATING MESHES CHANNEL 1---')
-    [msh1_int, msh1_ext, msh1_tiss] = im_ch1.s32Meshes(cont_types=['int', 'ext', 'tiss'],
-                                                       keep_largest=gui_keep_largest['ch1'],
-                                                       rotateZ_90 = True, new_set = True)
-    print('\n---CREATING MESHES CHANNEL 2---')
-    [msh2_int, msh2_ext, msh2_tiss] = im_ch2.s32Meshes(cont_types=['int', 'ext', 'tiss'],
-                                                       keep_largest=gui_keep_largest['ch2'],
-                                                         rotateZ_90 = True, new_set = True)
-    
+    # Create meshes after processing images
+    gui_keep_largest = {'ch1': {'int': True, 'ext': True, 'tiss': False}, 
+                        'ch2': {'int': True, 'ext': True, 'tiss': False}}
+    rotateZ_90 = True
+    fcMeshes.s32Meshes(organ, gui_keep_largest, rotateZ_90=rotateZ_90)
+
     # Save organ
     organ.save_organ()
     # Plot
-    txt = [(0, organ.user_organName)]
-    obj = [(msh1_ext.mesh),(msh1_int.mesh),(msh1_tiss.mesh),(msh2_ext.mesh),(msh2_int.mesh),(msh2_tiss.mesh)]
-    fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
+
     
     # Load project, organ, channels and meshes and check parameters
     print('\n---LOADING PROJECT, ORGAN, CHANNEL AND MESHES----')
     proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     organ_new = proj_new.load_organ(user_organName = organName2Load)
-    im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1', new=False)
-    im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2', new=False)
-    msh1_tiss2 = mHC.Mesh_mH(imChannel=im_ch1_new, mesh_type='tiss', keep_largest=True, rotateZ_90=True, new=False)
-    msh2_tiss2 = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='tiss', keep_largest=True, rotateZ_90=True, new=False)
+    im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1')#, new=False)
+    im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2')#, new=False)
+    msh1_tiss2 = mHC.Mesh_mH(imChannel=im_ch1_new, mesh_type='tiss', keep_largest=True, rotateZ_90=True)#, new=False)
+    msh2_tiss2 = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='tiss', keep_largest=True, rotateZ_90=True)#, new=False)
     print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
     print('>> Check im_ch1: \n',fcBasics.compare_nested_dicts(im_ch1.__dict__,im_ch1_new.__dict__,'imCh1','new'))
@@ -451,14 +426,13 @@ if partB:
 
     # Cut meshes inflow and outflow tracts 
     # Function to decide which meshes to cut
-   
-    meshes = fcMeshes.select_meshes2trim(organ=organ)
+    fcMeshes.select_meshes2trim(organ=organ)
     # meshes = [msh1_tiss, msh2_tiss]
     # User user input to select which meshes need to be cut
     cuts = {'top':    {'chs': {'ch1': False, 'ch2': True}},
-            'bottom': {'chs': {'ch1': True, 'ch2': True}}}
+            'bottom': {'chs': {'ch1': False, 'ch2': True}}}
 
-    meshes_out = fcMeshes.trim_top_bottom_S3s(organ=organ, cuts=cuts, meshes=meshes)
+    meshes_out = fcMeshes.trim_top_bottom_S3s(organ=organ, cuts=cuts)
 
     # print('\n---RECREATING MESHES CHANNEL 1 AFTER TRIMMING---')
     # [msh1_int, msh1_ext, msh1_tiss] = im_ch1.createNewMeshes(cont_types=['int', 'ext', 'tiss'],

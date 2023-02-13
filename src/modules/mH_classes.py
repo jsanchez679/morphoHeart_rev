@@ -156,6 +156,12 @@ class Project():
         mH_segments = []
             
         if self.analysis['morphoHeart']:
+            
+            if mH_settings['segments']['cutLayersIn2Segments']:
+                dict_segments = {'no_segments': mH_settings['segments']['no_segments'],
+                                 'name_segments': mH_settings['segments']['name_segments'],
+                                 'ch_segments': mH_settings['segments']['ch_segments']}
+                
             for ch_num in range(0, mH_settings['no_chs']):
                 ch_str = 'ch'+str(ch_num+1)
                 dict_info_ch = {'mH_chName':ch_str,
@@ -164,6 +170,11 @@ class Project():
                                 'ch_relation': mH_settings['chs_relation'][ch_str],
                                 'mask_ch': None,
                                 'dir_mk': None}
+                
+                if mH_settings['segments']['cutLayersIn2Segments']:   
+                    if ch_str in mH_settings['segments']['ch_segments'].keys():
+                        dict_info_ch['ch_segments'] = mH_settings['segments']['ch_segments'][ch_str]
+                
                 dict_setup = {}
                 dict_meas = {}
                 for cont in ['tiss', 'ext', 'int']: 
@@ -178,6 +189,8 @@ class Project():
                 mH_set['setup'][ch_str] = dict_setup
                 mH_set['measure'][ch_str] = dict_meas
                 mH_channels.append(ch_str)
+            
+            mH_set['general_info']['segments'] = dict_segments
     
             if mH_settings['ns']['layer_btw_chs']:
                 ch_str = 'chNS'
@@ -185,6 +198,11 @@ class Project():
                                                 'user_chName':mH_settings['ns']['user_nsChName'].replace(' ', '_'),
                                                 'ch_ext': mH_settings['ns']['ch_ext'],
                                                 'ch_int': mH_settings['ns']['ch_int']}
+                
+                if mH_settings['segments']['cutLayersIn2Segments']:   
+                    if ch_str in mH_settings['segments']['ch_segments'].keys():
+                        mH_set['general_info']['chNS']['ch_segments'] = mH_settings['segments']['ch_segments'][ch_str]
+                        
                 dict_setupNS = {}
                 dict_measNS = {}
                 for cont in ['tiss', 'ext', 'int']: 
@@ -666,10 +684,10 @@ class Project():
 class Organ():
     'Organ Class'
     
-    def __init__(self, project:Project, user_settings:dict, info_loadCh:dict, new=True, load_dict={}):
+    def __init__(self, project:Project, user_settings:dict, info_loadCh:dict, 
+                 new=True, load_dict={}):
         
         self.parent_project = project
-        
         if new:
             self.user_organName = user_settings['user_organName'].replace(' ', '_')
             self.info = user_settings
@@ -743,14 +761,14 @@ class Organ():
         self.obj_imChannels = {}
         if len(self.imChannels) > 0:
             for imCh in self.imChannels:
-                im_ch = ImChannel(organ=self, ch_name=imCh, new=False)
+                im_ch = ImChannel(organ=self, ch_name=imCh)#, new=False)
                 self.obj_imChannels[imCh] = im_ch
         
     def load_objImChannelNS(self):
         self.obj_imChannelNS = {}
         if len(self.imChannelNS) > 0: 
             for imCh in self.imChannelNS:
-                im_ch = ImChannelNS(organ=self, ch_name=imCh, new=False)
+                im_ch = ImChannelNS(organ=self, ch_name=imCh)#, new=False)
                 self.obj_imChannelNS[imCh] = im_ch
         
     def load_objMeshes(self):
@@ -766,8 +784,8 @@ class Organ():
                 keep_largest = self.meshes[mesh]['keep_largest']
                 rotateZ_90 = self.meshes[mesh]['rotateZ_90'] 
                 msh = Mesh_mH(imChannel = imCh, mesh_type = mesh_type, 
-                              keep_largest = keep_largest, rotateZ_90 = rotateZ_90,
-                              new = False)
+                              keep_largest = keep_largest, rotateZ_90 = rotateZ_90)#,
+                              # new = False)
                 self.obj_meshes[mesh] = msh
 
     def create_mHName(self):
@@ -934,7 +952,7 @@ class Organ():
         
     def load_TIFF(self, ch_name:str):
         print('---- Loading TIFF! ----')
-        image = ImChannel(organ=self, ch_name=ch_name)
+        image = ImChannel(organ=self, ch_name=ch_name)#,new=True
         return image
 
     def save_organ(self):
@@ -1091,16 +1109,19 @@ class ImChannel(): #channel
     'morphoHeart Image Channel Class (this class will be used to contain the images as tiffs that have been'
     'closed and the resulting s3s that come up from each channel'
     
-    def __init__(self, organ:Organ, ch_name:str, new=True):
-
+    def __init__(self, organ:Organ, ch_name:str): #, new=True):
+        
         self.parent_organ = organ
         self.parent_organ_name = organ.user_organName
         self.channel_no = ch_name
         self.user_chName = organ.mH_settings['general_info'][ch_name]['user_chName']
         self.ch_relation = organ.mH_settings['general_info'][ch_name]['ch_relation']
-        if new:       
+        
+        if self.channel_no not in organ.imChannels.keys():   
+            print('new channel-', self.channel_no)
             self.new_ImChannel()
         else: 
+            print('loading channel-', self.channel_no)
             self.load_channel()
 
     def new_ImChannel(self):
@@ -1409,6 +1430,13 @@ class ImChannel(): #channel
             #                 # 'Info': {'tuple_slices': None,
             #                 #         'number_contours': None,
             #                 #         'range': None}},
+            layerDict = {}
+            return layerDict
+        
+        else: 
+            layerDict = {}
+            return layerDict
+            
 
     def create_chS3s (self, layerDict:dict):
         #Check workflow status
@@ -1425,7 +1453,7 @@ class ImChannel(): #channel
         if proceed: 
             dirs_cont = []; shapes_s3 = []
             for cont in ['int', 'ext', 'tiss']:
-                s3 = ContStack(im_channel=self, cont_type=cont, new=True, layerDict=layerDict)
+                s3 = ContStack(im_channel=self, cont_type=cont, layerDict=layerDict)#new=True,
                 self.add_contStack(s3)
                 dirs_cont.append(s3.s3_dir.is_file())
                 shapes_s3.append(s3.shape_s3)
@@ -1454,7 +1482,7 @@ class ImChannel(): #channel
             
     def load_chS3s (self, cont_types:list):
         for cont in cont_types:
-            s3 = ContStack(im_channel=self, cont_type=cont, new=False)
+            s3 = ContStack(im_channel=self, cont_type=cont)#, new=False)
             setattr(self, 's3_'+cont, s3)
             self.add_contStack(s3)
         
@@ -1541,13 +1569,13 @@ class ImChannel(): #channel
                 print('new mesh!')
             else: 
                 if new_set: 
+                    print('new_set = True')
                     keep_largest_f = keep_largest[mesh_type]
                     print('recreating mesh with new settings -keep largest')
                 else: 
-                    keep_largest_f = self.parent_organ.mH_settings['setup'][self.channel_no][mesh_type]['keep_largest']
-                    rotateZ_90 =  self.parent_organ.mH_settings['setup'][self.channel_no][mesh_type]['rotateZ_90']
+                    keep_largest_f = keep_largest
                     print('recreating mesh with same settings as original')
-            mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new=True)
+            mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new_set=new_set)#, new=True)
             meshes_out.append(mesh)
             
         return meshes_out
@@ -1591,7 +1619,7 @@ class ImChannel(): #channel
         Function to clean channel using the other as a mask
         """
         
-        if proceed == None: 
+        if proceed: #== None: 
             workflow = self.parent_organ.workflow
             s3s = [self.s3_int, self.s3_ext, self.s3_tiss]
             process = ['ImProc',self.channel_no,'E-CleanCh', 'Status']
@@ -1599,11 +1627,11 @@ class ImChannel(): #channel
             if check_proc == 'DONE':
                 q = 'You already cleanes the '+ self.user_chName+' with the '+s3_mask.im_channel.user_chName+'. Do you want to re-run this process?'
                 res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-                proceed = ask4input(q, res, bool)
+                proceed2 = ask4input(q, res, bool)
             else: 
-                proceed = True
+                proceed2 = True
             
-        if proceed: 
+        if proceed2: 
             for s3 in s3s:
                 print('- Cleaning '+self.user_chName+' ('+ self.channel_no + '-' + s3.cont_type +')')
                     
@@ -1693,16 +1721,18 @@ class ImChannelNS(): #channel
 
     'morphoHeart Image Channel Negative Space'
     
-    def __init__(self, organ:Organ, ch_name:str, new=True):
+    def __init__(self, organ:Organ, ch_name:str):#, new=True):
 
         self.parent_organ = organ
         self.parent_organ_name = organ.user_organName
         self.channel_no = ch_name
         self.user_chName = organ.mH_settings['general_info'][ch_name]['user_chName']
         self.ch_relation = 'negative-space'
-        if new:
+        if self.channel_no not in organ.imChannelNS.keys():
+            print('new channelNS')
             self.new_ImChannelNS()
         else: 
+            print('loading channelNS')
             self.load_channel()
     
     def new_ImChannelNS (self):
@@ -1747,19 +1777,19 @@ class ImChannelNS(): #channel
         ext_s3_name = self.setup_NS['ext']['name']
         ext_s3_type = self.setup_NS['ext']['type']
         ext_s3 = ContStack(im_channel=organ.obj_imChannels[ext_s3_name], 
-                           cont_type=ext_s3_type, new=False)
+                           cont_type=ext_s3_type)#, new=False)
         self.s3_ext = ext_s3
         self.add_contStack(ext_s3)
         
         int_s3_name = self.setup_NS['int']['name']
         int_s3_type = self.setup_NS['int']['type']
         int_s3 = ContStack(im_channel=organ.obj_imChannels[int_s3_name], 
-                           cont_type=int_s3_type, new=False)
+                           cont_type=int_s3_type)#, new=False)
         self.s3_int = int_s3
         self.add_contStack(int_s3)
         
-        tiss_s3 = ContStack(im_channel = self, cont_type = 'tiss', new = True, 
-                            layerDict=plot)
+        tiss_s3 = ContStack(im_channel = self, cont_type = 'tiss',
+                            layerDict=plot)#,  new = True)
         self.s3_tiss = tiss_s3
         self.add_contStack(tiss_s3)
      
@@ -1881,7 +1911,7 @@ class ImChannelNS(): #channel
                     keep_largest_f = self.parent_organ.mH_settings['setup'][self.channel_no][mesh_type]['keep_largest']
                     rotateZ_90 =  self.parent_organ.mH_settings['setup'][self.channel_no][mesh_type]['rotateZ_90']
                     print('recreating mesh with same settings as original')
-            mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new=True)
+            mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90)#, new=True)
             meshes_out.append(mesh)
             
         return meshes_out
@@ -1890,7 +1920,7 @@ class ContStack():
     'morphoHeart Contour Stack Class'
     
     def __init__(self, im_channel:Union[ImChannel,ImChannelNS], 
-                             cont_type:str, new=True, layerDict={}):
+                             cont_type:str, layerDict={}):#new=True,
         
         cont_types = ['int', 'ext', 'tiss']
         names = ['imIntFilledCont', 'imExtFilledCont', 'imAllFilledCont']
@@ -1905,7 +1935,8 @@ class ContStack():
         self.s3_file = parent_organ.user_organName + '_s3_' + im_channel.channel_no + '_' + self.cont_type + '.npy'
         self.s3_dir = parent_organ.dir_res / 's3_numpy' / self.s3_file
         
-        if new: 
+        if self.cont_type not in self.im_channel.contStack.keys():
+        # if new: 
             if im_channel.channel_no == 'chNS':
                 s3 = im_channel.create_s3_tiss(plot=layerDict)
             else: 
@@ -2081,7 +2112,7 @@ class Mesh_mH():
     'morphoHeart Mesh Class'
     
     def __init__(self, imChannel:ImChannel, mesh_type:str, 
-                 keep_largest:bool, rotateZ_90=True, new=True):
+                 keep_largest:bool, rotateZ_90=True, new_set=False):#, new=True):
         
         self.parent_organ = imChannel.parent_organ
         self.imChannel = imChannel
@@ -2093,7 +2124,9 @@ class Mesh_mH():
         self.resolution = imChannel.get_resolution()
 
         wf = ['MeshesProc','A-Create3DMesh', imChannel.channel_no, mesh_type] 
-        if new: 
+        if self.name not in self.parent_organ.meshes.keys():
+            print('new mesh-', self.name)
+            new = True
             self.keep_largest = keep_largest
             self.rotateZ_90 = rotateZ_90
             self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
@@ -2123,13 +2156,20 @@ class Mesh_mH():
             self.parent_organ.check_status(process = 'MeshesProc')
         
         else: 
-            # print('> Loading ', self.name)
-            self.load_mesh()
-            self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['keep_largest']
-            self.rotateZ_90 = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['rotateZ_90']
+            new = False
             self.color = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['color']
             self.alpha = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['alpha']
             self.s3_dir = self.imChannel.contStack[self.mesh_type]['s3_dir']
+            if new_set: 
+                self.keep_largest = keep_largest
+                self.rotateZ_90 = rotateZ_90
+                print('re-creating mesh-', self.name)
+                self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
+            else: 
+                self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['keep_largest']
+                self.rotateZ_90 = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['rotateZ_90']
+                print('loading mesh-', self.name)
+                self.load_mesh()
             
         self.mesh.color(self.color)
         self.mesh.alpha(self.alpha)
@@ -2149,7 +2189,7 @@ class Mesh_mH():
             
         self.s3_dir = s3.s3_dir
         s3s3 = s3.s3()
-        verts, faces, _, _ = measure.marching_cubes_lewiner(s3s3, spacing=self.resolution)
+        verts, faces, _, _ = measure.marching_cubes(s3s3, spacing=self.resolution, method='lewiner')
     
         # Create meshes
         mesh = vedo.Mesh([verts, faces])
