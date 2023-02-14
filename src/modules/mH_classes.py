@@ -1024,7 +1024,7 @@ class Organ():
                         proc_done.append(val_b)
                         # proc_done.append(self.workflow[process][ch][key_b]['Status'])
                 print('\tchannel:',ch, '-ImProc:', proc_done)
-                if all(flag == 'DONE' for flag in proc_done):
+                if all('DONE' in flag for flag in proc_done):
                     self.update_workflow([process,ch,'Status'], 'DONE')
                     # self.workflow[process][ch]['Status'] = 'DONE'
                 val_c = get_by_path(self.workflow, [process,ch,'Status'])
@@ -1499,7 +1499,7 @@ class ImChannel(): #channel
         process = ['ImProc', self.channel_no, 'E-TrimS3','Status']
         check_proc = get_by_path(workflow, process)
         if check_proc == 'DONE':
-            q = 'You already masked this channel ('+ self.user_chName+'). Do you want to re-run it?'
+            q = 'You already trimmed this channel ('+ self.user_chName+'). Do you want to re-run it?'
             res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
             proceed = ask4input(q, res, bool)
         else: 
@@ -1570,7 +1570,12 @@ class ImChannel(): #channel
             else: 
                 if new_set: 
                     print('new_set = True')
-                    keep_largest_f = keep_largest[mesh_type]
+                    try: 
+                        keep_largest_f = keep_largest[mesh_type]
+                        print('new keep_largest')
+                    except:
+                        print('old keep_largest')
+                        keep_largest_f = self.parent_organ.mH_settings['setup'][self.channel_no][mesh_type]['keep_largest']
                     print('recreating mesh with new settings -keep largest')
                 else: 
                     keep_largest_f = keep_largest
@@ -1580,12 +1585,12 @@ class ImChannel(): #channel
             
         return meshes_out
     
-    def createNewMeshes(self, cont_types:list, process:str):#, keep_largest = None, 
+    def createNewMeshes(self, cont_types:list, process:str, new_set = False):#, keep_largest = None, 
                                    # rotateZ_90 = True, new_set = False):
                          
         ch_no = self.channel_no
         if process == 'AfterTrimming':
-            meshes_out = self.s32Meshes(cont_types)
+            meshes_out = self.s32Meshes(cont_types, new_set=True)
             for mesh_type in ['int', 'ext', 'tiss']:
                 proc = ['MeshesProc', 'B-TrimMesh', ch_no, mesh_type,'Status']
                 self.parent_organ.update_workflow(proc, 'DONE')
@@ -1746,7 +1751,7 @@ class ImChannelNS(): #channel
         # external contour
         ext_s3_name = organ.mH_settings['general_info'][ch_name]['ch_ext'][0]
         ext_s3_type = organ.mH_settings['general_info'][ch_name]['ch_ext'][1]
-        #internal contour
+        # internal contour
         int_s3_name = organ.mH_settings['general_info'][ch_name]['ch_int'][0]
         int_s3_type = organ.mH_settings['general_info'][ch_name]['ch_int'][1]
         
@@ -1902,16 +1907,21 @@ class ImChannelNS(): #channel
             name = self.channel_no + '_' + mesh_type
             if name not in self.parent_organ.meshes.keys():
                 keep_largest_f = keep_largest[mesh_type]
-                print('new mesh!')
+                print('new mesh NS!')
             else: 
                 if new_set: 
-                    keep_largest_f = keep_largest[mesh_type]
+                    print('new_set = True')
+                    try: 
+                        keep_largest_f = keep_largest[mesh_type]
+                        print('new keep_largest')
+                    except: 
+                        print('old keep_largest')
+                        keep_largest_f = self.parent_organ.mH_settings['setup'][self.channel_no][mesh_type]['keep_largest']
                     print('recreating mesh with new settings -keep largest')
                 else: 
-                    keep_largest_f = self.parent_organ.mH_settings['setup'][self.channel_no][mesh_type]['keep_largest']
-                    rotateZ_90 =  self.parent_organ.mH_settings['setup'][self.channel_no][mesh_type]['rotateZ_90']
+                    keep_largest_f = keep_largest
                     print('recreating mesh with same settings as original')
-            mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90)#, new=True)
+            mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new_set=new_set)#, new=True)
             meshes_out.append(mesh)
             
         return meshes_out
@@ -2173,8 +2183,7 @@ class Mesh_mH():
             
         self.mesh.color(self.color)
         self.mesh.alpha(self.alpha)
-        
-        if new: 
+        if new or new_set: 
             self.parent_organ.add_mesh(self)
             self.save_mesh()
     
@@ -2205,6 +2214,7 @@ class Mesh_mH():
         mesh_name = parent_organ.user_organName+'_'+self.legend+'.vtk'
         mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
         mesh_out = vedo.load(str(mesh_dir))
+        mesh_out.legend(self.legend).wireframe()
         self.dir_out = mesh_dir
         self.mesh = mesh_out
 

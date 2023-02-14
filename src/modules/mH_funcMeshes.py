@@ -49,7 +49,7 @@ class NumpyArrayEncoder(json.JSONEncoder):
 #%% ##### - Other Imports - ##################################################
 # from ...config import dict_gui
 from .mH_funcBasics import ask4input, get_by_path, alert
-# from .mH_classes import ImChannel, Mesh_mH
+# from .mH_classes import ImChannelNS#, Mesh_mH
 
 alert_all = True
 heart_default = False
@@ -58,7 +58,7 @@ dict_gui = {'alert_all': alert_all,
             
 #%% - morphoHeart B functions
 #%% func - clean_intCh
-def clean_intCh(organ):
+def clean_intCh(organ, plot=False):
     # Clean channels
     ch_ext, ch_int = organ.get_extIntChs()
                 
@@ -77,26 +77,30 @@ def clean_intCh(organ):
         clean_ch = ask4input(q, res, bool)
         
     if clean_ch:
+        ch_int_name = ch_int.channel_no
+        obj1 = [(organ.obj_meshes[ch_int_name+'_int'].mesh.clone()), 
+                (organ.obj_meshes[ch_int_name+'_ext'].mesh.clone()),
+                (organ.obj_meshes[ch_int_name+'_tiss'].mesh.clone())]
         q = 'Select the mask you would like to use to clean the '+ch_int.user_chName+':'
         res = {0: 'Just the tissue layer of the '+ch_ext.user_chName,1: '(Recommended) The inverted internal segmentation of the '+ch_ext.user_chName+' (more profound cleaning).'}
         inverted = ask4input(q, res, bool)
-        plot = False
-        ch_int.ch_clean(s3_mask=ch_ext.s3_ext, inverted=inverted, plot=plot, proceed=True)
-        # print('>> Check Ch2 vs ChInt: \n',compare_nested_dicts(im_ch2.__dict__,ch_int.__dict__,'ch2','int'))
-        
+        if not hasattr(ch_ext, 's3_ext'):
+            s3_mask = ch_ext.load_chS3s(cont_types = ['ext'])
+        if not hasattr(ch_int, 's3_ext'):
+            ch_int.load_chS3s(cont_types = ['tiss','int','ext'])
+        s3_mask = ch_ext.s3_ext
+        ch_int.ch_clean(s3_mask=s3_mask, inverted=inverted, plot=plot, proceed=True)
+       
         print('\n---RECREATING MESHES CHANNEL 2 WITH CLEANED ENDOCARDIUM---')
-        meshes_out = ch_int.s32Meshes(cont_types=['int', 'ext', 'tiss'])
-        # msh2_int2, msh2_ext2, msh2_tiss2 = meshes_out
+        meshes_out = ch_int.s32Meshes(cont_types=['int', 'ext', 'tiss'], new_set=True)
         
         # Plot cleaned ch2
-        obj1 = []
         obj2 = []
         for mesh in meshes_out:
-            obj2.append(organ.obj_meshes[mesh.name].mesh)
-            obj1.append(mesh.mesh)
+            obj2.append(mesh.mesh)
         
         txt = [(0, organ.user_organName + ' - Original'), (3,'Cleaned Meshes')]
-        plot_grid(obj=obj2+obj1, txt=txt, axes=5)
+        plot_grid(obj=obj1+obj2, txt=txt, axes=5)
   
     else: 
         meshes_out = []
@@ -104,7 +108,6 @@ def clean_intCh(organ):
             if ch_int.channel_no in mesh:
                 meshes_out.append(organ.obj_meshes[mesh])
     
-    # return meshes_out
 
 #%% func - s32Meshes
 def s32Meshes(organ, gui_keep_largest:dict, rotateZ_90=True):
@@ -160,10 +163,13 @@ def trim_top_bottom_S3s(organ, cuts):
     
     #Get meshes to cut
     meshes = []
+    no_cut = []
     for ch in organ.obj_imChannels.keys():
             if cuts['top']['chs'][ch] or cuts['bottom']['chs'][ch]:
-                meshes.append(organ.obj_imChannels[ch])
-    
+                meshes.append(organ.obj_meshes[ch+'_tiss'])
+            else: 
+                no_cut.append(ch)
+    print(meshes, no_cut)
     #Check workflow status
     workflow = organ.workflow
     check_proc = []
@@ -246,18 +252,26 @@ def trim_top_bottom_S3s(organ, cuts):
         
         #Update mH_settings with channels to be cut
         update = {}
-        for ch in ch_planes: 
-            update[ch] = None
+        for ch_a in ch_planes: 
+            update[ch_a] = None
         proc = ['wf_info','ImProc','E-TrimS3','Planes']
         organ.update_settings(proc, update, 'mH')
         # print('ch_planes:', ch_planes)
-            
+        
+        #update workflow for channels that were not cut
+        for ch_c in no_cut:
+            proc_c = ['ImProc',ch_c,'E-TrimS3']
+            for cont in ['int', 'ext','tiss']:
+                organ.update_workflow(proc_c+['Info',cont,'Status'],'DONE-NoCut')
+            organ.update_workflow(proc_c+['Status'],'DONE-NoCut')
+        organ.check_status(process='ImProc')
+        
         #Cut channel s3s and recreate meshes
         meshes_out = []
-        for ch in ch_meshes: 
-            im_ch = ch_meshes[ch]
-            im_ch.trimS3(cuts=cut_chs[ch], cuts_out=cuts_out)
-            print('\n---RECREATING MESHES AFTER TRIMMING ('+ch+')---')
+        for ch_b in ch_meshes: 
+            im_ch = ch_meshes[ch_b]
+            im_ch.trimS3(cuts=cut_chs[ch_b], cuts_out=cuts_out)
+            print('\n---RECREATING MESHES AFTER TRIMMING ('+ch_b+')---')
             meshes = im_ch.createNewMeshes(cont_types=['int', 'ext', 'tiss'],
                                            process = 'AfterTrimming', new_set=True)
             meshes_out.append(meshes)
@@ -265,15 +279,41 @@ def trim_top_bottom_S3s(organ, cuts):
         
         obj = []
         # obj = [(msh1_ext.mesh),(msh1_int.mesh),(msh1_tiss.mesh),(msh2_ext.mesh),(msh2_int.mesh),(msh2_tiss.mesh)]
-        for ch in meshes_out:
-            for mesh in ch: 
+        for ch_d in meshes_out:
+            for mesh in ch_d: 
                 obj.append(mesh.mesh)
                 
         txt = [(0, organ.user_organName  + ' - Meshes after trimming')]
         plot_grid(obj=obj, txt=txt, axes=5)
     
-        return meshes_out
+        # return meshes_out
 
+#%% func - extractNSCh
+def extractNSCh(organ, plot):
+    from .mH_classes import ImChannelNS
+    if 'chNS' in organ.mH_settings['general_info'].keys():
+        im_ns = ImChannelNS(organ=organ, ch_name='chNS')
+        im_ns.create_chNSS3s(plot=plot)
+        
+        gui_keep_largest = {'int': True, 'ext': True, 'tiss': False}
+        [mshNS_int, mshNS_ext, mshNS_tiss] = im_ns.s32Meshes(cont_types=['int', 'ext', 'tiss'],
+                                                             keep_largest=gui_keep_largest,
+                                                             rotateZ_90 = True, new_set = True)
+       
+        txt = [(0, organ.user_organName  + ' - Extracted ' + im_ns.user_chName)]
+        obj = [(mshNS_ext.mesh),(mshNS_int.mesh),(mshNS_tiss.mesh)]
+        plot_grid(obj=obj, txt=txt, axes=5)
+        
+        txt = [(0, organ.user_organName  + ' - Final reconstructed meshes')]
+        obj = [organ.obj_meshes[key].mesh for key in organ.obj_meshes.keys() if 'tiss' in key]
+        obj.append(tuple(obj))
+        # obj = [(msh1_tiss.mesh),(msh2_tiss.mesh),(mshNS_tiss.mesh),(msh1_tiss.mesh, msh2_tiss.mesh, mshNS_tiss.mesh)]
+        plot_grid(obj=obj, txt=txt, axes=5)
+    
+    else: 
+        print('No layer between segments is being created as it was not setup by user!')
+        
+    
 #%% func - cutMeshes4CL
 def cutMeshes4CL(organ, plot=True, printshow=True):
     """
@@ -311,7 +351,7 @@ def cutMeshes4CL(organ, plot=True, printshow=True):
     # Get dictionary with initialised planes to cut top/bottom
     top_done = False; bot_done = False
     planes_info = {'top':None, 'bottom':None}
-    for ch in set(chs4cl):
+    for ch in organ.mH_settings['wf_info']['ImProc']['E-TrimS3']['Planes'].keys():#set(chs4cl):
         dict2check = organ.mH_settings['wf_info']['ImProc']['E-TrimS3']['Planes'][ch]
         if 'top' in dict2check and not top_done:
             print('in top:', ch)
@@ -574,7 +614,19 @@ def plot_grid(obj:list, txt=[], axes=1, zoom=2, lg_pos='top-left'):
             vp.show(obj[num], lbox[num], txt_out[num], at=num)
         else: # num == len(obj)-1
             vp.show(obj[num], lbox[num], txt_out[num], at=num, zoom=zoom, interactive=True)
-            
+
+#%% func - plot_all_organ
+def plot_all_organ(organ):
+    
+    obj = []
+    txt = [(0, organ.user_organName  + ' - All organ meshes')]
+    for mesh in organ.meshes.keys():
+        # print(organ.obj_meshes[mesh].mesh)
+        obj.append((organ.obj_meshes[mesh].mesh))
+    
+    plot_grid(obj=obj, txt=txt, axes=5)
+
+        
 #%% - Plane handling functions 
 #%% func - getPlane
 def getPlane(filename, txt:str, meshes:list, def_pl = None, 
