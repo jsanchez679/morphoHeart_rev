@@ -36,7 +36,7 @@ elif sys.platform == 'win32':
     #dir_proj_res = Path('C://Users//pallo//Desktop//cosas juli//mh//project')
     
 partA = False
-partB = True
+partB = False
 partB_vmtk = True
 partC = True
 print('partA:',partA,'- partB:',partB,'- partB_vmtk:',partB_vmtk,'- partC:',partC)
@@ -468,11 +468,39 @@ if partB_vmtk:
         proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
         organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
+        fcMeshes.plot_all_organ(organ)
     
     # Create meshes to extract CL
     plot = True
     fcMeshes.cutMeshes4CL(organ, plot=plot)
     fcMeshes.extractCL(organ)
+    nPoints = 300
+    fcMeshes.createCLs(organ, nPoints = nPoints)
+    
+    # Save organ
+    organ.save_organ()
+    # Load project, organ
+    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
+    organ_new = proj_new.load_organ(user_organName = organName2Load)    
+    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
+    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
+    del proj_new, organ_new
+    
+#%% Part C - Measure
+if partC: 
+    if not partA and not partB and not partB_vmtk(): 
+        proj_name = 'Project_B-C'
+        folder_name = 'R_'+proj_name
+        dir_proj = dir_proj_res / folder_name
+        proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
+        organName2Load = 'LS52_F02_V_SR_1029'
+        organ = proj.load_organ(user_organName = organName2Load)
+        fcMeshes.plot_all_organ(organ)
+    
+    
+    
+    
+    
     
     
 

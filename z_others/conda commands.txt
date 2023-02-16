@@ -1,0 +1,19 @@
+conda commands
+#List all the requirements of a package
+conda search <package_name> --info
+
+#Searches all the versions available of a package in conda-forge
+conda search <package_name> --channel conda-forge
+
+#Clones an existing virtual environment
+conda create --name <new_env_name> --clone <env_to_be_cloned_name>
+
+#Lists all the packages in the current environment
+conda list
+
+#Lists all the packages in the named environment
+conda list --name <env_name>
+
+#Remove an environment
+conda env remove -n <env_name>
+conda remove --name <env_name>--all

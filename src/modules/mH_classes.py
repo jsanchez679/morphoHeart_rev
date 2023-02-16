@@ -566,8 +566,10 @@ class Project():
                                 dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
                          
                             if process == 'C-Centreline' and 'C-Centreline' in dict_MeshesProc.keys():
+                                dict_MeshesProc[process]['Status'] = 'NotInitialised'
                                 if (ch,cont,'whole','centreline') in item_centreline:
-                                    dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
+                                    dict_MeshesProc[process]['SimplifyMesh'][ch][cont] = {'Status': 'NotInitialised'}
+                                    dict_MeshesProc[process]['vmtk_CL'][ch][cont] = {'Status': 'NotInitialised'}
                     else: 
                         if process == 'A-Create3DMesh':
                             dict_MeshesProc[process][ch] = {'Status': 'NotInitialised'}
@@ -704,6 +706,10 @@ class Organ():
                 self.meshes = {}
                 self.obj_meshes = {}
                 self.objects = {'KSplines': {}, 'Spheres': {}}
+                if 'C-Centreline' in self.parent_project.mH_methods:
+                    self.objects['KSplines']['cut4cl'] = {'bottom': {}, 'top':{}}
+                    self.objects['Spheres']['cut4cl'] = {'bottom': {}, 'top':{}}
+                    self.objects['Centreline'] = {}
             if self.analysis['morphoCell']:
                 self.mC_settings = copy.deepcopy(project.mC_settings)
             self.workflow = copy.deepcopy(project.workflow)
@@ -747,6 +753,8 @@ class Organ():
             # meshes
             self.meshes = load_dict['meshes']
             self.load_objMeshes()
+            # objects
+            self.objects = load_dict['objects']
             
         if self.analysis['morphoCell']:
             # mC_Settings
@@ -935,21 +943,30 @@ class Organ():
             self.obj_meshes[mesh.name] = mesh
             print('> Mesh data updated!')
 
-    def add_object(self, obj, proc:str, classif:str, mesh_name:str):
+    def add_object(self, obj, proc:str, class_name:Union[list,str]):
         
         if isinstance(obj, vedo.shapes.KSpline):
-            if len(self.objects['KSplines']) == 0:
-                self.objects['KSplines'][proc] = {}
-            self.objects['KSplines'][proc][classif] = {mesh_name : {'points': obj.points(), 
-                                                                   'color': obj.color()}}
+            if proc != 'Centreline': 
+                if isinstance(class_name, list):
+                    classif, mesh_name = class_name
+                    self.objects['KSplines'][proc][classif][mesh_name] = {'points': obj.points(), 
+                                                                       'color': obj.color()}
+                else: 
+                    self.objects['KSplines'][proc][class_name] = {'points': obj.points(), 
+                                                                       'color': obj.color()}
+            else: 
+                self.objects[proc][class_name] = {'points': obj.points(), 
+                                                  'color': obj.color()}
             
         if isinstance(obj, vedo.shapes.Sphere):
-            if len(self.objects['Spheres']) == 0:
-                self.objects['Spheres'][proc] = {}
-            self.objects['Spheres'][proc][classif] = {mesh_name : {'centre': obj.center, 
-                                                                   'color': obj.color()}}
-            
-        
+            if isinstance(class_name, list):
+                classif, mesh_name = class_name
+                self.objects['Spheres'][proc][classif][mesh_name] = {'center': obj.center, 
+                                                                   'color': obj.color()}
+            else: 
+                self.objects['Spheres'][proc][class_name] = {'center': obj.center, 
+                                                                   'color': obj.color()}
+                        
     def load_TIFF(self, ch_name:str):
         print('---- Loading TIFF! ----')
         image = ImChannel(organ=self, ch_name=ch_name)#,new=True
@@ -999,7 +1016,6 @@ class Organ():
             #print('>> Directory: '+ str(json2save_dir)+'\n')
             alert('countdown')
             
-
     def check_status(self, process:str):
  
         if process=='ImProc':
@@ -1039,7 +1055,7 @@ class Organ():
             proc_done = []
             flat_dict = flatdict.FlatDict(self.workflow[process])
             for key_f in [proc for proc in self.workflow[process].keys() if proc != 'Status']:
-                proc_done.append(self.workflow[process][key_f])
+                proc_done.append(self.workflow[process][key_f]['Status'])
                 if key_f != 'E-Segments':
                     dict_proc = [item for item in flat_dict.keys() if key_f in item]
                     ch_cont_done = [flat_dict[item] for item in dict_proc[1:]]
@@ -2248,6 +2264,13 @@ class Mesh_mH():
         alert('woohoo')
 
         return mesh4cl_cut
+    
+    def set_centreline(self):
+        try: 
+            cl_info = self.parent_organ.objects['Centreline'][self.name]
+            self.centreline_info = cl_info
+        except: 
+            print('No centreline has been created for this mesh - ', self.name)
 
     def get_channel_no(self):
         return self.channel_no
@@ -2303,8 +2326,16 @@ class Mesh_mH():
             self.load_mesh()
             return self.mesh
     
-    def getCentreline(self): 
-        pass
+    def get_centreline(self, nPoints=300, color='deepskyblue'): 
+        try: 
+            points = self.centreline_info['points']
+            kspl = vedo.KSpline(points, res = nPoints).color(color).lw(5).legend('CL_'+self.name)
+            return kspl
+        except: 
+            print('No centreline has been created for this mesh - ', self.name)
+            return None
+    
+    
 
 #%%
 print('morphoHeart! - Loaded Module Classes')
