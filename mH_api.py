@@ -41,13 +41,20 @@ partB_vmtk = True
 partC = True
 print('partA:',partA,'- partB:',partB,'- partB_vmtk:',partB_vmtk,'- partC:',partC)
 
+user_projName = 'Project B-C'
+proj_name = 'Project_B-C'
+user_organName = 'Up2BefCentreline'
+organName2Load = 'Up2BefCentreline'
+# user_organName = 'LS52_F02_V_SR_1029'
+# organName2Load = 'LS52_F02_V_SR_1029'
+
 #%% Part A
 if partA:
     #%
     # Info coming from the gui (user's selection)
     # 1. Click: Create new project
     print('\n---CREATING PROJECT----')
-    user_projName = 'Project B-C'
+    # user_projName = 'Project B-C'
     user_projNotes = 'Project to compare embryos B and C'
     # Morphological analysis - morphoHeart
     mH_analysis = True
@@ -75,7 +82,7 @@ if partA:
         ch_ext = ('ch1', 'int')
         ch_int = ('ch2', 'ext')
         user_nsChName = 'cardiac jelly'
-        color_chNS = {'tiss':'darkorange','ext':'crimson', 'int':'deepskyblue'}
+        color_chNS = {'tiss':'darkorange','ext':'powderblue', 'int':'greenyellow'}
         # By default the volume and surface area of the segments per tissue selected will be measured
         cutLayersIn2Segments = True
         no_segments = 2
@@ -244,7 +251,7 @@ if partA:
     proj.save_project()
     # Load project and check parameters 
     print('\n---LOADING PROJECT----')
-    proj_name = 'Project_B-C'
+    # proj_name = 'Project_B-C'
     folder_name = 'R_'+proj_name
     dir_proj = dir_proj_res / folder_name 
     proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
@@ -253,7 +260,7 @@ if partA:
     #% ------------------------------------------------------------------------------
     # Having created the project an organ is created as part of the project
     print('\n---CREATING ORGAN----')
-    user_organName = 'LS52_F02_V_SR_1029'
+    # user_organName = 'LS52_F02_V_SR_1029'
     user_organNotes = 'Wild-type heart 1'
     im_orientation = 'ventral'
     custom_angle = 0
@@ -325,11 +332,11 @@ if partA:
     proj.save_project()
     # Load project and check parameters 
     print('\n---LOADING PROJECT AND ORGAN----')
-    proj_name = 'Project_B-C'
+    # proj_name = 'Project_B-C'
     folder_name = 'R_'+proj_name
     dir_proj = dir_proj_res / folder_name
     proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-    organName2Load = 'LS52_F02_V_SR_1029'
+    # organName2Load = 'LS52_F02_V_SR_1029'
     organ_new = proj.load_organ(user_organName = organName2Load)
     print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))
@@ -375,11 +382,11 @@ if partA:
 if partB: 
     # Load project, organ and channel and check parameters
     if not partA: 
-        proj_name = 'Project_B-C'
+        # proj_name = 'Project_B-C'
         folder_name = 'R_'+proj_name
         dir_proj = dir_proj_res / folder_name
         proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-        organName2Load = 'LS52_F02_V_SR_1029'
+        # organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
         # fcMeshes.plot_all_organ(organ)
         im_ch1 = mHC.ImChannel(organ=organ, ch_name='ch1')#, new=False)
@@ -462,11 +469,11 @@ if partB:
 # Create meshes to extract CL and extract CL
 if partB_vmtk: 
     if not partA and not partB: 
-        proj_name = 'Project_B-C'
+        # proj_name = 'Project_B-C'
         folder_name = 'R_'+proj_name
         dir_proj = dir_proj_res / folder_name
         proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-        organName2Load = 'LS52_F02_V_SR_1029'
+        # organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
         fcMeshes.plot_all_organ(organ)
     
@@ -488,22 +495,31 @@ if partB_vmtk:
     
 #%% Part C - Measure
 if partC: 
-    if not partA and not partB and not partB_vmtk(): 
+    if not partA and not partB and not partB_vmtk: 
         proj_name = 'Project_B-C'
         folder_name = 'R_'+proj_name
         dir_proj = dir_proj_res / folder_name
         proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-        organName2Load = 'LS52_F02_V_SR_1029'
+        # organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
         fcMeshes.plot_all_organ(organ)
-    
-    
-    
-    
-    
-    
-    
 
+    #%%
+    fcMeshes. extractBallooning(organ, color_map='turbo')
+    
+    
+# from vedo import Sphere, Cube, Plotter
+
+# s1 = Sphere().pos(10,20,30)
+# s2 = Cube(c='grey4').scale([2,1,1]).pos(14,20,30)
+
+# s1.distance_to(s2, signed=False)
+# s1.cmap('hot').add_scalarbar('Signed\nDistance')
+# print(s1.pointdata["Distance"])  # numpy array
+
+
+# vp = Plotter(N=1)
+# vp.show(s1, s2, at=0, interactive=True)
     
     
     

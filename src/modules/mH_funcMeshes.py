@@ -7,6 +7,7 @@ Version: Dec 01, 2022
 '''
 #%% ##### - Imports - ########################################################
 import os
+from datetime import datetime
 from pathlib import Path
 import vedo as vedo
 import numpy as np
@@ -18,6 +19,7 @@ import json
 import vmtk
 from vmtk import pypes, vmtkscripts
 from scipy.interpolate import splprep, splev, interpn
+from time import perf_counter
 
 path_fcMeshes = os.path.abspath(__file__)
 path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
@@ -55,7 +57,8 @@ from .mH_funcBasics import ask4input, get_by_path, alert
 alert_all = True
 heart_default = False
 dict_gui = {'alert_all': alert_all,
-            'heart_default': heart_default}
+            'heart_default': heart_default, 
+            'colorMap': 'turbo'}
             
 #%% - morphoHeart B functions
 #%% func - clean_intCh
@@ -822,7 +825,7 @@ def extendCL(pts_int_o, pts_withOutf, num, nPoints, plane_info):
     return pts_int_opt, pt2add, sph_m10
 
 #%% func - extractBallooning
-def extractBallooning(organ):
+def extractBallooning(organ, color_map):
 
     #Check first if extracting centrelines is a process involved in this organ/project
     if 'D-Ballooning' in organ.parent_project.mH_methods: 
@@ -839,87 +842,87 @@ def extractBallooning(organ):
     
     if balloon: 
         ball_names = [item for item in organ.parent_project.mH_param2meas if 'ballooning' in item]
-        for name in ball_names: 
+        for name in ball_names[0:1]: 
             ch = name[0]; cont = name[1]
             mesh2ball = organ.obj_meshes[ch+'_'+cont]
             from_cl = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['Settings']['from_cl']
             from_cl_type = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['Settings']['from_cl_type']
             cl4ball = organ.obj_meshes[from_cl+'_'+from_cl_type].get_centreline()
+            sph4ball = sphs_in_spline(kspl=cl4ball,every=0.6)
+            sph4ball.legend('sphs_ball').alpha(0.1)
             
-            sph4ball = sphs_in_spline()
+            mesh_ball = getDistance2(mesh_from = mesh2ball, mesh_to=sph4ball, to_name='CL ('+from_cl+'_'+from_cl_type+')', color_map=color_map)
             
-            obj = [(mesh2ball.mesh, cl4ball)]
+            obj = [(mesh2ball.mesh, cl4ball, sph4ball), (mesh_ball, cl4ball, sph4ball)]
             txt = [(0, organ.user_organName +' - Ballooning Setup')]
-            fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
+            plot_grid(obj=obj, txt=txt, axes=5)
+            
+            # obj = [(mesh, cl4ball, sph4ball)]
+            # txt = [(0, organ.user_organName +' - Ballooning Setup')]
+            # fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
 
 #%% func - getDistance2Mesh
-def getDistance2Mesh(mesh, mesh_from, alpha=1):
+def getDistance2(mesh_from, mesh_to, to_name, color_map='turbo'):
     """
     Function that gets the distance between m_ext and m_int and color codes m_ext accordingly
     mesh_from = cl/int
     mesh_to = ext - the one that has the colors
     """
-    
-    mesh_to = mesh.clone()
-    mesh_to.distance_to(mesh_from, signed=True, invert=False, name=name)
-    
-    if isinstance(mesh,vedo.shapes.KSpline): 
+    if isinstance(mesh_to,vedo.shapes.Spheres): 
         name = 'Ballooning'
+        multip = 1
     else: 
         name = 'Thickness'
+        multip = 1
+    print(name, str(multip))
+        
+    title = mesh_from.legend+'\n'+name+' [um]\n('+to_name+')'
     
+    tic = perf_counter()
+    print('> Start time: \t', str(datetime.now())[11:-7])
+    mesh = mesh_from.mesh.clone()
+    print(type(mesh))
+
+    mesh.dictance_to(mesh_to, signed=True)
+    toc = perf_counter()
+    time = toc-tic
+    print('> End time: \t', str(datetime.now())[11:-7])
+    print("\t>> Total time taken to get "+name+" = ",format(time,'.2f'), "s/", format(time/60,'.2f'), "m/", format(time/3600,'.2f'), "h")
+    distance = multip*mesh.pointdata['Distance']
+    mesh.pointdata['Distance'] = distance
+    vmin, vmax = np.min(distance),np.max(distance)
+    print('vmax:', vmax, 'vmin:', vmin)
+    # alert('jump')
     
+    mesh.cmap(color_map)
+    mesh.add_scalarbar(title=title, pos=(0.8, 0.05))
+    mesh.mapper().SetScalarRange(vmin,vmax)
+
+    mesh.legend(mesh.legend)
     
-    if title in thickness_meshes:
-        thickness = - m_ext_out.getPointArray("Distance")
-    else:
-        thickness = m_ext_out.getPointArray("Distance")
+    return mesh
 
-    vmin, vmax = np.min(thickness),np.max(thickness)
-
-    alert('jump')
-
-    val_min = vmin; val_max = vmax
-
-    m_ext_out.pointColors(thickness, cmap="turbo", vmin=val_min, vmax=val_max)
-    m_ext_out.addScalarBar(title=title_bar+' [um]', pos=(0.8, 0.05))
-    m_ext_out.mapper().SetScalarRange(val_min,val_max)
-
-    m_ext_out.alpha(alpha).legend(m_ext._legend)
-
-    if plotshow:
-        text = filename+"\n\n >>"+title+" Heat map\n\t   - min and max: ("+format(vmin, '.2f')+" , "+format(vmax, '.2f')+")"
-        txt = Text2D(text, c="k", font= font)
-
-        cube = Cube(pos=m_ext_out.centerOfMass(), side=300, c='white', alpha=0.01)
-        settings.legendSize = .3
-        vp = Plotter(N=1, axes=10)
-        vp.show(m_ext_out, cube, txt, at=0, zoom=1.2)#vp.show(m_ext_out, m_int, cube, txt, at=0, zoom=1.2)
-
-    min_max = (vmin, vmax)
-
-    return thickness, m_ext_out, min_max
-
-#%% func - 
-def sphs_in_spline(kspl, colour = False, every = 10):
+#%% func - sphs_in_spline
+def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
     """
     Function that creates a group of spheres through a spline given as input.
     """
     if colour:
-        vcols = [colorMap(v, "turbo", 0, len(kspl.points())) for v in list(range(len(kspl.points())))]  # scalars->colors
+        vcols = [vedo.colorMap(v, color_map, 0, len(kspl.points())) for v in list(range(len(kspl.points())))]  
+        # scalars->colors
 
     if every > 1:
         spheres_spline = []
         for num, point in enumerate(kspl.points()):
-            if num % every == 0 or num == kspl.NPoints()-1:
+            if num % every == 0 or num == kspl.npoints-1:
                 if colour:
-                    sphere_pt = Sphere(pos=point, r=2, c=vcols[num]).addScalarBar(title='Centreline\nPoint Number')
+                    sphere_pt = vedo.Sphere(pos=point, r=2, c=vcols[num]).addScalarBar(title='Centreline\nPoint Number')
                 else:
-                    sphere_pt = Sphere(pos=point, r=2, c='coral')
+                    sphere_pt = vedo.Sphere(pos=point, r=2, c='coral')
                 spheres_spline.append(sphere_pt)
     else:
-        kspl_new = KSpline(kspl.points(), res = round(kspl.NPoints()/every))
-        spheres_spline = Spheres(kspl_new.points(), c='coral', r=2)
+        kspl_new = vedo.KSpline(kspl.points(), res = round(kspl.npoints/every))
+        spheres_spline = vedo.Spheres(kspl_new.points(), c='coral', r=2)
 
     return spheres_spline
 

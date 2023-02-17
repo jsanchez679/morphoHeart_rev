@@ -11,8 +11,6 @@ from datetime import datetime
 import pathlib
 from pathlib import Path
 import numpy as np
-import vedo as vedo
-from vedo import write
 from skimage import measure, io
 import copy
 import json
@@ -21,6 +19,9 @@ import pprint
 import matplotlib.pyplot as plt
 import flatdict
 from typing import Union
+from time import perf_counter
+import vedo as vedo
+from vedo import write
 
 #%% ##### - Other Imports - ##################################################
 #from ...config import dict_gui
@@ -557,19 +558,33 @@ class Project():
                                             'D-S3Create':{'Status': 'NotInitialised'}} 
                  
                     
-            for ch in mH_channels:
+            for nn, ch in enumerate(mH_channels):
                 for process in ['A-Create3DMesh','B-TrimMesh','C-Centreline']:
                     if 'NS' not in ch:
-                        dict_MeshesProc[process][ch] = {}
-                        for cont in ['tiss', 'int', 'ext']:
+                        if process != 'C-Centreline':
+                            dict_MeshesProc[process][ch] = {}
+                        for nnn, cont in enumerate(['tiss', 'int', 'ext']):
                             if process == 'A-Create3DMesh' or process == 'B-TrimMesh':
                                 dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
                          
                             if process == 'C-Centreline' and 'C-Centreline' in dict_MeshesProc.keys():
-                                dict_MeshesProc[process]['Status'] = 'NotInitialised'
+                                # print('nn:', nn, 'nnn:', nnn)
+                                if nn == 0 and nnn == 0: 
+                                    dict_MeshesProc[process]['Status'] = 'NotInitialised'
+                                    dict_MeshesProc[process]['SimplifyMesh'] = {}
+                                    dict_MeshesProc[process]['vmtk_CL'] = {}
+                                    dict_MeshesProc[process]['buildCL'] = {}
+                                    
                                 if (ch,cont,'whole','centreline') in item_centreline:
+                                    # print(ch,cont)
+                                    if ch not in dict_MeshesProc[process]['SimplifyMesh'].keys(): 
+                                        dict_MeshesProc[process]['SimplifyMesh'][ch] = {}
+                                        dict_MeshesProc[process]['vmtk_CL'][ch] = {}
+                                        dict_MeshesProc[process]['buildCL'][ch] = {}
                                     dict_MeshesProc[process]['SimplifyMesh'][ch][cont] = {'Status': 'NotInitialised'}
                                     dict_MeshesProc[process]['vmtk_CL'][ch][cont] = {'Status': 'NotInitialised'}
+                                    dict_MeshesProc[process]['buildCL'][ch][cont] = {'Status': 'NotInitialised'}
+                                    
                     else: 
                         if process == 'A-Create3DMesh':
                             dict_MeshesProc[process][ch] = {'Status': 'NotInitialised'}
@@ -739,7 +754,12 @@ class Organ():
                 tuple_keys.append(['imChannels', ch, 'contStack',cont,'shape_s3'])
         
         load_dict = make_tuples(load_dict, tuple_keys)
-     
+        
+        # Workflow
+        self.workflow = load_dict['workflow']
+        self.dir_info = Path(load_dict['dir_info'])
+        self.mH_organName = load_dict['mH_organName']
+        
         self.objects = load_dict['objects']
         if self.analysis['morphoHeart']:
             # mH_Settings
@@ -759,11 +779,6 @@ class Organ():
         if self.analysis['morphoCell']:
             # mC_Settings
             self.mC_settings = load_dict['mC_settings']
-        # Workflow
-        self.workflow = load_dict['workflow']
-       
-        self.dir_info = Path(load_dict['dir_info'])
-        self.mH_organName = load_dict['mH_organName']
         
     def load_objImChannels(self):
         self.obj_imChannels = {}
@@ -2196,6 +2211,9 @@ class Mesh_mH():
                 self.rotateZ_90 = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['rotateZ_90']
                 print('loading mesh-', self.name)
                 self.load_mesh()
+                if self.name in self.parent_organ.objects['Centreline'].keys():
+                    if self.parent_organ.workflow['MeshesProc']['C-Centreline']['buildCL']['Status'] == 'DONE':
+                        self.set_centreline()
             
         self.mesh.color(self.color)
         self.mesh.alpha(self.alpha)
@@ -2269,6 +2287,7 @@ class Mesh_mH():
         try: 
             cl_info = self.parent_organ.objects['Centreline'][self.name]
             self.centreline_info = cl_info
+            print('Centerline has been set for ', self.name)
         except: 
             print('No centreline has been created for this mesh - ', self.name)
 
@@ -2335,7 +2354,41 @@ class Mesh_mH():
             print('No centreline has been created for this mesh - ', self.name)
             return None
     
-    
+    def getDistance2(self, mesh_to, to_name, color_map):
+        
+        if isinstance(mesh_to,vedo.shapes.Spheres): 
+            name = 'Ballooning'
+            multip = 1
+        else: 
+            name = 'Thickness'
+            multip = 1
+        print(name, str(multip))
+            
+        title = self.legend+'\n'+name+' [um]\n('+to_name+')'
+        
+        tic = perf_counter()
+        print('> Start time: \t', str(datetime.now())[11:-7])
+        mesh = self.mesh.clone()
+        print(type(mesh))
+
+        mesh.dictance_to(mesh_to, signed=True)
+        toc = perf_counter()
+        time = toc-tic
+        print('> End time: \t', str(datetime.now())[11:-7])
+        print("\t>> Total time taken to get "+name+" = ",format(time,'.2f'), "s/", format(time/60,'.2f'), "m/", format(time/3600,'.2f'), "h")
+        distance = multip*mesh.pointdata['Distance']
+        mesh.pointdata['Distance'] = distance
+        vmin, vmax = np.min(distance),np.max(distance)
+        print('vmax:', vmax, 'vmin:', vmin)
+        # alert('jump')
+        
+        mesh.cmap(color_map)
+        mesh.add_scalarbar(title=title, pos=(0.8, 0.05))
+        mesh.mapper().SetScalarRange(vmin,vmax)
+
+        mesh.legend(self.legend)
+        
+        return mesh
 
 #%%
 print('morphoHeart! - Loaded Module Classes')
