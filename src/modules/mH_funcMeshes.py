@@ -318,7 +318,7 @@ def extractNSCh(organ, plot):
         
     
 #%% func - cutMeshes4CL
-def cutMeshes4CL(organ, plot=True, printshow=True):
+def cutMeshes4CL(organ, tol, plot=True, printshow=True):
     """
     Funtion that cuts the inflow and outflow tract of meshes from which 
     the centreline will be obtained.
@@ -338,7 +338,10 @@ def cutMeshes4CL(organ, plot=True, printshow=True):
             if 'ch' in ch_s:
                 for cont_s in path2files[ch_s].keys():
                     dir2check = path2files[ch_s][cont_s]['dir_meshLabMesh']
-                    files_exist.append(dir2check.is_file())
+                    if dir2check != None: 
+                        files_exist.append(dir2check.is_file())
+                    else: 
+                        files_exist.append(dir2check)
                     print (ch_s, cont_s)
         
         if check_proc == 'DONE' and all(flag for flag in files_exist):
@@ -426,19 +429,19 @@ def cutMeshes4CL(organ, plot=True, printshow=True):
                     print('> Cutting mesh: ', mH_msh.legend, '-', pl_cut)
                     pts2cut, _ = getPointsAtPlane(points = sm_msh.points(), 
                                                     pl_normal = plane_cuts[pl_cut]['pl_dict']['pl_normal'],
-                                                    pl_centre = plane_cuts[pl_cut]['pl_dict']['pl_centre'])
+                                                    pl_centre = plane_cuts[pl_cut]['pl_dict']['pl_centre'], tol=tol)
                     ordpts, angle = order_pts(points = pts2cut)
                     # Create spline around cut
                     kspl = vedo.KSpline(ordpts, continuity=0, tension=0, bias=0, closed=True)
                     kspl.color(color_cuts[pl_cut]).legend('cut4CL_'+pl_cut).lw(2)
-                    organ.add_object(kspl, proc='cut4cl', class_name=[pl_cut,mH_msh.name])
+                    organ.add_object(kspl, proc='cut4cl', class_name=[pl_cut,mH_msh.name], name='KSpline')
                     ksplines.append(kspl)
                     
                     # Get centroid of kspline to add to the centreline
                     kspl_bounds = kspl.bounds()
                     pt_centroid = np.mean(np.asarray(kspl_bounds).reshape((3, 2)),axis=1)
                     sph_centroid = vedo.Sphere(pos=pt_centroid, r=2).legend('cut4CL_'+pl_cut).color(color_cuts[pl_cut])
-                    organ.add_object(sph_centroid, proc='cut4cl', class_name=[pl_cut,mH_msh.name])
+                    organ.add_object(sph_centroid, proc='cut4cl', class_name=[pl_cut,mH_msh.name], name='Sphere')
                     spheres.append(sph_centroid)
                     
                     # Cutmesh using created plane
@@ -769,7 +772,7 @@ def createCLs(organ, nPoints = 300):
             
             #Add centreline to organ
             cl_final = dict_clOpt[cl_selected]['kspl']
-            organ.add_object(cl_final, proc='Centreline', class_name=ch+'_'+cont)
+            organ.add_object(cl_final, proc='Centreline', class_name=ch+'_'+cont, name='KSpline')
             organ.obj_meshes[ch+'_'+cont].set_centreline()
             
             # Plot final centreline
@@ -880,27 +883,27 @@ def getDistance2(mesh_from, mesh_to, to_name, color_map='turbo'):
     
     tic = perf_counter()
     print('> Start time: \t', str(datetime.now())[11:-7])
-    mesh = mesh_from.mesh.clone()
-    print(type(mesh))
+    mesh_fromB = mesh_from.mesh.clone()
+    print(type(mesh_fromB))
 
-    mesh.dictance_to(mesh_to, signed=True)
+    mesh_fromB.dictance_to(mesh_to, signed=True)
     toc = perf_counter()
     time = toc-tic
     print('> End time: \t', str(datetime.now())[11:-7])
     print("\t>> Total time taken to get "+name+" = ",format(time,'.2f'), "s/", format(time/60,'.2f'), "m/", format(time/3600,'.2f'), "h")
-    distance = multip*mesh.pointdata['Distance']
-    mesh.pointdata['Distance'] = distance
+    distance = multip*mesh_fromB.pointdata['Distance']
+    mesh_fromB.pointdata['Distance'] = distance
     vmin, vmax = np.min(distance),np.max(distance)
     print('vmax:', vmax, 'vmin:', vmin)
     # alert('jump')
     
-    mesh.cmap(color_map)
-    mesh.add_scalarbar(title=title, pos=(0.8, 0.05))
-    mesh.mapper().SetScalarRange(vmin,vmax)
+    mesh_fromB.cmap(color_map)
+    mesh_fromB.add_scalarbar(title=title, pos=(0.8, 0.05))
+    mesh_fromB.mapper().SetScalarRange(vmin,vmax)
 
-    mesh.legend(mesh.legend)
+    mesh_fromB.legend(mesh_from.legend)
     
-    return mesh
+    return mesh_fromB
 
 #%% func - sphs_in_spline
 def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):

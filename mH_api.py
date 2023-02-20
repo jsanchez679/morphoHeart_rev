@@ -37,14 +37,14 @@ elif sys.platform == 'win32':
     
 partA = False
 partB = False
-partB_vmtk = True
+partB_vmtk = False
 partC = True
 print('partA:',partA,'- partB:',partB,'- partB_vmtk:',partB_vmtk,'- partC:',partC)
 
-user_projName = 'Project B-C'
-proj_name = 'Project_B-C'
-user_organName = 'Up2BefCentreline'
-organName2Load = 'Up2BefCentreline'
+user_projName = 'Up2BefCentreline'
+proj_name = user_projName
+user_organName = 'LS52_F02_V_SR_1029'
+organName2Load = user_organName
 # user_organName = 'LS52_F02_V_SR_1029'
 # organName2Load = 'LS52_F02_V_SR_1029'
 
@@ -478,8 +478,8 @@ if partB_vmtk:
         fcMeshes.plot_all_organ(organ)
     
     # Create meshes to extract CL
-    plot = True
-    fcMeshes.cutMeshes4CL(organ, plot=plot)
+    plot = True; tol=2
+    fcMeshes.cutMeshes4CL(organ, tol=tol, plot=plot)
     fcMeshes.extractCL(organ)
     nPoints = 300
     fcMeshes.createCLs(organ, nPoints = nPoints)
@@ -496,16 +496,16 @@ if partB_vmtk:
 #%% Part C - Measure
 if partC: 
     if not partA and not partB and not partB_vmtk: 
-        proj_name = 'Project_B-C'
+        # proj_name = proj_name
         folder_name = 'R_'+proj_name
         dir_proj = dir_proj_res / folder_name
         proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
         # organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
-        fcMeshes.plot_all_organ(organ)
+        # fcMeshes.plot_all_organ(organ)
 
     #%%
-    fcMeshes. extractBallooning(organ, color_map='turbo')
+    fcMeshes.extractBallooning(organ, color_map='turbo')
     
     
 # from vedo import Sphere, Cube, Plotter

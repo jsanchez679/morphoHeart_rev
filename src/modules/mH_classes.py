@@ -571,9 +571,9 @@ class Project():
                                 # print('nn:', nn, 'nnn:', nnn)
                                 if nn == 0 and nnn == 0: 
                                     dict_MeshesProc[process]['Status'] = 'NotInitialised'
-                                    dict_MeshesProc[process]['SimplifyMesh'] = {}
-                                    dict_MeshesProc[process]['vmtk_CL'] = {}
-                                    dict_MeshesProc[process]['buildCL'] = {}
+                                    dict_MeshesProc[process]['SimplifyMesh'] = {'Status':'NotInitialised'}
+                                    dict_MeshesProc[process]['vmtk_CL'] = {'Status':'NotInitialised'}
+                                    dict_MeshesProc[process]['buildCL'] = {'Status':'NotInitialised'}
                                     
                                 if (ch,cont,'whole','centreline') in item_centreline:
                                     # print(ch,cont)
@@ -958,9 +958,9 @@ class Organ():
             self.obj_meshes[mesh.name] = mesh
             print('> Mesh data updated!')
 
-    def add_object(self, obj, proc:str, class_name:Union[list,str]):
+    def add_object(self, obj, proc:str, class_name:Union[list,str], name):
         
-        if isinstance(obj, vedo.shapes.KSpline):
+        if isinstance(obj, vedo.shapes.KSpline) or name == 'KSpline':
             if proc != 'Centreline': 
                 if isinstance(class_name, list):
                     classif, mesh_name = class_name
@@ -973,7 +973,7 @@ class Organ():
                 self.objects[proc][class_name] = {'points': obj.points(), 
                                                   'color': obj.color()}
             
-        if isinstance(obj, vedo.shapes.Sphere):
+        if isinstance(obj, vedo.shapes.Sphere) or name == 'Sphere':
             if isinstance(class_name, list):
                 classif, mesh_name = class_name
                 self.objects['Spheres'][proc][classif][mesh_name] = {'center': obj.center, 
