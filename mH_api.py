@@ -502,11 +502,15 @@ if partC:
         proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
         # organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
-        # fcMeshes.plot_all_organ(organ)
+        fcMeshes.plot_all_organ(organ)
 
     #%%
-    fcMeshes.extractBallooning(organ, color_map='turbo')
-    
+    plot = True
+    fcMeshes.extractBallooning(organ, color_map='turbo', plot=plot)
+    #%%
+    fcMeshes.extractThickness(organ, color_map='turbo', plot=plot)
+    #%%
+    'range' : {'min_val': None, 'max_val': None}
     
 # from vedo import Sphere, Cube, Plotter
 

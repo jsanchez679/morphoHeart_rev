@@ -442,7 +442,8 @@ class Project():
                 ch, cont, _, _ = tup
                 if ch not in mH_settings['wf_info']['MeshesProc']['D-Ballooning'].keys():
                     mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch] = {}
-                mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont] = {'Settings': self.mH_settings['measure'][ch][cont]['whole']['ballooning']}
+                mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont] = {'Settings': self.mH_settings['measure'][ch][cont]['whole']['ballooning'],
+                                                                                  'range' : {'min_val': None, 'max_val': None}}
             
         if 'D-Thickness_int>ext' in methods:
             item_th = [item for item in mH_params if 'thickness int>ext' in item]
@@ -663,7 +664,7 @@ class Project():
                 alert('error_beep')
             else: 
                 print('>> Project settings file saved correctly!\n>> File: '+jsonDict_name)
-                print('>> File: '+ str(json2save_dir)+'\n')
+                # print('>> File: '+ str(json2save_dir)+'\n')
                 alert('countdown')
         
     
@@ -960,7 +961,7 @@ class Organ():
 
     def add_object(self, obj, proc:str, class_name:Union[list,str], name):
         
-        if isinstance(obj, vedo.shapes.KSpline) or name == 'KSpline':
+        if isinstance(obj, vedo.shapes.KSpline):# or name == 'KSpline':
             if proc != 'Centreline': 
                 if isinstance(class_name, list):
                     classif, mesh_name = class_name
@@ -973,7 +974,7 @@ class Organ():
                 self.objects[proc][class_name] = {'points': obj.points(), 
                                                   'color': obj.color()}
             
-        if isinstance(obj, vedo.shapes.Sphere) or name == 'Sphere':
+        if isinstance(obj, vedo.shapes.Sphere):# or name == 'Sphere':
             if isinstance(class_name, list):
                 classif, mesh_name = class_name
                 self.objects['Spheres'][proc][classif][mesh_name] = {'center': obj.center, 
@@ -1103,6 +1104,12 @@ class Organ():
                     ch_int = self.obj_imChannels[ch]
                     
         return ch_ext, ch_int
+    
+    def check_method(self, method:str):
+        if method in self.parent_project.mH_methods:
+            return True
+        else:
+            return False  
                     
     #Get all the set mH variables in __init__
     def get_notes(self):
@@ -2195,6 +2202,7 @@ class Mesh_mH():
                 self.parent_organ.update_workflow(process_up2, update = 'Initialised')
                 
             self.parent_organ.check_status(process = 'MeshesProc')
+            self.measure = {}
         
         else: 
             new = False
@@ -2243,26 +2251,59 @@ class Mesh_mH():
         mesh.legend(self.legend).wireframe()
         self.mesh = mesh
     
-    def load_mesh(self):
+    def load_mesh(self, m_type='self'):
         parent_organ = self.parent_organ
-        mesh_name = parent_organ.user_organName+'_'+self.legend+'.vtk'
-        mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
+        if m_type == 'self':
+            mesh_name = parent_organ.user_organName+'_'+self.legend+'.vtk'
+            mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
+        elif 'ball' in m_type: 
+            mesh_name = parent_organ.user_organName+'_'+self.legend+'--'+m_type+'.vtk'
+            mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
+            
+            
         mesh_out = vedo.load(str(mesh_dir))
         mesh_out.legend(self.legend).wireframe()
         self.dir_out = mesh_dir
         self.mesh = mesh_out
 
-    def save_mesh(self):
+    def save_mesh(self, m_type='self'):
+        
         parent_organ = self.parent_organ
-        mesh_name = parent_organ.user_organName+'_'+self.legend+'.vtk'
-        mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
-        self.dir_out = mesh_dir
-        mesh_out = self.mesh
+        if m_type == 'self':
+            mesh_name = parent_organ.user_organName+'_'+self.legend+'.vtk'
+            mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
+            self.dir_out = mesh_dir
+            mesh_out = self.mesh
+            
+        elif 'ball' in m_type or 'thck' in m_type: 
+            print('aja')
+            mesh_name = parent_organ.user_organName+'_'+self.legend+'--'+m_type+'.vtk'
+            mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
+            mesh_out = self.measure[m_type]
+            if not hasattr(self, 'dirs'):
+                self.dirs = {'mesh': {}, 'arrays': {}}
+            self.dirs['mesh'][m_type] = mesh_dir
+            
         mesh_out.write(str(mesh_dir))
         print('>> Mesh '+mesh_name+' has been saved!')
         alert('countdown')        
         self.parent_organ.add_mesh(self)
+    
+    def save_array(self, array, m_type):
         
+        parent_organ = self.parent_organ        
+        title = parent_organ.user_organName+'_'+self.legend+'--'+m_type
+        np2save_dir = self.parent_organ.info['dirs']['csv_all'] / title
+        np.save(np2save_dir, array)
+        self.dirs['arrays'][m_type] = np2save_dir
+        np2save_dirf = Path(str(np2save_dir)+'.npy')
+        if not np2save_dirf.is_file():
+            print('>> Error: Array was not saved correctly!\n>> File: '+title)
+            alert('error_beep')
+        else: 
+            print('>> Project settings file saved correctly!\n>> File: '+title)
+            alert('countdown')
+            
     def mesh4CL(self):
         """
         Function that cleans and smooths meshes given as input to get centreline using VMTK

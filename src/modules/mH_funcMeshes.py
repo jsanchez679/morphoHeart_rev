@@ -8,7 +8,7 @@ Version: Dec 01, 2022
 #%% ##### - Imports - ########################################################
 import os
 from datetime import datetime
-from pathlib import Path
+from pathlib import Path, WindowsPath
 import vedo as vedo
 import numpy as np
 import math
@@ -44,7 +44,7 @@ class NumpyArrayEncoder(json.JSONEncoder):
             return float(obj)
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
-        elif isinstance(obj, pathlib.WindowsPath):
+        elif isinstance(obj, WindowsPath):
             return str(obj)
         else:
             return super(NumpyArrayEncoder, self).default(obj)
@@ -315,7 +315,7 @@ def extractNSCh(organ, plot):
     
     else: 
         print('No layer between segments is being created as it was not setup by user!')
-        
+
     
 #%% func - cutMeshes4CL
 def cutMeshes4CL(organ, tol, plot=True, printshow=True):
@@ -325,7 +325,8 @@ def cutMeshes4CL(organ, tol, plot=True, printshow=True):
 
     """
     #Check first if extracting centrelines is a process involved in this organ/project
-    if 'C-Centreline' in organ.parent_project.mH_methods: 
+    if organ.check_method(method = 'C-Centreline'): 
+    # if 'C-Centreline' in organ.parent_project.mH_methods: 
         #Check workflow status
         workflow = organ.workflow
         process = ['MeshesProc','C-Centreline','SimplifyMesh','Status']
@@ -500,7 +501,8 @@ def cutMeshes4CL(organ, tol, plot=True, printshow=True):
 def extractCL(organ, voronoi=False):
     
     #Check first if extracting centrelines is a process involved in this organ/project
-    if 'C-Centreline' in organ.parent_project.mH_methods: 
+    if organ.check_method(method = 'C-Centreline'): 
+    # if 'C-Centreline' in organ.parent_project.mH_methods: 
         #Check workflow status
         workflow = organ.workflow
         process = ['MeshesProc','C-Centreline','vmtk_CL','Status']
@@ -643,7 +645,8 @@ def createCLs(organ, nPoints = 300):
 
     """
     #Check first if extracting centrelines is a process involved in this organ/project
-    if 'C-Centreline' in organ.parent_project.mH_methods: 
+    if organ.check_method(method = 'C-Centreline'): 
+    # if 'C-Centreline' in organ.parent_project.mH_methods: 
         #Check workflow status
         workflow = organ.workflow
         process = ['MeshesProc','C-Centreline','buildCL','Status']
@@ -828,10 +831,11 @@ def extendCL(pts_int_o, pts_withOutf, num, nPoints, plane_info):
     return pts_int_opt, pt2add, sph_m10
 
 #%% func - extractBallooning
-def extractBallooning(organ, color_map):
+def extractBallooning(organ, color_map, plot=False):
 
     #Check first if extracting centrelines is a process involved in this organ/project
-    if 'D-Ballooning' in organ.parent_project.mH_methods: 
+    if organ.check_method(method = 'D-Ballooning'): 
+    # if 'D-Ballooning' in organ.parent_project.mH_methods: 
         #Check workflow status
         workflow = organ.workflow
         process = ['MeshesProc','D-Ballooning','Status']
@@ -842,27 +846,123 @@ def extractBallooning(organ, color_map):
             balloon = ask4input(q, res, bool)
         else: 
             balloon = True
+    else:
+        balloon = False
+        return None
     
     if balloon: 
         ball_names = [item for item in organ.parent_project.mH_param2meas if 'ballooning' in item]
-        for name in ball_names[0:1]: 
+        for name in ball_names: 
             ch = name[0]; cont = name[1]
             mesh2ball = organ.obj_meshes[ch+'_'+cont]
+            print('\n- Extracting ballooning information for '+mesh2ball.legend+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
             from_cl = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['Settings']['from_cl']
             from_cl_type = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['Settings']['from_cl_type']
             cl4ball = organ.obj_meshes[from_cl+'_'+from_cl_type].get_centreline()
             sph4ball = sphs_in_spline(kspl=cl4ball,every=0.6)
             sph4ball.legend('sphs_ball').alpha(0.1)
             
-            mesh_ball = getDistance2(mesh_from = mesh2ball, mesh_to=sph4ball, to_name='CL ('+from_cl+'_'+from_cl_type+')', color_map=color_map)
+            mesh_ball, distance, min_max = getDistance2(mesh_from = mesh2ball, mesh_to=sph4ball, to_name='CL ('+from_cl+'_'+from_cl_type+')', color_map=color_map)
+            #Add mesh_ball to the measure attribute
+            m_type = 'ball_CL('+from_cl+'_'+from_cl_type+')'
             
-            obj = [(mesh2ball.mesh, cl4ball, sph4ball), (mesh_ball, cl4ball, sph4ball)]
-            txt = [(0, organ.user_organName +' - Ballooning Setup')]
+            if not hasattr(mesh2ball, 'measure'):
+                mesh2ball.measure = {}
+            mesh2ball.measure[m_type] = mesh_ball
+            mesh2ball.save_mesh(m_type=m_type)
+            mesh2ball.save_array(array=distance, m_type=m_type)
+            
+            if plot: 
+                obj = [(mesh2ball.mesh, cl4ball, sph4ball), (mesh_ball, cl4ball, sph4ball)]
+                txt = [(0, organ.user_organName +' - Ballooning Setup')]
+                plot_grid(obj=obj, txt=txt, axes=5)
+            
+            proc_wft = ['MeshesProc','D-Ballooning',ch, cont, 'Status']
+            organ.update_workflow(process = proc_wft, update = 'DONE')
+        
+        organ.update_workflow(process = process, update = 'DONE')
+            
+    else:
+        return None
+
+#%% func - extractThickness
+def extractThickness(organ, color_map, plot=False):
+    
+    thck_values = {'int>ext': {'method': 'D-Thickness_int>ext', 
+                                    'param': 'thickness int>ext'},
+                   'ext>int': {'method': 'D-Thickness_ext>int', 
+                                  'param': 'thickness ext>int'}}
+                        
+    for n_type in thck_values.keys(): 
+        print(thck_values[n_type])
+        method = thck_values[n_type]['method']
+        if organ.check_method(method = method): 
+            #Check workflow status
+            workflow = organ.workflow
+            process = ['MeshesProc', method,'Status']
+            check_proc = get_by_path(workflow, process)
+            if check_proc == 'DONE': 
+                q = 'You already extracted the thickness ('+n_type+') parameters of the selected meshes. Do you want to extract them again?'
+                res = {0: 'no, continue with next step', 1: 'yes, re-run this process!'}
+                thickness = ask4input(q, res, bool)
+            else: 
+                thickness = True
+        else:
+            thickness = False
+            return None
+        
+        if thickness: 
+            print('Extracting thickness for:', method)
+            print(n_type, thck_values[n_type])
+            res = getThickness(organ, n_type, thck_values[n_type], color_map, plot)
+            if res: 
+                organ.update_workflow(process = process, update = 'DONE')
+
+    
+#%% func - getThickness
+def getThickness(organ, n_type, thck_dict, color_map, plot=False):
+    
+    thck_names = [item for item in organ.parent_project.mH_param2meas if thck_dict['param'] in item]
+    print(thck_names)
+    proc_done = []
+    for name in thck_names: 
+        ch = name[0]; cont = name[1]
+        mesh_tiss = organ.obj_meshes[ch+'_tiss']
+        if n_type == 'int>ext': 
+            mesh_from = organ.obj_meshes[ch+'_ext']
+            mesh_to = organ.obj_meshes[ch+'_int'].mesh
+        elif n_type == 'ext>int': 
+            mesh_from = organ.obj_meshes[ch+'_int']
+            mesh_to = organ.obj_meshes[ch+'_ext'].mesh
+        # mesh_to = 
+        print('\n- Extracting thickness information for '+mesh_tiss.legend+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
+        
+        mesh_thck, distance, min_max = getDistance2(mesh_from=mesh_from, 
+                                            mesh_to=mesh_to, to_name=n_type, color_map=color_map)
+        mesh_thck.alpha(1)
+        # Add mesh_ball to the measure attribute
+        n_type_new = n_type.replace('>','TO')
+        m_type = 'thck_('+n_type_new+')'
+        
+        if not hasattr(mesh_from, 'measure'):
+            mesh_tiss.measure = {}
+        mesh_tiss.measure[m_type] = mesh_thck
+        mesh_tiss.save_mesh(m_type=m_type)
+        mesh_tiss.save_array(array=distance, m_type=m_type)
+        
+        if plot: 
+            obj = [(mesh_from.mesh, mesh_to), (mesh_tiss.mesh), (mesh_thck)]
+            txt = [(0, organ.user_organName +' - Thickness Setup')]
             plot_grid(obj=obj, txt=txt, axes=5)
-            
-            # obj = [(mesh, cl4ball, sph4ball)]
-            # txt = [(0, organ.user_organName +' - Ballooning Setup')]
-            # fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
+        
+        proc_wft = ['MeshesProc', thck_dict['method'], ch, cont, 'Status']
+        organ.update_workflow(process = proc_wft, update = 'DONE')
+        proc_done.append('DONE')
+    
+    if len(proc_done) == len(thck_names):
+        return True
+    else: 
+        return False
 
 #%% func - getDistance2Mesh
 def getDistance2(mesh_from, mesh_to, to_name, color_map='turbo'):
@@ -886,7 +986,7 @@ def getDistance2(mesh_from, mesh_to, to_name, color_map='turbo'):
     mesh_fromB = mesh_from.mesh.clone()
     print(type(mesh_fromB))
 
-    mesh_fromB.dictance_to(mesh_to, signed=True)
+    mesh_fromB.distance_to(mesh_to, signed=True)
     toc = perf_counter()
     time = toc-tic
     print('> End time: \t', str(datetime.now())[11:-7])
@@ -894,16 +994,16 @@ def getDistance2(mesh_from, mesh_to, to_name, color_map='turbo'):
     distance = multip*mesh_fromB.pointdata['Distance']
     mesh_fromB.pointdata['Distance'] = distance
     vmin, vmax = np.min(distance),np.max(distance)
-    print('vmax:', vmax, 'vmin:', vmin)
-    # alert('jump')
+    min_max = (vmin, vmax)
+    print('> vmax:', format(vmax,'.2f'), 'vmin:', format(vmin,'.2f'))
+    alert('jump')
     
     mesh_fromB.cmap(color_map)
     mesh_fromB.add_scalarbar(title=title, pos=(0.8, 0.05))
     mesh_fromB.mapper().SetScalarRange(vmin,vmax)
-
     mesh_fromB.legend(mesh_from.legend)
     
-    return mesh_fromB
+    return mesh_fromB, distance, min_max
 
 #%% func - sphs_in_spline
 def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
