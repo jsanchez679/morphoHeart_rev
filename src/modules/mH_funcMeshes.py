@@ -20,6 +20,7 @@ import vmtk
 from vmtk import pypes, vmtkscripts
 from scipy.interpolate import splprep, splev, interpn
 from time import perf_counter
+import copy
 
 path_fcMeshes = os.path.abspath(__file__)
 path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
@@ -140,7 +141,6 @@ def s32Meshes(organ, gui_keep_largest:dict, rotateZ_90=True):
             obj.append((mesh.mesh))
             
     plot_grid(obj=obj, txt=txt, axes=5)
-        
 
 #%% func - select_meshes2trim
 def select_meshes2trim(organ):
@@ -246,6 +246,7 @@ def trim_top_bottom_S3s(organ, cuts):
                                                             pl_dict_top['pl_normal'])
             cuts_out['top']['plane_info_image'] = pl_dict_topIm
             
+        print('cuts_out:', cuts_out)
         # Get the channels from the meshes to cut
         ch_meshes = {}
         ch_planes = []
@@ -254,17 +255,20 @@ def trim_top_bottom_S3s(organ, cuts):
             ch_planes.append(mesh.imChannel.channel_no)
         
         #Update mH_settings with channels to be cut
-        update = {}
+        update_im = {}; update_mesh = {}
         for ch_a in ch_planes: 
-            update[ch_a] = None
-        proc = ['wf_info','ImProc','E-TrimS3','Planes']
-        organ.update_settings(proc, update, 'mH')
+            update_im[ch_a] = {'cut_image': None}
+            update_mesh[ch_a] = {'cut_mesh': None}
+        proc_im = ['wf_info','ImProc','E-TrimS3','Planes']
+        organ.update_settings(proc_im, update_im, 'mH')
+        proc_meshes = ['wf_info','MeshesProc','B-TrimMesh','Planes']
+        organ.update_settings(proc_meshes, update_mesh, 'mH')
         # print('ch_planes:', ch_planes)
         
         #update workflow for channels that were not cut
         for ch_c in no_cut:
             proc_c = ['ImProc',ch_c,'E-TrimS3']
-            for cont in ['int', 'ext','tiss']:
+            for cont in ['int','ext','tiss']:
                 organ.update_workflow(proc_c+['Info',cont,'Status'],'DONE-NoCut')
             organ.update_workflow(proc_c+['Status'],'DONE-NoCut')
         organ.check_status(process='ImProc')
@@ -273,6 +277,7 @@ def trim_top_bottom_S3s(organ, cuts):
         meshes_out = []
         for ch_b in ch_meshes: 
             im_ch = ch_meshes[ch_b]
+            print('cut_chs[ch_b]:',cut_chs[ch_b])
             im_ch.trimS3(cuts=cut_chs[ch_b], cuts_out=cuts_out)
             print('\n---RECREATING MESHES AFTER TRIMMING ('+ch_b+')---')
             meshes = im_ch.createNewMeshes(cont_types=['int', 'ext', 'tiss'],
@@ -281,15 +286,13 @@ def trim_top_bottom_S3s(organ, cuts):
         organ.mH_settings['cut_ch'] = cut_chs
         
         obj = []
-        # obj = [(msh1_ext.mesh),(msh1_int.mesh),(msh1_tiss.mesh),(msh2_ext.mesh),(msh2_int.mesh),(msh2_tiss.mesh)]
         for ch_d in meshes_out:
             for mesh in ch_d: 
                 obj.append(mesh.mesh)
                 
         txt = [(0, organ.user_organName  + ' - Meshes after trimming')]
         plot_grid(obj=obj, txt=txt, axes=5)
-    
-        # return meshes_out
+
 
 #%% func - extractNSCh
 def extractNSCh(organ, plot):
@@ -383,17 +386,18 @@ def cutMeshes4CL(organ, tol, plot=True, printshow=True):
             # Get dictionary with initialised planes to cut top/bottom
             top_done = False; bot_done = False
             planes_info = {'top':None, 'bottom':None}
-            for ch in organ.mH_settings['wf_info']['ImProc']['E-TrimS3']['Planes'].keys():#set(chs4cl):
-                dict2check = organ.mH_settings['wf_info']['ImProc']['E-TrimS3']['Planes'][ch]
+            for ch in organ.mH_settings['wf_info']['MeshesProc']['B-TrimMesh']['Planes'].keys():
+                # print(ch)
+                dict2check = organ.mH_settings['wf_info']['MeshesProc']['B-TrimMesh']['Planes'][ch]['cut_mesh']
                 if 'top' in dict2check and not top_done:
                     print('in top:', ch)
-                    planes_info['top'] = dict2check['top']['cut_mesh']
+                    planes_info['top'] = dict2check['top']
                     top_done = True
                 if 'bottom' in dict2check and not bot_done:
                     print('in bot:', ch)
-                    planes_info['bottom'] = dict2check['bottom']['cut_mesh']
+                    planes_info['bottom'] = dict2check['bottom']
                     bot_done = True
-            print(planes_info)
+            print('planes_info:', planes_info)
             
             # cuts = ['bottom', 'top']; cut_direction = [True, False]
             ksplines = []; spheres = []; m4clf=[]
@@ -851,24 +855,33 @@ def extractBallooning(organ, color_map, plot=False):
         return None
     
     if balloon: 
+        proc_done = []
         ball_names = [item for item in organ.parent_project.mH_param2meas if 'ballooning' in item]
         for name in ball_names: 
             ch = name[0]; cont = name[1]
             mesh2ball = organ.obj_meshes[ch+'_'+cont]
             print('\n- Extracting ballooning information for '+mesh2ball.legend+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
-            from_cl = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['Settings']['from_cl']
-            from_cl_type = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['Settings']['from_cl_type']
+            from_cl = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['from_cl']
+            from_cl_type = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['from_cl_type']
             cl4ball = organ.obj_meshes[from_cl+'_'+from_cl_type].get_centreline()
             sph4ball = sphs_in_spline(kspl=cl4ball,every=0.6)
             sph4ball.legend('sphs_ball').alpha(0.1)
             
-            mesh_ball, distance, min_max = getDistance2(mesh_from = mesh2ball, mesh_to=sph4ball, to_name='CL ('+from_cl+'_'+from_cl_type+')', color_map=color_map)
-            #Add mesh_ball to the measure attribute
+            mesh_ball, distance, min_max = getDistance2(mesh_to=mesh2ball, 
+                                                        mesh_from = sph4ball, 
+                                                        from_name='CL ('+from_cl+'_'+from_cl_type+')', 
+                                                        color_map=color_map)
+            #Add min-max values to mH_settings
+            proc_range = ['measure', ch, cont,'whole','ballooning', 'range']
+            upd_range = {'min_val': min_max[0], 'max_val': min_max[1]}
+            organ.update_settings(proc_range, update = upd_range, mH = 'mH')
+            
+            #Add mesh_ball to the mesh_meas attribute
             m_type = 'ball_CL('+from_cl+'_'+from_cl_type+')'
             
-            if not hasattr(mesh2ball, 'measure'):
-                mesh2ball.measure = {}
-            mesh2ball.measure[m_type] = mesh_ball
+            if not hasattr(mesh2ball, 'mesh_meas'):
+                mesh2ball.mesh_meas = {}
+            mesh2ball.mesh_meas[m_type] = mesh_ball
             mesh2ball.save_mesh(m_type=m_type)
             mesh2ball.save_array(array=distance, m_type=m_type)
             
@@ -879,9 +892,11 @@ def extractBallooning(organ, color_map, plot=False):
             
             proc_wft = ['MeshesProc','D-Ballooning',ch, cont, 'Status']
             organ.update_workflow(process = proc_wft, update = 'DONE')
+            proc_done.append('DONE')
         
-        organ.update_workflow(process = process, update = 'DONE')
-            
+        if len(proc_done) == len(ball_names):
+            organ.update_workflow(process = process, update = 'DONE')
+    
     else:
         return None
 
@@ -894,7 +909,7 @@ def extractThickness(organ, color_map, plot=False):
                                   'param': 'thickness ext>int'}}
                         
     for n_type in thck_values.keys(): 
-        print(thck_values[n_type])
+        # print(thck_values[n_type])
         method = thck_values[n_type]['method']
         if organ.check_method(method = method): 
             #Check workflow status
@@ -913,97 +928,107 @@ def extractThickness(organ, color_map, plot=False):
         
         if thickness: 
             print('Extracting thickness for:', method)
-            print(n_type, thck_values[n_type])
+            # print(n_type, thck_values[n_type])
             res = getThickness(organ, n_type, thck_values[n_type], color_map, plot)
             if res: 
                 organ.update_workflow(process = process, update = 'DONE')
-
+            
     
 #%% func - getThickness
 def getThickness(organ, n_type, thck_dict, color_map, plot=False):
     
     thck_names = [item for item in organ.parent_project.mH_param2meas if thck_dict['param'] in item]
-    print(thck_names)
+    # print(thck_names)
     proc_done = []
     for name in thck_names: 
         ch = name[0]; cont = name[1]
         mesh_tiss = organ.obj_meshes[ch+'_tiss']
         if n_type == 'int>ext': 
-            mesh_from = organ.obj_meshes[ch+'_ext']
-            mesh_to = organ.obj_meshes[ch+'_int'].mesh
+            mesh_to = organ.obj_meshes[ch+'_ext']
+            mesh_from = organ.obj_meshes[ch+'_int'].mesh
         elif n_type == 'ext>int': 
-            mesh_from = organ.obj_meshes[ch+'_int']
-            mesh_to = organ.obj_meshes[ch+'_ext'].mesh
+            mesh_to = organ.obj_meshes[ch+'_int']
+            mesh_from = organ.obj_meshes[ch+'_ext'].mesh
         # mesh_to = 
-        print('\n- Extracting thickness information for '+mesh_tiss.legend+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
+        print('\n- Extracting thickness information for '+mesh_tiss.legend+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
         
-        mesh_thck, distance, min_max = getDistance2(mesh_from=mesh_from, 
-                                            mesh_to=mesh_to, to_name=n_type, color_map=color_map)
+        mesh_thck, distance, min_max = getDistance2(mesh_to=mesh_to, mesh_from=mesh_from, 
+                                                    from_name=n_type, color_map=color_map)
         mesh_thck.alpha(1)
-        # Add mesh_ball to the measure attribute
+        # Add mesh_ball to the mesh_meas attribute
         n_type_new = n_type.replace('>','TO')
         m_type = 'thck_('+n_type_new+')'
+        proc_range = ['measure', ch, 'tiss','whole', thck_dict['param']]
+        upd_range = {'range':{'min_val': min_max[0], 'max_val': min_max[1]}}
+        organ.update_settings(proc_range, update = upd_range, mH = 'mH')
         
-        if not hasattr(mesh_from, 'measure'):
-            mesh_tiss.measure = {}
-        mesh_tiss.measure[m_type] = mesh_thck
+        if not hasattr(mesh_from, 'mesh_meas'):
+            mesh_tiss.mesh_meas = {}
+        mesh_tiss.mesh_meas[m_type] = mesh_thck
         mesh_tiss.save_mesh(m_type=m_type)
         mesh_tiss.save_array(array=distance, m_type=m_type)
         
         if plot: 
-            obj = [(mesh_from.mesh, mesh_to), (mesh_tiss.mesh), (mesh_thck)]
+            obj = [(mesh_from, mesh_to.mesh), (mesh_tiss.mesh), (mesh_thck)]
             txt = [(0, organ.user_organName +' - Thickness Setup')]
             plot_grid(obj=obj, txt=txt, axes=5)
         
         proc_wft = ['MeshesProc', thck_dict['method'], ch, cont, 'Status']
-        organ.update_workflow(process = proc_wft, update = 'DONE')
         proc_done.append('DONE')
-    
+
     if len(proc_done) == len(thck_names):
+        organ.update_workflow(process = proc_wft, update = 'DONE')
         return True
     else: 
         return False
 
 #%% func - getDistance2Mesh
-def getDistance2(mesh_from, mesh_to, to_name, color_map='turbo'):
+def getDistance2(mesh_to, mesh_from, from_name, color_map='turbo'):
     """
     Function that gets the distance between m_ext and m_int and color codes m_ext accordingly
     mesh_from = cl/int
     mesh_to = ext - the one that has the colors
     """
-    if isinstance(mesh_to,vedo.shapes.Spheres): 
+    if isinstance(mesh_from,vedo.shapes.Spheres): 
         name = 'Ballooning'
         multip = 1
+        mesh_name = mesh_to.legend
+        suffix = '_Ballooning'
     else: 
         name = 'Thickness'
-        multip = 1
+        if from_name == 'int>ext':
+            multip = -1
+        else: 
+            multip = 1
+        mesh_name = mesh_to.legend.split('_')[0]
+        suffix = '_Thickness'
     print(name, str(multip))
         
-    title = mesh_from.legend+'\n'+name+' [um]\n('+to_name+')'
+    title = mesh_name+'\n'+name+' [um]\n('+from_name+')'
     
     tic = perf_counter()
     print('> Start time: \t', str(datetime.now())[11:-7])
-    mesh_fromB = mesh_from.mesh.clone()
-    print(type(mesh_fromB))
+    mesh_toB = mesh_to.mesh.clone()
+    # print(type(mesh_toB))
 
-    mesh_fromB.distance_to(mesh_to, signed=True)
+    mesh_toB.distance_to(mesh_from, signed=True)
     toc = perf_counter()
     time = toc-tic
     print('> End time: \t', str(datetime.now())[11:-7])
-    print("\t>> Total time taken to get "+name+" = ",format(time,'.2f'), "s/", format(time/60,'.2f'), "m/", format(time/3600,'.2f'), "h")
-    distance = multip*mesh_fromB.pointdata['Distance']
-    mesh_fromB.pointdata['Distance'] = distance
+    print("\t>> Total time taken to get "+name+" = ", format(time/60,'.2f'), "min")
+    distance = multip*mesh_toB.pointdata['Distance']
+    mesh_toB.pointdata['Distance'] = distance
     vmin, vmax = np.min(distance),np.max(distance)
     min_max = (vmin, vmax)
     print('> vmax:', format(vmax,'.2f'), 'vmin:', format(vmin,'.2f'))
     alert('jump')
     
-    mesh_fromB.cmap(color_map)
-    mesh_fromB.add_scalarbar(title=title, pos=(0.8, 0.05))
-    mesh_fromB.mapper().SetScalarRange(vmin,vmax)
-    mesh_fromB.legend(mesh_from.legend)
+    mesh_toB.cmap(color_map)
+    mesh_toB.add_scalarbar(title=title, pos=(0.8, 0.05))
+    mesh_toB.mapper().SetScalarRange(vmin,vmax)
+    mesh_toB.legend(mesh_name+suffix)
     
-    return mesh_fromB, distance, min_max
+    return mesh_toB, distance, min_max
 
 #%% func - sphs_in_spline
 def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
@@ -1011,9 +1036,9 @@ def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
     Function that creates a group of spheres through a spline given as input.
     """
     if colour:
-        vcols = [vedo.colorMap(v, color_map, 0, len(kspl.points())) for v in list(range(len(kspl.points())))]  
         # scalars->colors
-
+        vcols = [vedo.colorMap(v, color_map, 0, len(kspl.points())) for v in list(range(len(kspl.points())))]  
+    
     if every > 1:
         spheres_spline = []
         for num, point in enumerate(kspl.points()):
@@ -1028,8 +1053,7 @@ def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
         spheres_spline = vedo.Spheres(kspl_new.points(), c='coral', r=2)
 
     return spheres_spline
-
-#%% - 
+    
 #%% - Plotting functions
 #%% func - plot_grid
 def plot_grid(obj:list, txt=[], axes=1, zoom=2, lg_pos='top-left'):
@@ -1102,6 +1126,28 @@ def plot_all_organ(organ):
     
     plot_grid(obj=obj, txt=txt, axes=5)
 
+#%% func - plot_meas_meshes
+def plot_meas_meshes(organ, meas:list, color_map = 'turbo', alpha=1):
+    obj = []
+    for param in meas: 
+        names = [item for item in organ.parent_project.mH_param2meas if param in item]
+        for name in names: 
+            ch = name[0]; cont = name[1]
+            mesh_mHA = organ.obj_meshes[ch+'_'+cont]
+            if 'ball' in param:
+                from_cl = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['from_cl']
+                from_cl_type = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['from_cl_type']
+                mesh_out = mesh_mHA.balloon_mesh(n_type=from_cl+'_'+from_cl_type, color_map=color_map, alpha=alpha)
+            elif 'thickness' in param:
+                n_type = name[3][-7:].replace('>','TO')
+                mesh_out = mesh_mHA.thickness_mesh(n_type=n_type, color_map=color_map, alpha=alpha)
+            obj.append((mesh_out))
+    
+    if len(obj) == 0:
+        print('No meshes were recognised for param', meas)
+    else: 
+        txt = [(0, organ.user_organName)]
+        plot_grid(obj, txt, axes=5)
         
 #%% - Plane handling functions 
 #%% func - getPlane
@@ -1363,11 +1409,13 @@ def rotation_matrix(axis, theta):
                      [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
 
 #%% func - rotatePlane2Images
-def rotatePlane2Images (pl_centre, pl_normal, chNS = False):
+def rotatePlane2Images (pl_centre_o, pl_normal_o, chNS = False):
     """
     Function that rotates the planes defined in the surface reconstructions to the images mask
 
     """
+    pl_centre = copy.deepcopy(pl_centre_o)
+    pl_normal = copy.deepcopy(pl_normal_o)
     if not chNS:
         pl_im_centre = (np.dot(rotation_matrix(axis = [0,0,1], theta = np.radians(90)), pl_centre))
         pl_im_normal = (np.dot(rotation_matrix(axis = [0,0,1], theta = np.radians(90)), pl_normal))

@@ -258,8 +258,11 @@ def make_Paths(load_dict):
     flat_dict = flatdict.FlatDict(load_dict)
     # Make all paths into Path
     dir_keys = [key.split(':') for key in flat_dict.keys() if 'dir' in key]
+    # print(dir_keys)
     for key in dir_keys:
+        # print('key:', key)
         value = get_by_path(load_dict, key)
+        # print('value:', value)
         if value != None and value != 'NotAssigned':
             set_by_path(load_dict, key, Path(value))
     
@@ -278,17 +281,6 @@ def make_tuples(load_dict, tuple_keys):
                 set_by_path(load_dict, tup, tuple(value))
         
     return load_dict
-
-#%%
-
-# def save_mHProject(dicts:list, organ:Organ):
-#     jsonDict_name = 'mH_'+organ.user_organName+'_project.json'
-#     json2save_dir = organ.dir_res / jsonDict_name
-
-#     with open(str(json2save_dir), "w") as write_file:
-#         json.dump(str(organ.dir_res), write_file, cls=NumpyArrayEncoder)
-#         print('\t>> Dictionary saved correctly!\n\t>> File: '+jsonDict_name)
-#         alert('countdown')
 
 #%% func - load_npy_stack
     # def load_npy_stack(organ:Organ, name:str):

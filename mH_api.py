@@ -36,19 +36,19 @@ elif sys.platform == 'win32':
     #dir_proj_res = Path('C://Users//pallo//Desktop//cosas juli//mh//project')
     
 partA = False
-partB = False
-partB_vmtk = False
+partB = True
+partB_vmtk = True
 partC = True
 print('partA:',partA,'- partB:',partB,'- partB_vmtk:',partB_vmtk,'- partC:',partC)
 
-user_projName = 'Up2BefCentreline'
+user_projName = 'TestAll'#'Up2BefCentreline'
 proj_name = user_projName
 user_organName = 'LS52_F02_V_SR_1029'
 organName2Load = user_organName
 # user_organName = 'LS52_F02_V_SR_1029'
 # organName2Load = 'LS52_F02_V_SR_1029'
 
-#%% Part A
+#%% Part A - Create Project
 if partA:
     #%
     # Info coming from the gui (user's selection)
@@ -257,6 +257,8 @@ if partA:
     proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
     print('>> Check Project: \n\t',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
 
+#%% Part A - Create Organ
+if partA:
     #% ------------------------------------------------------------------------------
     # Having created the project an organ is created as part of the project
     print('\n---CREATING ORGAN----')
@@ -358,7 +360,7 @@ if partA:
     im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1')#, new=False)
     print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    print('>> Check im_ch1: \n',fcBasics.compare_nested_dicts(im_ch1.__dict__,im_ch1_new.__dict__,'imCh1','new')) 
+    # print('>> Check im_ch1: \n',fcBasics.compare_nested_dicts(im_ch1.__dict__,im_ch1_new.__dict__,'imCh1','new')) 
     del proj_new, organ_new, im_ch1_new
 
     # CHANNEL 2
@@ -375,7 +377,7 @@ if partA:
     im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2')#, new=False)
     print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
     print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    print('>> Check im_ch2: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,im_ch2_new.__dict__,'imCh2','new'))
+    # print('>> Check im_ch2: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,im_ch2_new.__dict__,'imCh2','new'))
     del proj_new, organ_new, im_ch2_new
     
 #%% Part B
@@ -398,7 +400,6 @@ if partB:
                         'ch2': {'int': True, 'ext': True, 'tiss': False}}
     rotateZ_90 = True
     fcMeshes.s32Meshes(organ, gui_keep_largest, rotateZ_90=rotateZ_90)
-
     # Save organ
     organ.save_organ()
 
@@ -437,10 +438,10 @@ if partB:
     # meshes = [msh1_tiss, msh2_tiss]
     # User user input to select which meshes need to be cut
     cuts = {'top':    {'chs': {'ch1': False, 'ch2': True}},
-            'bottom': {'chs': {'ch1': False, 'ch2': True}}}
+            'bottom': {'chs': {'ch1': True, 'ch2': True}}}
 
     fcMeshes.trim_top_bottom_S3s(organ=organ, cuts=cuts)
-    fcMeshes.plot_all_organ(organ)
+    # fcMeshes.plot_all_organ(organ)
     
     # Save organ
     organ.save_organ()
@@ -504,27 +505,30 @@ if partC:
         organ = proj.load_organ(user_organName = organName2Load)
         fcMeshes.plot_all_organ(organ)
 
-    #%%
-    plot = True
-    fcMeshes.extractBallooning(organ, color_map='turbo', plot=plot)
-    #%%
+    plot = False
     fcMeshes.extractThickness(organ, color_map='turbo', plot=plot)
-    #%%
-    'range' : {'min_val': None, 'max_val': None}
+    fcMeshes.plot_meas_meshes(organ, meas=['thickness int>ext']) 
+    fcMeshes.plot_meas_meshes(organ, meas=['thickness ext>int']) 
+    fcMeshes.extractBallooning(organ, color_map='turbo', plot=plot)
+    fcMeshes.plot_meas_meshes(organ, meas=['ballooning']) 
+
     
-# from vedo import Sphere, Cube, Plotter
-
-# s1 = Sphere().pos(10,20,30)
-# s2 = Cube(c='grey4').scale([2,1,1]).pos(14,20,30)
-
-# s1.distance_to(s2, signed=False)
-# s1.cmap('hot').add_scalarbar('Signed\nDistance')
-# print(s1.pointdata["Distance"])  # numpy array
-
-
-# vp = Plotter(N=1)
-# vp.show(s1, s2, at=0, interactive=True)
+    for obj in organ.obj_meshes:
+        pp = organ.obj_meshes[obj].mesh_meas
+        if pp != {}:
+            print(obj,':',pp)
+            
+    # Save organ
+    organ.save_organ()
+    # Load project, organ
+    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
+    organ_new = proj_new.load_organ(user_organName = organName2Load)   
     
+    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
+    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
+    print('>> Check msh_chNS_tiss: \n',fcBasics.compare_nested_dicts(organ.obj_meshes['chNS_tiss'].__dict__,organ_new.obj_meshes['chNS_tiss'].__dict__,'chNS_tiss','new'))  
+    print('>> Check msh_ch1_int: \n',fcBasics.compare_nested_dicts(organ.obj_meshes['ch1_int'].__dict__,organ_new.obj_meshes['ch1_int'].__dict__,'ch1_int','new'))  
+    del proj_new, organ_new
     
     
     

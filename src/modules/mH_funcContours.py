@@ -53,14 +53,14 @@ def closeContours(organ, ch_name:str):
         else: 
             im_ch = ImChannel(organ=organ, ch_name=ch_name, new=False)            
             
-        if close_done[1] != 'DONE':
-            im_ch.closeContours_auto()
+        # if close_done[1] != 'DONE':
+        #     im_ch.closeContours_auto()
             
-        if close_done[2] != 'DONE':
-            im_ch.closeContours_manual()
+        # if close_done[2] != 'DONE':
+        #     im_ch.closeContours_manual()
             
-        if close_done[3] != 'DONE':
-            im_ch.closeInfOutf()
+        # if close_done[3] != 'DONE':
+        #     im_ch.closeInfOutf()
     
     else: 
         im_ch = ImChannel(organ=organ, ch_name=ch_name, new=False)
