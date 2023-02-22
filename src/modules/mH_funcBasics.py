@@ -93,14 +93,16 @@ def ask4input(text:str, res:dict, type_response:type, keep=False):
                 response = int(response)
                 exit_now = True
             except:
-                print('ERROR: -'+response+'- The number entered needs to be an integer!')
+                print('>> Error: -'+response+'- The number entered needs to be an integer!')
+                alert('error_beep')
                 pass
         elif type_response == float:
             try:
                 response = float(response)
                 exit_now = True
             except:
-                print('ERROR: -'+response+'- The number entered needs to be a float!')
+                print('>> Error: -'+response+'- The number entered needs to be a float!')
+                alert('error_beep')
                 pass
         elif type_response == str:
             if keep == False:
@@ -112,7 +114,8 @@ def ask4input(text:str, res:dict, type_response:type, keep=False):
                     response = bool(int(response))
                     exit_now = True
             except:
-                print('ERROR: -'+response+'- The number entered needs to be a [0]:no or [1]:yes!')
+                print('>> Error: -'+response+'- The number entered needs to be a [0]:no or [1]:yes!')
+                alert('error_beep')
                 pass
 
     return response
@@ -282,6 +285,38 @@ def make_tuples(load_dict, tuple_keys):
         
     return load_dict
 
+#%% func - check_gral_loading
+def check_gral_loading(proj, organ, proj_name, dir_proj, organ_name):
+    
+    from .mH_classes import Project
+    
+    proj_new = Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
+    organ_new = proj_new.load_organ(user_organName = organ_name)   
+    
+    print('>> Check Project: \n',compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
+    print('>> Check Organ: \n',compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
+    
+    for ch in organ.obj_imChannels: 
+        ch_m = organ.obj_imChannels[ch]
+        ch_mn = organ_new.obj_imChannels[ch]
+        print('>> Check ',ch,': \n',compare_nested_dicts(ch_m.__dict__,ch_mn.__dict__,'orig','new'))  
+    
+    for chNS in organ.obj_imChannelNS: 
+        chNS_m = organ.obj_imChannelNS[chNS]
+        chNS_mn = organ_new.obj_imChannelNS[chNS]
+        print('>> Check ',chNS,': \n',compare_nested_dicts(chNS_m.__dict__,chNS_mn.__dict__,'orig','new'))  
+    
+    if len(organ.obj_meshes) != len(organ_new.obj_meshes):
+        print('organ.obj_meshes: ', organ.obj_meshes)
+        print('organ_new.obj_meshes: ', organ_new.obj_meshes)
+        
+    for obj in organ.obj_meshes: 
+        obj_m = organ.obj_meshes[obj]
+        obj_mn = organ_new.obj_meshes[obj]
+        print('>> Check ',obj,': \n',compare_nested_dicts(obj_m.__dict__,obj_mn.__dict__,'orig','new'))  
+        
+    del proj_new, organ_new
+    
 #%% func - load_npy_stack
     # def load_npy_stack(organ:Organ, name:str):
 from collections import defaultdict        

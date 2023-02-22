@@ -36,15 +36,17 @@ elif sys.platform == 'win32':
     #dir_proj_res = Path('C://Users//pallo//Desktop//cosas juli//mh//project')
     
 partA = False
-partB = True
-partB_vmtk = True
+partB = False
+partB_vmtk = False
 partC = True
 print('partA:',partA,'- partB:',partB,'- partB_vmtk:',partB_vmtk,'- partC:',partC)
 
-user_projName = 'TestAll'#'Up2BefCentreline'
+user_projName = 'TestAll'
 proj_name = user_projName
 user_organName = 'LS52_F02_V_SR_1029'
 organName2Load = user_organName
+folder_name = 'R_'+proj_name
+dir_proj = dir_proj_res / folder_name
 # user_organName = 'LS52_F02_V_SR_1029'
 # organName2Load = 'LS52_F02_V_SR_1029'
 
@@ -332,17 +334,9 @@ if partA:
     
     # Save project 
     proj.save_project()
-    # Load project and check parameters 
-    print('\n---LOADING PROJECT AND ORGAN----')
-    # proj_name = 'Project_B-C'
-    folder_name = 'R_'+proj_name
-    dir_proj = dir_proj_res / folder_name
-    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-    # organName2Load = 'LS52_F02_V_SR_1029'
-    organ_new = proj.load_organ(user_organName = organName2Load)
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))
-    del proj_new, organ_new
+    # Load project, organ
+    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    
     
     # CODE A ---------------------------------------------------------
     print('\n---CREATING CHANNELS 1 AND 2----')
@@ -353,16 +347,9 @@ if partA:
 
     # Save project
     proj.save_project()
-    print('\n---LOADING ORGAN----')
-    # Load project, organ and channel and check parameters
-    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-    organ_new = proj_new.load_organ(user_organName = organName2Load)
-    im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1')#, new=False)
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    # print('>> Check im_ch1: \n',fcBasics.compare_nested_dicts(im_ch1.__dict__,im_ch1_new.__dict__,'imCh1','new')) 
-    del proj_new, organ_new, im_ch1_new
-
+    # Load project, organ
+    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    
     # CHANNEL 2
     print('\n---PROCESSING CHANNEL 2----')
     im_ch2 = fcCont.closeContours(organ=organ, ch_name='ch2')
@@ -370,54 +357,28 @@ if partA:
     
     # Save project
     proj.save_project()
-    print('\n---LOADING PROJECT AND ORGAN----')
-    # Load project, organ and channel and check parameters
-    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-    organ_new = proj_new.load_organ(user_organName = organName2Load)
-    im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2')#, new=False)
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    # print('>> Check im_ch2: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,im_ch2_new.__dict__,'imCh2','new'))
-    del proj_new, organ_new, im_ch2_new
+    # Load project, organ
+    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    
     
 #%% Part B
 if partB: 
     # Load project, organ and channel and check parameters
     if not partA: 
-        # proj_name = 'Project_B-C'
-        folder_name = 'R_'+proj_name
-        dir_proj = dir_proj_res / folder_name
         proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-        # organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
-        # fcMeshes.plot_all_organ(organ)
-        im_ch1 = mHC.ImChannel(organ=organ, ch_name='ch1')#, new=False)
-        im_ch2 = mHC.ImChannel(organ=organ, ch_name='ch2')#, new=False)
-        
+
     #% CODE B
     # Create meshes after processing images
     gui_keep_largest = {'ch1': {'int': True, 'ext': True, 'tiss': False}, 
                         'ch2': {'int': True, 'ext': True, 'tiss': False}}
     rotateZ_90 = True
     fcMeshes.s32Meshes(organ, gui_keep_largest, rotateZ_90=rotateZ_90)
+    
     # Save organ
     organ.save_organ()
-
-    # Load project, organ, channels and meshes and check parameters
-    print('\n---LOADING PROJECT, ORGAN, CHANNEL AND MESHES----')
-    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-    organ_new = proj_new.load_organ(user_organName = organName2Load)
-    im_ch1_new = mHC.ImChannel(organ=organ_new, ch_name='ch1')#, new=False)
-    im_ch2_new = mHC.ImChannel(organ=organ_new, ch_name='ch2')#, new=False)
-    msh1_tiss2 = mHC.Mesh_mH(imChannel=im_ch1_new, mesh_type='tiss', keep_largest=True, rotateZ_90=True)#, new=False)
-    msh2_tiss2 = mHC.Mesh_mH(imChannel=im_ch2_new, mesh_type='tiss', keep_largest=True, rotateZ_90=True)#, new=False)
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    print('>> Check im_ch1: \n',fcBasics.compare_nested_dicts(im_ch1.__dict__,im_ch1_new.__dict__,'imCh1','new'))
-    print('>> Check im_ch2: \n',fcBasics.compare_nested_dicts(im_ch2.__dict__,im_ch2_new.__dict__,'imCh2','new'))
-    print('>> Check msh1_tiss: \n',fcBasics.compare_nested_dicts(organ.obj_meshes['ch1_tiss'].__dict__,msh1_tiss2.__dict__,'msh1_tiss','new'))
-    print('>> Check msh2_tiss: \n',fcBasics.compare_nested_dicts(organ.obj_meshes['ch2_tiss'].__dict__,msh2_tiss2.__dict__,'msh2_tiss','new'))
-    del proj_new, organ_new, im_ch1_new, im_ch2_new, msh1_tiss2, msh2_tiss2
+    # Load project, organ
+    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
     
     # Clean channels
     plot = True
@@ -426,12 +387,8 @@ if partB:
     # Save organ
     organ.save_organ()
     # Load project, organ
-    print('\n---LOADING PROJECT AND ORGAN----')
-    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-    organ_new = proj_new.load_organ(user_organName = organName2Load)    
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    del proj_new, organ_new
-
+    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+  
     # Cut meshes inflow and outflow tracts 
     # Function to decide which meshes to cut
     fcMeshes.select_meshes2trim(organ=organ)
@@ -446,13 +403,8 @@ if partB:
     # Save organ
     organ.save_organ()
     # Load project, organ
-    print('\n---LOADING PROJECT AND ORGAN----')
-    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-    organ_new = proj_new.load_organ(user_organName = organName2Load)    
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    del proj_new, organ_new
-    
+    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+  
     # Create Cardiac Jelly
     plot = True
     fcMeshes.extractNSCh(organ, plot)
@@ -460,21 +412,13 @@ if partB:
     # Save organ
     organ.save_organ()
     # Load project, organ
-    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-    organ_new = proj_new.load_organ(user_organName = organName2Load)    
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    del proj_new, organ_new
-        
+    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+  
 #%% Part B-vmtk
 # Create meshes to extract CL and extract CL
 if partB_vmtk: 
     if not partA and not partB: 
-        # proj_name = 'Project_B-C'
-        folder_name = 'R_'+proj_name
-        dir_proj = dir_proj_res / folder_name
         proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-        # organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
         fcMeshes.plot_all_organ(organ)
     
@@ -485,14 +429,13 @@ if partB_vmtk:
     nPoints = 300
     fcMeshes.createCLs(organ, nPoints = nPoints)
     
+    # Get CL measurements
+    fcMeshes.measure_centreline(organ, nPoints=nPoints)
+    
     # Save organ
     organ.save_organ()
     # Load project, organ
-    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-    organ_new = proj_new.load_organ(user_organName = organName2Load)    
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    del proj_new, organ_new
+    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
     
 #%% Part C - Measure
 if partC: 
@@ -507,11 +450,11 @@ if partC:
 
     plot = False
     fcMeshes.extractThickness(organ, color_map='turbo', plot=plot)
+    fcMeshes.extractBallooning(organ, color_map='turbo', plot=plot)
+    
     fcMeshes.plot_meas_meshes(organ, meas=['thickness int>ext']) 
     fcMeshes.plot_meas_meshes(organ, meas=['thickness ext>int']) 
-    fcMeshes.extractBallooning(organ, color_map='turbo', plot=plot)
     fcMeshes.plot_meas_meshes(organ, meas=['ballooning']) 
-
     
     for obj in organ.obj_meshes:
         pp = organ.obj_meshes[obj].mesh_meas
@@ -521,16 +464,7 @@ if partC:
     # Save organ
     organ.save_organ()
     # Load project, organ
-    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
-    organ_new = proj_new.load_organ(user_organName = organName2Load)   
-    
-    print('>> Check Project: \n',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-    print('>> Check Organ: \n',fcBasics.compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-    print('>> Check msh_chNS_tiss: \n',fcBasics.compare_nested_dicts(organ.obj_meshes['chNS_tiss'].__dict__,organ_new.obj_meshes['chNS_tiss'].__dict__,'chNS_tiss','new'))  
-    print('>> Check msh_ch1_int: \n',fcBasics.compare_nested_dicts(organ.obj_meshes['ch1_int'].__dict__,organ_new.obj_meshes['ch1_int'].__dict__,'ch1_int','new'))  
-    del proj_new, organ_new
-    
-    
+    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
     
 #%%
     

@@ -172,7 +172,7 @@ def trim_top_bottom_S3s(organ, cuts):
                 meshes.append(organ.obj_meshes[ch+'_tiss'])
             else: 
                 no_cut.append(ch)
-    print(meshes, no_cut)
+    # print(meshes, no_cut)
     #Check workflow status
     workflow = organ.workflow
     check_proc = []
@@ -246,7 +246,7 @@ def trim_top_bottom_S3s(organ, cuts):
                                                             pl_dict_top['pl_normal'])
             cuts_out['top']['plane_info_image'] = pl_dict_topIm
             
-        print('cuts_out:', cuts_out)
+        # print('cuts_out:', cuts_out)
         # Get the channels from the meshes to cut
         ch_meshes = {}
         ch_planes = []
@@ -277,7 +277,7 @@ def trim_top_bottom_S3s(organ, cuts):
         meshes_out = []
         for ch_b in ch_meshes: 
             im_ch = ch_meshes[ch_b]
-            print('cut_chs[ch_b]:',cut_chs[ch_b])
+            # print('cut_chs[ch_b]:',cut_chs[ch_b])
             im_ch.trimS3(cuts=cut_chs[ch_b], cuts_out=cuts_out)
             print('\n---RECREATING MESHES AFTER TRIMMING ('+ch_b+')---')
             meshes = im_ch.createNewMeshes(cont_types=['int', 'ext', 'tiss'],
@@ -317,7 +317,8 @@ def extractNSCh(organ, plot):
         plot_grid(obj=obj, txt=txt, axes=5)
     
     else: 
-        print('No layer between segments is being created as it was not setup by user!')
+        print('>> No layer between segments is being created as it was not setup by user!')
+        alert('error_beep')
 
     
 #%% func - cutMeshes4CL
@@ -408,7 +409,7 @@ def cutMeshes4CL(organ, tol, plot=True, printshow=True):
                 for nn, pl_cut in zip(count(), plane_cuts.keys()):
                     print('n:', n, 'nn:', nn, 'pl_cut:', pl_cut)
                     if nn == 0:
-                        print('Smoothing mesh')
+                        print('>> Smoothing mesh')
                         sm_msh = mH_msh.mesh4CL()
                     # Get planes for first mesh
                     if n == 0: 
@@ -860,7 +861,7 @@ def extractBallooning(organ, color_map, plot=False):
         for name in ball_names: 
             ch = name[0]; cont = name[1]
             mesh2ball = organ.obj_meshes[ch+'_'+cont]
-            print('\n- Extracting ballooning information for '+mesh2ball.legend+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
+            print('\n>> Extracting ballooning information for '+mesh2ball.legend+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
             from_cl = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['from_cl']
             from_cl_type = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['from_cl_type']
             cl4ball = organ.obj_meshes[from_cl+'_'+from_cl_type].get_centreline()
@@ -869,18 +870,17 @@ def extractBallooning(organ, color_map, plot=False):
             
             mesh_ball, distance, min_max = getDistance2(mesh_to=mesh2ball, 
                                                         mesh_from = sph4ball, 
-                                                        from_name='CL ('+from_cl+'_'+from_cl_type+')', 
+                                                        from_name='CL('+from_cl+'_'+from_cl_type+')', 
                                                         color_map=color_map)
+            mesh_ball.alpha(1)
             #Add min-max values to mH_settings
             proc_range = ['measure', ch, cont,'whole','ballooning', 'range']
             upd_range = {'min_val': min_max[0], 'max_val': min_max[1]}
             organ.update_settings(proc_range, update = upd_range, mH = 'mH')
             
             #Add mesh_ball to the mesh_meas attribute
-            m_type = 'ball_CL('+from_cl+'_'+from_cl_type+')'
+            m_type = 'ballCL('+from_cl+'_'+from_cl_type+')'
             
-            if not hasattr(mesh2ball, 'mesh_meas'):
-                mesh2ball.mesh_meas = {}
             mesh2ball.mesh_meas[m_type] = mesh_ball
             mesh2ball.save_mesh(m_type=m_type)
             mesh2ball.save_array(array=distance, m_type=m_type)
@@ -927,7 +927,7 @@ def extractThickness(organ, color_map, plot=False):
             return None
         
         if thickness: 
-            print('Extracting thickness for:', method)
+            print('>> Extracting thickness for:', method)
             # print(n_type, thck_values[n_type])
             res = getThickness(organ, n_type, thck_values[n_type], color_map, plot)
             if res: 
@@ -950,14 +950,14 @@ def getThickness(organ, n_type, thck_dict, color_map, plot=False):
             mesh_to = organ.obj_meshes[ch+'_int']
             mesh_from = organ.obj_meshes[ch+'_ext'].mesh
         # mesh_to = 
-        print('\n- Extracting thickness information for '+mesh_tiss.legend+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
+        print('\n>> Extracting thickness information for '+mesh_tiss.legend+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
         
         mesh_thck, distance, min_max = getDistance2(mesh_to=mesh_to, mesh_from=mesh_from, 
                                                     from_name=n_type, color_map=color_map)
         mesh_thck.alpha(1)
         # Add mesh_ball to the mesh_meas attribute
         n_type_new = n_type.replace('>','TO')
-        m_type = 'thck_('+n_type_new+')'
+        m_type = 'thck('+n_type_new+')'
         proc_range = ['measure', ch, 'tiss','whole', thck_dict['param']]
         upd_range = {'range':{'min_val': min_max[0], 'max_val': min_max[1]}}
         organ.update_settings(proc_range, update = upd_range, mH = 'mH')
@@ -994,17 +994,20 @@ def getDistance2(mesh_to, mesh_from, from_name, color_map='turbo'):
         multip = 1
         mesh_name = mesh_to.legend
         suffix = '_Ballooning'
+        title = mesh_name+'\n'+name+' [um]\n'+from_name
     else: 
         name = 'Thickness'
         if from_name == 'int>ext':
             multip = -1
         else: 
             multip = 1
-        mesh_name = mesh_to.legend.split('_')[0]
+        mesh_name = mesh_to.legend.split('_')
+        if len(mesh_name)>2:
+            mesh_name = mesh_to.legend.replace('_'+mesh_name[-1],'')
+        else: 
+            mesh_name = mesh_name[0]
         suffix = '_Thickness'
-    print(name, str(multip))
-        
-    title = mesh_name+'\n'+name+' [um]\n('+from_name+')'
+        title = mesh_name+'\n'+name+' [um]\n('+from_name+')'
     
     tic = perf_counter()
     print('> Start time: \t', str(datetime.now())[11:-7])
@@ -1053,10 +1056,33 @@ def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
         spheres_spline = vedo.Spheres(kspl_new.points(), c='coral', r=2)
 
     return spheres_spline
+
+#%% func - 
+
+#%% - Measuring function
+#%% func - measure_centreline
+def measure_centreline(organ, nPoints):
+    cl_names = [item for item in organ.parent_project.mH_param2meas if 'centreline' in item]
+    for name in cl_names: 
+        ch = name[0]; cont = name[1]; segm= name[2]
+        cl_final = organ.obj_meshes[ch+'_'+cont].get_centreline(nPoints=nPoints)
+        cl_length = cl_final.length()
+    
+        #Create linear line
+        linLine = organ.obj_meshes[ch+'_'+cont].get_linLine(nPoints=nPoints)
+        lin_length = linLine.length()
+        process = ['measure', ch, cont, segm]
+        organ.update_settings(process = process+['centreline_looplength'], 
+                              update = cl_length, mH='mH')
+        organ.update_settings(process = process+['centreline_linlength'], 
+                              update = lin_length, mH='mH')
+        organ.update_settings(process = process+['centreline'], 
+                              update = 'DONE', mH='mH')
+        
     
 #%% - Plotting functions
 #%% func - plot_grid
-def plot_grid(obj:list, txt=[], axes=1, zoom=2, lg_pos='top-left'):
+def plot_grid(obj:list, txt=[], axes=1, zoom=2, lg_pos='top-left',sc_side=350):
     
     # Load logo
     path_logo = path_mHImages / 'logo-07.jpg'
@@ -1064,9 +1090,9 @@ def plot_grid(obj:list, txt=[], axes=1, zoom=2, lg_pos='top-left'):
     
     # Create ScaleCube
     if isinstance(obj[0], tuple):
-        scale_cube = vedo.Cube(pos=obj[0][0].center_of_mass(), side=350, c='white', alpha=0.01).legend('ScaleCube')
+        scale_cube = vedo.Cube(pos=obj[0][0].center_of_mass(), side=sc_side, c='white', alpha=0.01).legend('ScaleCube')
     else: 
-        scale_cube = vedo.Cube(pos=obj[0].center_of_mass(), side=350, c='white', alpha=0.01).legend('ScaleCube')
+        scale_cube = vedo.Cube(pos=obj[0].center_of_mass(), side=sc_side, c='white', alpha=0.01).legend('ScaleCube')
     
     # Set logo position
     if lg_pos =='top-left':
@@ -1144,7 +1170,8 @@ def plot_meas_meshes(organ, meas:list, color_map = 'turbo', alpha=1):
             obj.append((mesh_out))
     
     if len(obj) == 0:
-        print('No meshes were recognised for param', meas)
+        print('>> No meshes were recognised for param', meas)
+        alert('error_beep')
     else: 
         txt = [(0, organ.user_organName)]
         plot_grid(obj, txt, axes=5)

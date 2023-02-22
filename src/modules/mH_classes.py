@@ -367,7 +367,7 @@ class Project():
                     mH_param2meas.append((from_cl,cl_type,'whole','centreline'))
                     mH_param2meas.append((from_cl,cl_type,'whole','centreline_linlength'))
                     mH_param2meas.append((from_cl,cl_type,'whole','centreline_looplength'))
-                    print('Added ', from_cl, cl_type)
+                    print('>> Added ', from_cl, cl_type)
                     
         # Note: Make sure the info being transferred from the dict to the wf is right 
         self.mH_param2meas = mH_param2meas
@@ -864,7 +864,7 @@ class Organ():
             if dir2create.is_dir():
                 self.info['dirs'][direc] = dir2create
             else: 
-                print('Error: Directory ', self.user_organName, '/', direc, ' could not be created!')
+                print('>> Error: Directory ', self.user_organName, '/', direc, ' could not be created!')
                 alert('error_beep')
         self.dir_res = self.parent_project.dir_proj / organ_folder
 
@@ -958,7 +958,7 @@ class Organ():
             self.obj_meshes[mesh.name] = mesh
             if hasattr(mesh, 'dirs'):
                 self.meshes[mesh.name]['dirs'] = mesh.dirs
-            print('> Mesh data updated!')
+            print('>> Mesh data updated!')
 
     def add_object(self, obj, proc:str, class_name:Union[list,str], name):
         
@@ -983,7 +983,8 @@ class Organ():
             else: 
                 self.objects['Spheres'][proc][class_name] = {'center': obj.center, 
                                                                    'color': obj.color()}
-                        
+                
+                    
     def load_TIFF(self, ch_name:str):
         print('---- Loading TIFF! ----')
         image = ImChannel(organ=self, ch_name=ch_name)#,new=True
@@ -1044,7 +1045,7 @@ class Organ():
                     val = get_by_path(self.workflow, [process,ch,'B-CloseCont','Steps',key_a,'Status'])
                     close_done.append(val)
                    # close_done.append(self.workflow[process][ch]['B-CloseCont']['Steps'][key_a]['Status'])
-                print('\tchannel:',ch, '-CloseCont:', close_done)
+                print('-> channel:',ch, '-CloseCont:', close_done)
                 if all(flag == 'DONE' for flag in close_done):
                     self.update_workflow([process,ch,'B-CloseCont','Status'], 'DONE')
                     # self.workflow[process][ch]['B-CloseCont']['Status'] = 'DONE'
@@ -1056,7 +1057,7 @@ class Organ():
                         val_b = get_by_path(self.workflow, [process,ch,key_b,'Status'])
                         proc_done.append(val_b)
                         # proc_done.append(self.workflow[process][ch][key_b]['Status'])
-                print('\tchannel:',ch, '-ImProc:', proc_done)
+                print('->channel:',ch, '-ImProc:', proc_done)
                 if all('DONE' in flag for flag in proc_done):
                     self.update_workflow([process,ch,'Status'], 'DONE')
                     # self.workflow[process][ch]['Status'] = 'DONE'
@@ -1076,7 +1077,7 @@ class Organ():
                 if key_f != 'E-Segments':
                     dict_proc = [item for item in flat_dict.keys() if key_f in item]
                     ch_cont_done = [flat_dict[item] for item in dict_proc[1:]]
-                    print('\t',key_f, ch_cont_done)
+                    print('->',key_f, ch_cont_done)
                     if all(flag == 'DONE' for flag in ch_cont_done):
                         self.update_workflow([process,key_f,'Status'], 'DONE')
             
@@ -1157,10 +1158,10 @@ class ImChannel(): #channel
         self.ch_relation = organ.mH_settings['general_info'][ch_name]['ch_relation']
         
         if self.channel_no not in organ.imChannels.keys():   
-            print('new channel-', self.channel_no)
+            print('>> New Channel-', self.channel_no)
             self.new_ImChannel()
         else: 
-            print('loading channel-', self.channel_no)
+            print('>> Loading Channel-', self.channel_no)
             self.load_channel()
 
     def new_ImChannel(self):
@@ -1505,7 +1506,7 @@ class ImChannel(): #channel
                 if shapes_s3.count(shapes_s3[0]) == len(shapes_s3):
                     self.shape_s3 = s3.shape_s3
                 else: 
-                    print('self.shape_s3 = s3.shape')
+                    print('>> Error: self.shape_s3 = s3.shape')
                 self.parent_organ.update_workflow(process, update = 'DONE')
 
             #Update channel process
@@ -1616,20 +1617,20 @@ class ImChannel(): #channel
             name = self.channel_no + '_' + mesh_type
             if name not in self.parent_organ.meshes.keys():
                 keep_largest_f = keep_largest[mesh_type]
-                print('new mesh!')
+                print('>> New Mesh!')
             else: 
                 if new_set: 
-                    print('new_set = True')
+                    print('>> New_set = True')
                     try: 
                         keep_largest_f = keep_largest[mesh_type]
-                        print('new keep_largest')
+                        print('>> New keep_largest')
                     except:
-                        print('old keep_largest')
+                        print('>> Old keep_largest')
                         keep_largest_f = self.parent_organ.mH_settings['setup'][self.channel_no][mesh_type]['keep_largest']
                     print('recreating mesh with new settings -keep largest')
                 else: 
                     keep_largest_f = keep_largest
-                    print('recreating mesh with same settings as original')
+                    print('>> Recreating mesh with same settings as original')
             mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new_set=new_set)#, new=True)
             meshes_out.append(mesh)
             
@@ -1687,16 +1688,18 @@ class ImChannel(): #channel
             
         if proceed2: 
             for s3 in s3s:
-                print('- Cleaning '+self.user_chName+' ('+ self.channel_no + '-' + s3.cont_type +')')
+                print('>> Cleaning '+self.user_chName+' ('+ self.channel_no + '-' + s3.cont_type +')')
                     
                 # What happens if the s3() are None? 
                 s3_s = s3.s3()
                 if not isinstance(s3_s, np.ndarray): 
-                    print(' not isinstance(s3_s, np.array)')
+                    print('>> Error: Not isinstance(s3_s, np.array)')
+                    alert('clown')
                     continue
                 s3_mask_s = s3_mask.s3()
                 if not isinstance(s3_mask_s, np.ndarray): 
-                    print('not isinstance(s3_mask_s, np.array)')
+                    print('>> Error: not isinstance(s3_mask_s, np.array)')
+                    alert('clown')
                     continue
                 s3_bits = np.zeros_like(s3_s, dtype='uint8')
                 s3_new =  np.zeros_like(s3_s, dtype='uint8')
@@ -1783,10 +1786,10 @@ class ImChannelNS(): #channel
         self.user_chName = organ.mH_settings['general_info'][ch_name]['user_chName']
         self.ch_relation = 'negative-space'
         if self.channel_no not in organ.imChannelNS.keys():
-            print('new channelNS')
+            print('>> New ChannelNS')
             self.new_ImChannelNS()
         else: 
-            print('loading channelNS')
+            print('>> Loading ChannelNS')
             self.load_channel()
     
     def new_ImChannelNS (self):
@@ -1823,6 +1826,7 @@ class ImChannelNS(): #channel
             contStack_dict[cont]['s3_dir'] = Path(contStack_dict[cont]['s3_dir'])
             contStack_dict[cont]['shape_s3'] = tuple(contStack_dict[cont]['shape_s3'])
         self.contStack = contStack_dict
+        self.setup_NS = organ.imChannelNS[ch_name]['setup_NS']
         
         # organ.add_channel(imChannel=self)
         
@@ -1833,19 +1837,19 @@ class ImChannelNS(): #channel
         ext_s3 = ContStack(im_channel=organ.obj_imChannels[ext_s3_name], 
                            cont_type=ext_s3_type)#, new=False)
         self.s3_ext = ext_s3
-        self.add_contStack(ext_s3)
+        self.add_contStack(ext_s3, cont_type = 'ext')
         
         int_s3_name = self.setup_NS['int']['name']
         int_s3_type = self.setup_NS['int']['type']
         int_s3 = ContStack(im_channel=organ.obj_imChannels[int_s3_name], 
                            cont_type=int_s3_type)#, new=False)
         self.s3_int = int_s3
-        self.add_contStack(int_s3)
+        self.add_contStack(int_s3, cont_type = 'int')
         
         tiss_s3 = ContStack(im_channel = self, cont_type = 'tiss',
                             layerDict=plot)#,  new = True)
         self.s3_tiss = tiss_s3
-        self.add_contStack(tiss_s3)
+        self.add_contStack(tiss_s3, cont_type = 'tiss')
      
     def get_channel_no(self):
         return self.channel_no
@@ -1853,24 +1857,24 @@ class ImChannelNS(): #channel
     def get_resolution(self):
         return self.resolution
     
-    def add_contStack(self, contStack):
+    def add_contStack(self, contStack, cont_type):
         # Check first if the contStack has been already added to the channel
         new = False
-        if contStack.cont_type not in self.contStack.keys():
+        if cont_type not in self.contStack.keys():
             new = True
             
         if new: 
             contStack_dict = {}
-            contStack_dict['cont_type'] = contStack.cont_type
+            contStack_dict['cont_type'] = cont_type
             contStack_dict['imfilled_name'] = contStack.imfilled_name
             contStack_dict['cont_name'] = contStack.cont_name
             contStack_dict['s3_file'] = contStack.s3_file
             contStack_dict['s3_dir'] = contStack.s3_dir
             contStack_dict['shape_s3'] = contStack.shape_s3
             contStack_dict['process'] = contStack.process
-            self.contStack[contStack.cont_type] = contStack_dict
+            self.contStack[cont_type] = contStack_dict
         else: # just update process 
-            self.contStack[contStack.cont_type]['process'] = contStack.process
+            self.contStack[cont_type]['process'] = contStack.process
 
     
     def create_s3_tiss (self, plot=False, im_every=25): 
@@ -1889,7 +1893,7 @@ class ImChannelNS(): #channel
             proceed = True
                 
         if proceed: 
-            print('- Extracting '+self.user_chName+'!')
+            print('>> Extracting '+self.user_chName+'!')
             s3 = self.s3_ext.s3()
             s3_mask = self.s3_int.s3()
             
@@ -1950,26 +1954,25 @@ class ImChannelNS(): #channel
         
     # func - s32Meshes
     def s32Meshes(self, cont_types:list, keep_largest=False, rotateZ_90=True, new_set=False):
-        
         meshes_out = []
         for mesh_type in cont_types:
             name = self.channel_no + '_' + mesh_type
             if name not in self.parent_organ.meshes.keys():
                 keep_largest_f = keep_largest[mesh_type]
-                print('new mesh NS!')
+                print('>> New mesh NS!')
             else: 
                 if new_set: 
-                    print('new_set = True')
+                    print('>> New_set = True')
                     try: 
                         keep_largest_f = keep_largest[mesh_type]
-                        print('new keep_largest')
+                        print('>> New keep_largest')
                     except: 
-                        print('old keep_largest')
+                        print('>> Old keep_largest')
                         keep_largest_f = self.parent_organ.mH_settings['setup'][self.channel_no][mesh_type]['keep_largest']
-                    print('recreating mesh with new settings -keep largest')
+                    print('>> Recreating mesh with new settings -keep largest')
                 else: 
                     keep_largest_f = keep_largest
-                    print('recreating mesh with same settings as original')
+                    print('>> Recreating mesh with same settings as original')
             mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new_set=new_set)#, new=True)
             meshes_out.append(mesh)
             
@@ -2184,7 +2187,7 @@ class Mesh_mH():
         
         wf = ['MeshesProc','A-Create3DMesh', imChannel.channel_no, mesh_type] 
         if self.name not in self.parent_organ.meshes.keys():
-            print('new mesh-', self.name)
+            print('>> New mesh -', self.name)
             new = True
             self.keep_largest = keep_largest
             self.rotateZ_90 = rotateZ_90
@@ -2224,34 +2227,29 @@ class Mesh_mH():
             if new_set: 
                 self.keep_largest = keep_largest
                 self.rotateZ_90 = rotateZ_90
-                print('re-creating mesh-', self.name)
+                print('>> Re-creating mesh -', self.name)
                 self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
             else: 
                 self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['keep_largest']
                 self.rotateZ_90 = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['rotateZ_90']
-                print('loading mesh-', self.name)
+                print('>> Loading mesh-', self.name)
                 self.load_mesh()
                 if self.name in self.parent_organ.objects['Centreline'].keys():
                     if self.parent_organ.workflow['MeshesProc']['C-Centreline']['buildCL']['Status'] == 'DONE':
                         self.set_centreline()
             self.dirs = self.parent_organ.meshes[self.name]['dirs']
             if self.dirs['mesh'] != None: 
-                # print(self.dirs['mesh'])
                 for n, meas_mesh in enumerate(self.dirs['mesh'].keys()):
                     if n == 0:
                         self.mesh_meas = {}
-                    # print(meas_mesh)
                     if 'ball' in meas_mesh:
                         n_type = meas_mesh.split('(')[1][:-1]
                         m_ball = self.balloon_mesh(n_type = n_type)
                         self.mesh_meas[meas_mesh] = m_ball
-                        # print('adding ballooning')
                     elif 'thck' in meas_mesh: 
                         n_type = meas_mesh.split('(')[1][:-1]
                         m_thck = self.thickness_mesh(n_type = n_type)
                         self.mesh_meas[meas_mesh] = m_thck
-                        # print('adding thickness')
-                        # {'mesh': None, 'arrays': None}
             else: 
                 self.mesh_meas = {}
             
@@ -2285,27 +2283,32 @@ class Mesh_mH():
     
     def load_mesh(self):
         parent_organ = self.parent_organ
-        mesh_name = parent_organ.user_organName+'_'+self.legend+'.vtk'
+        # mesh_name = parent_organ.user_organName+'_'+self.legend+'.vtk'
+        mesh_name = parent_organ.user_organName+'_'+self.name+'.vtk'
         mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
         mesh_out = vedo.load(str(mesh_dir))
         mesh_out.legend(self.legend).wireframe()
         self.dir_out = mesh_dir
         self.mesh = mesh_out
 
-    def save_mesh(self, m_type='self'):
+    def save_mesh(self, m_type='self', ext='.vtk'):
         parent_organ = self.parent_organ
         if m_type == 'self':
-            mesh_name = parent_organ.user_organName+'_'+self.legend+'.vtk'
+            if ext != '.vtk':
+                mesh_name = parent_organ.user_organName+'_'+self.legend+ext
+            else: #== .vtk
+                mesh_name = parent_organ.user_organName+'_'+self.name+ext
             mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
             self.dir_out = mesh_dir
             mesh_out = self.mesh
             
         elif 'ball' in m_type or 'thck' in m_type: 
-            mesh_name = parent_organ.user_organName+'_'+self.legend+'--'+m_type+'.vtk'
+            if ext != '.vtk':
+                mesh_name = parent_organ.user_organName+'_'+self.legend+'_CM'+m_type+ext
+            else: #== .vtk
+                mesh_name = parent_organ.user_organName+'_'+self.name+'_CM'+m_type+ext
             mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
             mesh_out = self.mesh_meas[m_type]
-            # if not hasattr(self, 'dirs'):
-            #     self.dirs = {'mesh': {}, 'arrays': {}}
             if self.dirs['mesh'] == None: 
                 self.dirs['mesh'] = {m_type: mesh_dir}
             else:
@@ -2319,7 +2322,8 @@ class Mesh_mH():
     def save_array(self, array, m_type):
         
         parent_organ = self.parent_organ        
-        title = parent_organ.user_organName+'_'+self.legend+'--'+m_type
+        # title = parent_organ.user_organName+'_'+self.legend+'--'+m_type
+        title = parent_organ.user_organName+'_'+self.name+'_CM'+m_type
         np2save_dir = self.parent_organ.info['dirs']['csv_all'] / title
         np.save(np2save_dir, array)
         if self.dirs['arrays'] == None: 
@@ -2341,7 +2345,7 @@ class Mesh_mH():
     
         """
         mesh4cl = self.mesh.clone()
-        print('- Cleaning mesh '+self.legend)
+        print('>> Cleaning mesh '+self.legend)
         print("\t- Original number of points making up mesh: ", mesh4cl.NPoints())
         # Reduce the number of points that make up the mesh
         mesh4cl.subsample(fraction = 0.005)#tol=0.005)
@@ -2350,7 +2354,7 @@ class Mesh_mH():
         # Smooth mesh
         mesh4cl_cut = mesh4cl.clone().smooth_mls_2d(f=0.2)
         mesh4cl_cut.legend(self.legend+"-C&S").color(self.color)
-        print('- Mesh smoothed!')
+        print('>> Mesh smoothed!')
         alert('woohoo')
 
         return mesh4cl_cut
@@ -2359,9 +2363,9 @@ class Mesh_mH():
         try: 
             cl_info = self.parent_organ.objects['Centreline'][self.name]
             self.centreline_info = cl_info
-            print('Centerline has been set for ', self.name)
+            print('>> Centerline has been set for ', self.name)
         except: 
-            print('No centreline has been created for this mesh - ', self.name)
+            print('>> No centreline has been created for this mesh - ', self.name)
 
     def get_channel_no(self):
         return self.channel_no
@@ -2419,47 +2423,49 @@ class Mesh_mH():
     
     def thickness_mesh(self, n_type, color_map = 'turbo', alpha=1):
         try: 
-            mesh_out = self.mesh_meas['thck_('+n_type+')']
-            print('Extracting mesh from mesh_meas attribute')
-            return mesh_out
+            mesh_out = self.mesh_meas['thck('+n_type+')']
+            print('>> Extracting mesh from mesh_meas attribute')
+            return mesh_out.alpha(alpha)
         except: 
-            dir_mesh = self.dirs['mesh']['thck_('+n_type+')']
-            dir_npy = Path(str(self.dirs['arrays']['thck_('+n_type+')'])+'.npy')
+            dir_mesh = self.dirs['mesh']['thck('+n_type+')']
+            dir_npy = Path(str(self.dirs['arrays']['thck('+n_type+')'])+'.npy')
             # print(dir_mesh, dir_npy)
             if dir_mesh.is_file() and dir_npy.is_file():
                 name = 'Thickness'
-                title = self.legend+'\n'+name+' [um]\n('+n_type+')'
+                # title = self.legend+'\n'+name+' [um]\n('+n_type+')'
+                title = self.legend+'\n'+name+' [um]\n('+n_type.replace('TO','>')+')'
                 mesh_out = self.load_meas_mesh(dir_mesh, dir_npy, title, 
                                                color_map=color_map, alpha=alpha)
-                return mesh_out
+                return mesh_out.alpha(alpha)
             else: 
-                print('Unable to load mesh')
+                print('>> Error: Unable to load mesh', self.name,'-',n_type)
                 alert('error_beep')
                 return None
         
     def balloon_mesh(self, n_type, color_map = 'turbo', alpha=1):
         try: 
-            mesh_out = self.mesh_meas['thck_('+n_type+')']
-            print('Extracting mesh from mesh_meas attribute')
-            return mesh_out
+            mesh_out = self.mesh_meas['ballCL('+n_type+')']
+            print('>> Extracting mesh from mesh_meas attribute')
+            return mesh_out.alpha(alpha)
         except: 
-            dir_mesh = self.dirs['mesh']['ball_CL('+n_type+')']
-            dir_npy = Path(str(self.dirs['arrays']['ball_CL('+n_type+')'])+'.npy')
+            dir_mesh = self.dirs['mesh']['ballCL('+n_type+')']
+            dir_npy = Path(str(self.dirs['arrays']['ballCL('+n_type+')'])+'.npy')
             # print(dir_mesh, dir_npy)
             if dir_mesh.is_file() and dir_npy.is_file():
                 name = 'Ballooning'
+                # title = self.legend+'\n'+name+' [um]\n('+n_type+')'
                 title = self.legend+'\n'+name+' [um]\n('+n_type+')'
                 mesh_out = self.load_meas_mesh(dir_mesh, dir_npy, title, 
                                                color_map=color_map, alpha=alpha)
-                return mesh_out
+                return mesh_out.alpha(alpha)
             else: 
-                print('Unable to load mesh')
+                print('>> Error: Unable to load mesh', self.name,'-',n_type)
                 alert('error_beep')
                 return None
         
     def load_meas_mesh(self, dir_mesh, dir_npy, title, color_map, alpha):
-        title = title.replace('\n', ' ')
-        print('Loading mesh '+title)
+        title_print = title.replace('\n', ' ')
+        print('>> Loading mesh '+title_print)
         mesh_out = vedo.load(str(dir_mesh))
         npy_colour = np.load(dir_npy)
         
@@ -2480,44 +2486,19 @@ class Mesh_mH():
             kspl = vedo.KSpline(points, res = nPoints).color(color).lw(5).legend('CL_'+self.name)
             return kspl
         except: 
-            print('No centreline has been created for this mesh - ', self.name)
+            print('>> No centreline has been created for this mesh - ', self.name)
             return None
+        
+    def get_linLine(self, nPoints, color='aqua'):
+        cl_final =  self.get_centreline(nPoints=nPoints)
+        cl_points = cl_final.points()
+        cl_pt0 = cl_points[0]
+        cl_ptm1 = cl_points[-1]
+         
+        #Create linear line
+        linLine = vedo.Line(cl_pt0, cl_ptm1, c=color, lw=5)
+        
+        return linLine
     
-    def getDistance2(self, mesh_to, to_name, color_map):
-        
-        if isinstance(mesh_to,vedo.shapes.Spheres): 
-            name = 'Ballooning'
-            multip = 1
-        else: 
-            name = 'Thickness'
-            multip = 1
-        print(name, str(multip))
-            
-        title = self.legend+'\n'+name+' [um]\n('+to_name+')'
-        
-        tic = perf_counter()
-        print('> Start time: \t', str(datetime.now())[11:-7])
-        mesh = self.mesh.clone()
-        print(type(mesh))
-
-        mesh.dictance_to(mesh_to, signed=True)
-        toc = perf_counter()
-        time = toc-tic
-        print('> End time: \t', str(datetime.now())[11:-7])
-        print("\t>> Total time taken to get "+name+" = ",format(time,'.2f'), "s/", format(time/60,'.2f'), "m/", format(time/3600,'.2f'), "h")
-        distance = multip*mesh.pointdata['Distance']
-        mesh.pointdata['Distance'] = distance
-        vmin, vmax = np.min(distance),np.max(distance)
-        print('vmax:', vmax, 'vmin:', vmin)
-        # alert('jump')
-        
-        mesh.cmap(color_map)
-        mesh.add_scalarbar(title=title, pos=(0.8, 0.05))
-        mesh.mapper().SetScalarRange(vmin,vmax)
-
-        mesh.legend(self.legend)
-        
-        return mesh
-
 #%%
 print('morphoHeart! - Loaded Module Classes')
