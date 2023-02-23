@@ -156,8 +156,6 @@ def ask4inputList(text, res):
 
     return obj_num
 
-#%% func - check_dict_lines
-
 #%% func - compare_dicts
 def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=False):
     """Compare two dictionaries recursively to find non mathcing elements

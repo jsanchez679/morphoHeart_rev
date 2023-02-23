@@ -974,10 +974,10 @@ def getThickness(organ, n_type, thck_dict, color_map, plot=False):
             plot_grid(obj=obj, txt=txt, axes=5)
         
         proc_wft = ['MeshesProc', thck_dict['method'], ch, cont, 'Status']
+        organ.update_workflow(process = proc_wft, update = 'DONE')
         proc_done.append('DONE')
 
     if len(proc_done) == len(thck_names):
-        organ.update_workflow(process = proc_wft, update = 'DONE')
         return True
     else: 
         return False
@@ -1057,11 +1057,191 @@ def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
 
     return spheres_spline
 
-#%% func - 
+#%% func - cut_into_segments
+def cut_into_segments(organ): 
+    
+    #Check first if extracting centrelines is a process involved in this organ/project
+    if organ.check_method(method = 'E-Segments'): 
+        #Check workflow status
+        workflow = organ.workflow
+        process = ['MeshesProc','E-Segments','Status']
+        check_proc = get_by_path(workflow, process)
+        if check_proc == 'DONE': 
+            q = 'You already extracted the ballooning parameters of the selected meshes. Do you want to extract them again?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-run this process!'}
+            balloon = ask4input(q, res, bool)
+        else: 
+            balloon = True
+    else:
+        balloon = False
+        return None
+    
+    # if balloon: 
+    
+#%% func - getRing2CutChambers
+# def getRing2CutChambers(filename, kspl_CL, mesh2cut, resolution, dir_stl, dir_txtNnpy, dict_pts, dict_shapes):
+#     """
+#     Function to define the ring needed to cut the meshes into atrium and ventricle
+
+#     """
+    
+#     # Plot spheres through centreline inside myocardium
+#     spheres_spl = sphs_in_spline(kspl_CL = kspl_CL, colour = True)
+#     settings.legendSize = .3
+#     vp = Plotter(N=1, axes = 7)
+#     text = filename+"\n\n >> Define the centreline point number to use to initialise \n  disc to divide heart into chambers \n  [NOTE: Spheres appear in centreline every 10 points, starting from \n  outflow (blue) to inflow (red) tract]"
+#     txt = Text2D(text, c="k", font= font)
+#     vp.show(mesh2cut.alpha(0.01), kspl_CL, spheres_spl, txt, at=0, azimuth = azimuth, interactive=True)
+
+#     # Get myocIntBall data
+#     [[m_myocIntBall], [myoc_intBall]] = openThicknessMeshes(filename = filename, meshes_names = ['myoc_intBall'], extension = 'vtk',
+#                                       dir_stl = dir_stl, dir_txtNnpy = dir_txtNnpy, print_txt = False)
+
+#     # Get disc position and orientation to cut heart layers
+#     mesh2cut.alpha(0.05)
+#     happyWithMyocCut = False
+#     happyWithDisc = False
+#     while not happyWithMyocCut:
+#         while not happyWithDisc:
+#             # Create plane
+#             num_pt = ask4input('Enter the centreline point number you want to use to initialise the disc to divide the heart into chambers: ', int)
+#             # Use flat disc or centreline orientation at point to define disc?
+#             centrelineORFlat = ask4input('Do you want to use the centreline orientation at the selected point to define disc orientation or \n  initialise the disc in a plane normal to the y-z plane? \n\t[0]: Use centreline orientation at the selected point\n\t[1]: Use plane perpendicular to the y-z plane >>>: ', bool)
+#             if not centrelineORFlat:
+#                 pl_Ch_normal, pl_Ch_centre = getPlaneNormal2Pt (pt_num = num_pt, spline_pts = kspl_CL.points())
+#             else:
+#                 pl_Ch_centre = kspl_CL.points()[num_pt]
+#                 pl_Ch_normal = [1,0,0]
+#             # print('- Modifying disc position to cut chambers. Initially defined disc radius is 60um. \n  Once you have selected the position of the disc a new radius will be calculated based on the mesh points the disc cuts. \n  If you are not happy with the disc radius, you will be able to modify it just before proceeding to the cut.')
+#             # Modify (rotate and move cylinder/disc)
+#             cyl_test, sph_test, rotX, rotY, rotZ = modifyDisc (filename = filename,
+#                                                     pl_normal = pl_Ch_normal, pl_centre = pl_Ch_centre,
+#                                                     radius = 60, type_cut = 'Chamber',
+#                                                     mesh1 = mesh2cut, xyz_bounds = mesh2cut.bounds())
+#             # print('pl_Ch_centre', pl_Ch_centre)
+#             # print('sph_test.pos()',sph_test.pos())
+#             # print('cyl_test.pos()',cyl_test.pos())
+#             # print('num_pt:', num_pt)
+
+#             # Get new normal of rotated disc
+#             pl_Ch_normal_corrected = newNormal3DRot(normal = pl_Ch_normal, rotX = rotX, rotY = rotY, rotZ = rotZ)
+#             normal_unit = unit_vector(pl_Ch_normal_corrected)*10
+#             # Get central point of newly defined disc
+#             pl_Ch_centre = sph_test.pos()
+
+#             # Get points at plane
+#             # Myocardium
+#             pts2cut, _ = getPointsAtPlane(points = mesh2cut.points(), pl_normal = pl_Ch_normal_corrected,
+#                                                 pl_centre = pl_Ch_centre, tol = 1)
+#             # Internal myocardium with ballooning data
+#             _, data2cut = getPointsAtPlane(points = m_myocIntBall.points(), pl_normal = pl_Ch_normal_corrected,
+#                                                 pl_centre = pl_Ch_centre, tol = 1, addData = myoc_intBall)
+#             plane_Ch = Plane(pos = pl_Ch_centre, normal = pl_Ch_normal, sx = 300)
+#             # Cut cl with plane
+#             ksplCL_cut = kspl_CL.clone().cutWithMesh(plane_Ch, invert=True)
+#             # ksplCL_cut.lw(5).color('tomato')
+#             # print(ksplCL_cut.points()[0], ksplCL_cut.points()[-1])
+#             # Find point of centreline closer to last point of kspline cut
+#             ksplCL_cutPt, num_pt = findClosestPtGuess(ksplCL_cut.points(), kspl_CL.points(), index_guess = num_pt)#findClosestPt(ksplCL_cut.points()[-1], kspl_CL.points())
+#             # print('num_pt:', num_pt)
+
+#             # Newly defined centreline point cut by plane/disc
+#             cl_point = pl_Ch_centre# kspl_CL.points()[num_pt]
+#             sph_cut = Sphere(pos = cl_point, r=4, c='gold').legend('sph_ChamberCut')
+
+#             # Order the points
+#             ordpts, _ = order_pts(points = pts2cut)
+#             # Find distance between points at plane and cl_point to define radius
+#             dist = []
+#             for pt in ordpts:
+#                 dist.append(findDist(cl_point, pt))
+
+#             r_circle_max = np.mean(dist)*1.2
+#             r_circle_min = min(dist)*0.8
+#             if r_circle_max < max(data2cut):
+#                 r_circle_max = max(data2cut)*1.5
+
+#             # Build new disc to confirm
+#             cyl_final = Cylinder(pos = pl_Ch_centre,r = r_circle_max, height = 2*0.225, axis = normal_unit, c = 'purple', cap = True, res = 300)
+#             r_circle_max_str = r_circle_max
+
+#             text = filename+"\n\n >> Check the position and the radius of the disc to cut the heart into chambers.\n  Make sure it is cutting the heart through the AVC and hopefully not cutting any other chamber regions. \n >> Close the window when done"
+#             txt = Text2D(text, c=c, font=font)
+#             settings.legendSize = .3
+#             vp = Plotter(N=1, axes=4)
+#             vp.show(mesh2cut, cyl_final, ksplCL_cut, txt, at=0, viewup="y", azimuth=0, elevation=0, interactive=True)
+#             happy = ask4input('Are you happy with the position of the disc [radius: '+format(r_circle_max_str,'.2f')+"um] to cut heart into chambers? \n  [0]: no, I would like to define a new position for the disc\n  [1]: yes, but I would like to redefine the disc radius \n  [2]: yes, I am happy with both, disc position and radius :", int)
+#             if happy == 1:
+#                 happy_rad = False
+#                 while not happy_rad:
+#                     r_circle_max = ask4input('Input disc radius [um]: ', float)
+#                     text = filename+"\n\n >> New radius \n  Check the radius of the disc to cut the myocardial tissue into \n   chambers. Make sure it is cutting through the AVC and not catching any other chamber regions. \n >> Close the window when done"
+#                     cyl_final = Cylinder(pos = pl_Ch_centre,r = r_circle_max, height = 2*0.225, axis = normal_unit, c = 'purple', cap = True, res = 300)
+#                     r_circle_max_str = r_circle_max
+#                     txt = Text2D(text, c="k", font= font)
+#                     settings.legendSize = .15
+#                     vp = Plotter(N=1, axes = 10)
+#                     vp.show(mesh2cut.alpha(1), kspl_CL, cyl_final, sph_cut, txt, at = 0, interactive=True)
+#                     r_circle_max_str = r_circle_max
+#                     happy_rad = ask4input('Is the selected radius ['+format(r_circle_max_str,'.2f')+"um] sufficient to cut heart into chambers? \n  [0]: no, I would like to change its value \n  [1]: yes, it cuts the heart without disrupting too much the chambers!: ", bool)
+#                 happyWithDisc = True
+#             elif happy == 2:
+#                 happyWithDisc = True
+
+#         cyl_final.legend('cyl2CutChambers_o')
+#         cyl_data = [r_circle_max, r_circle_min, normal_unit, pl_Ch_centre]
+#         dict_shapes = addShapes2Dict (shapes = [cyl_final], dict_shapes = dict_shapes, radius = [cyl_data], print_txt = False)
+
+#         #Define atrium and ventricle
+#         try:
+#             avc_minus50y = kspl_CL.points()[num_pt-50]
+#         except:
+#             avc_minus50y = kspl_CL.points()[0]
+#             print('-> First centreline point got selected as AVC-50')
+#         try:
+#             avc_plus50y = kspl_CL.points()[num_pt+50]
+#         except:
+#             avc_plus50y = kspl_CL.points()[-1]
+#             print('-> Last centreline point got selected as  AVC+50')
+
+#         sph_atr = Sphere(pos = avc_plus50y, r=4, c='darkorange').legend('sph_CentreOfAtrium')
+#         sph_vent = Sphere(pos = avc_minus50y, r=4, c='deeppink').legend('sph_CentreOfVentricle')
+#         sph_cut = Sphere(pos = kspl_CL.points()[num_pt], r=4, c='gold').legend('sph_ChamberCut')
+
+#         text = filename+"\n\n >> Have a look at the spheres inside the heart \n   and confirm they are correctly named according to the chamber \n   in which they are positioned."
+#         txt = Text2D(text, c="k", font= font)
+#         settings.legendSize = .15
+#         vp = Plotter(N=1, axes = 10)
+#         vp.show(mesh2cut.alpha(0.01), kspl_CL, sph_cut, sph_atr, sph_vent, txt, at = 0, interactive=True)
+
+#         atrVentSph_corr = ask4input('Were the atrium and ventricle centre spheres named correctly? \n\t[0]: no, orange is ventricle, and pink is atrium \n\t[1]: yes, orange is atrium, and pink is ventricle! >>>:', bool)
+#         if not atrVentSph_corr:
+#             sph_atr = Sphere(pos = avc_minus50y, r=4, c='deeppink').legend('sph_CentreOfAtrium')
+#             sph_vent = Sphere(pos = avc_plus50y, r=4, c='darkorange').legend('sph_CentreOfVentricle')
+
+#         # Add pt to dict
+#         dict_pts = addPoints2Dict(spheres = [sph_cut, sph_atr, sph_vent], info = ['', 'ChCut','ChCut'], dict_pts = dict_pts)
+#         dict_pts['numPt_CLChamberCut'] = num_pt
+
+#         # Now cut myocardium
+#         print('\n')
+#         atr_meshes = []; vent_meshes = []
+#         atr_meshes, vent_meshes, dict_shapes, s3_cyl  = getChamberMeshes(filename = filename,
+#                                     end_name = ['ch0_cut'], names2cut = ['Myoc'],
+#                                     kspl_CL = kspl_CL, num_pt = num_pt, atr_meshes = atr_meshes, vent_meshes = vent_meshes,
+#                                     dir_txtNnpy = dir_txtNnpy, dict_shapes = dict_shapes, dict_pts = dict_pts,
+#                                     resolution = resolution, plotshow = True)
+
+#         happyWithMyocCut = ask4input('Has the myocardium been divided correctly into chambers with the defined disc? \n\t [0]:no, I would like to redefine the disc \n\t [1]:yes, I am happy with the cut made! >>>: ', bool)
+#         if not happyWithMyocCut:
+#             happyWithDisc = False
+
+#     return cyl_final, num_pt, atr_meshes, vent_meshes, dict_shapes, dict_pts, s3_cyl
 
 #%% - Measuring function
 #%% func - measure_centreline
 def measure_centreline(organ, nPoints):
+    
     cl_names = [item for item in organ.parent_project.mH_param2meas if 'centreline' in item]
     for name in cl_names: 
         ch = name[0]; cont = name[1]; segm= name[2]

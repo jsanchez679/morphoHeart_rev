@@ -66,8 +66,22 @@ class Project():
     new project and can be amended if needed as the organs are processed.
     '''
     def __init__(self, name=None, notes=None, analysis=None, dir_proj=None,
-                             new=True, proj_name=None):
-
+                             new=True):
+        
+        if dir_proj.is_dir():
+            print('>> There is already a project in the directory selected!')
+            settings_name = 'mH_'+name+'_project.json'
+            dir_settings = dir_proj / 'settings' / settings_name
+            if dir_settings.is_file():
+                print('>> There is already a project settings file!')
+                new = False
+            else: 
+                print('>> New Project! (if2)')
+                new = True
+        else: 
+            print('>> New Project! (if1)')
+            new = True
+            
         def create_mHName(self):
             '''
             func - create name for a morphoHeart project
@@ -90,7 +104,7 @@ class Project():
             self.cellGroups = {}
                 
         else: 
-            load_dict = {'name': proj_name, 'dir': dir_proj}
+            load_dict = {'name': name, 'dir': dir_proj}
             self.load_project(load_dict=load_dict)
     
     def load_project(self, load_dict:dict):
@@ -498,7 +512,7 @@ class Project():
             mH_segments = sorted(self.mH_segments)
     
             dict_ImProc = dict()
-            dict_ImProc['Status'] = 'NotInitialised'
+            dict_ImProc['Status'] = 'NI'
             dict_MeshesProc = dict()
     
             # Find the meas_param that include the extraction of a centreline
@@ -515,48 +529,44 @@ class Project():
             item_thickness_intext = [item for item in self.mH_param2meas if 'thickness int>ext' in item]
             item_thickness_extint = [item for item in self.mH_param2meas if 'thickness ext>int' in item]
     
-            dict_MeshesProc = {'Status' : 'NotInitialised'}
+            dict_MeshesProc = {'Status' : 'NI'}
             for met in self.mH_methods:
-                dict_MeshesProc[met] =  {'Status': 'NotInitialised'}
+                dict_MeshesProc[met] =  {'Status': 'NI'}
                                
             # Project status
             for ch in mH_channels:
                 if 'A-Create3DMesh' in dict_MeshesProc.keys():
                     if 'NS' not in ch:
-                        dict_ImProc[ch] = {'Status': 'NotInitialised',
-                                            'A-MaskChannel': {'Status': 'NotInitialised'},
-                                            'B-CloseCont':{'Status': 'NotInitialised',
-                                                            'Steps':{'A-Autom': {'Status': 'NotInitialised'},
-                                                                    'B-Manual': {'Status': 'NotInitialised'},
-                                                                    'C-CloseInOut': {'Status': 'NotInitialised'}}},
-        
-                                            'C-SelectCont':{'Status': 'NotInitialised'},
-        
-                                            'D-S3Create':{'Status': 'NotInitialised',
-                                                        'Info': {'tiss':{'Status': 'NotInitialised'}, 
-                                                                'int':{'Status': 'NotInitialised'}, 
-                                                                'ext':{'Status': 'NotInitialised'}}}}
-                        
+                        dict_ImProc[ch] = {'Status': 'NI',
+                                            'A-MaskChannel': {'Status': 'NI'},
+                                            'B-CloseCont':{'Status': 'NI',
+                                                            'Steps':{'A-Autom': {'Status': 'NI'},
+                                                                    'B-Manual': {'Status': 'NI'},
+                                                                    'C-CloseInOut': {'Status': 'NI'}}},
+                                            'C-SelectCont':{'Status': 'NI'},
+                                            'D-S3Create':{'Status': 'NI',
+                                                        'Info': {'tiss':{'Status': 'NI'}, 
+                                                                'int':{'Status': 'NI'}, 
+                                                                'ext':{'Status': 'NI'}}}}
                         #Check the external channel
                         if self.mH_settings['general_info'][ch]['ch_relation'] == 'external':
-                            dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NotInitialised',
-                                                             'Info':{'tiss':{'Status': 'NotInitialised'}, 
-                                                                     'int':{'Status': 'NotInitialised'},
-                                                                     'ext':{'Status': 'NotInitialised'}}}
+                            dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NI',
+                                                             'Info':{'tiss':{'Status': 'NI'}, 
+                                                                     'int':{'Status': 'NI'},
+                                                                     'ext':{'Status': 'NI'}}}
                         else: 
-                            dict_ImProc[ch]['E-CleanCh'] = {'Status': 'NotInitialised',
-                                                              'Info': {'tiss':{'Status': 'NotInitialised'}, 
-                                                                      'int':{'Status': 'NotInitialised'}, 
-                                                                      'ext':{'Status': 'NotInitialised'}}}
-                            dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NotInitialised',
-                                                             'Info':{'tiss':{'Status': 'NotInitialised'}, 
-                                                                     'int':{'Status': 'NotInitialised'},
-                                                                     'ext':{'Status': 'NotInitialised'}}}
+                            dict_ImProc[ch]['E-CleanCh'] = {'Status': 'NI',
+                                                              'Info': {'tiss':{'Status': 'NI'}, 
+                                                                      'int':{'Status': 'NI'}, 
+                                                                      'ext':{'Status': 'NI'}}}
+                            dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NI',
+                                                             'Info':{'tiss':{'Status': 'NI'}, 
+                                                                     'int':{'Status': 'NI'},
+                                                                     'ext':{'Status': 'NI'}}}
                     else: 
-                        dict_ImProc[ch] = {'Status': 'NotInitialised',
-                                            'D-S3Create':{'Status': 'NotInitialised'}} 
+                        dict_ImProc[ch] = {'Status': 'NI',
+                                            'D-S3Create':{'Status': 'NI'}} 
                  
-                    
             for nn, ch in enumerate(mH_channels):
                 for process in ['A-Create3DMesh','B-TrimMesh','C-Centreline']:
                     if 'NS' not in ch:
@@ -564,15 +574,15 @@ class Project():
                             dict_MeshesProc[process][ch] = {}
                         for nnn, cont in enumerate(['tiss', 'int', 'ext']):
                             if process == 'A-Create3DMesh' or process == 'B-TrimMesh':
-                                dict_MeshesProc[process][ch][cont] = {'Status': 'NotInitialised'}
+                                dict_MeshesProc[process][ch][cont] = {'Status': 'NI'}
                          
                             if process == 'C-Centreline' and 'C-Centreline' in dict_MeshesProc.keys():
                                 # print('nn:', nn, 'nnn:', nnn)
                                 if nn == 0 and nnn == 0: 
-                                    dict_MeshesProc[process]['Status'] = 'NotInitialised'
-                                    dict_MeshesProc[process]['SimplifyMesh'] = {'Status':'NotInitialised'}
-                                    dict_MeshesProc[process]['vmtk_CL'] = {'Status':'NotInitialised'}
-                                    dict_MeshesProc[process]['buildCL'] = {'Status':'NotInitialised'}
+                                    dict_MeshesProc[process]['Status'] = 'NI'
+                                    dict_MeshesProc[process]['SimplifyMesh'] = {'Status':'NI'}
+                                    dict_MeshesProc[process]['vmtk_CL'] = {'Status':'NI'}
+                                    dict_MeshesProc[process]['buildCL'] = {'Status':'NI'}
                                     
                                 if (ch,cont,'whole','centreline') in item_centreline:
                                     # print(ch,cont)
@@ -580,36 +590,44 @@ class Project():
                                         dict_MeshesProc[process]['SimplifyMesh'][ch] = {}
                                         dict_MeshesProc[process]['vmtk_CL'][ch] = {}
                                         dict_MeshesProc[process]['buildCL'][ch] = {}
-                                    dict_MeshesProc[process]['SimplifyMesh'][ch][cont] = {'Status': 'NotInitialised'}
-                                    dict_MeshesProc[process]['vmtk_CL'][ch][cont] = {'Status': 'NotInitialised'}
-                                    dict_MeshesProc[process]['buildCL'][ch][cont] = {'Status': 'NotInitialised'}
+                                    dict_MeshesProc[process]['SimplifyMesh'][ch][cont] = {'Status': 'NI'}
+                                    dict_MeshesProc[process]['vmtk_CL'][ch][cont] = {'Status': 'NI'}
+                                    dict_MeshesProc[process]['buildCL'][ch][cont] = {'Status': 'NI'}
                                     
                     else: 
                         if process == 'A-Create3DMesh':
-                            dict_MeshesProc[process][ch] = {'Status': 'NotInitialised'}
+                            dict_MeshesProc[process][ch] = {'Status': 'NI'}
     
                 for cont in ['tiss', 'int', 'ext']:
                     if (ch,cont,'whole','ballooning') in item_ballooning:
                         dict_MeshesProc['D-Ballooning'][ch] = {}
-                        dict_MeshesProc['D-Ballooning'][ch][cont] =  {'Status': 'NotInitialised'}
+                        dict_MeshesProc['D-Ballooning'][ch][cont] =  {'Status': 'NI'}
     
                     if (ch,cont,'whole','thickness int>ext') in item_thickness_intext:
                         dict_MeshesProc['D-Thickness_int>ext'][ch] = {}
-                        dict_MeshesProc['D-Thickness_int>ext'][ch][cont] = {'Status': 'NotInitialised'}
+                        dict_MeshesProc['D-Thickness_int>ext'][ch][cont] = {'Status': 'NI'}
                         
                     if (ch,cont,'whole','thickness ext>int') in item_thickness_extint:
                          dict_MeshesProc['D-Thickness_ext>int'][ch] = {}
-                         dict_MeshesProc['D-Thickness_ext>int'][ch][cont] = {'Status': 'NotInitialised'}
+                         dict_MeshesProc['D-Thickness_ext>int'][ch][cont] = {'Status': 'NI'}
                                                        
             # Project status
             for ch in ch_segm:
                 dict_MeshesProc['E-Segments'][ch] = {}
                 for cont in ['tiss', 'int', 'ext']:
                     if (ch, cont,'segm1','volume') in segm_list[0]:
-                        dict_MeshesProc['E-Segments'][ch][cont] = {'Status': 'NotInitialised',
-                                                                   'Segments': {}}
-                        for segm in ['whole']+mH_segments:
-                            dict_MeshesProc['E-Segments'][ch][cont]['Segments'][segm]={'Status': 'NotInitialised'}
+                        dict_MeshesProc['E-Segments'][ch][cont] = {'Status': 'NI'}
+                        for segm in mH_segments:
+                            dict_MeshesProc['E-Segments'][ch][cont][segm]={'Status': 'NI'}
+            
+            # Measure Dictionary
+            dict_meas = flatdict.FlatDict({})
+            rows = self.mH_param2meas
+            for ch, cont, segm, param in rows:
+                key = ":".join([ch, cont, segm, param])
+                dict_meas[key] = 'NI'
+            
+            dict_MeshesProc['F-Measure'] = dict_meas.as_dict()
                                                                                        
             workflow['ImProc'] = dict_ImProc
             workflow['MeshesProc'] = dict_MeshesProc
@@ -1272,7 +1290,7 @@ class ImChannel(): #channel
                 
                 #self.parent_organ.workflow['ImProc'][self.channel_no]['A-MaskChannel']['Status'] = 'DONE'
                 process_up = ['ImProc', self.channel_no,'Status']
-                if get_by_path(workflow, process_up) == 'NotInitialised':
+                if get_by_path(workflow, process_up) == 'NI':
                     self.parent_organ.update_workflow(process_up, update = 'Initialised')
                 
                 #Update channel process
@@ -1288,7 +1306,7 @@ class ImChannel(): #channel
                 alert('error_beep')
                 
             process_up2 = ['ImProc','Status']
-            if get_by_path(workflow, process_up2) == 'NotInitialised':
+            if get_by_path(workflow, process_up2) == 'NI':
                 self.parent_organ.update_workflow(process_up2, update = 'Initialised')
             
     def closeContours_auto(self):
@@ -1316,7 +1334,7 @@ class ImChannel(): #channel
             self.parent_organ.update_workflow(process, update = 'DONE')
 
             process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
-            if get_by_path(workflow, process_up) == 'NotInitialised':
+            if get_by_path(workflow, process_up) == 'NI':
                 self.parent_organ.update_workflow(process_up, update = 'Initialised')
             
             #Update channel process
@@ -1327,12 +1345,12 @@ class ImChannel(): #channel
             self.parent_organ.save_organ()
             
             process_up2 = ['ImProc','Status']
-            if get_by_path(workflow, process_up2) == 'NotInitialised':
+            if get_by_path(workflow, process_up2) == 'NI':
                 self.parent_organ.update_workflow(process_up2, update = 'Initialised')
                 
             #Update
-            # 'B-CloseCont':{'Status': 'NotInitialised',
-            #                 'Steps':{'A-Autom': {'Status': 'NotInitialised'},
+            # 'B-CloseCont':{'Status': 'NI',
+            #                 'Steps':{'A-Autom': {'Status': 'NI'},
             #                                     # 'Range': None, 
             #                                     # 'Range_completed': None}, 
         
@@ -1361,7 +1379,7 @@ class ImChannel(): #channel
             self.parent_organ.update_workflow(process, update = 'DONE')
             
             process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
-            if get_by_path(workflow, process_up) == 'NotInitialised':
+            if get_by_path(workflow, process_up) == 'NI':
                 self.parent_organ.update_workflow(process_up, update = 'Initialised')
             
             
@@ -1373,12 +1391,12 @@ class ImChannel(): #channel
             self.parent_organ.save_organ()
             
             process_up2 = ['ImProc','Status']
-            if get_by_path(workflow, process_up2) == 'NotInitialised':
+            if get_by_path(workflow, process_up2) == 'NI':
                 self.parent_organ.update_workflow(process_up2, update = 'Initialised')
             
             #Update
-            # 'B-CloseCont':{'Status': 'NotInitialised',
-            #                         'B-Manual': {'Status': 'NotInitialised'},
+            # 'B-CloseCont':{'Status': 'NI',
+            #                         'B-Manual': {'Status': 'NI'},
             #                                     # 'Range': None, 
             #                                     # 'Range_completed': None}, 
             
@@ -1410,7 +1428,7 @@ class ImChannel(): #channel
             self.parent_organ.update_workflow(process, update = 'DONE')
             
             process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
-            if get_by_path(workflow, process_up) == 'NotInitialised':
+            if get_by_path(workflow, process_up) == 'NI':
                 self.parent_organ.update_workflow(process_up, update = 'Initialised')
             
             # Update channel process
@@ -1424,12 +1442,12 @@ class ImChannel(): #channel
             self.parent_organ.save_organ()
             
             process_up2 = ['ImProc','Status']
-            if get_by_path(workflow, process_up2) == 'NotInitialised':
+            if get_by_path(workflow, process_up2) == 'NI':
                 self.parent_organ.update_workflow(process_up2, update = 'Initialised')
                 
             #Update 
-            # 'B-CloseCont':{'Status': 'NotInitialised',
-            #                         'C-CloseInOut': {'Status': 'NotInitialised'}}},
+            # 'B-CloseCont':{'Status': 'NI',
+            #                         'C-CloseInOut': {'Status': 'NI'}}},
 
     def selectContours(self):
         #Check workflow status
@@ -1462,11 +1480,11 @@ class ImChannel(): #channel
             self.parent_organ.save_organ()
             
             process_up2 = ['ImProc','Status']
-            if get_by_path(workflow, process_up2) == 'NotInitialised':
+            if get_by_path(workflow, process_up2) == 'NI':
                 self.parent_organ.update_workflow(process_up2, update = 'Initialised')
                 
             #Update
-            # 'C-SelectCont':{'Status': 'NotInitialised'},
+            # 'C-SelectCont':{'Status': 'NI'},
             #                 # 'Info': {'tuple_slices': None,
             #                 #         'number_contours': None,
             #                 #         'range': None}},
@@ -1517,7 +1535,7 @@ class ImChannel(): #channel
             self.parent_organ.save_organ()
             
             process_up2 = ['ImProc','Status']
-            if get_by_path(workflow, process_up2) == 'NotInitialised':
+            if get_by_path(workflow, process_up2) == 'NI':
                 self.parent_organ.update_workflow(process_up2, update = 'Initialised')
             
     def load_chS3s (self, cont_types:list):
@@ -1602,7 +1620,7 @@ class ImChannel(): #channel
             self.parent_organ.add_channel(self)
             
             process_up2 = ['ImProc','Status']
-            if get_by_path(workflow, process_up2) == 'NotInitialised':
+            if get_by_path(workflow, process_up2) == 'NI':
                 self.parent_organ.update_workflow(process_up2, update = 'Initialised')
             
             # Save organ
@@ -1646,7 +1664,7 @@ class ImChannel(): #channel
                 self.parent_organ.update_workflow(proc, 'DONE')
                 
             process_up = ['MeshesProc','B-TrimMesh','Status']
-            if get_by_path(self.parent_organ.workflow, process_up) == 'NotInitialised':
+            if get_by_path(self.parent_organ.workflow, process_up) == 'NI':
                 self.parent_organ.update_workflow(process_up, update = 'Initialised')
                 
             self.parent_organ.check_status(process = 'MeshesProc')
@@ -2208,11 +2226,11 @@ class Mesh_mH():
                 self.parent_organ.update_workflow(wf[0:3]+['Status'], update = 'DONE')
             
             process_up = ['MeshesProc','A-Create3DMesh','Status']
-            if get_by_path(self.parent_organ.workflow, process_up) == 'NotInitialised':
+            if get_by_path(self.parent_organ.workflow, process_up) == 'NI':
                 self.parent_organ.update_workflow(process_up, update = 'Initialised')
             
             process_up2 = ['MeshesProc','Status']
-            if get_by_path(self.parent_organ.workflow, process_up2) == 'NotInitialised':
+            if get_by_path(self.parent_organ.workflow, process_up2) == 'NI':
                 self.parent_organ.update_workflow(process_up2, update = 'Initialised')
                 
             self.dirs = {'mesh': None, 'arrays': None}

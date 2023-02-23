@@ -1,4 +1,7 @@
 conda commands
+#Create env with specific python
+conda create --name ENVNAME python=3.6
+
 #List all the requirements of a package
 conda search <package_name> --info
 

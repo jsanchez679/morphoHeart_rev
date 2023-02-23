@@ -256,7 +256,7 @@ if partA:
     # proj_name = 'Project_B-C'
     folder_name = 'R_'+proj_name
     dir_proj = dir_proj_res / folder_name 
-    proj_new = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
+    proj_new = mHC.Project(name = proj_name, dir_proj = dir_proj)
     print('>> Check Project: \n\t',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
 
 #%% Part A - Create Organ
@@ -365,7 +365,7 @@ if partA:
 if partB: 
     # Load project, organ and channel and check parameters
     if not partA: 
-        proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
+        proj = mHC.Project(name = proj_name, dir_proj = dir_proj)
         organ = proj.load_organ(user_organName = organName2Load)
 
     #% CODE B
@@ -418,7 +418,7 @@ if partB:
 # Create meshes to extract CL and extract CL
 if partB_vmtk: 
     if not partA and not partB: 
-        proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
+        proj = mHC.Project(name = proj_name, dir_proj = dir_proj)
         organ = proj.load_organ(user_organName = organName2Load)
         fcMeshes.plot_all_organ(organ)
     
@@ -443,7 +443,7 @@ if partC:
         # proj_name = proj_name
         folder_name = 'R_'+proj_name
         dir_proj = dir_proj_res / folder_name
-        proj = mHC.Project(new = False, proj_name = proj_name, dir_proj = dir_proj)
+        proj = mHC.Project(name = proj_name, dir_proj = dir_proj)
         # organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
         fcMeshes.plot_all_organ(organ)
@@ -467,6 +467,33 @@ if partC:
     fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
     
 #%%
+#%% To do: 
+    # update workflow when maesuring centrelines
+    # update workflow when measuring volumes
+    # revise segment creation in the workflow
+    # see if there can be an easier way to create workflow dict
+    # ask user if the project already exists if he/she wants to change some of the settings
+    # run it again to check if the changes from 'NotInitialised' to 'NI' works
+    # create a kspline ribbon using the kspline
+    # add to the workflow - measurements if to divide meshes l/R with CL
+    # which name?
+    # which process would that be included in? - measure?
+    # see whether to ask the user to select the cl to use to divide meshes L/R 
+    # When creating the disk to cut meshes A/V how many discs to create and cut?
+    # save the stacks for the disks?
+    # save the stacks for the L/R
+    # how to call l/r 
+    
+    
+#%%
+    # # Divide heart layers into chambers and save data
+    # cyl_Chambers, num_pt, m_atr, m_vent, dict_shapes, dict_pts, s3_cyl = fcMeshes.getRing2CutChambers(filename = filename, 
+    #                                                                               kspl_CL = kspl_CL[0], mesh2cut = m_myoc, 
+    #                                                                               resolution = res, dir_stl = directories[2], 
+    #                                                                               dir_txtNnpy = directories[1],
+    #                                                                               dict_pts = dict_pts, 
+    #                                                                               dict_shapes = dict_shapes)
     
 
 # %%
+#%% pip freeze > requirements.txt
