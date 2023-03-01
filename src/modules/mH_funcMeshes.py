@@ -1258,8 +1258,18 @@ def measure_centreline(organ, nPoints):
                               update = lin_length, mH='mH')
         organ.update_settings(process = process+['centreline'], 
                               update = 'DONE', mH='mH')
-        
-    
+
+#%% func - measure_volume  
+def measure_volume(organ):
+    vol_names = [item for item in organ.parent_project.mH_param2meas if 'volume' in item]
+    for name in vol_names: 
+        ch = name[0]; cont = name[1]; segm= name[2]
+        mesh2meas = organ.obj_meshes[ch+'_'+cont].get_volume(nPoints=nPoints)
+        volume = mesh2meas.mesh.volume()
+
+
+
+
 #%% - Plotting functions
 #%% func - plot_grid
 def plot_grid(obj:list, txt=[], axes=1, zoom=2, lg_pos='top-left',sc_side=350):
