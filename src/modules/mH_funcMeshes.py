@@ -1258,16 +1258,28 @@ def measure_centreline(organ, nPoints):
                               update = lin_length, mH='mH')
         organ.update_settings(process = process+['centreline'], 
                               update = 'DONE', mH='mH')
+        
+        processes = [['MeshesProc', 'F-Measure',ch, cont, segm, 'centreline'],
+                   ['MeshesProc', 'F-Measure',ch, cont, segm, 'centreline_linlength'],
+                   ['MeshesProc', 'F-Measure',ch, cont, segm, 'centreline_looplength']]
+        
+        for process in processes: 
+            organ.update_workflow(process=process,update='DONE')
 
 #%% func - measure_volume  
 def measure_volume(organ):
     vol_names = [item for item in organ.parent_project.mH_param2meas if 'volume' in item]
     for name in vol_names: 
+        print(name)
         ch = name[0]; cont = name[1]; segm= name[2]
-        mesh2meas = organ.obj_meshes[ch+'_'+cont].get_volume(nPoints=nPoints)
-        volume = mesh2meas.mesh.volume()
-
-
+        if segm == 'whole': 
+            volume = organ.obj_meshes[ch+'_'+cont].get_volume()
+            process = ['measure', ch, cont, segm, 'volume']
+            organ.update_settings(process = process, 
+                                  update = volume, mH='mH')
+            wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'volume']
+            organ.update_workflow(process=wf_proc, update='DONE')
+            
 
 
 #%% - Plotting functions

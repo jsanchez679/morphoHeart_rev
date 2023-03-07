@@ -2507,6 +2507,10 @@ class Mesh_mH():
             print('>> No centreline has been created for this mesh - ', self.name)
             return None
         
+    def get_volume(self): 
+        mesh_vol = self.mesh.volume()
+        return mesh_vol
+        
     def get_linLine(self, nPoints, color='aqua'):
         cl_final =  self.get_centreline(nPoints=nPoints)
         cl_points = cl_final.points()

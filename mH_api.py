@@ -467,6 +467,9 @@ if partC:
     fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
     
 #%%
+    # Get volume measurements
+    fcMeshes.measure_volume(organ)
+
 #%% To do: 
     # update workflow when maesuring centrelines
     # update workflow when measuring volumes
