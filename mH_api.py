@@ -35,13 +35,13 @@ elif sys.platform == 'win32':
     dir_proj_res = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
     #dir_proj_res = Path('C://Users//pallo//Desktop//cosas juli//mh//project')
     
-partA = False
-partB = False
-partB_vmtk = False
+partA = True
+partB = True
+partB_vmtk = True
 partC = True
 print('partA:',partA,'- partB:',partB,'- partB_vmtk:',partB_vmtk,'- partC:',partC)
 
-user_projName = 'TestAll'
+user_projName = 'TestAll2'
 proj_name = user_projName
 user_organName = 'LS52_F02_V_SR_1029'
 organName2Load = user_organName
@@ -63,7 +63,7 @@ if partA:
     # Cellular analysis - morphoCell
     mC_analysis = False
     user_analysis = {'morphoHeart': mH_analysis, 'morphoCell': mC_analysis}
-    dir_proj = dir_proj_res
+    dir_proj = dir_proj
     
     proj = mHC.Project(name=user_projName, notes=user_projNotes, 
                                analysis=user_analysis, dir_proj = dir_proj)
@@ -91,6 +91,11 @@ if partA:
         name_segments = {'segm1': 'atrium', 'segm2': 'ventricle'}
         # channels/meshes that will be divided into segments 
         ch_segments = {'ch1':['tiss', 'ext'],'ch2':['tiss', 'int'],'chNS':['tiss']}
+        cutLayersIn2Sections = True
+        no_sections = 2
+        name_sections = {'sect1': 'left', 'sect2': 'right'}
+        ch_sections = {'ch1':['tiss'],'ch2':['tiss'],'chNS':['tiss']}
+       
         
         mH_settings = {'no_chs': no_chs,
                         'name_chs': name_chs,
@@ -106,7 +111,12 @@ if partA:
                             {'cutLayersIn2Segments': cutLayersIn2Segments,
                             'no_segments': no_segments,
                             'name_segments': name_segments,
-                            'ch_segments': ch_segments}}
+                            'ch_segments': ch_segments},
+                        'sections': 
+                            {'cutLayersIn2Sections': cutLayersIn2Sections,
+                            'no_sections': no_sections,
+                            'name_sections': name_sections,
+                            'ch_sections': ch_sections}}
     else: 
         mH_settings = {}
             
@@ -166,6 +176,7 @@ if partA:
     # a dictionary with predefined measurement parameters is created with 
     # which a table in the GUI will be created for the user to modify
     proj.set_settings(mH_settings=mH_settings, mC_settings=mC_settings)
+   
     # Create project directory
     proj.create_proj_dir(dir_proj_res)
     print('>> proj.dict_projInfo: ', proj.info)
@@ -184,7 +195,9 @@ if partA:
                                             'segm2': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': False,
-                                                'thickness ext>int': False}},
+                                                'thickness ext>int': False},
+                                            'sect1': {'volume': True},
+                                            'sect2': {'volume': True}},
                                 'int':    {'whole': {'volume': True,
                                                 'surf_area': True,
                                                 'centreline': True,
@@ -208,7 +221,9 @@ if partA:
                                             'segm2': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': False,
-                                                'thickness ext>int': False}},
+                                                'thickness ext>int': False},
+                                            'sect1': {'volume': True},
+                                            'sect2': {'volume': True}},
                                 'int':    {'whole': {'volume': True,
                                                 'surf_area': True,
                                                 'centreline': False,
@@ -232,7 +247,9 @@ if partA:
                                             'segm2': {'volume': True,
                                                 'surf_area': False,
                                                 'thickness int>ext': False,
-                                                'thickness ext>int': False}},
+                                                'thickness ext>int': False},
+                                            'sect1': {'volume': True},
+                                            'sect2': {'volume': True}},
                                 'int': {'whole': {'volume': True,
                                                 'surf_area': True,}},
                                 'ext': {'whole': {'volume': True,
@@ -245,7 +262,7 @@ if partA:
                                              'from_cl': 'ch2', 'from_cl_type': 'ext'}}}
 
     proj.set_mH_meas(user_params2meas=user_params2meas, user_ball_settings=user_ball_settings)
-
+   
     # And a project status dictionary is created
     proj.set_workflow()
 
@@ -257,8 +274,8 @@ if partA:
     folder_name = 'R_'+proj_name
     dir_proj = dir_proj_res / folder_name 
     proj_new = mHC.Project(name = proj_name, dir_proj = dir_proj)
-    print('>> Check Project: \n\t',fcBasics.compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-
+    fcBasics.check_gral_loading(proj, proj_name, dir_proj)
+    
 #%% Part A - Create Organ
 if partA:
     #% ------------------------------------------------------------------------------
@@ -335,7 +352,7 @@ if partA:
     # Save project 
     proj.save_project()
     # Load project, organ
-    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
     
     # CODE A ---------------------------------------------------------
@@ -348,7 +365,7 @@ if partA:
     # Save project
     proj.save_project()
     # Load project, organ
-    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
     # CHANNEL 2
     print('\n---PROCESSING CHANNEL 2----')
@@ -358,7 +375,7 @@ if partA:
     # Save project
     proj.save_project()
     # Load project, organ
-    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
     
 #%% Part B
@@ -378,7 +395,7 @@ if partB:
     # Save organ
     organ.save_organ()
     # Load project, organ
-    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
     # Clean channels
     plot = True
@@ -387,7 +404,7 @@ if partB:
     # Save organ
     organ.save_organ()
     # Load project, organ
-    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
   
     # Cut meshes inflow and outflow tracts 
     # Function to decide which meshes to cut
@@ -403,7 +420,7 @@ if partB:
     # Save organ
     organ.save_organ()
     # Load project, organ
-    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
   
     # Create Cardiac Jelly
     plot = True
@@ -412,7 +429,7 @@ if partB:
     # Save organ
     organ.save_organ()
     # Load project, organ
-    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
   
 #%% Part B-vmtk
 # Create meshes to extract CL and extract CL
@@ -435,7 +452,7 @@ if partB_vmtk:
     # Save organ
     organ.save_organ()
     # Load project, organ
-    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
 #%% Part C - Measure
 if partC: 
@@ -464,23 +481,56 @@ if partC:
     # Save organ
     organ.save_organ()
     # Load project, organ
-    fcBasics.check_gral_loading(proj, organ, proj_name, dir_proj, organName2Load)
+    fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
 #%%
     # Get volume measurements
     fcMeshes.measure_volume(organ)
 
+#%%
+    # Select the centreline to use to divide organ into sections
+    nPoints = 300
+    organ_info = organ.mH_settings['general_info']
+    dict_cl = {}; obj = []; txt = []; n = 0
+    for item in organ.parent_project.mH_param2meas: 
+        if 'centreline' in item: 
+            n += 1
+            ch = item[0]; cont = item[1]; segm = item[2]
+            name = organ_info[ch]['user_chName']+'-'+cont+' ('+ch+'-'+cont+'-'+segm+')'
+            dict_cl[n] = name
+            mesh_o = organ.obj_meshes[ch+'_'+cont]
+            cl_o = mesh_o.get_centreline(nPoints, 'indigo')
+            obj.append((mesh_o.mesh, cl_o))
+            if n-1==0:
+                txt.append((n-1, organ.user_organName+'\n->'+name))
+            else:  
+                txt.append((n-1, '\n->'+name))
+                
+    fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
+    text ='Select the centreline  you would like to use to divide the organ tissues into sections'
+    q_cl = fcBasics.ask4inputList(text, dict_cl, res_all=False)
+    cl_sel = dict_cl[q_cl[0]].split(' (')[1]
+    ch_sel = cl_sel.split('-')[0]
+    cont_sel = cl_sel.split('-')[1]
+    
+    cl_mesh = organ.obj_meshes[ch_sel+'_'+cont_sel]
+    nRes = 601
+    plotshow=True
+    cl_mesh.get_clRibbon(nPoints,nRes, clRib_type='HDStack',plotshow=plotshow)
+    
+    
+
 #%% To do: 
-    # update workflow when maesuring centrelines
-    # update workflow when measuring volumes
-    # revise segment creation in the workflow
+    #D update workflow when maesuring centrelines
+    #D update workflow when measuring volumes
+    #D revise segment creation in the workflow
     # see if there can be an easier way to create workflow dict
     # ask user if the project already exists if he/she wants to change some of the settings
-    # run it again to check if the changes from 'NotInitialised' to 'NI' works
+    #D run it again to check if the changes from 'NotInitialised' to 'NI' works
     # create a kspline ribbon using the kspline
-    # add to the workflow - measurements if to divide meshes l/R with CL
-    # which name?
-    # which process would that be included in? - measure?
+    #D add to the workflow - measurements if to divide meshes l/R with CL
+    #D which name?
+    #D which process would that be included in? - measure?
     # see whether to ask the user to select the cl to use to divide meshes L/R 
     # When creating the disk to cut meshes A/V how many discs to create and cut?
     # save the stacks for the disks?

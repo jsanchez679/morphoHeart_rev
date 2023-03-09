@@ -42,7 +42,7 @@ def closeContours(organ, ch_name:str):
         proceed = True
         print('Processing had been initialised!')
     else: 
-        close_done = ['NotInitialised']*4
+        close_done = ['NI']*4
         print('\tchannel:',ch_name, '-CloseCont:', close_done)
         proceed = True
         

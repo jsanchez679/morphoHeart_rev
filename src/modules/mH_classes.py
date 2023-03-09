@@ -22,6 +22,7 @@ from typing import Union
 from time import perf_counter
 import vedo as vedo
 from vedo import write
+from scipy.interpolate import splprep, splev, interpn
 
 #%% ##### - Other Imports - ##################################################
 #from ...config import dict_gui
@@ -132,6 +133,7 @@ class Project():
             self.mH_settings = load_dict['mH_settings']
             self.mH_channels = load_dict['mH_channels']
             self.mH_segments = load_dict['mH_segments']
+            self.mH_sections = load_dict['mH_sections']
             self.mH_param2meas = [tuple(item) for item in load_dict['mH_param2meas']]
             
             self.mC_settings = load_dict['mC_settings']
@@ -169,6 +171,7 @@ class Project():
         mH_meas_keys = []
         mH_channels = []
         mH_segments = []
+        mH_sections = []
             
         if self.analysis['morphoHeart']:
             
@@ -176,6 +179,11 @@ class Project():
                 dict_segments = {'no_segments': mH_settings['segments']['no_segments'],
                                  'name_segments': mH_settings['segments']['name_segments'],
                                  'ch_segments': mH_settings['segments']['ch_segments']}
+                
+            if mH_settings['sections']['cutLayersIn2Sections']:
+                dict_sections = {'no_sections': mH_settings['sections']['no_sections'],
+                                 'name_sections': mH_settings['sections']['name_sections'],
+                                 'ch_sections': mH_settings['sections']['ch_sections']}
                 
             for ch_num in range(0, mH_settings['no_chs']):
                 ch_str = 'ch'+str(ch_num+1)
@@ -189,7 +197,11 @@ class Project():
                 if mH_settings['segments']['cutLayersIn2Segments']:   
                     if ch_str in mH_settings['segments']['ch_segments'].keys():
                         dict_info_ch['ch_segments'] = mH_settings['segments']['ch_segments'][ch_str]
-                
+                    
+                if mH_settings['sections']['cutLayersIn2Sections']:   
+                    if ch_str in mH_settings['sections']['ch_sections'].keys():
+                        dict_info_ch['ch_sections'] = mH_settings['sections']['ch_sections'][ch_str]
+            
                 dict_setup = {}
                 dict_meas = {}
                 for cont in ['tiss', 'ext', 'int']: 
@@ -206,6 +218,7 @@ class Project():
                 mH_channels.append(ch_str)
             
             mH_set['general_info']['segments'] = dict_segments
+            mH_set['general_info']['sections'] = dict_sections
     
             if mH_settings['ns']['layer_btw_chs']:
                 ch_str = 'chNS'
@@ -242,11 +255,24 @@ class Project():
                                 mH_set['measure'][ch_str][cont][segm_str] = {} 
                                 mH_meas_keys.append((ch_str,cont,segm_str))
             
+            if mH_settings['sections']['cutLayersIn2Sections']:
+                for ch_str in mH_channels:
+                    ch_sections = list(mH_settings['sections']['ch_sections'].keys())
+                    if ch_str in ch_sections:
+                        for s_num in range(0, mH_settings['sections']['no_sections']):
+                            sect_str = 'sect'+str(s_num+1)
+                            mH_sections.append(sect_str)
+                            for cont in mH_settings['sections']['ch_sections'][ch_str]:
+                                mH_set['measure'][ch_str][cont][sect_str] = {} 
+                                mH_meas_keys.append((ch_str,cont,sect_str))
+                                
         self.mH_settings = mH_set
         self.mH_meas_keys = mH_meas_keys
         self.mH_channels = mH_channels
         segments_new = list(set(mH_segments))
         self.mH_segments = segments_new
+        sections_new = list(set(mH_sections))
+        self.mH_sections = sections_new
         
         self.table2select_mH_meas()
 
@@ -308,11 +334,15 @@ class Project():
 
         for tup in self.mH_meas_keys:
             ch, cont, segm = tup
-            dict_params_deflt[ch][cont][segm] = {'volume': True, 
-                                                    'surf_area': False}
+            if 'segm' in segm or 'whole' in segm: 
+                dict_params_deflt[ch][cont][segm] = {'volume': True, 
+                                                        'surf_area': False}
+                mH_param2meas.append((ch,cont,segm,'volume'))
+                mH_param2meas.append((ch,cont,segm,'surf_area'))
+            else: 
+                dict_params_deflt[ch][cont][segm] = {'volume': True}
+                mH_param2meas.append((ch,cont,segm,'volume'))
 
-            mH_param2meas.append((ch,cont,segm,'volume'))
-            mH_param2meas.append((ch,cont,segm,'surf_area'))
 
             if cont in ['int', 'ext']:
                 dict_params_deflt[ch][cont][segm]['surf_area'] = True 
@@ -323,12 +353,13 @@ class Project():
 
                     mH_param2meas.append((ch,cont,segm,'thickness int>ext'))
                     mH_param2meas.append((ch,cont,segm,'thickness ext>int'))
-                else: 
+                elif 'segm' in segm: 
                     dict_params_deflt[ch][cont][segm]['thickness int>ext'] = False
                     dict_params_deflt[ch][cont][segm]['thickness ext>int'] = False
 
                     mH_param2meas.append((ch,cont,segm,'thickness int>ext'))
                     mH_param2meas.append((ch,cont,segm,'thickness ext>int'))
+                    
             if segm == 'whole' and cont in ['ext','int'] and ch != 'chNS':
                 dict_params_deflt[ch][cont][segm]['centreline'] = True
                 dict_params_deflt[ch][cont][segm]['centreline_linlength'] = True
@@ -422,6 +453,8 @@ class Project():
                 methods.append('D-Thickness_ext>int')
         if any('segm' in flag for (_,_,flag,_) in mH_param2meas):
             methods.append('E-Segments')
+        if any('sect' in flag for (_,_,flag,_) in mH_param2meas):
+            methods.append('E-Sections')
         
         self.mH_methods = methods
     
@@ -510,6 +543,7 @@ class Project():
         if self.analysis['morphoHeart']: 
             mH_channels = sorted(self.mH_channels)
             mH_segments = sorted(self.mH_segments)
+            mH_sections = sorted(self.mH_sections)
     
             dict_ImProc = dict()
             dict_ImProc['Status'] = 'NI'
@@ -522,7 +556,13 @@ class Project():
             for segm in mH_segments[0:1]:
                 segm_list.append([item for item in self.mH_param2meas if segm in item and 'volume' in item])
             ch_segm = sorted(list(set([tup[0] for tup in segm_list[0]])))
-        
+            
+            # Find the meas_param that include the extraction of mH_sections
+            sect_list = []
+            for sect in mH_sections[0:1]:
+                sect_list.append([item for item in self.mH_param2meas if sect in item and 'volume' in item])
+            ch_sect = sorted(list(set([tup[0] for tup in sect_list[0]])))
+
             # Find the meas_param that include the extraction of ballooning
             item_ballooning = [item for item in self.mH_param2meas if 'ballooning' in item]
             # Find the meas_param that include the extraction of thickness
@@ -620,9 +660,18 @@ class Project():
                         for segm in mH_segments:
                             dict_MeshesProc['E-Segments'][ch][cont][segm]={'Status': 'NI'}
             
+            for ch in ch_sect:
+                dict_MeshesProc['E-Sections'][ch] = {}
+                for cont in ['tiss', 'int', 'ext']:
+                    if (ch, cont,'sect1','volume') in sect_list[0]:
+                        dict_MeshesProc['E-Sections'][ch][cont] = {'Status': 'NI'}
+                        for sect in mH_sections:
+                            dict_MeshesProc['E-Sections'][ch][cont][sect]={'Status': 'NI'}
+            
             # Measure Dictionary
             dict_meas = flatdict.FlatDict({})
             rows = self.mH_param2meas
+            dict_meas['Status'] = 'NI'
             for ch, cont, segm, param in rows:
                 key = ":".join([ch, cont, segm, param])
                 dict_meas[key] = 'NI'
@@ -655,6 +704,7 @@ class Project():
         all_info['mH_settings'] = self.mH_settings
         all_info['mH_channels'] = self.mH_channels
         all_info['mH_segments'] = self.mH_segments
+        all_info['mH_sections'] = self.mH_sections
         all_info['mH_param2meas'] = self.mH_param2meas
         
         all_info['mC_settings'] = self.mC_settings
@@ -1075,7 +1125,7 @@ class Organ():
                         val_b = get_by_path(self.workflow, [process,ch,key_b,'Status'])
                         proc_done.append(val_b)
                         # proc_done.append(self.workflow[process][ch][key_b]['Status'])
-                print('->channel:',ch, '-ImProc:', proc_done)
+                print('-> channel:',ch, '-ImProc:', proc_done)
                 if all('DONE' in flag for flag in proc_done):
                     self.update_workflow([process,ch,'Status'], 'DONE')
                     # self.workflow[process][ch]['Status'] = 'DONE'
@@ -2506,7 +2556,119 @@ class Mesh_mH():
         except: 
             print('>> No centreline has been created for this mesh - ', self.name)
             return None
+    
+
+    def get_clRibbon(self, nPoints, nRes, clRib_type, plotshow):
+            # filename, file_num, df_res, kspl_CL2use, linLine, mesh,
+            #            dict_kspl, dict_shapes, dict_planes,
+            #            clRib_type = 'extDV', scale_cube = [],plotshow = True):
+        """
+        Function that creates dorso-ventral extended centreline ribbon
+    
+        """
         
+        cl = self.get_centreline(nPoints)
+        pts_cl = cl.points()
+        
+        # Extended centreline
+        nn = -20#-3
+        inf_ext_normal = (pts_cl[nn]+(pts_cl[-1]-pts_cl[nn])*10)#*70
+        outf_ext_normal = (pts_cl[0]+(pts_cl[0]-pts_cl[1])*100)#*70 (test for LnR cut Jun14.22)
+        inf_ext_sphere = vedo.Sphere(pos=inf_ext_normal, r=3, c='purple').legend("sph_infCLExt")
+        outf_ext_sphere = vedo.Sphere(pos=outf_ext_normal, r=3, c='purple').legend("sph_outfCLExt")
+    
+        pts_cl_ext = np.insert(pts_cl,0,np.transpose(outf_ext_normal), axis=0)
+        pts_cl_ext = np.insert(pts_cl_ext,len(pts_cl_ext),np.transpose(inf_ext_normal), axis=0)
+    
+        # Increase the resolution of the extended centreline and interpolate to unify sampling
+        xd = np.diff(pts_cl_ext[:,0])
+        yd = np.diff(pts_cl_ext[:,1])
+        zd = np.diff(pts_cl_ext[:,2])
+        dist = np.sqrt(xd**2+yd**2+zd**2)
+        u = np.cumsum(dist)
+        u = np.hstack([[0],u])
+        t = np.linspace(0, u[-1], nRes)#601
+        resamp_pts = interpn((u,), pts_cl_ext, t)
+        kspl_ext = vedo.KSpline(resamp_pts, res=nRes).color('purple').legend('ExtendedCL')#601
+        linLine = self.get_linLine(nPoints)
+        
+        # Create plane to project centreline
+        extend_ventral = True #ask4input('You are processing a heart that came from an incross of spaw heterozygous.\n  Please, select the way this heart is looping to continue processing: \n\t[0]: right-left\n\t[1]: dorso-ventral >>>: ', bool)
+        im_orient = self.parent_organ.info['im_orientation']
+        cust_angle = self.parent_organ.info['custom_angle']
+        if extend_ventral and im_orient == 'ventral' and cust_angle == 0: 
+            #spaw_analysis = False
+            linLineX = linLine.clone().project_on_plane('x').c(linLine.color()).x(0)
+            azimuth = 0
+        elif im_orient == 'dorsal': 
+            #spaw_analysis = False 
+            linLineX = linLine.clone().project_on_plane('z').c(linLine.color()).z(0)
+            azimuth = -90
+        else:
+            #spaw_analysis = True 
+            linLineX = linLine.clone().project_on_plane('z').c(linLine.color()).z(150)
+            azimuth = 0
+            
+        ptsPl_linLine = vedo.Points([linLineX.points()[0], linLine.points()[0], linLine.points()[1]])
+        pl_linLine = vedo.fit_plane(ptsPl_linLine.points()).scale(4).c('mediumaquamarine').alpha(1).legend('pl_Parallel2LinLine')
+        pl_linLine_normal = pl_linLine.normal
+        pl_linLine_centre = pl_linLine.center
+        # dict_planes = addPlanes2Dict(planes = [pl_linLine], pls_centre = [pl_linLine_centre],
+        #                                         pls_normal = [pl_linLine_normal], info = [''], dict_planes = dict_planes)
+    
+        pl_linLine_unitNormal = unit_vector(pl_linLine_normal)
+        x_ul, y_ul, z_ul = pl_linLine_unitNormal*2
+        x_ucl, y_ucl, z_ucl = pl_linLine_unitNormal*15
+        pl_linLine_unitNormal120 = pl_linLine_unitNormal*120
+        x_cl, y_cl, z_cl = pl_linLine_unitNormal120
+    
+        if clRib_type == 'extDV': # Names are switched but it works
+            kspl_ext_D = kspl_ext.clone().x(x_cl).y(y_cl).z(z_cl).legend('kspl_CLExtD')
+            kspl_ext_V = kspl_ext.clone().x(-x_cl).y(-y_cl).z(-z_cl).legend('kspl_CLExtV')
+            cl_ribbon = vedo.Ribbon(kspl_ext_D, kspl_ext_V, alpha=0.2, res=(1500, 1500))
+            cl_ribbon = cl_ribbon.wireframe(True).legend("rib_ExtCL(D-V)")
+    
+        elif clRib_type == 'extV':
+            cl_ribbon = []
+            for i in range(10):
+                kspl_ext_DA = kspl_ext.clone().x(i*x_ucl).y(i*y_ucl).z(i*z_ucl)
+                kspl_ext_DB = kspl_ext.clone().x((i+1)*x_ucl).y((i+1)*y_ucl).z((i+1)*z_ucl)
+                cl_ribbon2un = vedo.Ribbon(kspl_ext_DA, kspl_ext_DB, alpha=0.2, res=(220, 5))
+                cl_ribbon.append(cl_ribbon2un)
+            cl_ribbon = vedo.merge(cl_ribbon)
+            cl_ribbon.legend('rib_ExtCL(V)').wireframe(True)
+    
+        elif clRib_type == 'HDStack':
+            cl_ribbon = []
+            for i in range(100):
+                kspl_ext_D = kspl_ext.clone().x(x_cl-i*x_ul).y(y_cl-i*y_ul).z(z_cl-i*z_ul)
+                kspl_ext_V = kspl_ext.clone().x(-x_cl+i*x_ul).y(-y_cl+i*y_ul).z(-z_cl+i*z_ul)
+                cl_ribbon2un = vedo.Ribbon(kspl_ext_D, kspl_ext_V, alpha=0.2, res=(220, 20))
+                if i == 0:
+                    rib_pts = cl_ribbon2un.points()
+                else:
+                    rib_pts = np.concatenate((rib_pts,cl_ribbon2un.points()))
+                cl_ribbon.append(cl_ribbon2un)
+            cl_ribbon = vedo.merge(cl_ribbon)
+            cl_ribbon.legend('HDStack').wireframe(True)
+    
+        # dict_shapes = addShapes2Dict (shapes = [cl_ribbon], dict_shapes = dict_shapes, radius = [[]])
+        # if clRib_type == 'extDV':
+        #     dict_kspl = addKSplines2Dict(kspls = [kspl_ext_D, kspl_ext, kspl_ext_V], info = ['','', ''], dict_kspl = dict_kspl)
+    
+        if plotshow:
+            text = self.parent_organ.user_organName+"\n\n >> Creating Extended Centreline ("+clRib_type+")"
+            txt = vedo.Text2D(text, c="k")
+    
+            elevation = 0#df_res.loc[file_num,'ang_Heart']
+            vp = vedo.Plotter(N=1, axes=8)
+            vp.show(self.mesh, linLine, linLineX, cl, kspl_ext, inf_ext_sphere, outf_ext_sphere, cl_ribbon, txt, at=0, azimuth = azimuth, elevation = elevation, interactive=1)
+
+        if clRib_type == 'HDStack':
+            return rib_pts, cl_ribbon
+        else:
+            return cl_ribbon, kspl_ext
+    
     def get_volume(self): 
         mesh_vol = self.mesh.volume()
         return mesh_vol
