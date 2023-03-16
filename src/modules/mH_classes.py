@@ -27,7 +27,7 @@ from scipy.interpolate import splprep, splev, interpn
 #%% ##### - Other Imports - ##################################################
 #from ...config import dict_gui
 from .mH_funcBasics import alert, ask4input, make_Paths, make_tuples, get_by_path, set_by_path
-from .mH_funcMeshes import unit_vector
+from .mH_funcMeshes import unit_vector, plot_organCLs
 
 alert_all=True
 heart_default=False
@@ -1181,13 +1181,17 @@ class Organ():
         else:
             return False  
                     
+    def get_orientation(self):
+        # Select the mesh to use to measure organ orientation
+        dict_cl = plot_organCLs(self)
+        q = ''
+        res = {}
+        extend_dir = ask4input(q, res, int)
+
     #Get all the set mH variables in __init__
     def get_notes(self):
         
         return self.info['user_organNotes']
-
-    def get_orientation(self):
-        return self.info['im_orientation']
 
     def get_custom_angle(self):
         return self.info['custom_angle']

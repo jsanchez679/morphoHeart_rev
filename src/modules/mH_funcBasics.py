@@ -7,7 +7,7 @@ Version: Dec 01, 2022
 '''
 #%% Imports 
 import os
-from pathlib import Path
+from pathlib import Path, PurePath
 from playsound import playsound
 # import json
 import numpy as np 
@@ -78,6 +78,8 @@ def ask4input(text:str, res:dict, type_response:type, keep=False):
     """
     alert('error_beep')
     exit_now = False
+    response = None
+
     while exit_now == False:
         res_text = '> '+text+' \n\t'
         res_len = len(res)
@@ -125,6 +127,7 @@ def ask4inputList(text, res, res_all=True):
 
     alert('error_beep')
     exit_now = False
+    obj_num = []
     while not exit_now:
         res_text = '> '+text+' \n\t'
         res_len = len(res)

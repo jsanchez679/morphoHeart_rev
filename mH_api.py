@@ -35,11 +35,13 @@ elif sys.platform == 'win32':
     dir_proj_res = Path('D:/Documents JSP/Dropbox/Dropbox_Juliana/PhD_Thesis/Data_ongoing/LS_ongoing/A_LS_Analysis/im_morphoHeart/')
     #dir_proj_res = Path('C://Users//pallo//Desktop//cosas juli//mh//project')
     
-partA = True
-partB = True
-partB_vmtk = True
+partA = False
+partB = False
+partB_vmtk = False
+partC_thk = False
 partC = True
-print('partA:',partA,'- partB:',partB,'- partB_vmtk:',partB_vmtk,'- partC:',partC)
+
+print('partA:',partA,'- partB:',partB,'- partB_vmtk:',partB_vmtk,'- partC_thk:',partC_thk, '- partC:',partC)
 
 user_projName = 'TestAll2'
 proj_name = user_projName
@@ -448,6 +450,7 @@ if partB_vmtk:
     
     # Get CL measurements
     fcMeshes.measure_centreline(organ, nPoints=nPoints)
+    fcMeshes.measure_orientation(organ)
     
     # Save organ
     organ.save_organ()
@@ -455,7 +458,7 @@ if partB_vmtk:
     fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
 #%% Part C - Measure
-if partC: 
+if partC_thk: 
     if not partA and not partB and not partB_vmtk: 
         # proj_name = proj_name
         folder_name = 'R_'+proj_name
@@ -465,6 +468,7 @@ if partC:
         organ = proj.load_organ(user_organName = organName2Load)
         fcMeshes.plot_all_organ(organ)
 
+    # 3D Thickness and Ballooning Heatmaps 
     plot = False
     fcMeshes.extractThickness(organ, color_map='turbo', plot=plot)
     fcMeshes.extractBallooning(organ, color_map='turbo', plot=plot)
@@ -484,31 +488,88 @@ if partC:
     fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
 #%%
+if partC: 
+    if not partA and not partB and not partB_vmtk and not partC_thk: 
+        # proj_name = proj_name
+        folder_name = 'R_'+proj_name
+        dir_proj = dir_proj_res / folder_name
+        proj = mHC.Project(name = proj_name, dir_proj = dir_proj)
+        # organName2Load = 'LS52_F02_V_SR_1029'
+        organ = proj.load_organ(user_organName = organName2Load)
+        fcMeshes.plot_all_organ(organ)
+
     # Get volume measurements
     fcMeshes.measure_volume(organ)
 
 #%%
+    # Select the mesh to use to measure organ orientation
+    # Select the direction to cut organ into sections using centreline
+    im_orient = organ.info['im_orientation']
+    cust_angle = organ.info['custom_angle']
+
+    organ.get_orientation()
+
+    q = ''
+    res = {}
+    extend_dir = fcBasics.ask4input(q, res, int)
+
+    # Click on the cube face that will be used to extende centreline
+    # Ask user if interested in using organ orientation? if ventral and cust_angle =0
+    # if so, create cube based on orientation
+
+    #-------
+    #Select direction of extended centreline
+    #Create multiple cubes with different orientations based in the cust_angle? 
+    # and with organ in centre? 
+    # Ask the user to select the face that will be used to extend centreline?
+    # Create a cube with orientation of heart using (tilted?)
+    #https://github.com/marcomusy/vedo/blob/master/examples/basic/color_mesh_cells2.py
+    from vedo import Mesh, Plotter, dataurl
+
+    def func(evt):
+        msh = evt.actor
+        if not msh:
+            return
+        pt = evt.picked3d
+        idcell = msh.closest_point(pt, return_cell_id=True)
+        m.cellcolors[idcell] = [255,0,0,200] #RGBA 
+
+    m = Mesh(dataurl + "panther.stl").c("blue7")
+    m.force_opaque().linewidth(1)
+
+    plt = Plotter()
+    plt.add_callback("mouse click", func)
+    plt.show(m, __doc__, axes=1).close()
+
+    #https://github.com/marcomusy/vedo/blob/master/examples/basic/mousehighlight.py
+    #-------
+    # return face direction ans use that as input in get_CLRibbon?
+
+
+
     # Select the centreline to use to divide organ into sections
-    nPoints = 300
-    organ_info = organ.mH_settings['general_info']
-    dict_cl = {}; obj = []; txt = []; n = 0
-    for item in organ.parent_project.mH_param2meas: 
-        if 'centreline' in item: 
-            n += 1
-            ch = item[0]; cont = item[1]; segm = item[2]
-            name = organ_info[ch]['user_chName']+'-'+cont+' ('+ch+'-'+cont+'-'+segm+')'
-            dict_cl[n] = name
-            mesh_o = organ.obj_meshes[ch+'_'+cont]
-            cl_o = mesh_o.get_centreline(nPoints, 'indigo')
-            obj.append((mesh_o.mesh, cl_o))
-            if n-1==0:
-                txt.append((n-1, organ.user_organName+'\n->'+name))
-            else:  
-                txt.append((n-1, '\n->'+name))
+    # nPoints = 300
+    # organ_info = organ.mH_settings['general_info']
+    # dict_cl = {}; obj = []; txt = []; n = 0
+    # for item in organ.parent_project.mH_param2meas: 
+    #     if 'centreline' in item: 
+    #         n += 1
+    #         ch = item[0]; cont = item[1]; segm = item[2]
+    #         name = organ_info[ch]['user_chName']+'-'+cont+' ('+ch+'-'+cont+'-'+segm+')'
+    #         dict_cl[n] = name
+    #         mesh_o = organ.obj_meshes[ch+'_'+cont]
+    #         cl_o = mesh_o.get_centreline(nPoints, 'indigo')
+    #         obj.append((mesh_o.mesh, cl_o))
+    #         if n-1==0:
+    #             txt.append((n-1, organ.user_organName+'\n->'+name))
+    #         else:  
+    #             txt.append((n-1, '\n->'+name))
                 
-    fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
-    text ='Select the centreline  you would like to use to divide the organ tissues into sections'
-    q_cl = fcBasics.ask4inputList(text, dict_cl, res_all=False)
+    # fcMeshes.plot_grid(obj=obj, txt=txt, axes=5)
+    dict_cl = fcMeshes.plot_organCLs(organ)
+
+    q ='Select the centreline  you would like to use to divide the organ tissues into sections'
+    q_cl = fcBasics.ask4inputList(q, dict_cl, res_all=False)
     cl_sel = dict_cl[q_cl[0]].split(' (')[1]
     ch_sel = cl_sel.split('-')[0]
     cont_sel = cl_sel.split('-')[1]
@@ -516,8 +577,10 @@ if partC:
     cl_mesh = organ.obj_meshes[ch_sel+'_'+cont_sel]
     nRes = 601
     plotshow=True
-    cl_mesh.get_clRibbon(nPoints,nRes, clRib_type='HDStack',plotshow=plotshow)
+    cl_ribbon, kspl_ext = cl_mesh.get_clRibbon(nPoints,nRes, clRib_type='HDStack',plotshow=plotshow)
     
+    fcMeshes.get_cube_clRibbon(organ, cl_mesh, cl_ribbon)
+
     
 
 #%% To do: 
@@ -536,6 +599,7 @@ if partC:
     # save the stacks for the disks?
     # save the stacks for the L/R
     # how to call l/r 
+    #add to workflow and settings orientation, angle meas?, chamber dimensions
     
     
 #%%

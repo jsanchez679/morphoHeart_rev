@@ -21,7 +21,9 @@ conda install spyder
 raise QtModuleNotInstalledError( qtpy.QtModuleNotInstalledError: The QtWebEngineWidgets module was not found. It must be installed separately as PyQtWebEngine.
 conda install qt
 conda uninstall spyder
-
+(MAC) pip install wrapt
+(MAC) pip install AppKit
+(MAC) pip install -U PyObjC
 
 to check?
 -seaborn==0.11.0

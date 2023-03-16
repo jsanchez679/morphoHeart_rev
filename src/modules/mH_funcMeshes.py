@@ -8,7 +8,7 @@ Version: Dec 01, 2022
 #%% ##### - Imports - ########################################################
 import os
 from datetime import datetime
-from pathlib import Path, WindowsPath
+from pathlib import Path, WindowsPath, PurePath
 import vedo as vedo
 import numpy as np
 import math
@@ -21,6 +21,8 @@ from vmtk import pypes, vmtkscripts
 from scipy.interpolate import splprep, splev, interpn
 from time import perf_counter
 import copy
+from typing import Union
+from skimage import measure
 
 path_fcMeshes = os.path.abspath(__file__)
 path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
@@ -45,7 +47,7 @@ class NumpyArrayEncoder(json.JSONEncoder):
             return float(obj)
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
-        elif isinstance(obj, WindowsPath):
+        elif isinstance(obj, Union(WindowsPath, PurePath)):
             return str(obj)
         else:
             return super(NumpyArrayEncoder, self).default(obj)
@@ -1032,6 +1034,179 @@ def getDistance2(mesh_to, mesh_from, from_name, color_map='turbo'):
     mesh_toB.legend(mesh_name+suffix)
     
     return mesh_toB, distance, min_max
+
+#‰‰ ƒunc - plotCLs
+def plot_organCLs(organ):
+    organ_info = organ.mH_settings['general_info']
+    dict_cl = {}; obj = []; txt = []; n = 0
+    for item in organ.parent_project.mH_param2meas: 
+        if 'centreline' in item: 
+            n += 1
+            ch = item[0]; cont = item[1]; segm = item[2]
+            name = organ_info[ch]['user_chName']+'-'+cont+' ('+ch+'-'+cont+'-'+segm+')'
+            dict_cl[n] = name
+            mesh_o = organ.obj_meshes[ch+'_'+cont]
+            cl_o = mesh_o.get_centreline(color = 'indigo')
+            obj.append((mesh_o.mesh, cl_o))
+            if n-1==0:
+                txt.append((n-1, organ.user_organName+'\n->'+name))
+            else:  
+                txt.append((n-1, '\n->'+name))
+                
+    plot_grid(obj=obj, txt=txt, axes=5)
+
+    return dict_cl
+
+#%% func - get_cube_clRibbon
+def get_cube_clRibbon(organ, cl_mesh, cl_ribbon, plotshow=True):
+    res = organ.meshes[mesh.name]['resolution'] #cl_mesh.resolution - resolution?
+
+    cl_ribbonR = cl_ribbon.clone().x(res[0])
+    # cl_ribbonL = cl_ribbon.clone().x(-res[0])
+    cl_ribbonF = cl_ribbon.clone().y(res[1])
+    # cl_ribbonB = cl_ribbon.clone().y(-res[1])
+    cl_ribbonT = cl_ribbon.clone().z(res[1])
+    # cl_ribbonD = cl_ribbon.clone().z(-res[1])
+    cl_ribbonS = [cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT]
+    cl_ribbonAll = vedo.merge(cl_ribbonS)
+
+    if plotshow: 
+        vp = vedo.Plotter(N=1, axes = 1)
+        vp.show(cl_mesh, cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT, at=0, interactive = True)
+
+    #Load stack shape
+    [[xdim, ydim, zdim]] = fcBasics.loadNPY(filename, ['stackShape'], dir_txtNnpy, print_txt = False)
+
+    # Rotate the points that make up the HR disc, to convert them to a stack
+    resolution = res
+    if 'CJ' not in filename: 
+        axis = [0,0,1]
+    else: 
+        axis = [1,0,0]
+
+    s3_rib = np.zeros((xdim, ydim, zdim+2))
+    s3_filledCube = np.zeros((xdim, ydim, zdim+2))
+    s3_filledCube[1:xdim-1,1:ydim-1,1:zdim+1] = 1
+
+    # Rotate the points in all ribbons and fit into stack size 
+    for cl_rib in cl_ribbonS:
+        rib_pts = cl_rib.points()
+        rib_points_rot = np.zeros_like(rib_pts)
+
+        for i, pt in enumerate(rib_pts):
+            rib_points_rot[i] = (np.dot(rotation_matrix(axis = axis, theta = np.radians(90)),pt))
+
+        rib_pix = np.transpose(np.asarray([rib_points_rot[:,i]//resolution[i] for i in range(len(resolution))]))
+        rib_pix = rib_pix.astype(int)
+        rib_pix = np.unique(rib_pix, axis =0)
+
+        rib_pix_out = rib_pix.copy()
+
+        index_out = []
+        # Clean rib_pix if out of stack shape
+        for index, pt in enumerate(rib_pix):
+            if pt[0] > xdim-2 or pt[0] < 0:
+                delete = True
+            elif pt[1] > ydim-2 or pt[1] < 0:
+                delete = True
+            elif pt[2] > zdim+2-1 or pt[2] < 0:
+                delete = True
+            else: 
+                delete = False
+            
+            if delete:
+                # print(pt)
+                index_out.append(index)
+
+        rib_pix_out = np.delete(rib_pix_out, index_out, axis = 0)
+
+        # Create mask of ring
+        s3_rib[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 1
+        # Create filled cube just to one side of cl
+        s3_filledCube[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 0
+    
+    # Create volume of extended centreline mask
+    # test_rib = createExtLayerMesh(filename, s3_rib, resolution, 'ribbon', 'ribbon', extractLargest = False, plotshow = False)
+    test_rib = s3_to_mesh(s3_rib, res=res, name='Extended CL', color='darkmagenta')
+
+    # For future development, create 4 different options of cuts and ask user to selec which one to use? 
+    # Maybe just if it is spaw or if user is not happy with the default one selected?
+    happy = False; nn = 0; repeat = False
+    if not happy and nn < 2: 
+
+        if not spaw_analysis: 
+            if 'V' in filename:
+                for xpos in range(0,xdim):
+                    for zpos in range(0,zdim+2): 
+                        yline = s3_filledCube[xpos,0:ydim,zpos]
+                        index_y = np.where(yline == 0)[0]
+                        index_y = list(index_y)
+                        index_y.pop(0);index_y.pop(-1)
+                        if len(index_y) > 0:
+                            if not repeat: 
+                                s3_filledCube[xpos,index_y[0]:ydim,zpos] = 0
+                            else: # repeat: 
+                                s3_filledCube[xpos,0:index_y[0],zpos] = 0
+                print('AV')
+            else: 
+                for xpos in range(0,xdim):
+                    for ypos in range(0,ydim): 
+                        zline = s3_filledCube[xpos,ypos,0:zdim+2]
+                        index_z = np.where(zline == 0)[0]
+                        index_z = list(index_z)
+                        index_z.pop(0);index_z.pop(-1)
+                        if len(index_z) > 0:
+                            if not repeat: 
+                                s3_filledCube[xpos,ypos,index_z[0]:zdim+2] = 0
+                            else: 
+                                s3_filledCube[xpos,ypos,0:index_z[0]] = 0
+                print('AD')
+        else: 
+            for ypos in range(0,ydim):
+                for zpos in range(0,zdim+2): 
+                    xline = s3_filledCube[0:xdim,ypos,zpos]
+                    index_x = np.where(xline == 0)[0]
+                    index_x = list(index_x)
+                    index_x.pop(0);index_x.pop(-1)
+                    if len(index_x) > 0:#0
+                        if not repeat:
+                            s3_filledCube[index_x[-1]:xdim,ypos,zpos] = 0#[1]
+                        else:
+                            s3_filledCube[0:index_x[1],ypos,zpos] = 0#[0]
+            print('B')
+        
+        alert('clown')
+    
+        #Create volume of filled side of extended centreline mask
+        #test_cube = fcMeshes.createExtLayerMesh(filename, s3_filledCube, resolution, 'cube', 'cube', extractLargest = True, plotshow = False)
+        test_cube = s3_to_mesh(s3_filledCube, res=res, name='Filled CL side', color='darkblue')
+        test_cube.alpha(0.05)
+        
+        if plotshow: 
+            vp = vedo.Plotter(N=3, axes = 1)
+            vp.show(test_cube, test_rib, at=0)
+            vp.show(test_cube, at = 1)
+            vp.show(test_rib, at = 2, interactive = True)
+
+        happy = True#fcBasics.ask4input('>> Happy with the ribbon cube? [0]:no, [1]: yes, continue! >>: ',bool)
+        if not happy: 
+            repeat = True
+        nn += 1
+        
+    return s3_filledCube, cl_ribbonAll, happy
+
+#%% func - s3_to_mesh
+def s3_to_mesh(s3, res, name:str, color='cyan'):
+
+    verts, faces, _, _ = measure.marching_cubes(s3, spacing=res, method='lewiner')
+    alert('frog')
+    mesh = vedo.Mesh([verts, faces])
+    mesh.rotateX(-90)
+    mesh = mesh.extract_largest_region()
+    alert('clown')
+    mesh.color(color).alpha(1).wireframe().legend(name)
+
+    return mesh
 
 #%% func - sphs_in_spline
 def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
