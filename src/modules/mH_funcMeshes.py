@@ -67,7 +67,7 @@ dict_gui = {'alert_all': alert_all,
 #%% func - clean_intCh
 def clean_intCh(organ, plot=False):
     # Clean channels
-    ch_ext, ch_int = organ.get_extIntChs()
+    ch_ext, ch_int = organ.get_ext_int_chs()
     
     #Check workflow status
     workflow = organ.workflow
@@ -106,7 +106,7 @@ def clean_intCh(organ, plot=False):
             obj2.append(mesh.mesh)
         
         txt = [(0, organ.user_organName + ' - Original'), (3,'Cleaned Meshes')]
-        plot_grid(obj=obj1+obj2, txt=txt, axes=5)
+        plot_grid(obj=obj1+obj2, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
   
     else: 
         meshes_out = []
@@ -142,7 +142,7 @@ def s32Meshes(organ, gui_keep_largest:dict, rotateZ_90=True):
         for mesh in meshes: 
             obj.append((mesh.mesh))
             
-    plot_grid(obj=obj, txt=txt, axes=5)
+    plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
 
 #%% func - select_meshes2trim
 def select_meshes2trim(organ):
@@ -159,7 +159,7 @@ def select_meshes2trim(organ):
     # obj = [(msh1_tiss.mesh),(msh2_tiss.mesh),(msh1_tiss.mesh, msh2_tiss.mesh)]
     text = organ.user_organName+"\n\nTake a closer look at both meshes and decide from which layer to cut\n the inflow and outflow. \nClose the window when done"
     txt = [(0, text)]
-    plot_grid(obj=obj, txt=txt, axes=5, lg_pos='bottom-right')
+    plot_grid(obj=obj, txt=txt, axes=5, lg_pos='bottom-right', sc_side=max(organ.get_maj_bounds()))
     
     # return meshes
 
@@ -293,7 +293,7 @@ def trim_top_bottom_S3s(organ, cuts):
                 obj.append(mesh.mesh)
                 
         txt = [(0, organ.user_organName  + ' - Meshes after trimming')]
-        plot_grid(obj=obj, txt=txt, axes=5)
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
 
 
 #%% func - extractNSCh
@@ -310,13 +310,13 @@ def extractNSCh(organ, plot):
        
         txt = [(0, organ.user_organName  + ' - Extracted ' + im_ns.user_chName)]
         obj = [(mshNS_ext.mesh),(mshNS_int.mesh),(mshNS_tiss.mesh)]
-        plot_grid(obj=obj, txt=txt, axes=5)
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
         
         txt = [(0, organ.user_organName  + ' - Final reconstructed meshes')]
         obj = [organ.obj_meshes[key].mesh for key in organ.obj_meshes.keys() if 'tiss' in key]
         obj.append(tuple(obj))
         # obj = [(msh1_tiss.mesh),(msh2_tiss.mesh),(mshNS_tiss.mesh),(msh1_tiss.mesh, msh2_tiss.mesh, mshNS_tiss.mesh)]
-        plot_grid(obj=obj, txt=txt, axes=5)
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
     
     else: 
         print('>> No layer between segments is being created as it was not setup by user!')
@@ -373,7 +373,7 @@ def cutMeshes4CL(organ, tol, plot=True, printshow=True):
             
             # Get organ settings
             filename = organ.user_organName
-            ch_ext, _ = organ.get_extIntChs()
+            ch_ext, _ = organ.get_ext_int_chs()
             ext = 'stl'; directory = organ.info['dirs']['centreline']
             
             # Get the meshes from which the centreline needs to be extracted
@@ -460,7 +460,7 @@ def cutMeshes4CL(organ, tol, plot=True, printshow=True):
                     if plot: 
                         txt = [(0, organ.user_organName  + ' - Resulting mesh after cutting')]
                         obj = [(msh_new, kspl, sph_centroid)]
-                        plot_grid(obj=obj, txt=txt, axes=5)
+                        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
                     
                     sm_msh = msh_new.clone()
                     
@@ -489,7 +489,7 @@ def cutMeshes4CL(organ, tol, plot=True, printshow=True):
             if plot: 
                 txt = [(0, organ.user_organName  + ' - Resulting meshes after cutting')]
                 obj = [(mesh) for mesh in m4clf]
-                plot_grid(obj=obj, txt=txt, axes=5)
+                plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
                 
             organ.update_workflow(process = process, update = 'DONE')
             organ.update_workflow(process =  ['MeshesProc','C-Centreline','Status'], update = 'Initialised')
@@ -770,7 +770,7 @@ def createCLs(organ, nPoints = 300):
                 else: 
                     txt.append((num, opt))
             
-            plot_grid(obj=obj, txt=txt, axes=5)
+            plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
             
             q_select = 'Select the preferred centreline for processing this heart'
             res_select = {1: 'Option 1', 2: 'Option 2', 3: 'Option 3', 4: 'Option 4', 5:'Option 5', 6:'Option 6'}
@@ -789,7 +789,7 @@ def createCLs(organ, nPoints = 300):
             cl_final = organ.obj_meshes[ch+'_'+cont].get_centreline(nPoints=nPoints)
             obj_final = [(mesh.alpha(0.01), cl_final)]
             txt_final = [(0, organ.user_organName +' - Final Centreline')]
-            plot_grid(obj=obj_final, txt=txt_final, axes=5)
+            plot_grid(obj=obj_final, txt=txt_final, axes=5, sc_side=max(organ.get_maj_bounds()))
             
             # Update organ workflow
             proc_wft = ['MeshesProc', 'C-Centreline', 'buildCL', ch, cont, 'Status']
@@ -890,7 +890,7 @@ def extractBallooning(organ, color_map, plot=False):
             if plot: 
                 obj = [(mesh2ball.mesh, cl4ball, sph4ball), (mesh_ball, cl4ball, sph4ball)]
                 txt = [(0, organ.user_organName +' - Ballooning Setup')]
-                plot_grid(obj=obj, txt=txt, axes=5)
+                plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
             
             proc_wft = ['MeshesProc','D-Ballooning',ch, cont, 'Status']
             organ.update_workflow(process = proc_wft, update = 'DONE')
@@ -973,7 +973,7 @@ def getThickness(organ, n_type, thck_dict, color_map, plot=False):
         if plot: 
             obj = [(mesh_from, mesh_to.mesh), (mesh_tiss.mesh), (mesh_thck)]
             txt = [(0, organ.user_organName +' - Thickness Setup')]
-            plot_grid(obj=obj, txt=txt, axes=5)
+            plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
         
         proc_wft = ['MeshesProc', thck_dict['method'], ch, cont, 'Status']
         organ.update_workflow(process = proc_wft, update = 'DONE')
@@ -1034,28 +1034,6 @@ def getDistance2(mesh_to, mesh_from, from_name, color_map='turbo'):
     mesh_toB.legend(mesh_name+suffix)
     
     return mesh_toB, distance, min_max
-
-#‰‰ ƒunc - plotCLs
-def plot_organCLs(organ):
-    organ_info = organ.mH_settings['general_info']
-    dict_cl = {}; obj = []; txt = []; n = 0
-    for item in organ.parent_project.mH_param2meas: 
-        if 'centreline' in item: 
-            n += 1
-            ch = item[0]; cont = item[1]; segm = item[2]
-            name = organ_info[ch]['user_chName']+'-'+cont+' ('+ch+'-'+cont+'-'+segm+')'
-            dict_cl[n] = name
-            mesh_o = organ.obj_meshes[ch+'_'+cont]
-            cl_o = mesh_o.get_centreline(color = 'indigo')
-            obj.append((mesh_o.mesh, cl_o))
-            if n-1==0:
-                txt.append((n-1, organ.user_organName+'\n->'+name))
-            else:  
-                txt.append((n-1, '\n->'+name))
-                
-    plot_grid(obj=obj, txt=txt, axes=5)
-
-    return dict_cl
 
 #%% func - get_cube_clRibbon
 def get_cube_clRibbon(organ, cl_mesh, cl_ribbon, plotshow=True):
@@ -1455,11 +1433,51 @@ def measure_volume(organ):
             wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'volume']
             organ.update_workflow(process=wf_proc, update='DONE')
             
+#%% func - measure_area 
+def measure_area(organ):
+    area_names = [item for item in organ.parent_project.mH_param2meas if 'surf_area' in item]
+    for name in area_names: 
+        print(name)
+        ch = name[0]; cont = name[1]; segm= name[2]
+        if segm == 'whole': 
+            area = organ.obj_meshes[ch+'_'+cont].get_area()
+            process = ['measure', ch, cont, segm, 'surf_area']
+            organ.update_settings(process = process, 
+                                  update = area, mH='mH')
+            wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'surf_area']
+            organ.update_workflow(process=wf_proc, update='DONE')
+            
+#%% func - find_angle_btw_pts
+def find_angle_btw_pts(pts1, pts2):
+    """
+    Function that returns the angle between two vectors on the input-plane
+    """
+        
+    mag_v1 = findDist(pts1[0],pts1[1])
+    mag_v2 = findDist(pts2[0],pts2[1])
 
+    vect1 = pts1[1]-pts1[0]
+    vect2 = pts2[1]-pts2[0]
+
+    dotProd = np.dot(vect1,vect2)
+
+    angle = math.degrees(math.acos(dotProd/(mag_v1*mag_v2)))
+
+    return angle
+
+#%% func - findDist
+def findDist(pt1, pt2):
+    """
+    Function that returns the distance between two points given as input
+    """
+    squared_dist = np.sum((pt1-pt2)**2, axis=0)
+    dist = np.sqrt(squared_dist)
+
+    return dist
 
 #%% - Plotting functions
 #%% func - plot_grid
-def plot_grid(obj:list, txt=[], axes=1, zoom=2, lg_pos='top-left',sc_side=350):
+def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350):
     
     # Load logo
     path_logo = path_mHImages / 'logo-07.jpg'
@@ -1527,7 +1545,7 @@ def plot_all_organ(organ):
         # print(organ.obj_meshes[mesh].mesh)
         obj.append((organ.obj_meshes[mesh].mesh))
     
-    plot_grid(obj=obj, txt=txt, axes=5)
+    plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
 
 #%% func - plot_meas_meshes
 def plot_meas_meshes(organ, meas:list, color_map = 'turbo', alpha=1):
@@ -1551,8 +1569,30 @@ def plot_meas_meshes(organ, meas:list, color_map = 'turbo', alpha=1):
         alert('error_beep')
     else: 
         txt = [(0, organ.user_organName)]
-        plot_grid(obj, txt, axes=5)
+        plot_grid(obj, txt, axes=5, sc_side=max(organ.get_maj_bounds()))
         
+#%% ƒunc - plot_organCLs
+def plot_organCLs(organ, axes=5):
+    organ_info = organ.mH_settings['general_info']
+    dict_cl = {}; obj = []; txt = []; n = 0
+    for item in organ.parent_project.mH_param2meas: 
+        if 'centreline' in item: 
+            n += 1
+            ch = item[0]; cont = item[1]; segm = item[2]
+            name = organ_info[ch]['user_chName']+'-'+cont+' ('+ch+'-'+cont+'-'+segm+')'
+            dict_cl[n] = name
+            mesh_o = organ.obj_meshes[ch+'_'+cont]
+            cl_o = mesh_o.get_centreline(color = 'indigo')
+            obj.append((mesh_o.mesh, cl_o))
+            if n-1==0:
+                txt.append((n-1, organ.user_organName+'\n-> '+name))
+            else:  
+                txt.append((n-1, '\n-> '+name))
+                
+    plot_grid(obj=obj, txt=txt, axes=axes, sc_side=max(organ.get_maj_bounds()))
+
+    return dict_cl
+
 #%% - Plane handling functions 
 #%% func - getPlane
 def getPlane(filename, txt:str, meshes:list, def_pl = None, 

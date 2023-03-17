@@ -27,7 +27,7 @@ from scipy.interpolate import splprep, splev, interpn
 #%% ##### - Other Imports - ##################################################
 #from ...config import dict_gui
 from .mH_funcBasics import alert, ask4input, make_Paths, make_tuples, get_by_path, set_by_path
-from .mH_funcMeshes import unit_vector, plot_organCLs
+from .mH_funcMeshes import unit_vector, plot_organCLs, find_angle_btw_pts
 
 alert_all=True
 heart_default=False
@@ -1163,7 +1163,7 @@ class Organ():
             settings = self.mC_settings
         set_by_path(settings, process, update)
     
-    def get_extIntChs(self): 
+    def get_ext_int_chs(self): 
         chs = list(self.imChannels.keys())
         ch_ext = []; ch_int = []
         if len(chs)>1:# and len(chs)<3:
@@ -1181,13 +1181,55 @@ class Organ():
         else:
             return False  
                     
-    def get_orientation(self):
+    def get_orientation(self, plane:str, ref_vect=np.array([[0,1,0],[0,0,0]])):
         # Select the mesh to use to measure organ orientation
-        dict_cl = plot_organCLs(self)
-        q = ''
-        res = {}
-        extend_dir = ask4input(q, res, int)
 
+        
+        dict_cl = plot_organCLs(self)
+        q = 'Select the mesh-centreline combination you want to use to measure organ orientation:'
+        extend_dir = ask4input(q, dict_cl, int)
+        
+        ch_cont_cl = dict_cl[extend_dir].split(' (')[1].split('-')
+        ch = ch_cont_cl[0]
+        cont = ch_cont_cl[1]
+        
+        cl_mesh = self.obj_meshes[ch+'_'+cont]
+        linLine = cl_mesh.get_linLine()
+        pts = linLine.points()
+        print('pts:', pts)
+        
+        if plane=='XY':
+            coord = 2
+        elif plane=='YZ':
+            coord = 0
+        elif plane=='XZ':
+            coord = 1
+            
+        print('ref_vect:', ref_vect)
+        for pt in pts: 
+            pt[coord] = 0
+        
+        print('pts:', pts)
+        angle = find_angle_btw_pts(pts, ref_vect)
+        self.mH_settings['organ_orientation'] = {'plane': plane, 
+                                                 'ref_vect': ref_vect,
+                                                 'orient_vect': pts,
+                                                 'angle_deg': angle}
+
+    def get_maj_bounds(self):
+        x_b = 0; y_b = 0; z_b = 0
+        for mesh_o in self.obj_meshes:
+            m_mesh = self.obj_meshes[mesh_o].mesh
+            x1,x2,y1,y2,z1,z2 = m_mesh.bounds()
+            if x2-x1 > x_b:
+                x_b = x2-x1
+            if y2-y1 > y_b:
+                y_b = y2-y1
+            if z2-z1 > z_b:
+                z_b = z2-z1   
+                
+        return [x_b, y_b, z_b]
+        
     #Get all the set mH variables in __init__
     def get_notes(self):
         
@@ -2560,7 +2602,17 @@ class Mesh_mH():
         except: 
             print('>> No centreline has been created for this mesh - ', self.name)
             return None
-    
+        
+    def get_linLine(self, color='aqua'):
+        cl_final =  self.get_centreline()
+        cl_points = cl_final.points()
+        cl_pt0 = cl_points[0]
+        cl_ptm1 = cl_points[-1]
+         
+        #Create linear line
+        linLine = vedo.Line(cl_pt0, cl_ptm1, c=color, lw=5)
+        
+        return linLine
 
     def get_clRibbon(self, nPoints, nRes, clRib_type, plotshow):
             # filename, file_num, df_res, kspl_CL2use, linLine, mesh,
@@ -2677,16 +2729,11 @@ class Mesh_mH():
         mesh_vol = self.mesh.volume()
         return mesh_vol
         
-    def get_linLine(self, nPoints, color='aqua'):
-        cl_final =  self.get_centreline(nPoints=nPoints)
-        cl_points = cl_final.points()
-        cl_pt0 = cl_points[0]
-        cl_ptm1 = cl_points[-1]
-         
-        #Create linear line
-        linLine = vedo.Line(cl_pt0, cl_ptm1, c=color, lw=5)
-        
-        return linLine
+    def get_area(self): 
+        mesh_area = self.mesh.area()
+        return mesh_area
+    
+
     
 #%%
 print('morphoHeart! - Loaded Module Classes')

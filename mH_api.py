@@ -457,7 +457,7 @@ if partB_vmtk:
     # Load project, organ
     fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
-#%% Part C - Measure
+#%% Part C-thkness - Measure
 if partC_thk: 
     if not partA and not partB and not partB_vmtk: 
         # proj_name = proj_name
@@ -500,19 +500,71 @@ if partC:
 
     # Get volume measurements
     fcMeshes.measure_volume(organ)
-
+    fcMeshes.measure_area(organ)
+    
+    
+    
 #%%
     # Select the mesh to use to measure organ orientation
     # Select the direction to cut organ into sections using centreline
+    import numpy as np
+    import vedo as vedo
+    
+    plane = 'YZ'
+    organ.get_orientation(plane='YZ',ref_vect=np.array([[0,1,0],[0,0,0]]))
+    angle = organ.mH_settings['organ_orientation']['angle_deg']
+    
+    ext_ch, _ = organ.get_ext_int_chs()
+    mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_ext']
+    pos = mesh_ext.mesh.center_of_mass()
+    sph = vedo.Sphere(pos=pos,r=2,c='black')
+    pos_rot = fcMeshes.newNormal3DRot(pos, [angle], [0], [0])
+    sph_rot = vedo.Sphere(pos=pos_rot,r=2,c='tomato')
+    side = max(organ.get_maj_bounds())
+    
+    orient_cube = vedo.Cube(pos=pos, side=side, c='cyan', alpha=0.05)
+    orient_cube.force_opaque().linewidth(1)
+    if plane=='XY':
+        orient_cube.rotate_z(angle, rad=False)
+        sph.rotate_z(angle, rad=False)
+    elif plane=='YZ':
+        orient_cube.rotate_x(angle, rad=False)
+        sph.rotate_x(angle, rad=False)
+    elif plane=='XZ':
+        orient_cube.rotate_y(angle, rad=False)
+        sph.rotate_y(angle, rad=False)
+        
+    def func(evt):
+        msh = evt.actor
+        if not msh:
+            return
+        pt = evt.picked3d
+        idcell = msh.closest_point(pt, return_cell_id=True)
+        print('idcell:', idcell)
+        orient_cube.cellcolors[idcell] = [255,0,0,200] #RGBA 
+        center = orient_cube.cell_centers()[idcell]
+        cells = orient_cube.cells()[idcell]
+        points = []
+        for cell in cells: 
+            point = orient_cube.points()[cell]
+            points.append(point)
+        print('orient_cube.cell_centers[idcell]',center)
+        print('orient_cube.cell[idcell]',cells)
+        print('orient_cube.points[cells]', points)
+        
+        plane = vedo.fit_plane(points, signed=True)
+        print('normal:',plane.normal, 'center:',plane.center)
+        
+    vp = vedo.Plotter(N=1,axes=8)
+    vp.show(mesh_ext.mesh, orient_cube, sph, sph_rot, at=0, interactive=True)
     im_orient = organ.info['im_orientation']
     cust_angle = organ.info['custom_angle']
-
-    organ.get_orientation()
-
-    q = ''
-    res = {}
-    extend_dir = fcBasics.ask4input(q, res, int)
-
+    
+    plt = vedo.Plotter()
+    plt.add_callback("mouse click", func)
+    plt.show(mesh_ext.mesh, orient_cube,__doc__, axes=1, interactive=True)
+    
+    
     # Click on the cube face that will be used to extende centreline
     # Ask user if interested in using organ orientation? if ventral and cust_angle =0
     # if so, create cube based on orientation
@@ -540,6 +592,41 @@ if partC:
     plt = Plotter()
     plt.add_callback("mouse click", func)
     plt.show(m, __doc__, axes=1).close()
+    
+    from vedo import Mesh, Plotter, dataurl, Cube, fit_plane
+
+    def func(evt):
+        msh = evt.actor
+        if not msh:
+            return
+        pt = evt.picked3d
+        idcell = msh.closest_point(pt, return_cell_id=True)
+        print('idcell:', idcell)
+        m.cellcolors[idcell] = [255,0,0,200] #RGBA 
+        center = m.cell_centers()[idcell]
+        cells = m.cells()[idcell]
+        points = []
+        for cell in cells: 
+            point = m.points()[cell]
+            points.append(point)
+        print('m.cell_centers[idcell]',center)
+        print('m.cell[idcell]',cells)
+        print('m.points[cells]', points)
+        
+        plane = fit_plane(points, signed=True)
+        print('normal:',plane.normal, 'center:',plane.center)
+        
+        
+
+    # m = Mesh(dataurl + "panther.stl").c("blue7")
+    m = Cube(pos=(0, 0, 0), side=1, c='g4', alpha=1)
+    m.force_opaque().linewidth(1)
+
+    plt = Plotter()
+    plt.add_callback("mouse click", func)
+    plt.show(m, __doc__, axes=1, interactive=True)
+    
+    
 
     #https://github.com/marcomusy/vedo/blob/master/examples/basic/mousehighlight.py
     #-------
