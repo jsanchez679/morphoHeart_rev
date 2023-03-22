@@ -1034,33 +1034,163 @@ def getDistance2(mesh_to, mesh_from, from_name, color_map='turbo'):
     mesh_toB.legend(mesh_name+suffix)
     
     return mesh_toB, distance, min_max
+    
+#%% func - get_organ_ribbon
+def get_organ_ribbon(organ, nRes, nPoints, clRib_type): 
+    
+    im_orient = organ.info['im_orientation']
+    cust_angle = organ.info['custom_angle']
+    rotateY = False
+    if im_orient != 'ventral' and cust_angle != 0:
+        rotateY = True
 
+    angle = organ.mH_settings['organ_orientation']['angle_deg']
+    if angle != 0: 
+        rotate = True
+    
+    # Find the external mesh to demonstrate the sections cut using extended centreline ribbon
+    sect_names = [item for item in organ.parent_project.mH_param2meas if 'sect1' in item]
+    ext_ch, _ = organ.get_ext_int_chs()
+    # Check if that mesh is going to be cut into sections
+    if any(ext_ch.channel_no in flag for (flag,_,_,_) in sect_names):
+        mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_tiss']
+    else: 
+        mesh_ext = organ.obj_meshes[sect_names[0][0]+'_'+sect_names[0][1]]
+    
+    pos = mesh_ext.mesh.center_of_mass()
+    sph = vedo.Sphere(pos=pos,r=2,c='black')
+    side = max(organ.get_maj_bounds())
+    orient_cube = vedo.Cube(pos=pos, side=side, c='blue7')#[90,156,254,255]
+    orient_cube.linewidth(1).force_opaque()
+    
+    plane = organ.mH_settings['organ_orientation']['plane']
+    if rotate: 
+        pos_rot = newNormal3DRot(pos, [angle], [0], [0])
+        sph_rot = vedo.Sphere(pos=pos_rot,r=2,c='tomato')
+        if plane=='XY':
+            orient_cube.rotate_z(angle, rad=False)
+            sph.rotate_z(angle, rad=False)
+        elif plane=='YZ':
+            orient_cube.rotate_x(angle, rad=False)
+            sph.rotate_x(angle, rad=False)
+        elif plane=='XZ':
+            orient_cube.rotate_y(angle, rad=False)
+            sph.rotate_y(angle, rad=False)
+    
+    if rotateY: 
+        orient_cube.rotate_y(cust_angle, rad=False)
+        sph.rotate_z(cust_angle, rad=False)
+    
+    pos = mesh_ext.mesh.center_of_mass()
+    orient_cube.pos(pos)
+    sph_COM = vedo.Sphere(pos=pos,r=5,c='gold')
+    
+    #% Mesh centreline
+    # Select the centreline you want to use to cut organ into sides
+    dict_cl = plot_organCLs(organ)
+    q = 'Select the centreline you want to use to cut organ into sections:'
+    select = ask4input(q, dict_cl, int)
+    
+    ch_cont_cl = dict_cl[select].split(' (')[1].split('-')
+    ch = ch_cont_cl[0]
+    cont = ch_cont_cl[1]
+    mesh_cl = organ.obj_meshes[ch+'_'+cont]
+
+    orient_cube_clear = orient_cube.clone().alpha(0.5)
+    
+    def select_cube_face(evt):
+        orient_cube = evt.actor
+        if not orient_cube:
+            return
+        pt = evt.picked3d
+        idcell = orient_cube.closest_point(pt, return_cell_id=True)
+        print('You clicked (idcell):', idcell)
+        if set(orient_cube.cellcolors[idcell]) == set([90,156,254,255]):
+            orient_cube.cellcolors[idcell] = [255,0,0,200] #RGBA 
+            for cell_no in range(len(orient_cube.cells())):
+                # print(cell_no)
+                if cell_no != idcell: 
+                    orient_cube.cellcolors[cell_no] = [90,156,254,255] #RGBA 
+                    
+        elif set(orient_cube.cellcolors[idcell]) == set([255,0,0,200]):
+            orient_cube.cellcolors[idcell] = [90,156,254,255] #RGBA 
+            for cell_no in range(len(orient_cube.cells())):
+                # print(cell_no)
+                if cell_no != idcell: 
+                    orient_cube.cellcolors[cell_no] = [255,0,0,200] #RGBA 
+                    
+        cells = orient_cube.cells()[idcell]
+        points = [orient_cube.points()[cell] for cell in cells]
+        
+        plane_fit = vedo.fit_plane(points, signed=True)
+        # print('normal:',plane_fit.normal, 'center:',plane_fit.center)
+        organ.mH_settings['organ_orientation']['cl_ribbon'] = {'mesh_cl': ch+'_'+cont,
+                                                               'pl_normal': plane_fit.normal,
+                                                               'nRes': nRes,
+                                                               'nPoints': nPoints, 
+                                                               'cl_type': clRib_type,
+                                                               'rotateY': rotateY, 
+                                                               'cust_angle': cust_angle}
+    
+    txt0 = vedo.Text2D('Reference', c=txt_color, font=txt_font, s=txt_size)
+    txt1 = vedo.Text2D('Select (click) cube face you want to use to extended centreline.\nNote: The face that is last selected will be used', c=txt_color, font=txt_font, s=txt_size)
+    plt = vedo.Plotter(N=2, axes=1)
+    plt.add_callback("mouse click", select_cube_face)
+    plt.show(mesh_ext.mesh, orient_cube_clear, txt0, at=0)
+    plt.show(orient_cube, txt1, at=1, interactive=True)
+    
+    pl_normal = organ.mH_settings['organ_orientation']['cl_ribbon']['pl_normal']
+    cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+                          pl_normal=pl_normal, 
+                          clRib_type=clRib_type)
+    
+    txt0 = vedo.Text2D('Final selected face', c=txt_color, font=txt_font, s=txt_size)
+    txt1 = vedo.Text2D('Extended Centreline Ribbon to cut organ into sides', c=txt_color, font=txt_font, s=txt_size)
+    vp = vedo.Plotter(N=2,axes=8)
+    vp.show(mesh_ext.mesh, orient_cube_clear, sph, sph_rot, sph_COM, txt0, at=0)
+    vp.show(mesh_cl.mesh, cl_ribbon, txt1, at=1, interactive=True)
+    
 #%% func - get_cube_clRibbon
-def get_cube_clRibbon(organ, cl_mesh, cl_ribbon, plotshow=True):
-    res = organ.meshes[mesh.name]['resolution'] #cl_mesh.resolution - resolution?
-
+def get_cube_clRibbon(organ, plotshow=True):
+    
+    cl_settings =  organ.mH_settings['organ_orientation']['cl_ribbon']
+    mesh_cl = organ.obj_meshes[cl_settings['mesh_cl']]
+    cl_ribbon =  mesh_cl.get_clRibbon(nPoints=cl_settings['nPoints'], 
+                                      nRes=cl_settings['nRes'], 
+                                      pl_normal=cl_settings['pl_normal'], 
+                                      clRib_type=cl_settings['cl_type'])
+    
+    res = mesh_cl.resolution
     cl_ribbonR = cl_ribbon.clone().x(res[0])
-    # cl_ribbonL = cl_ribbon.clone().x(-res[0])
     cl_ribbonF = cl_ribbon.clone().y(res[1])
-    # cl_ribbonB = cl_ribbon.clone().y(-res[1])
     cl_ribbonT = cl_ribbon.clone().z(res[1])
-    # cl_ribbonD = cl_ribbon.clone().z(-res[1])
     cl_ribbonS = [cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT]
-    cl_ribbonAll = vedo.merge(cl_ribbonS)
+    # cl_ribbonAll = vedo.merge(cl_ribbonS)
 
     if plotshow: 
-        vp = vedo.Plotter(N=1, axes = 1)
-        vp.show(cl_mesh, cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT, at=0, interactive = True)
-
+        obj = [(mesh_cl.mesh, cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT)]
+        txt = [(0, organ.user_organName)]
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+        
     #Load stack shape
-    [[xdim, ydim, zdim]] = fcBasics.loadNPY(filename, ['stackShape'], dir_txtNnpy, print_txt = False)
+    shape_s3 = organ.info['shape_s3']
+    zdim, xdim, ydim = shape_s3
+    print('shape_s3:',shape_s3, '- xdim:', xdim, '- ydim:',ydim, '- zdim:', zdim)
 
-    # Rotate the points that make up the HR disc, to convert them to a stack
-    resolution = res
-    if 'CJ' not in filename: 
+    # Rotate the points that make up the cl_ribbon, to convert them to a stack
+    # im_orient = organ.info['im_orientation']
+    cust_angle = organ.info['custom_angle']
+    
+    if mesh_cl.rotateZ_90: #'CJ' not in filename: 
         axis = [0,0,1]
+        theta = np.radians(90)
     else: 
-        axis = [1,0,0]
+        axis = [0,0,0]
+        theta = np.radians(0)
+    
+    print('axis:',axis, '- theta:',theta)
+    if cust_angle != 0: 
+        print('cust_angle != 0, develop this!')
 
     s3_rib = np.zeros((xdim, ydim, zdim+2))
     s3_filledCube = np.zeros((xdim, ydim, zdim+2))
@@ -1070,16 +1200,13 @@ def get_cube_clRibbon(organ, cl_mesh, cl_ribbon, plotshow=True):
     for cl_rib in cl_ribbonS:
         rib_pts = cl_rib.points()
         rib_points_rot = np.zeros_like(rib_pts)
-
         for i, pt in enumerate(rib_pts):
-            rib_points_rot[i] = (np.dot(rotation_matrix(axis = axis, theta = np.radians(90)),pt))
-
-        rib_pix = np.transpose(np.asarray([rib_points_rot[:,i]//resolution[i] for i in range(len(resolution))]))
+            rib_points_rot[i] = (np.dot(rotation_matrix(axis = axis, theta = theta),pt))
+        rib_pix = np.transpose(np.asarray([rib_points_rot[:,i]//res[i] for i in range(len(res))]))
         rib_pix = rib_pix.astype(int)
-        rib_pix = np.unique(rib_pix, axis =0)
+        rib_pix = np.unique(rib_pix, axis=0)
 
         rib_pix_out = rib_pix.copy()
-
         index_out = []
         # Clean rib_pix if out of stack shape
         for index, pt in enumerate(rib_pix):
@@ -1093,93 +1220,329 @@ def get_cube_clRibbon(organ, cl_mesh, cl_ribbon, plotshow=True):
                 delete = False
             
             if delete:
-                # print(pt)
                 index_out.append(index)
 
         rib_pix_out = np.delete(rib_pix_out, index_out, axis = 0)
-
-        # Create mask of ring
+        # Create mask of cl_ribbon
         s3_rib[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 1
         # Create filled cube just to one side of cl
         s3_filledCube[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 0
-    
-    # Create volume of extended centreline mask
-    # test_rib = createExtLayerMesh(filename, s3_rib, resolution, 'ribbon', 'ribbon', extractLargest = False, plotshow = False)
-    test_rib = s3_to_mesh(s3_rib, res=res, name='Extended CL', color='darkmagenta')
-
-    # For future development, create 4 different options of cuts and ask user to selec which one to use? 
-    # Maybe just if it is spaw or if user is not happy with the default one selected?
-    happy = False; nn = 0; repeat = False
-    if not happy and nn < 2: 
-
-        if not spaw_analysis: 
-            if 'V' in filename:
-                for xpos in range(0,xdim):
-                    for zpos in range(0,zdim+2): 
-                        yline = s3_filledCube[xpos,0:ydim,zpos]
-                        index_y = np.where(yline == 0)[0]
-                        index_y = list(index_y)
-                        index_y.pop(0);index_y.pop(-1)
-                        if len(index_y) > 0:
-                            if not repeat: 
-                                s3_filledCube[xpos,index_y[0]:ydim,zpos] = 0
-                            else: # repeat: 
-                                s3_filledCube[xpos,0:index_y[0],zpos] = 0
-                print('AV')
-            else: 
-                for xpos in range(0,xdim):
-                    for ypos in range(0,ydim): 
-                        zline = s3_filledCube[xpos,ypos,0:zdim+2]
-                        index_z = np.where(zline == 0)[0]
-                        index_z = list(index_z)
-                        index_z.pop(0);index_z.pop(-1)
-                        if len(index_z) > 0:
-                            if not repeat: 
-                                s3_filledCube[xpos,ypos,index_z[0]:zdim+2] = 0
-                            else: 
-                                s3_filledCube[xpos,ypos,0:index_z[0]] = 0
-                print('AD')
-        else: 
-            for ypos in range(0,ydim):
-                for zpos in range(0,zdim+2): 
-                    xline = s3_filledCube[0:xdim,ypos,zpos]
-                    index_x = np.where(xline == 0)[0]
-                    index_x = list(index_x)
-                    index_x.pop(0);index_x.pop(-1)
-                    if len(index_x) > 0:#0
-                        if not repeat:
-                            s3_filledCube[index_x[-1]:xdim,ypos,zpos] = 0#[1]
-                        else:
-                            s3_filledCube[0:index_x[1],ypos,zpos] = 0#[0]
-            print('B')
-        
         alert('clown')
     
-        #Create volume of filled side of extended centreline mask
-        #test_cube = fcMeshes.createExtLayerMesh(filename, s3_filledCube, resolution, 'cube', 'cube', extractLargest = True, plotshow = False)
-        test_cube = s3_to_mesh(s3_filledCube, res=res, name='Filled CL side', color='darkblue')
-        test_cube.alpha(0.05)
+    # Create volume of extended centreline mask
+    test_rib = s3_to_mesh(s3_rib, res=res, name='Extended CL', color='darkmagenta')
+    if plotshow: 
+        obj = [(test_rib, mesh_cl.mesh)]
+        txt = [(0, organ.user_organName)]
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
         
-        if plotshow: 
-            vp = vedo.Plotter(N=3, axes = 1)
-            vp.show(test_cube, test_rib, at=0)
-            vp.show(test_cube, at = 1)
-            vp.show(test_rib, at = 2, interactive = True)
+        # vp = vedo.Plotter(N=1, axes=1)
+        # vp.show(mesh_cl.mesh, test_rib, at=0, interactive = True)
+        
+    
+    #Identify the direction in which the cubes need to be buit
+    pl_normal = cl_settings['pl_normal']
+    ref_vect = organ.mH_settings['organ_orientation']['ref_vectF'][0]
+    ext_dir = list(np.cross(ref_vect, pl_normal))
+    max_ext_dir = max(ext_dir)
+    coord_dir = ext_dir.index(max_ext_dir)
+    print('pl_normal:', pl_normal, '\nref_vect:', ref_vect, '\next_dir:', ext_dir, '\ncoord_dir:', coord_dir)
+    
+    if coord_dir == 0: 
+        print('Extending cube in the x direction')
+        for xpos in range(0,xdim):
+            for zpos in range(0,zdim+2): 
+                yline = s3_filledCube[xpos,0:ydim,zpos]
+                index_y = np.where(yline == 0)[0]
+                index_y = list(index_y)
+                index_y.pop(0);index_y.pop(-1)
+                if len(index_y) > 0:
+                    # if not repeat: 
+                    s3_filledCube[xpos,index_y[0]:ydim,zpos] = 0
+                    # else: # repeat: 
+                    #     s3_filledCube[xpos,0:index_y[0],zpos] = 0
+        
+    elif coord_dir == 1:
+        print('Extending cube in the y direction - check!!!')
+        for ypos in range(0,ydim):
+            for zpos in range(0,zdim+2): 
+                xline = s3_filledCube[0:xdim,ypos,zpos]
+                index_x = np.where(xline == 0)[0]
+                index_x = list(index_x)
+                index_x.pop(0);index_x.pop(-1)
+                if len(index_x) > 0:
+                    # if not repeat:
+                    s3_filledCube[index_x[-1]:xdim,ypos,zpos] = 0#[1]
+                    # else:
+                    #     s3_filledCube[0:index_x[1],ypos,zpos] = 0#[0]
 
-        happy = True#fcBasics.ask4input('>> Happy with the ribbon cube? [0]:no, [1]: yes, continue! >>: ',bool)
-        if not happy: 
-            repeat = True
-        nn += 1
+    elif coord_dir == 2: 
+        print('Extending cube in the z direction')
+        for xpos in range(0,xdim):
+            for ypos in range(0,ydim): 
+                zline = s3_filledCube[xpos,ypos,0:zdim+2]
+                index_z = np.where(zline == 0)[0]
+                index_z = list(index_z)
+                index_z.pop(0);index_z.pop(-1)
+                if len(index_z) > 0:
+                    # if not repeat: 
+                    s3_filledCube[xpos,ypos,index_z[0]:zdim+2] = 0
+                    # else: 
+                    #     s3_filledCube[xpos,ypos,0:index_z[0]] = 0
         
-    return s3_filledCube, cl_ribbonAll, happy
+    # For future development, create 4 different options of cuts and ask user to selec which one to use? 
+    # Maybe just if it is spaw or if user is not happy with the default one selected?
+    # happy = False; nn = 0; repeat = False
+    # if not happy and nn < 2: 
+    #     if not spaw_analysis: 
+    #         if im_orient == 'ventral':
+    #             for xpos in range(0,xdim):
+    #                 for zpos in range(0,zdim+2): 
+    #                     yline = s3_filledCube[xpos,0:ydim,zpos]
+    #                     index_y = np.where(yline == 0)[0]
+    #                     index_y = list(index_y)
+    #                     index_y.pop(0);index_y.pop(-1)
+    #                     if len(index_y) > 0:
+    #                         if not repeat: 
+    #                             s3_filledCube[xpos,index_y[0]:ydim,zpos] = 0
+    #                         else: # repeat: 
+    #                             s3_filledCube[xpos,0:index_y[0],zpos] = 0
+    #             print('AV')
+    #         else: 
+    #             for xpos in range(0,xdim):
+    #                 for ypos in range(0,ydim): 
+    #                     zline = s3_filledCube[xpos,ypos,0:zdim+2]
+    #                     index_z = np.where(zline == 0)[0]
+    #                     index_z = list(index_z)
+    #                     index_z.pop(0);index_z.pop(-1)
+    #                     if len(index_z) > 0:
+    #                         if not repeat: 
+    #                             s3_filledCube[xpos,ypos,index_z[0]:zdim+2] = 0
+    #                         else: 
+    #                             s3_filledCube[xpos,ypos,0:index_z[0]] = 0
+    #             print('AD')
+    #     else: 
+    #         for ypos in range(0,ydim):
+    #             for zpos in range(0,zdim+2): 
+    #                 xline = s3_filledCube[0:xdim,ypos,zpos]
+    #                 index_x = np.where(xline == 0)[0]
+    #                 index_x = list(index_x)
+    #                 index_x.pop(0);index_x.pop(-1)
+    #                 if len(index_x) > 0:#0
+    #                     if not repeat:
+    #                         s3_filledCube[index_x[-1]:xdim,ypos,zpos] = 0#[1]
+    #                     else:
+    #                         s3_filledCube[0:index_x[1],ypos,zpos] = 0#[0]
+    #         print('B')
+        
+    alert('woohoo')
+
+    #Create volume of filled side of extended centreline mask
+    mask_cube = s3_to_mesh(s3_filledCube, res=res, name='Filled CLRibbon SideA', color='darkblue')
+    mask_cube.alpha(0.05)
+    
+    if plotshow: 
+        obj = [(mask_cube, test_rib, mesh_cl.mesh)]
+        txt = [(0, organ.user_organName)]
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+        
+        # vp = vedo.Plotter(N=1, axes = 1)
+        # vp.show(mask_cube, test_rib, mesh_cl.mesh,  at=0,  interactive = True)
+
+    s3_filledCube = s3_filledCube.astype('uint8')
+    return s3_filledCube, mask_cube
+
+    q = 'Are you happy with the ribbon cube?'
+    res = {0: 'no', 1:'yes, continue!'}
+    happy = ask4input(q,res,bool)
+    
+    if happy: 
+        #Create the inverse section and make the user select the section that corresponds to section 1
+        s3_filledCubeBoolA =  copy.deepcopy(s3_filledCube).astype(bool)
+        s3_filledCubeBoolB = np.full_like(s3_filledCubeBoolA, False)
+        s3_filledCubeBoolB[1:-1,1:-1,1:-1] = True
+        s3_filledCubeBoolB[s3_filledCubeBoolA]=False
+    
+        # mask_cubeA = fcMeshes.s3_to_mesh(s3_filledCubeBoolA, res=res, name='Filled CLRibbon SideA', color='darkblue')
+        mask_cubeB = fcMeshes.s3_to_mesh(s3_filledCubeBoolB, res=res, name='Filled CLRibbon SideB', color='skyblue')
+        mask_cubeB.alpha(0.05).linewidth(1)
+        mask_cube.linewidth(1)
+        
+        obj = [(mask_cube), (mask_cubeB)]
+        txt = [(0, organ.user_organName)]
+        fcMeshes.plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+
+        def select_section1(evt):
+            if not evt.actor:
+                return
+            print("point coords =", evt.picked3d)
+            
+            
+            print(msh)
+            sil = evt.actor.silhouette().linewidth(6).c('red5')
+            print("You clicked: "+evt.actor)
+            print('aja')
+                # plt.remove('silu').add(sil)
+        
+            # if isinstance(evt.actor, vedo.mesh.Mesh): 
+            #     sil = evt.actor.silhouette().lineWidth(6).c('red')
+            #     print("You clicked: "+evt.actor.name)
+            #     cell_no = evt.actor.name
+            #     cell_no = int(cell_no.split('.')[-1])
+            #     if cell_no < 10000: # remove
+            #         cells2remove.append(cell_no)
+            #         sphs[cell_no].color('black')
+            #         new_no = 10000+cell_no
+            #         sphs[cell_no].name = f"Cell Nr.{new_no}"
+            #     else: # add back
+            #         ind2rem = cells2remove.index(cell_no-10000)
+            #         cells2remove.pop(ind2rem)
+            #         old_no = cell_no-10000
+            #         sphs[old_no].color('gold')
+            #         sphs[old_no].name = f"Cell Nr.{old_no}"
+                    
+        #         plt.remove(silcont.pop()).add(sil)
+        #         silcont.append(sil)
+        # silcont = [None]
+
+            # organ.s3_mask_sect = s3
+            # organ.vol_mask_sect = mask_cube
+            
+        plt = vedo.Plotter(N=1, axes=5)
+        txto = organ.user_organName+' - Select the mask that corresponds to Section No.1: '+organ.mH_settings['general_info']['sections']['name_sections']['sect1']
+        txt = vedo.Text2D(txto, c=txt_color, font=txt_font, s=txt_size)
+        plt.add_callback('mouse click', select_section1)
+        plt.show(mask_cube, txt, at=0, zoom=1, interactive=True)
+            
+        plt = vedo.Plotter()
+        plt.add_callback("mouse click", select_section1)
+        plt.show(mask_cube, __doc__, axes=1).close()
+    
+        # dir2save = organ.info['dirs']['s3_numpy'] / 'mask_sect.npy'
+        # np.save(dir2save, s3)
+        # if not dir2save.is_file():
+        #     print('>> Error: s3 mask of sections was not saved correctly!\n>> File: '+ 'mask_sect.npy')
+        #     alert('error_beep')
+        # else: 
+        #     print('>> s3 mask of sections saved correctly!')
+        #     # print('>> Directory: '+ str(dir2save)+'\n')
+        #     alert('countdown')
+                 
+        
+    
+
+#%% func - get_sections
+def get_sections(organ, plotshow):
+    
+    if not hasattr(organ, 's3_mask_sect'):
+        s3_dir = organ.info['dirs']['s3_numpy'] / 'mask_sect.npy'
+        s3_mask_sect = np.load(s3_dir)
+        organ.s3_mask_sect = s3_mask_sect
+    else: 
+        s3_mask_sect = organ.s3_mask_sect
+    
+    sect_names = [item for item in organ.parent_project.mH_param2meas if 'sect1' in item]
+    if len(sect_names)>0:
+        no_sect = organ.mH_settings['general_info']['sections']['no_sections']
+        name_sections = organ.mH_settings['general_info']['sections']['name_sections']
+        
+        s3_filledCubeBoolA = s3_mask_sect.astype(bool)
+        s3_filledCubeBoolB = np.invert(s3_filledCubeBoolA)
+        for name in sect_names[0:1]: 
+            ch = name[0]; cont = name[1]
+            mesh = organ.obj_meshes[ch+'_'+cont]
+            print('\n- Dividing '+mesh.legend+' into sections')
+            im_ch = mesh.imChannel
+            im_ch.load_chS3s(cont_types=[cont])
+            cont_tiss = getattr(im_ch, 's3_'+cont)
+            s3 = cont_tiss.s3()
+            
+            masked_s3A = s3.copy()
+            masked_s3A[s3_filledCubeBoolA] = 0
+            # cutA = s3_to_mesh(filename, masked_s3A, res, 'cjcutA', 'cjcutA', extractLargest = False, plotshow = False)
+            cutA = fcMeshes.s3_to_mesh(masked_s3A, res=mesh.resolution, 
+                                       name='SectA', color='indigo')
+            fcBasics.alert('woohoo')
+            
+            masked_s3B = s3.copy()
+            masked_s3B[s3_filledCubeBoolB] = 0
+            cutB = fcMeshes.s3_to_mesh(masked_s3B, res=mesh.resolution, 
+                                       name='SectB', color='mediumvioletred')
+            fcBasics.alert('clown')
+            
+            if plotshow: 
+                obj = [(mesh.mesh), (cutA), (cutB)]
+                txt = [(0, organ.user_organName +' - '+mesh.legend )]
+                fcMeshes.plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+        
+            
+            
+    # spaw_analysis = False
+    # spaw_sinistral = False
+    # if 'spaw_ct' in df_res.loc[file_num,'spAnalysis']:
+    #     spaw_analysis = True
+    # if 'spaw_lf' in df_res.loc[file_num,'spAnalysis']:
+    #     spaw_sinistral = True
+    
+    # mesh_legend = mesh._legend
+    # if not spaw_analysis: 
+    #     print('\n- Dividing '+mesh_legend+' into left and right sides')
+    #     names_LnR = ['CJ_total','CJ.Left', 'CJ.Right']
+    #     names_LnRm = ['CJ_total','-Left', '-Right']
+    # else: 
+    #     print('\n- Dividing '+mesh_legend+' into dorsal and ventral sides')
+    #     names_LnR = ['CJ_total','CJ.Dorsal', 'CJ.Ventral']
+    #     names_LnRm = ['CJ_total','-Dorsal', '-Ventral']
+        
+    # s3_filledCubeBoolA = s3_filledCube.astype(bool)
+    # [s3], _ = loadStacks(filename = filename, dir_txtNnpy = directories[1], end_name = ['cj'], print_txt = False)
+    
+    # masked_s3A = s3.copy()
+    # masked_s3A[s3_filledCubeBoolA] = 0
+    # test_cutA = fcMeshes.createExtLayerMesh(filename, masked_s3A, res, 'cjcutA', 'cjcutA', extractLargest = False, plotshow = False)
+    # test_cutA.legend(mesh_legend+names_LnRm[1]).color(colors[0])
+    # fcBasics.alert('wohoo',1)
+    # s3_filledCubeBoolB = np.invert(s3_filledCubeBoolA)
+    # masked_s3B = s3.copy()
+    # masked_s3B[s3_filledCubeBoolB] = 0
+    # test_cutB = fcMeshes.createExtLayerMesh(filename, masked_s3B, res, 'cjcutB', 'cjcutB', extractLargest = False, plotshow = False)
+    # test_cutB.legend(mesh_legend+names_LnRm[2]).color(colors[1])
+    # fcBasics.alert('clown',1)
+    
+    # if plotshow: 
+    #     settings.legendSize = .20
+    #     vp = Plotter(N=3, axes = 1)
+    #     vp.show(mesh, at=0)
+    #     vp.show(test_cutA, scale_cube, at = 1)
+    #     vp.show(test_cutB, scale_cube, at = 2, interactive = True)
+    
+    # if saveStacks:
+    #     if not spaw_sinistral: 
+    #         save_s3(filename = filename, s3 = masked_s3A, dir_txtNnpy = directories[1], layer = 'cj_AOCVIC')
+    #         save_s3(filename = filename, s3 = masked_s3B, dir_txtNnpy = directories[1], layer = 'cj_AICVOC')
+          
+    #     else: 
+    #         save_s3(filename = filename, s3 = masked_s3A, dir_txtNnpy = directories[1], layer = 'cj_AICVOC')
+    #         save_s3(filename = filename, s3 = masked_s3B, dir_txtNnpy = directories[1], layer = 'cj_AOCVIC')
+        
+    # print('Total cardiac jelly volume:',mesh.volume())
+    # print('Cardiac jelly volume side A:',test_cutA.volume())
+    # print('Cardiac jelly volume side B:',test_cutB.volume())
+    # print('Cardiac jelly volume side A+B:',test_cutA.volume()+test_cutB.volume())
+    # print('Cardiac jelly volume difference (%):',((test_cutA.volume()+test_cutB.volume())-mesh.volume())/mesh.volume()*100)
+    
+    # meshes_LnR = [test_cutA, test_cutB]
+        
+    # return meshes_LnR, names_LnR
 
 #%% func - s3_to_mesh
-def s3_to_mesh(s3, res, name:str, color='cyan'):
+def s3_to_mesh(s3, res, name:str, color='cyan', rotateZ_90=True):
 
     verts, faces, _, _ = measure.marching_cubes(s3, spacing=res, method='lewiner')
     alert('frog')
     mesh = vedo.Mesh([verts, faces])
-    mesh.rotateX(-90)
+    if rotateZ_90: 
+        mesh.rotateZ(-90).wireframe(True)
     mesh = mesh.extract_largest_region()
     alert('clown')
     mesh.color(color).alpha(1).wireframe().legend(name)
@@ -1423,7 +1786,7 @@ def measure_centreline(organ, nPoints):
 def measure_volume(organ):
     vol_names = [item for item in organ.parent_project.mH_param2meas if 'volume' in item]
     for name in vol_names: 
-        print(name)
+        # print(name)
         ch = name[0]; cont = name[1]; segm= name[2]
         if segm == 'whole': 
             volume = organ.obj_meshes[ch+'_'+cont].get_volume()
@@ -1437,7 +1800,7 @@ def measure_volume(organ):
 def measure_area(organ):
     area_names = [item for item in organ.parent_project.mH_param2meas if 'surf_area' in item]
     for name in area_names: 
-        print(name)
+        # print(name)
         ch = name[0]; cont = name[1]; segm= name[2]
         if segm == 'whole': 
             area = organ.obj_meshes[ch+'_'+cont].get_area()

@@ -961,6 +961,7 @@ class Organ():
             channel_dict['dir_stckproc'] = imChannel.dir_stckproc
             
             self.imChannels[imChannel.channel_no] = channel_dict
+            self.parent_organ.info['shape_s3'] = imChannel.shape
             
         else: # just update im_proc 
             self.imChannels[imChannel.channel_no]['process'] = imChannel.process
@@ -1181,12 +1182,11 @@ class Organ():
         else:
             return False  
                     
-    def get_orientation(self, plane:str, ref_vect=np.array([[0,1,0],[0,0,0]])):
+    def get_orientation(self, plane:str, ref_vect='Y+'):
         # Select the mesh to use to measure organ orientation
-
         
         dict_cl = plot_organCLs(self)
-        q = 'Select the mesh-centreline combination you want to use to measure organ orientation:'
+        q = 'Select the centreline you want to use to measure organ orientation:'
         extend_dir = ask4input(q, dict_cl, int)
         
         ch_cont_cl = dict_cl[extend_dir].split(' (')[1].split('-')
@@ -1196,7 +1196,7 @@ class Organ():
         cl_mesh = self.obj_meshes[ch+'_'+cont]
         linLine = cl_mesh.get_linLine()
         pts = linLine.points()
-        print('pts:', pts)
+        # print('pts:', pts)
         
         if plane=='XY':
             coord = 2
@@ -1205,14 +1205,21 @@ class Organ():
         elif plane=='XZ':
             coord = 1
             
-        print('ref_vect:', ref_vect)
+        if isinstance(ref_vect, str):
+            ref_vectAll = {'X+': np.array([[1,0,0],[0,0,0]]),
+                           'Y+': np.array([[0,1,0],[0,0,0]]),
+                           'Z+': np.array([[0,0,1],[0,0,0]])}
+            ref_vectF = ref_vectAll[ref_vect]
+            
+        # print('ref_vect:', ref_vect)
         for pt in pts: 
             pt[coord] = 0
         
-        print('pts:', pts)
-        angle = find_angle_btw_pts(pts, ref_vect)
+        # print('pts:', pts)
+        angle = find_angle_btw_pts(pts, ref_vectF)
         self.mH_settings['organ_orientation'] = {'plane': plane, 
                                                  'ref_vect': ref_vect,
+                                                 'ref_vectF': ref_vectF,
                                                  'orient_vect': pts,
                                                  'angle_deg': angle}
 
@@ -1636,6 +1643,7 @@ class ImChannel(): #channel
             
     def load_chS3s (self, cont_types:list):
         for cont in cont_types:
+            # print(cont)
             s3 = ContStack(im_channel=self, cont_type=cont)#, new=False)
             setattr(self, 's3_'+cont, s3)
             self.add_contStack(s3)
@@ -2614,24 +2622,20 @@ class Mesh_mH():
         
         return linLine
 
-    def get_clRibbon(self, nPoints, nRes, clRib_type, plotshow):
-            # filename, file_num, df_res, kspl_CL2use, linLine, mesh,
-            #            dict_kspl, dict_shapes, dict_planes,
-            #            clRib_type = 'extDV', scale_cube = [],plotshow = True):
+    def get_clRibbon(self, nPoints, nRes, pl_normal, clRib_type):
         """
         Function that creates dorso-ventral extended centreline ribbon
-    
         """
         
         cl = self.get_centreline(nPoints)
         pts_cl = cl.points()
         
         # Extended centreline
-        nn = -20#-3
-        inf_ext_normal = (pts_cl[nn]+(pts_cl[-1]-pts_cl[nn])*10)#*70
+        nn = -20
+        inf_ext_normal = (pts_cl[nn]+(pts_cl[-1]-pts_cl[nn])*5)#*70
         outf_ext_normal = (pts_cl[0]+(pts_cl[0]-pts_cl[1])*100)#*70 (test for LnR cut Jun14.22)
-        inf_ext_sphere = vedo.Sphere(pos=inf_ext_normal, r=3, c='purple').legend("sph_infCLExt")
-        outf_ext_sphere = vedo.Sphere(pos=outf_ext_normal, r=3, c='purple').legend("sph_outfCLExt")
+        # inf_ext_sphere = vedo.Sphere(pos=inf_ext_normal, r=3, c='purple').legend("sph_infCLExt")
+        # outf_ext_sphere = vedo.Sphere(pos=outf_ext_normal, r=3, c='purple').legend("sph_outfCLExt")
     
         pts_cl_ext = np.insert(pts_cl,0,np.transpose(outf_ext_normal), axis=0)
         pts_cl_ext = np.insert(pts_cl_ext,len(pts_cl_ext),np.transpose(inf_ext_normal), axis=0)
@@ -2646,45 +2650,45 @@ class Mesh_mH():
         t = np.linspace(0, u[-1], nRes)#601
         resamp_pts = interpn((u,), pts_cl_ext, t)
         kspl_ext = vedo.KSpline(resamp_pts, res=nRes).color('purple').legend('ExtendedCL')#601
-        linLine = self.get_linLine(nPoints)
+        # linLine = self.get_linLine(nPoints)
         
         # Create plane to project centreline
-        extend_ventral = True #ask4input('You are processing a heart that came from an incross of spaw heterozygous.\n  Please, select the way this heart is looping to continue processing: \n\t[0]: right-left\n\t[1]: dorso-ventral >>>: ', bool)
-        im_orient = self.parent_organ.info['im_orientation']
-        cust_angle = self.parent_organ.info['custom_angle']
-        if extend_ventral and im_orient == 'ventral' and cust_angle == 0: 
-            #spaw_analysis = False
-            linLineX = linLine.clone().project_on_plane('x').c(linLine.color()).x(0)
-            azimuth = 0
-        elif im_orient == 'dorsal': 
-            #spaw_analysis = False 
-            linLineX = linLine.clone().project_on_plane('z').c(linLine.color()).z(0)
-            azimuth = -90
-        else:
-            #spaw_analysis = True 
-            linLineX = linLine.clone().project_on_plane('z').c(linLine.color()).z(150)
-            azimuth = 0
+        # extend_ventral = True #ask4input('You are processing a heart that came from an incross of spaw heterozygous.\n  Please, select the way this heart is looping to continue processing: \n\t[0]: right-left\n\t[1]: dorso-ventral >>>: ', bool)
+        # im_orient = self.parent_organ.info['im_orientation']
+        # cust_angle = self.parent_organ.info['custom_angle']
+        # if extend_ventral and im_orient == 'ventral' and cust_angle == 0: 
+        #     #spaw_analysis = False
+        #     linLineX = linLine.clone().project_on_plane('x').c(linLine.color()).x(0)
+        #     azimuth = 0
+        # elif im_orient == 'dorsal': 
+        #     #spaw_analysis = False 
+        #     linLineX = linLine.clone().project_on_plane('z').c(linLine.color()).z(0)
+        #     azimuth = -90
+        # else:
+        #     #spaw_analysis = True 
+        #     linLineX = linLine.clone().project_on_plane('z').c(linLine.color()).z(150)
+        #     azimuth = 0
             
-        ptsPl_linLine = vedo.Points([linLineX.points()[0], linLine.points()[0], linLine.points()[1]])
-        pl_linLine = vedo.fit_plane(ptsPl_linLine.points()).scale(4).c('mediumaquamarine').alpha(1).legend('pl_Parallel2LinLine')
-        pl_linLine_normal = pl_linLine.normal
-        pl_linLine_centre = pl_linLine.center
-        # dict_planes = addPlanes2Dict(planes = [pl_linLine], pls_centre = [pl_linLine_centre],
-        #                                         pls_normal = [pl_linLine_normal], info = [''], dict_planes = dict_planes)
+        # ptsPl_linLine = vedo.Points([linLineX.points()[0], linLine.points()[0], linLine.points()[1]])
+        # pl_linLine = vedo.fit_plane(ptsPl_linLine.points()).scale(4).c('mediumaquamarine').alpha(1).legend('pl_Parallel2LinLine')
+        # pl_linLine_normal = pl_linLine.normal
+        # pl_linLine_centre = pl_linLine.center
+        # # dict_planes = addPlanes2Dict(planes = [pl_linLine], pls_centre = [pl_linLine_centre],
+        # #                                         pls_normal = [pl_linLine_normal], info = [''], dict_planes = dict_planes)
     
-        pl_linLine_unitNormal = unit_vector(pl_linLine_normal)
-        x_ul, y_ul, z_ul = pl_linLine_unitNormal*2
-        x_ucl, y_ucl, z_ucl = pl_linLine_unitNormal*15
+        # pl_linLine_unitNormal = unit_vector(pl_linLine_normal)
+        pl_linLine_unitNormal = unit_vector(pl_normal)
         pl_linLine_unitNormal120 = pl_linLine_unitNormal*120
-        x_cl, y_cl, z_cl = pl_linLine_unitNormal120
     
         if clRib_type == 'extDV': # Names are switched but it works
+            x_cl, y_cl, z_cl = pl_linLine_unitNormal120
             kspl_ext_D = kspl_ext.clone().x(x_cl).y(y_cl).z(z_cl).legend('kspl_CLExtD')
             kspl_ext_V = kspl_ext.clone().x(-x_cl).y(-y_cl).z(-z_cl).legend('kspl_CLExtV')
             cl_ribbon = vedo.Ribbon(kspl_ext_D, kspl_ext_V, alpha=0.2, res=(1500, 1500))
             cl_ribbon = cl_ribbon.wireframe(True).legend("rib_ExtCL(D-V)")
     
         elif clRib_type == 'extV':
+            x_ucl, y_ucl, z_ucl = pl_linLine_unitNormal*15
             cl_ribbon = []
             for i in range(10):
                 kspl_ext_DA = kspl_ext.clone().x(i*x_ucl).y(i*y_ucl).z(i*z_ucl)
@@ -2695,6 +2699,8 @@ class Mesh_mH():
             cl_ribbon.legend('rib_ExtCL(V)').wireframe(True)
     
         elif clRib_type == 'HDStack':
+            x_ul, y_ul, z_ul = pl_linLine_unitNormal*2
+            x_cl, y_cl, z_cl = pl_linLine_unitNormal120
             cl_ribbon = []
             for i in range(100):
                 kspl_ext_D = kspl_ext.clone().x(x_cl-i*x_ul).y(y_cl-i*y_ul).z(z_cl-i*z_ul)
@@ -2712,19 +2718,19 @@ class Mesh_mH():
         # if clRib_type == 'extDV':
         #     dict_kspl = addKSplines2Dict(kspls = [kspl_ext_D, kspl_ext, kspl_ext_V], info = ['','', ''], dict_kspl = dict_kspl)
     
-        if plotshow:
-            text = self.parent_organ.user_organName+"\n\n >> Creating Extended Centreline ("+clRib_type+")"
-            txt = vedo.Text2D(text, c="k")
+        # if plotshow:
+        #     text = self.parent_organ.user_organName+"\n\n >> Creating Extended Centreline ("+clRib_type+")"
+        #     txt = vedo.Text2D(text, c="k")
     
-            elevation = 0#df_res.loc[file_num,'ang_Heart']
-            vp = vedo.Plotter(N=1, axes=8)
-            vp.show(self.mesh, linLine, linLineX, cl, kspl_ext, inf_ext_sphere, outf_ext_sphere, cl_ribbon, txt, at=0, azimuth = azimuth, elevation = elevation, interactive=1)
+        #     elevation = 0#df_res.loc[file_num,'ang_Heart']
+        #     vp = vedo.Plotter(N=1, axes=8)
+        #     vp.show(self.mesh, linLine, linLineX, cl, kspl_ext, inf_ext_sphere, outf_ext_sphere, cl_ribbon, txt, at=0, azimuth = azimuth, elevation = elevation, interactive=1)
 
-        if clRib_type == 'HDStack':
-            return rib_pts, cl_ribbon
-        else:
-            return cl_ribbon, kspl_ext
-    
+        # if clRib_type == 'HDStack':
+        #     return rib_pts, cl_ribbon
+        # else:
+        return cl_ribbon
+        
     def get_volume(self): 
         mesh_vol = self.mesh.volume()
         return mesh_vol

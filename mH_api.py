@@ -502,72 +502,23 @@ if partC:
     fcMeshes.measure_volume(organ)
     fcMeshes.measure_area(organ)
     
-    
-    
-#%%
-    # Select the mesh to use to measure organ orientation
-    # Select the direction to cut organ into sections using centreline
-    import numpy as np
-    import vedo as vedo
-    
+    # Get organ orientation
     plane = 'YZ'
-    organ.get_orientation(plane='YZ',ref_vect=np.array([[0,1,0],[0,0,0]]))
+    ref_vect = 'Y+'
+    organ.get_orientation(plane='YZ',ref_vect=ref_vect)
     angle = organ.mH_settings['organ_orientation']['angle_deg']
     
-    ext_ch, _ = organ.get_ext_int_chs()
-    mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_ext']
-    pos = mesh_ext.mesh.center_of_mass()
-    sph = vedo.Sphere(pos=pos,r=2,c='black')
-    pos_rot = fcMeshes.newNormal3DRot(pos, [angle], [0], [0])
-    sph_rot = vedo.Sphere(pos=pos_rot,r=2,c='tomato')
-    side = max(organ.get_maj_bounds())
+    # Get organ centreline ribbon 
+    nRes = 601; nPoints = 300; clRib_type = 'extDV'
+    fcMeshes.get_organ_ribbon(organ, nRes, nPoints, clRib_type)
+    organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
     
-    orient_cube = vedo.Cube(pos=pos, side=side, c='cyan', alpha=0.05)
-    orient_cube.force_opaque().linewidth(1)
-    if plane=='XY':
-        orient_cube.rotate_z(angle, rad=False)
-        sph.rotate_z(angle, rad=False)
-    elif plane=='YZ':
-        orient_cube.rotate_x(angle, rad=False)
-        sph.rotate_x(angle, rad=False)
-    elif plane=='XZ':
-        orient_cube.rotate_y(angle, rad=False)
-        sph.rotate_y(angle, rad=False)
-        
-    def func(evt):
-        msh = evt.actor
-        if not msh:
-            return
-        pt = evt.picked3d
-        idcell = msh.closest_point(pt, return_cell_id=True)
-        print('idcell:', idcell)
-        orient_cube.cellcolors[idcell] = [255,0,0,200] #RGBA 
-        center = orient_cube.cell_centers()[idcell]
-        cells = orient_cube.cells()[idcell]
-        points = []
-        for cell in cells: 
-            point = orient_cube.points()[cell]
-            points.append(point)
-        print('orient_cube.cell_centers[idcell]',center)
-        print('orient_cube.cell[idcell]',cells)
-        print('orient_cube.points[cells]', points)
-        
-        plane = vedo.fit_plane(points, signed=True)
-        print('normal:',plane.normal, 'center:',plane.center)
-        
-    vp = vedo.Plotter(N=1,axes=8)
-    vp.show(mesh_ext.mesh, orient_cube, sph, sph_rot, at=0, interactive=True)
-    im_orient = organ.info['im_orientation']
-    cust_angle = organ.info['custom_angle']
+    cl_settings =  organ.mH_settings['organ_orientation']['cl_ribbon']
+    mesh_cl = organ.obj_meshes[cl_settings['mesh_cl']]
+    res = mesh_cl.resolution
     
-    plt = vedo.Plotter()
-    plt.add_callback("mouse click", func)
-    plt.show(mesh_ext.mesh, orient_cube,__doc__, axes=1, interactive=True)
+    s3_filledCube, mask_cube = fcMeshes.get_cube_clRibbon(organ, plotshow=True)
     
-    
-    # Click on the cube face that will be used to extende centreline
-    # Ask user if interested in using organ orientation? if ventral and cust_angle =0
-    # if so, create cube based on orientation
 
     #-------
     #Select direction of extended centreline
@@ -667,8 +618,33 @@ if partC:
     cl_ribbon, kspl_ext = cl_mesh.get_clRibbon(nPoints,nRes, clRib_type='HDStack',plotshow=plotshow)
     
     fcMeshes.get_cube_clRibbon(organ, cl_mesh, cl_ribbon)
+#%%
+    """
+    Created on Tue Mar 21 16:40:47 2023
 
-    
+    @author: bi1jsa
+    """
+
+    """Compute the (signed) distance of one mesh to another"""
+    import vedo as vedo
+
+    s1 = vedo.Sphere().pos(10,20,30)
+    s2 = vedo.Cube(c='grey4').scale([2,1,1]).pos(14,20,30)
+
+    def func(evt):
+        if not evt.actor:
+            return
+        sil = evt.actor.silhouette().linewidth(6).c('red5')
+        sil.name = "silu" # give it a name so we can remove the old one
+        msg.text("You clicked: "+evt.actor.name)
+        plt.remove('silu').add(sil)
+        
+    msg = vedo.Text2D("", pos="bottom-center", c='k', bg='r9', alpha=0.8)
+        
+    plt = vedo.Plotter(axes=1, bg='black')
+    plt.add_callback('mouse click', func)
+    plt.show(s1, s2, msg, __doc__, zoom=1.2)
+    plt.close()
 
 #%% To do: 
     #D update workflow when maesuring centrelines
