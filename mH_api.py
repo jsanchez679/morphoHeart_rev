@@ -1,3 +1,4 @@
+
 '''
 morphoHeart_api_B
 
@@ -501,23 +502,26 @@ if partC:
     # Get volume measurements
     fcMeshes.measure_volume(organ)
     fcMeshes.measure_area(organ)
+    organ.get_organ_imaged_orientation()
     
     # Get organ orientation
     plane = 'YZ'
     ref_vect = 'Y+'
     organ.get_orientation(plane='YZ',ref_vect=ref_vect)
-    angle = organ.mH_settings['organ_orientation']['angle_deg']
     
+    #%%
     # Get organ centreline ribbon 
     nRes = 601; nPoints = 300; clRib_type = 'extDV'
     fcMeshes.get_organ_ribbon(organ, nRes, nPoints, clRib_type)
-    organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
     
-    cl_settings =  organ.mH_settings['organ_orientation']['cl_ribbon']
+    organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
+    cl_settings =  organ.mH_settings['organ_orientation']['organ_specific']['cl_ribbon']
     mesh_cl = organ.obj_meshes[cl_settings['mesh_cl']]
     res = mesh_cl.resolution
+    import copy
+    import numpy as np
     
-    s3_filledCube, mask_cube = fcMeshes.get_cube_clRibbon(organ, plotshow=True)
+    s3_filledCube, mask_cube, ext_dir = fcMeshes.get_cube_clRibbon(organ, plotshow=True)
     
 
     #-------

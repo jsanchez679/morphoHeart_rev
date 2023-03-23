@@ -1044,7 +1044,7 @@ def get_organ_ribbon(organ, nRes, nPoints, clRib_type):
     if im_orient != 'ventral' and cust_angle != 0:
         rotateY = True
 
-    angle = organ.mH_settings['organ_orientation']['angle_deg']
+    angle = organ.mH_settings['organ_orientation']['organ_specific']['angle_deg']
     if angle != 0: 
         rotate = True
     
@@ -1063,7 +1063,7 @@ def get_organ_ribbon(organ, nRes, nPoints, clRib_type):
     orient_cube = vedo.Cube(pos=pos, side=side, c='blue7')#[90,156,254,255]
     orient_cube.linewidth(1).force_opaque()
     
-    plane = organ.mH_settings['organ_orientation']['plane']
+    plane = organ.mH_settings['organ_orientation']['organ_specific']['plane']
     if rotate: 
         pos_rot = newNormal3DRot(pos, [angle], [0], [0])
         sph_rot = vedo.Sphere(pos=pos_rot,r=2,c='tomato')
@@ -1099,47 +1099,50 @@ def get_organ_ribbon(organ, nRes, nPoints, clRib_type):
     orient_cube_clear = orient_cube.clone().alpha(0.5)
     
     def select_cube_face(evt):
+        color_o = [90,156,254,255]
+        color_selected = [255,0,0,200]
+        
         orient_cube = evt.actor
         if not orient_cube:
             return
         pt = evt.picked3d
         idcell = orient_cube.closest_point(pt, return_cell_id=True)
         print('You clicked (idcell):', idcell)
-        if set(orient_cube.cellcolors[idcell]) == set([90,156,254,255]):
-            orient_cube.cellcolors[idcell] = [255,0,0,200] #RGBA 
+        if set(orient_cube.cellcolors[idcell]) == set(color_o):
+            orient_cube.cellcolors[idcell] = color_selected #RGBA 
             for cell_no in range(len(orient_cube.cells())):
                 # print(cell_no)
                 if cell_no != idcell: 
-                    orient_cube.cellcolors[cell_no] = [90,156,254,255] #RGBA 
+                    orient_cube.cellcolors[cell_no] = color_o #RGBA 
                     
-        elif set(orient_cube.cellcolors[idcell]) == set([255,0,0,200]):
-            orient_cube.cellcolors[idcell] = [90,156,254,255] #RGBA 
+        elif set(orient_cube.cellcolors[idcell]) == set(color_selected):
+            orient_cube.cellcolors[idcell] = color_o #RGBA 
             for cell_no in range(len(orient_cube.cells())):
                 # print(cell_no)
                 if cell_no != idcell: 
-                    orient_cube.cellcolors[cell_no] = [255,0,0,200] #RGBA 
+                    orient_cube.cellcolors[cell_no] = color_selected #RGBA 
                     
         cells = orient_cube.cells()[idcell]
         points = [orient_cube.points()[cell] for cell in cells]
         
         plane_fit = vedo.fit_plane(points, signed=True)
         # print('normal:',plane_fit.normal, 'center:',plane_fit.center)
-        organ.mH_settings['organ_orientation']['cl_ribbon'] = {'mesh_cl': ch+'_'+cont,
-                                                               'pl_normal': plane_fit.normal,
-                                                               'nRes': nRes,
-                                                               'nPoints': nPoints, 
-                                                               'cl_type': clRib_type,
-                                                               'rotateY': rotateY, 
-                                                               'cust_angle': cust_angle}
+        organ.mH_settings['organ_orientation']['organ_specific']['cl_ribbon'] = {'mesh_cl': ch+'_'+cont,
+                                                                               'pl_normal': plane_fit.normal,
+                                                                               'nRes': nRes,
+                                                                               'nPoints': nPoints, 
+                                                                               'cl_type': clRib_type,
+                                                                               'rotateY': rotateY, 
+                                                                               'cust_angle': cust_angle}
     
-    txt0 = vedo.Text2D('Reference', c=txt_color, font=txt_font, s=txt_size)
+    txt0 = vedo.Text2D(organ.user_organName+' - Reference cube and mesh.', c=txt_color, font=txt_font, s=txt_size)
     txt1 = vedo.Text2D('Select (click) cube face you want to use to extended centreline.\nNote: The face that is last selected will be used', c=txt_color, font=txt_font, s=txt_size)
     plt = vedo.Plotter(N=2, axes=1)
     plt.add_callback("mouse click", select_cube_face)
     plt.show(mesh_ext.mesh, orient_cube_clear, txt0, at=0)
-    plt.show(orient_cube, txt1, at=1, interactive=True)
+    plt.show(orient_cube, txt1, at=1, azimuth=45, interactive=True)
     
-    pl_normal = organ.mH_settings['organ_orientation']['cl_ribbon']['pl_normal']
+    pl_normal = organ.mH_settings['organ_orientation']['organ_specific']['cl_ribbon']['pl_normal']
     cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
                           pl_normal=pl_normal, 
                           clRib_type=clRib_type)
@@ -1153,7 +1156,7 @@ def get_organ_ribbon(organ, nRes, nPoints, clRib_type):
 #%% func - get_cube_clRibbon
 def get_cube_clRibbon(organ, plotshow=True):
     
-    cl_settings =  organ.mH_settings['organ_orientation']['cl_ribbon']
+    cl_settings =  organ.mH_settings['organ_orientation']['organ_specific']['cl_ribbon']
     mesh_cl = organ.obj_meshes[cl_settings['mesh_cl']]
     cl_ribbon =  mesh_cl.get_clRibbon(nPoints=cl_settings['nPoints'], 
                                       nRes=cl_settings['nRes'], 
@@ -1239,10 +1242,9 @@ def get_cube_clRibbon(organ, plotshow=True):
         # vp = vedo.Plotter(N=1, axes=1)
         # vp.show(mesh_cl.mesh, test_rib, at=0, interactive = True)
         
-    
     #Identify the direction in which the cubes need to be buit
     pl_normal = cl_settings['pl_normal']
-    ref_vect = organ.mH_settings['organ_orientation']['ref_vectF'][0]
+    ref_vect = organ.mH_settings['organ_orientation']['organ_specific']['ref_vectF'][0]
     ext_dir = list(np.cross(ref_vect, pl_normal))
     max_ext_dir = max(ext_dir)
     coord_dir = ext_dir.index(max_ext_dir)
@@ -1350,7 +1352,7 @@ def get_cube_clRibbon(organ, plotshow=True):
         # vp.show(mask_cube, test_rib, mesh_cl.mesh,  at=0,  interactive = True)
 
     s3_filledCube = s3_filledCube.astype('uint8')
-    return s3_filledCube, mask_cube
+    return s3_filledCube, mask_cube, ext_dir
 
     q = 'Are you happy with the ribbon cube?'
     res = {0: 'no', 1:'yes, continue!'}
@@ -1370,8 +1372,18 @@ def get_cube_clRibbon(organ, plotshow=True):
         
         obj = [(mask_cube), (mask_cubeB)]
         txt = [(0, organ.user_organName)]
-        fcMeshes.plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+        fcMeshes.plot_grid(obj=obj, txt=txt, axes=1, sc_side=max(organ.get_maj_bounds()))
 
+        #Find the plane that is parallel to ext_dir
+        for plane in organ.mH_settings['organ_orientation']['planar_views']:
+            pl_normal = organ.mH_settings['organ_orientation']['planar_views'][plane]['pl_normal']
+            dotv = np.dot(pl_normal, ext_dir)
+            magx = np.linalg.norm(ext_dir)*np.linalg.norm(pl_normal)
+            ang = math.degrees(math.acos(dotv/magx))
+            if ang == float(0): 
+                print(plane, ang)
+            
+        
         def select_section1(evt):
             if not evt.actor:
                 return

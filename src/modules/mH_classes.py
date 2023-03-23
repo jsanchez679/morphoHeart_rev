@@ -34,6 +34,15 @@ heart_default=False
 dict_gui = {'alert_all': alert_all,
             'heart_default': heart_default}
 
+#%% Set default fonts and sizes for plots
+txt_font = 'Dalim'
+leg_font = 'LogoType' # 'Quikhand' 'LogoType'  'Dalim'
+leg_width = 0.18
+leg_height = 0.2
+txt_size = 0.7
+txt_color = '#696969'
+txt_slider_size = 0.8
+
 #%% ##### - Authorship - #####################################################
 __author__     = 'Juliana Sanchez-Posada'
 __license__    = 'MIT'
@@ -1181,7 +1190,75 @@ class Organ():
             return True
         else:
             return False  
-                    
+    
+    def get_organ_imaged_orientation(self):
+        ext_ch, _ = self.get_ext_int_chs()
+        mesh_ext = self.obj_meshes[ext_ch.channel_no+'_tiss']
+        
+        pos = mesh_ext.mesh.center_of_mass()
+        side = max(self.get_maj_bounds())
+        orient_cube = vedo.Cube(pos=pos, side=side, c='midnight blue')#[90,156,254,255]
+        orient_cube.linewidth(1).force_opaque()
+        
+        orient_cube.pos(pos)
+        orient_cube_clear = orient_cube.clone().alpha(0.5)
+        
+        def select_cube_face(evt):
+            orient_cube = evt.actor
+            if not orient_cube:
+                return
+            pt = evt.picked3d
+            idcell = orient_cube.closest_point(pt, return_cell_id=True)
+            print('You clicked (idcell):', idcell)
+            if set(orient_cube.cellcolors[idcell]) == set(color_o):
+                orient_cube.cellcolors[idcell] = color_selected #RGBA 
+                for cell_no in range(len(orient_cube.cells())):
+                    if cell_no != idcell and cell_no not in selected_faces: 
+                        orient_cube.cellcolors[cell_no] = color_o #RGBA 
+                        
+            # elif set(orient_cube.cellcolors[idcell]) == set(color_selected):
+            #     orient_cube.cellcolors[idcell] = color_o #RGBA 
+            #     for cell_no in range(len(orient_cube.cells())):
+            #         # print(cell_no)
+            #         if cell_no != idcell: 
+            #             orient_cube.cellcolors[cell_no] = color_selected #RGBA 
+                        
+            planar_views[planar_view]['idcell'] = idcell
+            cells = orient_cube.cells()[idcell]
+            points = [orient_cube.points()[cell] for cell in cells]
+            
+            plane_fit = vedo.fit_plane(points, signed=True)
+            planar_views[planar_view]['pl_normal'] = plane_fit.normal
+            msg.text('You selected face number: '+str(idcell)+' as '+planar_view.upper()+' face')
+            
+        color_o = [25,25,112,255]
+        color_top = [255,215,0,200]
+        color_ventral = [220,20,60,200]
+        color_left = [144,238,144,200]
+        
+        planar_views = {'top': {'color': color_top}, 
+                        'ventral': {'color': color_ventral}, 
+                        'left': {'color': color_left}}
+        
+        selected_faces = []
+        for planar_view in planar_views.keys(): 
+            print('Selecting '+planar_view.upper()+'...')
+            color_selected = planar_views[planar_view]['color']
+            
+            msg = vedo.Text2D("", pos="bottom-center", c='k', bg='white', alpha=0.8, s=txt_size)
+            txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select '+planar_view.upper()+' planar view ...', c=txt_color, font=txt_font, s=txt_size)
+            txt1 = vedo.Text2D('Select (click) the cube face that represents the '+planar_view.upper()+' face and \nclose the window when done.\nNote: The face that is last selected will be used for that planar face.', c=txt_color, font=txt_font, s=txt_size)
+          
+            plt = vedo.Plotter(N=2, axes=1)
+            plt.add_callback("mouse click", select_cube_face)
+            plt.show(mesh_ext.mesh, orient_cube_clear, txt0, at=0)
+            plt.show(orient_cube, txt1, msg, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)        
+            
+            selected_faces.append(planar_views[planar_view]['idcell'])
+            
+        self.mH_settings['organ_orientation'] = {'planar_views': planar_views}
+        
+        
     def get_orientation(self, plane:str, ref_vect='Y+'):
         # Select the mesh to use to measure organ orientation
         
@@ -1217,11 +1294,11 @@ class Organ():
         
         # print('pts:', pts)
         angle = find_angle_btw_pts(pts, ref_vectF)
-        self.mH_settings['organ_orientation'] = {'plane': plane, 
-                                                 'ref_vect': ref_vect,
-                                                 'ref_vectF': ref_vectF,
-                                                 'orient_vect': pts,
-                                                 'angle_deg': angle}
+        self.mH_settings['organ_orientation']['organ_specific'] = {'plane': plane, 
+                                                                     'ref_vect': ref_vect,
+                                                                     'ref_vectF': ref_vectF,
+                                                                     'orient_vect': pts,
+                                                                     'angle_deg': angle}
 
     def get_maj_bounds(self):
         x_b = 0; y_b = 0; z_b = 0
