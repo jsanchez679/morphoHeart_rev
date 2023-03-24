@@ -1355,16 +1355,41 @@ def get_cube_clRibbon(organ, plotshow=True):
         txt = [(0, organ.user_organName)]
         fcMeshes.plot_grid(obj=obj, txt=txt, axes=1, sc_side=max(organ.get_maj_bounds()))
 
-        #Find the plane that is parallel to ext_dir
-        coord_ax = cl_settings['coord_ax']
-        view = cl_settings['planar_view']
-        for plane in organ.mH_settings['orientation'][coord_ax]['planar_views']:
-            pl_normal = organ.mH_settings['orientation'][coord_ax]['planar_views'][plane]['pl_normal']
-            dotv = np.dot(pl_normal, ext_dir)
-            magx = np.linalg.norm(ext_dir)*np.linalg.norm(pl_normal)
-            ang = math.degrees(math.acos(dotv/magx))
-            if ang == float(0): 
-                print(plane, ang)
+        sides = [mask_cube, mask_cubeB]
+      
+        def func(evt):
+            sides = evt.actor
+            if not evt.actor:
+                return
+            sil = evt.actor.silhouette().linewidth(6).c('red5')
+            sil.name = "silu" # give it a name so we can remove the old one
+            msg.text("You clicked: "+evt.actor.info['legend'])
+            plt.remove('silu').add(sil)
+        
+        msg = vedo.Text2D("", pos="bottom-center", c='k', bg='r9', alpha=0.8)
+        
+        # plt = Plotter(axes=1, bg='black')
+        # plt.add_callback('mouse click', func)
+        # plt.show(spheres, msg, __doc__, zoom=1.2)
+        # plt.close()
+
+        plt = vedo.Plotter(N=1, axes=5)
+        txto = organ.user_organName+' - Select the mask that corresponds to Section No.1: '+organ.mH_settings['general_info']['sections']['name_sections']['sect1']
+        txt = vedo.Text2D(txto, c=txt_color, font=txt_font, s=txt_size)
+        plt.add_callback('mouse click', func)
+        plt.show(sides, txt, msg, at=0, zoom=1, interactive=True)
+        plt.close()
+        
+        # #Find the plane that is parallel to ext_dir
+        # coord_ax = cl_settings['coord_ax']
+        # view = cl_settings['planar_view']
+        # for plane in organ.mH_settings['orientation'][coord_ax]['planar_views']:
+        #     pl_normal = organ.mH_settings['orientation'][coord_ax]['planar_views'][plane]['pl_normal']
+        #     dotv = np.dot(pl_normal, ext_dir)
+        #     magx = np.linalg.norm(ext_dir)*np.linalg.norm(pl_normal)
+        #     ang = math.degrees(math.acos(dotv/magx))
+        #     if ang == float(0): 
+        #         print(plane, ang)
             
         
         def select_section1(evt):
@@ -1403,11 +1428,7 @@ def get_cube_clRibbon(organ, plotshow=True):
             # organ.s3_mask_sect = s3
             # organ.vol_mask_sect = mask_cube
             
-        plt = vedo.Plotter(N=1, axes=5)
-        txto = organ.user_organName+' - Select the mask that corresponds to Section No.1: '+organ.mH_settings['general_info']['sections']['name_sections']['sect1']
-        txt = vedo.Text2D(txto, c=txt_color, font=txt_font, s=txt_size)
-        plt.add_callback('mouse click', select_section1)
-        plt.show(mask_cube, txt, at=0, zoom=1, interactive=True)
+        
             
         plt = vedo.Plotter()
         plt.add_callback("mouse click", select_section1)
