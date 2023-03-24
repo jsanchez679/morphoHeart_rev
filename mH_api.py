@@ -502,24 +502,36 @@ if partC:
     # Get volume measurements
     fcMeshes.measure_volume(organ)
     fcMeshes.measure_area(organ)
-    organ.get_organ_imaged_orientation()
+    
+    from itertools import count
+    colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
+    views = ['top', 'ventral', 'left']
+    planar_views = {}
+    for n, view, color in zip(count(), views, colors): 
+        planar_views[view] = {'color': color}
+    
+    organ.get_stack_orientation(planar_views)
     
     # Get organ orientation
     plane = 'YZ'
     ref_vect = 'Y+'
-    organ.get_orientation(plane='YZ',ref_vect=ref_vect)
+    planar_views = {}
+    for n, view, color in zip(count(), views, colors): 
+        planar_views[view] = {'color': color}
+    organ.get_ROI_orientation(planar_views, plane='YZ',ref_vect=ref_vect)
     
-    #%%
     # Get organ centreline ribbon 
-    nRes = 601; nPoints = 300; clRib_type = 'extDV'
+    nRes = 601; nPoints = 300; clRib_type = 'ext2sides'
     fcMeshes.get_organ_ribbon(organ, nRes, nPoints, clRib_type)
     
+    #%%
     organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
-    cl_settings =  organ.mH_settings['organ_orientation']['organ_specific']['cl_ribbon']
+    cl_settings =  organ.mH_settings['orientation']['cl_ribbon']
     mesh_cl = organ.obj_meshes[cl_settings['mesh_cl']]
     res = mesh_cl.resolution
     import copy
     import numpy as np
+    import math
     
     s3_filledCube, mask_cube, ext_dir = fcMeshes.get_cube_clRibbon(organ, plotshow=True)
     
@@ -649,6 +661,41 @@ if partC:
     plt.add_callback('mouse click', func)
     plt.show(s1, s2, msg, __doc__, zoom=1.2)
     plt.close()
+
+
+#%%
+"""Render meshes into inset windows
+(which can be dragged)"""
+from vedo import *
+
+plt = Plotter(bg2='bisque', size=(1000,800), interactive=False)
+
+e = Volume(dataurl+"embryo.tif").isosurface()
+e.normalize().shift(-2,-1.5,-2).c("gold")
+
+plt.show(e, __doc__, viewup='z')
+
+# make clone copies of the embryo surface and cut them:
+e1 = e.clone().cut_with_plane(normal=[0,1,0]).c("green4")
+e2 = e.clone().cut_with_plane(normal=[1,0,0]).c("red5")
+
+# add 2 draggable inset windows:
+plt.add_inset(e1, pos=(0.9,0.8))
+plt.add_inset(e2, pos=(0.9,0.5))
+
+# customised axes can also be inserted:
+ax = Axes(
+    xrange=(0,1), yrange=(0,1), zrange=(0,1),
+    xtitle='front', ytitle='left', ztitle='head',
+    yzgrid=False, xtitle_size=0.15, ytitle_size=0.15, ztitle_size=0.15,
+    xlabel_size=0, ylabel_size=0, zlabel_size=0, tip_size=0.05,
+    axes_linewidth=2, xline_color='dr', yline_color='dg', zline_color='db',
+    xtitle_offset=0.05, ytitle_offset=0.05, ztitle_offset=0.05,
+)
+
+ex = e.clone().scale(0.25).pos(0,0.1,0.1).alpha(0.1).lighting('off')
+plt.add_inset(ax, ex, pos=(0.1,0.1), size=0.15, draggable=False)
+plt.interactive().close()
 
 #%% To do: 
     #D update workflow when maesuring centrelines

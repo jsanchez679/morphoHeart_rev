@@ -1191,14 +1191,25 @@ class Organ():
         else:
             return False  
     
-    def get_organ_imaged_orientation(self):
+    def get_stack_orientation(self, planar_views):
+        
+        im_orient = self.info['im_orientation']
+        rotateY = False
+        if im_orient == 'custom': 
+            cust_angle = self.info['custom_angle']
+            rotateY = True
+        
         ext_ch, _ = self.get_ext_int_chs()
         mesh_ext = self.obj_meshes[ext_ch.channel_no+'_tiss']
         
         pos = mesh_ext.mesh.center_of_mass()
         side = max(self.get_maj_bounds())
-        orient_cube = vedo.Cube(pos=pos, side=side, c='midnight blue')#[90,156,254,255]
+        color_o = [152,251,152,255]
+        orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
         orient_cube.linewidth(1).force_opaque()
+        
+        if rotateY: 
+            orient_cube.rotate_y(cust_angle)
         
         orient_cube.pos(pos)
         orient_cube_clear = orient_cube.clone().alpha(0.5)
@@ -1216,13 +1227,6 @@ class Organ():
                     if cell_no != idcell and cell_no not in selected_faces: 
                         orient_cube.cellcolors[cell_no] = color_o #RGBA 
                         
-            # elif set(orient_cube.cellcolors[idcell]) == set(color_selected):
-            #     orient_cube.cellcolors[idcell] = color_o #RGBA 
-            #     for cell_no in range(len(orient_cube.cells())):
-            #         # print(cell_no)
-            #         if cell_no != idcell: 
-            #             orient_cube.cellcolors[cell_no] = color_selected #RGBA 
-                        
             planar_views[planar_view]['idcell'] = idcell
             cells = orient_cube.cells()[idcell]
             points = [orient_cube.points()[cell] for cell in cells]
@@ -1231,15 +1235,6 @@ class Organ():
             planar_views[planar_view]['pl_normal'] = plane_fit.normal
             msg.text('You selected face number: '+str(idcell)+' as '+planar_view.upper()+' face')
             
-        color_o = [25,25,112,255]
-        color_top = [255,215,0,200]
-        color_ventral = [220,20,60,200]
-        color_left = [144,238,144,200]
-        
-        planar_views = {'top': {'color': color_top}, 
-                        'ventral': {'color': color_ventral}, 
-                        'left': {'color': color_left}}
-        
         selected_faces = []
         for planar_view in planar_views.keys(): 
             print('Selecting '+planar_view.upper()+'...')
@@ -1247,7 +1242,7 @@ class Organ():
             
             msg = vedo.Text2D("", pos="bottom-center", c='k', bg='white', alpha=0.8, s=txt_size)
             txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select '+planar_view.upper()+' planar view ...', c=txt_color, font=txt_font, s=txt_size)
-            txt1 = vedo.Text2D('Select (click) the cube face that represents the '+planar_view.upper()+' face and \nclose the window when done.\nNote: The face that is last selected will be used for that planar face.', c=txt_color, font=txt_font, s=txt_size)
+            txt1 = vedo.Text2D('Select (click) the cube face that represents the '+planar_view.upper()+' face and close the window when done.\nNote: The face that is last selected will be used for that planar face.', c=txt_color, font=txt_font, s=txt_size)
           
             plt = vedo.Plotter(N=2, axes=1)
             plt.add_callback("mouse click", select_cube_face)
@@ -1256,12 +1251,26 @@ class Organ():
             
             selected_faces.append(planar_views[planar_view]['idcell'])
             
-        self.mH_settings['organ_orientation'] = {'planar_views': planar_views}
+        self.mH_settings['orientation'] = {'stack': {'planar_views': planar_views}}
         
+    def get_ROI_orientation(self, planar_views:dict, plane:str, ref_vect='Y+'):
         
-    def get_orientation(self, plane:str, ref_vect='Y+'):
+        q = 'How do you want to define the Organ (ROI) orientation?:'
+        res = {0: 'I want to use the centreline (project linLine, measure angle and define ROI orientation', 
+               1: 'I want to use the same images orientation defined',
+               2: 'Other...'}
+        opt = ask4input(q, res, int)
+        
+        if opt == 0: 
+            self.orient_by_cl(planar_views, plane, ref_vect)
+        elif opt == 1: 
+            print('Opt1: Code under development!')
+        elif opt == 2: 
+            print('Opt2: Code under development!')
+        
+    def orient_by_cl(self, planar_views:dict, plane:str, ref_vect='Y+'):
+        
         # Select the mesh to use to measure organ orientation
-        
         dict_cl = plot_organCLs(self)
         q = 'Select the centreline you want to use to measure organ orientation:'
         extend_dir = ask4input(q, dict_cl, int)
@@ -1273,32 +1282,87 @@ class Organ():
         cl_mesh = self.obj_meshes[ch+'_'+cont]
         linLine = cl_mesh.get_linLine()
         pts = linLine.points()
-        # print('pts:', pts)
         
-        if plane=='XY':
-            coord = 2
-        elif plane=='YZ':
-            coord = 0
-        elif plane=='XZ':
-            coord = 1
-            
+        plane_coord = {'XY': 2, 'YZ': 0, 'XZ': 1}
         if isinstance(ref_vect, str):
             ref_vectAll = {'X+': np.array([[1,0,0],[0,0,0]]),
                            'Y+': np.array([[0,1,0],[0,0,0]]),
                            'Z+': np.array([[0,0,1],[0,0,0]])}
             ref_vectF = ref_vectAll[ref_vect]
             
-        # print('ref_vect:', ref_vect)
+        coord = plane_coord[plane]
         for pt in pts: 
             pt[coord] = 0
         
-        # print('pts:', pts)
         angle = find_angle_btw_pts(pts, ref_vectF)
-        self.mH_settings['organ_orientation']['organ_specific'] = {'plane': plane, 
-                                                                     'ref_vect': ref_vect,
-                                                                     'ref_vectF': ref_vectF,
-                                                                     'orient_vect': pts,
-                                                                     'angle_deg': angle}
+        
+        pos = cl_mesh.mesh.center_of_mass()
+        side = max(self.get_maj_bounds())  
+        color_o = [152,251,152,255]
+        orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
+        orient_cube.linewidth(1).force_opaque()
+        
+        if angle != 0: 
+            if coord == 0: 
+                orient_cube.rotate_x(angle)
+            elif coord == 1: 
+                orient_cube.rotate_y(angle)
+            elif coord == 2: 
+                orient_cube.rotate_z(angle)
+        
+        orient_cube.pos(pos)
+        orient_cube_clear = orient_cube.clone().alpha(0.5)
+        
+        def select_cube_face(evt):
+            orient_cube = evt.actor
+            if not orient_cube:
+                return
+            pt = evt.picked3d
+            idcell = orient_cube.closest_point(pt, return_cell_id=True)
+            print('You clicked (idcell):', idcell)
+            if set(orient_cube.cellcolors[idcell]) == set(color_o):
+                orient_cube.cellcolors[idcell] = color_selected #RGBA 
+                for cell_no in range(len(orient_cube.cells())):
+                    if cell_no != idcell and cell_no not in selected_faces: 
+                        orient_cube.cellcolors[cell_no] = color_o #RGBA 
+                        
+            planar_views[planar_view]['idcell'] = idcell
+            cells = orient_cube.cells()[idcell]
+            points = [orient_cube.points()[cell] for cell in cells]
+            
+            plane_fit = vedo.fit_plane(points, signed=True)
+            planar_views[planar_view]['pl_normal'] = plane_fit.normal
+            msg.text('You selected face number: '+str(idcell)+' as '+planar_view.upper()+' face')
+            
+        color_o = [152,251,152,255]
+        
+        selected_faces = []
+        for planar_view in planar_views.keys(): 
+            print('Selecting '+planar_view.upper()+'...')
+            color_selected = planar_views[planar_view]['color']
+            
+            msg = vedo.Text2D("", pos="bottom-center", c='k', bg='white', alpha=0.8, s=txt_size)
+            txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select '+planar_view.upper()+' planar view ...', c=txt_color, font=txt_font, s=txt_size)
+            txt1 = vedo.Text2D('Select (click) the cube face that represents the '+planar_view.upper()+' face and close the window when done.\nNote: The face that is last selected will be used for that planar face.', c=txt_color, font=txt_font, s=txt_size)
+          
+            plt = vedo.Plotter(N=2, axes=1)
+            plt.add_callback("mouse click", select_cube_face)
+            plt.show(cl_mesh.mesh, orient_cube_clear, txt0, at=0)
+            plt.show(orient_cube, txt1, msg, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)        
+            
+            selected_faces.append(planar_views[planar_view]['idcell'])
+        
+        roi_dict = {'planar_views': planar_views, 
+                    'proj_plane': plane, 
+                    'ref_vect': ref_vect,
+                    'ref_vectF': ref_vectF,
+                    'orient_vect': pts,
+                    'angle_deg': angle}
+        
+        if 'orientation' not in list(self.mH_settings.keys()): 
+            self.mH_settings['orientation'] = {'ROI': roi_dict}
+        else: 
+            self.mH_settings['orientation']['ROI'] = roi_dict
 
     def get_maj_bounds(self):
         x_b = 0; y_b = 0; z_b = 0
@@ -2711,9 +2775,7 @@ class Mesh_mH():
         nn = -20
         inf_ext_normal = (pts_cl[nn]+(pts_cl[-1]-pts_cl[nn])*5)#*70
         outf_ext_normal = (pts_cl[0]+(pts_cl[0]-pts_cl[1])*100)#*70 (test for LnR cut Jun14.22)
-        # inf_ext_sphere = vedo.Sphere(pos=inf_ext_normal, r=3, c='purple').legend("sph_infCLExt")
-        # outf_ext_sphere = vedo.Sphere(pos=outf_ext_normal, r=3, c='purple').legend("sph_outfCLExt")
-    
+      
         pts_cl_ext = np.insert(pts_cl,0,np.transpose(outf_ext_normal), axis=0)
         pts_cl_ext = np.insert(pts_cl_ext,len(pts_cl_ext),np.transpose(inf_ext_normal), axis=0)
     
@@ -2727,44 +2789,18 @@ class Mesh_mH():
         t = np.linspace(0, u[-1], nRes)#601
         resamp_pts = interpn((u,), pts_cl_ext, t)
         kspl_ext = vedo.KSpline(resamp_pts, res=nRes).color('purple').legend('ExtendedCL')#601
-        # linLine = self.get_linLine(nPoints)
-        
-        # Create plane to project centreline
-        # extend_ventral = True #ask4input('You are processing a heart that came from an incross of spaw heterozygous.\n  Please, select the way this heart is looping to continue processing: \n\t[0]: right-left\n\t[1]: dorso-ventral >>>: ', bool)
-        # im_orient = self.parent_organ.info['im_orientation']
-        # cust_angle = self.parent_organ.info['custom_angle']
-        # if extend_ventral and im_orient == 'ventral' and cust_angle == 0: 
-        #     #spaw_analysis = False
-        #     linLineX = linLine.clone().project_on_plane('x').c(linLine.color()).x(0)
-        #     azimuth = 0
-        # elif im_orient == 'dorsal': 
-        #     #spaw_analysis = False 
-        #     linLineX = linLine.clone().project_on_plane('z').c(linLine.color()).z(0)
-        #     azimuth = -90
-        # else:
-        #     #spaw_analysis = True 
-        #     linLineX = linLine.clone().project_on_plane('z').c(linLine.color()).z(150)
-        #     azimuth = 0
-            
-        # ptsPl_linLine = vedo.Points([linLineX.points()[0], linLine.points()[0], linLine.points()[1]])
-        # pl_linLine = vedo.fit_plane(ptsPl_linLine.points()).scale(4).c('mediumaquamarine').alpha(1).legend('pl_Parallel2LinLine')
-        # pl_linLine_normal = pl_linLine.normal
-        # pl_linLine_centre = pl_linLine.center
-        # # dict_planes = addPlanes2Dict(planes = [pl_linLine], pls_centre = [pl_linLine_centre],
-        # #                                         pls_normal = [pl_linLine_normal], info = [''], dict_planes = dict_planes)
     
-        # pl_linLine_unitNormal = unit_vector(pl_linLine_normal)
         pl_linLine_unitNormal = unit_vector(pl_normal)
         pl_linLine_unitNormal120 = pl_linLine_unitNormal*120
     
-        if clRib_type == 'extDV': # Names are switched but it works
+        if clRib_type == 'ext2sides': # Names are switched but it works
             x_cl, y_cl, z_cl = pl_linLine_unitNormal120
-            kspl_ext_D = kspl_ext.clone().x(x_cl).y(y_cl).z(z_cl).legend('kspl_CLExtD')
-            kspl_ext_V = kspl_ext.clone().x(-x_cl).y(-y_cl).z(-z_cl).legend('kspl_CLExtV')
+            kspl_ext_D = kspl_ext.clone().x(x_cl).y(y_cl).z(z_cl).legend('kspl_CLExt1')
+            kspl_ext_V = kspl_ext.clone().x(-x_cl).y(-y_cl).z(-z_cl).legend('kspl_CLExt2')
             cl_ribbon = vedo.Ribbon(kspl_ext_D, kspl_ext_V, alpha=0.2, res=(1500, 1500))
-            cl_ribbon = cl_ribbon.wireframe(True).legend("rib_ExtCL(D-V)")
+            cl_ribbon = cl_ribbon.wireframe(True).legend("rib_ExtCL(2-sides)")
     
-        elif clRib_type == 'extV':
+        elif clRib_type == 'ext1side':
             x_ucl, y_ucl, z_ucl = pl_linLine_unitNormal*15
             cl_ribbon = []
             for i in range(10):
@@ -2773,7 +2809,7 @@ class Mesh_mH():
                 cl_ribbon2un = vedo.Ribbon(kspl_ext_DA, kspl_ext_DB, alpha=0.2, res=(220, 5))
                 cl_ribbon.append(cl_ribbon2un)
             cl_ribbon = vedo.merge(cl_ribbon)
-            cl_ribbon.legend('rib_ExtCL(V)').wireframe(True)
+            cl_ribbon.legend('rib_ExtCL(1-side)').wireframe(True)
     
         elif clRib_type == 'HDStack':
             x_ul, y_ul, z_ul = pl_linLine_unitNormal*2
@@ -2790,22 +2826,7 @@ class Mesh_mH():
                 cl_ribbon.append(cl_ribbon2un)
             cl_ribbon = vedo.merge(cl_ribbon)
             cl_ribbon.legend('HDStack').wireframe(True)
-    
-        # dict_shapes = addShapes2Dict (shapes = [cl_ribbon], dict_shapes = dict_shapes, radius = [[]])
-        # if clRib_type == 'extDV':
-        #     dict_kspl = addKSplines2Dict(kspls = [kspl_ext_D, kspl_ext, kspl_ext_V], info = ['','', ''], dict_kspl = dict_kspl)
-    
-        # if plotshow:
-        #     text = self.parent_organ.user_organName+"\n\n >> Creating Extended Centreline ("+clRib_type+")"
-        #     txt = vedo.Text2D(text, c="k")
-    
-        #     elevation = 0#df_res.loc[file_num,'ang_Heart']
-        #     vp = vedo.Plotter(N=1, axes=8)
-        #     vp.show(self.mesh, linLine, linLineX, cl, kspl_ext, inf_ext_sphere, outf_ext_sphere, cl_ribbon, txt, at=0, azimuth = azimuth, elevation = elevation, interactive=1)
-
-        # if clRib_type == 'HDStack':
-        #     return rib_pts, cl_ribbon
-        # else:
+            
         return cl_ribbon
         
     def get_volume(self): 

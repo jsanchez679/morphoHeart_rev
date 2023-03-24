@@ -1038,125 +1038,158 @@ def getDistance2(mesh_to, mesh_from, from_name, color_map='turbo'):
 #%% func - get_organ_ribbon
 def get_organ_ribbon(organ, nRes, nPoints, clRib_type): 
     
-    im_orient = organ.info['im_orientation']
-    cust_angle = organ.info['custom_angle']
-    rotateY = False
-    if im_orient != 'ventral' and cust_angle != 0:
-        rotateY = True
-
-    angle = organ.mH_settings['organ_orientation']['organ_specific']['angle_deg']
-    if angle != 0: 
-        rotate = True
+    q = 'Select the coordinate-axes you would like to use to define the plane in which the centreline will be extended to cut organ into sections:'
+    res = {0: 'stack Coordinate Axes', 
+           1: 'ROI (Organ) Specific Coordinate Axes', 
+           2: 'Other'}
+    opt = ask4input(q, res, int)
     
-    # Find the external mesh to demonstrate the sections cut using extended centreline ribbon
-    sect_names = [item for item in organ.parent_project.mH_param2meas if 'sect1' in item]
-    ext_ch, _ = organ.get_ext_int_chs()
-    # Check if that mesh is going to be cut into sections
-    if any(ext_ch.channel_no in flag for (flag,_,_,_) in sect_names):
-        mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_tiss']
+    if opt in [0,1]: 
+        coord_ax = organ.mH_settings['orientation'][res[opt].split(' ')[0]]
+        views = {}
+        for n, view in enumerate(list(coord_ax['planar_views'].keys())):
+            views[n] = view
+        q2 = 'From the -'+res[opt]+'- select the plane you want to use to extend the centreline: '
+        opt2 = ask4input(q2, views, int)
+        
+        plane_normal = coord_ax['planar_views'][views[opt2]]['pl_normal']
+        
+        #% Mesh centreline
+        # Select the centreline you want to use to cut organ into sides
+        dict_cl = plot_organCLs(organ)
+        q = 'Select the centreline you want to use to cut organ into sections:'
+        select = ask4input(q, dict_cl, int)
+        
+        ch_cont_cl = dict_cl[select].split(' (')[1].split('-')
+        ch = ch_cont_cl[0]
+        cont = ch_cont_cl[1]
+        mesh_cl = organ.obj_meshes[ch+'_'+cont]
+        
+        organ.mH_settings['orientation']['cl_ribbon'] = {'coord_ax': res[opt].split(' ')[0],
+                                                         'planar_view': views[opt2],
+                                                         'mesh_cl': ch+'_'+cont,
+                                                         'pl_normal': plane_normal,
+                                                         'nRes': nRes,
+                                                         'nPoints': nPoints, 
+                                                         'cl_type': clRib_type}
+        
+        cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+                              pl_normal=plane_normal, 
+                              clRib_type=clRib_type)
+        
+        obj = [(mesh_cl.mesh, cl_ribbon)]
+        txt = [(0, organ.user_organName+'- Extended Centreline Ribbon to cut organ into sides')]
+        plot_grid(obj=obj, txt=txt, axes=8, sc_side=max(organ.get_maj_bounds()))
+        
     else: 
-        mesh_ext = organ.obj_meshes[sect_names[0][0]+'_'+sect_names[0][1]]
-    
-    pos = mesh_ext.mesh.center_of_mass()
-    sph = vedo.Sphere(pos=pos,r=2,c='black')
-    side = max(organ.get_maj_bounds())
-    orient_cube = vedo.Cube(pos=pos, side=side, c='blue7')#[90,156,254,255]
-    orient_cube.linewidth(1).force_opaque()
-    
-    plane = organ.mH_settings['organ_orientation']['organ_specific']['plane']
-    if rotate: 
-        pos_rot = newNormal3DRot(pos, [angle], [0], [0])
-        sph_rot = vedo.Sphere(pos=pos_rot,r=2,c='tomato')
-        if plane=='XY':
-            orient_cube.rotate_z(angle, rad=False)
-            sph.rotate_z(angle, rad=False)
-        elif plane=='YZ':
-            orient_cube.rotate_x(angle, rad=False)
-            sph.rotate_x(angle, rad=False)
-        elif plane=='XZ':
-            orient_cube.rotate_y(angle, rad=False)
-            sph.rotate_y(angle, rad=False)
-    
-    if rotateY: 
-        orient_cube.rotate_y(cust_angle, rad=False)
-        sph.rotate_z(cust_angle, rad=False)
-    
-    pos = mesh_ext.mesh.center_of_mass()
-    orient_cube.pos(pos)
-    sph_COM = vedo.Sphere(pos=pos,r=5,c='gold')
-    
-    #% Mesh centreline
-    # Select the centreline you want to use to cut organ into sides
-    dict_cl = plot_organCLs(organ)
-    q = 'Select the centreline you want to use to cut organ into sections:'
-    select = ask4input(q, dict_cl, int)
-    
-    ch_cont_cl = dict_cl[select].split(' (')[1].split('-')
-    ch = ch_cont_cl[0]
-    cont = ch_cont_cl[1]
-    mesh_cl = organ.obj_meshes[ch+'_'+cont]
-
-    orient_cube_clear = orient_cube.clone().alpha(0.5)
-    
-    def select_cube_face(evt):
-        color_o = [90,156,254,255]
-        color_selected = [255,0,0,200]
+        print('Opt2: Code under development!')
         
-        orient_cube = evt.actor
-        if not orient_cube:
-            return
-        pt = evt.picked3d
-        idcell = orient_cube.closest_point(pt, return_cell_id=True)
-        print('You clicked (idcell):', idcell)
-        if set(orient_cube.cellcolors[idcell]) == set(color_o):
-            orient_cube.cellcolors[idcell] = color_selected #RGBA 
-            for cell_no in range(len(orient_cube.cells())):
-                # print(cell_no)
-                if cell_no != idcell: 
-                    orient_cube.cellcolors[cell_no] = color_o #RGBA 
-                    
-        elif set(orient_cube.cellcolors[idcell]) == set(color_selected):
-            orient_cube.cellcolors[idcell] = color_o #RGBA 
-            for cell_no in range(len(orient_cube.cells())):
-                # print(cell_no)
-                if cell_no != idcell: 
-                    orient_cube.cellcolors[cell_no] = color_selected #RGBA 
-                    
-        cells = orient_cube.cells()[idcell]
-        points = [orient_cube.points()[cell] for cell in cells]
+        # sect_names = [item for item in organ.parent_project.mH_param2meas if 'sect1' in item]
+        # ext_ch, _ = organ.get_ext_int_chs()
+        # if any(ext_ch.channel_no in flag for (flag,_,_,_) in sect_names):
+        #     mesh_ext = organ.obj_meshes[ext_ch.channel_no+'tiss']
+        # else: 
+        #     mesh_ext = organ.obj_meshes[sect_names[0][0]+'_'+sect_names[0][1]]
+       
+        # pos = mesh_ext.mesh.center_of_mass()
+        # sph = vedo.Sphere(pos=pos,r=2,c='black')
+        # side = max(organ.get_maj_bounds())
         
-        plane_fit = vedo.fit_plane(points, signed=True)
-        # print('normal:',plane_fit.normal, 'center:',plane_fit.center)
-        organ.mH_settings['organ_orientation']['organ_specific']['cl_ribbon'] = {'mesh_cl': ch+'_'+cont,
-                                                                               'pl_normal': plane_fit.normal,
-                                                                               'nRes': nRes,
-                                                                               'nPoints': nPoints, 
-                                                                               'cl_type': clRib_type,
-                                                                               'rotateY': rotateY, 
-                                                                               'cust_angle': cust_angle}
+        # color_o = [90,156,254,255]
+        # orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
+        # orient_cube.linewidth(1).force_opaque()
+        
+        # plane = organ.mH_settings['organ_orientation']['organ_specific']['plane']
+        # if rotate: 
+        #     pos_rot = newNormal3DRot(pos, [angle], [0], [0])
+        #     sph_rot = vedo.Sphere(pos=pos_rot,r=2,c='tomato')
+        #     if plane=='XY':
+        #         orient_cube.rotate_z(angle, rad=False)
+        #         sph.rotate_z(angle, rad=False)
+        #     elif plane=='YZ':
+        #         orient_cube.rotate_x(angle, rad=False)
+        #         sph.rotate_x(angle, rad=False)
+        #     elif plane=='XZ':
+        #         orient_cube.rotate_y(angle, rad=False)
+        #         sph.rotate_y(angle, rad=False)
+        
+        # if rotateY: 
+        #     orient_cube.rotate_y(cust_angle, rad=False)
+        #     sph.rotate_z(cust_angle, rad=False)
+        
+        # pos = mesh_ext.mesh.center_of_mass()
+        # orient_cube.pos(pos)
+        # sph_COM = vedo.Sphere(pos=pos,r=5,c='gold')
+        
+        # #% Mesh centreline
+        # # Select the centreline you want to use to cut organ into sides
+        # dict_cl = plot_organCLs(organ)
+        # q = 'Select the centreline you want to use to cut organ into sections:'
+        # select = ask4input(q, dict_cl, int)
+        
+        # ch_cont_cl = dict_cl[select].split(' (')[1].split('-')
+        # ch = ch_cont_cl[0]
+        # cont = ch_cont_cl[1]
+        # mesh_cl = organ.obj_meshes[ch+'_'+cont]
     
-    txt0 = vedo.Text2D(organ.user_organName+' - Reference cube and mesh.', c=txt_color, font=txt_font, s=txt_size)
-    txt1 = vedo.Text2D('Select (click) cube face you want to use to extended centreline.\nNote: The face that is last selected will be used', c=txt_color, font=txt_font, s=txt_size)
-    plt = vedo.Plotter(N=2, axes=1)
-    plt.add_callback("mouse click", select_cube_face)
-    plt.show(mesh_ext.mesh, orient_cube_clear, txt0, at=0)
-    plt.show(orient_cube, txt1, at=1, azimuth=45, interactive=True)
-    
-    pl_normal = organ.mH_settings['organ_orientation']['organ_specific']['cl_ribbon']['pl_normal']
-    cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
-                          pl_normal=pl_normal, 
-                          clRib_type=clRib_type)
-    
-    txt0 = vedo.Text2D('Final selected face', c=txt_color, font=txt_font, s=txt_size)
-    txt1 = vedo.Text2D('Extended Centreline Ribbon to cut organ into sides', c=txt_color, font=txt_font, s=txt_size)
-    vp = vedo.Plotter(N=2,axes=8)
-    vp.show(mesh_ext.mesh, orient_cube_clear, sph, sph_rot, sph_COM, txt0, at=0)
-    vp.show(mesh_cl.mesh, cl_ribbon, txt1, at=1, interactive=True)
+        # orient_cube_clear = orient_cube.clone().alpha(0.5)
+        
+        # def select_cube_face(evt):
+        #     color_selected = [255,0,0,200]
+            
+        #     orient_cube = evt.actor
+        #     if not orient_cube:
+        #         return
+        #     pt = evt.picked3d
+        #     idcell = orient_cube.closest_point(pt, return_cell_id=True)
+        #     print('You clicked (idcell):', idcell)
+        #     if set(orient_cube.cellcolors[idcell]) == set(color_o):
+        #         orient_cube.cellcolors[idcell] = color_selected #RGBA 
+        #         for cell_no in range(len(orient_cube.cells())):
+        #             # print(cell_no)
+        #             if cell_no != idcell: 
+        #                 orient_cube.cellcolors[cell_no] = color_o #RGBA 
+                        
+        #     elif set(orient_cube.cellcolors[idcell]) == set(color_selected):
+        #         orient_cube.cellcolors[idcell] = color_o #RGBA 
+        #         for cell_no in range(len(orient_cube.cells())):
+        #             # print(cell_no)
+        #             if cell_no != idcell: 
+        #                 orient_cube.cellcolors[cell_no] = color_selected #RGBA 
+                        
+        #     cells = orient_cube.cells()[idcell]
+        #     points = [orient_cube.points()[cell] for cell in cells]
+            
+        #     plane_fit = vedo.fit_plane(points, signed=True)
+        #     # print('normal:',plane_fit.normal, 'center:',plane_fit.center)
+        #     organ.mH_settings['orientation']['cl_ribbon'] = {'mesh_cl': ch+'_'+cont,
+        #                                                         'pl_normal': plane_fit.normal,
+        #                                                         'nRes': nRes,
+        #                                                         'nPoints': nPoints, 
+        #                                                         'cl_type': clRib_type}
+     
+        # txt0 = vedo.Text2D(organ.user_organName+' - Reference cube and mesh.', c=txt_color, font=txt_font, s=txt_size)
+        # txt1 = vedo.Text2D('Select (click) cube face you want to use to extended centreline.\nNote: The face that is last selected will be used', c=txt_color, font=txt_font, s=txt_size)
+        # plt = vedo.Plotter(N=2, axes=1)
+        # plt.add_callback("mouse click", select_cube_face)
+        # plt.show(mesh_ext.mesh, orient_cube_clear, txt0, at=0)
+        # plt.show(orient_cube, txt1, at=1, azimuth=45, interactive=True)
+        
+        # pl_normal = organ.mH_settings['organ_orientation']['organ_specific']['cl_ribbon']['pl_normal']
+        # cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+        #                       pl_normal=pl_normal, 
+        #                       clRib_type=clRib_type)
+        
+        # txt0 = vedo.Text2D('Final selected face', c=txt_color, font=txt_font, s=txt_size)
+        # txt1 = vedo.Text2D('Extended Centreline Ribbon to cut organ into sides', c=txt_color, font=txt_font, s=txt_size)
+        # vp = vedo.Plotter(N=2,axes=8)
+        # vp.show(mesh_ext.mesh, orient_cube_clear, sph, sph_rot, sph_COM, txt0, at=0)
+        # vp.show(mesh_cl.mesh, cl_ribbon, txt1, at=1, interactive=True)
     
 #%% func - get_cube_clRibbon
 def get_cube_clRibbon(organ, plotshow=True):
     
-    cl_settings =  organ.mH_settings['organ_orientation']['organ_specific']['cl_ribbon']
+    cl_settings =  organ.mH_settings['orientation']['cl_ribbon']
     mesh_cl = organ.obj_meshes[cl_settings['mesh_cl']]
     cl_ribbon =  mesh_cl.get_clRibbon(nPoints=cl_settings['nPoints'], 
                                       nRes=cl_settings['nRes'], 
@@ -1168,12 +1201,11 @@ def get_cube_clRibbon(organ, plotshow=True):
     cl_ribbonF = cl_ribbon.clone().y(res[1])
     cl_ribbonT = cl_ribbon.clone().z(res[1])
     cl_ribbonS = [cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT]
-    # cl_ribbonAll = vedo.merge(cl_ribbonS)
 
-    if plotshow: 
-        obj = [(mesh_cl.mesh, cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT)]
-        txt = [(0, organ.user_organName)]
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+    # if plotshow: 
+    #     obj = [(mesh_cl.mesh, cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT)]
+    #     txt = [(0, organ.user_organName)]
+    #     plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
         
     #Load stack shape
     shape_s3 = organ.info['shape_s3']
@@ -1181,7 +1213,6 @@ def get_cube_clRibbon(organ, plotshow=True):
     print('shape_s3:',shape_s3, '- xdim:', xdim, '- ydim:',ydim, '- zdim:', zdim)
 
     # Rotate the points that make up the cl_ribbon, to convert them to a stack
-    # im_orient = organ.info['im_orientation']
     cust_angle = organ.info['custom_angle']
     
     if mesh_cl.rotateZ_90: #'CJ' not in filename: 
@@ -1234,24 +1265,21 @@ def get_cube_clRibbon(organ, plotshow=True):
     
     # Create volume of extended centreline mask
     test_rib = s3_to_mesh(s3_rib, res=res, name='Extended CL', color='darkmagenta')
-    if plotshow: 
-        obj = [(test_rib, mesh_cl.mesh)]
-        txt = [(0, organ.user_organName)]
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-        
-        # vp = vedo.Plotter(N=1, axes=1)
-        # vp.show(mesh_cl.mesh, test_rib, at=0, interactive = True)
+    # if plotshow: 
+    #     obj = [(test_rib, mesh_cl.mesh)]
+    #     txt = [(0, organ.user_organName)]
+    #     plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
         
     #Identify the direction in which the cubes need to be buit
     pl_normal = cl_settings['pl_normal']
-    ref_vect = organ.mH_settings['organ_orientation']['organ_specific']['ref_vectF'][0]
+    ref_vect = organ.mH_settings['orientation']['ROI']['ref_vectF'][0]
     ext_dir = list(np.cross(ref_vect, pl_normal))
     max_ext_dir = max(ext_dir)
     coord_dir = ext_dir.index(max_ext_dir)
     print('pl_normal:', pl_normal, '\nref_vect:', ref_vect, '\next_dir:', ext_dir, '\ncoord_dir:', coord_dir)
     
     if coord_dir == 0: 
-        print('Extending cube in the x direction')
+        print('Extending cube in the x? direction')
         for xpos in range(0,xdim):
             for zpos in range(0,zdim+2): 
                 yline = s3_filledCube[xpos,0:ydim,zpos]
@@ -1292,51 +1320,6 @@ def get_cube_clRibbon(organ, plotshow=True):
                     # else: 
                     #     s3_filledCube[xpos,ypos,0:index_z[0]] = 0
         
-    # For future development, create 4 different options of cuts and ask user to selec which one to use? 
-    # Maybe just if it is spaw or if user is not happy with the default one selected?
-    # happy = False; nn = 0; repeat = False
-    # if not happy and nn < 2: 
-    #     if not spaw_analysis: 
-    #         if im_orient == 'ventral':
-    #             for xpos in range(0,xdim):
-    #                 for zpos in range(0,zdim+2): 
-    #                     yline = s3_filledCube[xpos,0:ydim,zpos]
-    #                     index_y = np.where(yline == 0)[0]
-    #                     index_y = list(index_y)
-    #                     index_y.pop(0);index_y.pop(-1)
-    #                     if len(index_y) > 0:
-    #                         if not repeat: 
-    #                             s3_filledCube[xpos,index_y[0]:ydim,zpos] = 0
-    #                         else: # repeat: 
-    #                             s3_filledCube[xpos,0:index_y[0],zpos] = 0
-    #             print('AV')
-    #         else: 
-    #             for xpos in range(0,xdim):
-    #                 for ypos in range(0,ydim): 
-    #                     zline = s3_filledCube[xpos,ypos,0:zdim+2]
-    #                     index_z = np.where(zline == 0)[0]
-    #                     index_z = list(index_z)
-    #                     index_z.pop(0);index_z.pop(-1)
-    #                     if len(index_z) > 0:
-    #                         if not repeat: 
-    #                             s3_filledCube[xpos,ypos,index_z[0]:zdim+2] = 0
-    #                         else: 
-    #                             s3_filledCube[xpos,ypos,0:index_z[0]] = 0
-    #             print('AD')
-    #     else: 
-    #         for ypos in range(0,ydim):
-    #             for zpos in range(0,zdim+2): 
-    #                 xline = s3_filledCube[0:xdim,ypos,zpos]
-    #                 index_x = np.where(xline == 0)[0]
-    #                 index_x = list(index_x)
-    #                 index_x.pop(0);index_x.pop(-1)
-    #                 if len(index_x) > 0:#0
-    #                     if not repeat:
-    #                         s3_filledCube[index_x[-1]:xdim,ypos,zpos] = 0#[1]
-    #                     else:
-    #                         s3_filledCube[0:index_x[1],ypos,zpos] = 0#[0]
-    #         print('B')
-        
     alert('woohoo')
 
     #Create volume of filled side of extended centreline mask
@@ -1347,11 +1330,9 @@ def get_cube_clRibbon(organ, plotshow=True):
         obj = [(mask_cube, test_rib, mesh_cl.mesh)]
         txt = [(0, organ.user_organName)]
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-        
-        # vp = vedo.Plotter(N=1, axes = 1)
-        # vp.show(mask_cube, test_rib, mesh_cl.mesh,  at=0,  interactive = True)
-
+   
     s3_filledCube = s3_filledCube.astype('uint8')
+    
     return s3_filledCube, mask_cube, ext_dir
 
     q = 'Are you happy with the ribbon cube?'
@@ -1375,8 +1356,10 @@ def get_cube_clRibbon(organ, plotshow=True):
         fcMeshes.plot_grid(obj=obj, txt=txt, axes=1, sc_side=max(organ.get_maj_bounds()))
 
         #Find the plane that is parallel to ext_dir
-        for plane in organ.mH_settings['organ_orientation']['planar_views']:
-            pl_normal = organ.mH_settings['organ_orientation']['planar_views'][plane]['pl_normal']
+        coord_ax = cl_settings['coord_ax']
+        view = cl_settings['planar_view']
+        for plane in organ.mH_settings['orientation'][coord_ax]['planar_views']:
+            pl_normal = organ.mH_settings['orientation'][coord_ax]['planar_views'][plane]['pl_normal']
             dotv = np.dot(pl_normal, ext_dir)
             magx = np.linalg.norm(ext_dir)*np.linalg.norm(pl_normal)
             ang = math.degrees(math.acos(dotv/magx))
