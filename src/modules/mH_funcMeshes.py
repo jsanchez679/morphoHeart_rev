@@ -227,7 +227,7 @@ def trim_top_bottom_S3s(organ, cuts):
         #Define plane to cut bottom
         if any(cut_bott):
             #Define plane to cut bottom
-            plane_bott, pl_dict_bott = getPlane(filename=filename, 
+            plane_bott, pl_dict_bott = get_plane(filename=filename, 
                                                 txt = 'cut '+cuts_names['bottom'][name_dict],
                                                 meshes = meshes)    
             cuts_out['bottom']['plane_info_mesh'] = pl_dict_bott
@@ -239,7 +239,7 @@ def trim_top_bottom_S3s(organ, cuts):
         #Define plane to cut top
         if any(cut_top):
             #Define plane to cut top
-            plane_top, pl_dict_top = getPlane(filename=filename, 
+            plane_top, pl_dict_top = get_plane(filename=filename, 
                                               txt = 'cut '+cuts_names['top'][name_dict],
                                               meshes = meshes)
             cuts_out['top']['plane_info_mesh'] = pl_dict_top
@@ -418,13 +418,13 @@ def cutMeshes4CL(organ, tol, plot=True, printshow=True):
                         if planes_info[pl_cut] == None:
                             #Planes have not been initialised
                             print('-Planes have not been initialised for ', pl_cut)
-                            plane, pl_dict = getPlane(filename=filename, 
+                            plane, pl_dict = get_plane(filename=filename, 
                                                         txt = 'cut '+cuts_names[pl_cut][name_dict],
                                                         meshes = [sm_msh]) 
                         else:
                             print('-Planes have been initialised for ', pl_cut)
                             # Planes have been initialised
-                            plane, pl_dict = getPlane(filename=filename, 
+                            plane, pl_dict = get_plane(filename=filename, 
                                                         txt = 'cut '+cuts_names[pl_cut][name_dict],
                                                         meshes = [sm_msh], def_pl = planes_info[pl_cut]) 
                         
@@ -1202,11 +1202,6 @@ def get_cube_clRibbon(organ, plotshow=True):
     cl_ribbonT = cl_ribbon.clone().z(res[1])
     cl_ribbonS = [cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT]
 
-    # if plotshow: 
-    #     obj = [(mesh_cl.mesh, cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT)]
-    #     txt = [(0, organ.user_organName)]
-    #     plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-        
     #Load stack shape
     shape_s3 = organ.info['shape_s3']
     zdim, xdim, ydim = shape_s3
@@ -1265,11 +1260,7 @@ def get_cube_clRibbon(organ, plotshow=True):
     
     # Create volume of extended centreline mask
     test_rib = s3_to_mesh(s3_rib, res=res, name='Extended CL', color='darkmagenta')
-    # if plotshow: 
-    #     obj = [(test_rib, mesh_cl.mesh)]
-    #     txt = [(0, organ.user_organName)]
-    #     plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-        
+      
     #Identify the direction in which the cubes need to be buit
     pl_normal = cl_settings['pl_normal']
     ref_vect = organ.mH_settings['orientation']['ROI']['ref_vectF'][0]
@@ -1332,120 +1323,59 @@ def get_cube_clRibbon(organ, plotshow=True):
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
    
     s3_filledCube = s3_filledCube.astype('uint8')
-    
-    return s3_filledCube, mask_cube, ext_dir
 
-    q = 'Are you happy with the ribbon cube?'
-    res = {0: 'no', 1:'yes, continue!'}
-    happy = ask4input(q,res,bool)
-    
-    if happy: 
-        #Create the inverse section and make the user select the section that corresponds to section 1
-        s3_filledCubeBoolA =  copy.deepcopy(s3_filledCube).astype(bool)
-        s3_filledCubeBoolB = np.full_like(s3_filledCubeBoolA, False)
-        s3_filledCubeBoolB[1:-1,1:-1,1:-1] = True
-        s3_filledCubeBoolB[s3_filledCubeBoolA]=False
-    
-        # mask_cubeA = fcMeshes.s3_to_mesh(s3_filledCubeBoolA, res=res, name='Filled CLRibbon SideA', color='darkblue')
-        mask_cubeB = fcMeshes.s3_to_mesh(s3_filledCubeBoolB, res=res, name='Filled CLRibbon SideB', color='skyblue')
-        mask_cubeB.alpha(0.05).linewidth(1)
-        mask_cube.linewidth(1)
-        
-        obj = [(mask_cube), (mask_cubeB)]
-        txt = [(0, organ.user_organName)]
-        fcMeshes.plot_grid(obj=obj, txt=txt, axes=1, sc_side=max(organ.get_maj_bounds()))
+    #Create the inverse section and make the user select the section that corresponds to section 1
+    s3_filledCubeBoolA =  copy.deepcopy(s3_filledCube).astype(bool)
+    s3_filledCubeBoolB = np.full_like(s3_filledCubeBoolA, False)
+    s3_filledCubeBoolB[1:-1,1:-1,1:-1] = True
+    s3_filledCubeBoolB[s3_filledCubeBoolA] = False
 
-        sides = [mask_cube, mask_cubeB]
-      
-        def func(evt):
-            sides = evt.actor
-            if not evt.actor:
-                return
-            sil = evt.actor.silhouette().linewidth(6).c('red5')
-            sil.name = "silu" # give it a name so we can remove the old one
-            msg.text("You clicked: "+evt.actor.info['legend'])
-            plt.remove('silu').add(sil)
-        
-        msg = vedo.Text2D("", pos="bottom-center", c='k', bg='r9', alpha=0.8)
-        
-        # plt = Plotter(axes=1, bg='black')
-        # plt.add_callback('mouse click', func)
-        # plt.show(spheres, msg, __doc__, zoom=1.2)
-        # plt.close()
-
-        plt = vedo.Plotter(N=1, axes=5)
-        txto = organ.user_organName+' - Select the mask that corresponds to Section No.1: '+organ.mH_settings['general_info']['sections']['name_sections']['sect1']
-        txt = vedo.Text2D(txto, c=txt_color, font=txt_font, s=txt_size)
-        plt.add_callback('mouse click', func)
-        plt.show(sides, txt, msg, at=0, zoom=1, interactive=True)
-        plt.close()
-        
-        # #Find the plane that is parallel to ext_dir
-        # coord_ax = cl_settings['coord_ax']
-        # view = cl_settings['planar_view']
-        # for plane in organ.mH_settings['orientation'][coord_ax]['planar_views']:
-        #     pl_normal = organ.mH_settings['orientation'][coord_ax]['planar_views'][plane]['pl_normal']
-        #     dotv = np.dot(pl_normal, ext_dir)
-        #     magx = np.linalg.norm(ext_dir)*np.linalg.norm(pl_normal)
-        #     ang = math.degrees(math.acos(dotv/magx))
-        #     if ang == float(0): 
-        #         print(plane, ang)
-            
-        
-        def select_section1(evt):
-            if not evt.actor:
-                return
-            print("point coords =", evt.picked3d)
-            
-            
-            print(msh)
-            sil = evt.actor.silhouette().linewidth(6).c('red5')
-            print("You clicked: "+evt.actor)
-            print('aja')
-                # plt.remove('silu').add(sil)
-        
-            # if isinstance(evt.actor, vedo.mesh.Mesh): 
-            #     sil = evt.actor.silhouette().lineWidth(6).c('red')
-            #     print("You clicked: "+evt.actor.name)
-            #     cell_no = evt.actor.name
-            #     cell_no = int(cell_no.split('.')[-1])
-            #     if cell_no < 10000: # remove
-            #         cells2remove.append(cell_no)
-            #         sphs[cell_no].color('black')
-            #         new_no = 10000+cell_no
-            #         sphs[cell_no].name = f"Cell Nr.{new_no}"
-            #     else: # add back
-            #         ind2rem = cells2remove.index(cell_no-10000)
-            #         cells2remove.pop(ind2rem)
-            #         old_no = cell_no-10000
-            #         sphs[old_no].color('gold')
-            #         sphs[old_no].name = f"Cell Nr.{old_no}"
-                    
-        #         plt.remove(silcont.pop()).add(sil)
-        #         silcont.append(sil)
-        # silcont = [None]
-
-            # organ.s3_mask_sect = s3
-            # organ.vol_mask_sect = mask_cube
-            
-        
-            
-        plt = vedo.Plotter()
-        plt.add_callback("mouse click", select_section1)
-        plt.show(mask_cube, __doc__, axes=1).close()
+    mask_cubeB = s3_to_mesh(s3_filledCubeBoolB, res=res, name='Filled CLRibbon SideB', color='skyblue')
+    mask_cubeB.alpha(0.05).linewidth(1)
+    mask_cube.linewidth(1)
     
-        # dir2save = organ.info['dirs']['s3_numpy'] / 'mask_sect.npy'
-        # np.save(dir2save, s3)
-        # if not dir2save.is_file():
-        #     print('>> Error: s3 mask of sections was not saved correctly!\n>> File: '+ 'mask_sect.npy')
-        #     alert('error_beep')
-        # else: 
-        #     print('>> s3 mask of sections saved correctly!')
-        #     # print('>> Directory: '+ str(dir2save)+'\n')
-        #     alert('countdown')
-                 
-        
+    obj = [(mask_cube), (mask_cubeB)]
+    txt = [(0, organ.user_organName)]
+    plot_grid(obj=obj, txt=txt, axes=1, sc_side=max(organ.get_maj_bounds()))
+
+    # def func(evt):
+    #     if not evt.actor:
+    #         return
+    #     sil = evt.actor.silhouette().linewidth(6).c('red5')
+    #     sil.name = "silu" # give it a name so we can remove the old one
+    #     msg.text("You clicked: "+evt.actor.info['legend'])
+    #     plt.remove('silu').add(sil)
     
+    # msg = vedo.Text2D("", pos="bottom-center", c='k', bg='r9', alpha=0.8)
+    
+    # plt = vedo.Plotter(axes=1)
+    # plt.add_callback('mouse click', func)
+    # plt.show(mask_cube, mask_cubeB, msg, __doc__, zoom=1.2)
+    # plt.close()
+
+    q = 'Select the mesh that corresponds to Section No.1 (' +organ.mH_settings['general_info']['sections']['name_sections']['sect1']+')?'
+    res = {'A': 'SideA (dark blue)', 'B':'SideB (light blue)'}
+    side_sel = ask4input(q,res,str).upper()
+    
+    if side_sel == 'A':
+        mask_selected = s3_filledCube.astype('uint8')
+        vol_selected = mask_cube
+    else: 
+        mask_selected = s3_filledCubeBoolB.astype('uint8')
+        vol_selected = mask_cubeB
+        
+    organ.s3_mask_sect = mask_selected
+    organ.vol_mask_sect = vol_selected
+
+    dir2save = organ.info['dirs']['s3_numpy'] / 'mask_sect.npy'
+    np.save(dir2save, organ.s3_mask_sect)
+    if not dir2save.is_file():
+        print('>> Error: s3 mask of sections was not saved correctly!\n>> File: '+ 'mask_sect.npy')
+        alert('error_beep')
+    else: 
+        print('>> s3 mask of sections saved correctly!')
+        # print('>> Directory: '+ str(dir2save)+'\n')
+        alert('countdown')
 
 #%% func - get_sections
 def get_sections(organ, plotshow):
@@ -1458,98 +1388,46 @@ def get_sections(organ, plotshow):
         s3_mask_sect = organ.s3_mask_sect
     
     sect_names = [item for item in organ.parent_project.mH_param2meas if 'sect1' in item]
+    no_sect = organ.mH_settings['general_info']['sections']['no_sections']
     if len(sect_names)>0:
-        no_sect = organ.mH_settings['general_info']['sections']['no_sections']
-        name_sections = organ.mH_settings['general_info']['sections']['name_sections']
-        
-        s3_filledCubeBoolA = s3_mask_sect.astype(bool)
-        s3_filledCubeBoolB = np.invert(s3_filledCubeBoolA)
-        for name in sect_names[0:1]: 
-            ch = name[0]; cont = name[1]
-            mesh = organ.obj_meshes[ch+'_'+cont]
-            print('\n- Dividing '+mesh.legend+' into sections')
-            im_ch = mesh.imChannel
-            im_ch.load_chS3s(cont_types=[cont])
-            cont_tiss = getattr(im_ch, 's3_'+cont)
-            s3 = cont_tiss.s3()
+        if no_sect == 2: 
+            name_sections = organ.mH_settings['general_info']['sections']['name_sections']
+            name_sA = name_sections['sect1']
+            name_sB = name_sections['sect2']
             
-            masked_s3A = s3.copy()
-            masked_s3A[s3_filledCubeBoolA] = 0
-            # cutA = s3_to_mesh(filename, masked_s3A, res, 'cjcutA', 'cjcutA', extractLargest = False, plotshow = False)
-            cutA = fcMeshes.s3_to_mesh(masked_s3A, res=mesh.resolution, 
-                                       name='SectA', color='indigo')
-            fcBasics.alert('woohoo')
-            
-            masked_s3B = s3.copy()
-            masked_s3B[s3_filledCubeBoolB] = 0
-            cutB = fcMeshes.s3_to_mesh(masked_s3B, res=mesh.resolution, 
-                                       name='SectB', color='mediumvioletred')
-            fcBasics.alert('clown')
-            
-            if plotshow: 
-                obj = [(mesh.mesh), (cutA), (cutB)]
-                txt = [(0, organ.user_organName +' - '+mesh.legend )]
-                fcMeshes.plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-        
-            
-            
-    # spaw_analysis = False
-    # spaw_sinistral = False
-    # if 'spaw_ct' in df_res.loc[file_num,'spAnalysis']:
-    #     spaw_analysis = True
-    # if 'spaw_lf' in df_res.loc[file_num,'spAnalysis']:
-    #     spaw_sinistral = True
-    
-    # mesh_legend = mesh._legend
-    # if not spaw_analysis: 
-    #     print('\n- Dividing '+mesh_legend+' into left and right sides')
-    #     names_LnR = ['CJ_total','CJ.Left', 'CJ.Right']
-    #     names_LnRm = ['CJ_total','-Left', '-Right']
-    # else: 
-    #     print('\n- Dividing '+mesh_legend+' into dorsal and ventral sides')
-    #     names_LnR = ['CJ_total','CJ.Dorsal', 'CJ.Ventral']
-    #     names_LnRm = ['CJ_total','-Dorsal', '-Ventral']
-        
-    # s3_filledCubeBoolA = s3_filledCube.astype(bool)
-    # [s3], _ = loadStacks(filename = filename, dir_txtNnpy = directories[1], end_name = ['cj'], print_txt = False)
-    
-    # masked_s3A = s3.copy()
-    # masked_s3A[s3_filledCubeBoolA] = 0
-    # test_cutA = fcMeshes.createExtLayerMesh(filename, masked_s3A, res, 'cjcutA', 'cjcutA', extractLargest = False, plotshow = False)
-    # test_cutA.legend(mesh_legend+names_LnRm[1]).color(colors[0])
-    # fcBasics.alert('wohoo',1)
-    # s3_filledCubeBoolB = np.invert(s3_filledCubeBoolA)
-    # masked_s3B = s3.copy()
-    # masked_s3B[s3_filledCubeBoolB] = 0
-    # test_cutB = fcMeshes.createExtLayerMesh(filename, masked_s3B, res, 'cjcutB', 'cjcutB', extractLargest = False, plotshow = False)
-    # test_cutB.legend(mesh_legend+names_LnRm[2]).color(colors[1])
-    # fcBasics.alert('clown',1)
-    
-    # if plotshow: 
-    #     settings.legendSize = .20
-    #     vp = Plotter(N=3, axes = 1)
-    #     vp.show(mesh, at=0)
-    #     vp.show(test_cutA, scale_cube, at = 1)
-    #     vp.show(test_cutB, scale_cube, at = 2, interactive = True)
-    
-    # if saveStacks:
-    #     if not spaw_sinistral: 
-    #         save_s3(filename = filename, s3 = masked_s3A, dir_txtNnpy = directories[1], layer = 'cj_AOCVIC')
-    #         save_s3(filename = filename, s3 = masked_s3B, dir_txtNnpy = directories[1], layer = 'cj_AICVOC')
-          
-    #     else: 
-    #         save_s3(filename = filename, s3 = masked_s3A, dir_txtNnpy = directories[1], layer = 'cj_AICVOC')
-    #         save_s3(filename = filename, s3 = masked_s3B, dir_txtNnpy = directories[1], layer = 'cj_AOCVIC')
-        
-    # print('Total cardiac jelly volume:',mesh.volume())
-    # print('Cardiac jelly volume side A:',test_cutA.volume())
-    # print('Cardiac jelly volume side B:',test_cutB.volume())
-    # print('Cardiac jelly volume side A+B:',test_cutA.volume()+test_cutB.volume())
-    # print('Cardiac jelly volume difference (%):',((test_cutA.volume()+test_cutB.volume())-mesh.volume())/mesh.volume()*100)
-    
-    # meshes_LnR = [test_cutA, test_cutB]
-        
-    # return meshes_LnR, names_LnR
+            s3_filledCubeBoolA = s3_mask_sect.astype(bool)
+            s3_filledCubeBoolB = np.invert(s3_filledCubeBoolA)
+            for name in sect_names: 
+                ch = name[0]; cont = name[1]
+                mesh = organ.obj_meshes[ch+'_'+cont]
+                print('\n- Dividing '+mesh.legend+' into sections')
+
+                im_ch = mesh.imChannel
+                im_ch.load_chS3s(cont_types=[cont])
+                cont_tiss = getattr(im_ch, 's3_'+cont)
+                    
+                s3 = cont_tiss.s3()
+                
+                masked_s3A = s3.copy()
+                masked_s3A[s3_filledCubeBoolB] = 0
+                cutA = s3_to_mesh(masked_s3A, res=mesh.resolution, 
+                                           name=mesh.legend+'-'+name_sA, color='mediumvioletred')
+                cutA.alpha(0.5)
+                
+                alert('woohoo')
+                masked_s3B = s3.copy()
+                masked_s3B[s3_filledCubeBoolA] = 0
+                cutB = s3_to_mesh(masked_s3B, res=mesh.resolution, 
+                                           name=mesh.legend+'-'+name_sB, color='indigo')
+                cutB.alpha(0.5)
+                alert('clown')
+                
+                if plotshow: 
+                    obj = [(mesh.mesh), (cutA), (cutB)]
+                    txt = [(0, organ.user_organName +' - '+mesh.legend )]
+                    plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+                    
+                
 
 #%% func - s3_to_mesh
 def s3_to_mesh(s3, res, name:str, color='cyan', rotateZ_90=True):
@@ -1572,7 +1450,7 @@ def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
     """
     if colour:
         # scalars->colors
-        vcols = [vedo.colorMap(v, color_map, 0, len(kspl.points())) for v in list(range(len(kspl.points())))]  
+        vcols = [vedo.color_map(v, color_map, 0, len(kspl.points())) for v in list(range(len(kspl.points())))]  
     
     if every > 1:
         spheres_spline = []
@@ -1610,6 +1488,58 @@ def cut_into_segments(organ):
     
     # if balloon: 
     
+#%% func - get_rings2cut_segm
+def get_rings2cut_segm(organ):
+    
+    #Find centreline first
+    dict_cl = fcMeshes.plot_organCLs(organ)
+    q = 'Select the centreline you want to use to aid organ cut into segments:'
+    select = fcBasics.ask4input(q, dict_cl, int)
+    
+    ch_cont_cl = dict_cl[select].split(' (')[1].split('-')
+    ch = ch_cont_cl[0]
+    cont = ch_cont_cl[1]
+    cl = organ.obj_meshes[ch+'_'+cont].get_centreline()
+    spheres_spl = fcMeshes.sphs_in_spline(kspl = cl, colour = True)
+    
+    segm_names = [item for item in organ.parent_project.mH_param2meas if 'segm1' in item]
+    
+    ext_ch, _ = organ.get_ext_int_chs()
+    if (ext_ch.channel_no, 'tiss', 'segm1', 'volume') in segm_names:
+        mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_tiss']
+    else: 
+        ch = segm_names[0][0]; cont = segm_names[0][1]
+        mesh_ext = organ.obj_meshes[ch+'_'+cont]
+        
+    vp = vedo.Plotter(N=1, axes = 7)
+    text = organ.user_organName+"\n\n >> Define the centreline point number to use to initialise \n  disc to divide heart into chambers \n  [NOTE: Spheres appear in centreline every 10 points, starting from \n  outflow (blue) to inflow (red) tract]"
+    txt = vedo.Text2D(text, c="k")#, font= font)
+    vp.show(mesh_ext.mesh, cl, spheres_spl, txt, at=0, azimuth = 0, interactive=True)
+
+    q = 'Enter the centreline point number you want to use to initialise the disc to divide the heart into chambers:'
+    num_pt = fcBasics.ask4input(q,{},int)
+    # Use flat disc or centreline orientation at point to define disc?
+    q2 = 'Select the object you want to use: '
+    res = {0:'Use the centreline orientation at the selected point to define disc orientation', 1: 'Initialise the disc in a plane normal to the y-z plane?'}
+    cl_or_flat = fcBasics.ask4input(q2, res, bool)
+ 
+    if not cl_or_flat:
+        pl_normal, pl_centre = fcMeshes.get_plane_normal2pt(pt_num = num_pt, points = cl.points())
+    else:
+        pl_centre = cl.points()[num_pt]
+        pl_normal = [1,0,0]
+
+    # Modify (rotate and move cylinder/disc)
+    cyl_test, sph_test, rotX, rotY, rotZ = fcMeshes.modify_disc(filename = organ.user_organName,
+                                                        txt = 'cut tissues into segments', 
+                                                        mesh = mesh_ext.mesh,
+                                                        option = [True,True,True,True,True,True],
+                                                        def_pl = {'pl_normal': pl_normal, 'pl_centre': pl_centre},
+                                                        radius = 60)
+                                       
+
+
+    
 #%% func - getRing2CutChambers
 # def getRing2CutChambers(filename, kspl_CL, mesh2cut, resolution, dir_stl, dir_txtNnpy, dict_pts, dict_shapes):
 #     """
@@ -1640,7 +1570,7 @@ def cut_into_segments(organ):
 #             # Use flat disc or centreline orientation at point to define disc?
 #             centrelineORFlat = ask4input('Do you want to use the centreline orientation at the selected point to define disc orientation or \n  initialise the disc in a plane normal to the y-z plane? \n\t[0]: Use centreline orientation at the selected point\n\t[1]: Use plane perpendicular to the y-z plane >>>: ', bool)
 #             if not centrelineORFlat:
-#                 pl_Ch_normal, pl_Ch_centre = getPlaneNormal2Pt (pt_num = num_pt, spline_pts = kspl_CL.points())
+#                 pl_Ch_normal, pl_Ch_centre = get_planeNormal2Pt (pt_num = num_pt, spline_pts = kspl_CL.points())
 #             else:
 #                 pl_Ch_centre = kspl_CL.points()[num_pt]
 #                 pl_Ch_normal = [1,0,0]
@@ -1854,6 +1784,18 @@ def findDist(pt1, pt2):
 
     return dist
 
+#%% func - get_plane_normal2pt
+def get_plane_normal2pt (pt_num, points):
+    """
+    Funtion that gets a plane normal to a point in a spline
+
+    """
+
+    pt_centre = points[pt_num]
+    normal = points[pt_num-1]-points[pt_num+1]
+
+    return normal, pt_centre
+
 #%% - Plotting functions
 #%% func - plot_grid
 def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350):
@@ -1973,8 +1915,8 @@ def plot_organCLs(organ, axes=5):
     return dict_cl
 
 #%% - Plane handling functions 
-#%% func - getPlane
-def getPlane(filename, txt:str, meshes:list, def_pl = None, 
+#%% func - get_plane
+def get_plane(filename, txt:str, meshes:list, def_pl = None, 
                              option = [True,True,True,True,True,True]):
     '''
     Function that creates a plane defined by the user
@@ -1993,9 +1935,9 @@ def getPlane(filename, txt:str, meshes:list, def_pl = None,
     while True:
         # Create plane
         if def_pl != None:
-            plane, normal, rotX, rotY, rotZ = getPlanePos(filename, txt, meshes_mesh, option, def_pl)
+            plane, normal, rotX, rotY, rotZ = get_plane_pos(filename, txt, meshes_mesh, option, def_pl)
         else:
-            plane, normal, rotX, rotY, rotZ = getPlanePos(filename, txt, meshes_mesh, option)
+            plane, normal, rotX, rotY, rotZ = get_plane_pos(filename, txt, meshes_mesh, option)
             
         # Get new normal of rotated plane
         normal_corrected = newNormal3DRot(normal, rotX, rotY, rotZ)
@@ -2008,7 +1950,7 @@ def getPlane(filename, txt:str, meshes:list, def_pl = None,
         normal_txt = str([' {:.2f}'.format(i) for i in normal_corrected]).replace("'","")
         centre_txt = str([' {:.2f}'.format(i) for i in pl_centre]).replace("'","")
         text = filename+'\n\nUser defined plane to '+ txt +'.\nPlane normal: '+normal_txt+' - Plane centre: '+centre_txt+'.\nClose the window when done.'
-        txt2D = vedo.Text2D(text, c=txt_color, font=txt_font)
+        txt2D = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
 
         # meshes_mesh = [mesh.mesh for mesh in meshes]
         # meshes_all = [plane, plane_new, sph_centre] + meshes_mesh
@@ -2028,8 +1970,8 @@ def getPlane(filename, txt:str, meshes:list, def_pl = None,
 
     return plane_new, pl_dict
 
-#%% func - getPlanePos
-def getPlanePos (filename, txt, meshes, option, 
+#%% func - get_plane_pos
+def get_plane_pos (filename, txt, meshes, option, 
                      def_pl= {'pl_normal': (0,1,0), 'pl_centre': []}):
     '''
     Function that shows a plot so that the user can define a plane (mesh opacity can be changed)
@@ -2131,10 +2073,117 @@ def getPlanePos (filename, txt, meshes, option,
                title=titleOp, title_size=txt_slider_size)
 
     text = filename+'\n\nDefine plane position to '+txt+'. \nClose the window when done'
-    txt = vedo.Text2D(text, c=txt_color, font=txt_font)
+    txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
     vp.show(meshes, plane, lbox, txt, viewup='y', zoom=1, interactive=True)
 
     return plane, normal, rotX, rotY, rotZ
+
+#%% func - modify_disc
+def modify_disc(filename, txt, mesh, option,  
+                    def_pl= {'pl_normal': (0,1,0), 'pl_centre': []}, radius=60):
+    """
+    Function that shows a plot so that the user can define a cylinder (disc)
+
+    """
+
+    # Load logo
+    path_logo = path_mHImages / 'logo-07.jpg'
+    logo = vedo.Picture(str(path_logo))
+    
+    xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds()
+    x_size = xmax - xmin; y_size = ymax - ymin; z_size = zmax - zmin
+    
+    xval = sorted([xmin-0.3*x_size,xmax+0.3*x_size])
+    yval = sorted([ymin-0.3*y_size,ymax+0.3*y_size])
+    zval = sorted([zmin-0.3*z_size,zmax+0.3*z_size])
+    
+    if def_pl['pl_centre'] == []:
+        centre = (x_size/2+xmin, ymin, z_size/2+zmin)
+    else: 
+        centre = def_pl['pl_centre']
+    normal = def_pl['pl_normal']
+
+    rotX = [0];    rotY = [0];    rotZ = [0]
+
+    # Functions to move and rotate cyl_test
+    def sliderX(widget, event):
+        valueX = widget.GetRepresentation().GetValue()
+        cyl_test.x(valueX)
+        sph_cyl.x(valueX)
+
+    def sliderY(widget, event):
+        valueY = widget.GetRepresentation().GetValue()
+        cyl_test.y(valueY)
+        sph_cyl.y(valueY)
+
+    def sliderZ(widget, event):
+        valueZ = widget.GetRepresentation().GetValue()
+        cyl_test.z(valueZ)
+        sph_cyl.z(valueZ)
+
+    def sliderRotX(widget, event):
+        valueRX = widget.GetRepresentation().GetValue()
+        rotX.append(valueRX)
+        cyl_test.rotateX(valueRX, rad=False)
+        sph_cyl.rotateX(valueRX, rad=False)
+
+    def sliderRotY(widget, event):
+        valueRY = widget.GetRepresentation().GetValue()
+        rotY.append(valueRY)
+        cyl_test.rotateY(valueRY, rad=False)
+        sph_cyl.rotateY(valueRY, rad=False)
+
+    def sliderRotZ(widget, event):
+        valueRZ = widget.GetRepresentation().GetValue()
+        rotZ.append(valueRZ)
+        cyl_test.rotateZ(valueRZ, rad=False)
+        sph_cyl.rotateZ(valueRZ, rad=False)
+
+    def sliderAlphaMeshOut(widget, event):
+        valueAlpha = widget.GetRepresentation().GetValue()
+        mesh.alpha(valueAlpha)
+
+    lbox = vedo.LegendBox([mesh], font=leg_font, width=leg_width, padding=1)
+    vp = vedo.Plotter(N=1, axes=8)
+    vp.add_icon(logo, pos=(0.85,0.75), size=0.10)
+    
+    cyl_test = vedo.Cylinder(pos = centre, r = radius, height = 2*0.225, 
+                             axis = normal, c = 'purple', cap = True, res = 300)
+    sph_cyl = vedo.Sphere(pos = centre, r=4, c='gold')
+
+    if option[0]: #sliderX
+        vp.addSlider2D(sliderX, xval[0], xval[1], value=centre[0],
+                    pos=[(0.1,0.15), (0.3,0.15)], title='- > x position > +', 
+                    c='crimson', title_size=txt_slider_size)
+    if option[1]: #sliderY
+        vp.addSlider2D(sliderY, yval[0], yval[1], value=centre[1],
+                    pos=[(0.4,0.15), (0.6,0.15)], title='- > y position > +', 
+                    c='dodgerblue', title_size=txt_slider_size)
+    if option[2]: #sliderZ
+        vp.addSlider2D(sliderZ, zval[0], zval[1], value=centre[2],
+                    pos=[(0.7,0.15), (0.9,0.15)], title='- > z position > +', 
+                    c='limegreen', title_size=txt_slider_size)
+    if option[3]: #sliderRotX
+        vp.addSlider2D(sliderRotX, -1, +1, value=0,
+                    pos=[(0.1,0.05), (0.3,0.05)], title='- > x rotation > +', 
+                    c='deeppink', title_size=txt_slider_size)
+    if option[4]: #sliderRotY
+        vp.addSlider2D(sliderRotY, -1, +1, value=0,
+                    pos=[(0.4,0.05), (0.6,0.05)], title='- > y rotation > +', 
+                    c='gold', title_size=txt_slider_size)
+    if option[5]: #sliderRotZ
+        vp.addSlider2D(sliderRotZ, -1, +1, value=0,
+                    pos=[(0.7,0.05), (0.9,0.05)], title='- > z rotation > +', 
+                    c='teal', title_size=txt_slider_size)
+
+    vp.addSlider2D(sliderAlphaMeshOut, xmin=0.01, xmax=0.99, value=0.01,
+               pos=[(0.95,0.25), (0.95,0.45)], c="blue", title="Myocardial Opacity)")
+
+    text = filename+'\nDefine disc position to '+txt+'.\nMake sure it cuts all the mesh effectively separating it into individual segments.\n>> Close the window when done.\n>> Note: Initially defined disc radius is '+str(radius)+'um.\nIf you are not happy with the disc radius, you will be able to modify it just before proceeding with the cut.'
+    txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
+    vp.show(mesh, cyl_test, sph_cyl, lbox, txt, viewup='y', zoom=1, interactive=True)
+
+    return cyl_test, sph_cyl, rotX, rotY, rotZ
 
 #%% - Mesh Operations
 #%% func - getPointsAtPlane

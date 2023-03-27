@@ -1252,7 +1252,8 @@ class Organ():
             selected_faces.append(planar_views[planar_view]['idcell'])
             
         self.mH_settings['orientation'] = {'stack': {'planar_views': planar_views}}
-        
+    
+           
     def get_ROI_orientation(self, planar_views:dict, plane:str, ref_vect='Y+'):
         
         q = 'How do you want to define the Organ (ROI) orientation?:'
@@ -2113,6 +2114,20 @@ class ImChannelNS(): #channel
                             layerDict=plot)#,  new = True)
         self.s3_tiss = tiss_s3
         self.add_contStack(tiss_s3, cont_type = 'tiss')
+        
+    def load_chS3s (self, cont_types:list):
+        for cont in cont_types:
+            # print(cont)
+            s3 = ContStack(im_channel=self, cont_type=cont)#, new=False)
+            setattr(self, 's3_'+cont, s3)
+            self.add_contStack(s3, cont)
+        
+        #Update channel process
+        self.process.append('LoadS3')
+        
+        #Update organ imChannel
+        self.parent_organ.add_channelNS(imChannelNS=self)
+        self.parent_organ.save_organ()
      
     def get_channel_no(self):
         return self.channel_no

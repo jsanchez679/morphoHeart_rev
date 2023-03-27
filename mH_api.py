@@ -434,6 +434,7 @@ if partB:
     # Load project, organ
     fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
   
+
 #%% Part B-vmtk
 # Create meshes to extract CL and extract CL
 if partB_vmtk: 
@@ -523,19 +524,107 @@ if partC:
     # Get organ centreline ribbon 
     nRes = 601; nPoints = 300; clRib_type = 'ext2sides'
     fcMeshes.get_organ_ribbon(organ, nRes, nPoints, clRib_type)
+    # organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
+    fcMeshes.get_cube_clRibbon(organ, plotshow=True)
     
-    #%%
-    organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
-    cl_settings =  organ.mH_settings['orientation']['cl_ribbon']
-    mesh_cl = organ.obj_meshes[cl_settings['mesh_cl']]
-    res = mesh_cl.resolution
-    import copy
-    import numpy as np
-    import math
+    import vedo as vedo
+    plt = vedo.Plotter(N=1)
+    plt.show(organ.vol_mask_sect, at=0, axes=1, interactive=True)
     
-    s3_filledCube, mask_cube, ext_dir = fcMeshes.get_cube_clRibbon(organ, plotshow=True)
     
+    fcMeshes.get_sections(organ, plotshow=True)
+    
+    ext_ch, _ = organ.get_ext_int_chs()
+    mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_tiss']
+    fcMeshes.sphs_in_spline()
+    
+#%%
+import vedo as vedo
 
+mesh_ext = vedo.Mesh(vedo.dataurl + "bunny.obj").color("m")
+
+pos = mesh_ext.center_of_mass()
+color_o = [152, 251, 152, 255]
+orient_cube = vedo.Cube(pos=pos, side=0.15, c=color_o[:-1])
+orient_cube.linewidth(1).force_opaque()
+orient_cube.pos(pos)
+orient_cube_clear = orient_cube.clone().alpha(0.5)
+
+planar_views = {
+    "top": {"color": [255, 215, 0, 200]},
+    "ventral": {"color": [0, 0, 205, 200]},
+    "left": {"color": [255, 0, 0, 200]},
+}
+
+
+def select_cube_face(evt):
+    orient_cube = evt.actor
+    if not orient_cube:
+        return
+    pt = evt.picked3d
+    idcell = orient_cube.closest_point(pt, return_cell_id=True)
+    print("You clicked (idcell):", idcell)
+    if set(orient_cube.cellcolors[idcell]) == set(color_o):
+        orient_cube.cellcolors[idcell] = color_selected  # RGBA
+        for cell_no in range(len(orient_cube.cells())):
+            if cell_no != idcell and cell_no not in selected_faces:
+                orient_cube.cellcolors[cell_no] = color_o  # RGBA
+
+    planar_views[planar_view]["idcell"] = idcell
+    cells = orient_cube.cells()[idcell]
+    points = [orient_cube.points()[cell] for cell in cells]
+
+    plane_fit = vedo.fit_plane(points, signed=True)
+    planar_views[planar_view]["pl_normal"] = plane_fit.normal
+    msg.text(
+        "You selected face number: "
+        + str(idcell)
+        + " as "
+        + planar_view.upper()
+        + " face"
+    )
+
+
+def keypress(evt):
+    if evt.keypress != "c":
+        return
+    selected_faces = []
+    for planar_view in planar_views.keys():
+        txt0.text(
+            " - Reference cube and mesh to select "
+            + planar_view.upper()
+            + " planar view ..."
+        )
+
+        txt1.text(
+            "Select (click) the cube face that represents the "
+            + planar_view.upper()
+            + " face and close the window when done.\nNote: The face that is last selected will be used for that planar face.",
+        )
+        plt.render()
+
+        selected_faces.append(planar_views[planar_view]["idcell"])
+
+msg = vedo.Text2D(pos="bottom-center", c="k", bg="white", alpha=0.8, s=0.7)
+txt0 = vedo.Text2D(c="black", s=0.7)
+txt1 = vedo.Text2D(c="black", s=0.7)
+
+plt = vedo.Plotter(N=2, axes=1)
+plt.add_callback("mouse click", select_cube_face)
+plt.show(mesh_ext, orient_cube_clear, txt0, at=0)
+plt.show(
+    orient_cube,
+    txt1,
+    msg,
+    at=1,
+    azimuth=45,
+    elevation=30,
+    zoom=0.8,
+)
+plt.close
+
+
+#%%
     #-------
     #Select direction of extended centreline
     #Create multiple cubes with different orientations based in the cust_angle? 
@@ -634,6 +723,7 @@ if partC:
     cl_ribbon, kspl_ext = cl_mesh.get_clRibbon(nPoints,nRes, clRib_type='HDStack',plotshow=plotshow)
     
     fcMeshes.get_cube_clRibbon(organ, cl_mesh, cl_ribbon)
+    
 #%%
     """
     Created on Tue Mar 21 16:40:47 2023
@@ -657,9 +747,10 @@ if partC:
         
     msg = vedo.Text2D("", pos="bottom-center", c='k', bg='r9', alpha=0.8)
         
-    plt = vedo.Plotter(axes=1, bg='black')
+    plt = vedo.Plotter(axes=1)
     plt.add_callback('mouse click', func)
-    plt.show(s1, s2, msg, __doc__, zoom=1.2)
+    # plt.show(s1, s2, msg, __doc__, zoom=1.2)
+    plt.show(mask_cube, mask_cubeB, msg, __doc__, zoom=1.2)
     plt.close()
 
 
@@ -697,6 +788,85 @@ ex = e.clone().scale(0.25).pos(0,0.1,0.1).alpha(0.1).lighting('off')
 plt.add_inset(ax, ex, pos=(0.1,0.1), size=0.15, draggable=False)
 plt.interactive().close()
 
+
+#%%
+import vedo as vedo
+
+b = vedo.Mesh(vedo.dataurl+'bunny.obj').color('m')
+
+b.name = 'Bunny'
+# c = vedo.Mesh(vedo.dataurl+'bunny.obj').color('g').pos((0.1,0,0))
+c = vedo.Cube(side=0.1).alpha(0.8).y(-0.02).lw(1)
+c.name = 'Cube'
+
+def func(evt):
+    if not evt.actor:
+        return
+    sil = evt.actor.silhouette().linewidth(6).c('red5')
+    sil.name = "silu" # give it a name so we can remove the old one
+    msg.text("You clicked: "+evt.actor.name)
+    plt.remove('silu').add(sil)
+    
+msg = vedo.Text2D("", pos="bottom-center", c='k', bg='r9', alpha=0.8)
+
+plt = vedo.Plotter(axes=1, bg='black')
+plt.add_callback('mouse click', func)
+plt.show(b, c, msg, __doc__, zoom=1.2)
+plt.close()
+
+#%%
+import vedo as vedo
+
+mesh_ext = vedo.Mesh(vedo.dataurl+'bunny.obj').color('m')
+
+pos = mesh_ext.center_of_mass()
+color_o = [152,251,152,255]
+orient_cube = vedo.Cube(pos=pos, side=0.15, c=color_o[:-1])
+orient_cube.linewidth(1).force_opaque()
+orient_cube.pos(pos)
+orient_cube_clear = orient_cube.clone().alpha(0.5)
+
+planar_views = {'top': {'color': [255, 215, 0, 200]},
+                 'ventral': {'color': [0, 0, 205, 200]},
+                 'left': {'color': [255, 0, 0, 200]}}
+
+def select_cube_face(evt):
+    orient_cube = evt.actor
+    if not orient_cube:
+        return
+    pt = evt.picked3d
+    idcell = orient_cube.closest_point(pt, return_cell_id=True)
+    print('You clicked (idcell):', idcell)
+    if set(orient_cube.cellcolors[idcell]) == set(color_o):
+        orient_cube.cellcolors[idcell] = color_selected #RGBA 
+        for cell_no in range(len(orient_cube.cells())):
+            if cell_no != idcell and cell_no not in selected_faces: 
+                orient_cube.cellcolors[cell_no] = color_o #RGBA 
+                
+    planar_views[planar_view]['idcell'] = idcell
+    cells = orient_cube.cells()[idcell]
+    points = [orient_cube.points()[cell] for cell in cells]
+    
+    plane_fit = vedo.fit_plane(points, signed=True)
+    planar_views[planar_view]['pl_normal'] = plane_fit.normal
+    msg.text('You selected face number: '+str(idcell)+' as '+planar_view.upper()+' face')
+    
+selected_faces = []
+for planar_view in planar_views.keys(): 
+    print('Selecting '+planar_view.upper()+'...')
+    color_selected = planar_views[planar_view]['color']
+    
+    msg = vedo.Text2D("", pos="bottom-center", c='k', bg='white', alpha=0.8, s=0.7)
+    txt0 = vedo.Text2D(' - Reference cube and mesh to select '+planar_view.upper()+' planar view ...', c='black', s=0.7)
+    txt1 = vedo.Text2D('Select (click) the cube face that represents the '+planar_view.upper()+' face and close the window when done.\nNote: The face that is last selected will be used for that planar face.', c='black', s=0.7)
+  
+    plt = vedo.Plotter(N=2, axes=1)
+    plt.add_callback("mouse click", select_cube_face)
+    plt.show(mesh_ext, orient_cube_clear, txt0, at=0)
+    plt.show(orient_cube, txt1, msg, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)        
+    
+    selected_faces.append(planar_views[planar_view]['idcell'])
+    
 #%% To do: 
     #D update workflow when maesuring centrelines
     #D update workflow when measuring volumes

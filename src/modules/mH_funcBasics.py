@@ -83,6 +83,8 @@ def ask4input(text:str, res:dict, type_response:type, keep=False):
     while exit_now == False:
         res_text = '> '+text+' \n\t'
         res_len = len(res)
+        if len(res) <= 0:
+            res_text = res_text + ' >> : '
         for n, r in enumerate(res.keys()): 
             if n != res_len-1:
                 r_text = '['+str(r)+']: '+res[r] +'\n\t'
