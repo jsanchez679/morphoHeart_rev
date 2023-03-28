@@ -795,6 +795,7 @@ class Organ():
                 self.imChannelNS = {}
                 self.obj_imChannelNS = {}
                 self.meshes = {}
+                self.submeshes = {}
                 self.obj_meshes = {}
                 self.objects = {'KSplines': {}, 'Spheres': {}}
                 if 'C-Centreline' in self.parent_project.mH_methods:
@@ -849,6 +850,12 @@ class Organ():
             # meshes
             self.meshes = load_dict['meshes']
             self.load_objMeshes()
+            # submeshes
+            if 'submeshes' in load_dict.keys():
+                self.submeshes = load_dict['submeshes']
+                print('aja!')
+            else: 
+                self.submeshes = {}
             # objects
             self.objects = load_dict['objects']
             
@@ -1037,6 +1044,40 @@ class Organ():
             if hasattr(mesh, 'dirs'):
                 self.meshes[mesh.name]['dirs'] = mesh.dirs
             print('>> Mesh data updated!')
+    
+    def add_submesh(self, submesh):
+        new = False
+        if submesh.sub_name not in self.submeshes.keys():
+            new = True
+        if new:
+            print('>> Adding SubMesh - ', submesh.sub_name)
+            self.submeshes[submesh.sub_name] = {}
+            #Inherited from mesh
+            self.submeshes[submesh.sub_name]['parent_organ'] = submesh.parent_organ.user_organName
+            self.submeshes[submesh.sub_name]['channel_no'] = submesh.imChannel.channel_no
+            self.submeshes[submesh.sub_name]['user_meshName'] = submesh.user_meshName
+            self.submeshes[submesh.sub_name]['mesh_type'] = submesh.mesh_type
+            self.submeshes[submesh.sub_name]['legend'] = submesh.legend
+            self.submeshes[submesh.sub_name]['name'] = submesh.name
+            self.submeshes[submesh.sub_name]['resolution'] = submesh.resolution
+            self.submeshes[submesh.sub_name]['color'] = submesh.color
+            self.submeshes[submesh.sub_name]['alpha'] = submesh.alpha
+            self.submeshes[submesh.sub_name]['keep_largest'] = submesh.keep_largest
+            self.submeshes[submesh.sub_name]['rotateZ_90'] = submesh.rotateZ_90
+            #New to submesh
+            self.submeshes[submesh.sub_name]['parent_mesh'] = submesh.parent_mesh.name
+            self.submeshes[submesh.sub_name]['sub_mesh_type'] = submesh.sub_mesh_type
+            self.submeshes[submesh.sub_name]['sub_legend'] = submesh.sub_legend
+            self.submeshes[submesh.sub_name]['s3_invert'] = submesh.s3_invert
+            self.submeshes[submesh.sub_name]['s3_mask_dir'] = submesh.s3_mask_dir
+            self.submeshes[submesh.sub_name]['sub_name'] = submesh.sub_name
+            
+        else: #Just updating things that could change
+            self.submeshes[submesh.sub_name]['color'] = submesh.color
+            self.submeshes[submesh.sub_name]['alpha'] = submesh.alpha
+            self.submeshes[submesh.sub_name]['keep_largest'] = submesh.keep_largest
+
+            print('>> SubMesh data updated!')
 
     def add_object(self, obj, proc:str, class_name:Union[list,str], name):
         
@@ -1090,6 +1131,7 @@ class Organ():
             all_info['imChannelNS'] = imageNS_dict
 
             all_info['meshes'] = self.meshes
+            all_info['submeshes'] = self.submeshes
             all_info['objects'] = self.objects
             
         if self.analysis['morphoCell']:
@@ -2463,79 +2505,84 @@ class Mesh_mH():
         self.name = self.channel_no +'_'+self.mesh_type
         self.resolution = imChannel.get_resolution()
         
-        wf = ['MeshesProc','A-Create3DMesh', imChannel.channel_no, mesh_type] 
-        if self.name not in self.parent_organ.meshes.keys():
-            print('>> New mesh -', self.name)
-            new = True
-            self.keep_largest = keep_largest
-            self.rotateZ_90 = rotateZ_90
-            self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
-            self.color = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['color']
-            self.alpha = 0.05
-            
-            #Update settings
-            set_proc = ['setup', self.channel_no, self.mesh_type]
-            self.parent_organ.update_settings(set_proc+['keep_largest'], self.keep_largest, 'mH')
-            self.parent_organ.update_settings(set_proc+['rotateZ_90'], self.rotateZ_90, 'mH')
-            self.parent_organ.update_settings(set_proc+['alpha'], self.alpha, 'mH')
-            
-            # Update workflow
-            if 'NS' not in self.channel_no:
-                self.parent_organ.update_workflow(wf+['Status'], update = 'DONE')
-            else: 
-                self.parent_organ.update_workflow(wf[0:3]+['Status'], update = 'DONE')
-            
-            process_up = ['MeshesProc','A-Create3DMesh','Status']
-            if get_by_path(self.parent_organ.workflow, process_up) == 'NI':
-                self.parent_organ.update_workflow(process_up, update = 'Initialised')
-            
-            process_up2 = ['MeshesProc','Status']
-            if get_by_path(self.parent_organ.workflow, process_up2) == 'NI':
-                self.parent_organ.update_workflow(process_up2, update = 'Initialised')
-                
-            self.dirs = {'mesh': None, 'arrays': None}
-            self.mesh_meas = {}
-            self.parent_organ.check_status(process = 'MeshesProc')
-        
-        else: 
-            new = False
-            self.color = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['color']
-            self.alpha = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['alpha']
-            self.s3_dir = self.imChannel.contStack[self.mesh_type]['s3_dir']
-            if new_set: 
+        if not hasattr(self, 'sub_mesh_type'):
+            wf = ['MeshesProc','A-Create3DMesh', imChannel.channel_no, mesh_type] 
+            if self.name not in self.parent_organ.meshes.keys():
+                print('>> New mesh -', self.name)
+                new = True
                 self.keep_largest = keep_largest
                 self.rotateZ_90 = rotateZ_90
-                print('>> Re-creating mesh -', self.name)
+                
+                # if not hasattr(self, 'sub_mesh_type'):
                 self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
-            else: 
-                self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['keep_largest']
-                self.rotateZ_90 = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['rotateZ_90']
-                print('>> Loading mesh-', self.name)
-                self.load_mesh()
-                if self.name in self.parent_organ.objects['Centreline'].keys():
-                    if self.parent_organ.workflow['MeshesProc']['C-Centreline']['buildCL']['Status'] == 'DONE':
-                        self.set_centreline()
-            self.dirs = self.parent_organ.meshes[self.name]['dirs']
-            if self.dirs['mesh'] != None: 
-                for n, meas_mesh in enumerate(self.dirs['mesh'].keys()):
-                    if n == 0:
-                        self.mesh_meas = {}
-                    if 'ball' in meas_mesh:
-                        n_type = meas_mesh.split('(')[1][:-1]
-                        m_ball = self.balloon_mesh(n_type = n_type)
-                        self.mesh_meas[meas_mesh] = m_ball
-                    elif 'thck' in meas_mesh: 
-                        n_type = meas_mesh.split('(')[1][:-1]
-                        m_thck = self.thickness_mesh(n_type = n_type)
-                        self.mesh_meas[meas_mesh] = m_thck
-            else: 
+                self.color = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['color']
+                self.alpha = 0.05
+                
+                #Update settings
+                set_proc = ['setup', self.channel_no, self.mesh_type]
+                self.parent_organ.update_settings(set_proc+['keep_largest'], self.keep_largest, 'mH')
+                self.parent_organ.update_settings(set_proc+['rotateZ_90'], self.rotateZ_90, 'mH')
+                self.parent_organ.update_settings(set_proc+['alpha'], self.alpha, 'mH')
+                
+                # Update workflow
+                if 'NS' not in self.channel_no:
+                    self.parent_organ.update_workflow(wf+['Status'], update = 'DONE')
+                else: 
+                    self.parent_organ.update_workflow(wf[0:3]+['Status'], update = 'DONE')
+                
+                process_up = ['MeshesProc','A-Create3DMesh','Status']
+                if get_by_path(self.parent_organ.workflow, process_up) == 'NI':
+                    self.parent_organ.update_workflow(process_up, update = 'Initialised')
+                
+                process_up2 = ['MeshesProc','Status']
+                if get_by_path(self.parent_organ.workflow, process_up2) == 'NI':
+                    self.parent_organ.update_workflow(process_up2, update = 'Initialised')
+                    
+                self.dirs = {'mesh': None, 'arrays': None}
+                self.parent_organ.check_status(process = 'MeshesProc')
                 self.mesh_meas = {}
             
-        self.mesh.color(self.color)
-        self.mesh.alpha(self.alpha)
-        if new or new_set: 
-            self.parent_organ.add_mesh(self)
-            self.save_mesh()
+            else: 
+                new = False
+                self.color = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['color']
+                self.alpha = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['alpha']
+                self.s3_dir = self.imChannel.contStack[self.mesh_type]['s3_dir']
+                if new_set: 
+                    self.keep_largest = keep_largest
+                    self.rotateZ_90 = rotateZ_90
+                    print('>> Re-creating mesh -', self.name)
+                    self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
+                else: 
+                    self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['keep_largest']
+                    self.rotateZ_90 = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['rotateZ_90']
+                    print('>> Loading mesh-', self.name)
+                    self.load_mesh()
+                    if self.name in self.parent_organ.objects['Centreline'].keys():
+                        if self.parent_organ.workflow['MeshesProc']['C-Centreline']['buildCL']['Status'] == 'DONE':
+                            self.set_centreline()
+                self.dirs = self.parent_organ.meshes[self.name]['dirs']
+                if self.dirs['mesh'] != None: 
+                    for n, meas_mesh in enumerate(self.dirs['mesh'].keys()):
+                        if n == 0:
+                            self.mesh_meas = {}
+                        if 'ball' in meas_mesh:
+                            n_type = meas_mesh.split('(')[1][:-1]
+                            m_ball = self.balloon_mesh(n_type = n_type)
+                            self.mesh_meas[meas_mesh] = m_ball
+                        elif 'thck' in meas_mesh: 
+                            n_type = meas_mesh.split('(')[1][:-1]
+                            m_thck = self.thickness_mesh(n_type = n_type)
+                            self.mesh_meas[meas_mesh] = m_thck
+                else: 
+                    self.mesh_meas = {}
+                
+            self.mesh.color(self.color)
+            self.mesh.alpha(self.alpha)
+            if new or new_set: 
+                self.parent_organ.add_mesh(self)
+                self.save_mesh()
+        else: 
+            print('SubMesh being created '+self.sub_legend)
     
     def create_mesh(self, keep_largest:bool, rotateZ_90:bool):
         # Extract vertices, faces, normals and values of each mesh
@@ -2852,7 +2899,88 @@ class Mesh_mH():
         mesh_area = self.mesh.area()
         return mesh_area
     
-
+    def create_section(self, name, color, alpha=0.5):#, invert=False): 
+        
+        im_ch = self.imChannel     
+        sect_info = self.parent_organ.mH_settings['general_info']['sections']['name_sections']
+        if name == sect_info['sect1']:
+            invert = True
+        else: 
+            invert = False
+            
+        submesh = SubMesh(parent_mesh = self, 
+                          sub_mesh_type='Section', 
+                          name = name, color=color, 
+                          alpha = alpha,
+                          imChannel= im_ch, 
+                          mesh_type=self.mesh_type,
+                          keep_largest=self.keep_largest,
+                          rotateZ_90=self.rotateZ_90, 
+                          new_set=True)
+        
+        submesh.s3_invert = invert
+        name2save = self.parent_organ.user_organName + '_mask_sect.npy'
+        submesh.s3_mask_dir = self.parent_organ.info['dirs']['s3_numpy'] / name2save
+        self.parent_organ.add_submesh(submesh)
+        
+        return submesh
+        
+class SubMesh(Mesh_mH):
     
+    def __init__(self, parent_mesh: Mesh_mH, sub_mesh_type:str, 
+                 name: str,
+                 color: str, alpha:float,
+                 imChannel:ImChannel, mesh_type:str, 
+                 keep_largest:bool, rotateZ_90=True, new_set=False):
+        
+        self.parent_mesh = parent_mesh
+        self.sub_mesh_type = sub_mesh_type
+        self.sub_legend = parent_mesh.legend + '_' + name
+        self.sub_name = parent_mesh.name + '_' + name
+        self.color = color
+        self.alpha = alpha
+        self.keep_largest = keep_largest
+        self.rotateZ_90 = rotateZ_90
+    
+        super().__init__(imChannel, mesh_type, keep_largest, rotateZ_90, new_set)
+        
+    def get_mesh(self):
+        
+        s3_mask = np.load(str(self.s3_mask_dir))
+        s3_mask = s3_mask.astype('bool')
+        if self.s3_invert: 
+            maskF = np.invert(s3_mask)
+        else: 
+            maskF = s3_mask
+            
+        im_ch = self.imChannel      
+        cont = self.mesh_type
+        im_ch.load_chS3s([cont])
+        cont_tiss = getattr(im_ch, 's3_'+cont)
+        s3 = cont_tiss.s3()
+        masked_s3 = s3.copy()
+    
+        masked_s3[maskF] = 0
+        self.create_subMesh(masked_s3, self.keep_largest, self.rotateZ_90)
+        self.mesh.alpha(self.alpha)
+        self.mesh.color(self.color)
+    
+        return self.mesh
+        
+    def create_subMesh(self, masked_s3, keep_largest:bool, rotateZ_90:bool):
+        
+        verts, faces, _, _ = measure.marching_cubes(masked_s3, spacing=self.resolution, method='lewiner')
+       
+        # Create meshes
+        mesh = vedo.Mesh([verts, faces])
+        if keep_largest:
+            mesh = mesh.extractLargestRegion()
+        if rotateZ_90:
+            mesh.rotateZ(-90)
+        mesh.legend(self.sub_legend).wireframe()
+        self.mesh = mesh
+        alert('woohoo')
+        
+        
 #%%
 print('morphoHeart! - Loaded Module Classes')

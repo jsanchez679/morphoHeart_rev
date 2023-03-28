@@ -1367,7 +1367,8 @@ def get_cube_clRibbon(organ, plotshow=True):
     organ.s3_mask_sect = mask_selected
     organ.vol_mask_sect = vol_selected
 
-    dir2save = organ.info['dirs']['s3_numpy'] / 'mask_sect.npy'
+    name2save = organ.user_organName + '_mask_sect.npy'
+    dir2save = organ.info['dirs']['s3_numpy'] / name2save
     np.save(dir2save, organ.s3_mask_sect)
     if not dir2save.is_file():
         print('>> Error: s3 mask of sections was not saved correctly!\n>> File: '+ 'mask_sect.npy')
@@ -1380,54 +1381,31 @@ def get_cube_clRibbon(organ, plotshow=True):
 #%% func - get_sections
 def get_sections(organ, plotshow):
     
-    if not hasattr(organ, 's3_mask_sect'):
-        s3_dir = organ.info['dirs']['s3_numpy'] / 'mask_sect.npy'
-        s3_mask_sect = np.load(s3_dir)
-        organ.s3_mask_sect = s3_mask_sect
-    else: 
-        s3_mask_sect = organ.s3_mask_sect
-    
     sect_names = [item for item in organ.parent_project.mH_param2meas if 'sect1' in item]
-    no_sect = organ.mH_settings['general_info']['sections']['no_sections']
-    if len(sect_names)>0:
-        if no_sect == 2: 
-            name_sections = organ.mH_settings['general_info']['sections']['name_sections']
-            name_sA = name_sections['sect1']
-            name_sB = name_sections['sect2']
-            
-            s3_filledCubeBoolA = s3_mask_sect.astype(bool)
-            s3_filledCubeBoolB = np.invert(s3_filledCubeBoolA)
-            for name in sect_names: 
-                ch = name[0]; cont = name[1]
-                mesh = organ.obj_meshes[ch+'_'+cont]
-                print('\n- Dividing '+mesh.legend+' into sections')
 
-                im_ch = mesh.imChannel
-                im_ch.load_chS3s(cont_types=[cont])
-                cont_tiss = getattr(im_ch, 's3_'+cont)
-                    
-                s3 = cont_tiss.s3()
-                
-                masked_s3A = s3.copy()
-                masked_s3A[s3_filledCubeBoolB] = 0
-                cutA = s3_to_mesh(masked_s3A, res=mesh.resolution, 
-                                           name=mesh.legend+'-'+name_sA, color='mediumvioletred')
-                cutA.alpha(0.5)
-                
-                alert('woohoo')
-                masked_s3B = s3.copy()
-                masked_s3B[s3_filledCubeBoolA] = 0
-                cutB = s3_to_mesh(masked_s3B, res=mesh.resolution, 
-                                           name=mesh.legend+'-'+name_sB, color='indigo')
-                cutB.alpha(0.5)
-                alert('clown')
-                
-                if plotshow: 
-                    obj = [(mesh.mesh), (cutA), (cutB)]
-                    txt = [(0, organ.user_organName +' - '+mesh.legend )]
-                    plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-                    
-                
+    name_sections = organ.mH_settings['general_info']['sections']['name_sections']
+    name_sA = name_sections['sect1']
+    name_sB = name_sections['sect2']
+            
+    subms = []
+    for name in sect_names: 
+        ch = name[0]; cont = name[1]
+        mesh = organ.obj_meshes[ch+'_'+cont]
+        print('\n- Dividing '+mesh.legend+' into sections')
+        submeshes = [(mesh.mesh)]; 
+        for n, name, color in zip(count(), [name_sA, name_sB], ['mediumvioletred', 'indigo']):
+            print(n, name, color)
+            subm = mesh.create_section(name = name, color = color)
+            sub_mesh = subm.get_mesh()
+            submeshes.append((sub_mesh))
+            subms.append(subm)
+            
+        if plotshow: 
+            obj = submeshes
+            txt = [(0, organ.user_organName +' - '+mesh.legend)]
+            plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+            
+    return subms
 
 #%% func - s3_to_mesh
 def s3_to_mesh(s3, res, name:str, color='cyan', rotateZ_90=True):
@@ -1541,164 +1519,164 @@ def get_rings2cut_segm(organ):
 
     
 #%% func - getRing2CutChambers
-# def getRing2CutChambers(filename, kspl_CL, mesh2cut, resolution, dir_stl, dir_txtNnpy, dict_pts, dict_shapes):
-#     """
-#     Function to define the ring needed to cut the meshes into atrium and ventricle
+def getRing2CutChambers(filename, kspl_CL, mesh2cut, resolution, dir_stl, dir_txtNnpy, dict_pts, dict_shapes):
+    """
+    Function to define the ring needed to cut the meshes into atrium and ventricle
 
-#     """
+    """
     
-#     # Plot spheres through centreline inside myocardium
-#     spheres_spl = sphs_in_spline(kspl_CL = kspl_CL, colour = True)
-#     settings.legendSize = .3
-#     vp = Plotter(N=1, axes = 7)
-#     text = filename+"\n\n >> Define the centreline point number to use to initialise \n  disc to divide heart into chambers \n  [NOTE: Spheres appear in centreline every 10 points, starting from \n  outflow (blue) to inflow (red) tract]"
-#     txt = Text2D(text, c="k", font= font)
-#     vp.show(mesh2cut.alpha(0.01), kspl_CL, spheres_spl, txt, at=0, azimuth = azimuth, interactive=True)
+    # Plot spheres through centreline inside myocardium
+    spheres_spl = sphs_in_spline(kspl_CL = kspl_CL, colour = True)
+    settings.legendSize = .3
+    vp = Plotter(N=1, axes = 7)
+    text = filename+"\n\n >> Define the centreline point number to use to initialise \n  disc to divide heart into chambers \n  [NOTE: Spheres appear in centreline every 10 points, starting from \n  outflow (blue) to inflow (red) tract]"
+    txt = Text2D(text, c="k", font= font)
+    vp.show(mesh2cut.alpha(0.01), kspl_CL, spheres_spl, txt, at=0, azimuth = azimuth, interactive=True)
 
-#     # Get myocIntBall data
-#     [[m_myocIntBall], [myoc_intBall]] = openThicknessMeshes(filename = filename, meshes_names = ['myoc_intBall'], extension = 'vtk',
-#                                       dir_stl = dir_stl, dir_txtNnpy = dir_txtNnpy, print_txt = False)
+    # Get myocIntBall data
+    [[m_myocIntBall], [myoc_intBall]] = openThicknessMeshes(filename = filename, meshes_names = ['myoc_intBall'], extension = 'vtk',
+                                      dir_stl = dir_stl, dir_txtNnpy = dir_txtNnpy, print_txt = False)
 
-#     # Get disc position and orientation to cut heart layers
-#     mesh2cut.alpha(0.05)
-#     happyWithMyocCut = False
-#     happyWithDisc = False
-#     while not happyWithMyocCut:
-#         while not happyWithDisc:
-#             # Create plane
-#             num_pt = ask4input('Enter the centreline point number you want to use to initialise the disc to divide the heart into chambers: ', int)
-#             # Use flat disc or centreline orientation at point to define disc?
-#             centrelineORFlat = ask4input('Do you want to use the centreline orientation at the selected point to define disc orientation or \n  initialise the disc in a plane normal to the y-z plane? \n\t[0]: Use centreline orientation at the selected point\n\t[1]: Use plane perpendicular to the y-z plane >>>: ', bool)
-#             if not centrelineORFlat:
-#                 pl_Ch_normal, pl_Ch_centre = get_planeNormal2Pt (pt_num = num_pt, spline_pts = kspl_CL.points())
-#             else:
-#                 pl_Ch_centre = kspl_CL.points()[num_pt]
-#                 pl_Ch_normal = [1,0,0]
-#             # print('- Modifying disc position to cut chambers. Initially defined disc radius is 60um. \n  Once you have selected the position of the disc a new radius will be calculated based on the mesh points the disc cuts. \n  If you are not happy with the disc radius, you will be able to modify it just before proceeding to the cut.')
-#             # Modify (rotate and move cylinder/disc)
-#             cyl_test, sph_test, rotX, rotY, rotZ = modifyDisc (filename = filename,
-#                                                     pl_normal = pl_Ch_normal, pl_centre = pl_Ch_centre,
-#                                                     radius = 60, type_cut = 'Chamber',
-#                                                     mesh1 = mesh2cut, xyz_bounds = mesh2cut.bounds())
-#             # print('pl_Ch_centre', pl_Ch_centre)
-#             # print('sph_test.pos()',sph_test.pos())
-#             # print('cyl_test.pos()',cyl_test.pos())
-#             # print('num_pt:', num_pt)
+    # Get disc position and orientation to cut heart layers
+    mesh2cut.alpha(0.05)
+    happyWithMyocCut = False
+    happyWithDisc = False
+    while not happyWithMyocCut:
+        while not happyWithDisc:
+            # Create plane
+            num_pt = ask4input('Enter the centreline point number you want to use to initialise the disc to divide the heart into chambers: ', int)
+            # Use flat disc or centreline orientation at point to define disc?
+            centrelineORFlat = ask4input('Do you want to use the centreline orientation at the selected point to define disc orientation or \n  initialise the disc in a plane normal to the y-z plane? \n\t[0]: Use centreline orientation at the selected point\n\t[1]: Use plane perpendicular to the y-z plane >>>: ', bool)
+            if not centrelineORFlat:
+                pl_Ch_normal, pl_Ch_centre = get_planeNormal2Pt (pt_num = num_pt, spline_pts = kspl_CL.points())
+            else:
+                pl_Ch_centre = kspl_CL.points()[num_pt]
+                pl_Ch_normal = [1,0,0]
+            # print('- Modifying disc position to cut chambers. Initially defined disc radius is 60um. \n  Once you have selected the position of the disc a new radius will be calculated based on the mesh points the disc cuts. \n  If you are not happy with the disc radius, you will be able to modify it just before proceeding to the cut.')
+            # Modify (rotate and move cylinder/disc)
+            cyl_test, sph_test, rotX, rotY, rotZ = modifyDisc (filename = filename,
+                                                    pl_normal = pl_Ch_normal, pl_centre = pl_Ch_centre,
+                                                    radius = 60, type_cut = 'Chamber',
+                                                    mesh1 = mesh2cut, xyz_bounds = mesh2cut.bounds())
+            # print('pl_Ch_centre', pl_Ch_centre)
+            # print('sph_test.pos()',sph_test.pos())
+            # print('cyl_test.pos()',cyl_test.pos())
+            # print('num_pt:', num_pt)
 
-#             # Get new normal of rotated disc
-#             pl_Ch_normal_corrected = newNormal3DRot(normal = pl_Ch_normal, rotX = rotX, rotY = rotY, rotZ = rotZ)
-#             normal_unit = unit_vector(pl_Ch_normal_corrected)*10
-#             # Get central point of newly defined disc
-#             pl_Ch_centre = sph_test.pos()
+            # Get new normal of rotated disc
+            pl_Ch_normal_corrected = newNormal3DRot(normal = pl_Ch_normal, rotX = rotX, rotY = rotY, rotZ = rotZ)
+            normal_unit = unit_vector(pl_Ch_normal_corrected)*10
+            # Get central point of newly defined disc
+            pl_Ch_centre = sph_test.pos()
 
-#             # Get points at plane
-#             # Myocardium
-#             pts2cut, _ = getPointsAtPlane(points = mesh2cut.points(), pl_normal = pl_Ch_normal_corrected,
-#                                                 pl_centre = pl_Ch_centre, tol = 1)
-#             # Internal myocardium with ballooning data
-#             _, data2cut = getPointsAtPlane(points = m_myocIntBall.points(), pl_normal = pl_Ch_normal_corrected,
-#                                                 pl_centre = pl_Ch_centre, tol = 1, addData = myoc_intBall)
-#             plane_Ch = Plane(pos = pl_Ch_centre, normal = pl_Ch_normal, sx = 300)
-#             # Cut cl with plane
-#             ksplCL_cut = kspl_CL.clone().cutWithMesh(plane_Ch, invert=True)
-#             # ksplCL_cut.lw(5).color('tomato')
-#             # print(ksplCL_cut.points()[0], ksplCL_cut.points()[-1])
-#             # Find point of centreline closer to last point of kspline cut
-#             ksplCL_cutPt, num_pt = findClosestPtGuess(ksplCL_cut.points(), kspl_CL.points(), index_guess = num_pt)#findClosestPt(ksplCL_cut.points()[-1], kspl_CL.points())
-#             # print('num_pt:', num_pt)
+            # Get points at plane
+            # Myocardium
+            pts2cut, _ = getPointsAtPlane(points = mesh2cut.points(), pl_normal = pl_Ch_normal_corrected,
+                                                pl_centre = pl_Ch_centre, tol = 1)
+            # Internal myocardium with ballooning data
+            _, data2cut = getPointsAtPlane(points = m_myocIntBall.points(), pl_normal = pl_Ch_normal_corrected,
+                                                pl_centre = pl_Ch_centre, tol = 1, addData = myoc_intBall)
+            plane_Ch = Plane(pos = pl_Ch_centre, normal = pl_Ch_normal, sx = 300)
+            # Cut cl with plane
+            ksplCL_cut = kspl_CL.clone().cutWithMesh(plane_Ch, invert=True)
+            # ksplCL_cut.lw(5).color('tomato')
+            # print(ksplCL_cut.points()[0], ksplCL_cut.points()[-1])
+            # Find point of centreline closer to last point of kspline cut
+            ksplCL_cutPt, num_pt = findClosestPtGuess(ksplCL_cut.points(), kspl_CL.points(), index_guess = num_pt)#findClosestPt(ksplCL_cut.points()[-1], kspl_CL.points())
+            # print('num_pt:', num_pt)
 
-#             # Newly defined centreline point cut by plane/disc
-#             cl_point = pl_Ch_centre# kspl_CL.points()[num_pt]
-#             sph_cut = Sphere(pos = cl_point, r=4, c='gold').legend('sph_ChamberCut')
+            # Newly defined centreline point cut by plane/disc
+            cl_point = pl_Ch_centre# kspl_CL.points()[num_pt]
+            sph_cut = Sphere(pos = cl_point, r=4, c='gold').legend('sph_ChamberCut')
 
-#             # Order the points
-#             ordpts, _ = order_pts(points = pts2cut)
-#             # Find distance between points at plane and cl_point to define radius
-#             dist = []
-#             for pt in ordpts:
-#                 dist.append(findDist(cl_point, pt))
+            # Order the points
+            ordpts, _ = order_pts(points = pts2cut)
+            # Find distance between points at plane and cl_point to define radius
+            dist = []
+            for pt in ordpts:
+                dist.append(findDist(cl_point, pt))
 
-#             r_circle_max = np.mean(dist)*1.2
-#             r_circle_min = min(dist)*0.8
-#             if r_circle_max < max(data2cut):
-#                 r_circle_max = max(data2cut)*1.5
+            r_circle_max = np.mean(dist)*1.2
+            r_circle_min = min(dist)*0.8
+            if r_circle_max < max(data2cut):
+                r_circle_max = max(data2cut)*1.5
 
-#             # Build new disc to confirm
-#             cyl_final = Cylinder(pos = pl_Ch_centre,r = r_circle_max, height = 2*0.225, axis = normal_unit, c = 'purple', cap = True, res = 300)
-#             r_circle_max_str = r_circle_max
+            # Build new disc to confirm
+            cyl_final = Cylinder(pos = pl_Ch_centre,r = r_circle_max, height = 2*0.225, axis = normal_unit, c = 'purple', cap = True, res = 300)
+            r_circle_max_str = r_circle_max
 
-#             text = filename+"\n\n >> Check the position and the radius of the disc to cut the heart into chambers.\n  Make sure it is cutting the heart through the AVC and hopefully not cutting any other chamber regions. \n >> Close the window when done"
-#             txt = Text2D(text, c=c, font=font)
-#             settings.legendSize = .3
-#             vp = Plotter(N=1, axes=4)
-#             vp.show(mesh2cut, cyl_final, ksplCL_cut, txt, at=0, viewup="y", azimuth=0, elevation=0, interactive=True)
-#             happy = ask4input('Are you happy with the position of the disc [radius: '+format(r_circle_max_str,'.2f')+"um] to cut heart into chambers? \n  [0]: no, I would like to define a new position for the disc\n  [1]: yes, but I would like to redefine the disc radius \n  [2]: yes, I am happy with both, disc position and radius :", int)
-#             if happy == 1:
-#                 happy_rad = False
-#                 while not happy_rad:
-#                     r_circle_max = ask4input('Input disc radius [um]: ', float)
-#                     text = filename+"\n\n >> New radius \n  Check the radius of the disc to cut the myocardial tissue into \n   chambers. Make sure it is cutting through the AVC and not catching any other chamber regions. \n >> Close the window when done"
-#                     cyl_final = Cylinder(pos = pl_Ch_centre,r = r_circle_max, height = 2*0.225, axis = normal_unit, c = 'purple', cap = True, res = 300)
-#                     r_circle_max_str = r_circle_max
-#                     txt = Text2D(text, c="k", font= font)
-#                     settings.legendSize = .15
-#                     vp = Plotter(N=1, axes = 10)
-#                     vp.show(mesh2cut.alpha(1), kspl_CL, cyl_final, sph_cut, txt, at = 0, interactive=True)
-#                     r_circle_max_str = r_circle_max
-#                     happy_rad = ask4input('Is the selected radius ['+format(r_circle_max_str,'.2f')+"um] sufficient to cut heart into chambers? \n  [0]: no, I would like to change its value \n  [1]: yes, it cuts the heart without disrupting too much the chambers!: ", bool)
-#                 happyWithDisc = True
-#             elif happy == 2:
-#                 happyWithDisc = True
+            text = filename+"\n\n >> Check the position and the radius of the disc to cut the heart into chambers.\n  Make sure it is cutting the heart through the AVC and hopefully not cutting any other chamber regions. \n >> Close the window when done"
+            txt = Text2D(text, c=c, font=font)
+            settings.legendSize = .3
+            vp = Plotter(N=1, axes=4)
+            vp.show(mesh2cut, cyl_final, ksplCL_cut, txt, at=0, viewup="y", azimuth=0, elevation=0, interactive=True)
+            happy = ask4input('Are you happy with the position of the disc [radius: '+format(r_circle_max_str,'.2f')+"um] to cut heart into chambers? \n  [0]: no, I would like to define a new position for the disc\n  [1]: yes, but I would like to redefine the disc radius \n  [2]: yes, I am happy with both, disc position and radius :", int)
+            if happy == 1:
+                happy_rad = False
+                while not happy_rad:
+                    r_circle_max = ask4input('Input disc radius [um]: ', float)
+                    text = filename+"\n\n >> New radius \n  Check the radius of the disc to cut the myocardial tissue into \n   chambers. Make sure it is cutting through the AVC and not catching any other chamber regions. \n >> Close the window when done"
+                    cyl_final = Cylinder(pos = pl_Ch_centre,r = r_circle_max, height = 2*0.225, axis = normal_unit, c = 'purple', cap = True, res = 300)
+                    r_circle_max_str = r_circle_max
+                    txt = Text2D(text, c="k", font= font)
+                    settings.legendSize = .15
+                    vp = Plotter(N=1, axes = 10)
+                    vp.show(mesh2cut.alpha(1), kspl_CL, cyl_final, sph_cut, txt, at = 0, interactive=True)
+                    r_circle_max_str = r_circle_max
+                    happy_rad = ask4input('Is the selected radius ['+format(r_circle_max_str,'.2f')+"um] sufficient to cut heart into chambers? \n  [0]: no, I would like to change its value \n  [1]: yes, it cuts the heart without disrupting too much the chambers!: ", bool)
+                happyWithDisc = True
+            elif happy == 2:
+                happyWithDisc = True
 
-#         cyl_final.legend('cyl2CutChambers_o')
-#         cyl_data = [r_circle_max, r_circle_min, normal_unit, pl_Ch_centre]
-#         dict_shapes = addShapes2Dict (shapes = [cyl_final], dict_shapes = dict_shapes, radius = [cyl_data], print_txt = False)
+        cyl_final.legend('cyl2CutChambers_o')
+        cyl_data = [r_circle_max, r_circle_min, normal_unit, pl_Ch_centre]
+        dict_shapes = addShapes2Dict (shapes = [cyl_final], dict_shapes = dict_shapes, radius = [cyl_data], print_txt = False)
 
-#         #Define atrium and ventricle
-#         try:
-#             avc_minus50y = kspl_CL.points()[num_pt-50]
-#         except:
-#             avc_minus50y = kspl_CL.points()[0]
-#             print('-> First centreline point got selected as AVC-50')
-#         try:
-#             avc_plus50y = kspl_CL.points()[num_pt+50]
-#         except:
-#             avc_plus50y = kspl_CL.points()[-1]
-#             print('-> Last centreline point got selected as  AVC+50')
+        #Define atrium and ventricle
+        try:
+            avc_minus50y = kspl_CL.points()[num_pt-50]
+        except:
+            avc_minus50y = kspl_CL.points()[0]
+            print('-> First centreline point got selected as AVC-50')
+        try:
+            avc_plus50y = kspl_CL.points()[num_pt+50]
+        except:
+            avc_plus50y = kspl_CL.points()[-1]
+            print('-> Last centreline point got selected as  AVC+50')
 
-#         sph_atr = Sphere(pos = avc_plus50y, r=4, c='darkorange').legend('sph_CentreOfAtrium')
-#         sph_vent = Sphere(pos = avc_minus50y, r=4, c='deeppink').legend('sph_CentreOfVentricle')
-#         sph_cut = Sphere(pos = kspl_CL.points()[num_pt], r=4, c='gold').legend('sph_ChamberCut')
+        sph_atr = Sphere(pos = avc_plus50y, r=4, c='darkorange').legend('sph_CentreOfAtrium')
+        sph_vent = Sphere(pos = avc_minus50y, r=4, c='deeppink').legend('sph_CentreOfVentricle')
+        sph_cut = Sphere(pos = kspl_CL.points()[num_pt], r=4, c='gold').legend('sph_ChamberCut')
 
-#         text = filename+"\n\n >> Have a look at the spheres inside the heart \n   and confirm they are correctly named according to the chamber \n   in which they are positioned."
-#         txt = Text2D(text, c="k", font= font)
-#         settings.legendSize = .15
-#         vp = Plotter(N=1, axes = 10)
-#         vp.show(mesh2cut.alpha(0.01), kspl_CL, sph_cut, sph_atr, sph_vent, txt, at = 0, interactive=True)
+        text = filename+"\n\n >> Have a look at the spheres inside the heart \n   and confirm they are correctly named according to the chamber \n   in which they are positioned."
+        txt = Text2D(text, c="k", font= font)
+        settings.legendSize = .15
+        vp = Plotter(N=1, axes = 10)
+        vp.show(mesh2cut.alpha(0.01), kspl_CL, sph_cut, sph_atr, sph_vent, txt, at = 0, interactive=True)
 
-#         atrVentSph_corr = ask4input('Were the atrium and ventricle centre spheres named correctly? \n\t[0]: no, orange is ventricle, and pink is atrium \n\t[1]: yes, orange is atrium, and pink is ventricle! >>>:', bool)
-#         if not atrVentSph_corr:
-#             sph_atr = Sphere(pos = avc_minus50y, r=4, c='deeppink').legend('sph_CentreOfAtrium')
-#             sph_vent = Sphere(pos = avc_plus50y, r=4, c='darkorange').legend('sph_CentreOfVentricle')
+        atrVentSph_corr = ask4input('Were the atrium and ventricle centre spheres named correctly? \n\t[0]: no, orange is ventricle, and pink is atrium \n\t[1]: yes, orange is atrium, and pink is ventricle! >>>:', bool)
+        if not atrVentSph_corr:
+            sph_atr = Sphere(pos = avc_minus50y, r=4, c='deeppink').legend('sph_CentreOfAtrium')
+            sph_vent = Sphere(pos = avc_plus50y, r=4, c='darkorange').legend('sph_CentreOfVentricle')
 
-#         # Add pt to dict
-#         dict_pts = addPoints2Dict(spheres = [sph_cut, sph_atr, sph_vent], info = ['', 'ChCut','ChCut'], dict_pts = dict_pts)
-#         dict_pts['numPt_CLChamberCut'] = num_pt
+        # Add pt to dict
+        dict_pts = addPoints2Dict(spheres = [sph_cut, sph_atr, sph_vent], info = ['', 'ChCut','ChCut'], dict_pts = dict_pts)
+        dict_pts['numPt_CLChamberCut'] = num_pt
 
-#         # Now cut myocardium
-#         print('\n')
-#         atr_meshes = []; vent_meshes = []
-#         atr_meshes, vent_meshes, dict_shapes, s3_cyl  = getChamberMeshes(filename = filename,
-#                                     end_name = ['ch0_cut'], names2cut = ['Myoc'],
-#                                     kspl_CL = kspl_CL, num_pt = num_pt, atr_meshes = atr_meshes, vent_meshes = vent_meshes,
-#                                     dir_txtNnpy = dir_txtNnpy, dict_shapes = dict_shapes, dict_pts = dict_pts,
-#                                     resolution = resolution, plotshow = True)
+        # Now cut myocardium
+        print('\n')
+        atr_meshes = []; vent_meshes = []
+        atr_meshes, vent_meshes, dict_shapes, s3_cyl  = getChamberMeshes(filename = filename,
+                                    end_name = ['ch0_cut'], names2cut = ['Myoc'],
+                                    kspl_CL = kspl_CL, num_pt = num_pt, atr_meshes = atr_meshes, vent_meshes = vent_meshes,
+                                    dir_txtNnpy = dir_txtNnpy, dict_shapes = dict_shapes, dict_pts = dict_pts,
+                                    resolution = resolution, plotshow = True)
 
-#         happyWithMyocCut = ask4input('Has the myocardium been divided correctly into chambers with the defined disc? \n\t [0]:no, I would like to redefine the disc \n\t [1]:yes, I am happy with the cut made! >>>: ', bool)
-#         if not happyWithMyocCut:
-#             happyWithDisc = False
+        happyWithMyocCut = ask4input('Has the myocardium been divided correctly into chambers with the defined disc? \n\t [0]:no, I would like to redefine the disc \n\t [1]:yes, I am happy with the cut made! >>>: ', bool)
+        if not happyWithMyocCut:
+            happyWithDisc = False
 
-#     return cyl_final, num_pt, atr_meshes, vent_meshes, dict_shapes, dict_pts, s3_cyl
+    return cyl_final, num_pt, atr_meshes, vent_meshes, dict_shapes, dict_pts, s3_cyl
 
 #%% - Measuring function
 #%% func - measure_centreline
@@ -1734,13 +1712,26 @@ def measure_volume(organ):
     for name in vol_names: 
         # print(name)
         ch = name[0]; cont = name[1]; segm= name[2]
+        mesh_mH = organ.obj_meshes[ch+'_'+cont]
         if segm == 'whole': 
-            volume = organ.obj_meshes[ch+'_'+cont].get_volume()
-            process = ['measure', ch, cont, segm, 'volume']
-            organ.update_settings(process = process, 
-                                  update = volume, mH='mH')
-            wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'volume']
-            organ.update_workflow(process=wf_proc, update='DONE')
+            volume = mesh_mH.get_volume()
+            
+        elif 'sect' in segm: 
+            sect_names = organ.mH_settings['general_info']['sections']['name_sections']
+            sect_name = sect_names[segm]
+            sub_sect = organ.submeshes[ch+'_'+cont+'_'+sect_name]
+            subm = mesh_mH.create_section(name = sect_name, color = sub_sect['color'])
+            volume = subm.get_mesh().volume()
+        
+        else: 
+            print(segm)
+            continue
+            
+        process = ['measure', ch, cont, segm, 'volume']
+        organ.update_settings(process = process, 
+                              update = volume, mH='mH')
+        wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'volume']
+        organ.update_workflow(process=wf_proc, update='DONE')
             
 #%% func - measure_area 
 def measure_area(organ):
@@ -1748,13 +1739,26 @@ def measure_area(organ):
     for name in area_names: 
         # print(name)
         ch = name[0]; cont = name[1]; segm= name[2]
+        mesh_mH = organ.obj_meshes[ch+'_'+cont]
         if segm == 'whole': 
-            area = organ.obj_meshes[ch+'_'+cont].get_area()
-            process = ['measure', ch, cont, segm, 'surf_area']
-            organ.update_settings(process = process, 
-                                  update = area, mH='mH')
-            wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'surf_area']
-            organ.update_workflow(process=wf_proc, update='DONE')
+            area = mesh_mH.get_area()
+            
+        elif 'sect' in segm: 
+            sect_names = organ.mH_settings['general_info']['sections']['name_sections']
+            sect_name = sect_names[segm]
+            sub_sect = organ.submeshes[ch+'_'+cont+'_'+sect_name]
+            subm = mesh_mH.create_section(name = sect_name, color = sub_sect['color'])
+            area = subm.get_mesh().area()
+            
+        else: 
+            print(segm)
+            continue
+            
+        process = ['measure', ch, cont, segm, 'surf_area']
+        organ.update_settings(process = process, 
+                              update = area, mH='mH')
+        wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'surf_area']
+        organ.update_workflow(process=wf_proc, update='DONE')
             
 #%% func - find_angle_btw_pts
 def find_angle_btw_pts(pts1, pts2):
@@ -2177,7 +2181,7 @@ def modify_disc(filename, txt, mesh, option,
                     c='teal', title_size=txt_slider_size)
 
     vp.addSlider2D(sliderAlphaMeshOut, xmin=0.01, xmax=0.99, value=0.01,
-               pos=[(0.95,0.25), (0.95,0.45)], c="blue", title="Myocardial Opacity)")
+               pos=[(0.95,0.25), (0.95,0.45)], c="blue", title="Mesh Opacity")
 
     text = filename+'\nDefine disc position to '+txt+'.\nMake sure it cuts all the mesh effectively separating it into individual segments.\n>> Close the window when done.\n>> Note: Initially defined disc radius is '+str(radius)+'um.\nIf you are not happy with the disc radius, you will be able to modify it just before proceeding with the cut.'
     txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)

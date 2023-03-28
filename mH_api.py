@@ -527,13 +527,188 @@ if partC:
     # organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
     fcMeshes.get_cube_clRibbon(organ, plotshow=True)
     
-    import vedo as vedo
-    plt = vedo.Plotter(N=1)
-    plt.show(organ.vol_mask_sect, at=0, axes=1, interactive=True)
+    # Cut organ into sections
+    subms = fcMeshes.get_sections(organ, plotshow=True)
+    
+    left_myo = subms[0].get_mesh()
+    right_myo = subms[1].get_mesh()
     
     
-    fcMeshes.get_sections(organ, plotshow=True)
     
+#%% 
+    # Cut organ into segments
+    q = 'Do you want to use the centreline to aid cut of tissue into segments?'
+    res = {0: 'No, I would like to define the cuts by hand', 1: 'yes, please!'}
+    segm_using_cl = fcBasics.ask4input(q, res, bool)
+    if segm_using_cl: 
+        #Find centreline first
+        dict_cl = fcMeshes.plot_organCLs(organ)
+        q = 'Select the centreline you want to use to aid organ cut into segments:'
+        select = fcBasics.ask4input(q, dict_cl, int)
+        ch_cont_cl = dict_cl[select].split(' (')[1].split('-')
+        ch = ch_cont_cl[0]
+        cont = ch_cont_cl[1]
+        cl = organ.obj_meshes[ch+'_'+cont].get_centreline()
+        spheres_spl = fcMeshes.sphs_in_spline(kspl = cl, colour = True)
+    
+    segm_names = [item for item in organ.parent_project.mH_param2meas if 'segm1' in item]
+    
+    ext_ch, _ = organ.get_ext_int_chs()
+    if (ext_ch.channel_no, 'tiss', 'segm1', 'volume') in segm_names:
+        mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_tiss']
+    else: 
+        ch = segm_names[0][0]; cont = segm_names[0][1]
+        mesh_ext = organ.obj_meshes[ch+'_'+cont]
+        
+    happyWithCut = False
+    happyWithDisc = False
+    number_cuts_4segm = 2
+    segm_name = organ.mH_settings['general_info']['segments']['name_segments']
+    for n in range(number_cuts_4segm):
+        print('Creating disc No.'+str(n)+' for cutting tissues into segments!')
+        while not happyWithDisc: 
+            if segm_using_cl:
+                vp = vedo.Plotter(N=1, axes = 7)
+                text = organ.user_organName+"\n\n >> Define the centreline point number to use to initialise \n  disc to divide heart into chambers \n  [NOTE: Spheres appear in centreline every 10 points, starting from \n  outflow (blue) to inflow (red) tract]"
+                txt = vedo.Text2D(text, c="k")#, font= font)
+                vp.show(mesh_ext.mesh, cl, spheres_spl, txt, at=0, azimuth = 0, interactive=True)
+    
+                q = 'Enter the centreline point number you want to use to initialise the disc to divide the heart into chambers:'
+                num_pt = fcBasics.ask4input(q,{},int)
+                # Use flat disc or centreline orientation at point to define disc?
+                q2 = 'Select the object you want to use: '
+                res = {0:'Use the centreline orientation at the selected point to define disc orientation', 1: 'Initialise the disc in a plane normal to the y-z plane?'}
+                cl_or_flat = fcBasics.ask4input(q2, res, bool)
+             
+                if not cl_or_flat:
+                    pl_normal, pl_centre = fcMeshes.get_plane_normal2pt(pt_num = num_pt, points = cl.points())
+                else:
+                    pl_centre = cl.points()[num_pt]
+                    pl_normal = [1,0,0]
+            else: 
+                
+                pl_centre = mesh_ext.mesh.center_of_mass()
+                pl_normal = [0,1,0]
+                
+            radius = 60
+            # Modify (rotate and move cylinder/disc)
+            cyl_test, sph_test, rotX, rotY, rotZ = fcMeshes.modify_disc(filename = organ.user_organName,
+                                                                txt = 'cut tissues into segments', 
+                                                                mesh = mesh_ext.mesh,
+                                                                option = [True,True,True,True,True,True],
+                                                                def_pl = {'pl_normal': pl_normal, 'pl_centre': pl_centre},
+                                                                radius = radius)
+            
+            # Get new normal of rotated disc
+            pl_normal_corrected = fcMeshes.newNormal3DRot(normal = pl_normal, rotX = rotX, rotY = rotY, rotZ = rotZ)
+            normal_unit = fcMeshes.unit_vector(pl_normal_corrected)*10
+            # Get central point of newly defined disc
+            pl_centre_new = sph_test.pos()
+            
+            # Newly defined centreline point
+            cl_point = pl_centre_new# kspl_CL.points()[num_pt]
+            sph_cut = vedo.Sphere(pos = pl_centre_new, r=4, c='gold').legend('sph_ChamberCut')
+    
+            # Build new disc to confirm
+            cyl_final = vedo.Cylinder(pos = pl_centre_new, r = radius, height = 2*0.225, axis = normal_unit, c = 'purple', cap = True, res = 300)
+            
+            text = organ.user_organName+"\n\n >> Check the position and the radius of the disc to cut the heart into chambers.\n  Make sure it is cutting the heart through the AVC and hopefully not cutting any other chamber regions. \n >> Close the window when done"
+            txt = vedo.Text2D(text, c='k')#, font=font)
+            vp = vedo.Plotter(N=1, axes=4)
+            vp.show(mesh_ext.mesh, cyl_final, cl, txt, at=0, viewup="y", azimuth=0, elevation=0, interactive=True)
+            
+            disc_radius = radius
+            q_happy = 'Are you happy with the position of the disc [radius: '+str(disc_radius)+'um] to cut heart into chambers?'
+            res_happy = {0: 'no, I would like to define a new position for the disc', 1: 'yes, but I would like to redefine the disc radius', 2: 'yes, I am happy with both, disc position and radius'}
+            happy = fcBasics.ask4input(q_happy, res_happy, int)
+            if happy == 1:
+                happy_rad = False
+                while not happy_rad:
+                    disc_radius = fcBasics.ask4input('Input disc radius [um]: ',{}, float)
+                    text = organ.user_organName+"\n\n >> New radius \n  Check the radius of the disc to cut the myocardial tissue into \n   chambers. Make sure it is cutting through the AVC and not catching any other chamber regions. \n >> Close the window when done"
+                    cyl_final = vedo.Cylinder(pos = pl_centre_new, r = disc_radius, height = 2*0.225, axis = normal_unit, c = 'purple', cap = True, res = 300)
+                    txt = vedo.Text2D(text, c="k"), #font= font)
+                    vp = vedo.Plotter(N=1, axes = 10)
+                    vp.show(mesh_ext.mesh.alpha(1), cl, cyl_final, sph_cut, txt, at = 0, interactive=True)
+                    q_happy_rad = 'Is the selected radius ['+str(disc_radius)+'um] sufficient to cut heart into chambers?'
+                    res_happy_rad = {0: 'no, I would like to change its value', 1: 'yes, it cuts the heart without disrupting too much the chambers!'}
+                    happy_rad = fcBasics.ask4input(q_happy_rad, res_happy_rad, bool)
+                happyWithDisc = True
+            elif happy == 2:
+                happyWithDisc = True
+       
+        #HEREE!!!
+        # Save disc info
+        cyl_final.legend('cyl2CutChambers_o')
+        cyl_data = [r_circle_max, r_circle_min, normal_unit, pl_Ch_centre]
+        dict_shapes = addShapes2Dict (shapes = [cyl_final], dict_shapes = dict_shapes, radius = [cyl_data], print_txt = False)
+
+        # Create mask for created disc
+        print('- Creating disc mask to cut chambers... (this takes about 2mins)')
+        r_circle_max = dict_shapes['cyl2CutChambers_o']['radius_max']
+        r_circle_min = dict_shapes['cyl2CutChambers_o']['radius_min']
+        normal_unit = dict_shapes['cyl2CutChambers_o']['cyl_axis']
+        cl_point = dict_shapes['cyl2CutChambers_o']['cyl_centre']
+ 
+        # Create a disc with better resolution to transform into pixels to mask stack
+        res_cyl = 2000
+        num_rad = int(3*int(r_circle_max)) #int(((r_circle_max-r_circle_min)/0.225)+1)
+        num_h = 9; h_min = 0.225/2; h_max = 0.225*2
+        for j, rad in enumerate(np.linspace(r_circle_min/2, r_circle_max, num_rad)):
+            for i,h in enumerate(np.linspace(h_min,h_max, num_h)):
+                cyl = Cylinder(pos = cl_point,r = rad, height = h, axis = normal_unit, c = 'lime', cap = True, res = res_cyl)#.wireframe(True)
+                if i == 0 and j == 0:
+                    cyl_pts = cyl.points()
+                else:
+                    cyl_pts = np.concatenate((cyl_pts, cyl.points()))
+ 
+        cyl.legend('cyl2CutChambers_final')
+        cyl_data = [r_circle_max, r_circle_min/2, num_rad, h_max, h_min, num_h, normal_unit, cl_point, res_cyl]
+        dict_shapes = addShapes2Dict (shapes = [cyl], dict_shapes = dict_shapes, radius = [cyl_data], print_txt = False)
+ 
+        # Rotate the points that make up the HR disc, to convert them to a stack
+        cyl_points_rot = np.zeros_like(cyl_pts)
+        if 'CJ' not in filename:
+            axis = [0,0,1]
+        else:
+            axis = [1,0,0]
+ 
+        for i, pt in enumerate(cyl_pts):
+            cyl_points_rot[i] = (np.dot(rotation_matrix(axis = axis, theta = np.radians(90)),pt))
+ 
+        cyl_pix = np.transpose(np.asarray([cyl_points_rot[:,i]//resolution[i] for i in range(len(resolution))]))
+        cyl_pix = cyl_pix.astype(int)
+        cyl_pix = np.unique(cyl_pix, axis =0)
+        # print(cyl_pix.shape)
+ 
+        cyl_pix_out = cyl_pix.copy()
+        index_out = []
+        # Clean cyl_pix if out of stack shape
+        for index, pt in enumerate(cyl_pix):
+            # print(index, pt)
+            if pt[0] > xdim-2 or pt[0] < 0:
+                delete = True
+            elif pt[1] > ydim-2 or pt[1] < 0:
+                delete = True
+            elif pt[2] > zdim+2-1 or pt[2] < 0:
+                delete = True
+            else:
+                delete = False
+ 
+            if delete:
+                # print(pt)
+                index_out.append(index)
+ 
+        cyl_pix_out = np.delete(cyl_pix_out, index_out, axis = 0)
+ 
+        # Create mask of ring
+        s3_cyl = np.zeros((xdim, ydim, zdim+2))
+        s3_cyl[cyl_pix_out[:,0],cyl_pix_out[:,1],cyl_pix_out[:,2]] = 1
+        
+        
+        
+    
+    #%%
     ext_ch, _ = organ.get_ext_int_chs()
     mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_tiss']
     fcMeshes.sphs_in_spline()
@@ -895,6 +1070,15 @@ for planar_view in planar_views.keys():
     #                                                                               dict_pts = dict_pts, 
     #                                                                               dict_shapes = dict_shapes)
     
+#%%
+from vedo import dataurl, Picture 
+from vedo.applications import SplinePlotter  # ready to use class!
+
+pic = Picture(dataurl + "images/embryo.jpg")
+
+plt = SplinePlotter(pic)
+plt.show(mode="image", zoom='tightest')
+print("Npts =", len(plt.cpoints), "NSpline =", plt.line.npoints)
 
 # %%
 #%% pip freeze > requirements.txt
