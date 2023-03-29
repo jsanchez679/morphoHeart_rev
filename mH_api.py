@@ -50,8 +50,6 @@ user_organName = 'LS52_F02_V_SR_1029'
 organName2Load = user_organName
 folder_name = 'R_'+proj_name
 dir_proj = dir_proj_res / folder_name
-# user_organName = 'LS52_F02_V_SR_1029'
-# organName2Load = 'LS52_F02_V_SR_1029'
 
 #%% Part A - Create Project
 if partA:
@@ -91,6 +89,7 @@ if partA:
         # By default the volume and surface area of the segments per tissue selected will be measured
         cutLayersIn2Segments = True
         no_segments = 2
+        no_cuts_4segments = 2,
         name_segments = {'segm1': 'atrium', 'segm2': 'ventricle'}
         # channels/meshes that will be divided into segments 
         ch_segments = {'ch1':['tiss', 'ext'],'ch2':['tiss', 'int'],'chNS':['tiss']}
@@ -98,7 +97,7 @@ if partA:
         no_sections = 2
         name_sections = {'sect1': 'left', 'sect2': 'right'}
         ch_sections = {'ch1':['tiss'],'ch2':['tiss'],'chNS':['tiss']}
-       
+        rotateZ_90 = True
         
         mH_settings = {'no_chs': no_chs,
                         'name_chs': name_chs,
@@ -113,13 +112,15 @@ if partA:
                         'segments': 
                             {'cutLayersIn2Segments': cutLayersIn2Segments,
                             'no_segments': no_segments,
+                            'no_cuts_4segments': no_cuts_4segments,
                             'name_segments': name_segments,
                             'ch_segments': ch_segments},
                         'sections': 
                             {'cutLayersIn2Sections': cutLayersIn2Sections,
                             'no_sections': no_sections,
                             'name_sections': name_sections,
-                            'ch_sections': ch_sections}}
+                            'ch_sections': ch_sections},
+                        'rotateZ_90': rotateZ_90}
     else: 
         mH_settings = {}
             
@@ -395,6 +396,21 @@ if partB:
     rotateZ_90 = True
     fcMeshes.s32Meshes(organ, gui_keep_largest, rotateZ_90=rotateZ_90)
     
+    # Using one of the just created meshes, ask the user to select the stack 
+    # planar views 
+    from itertools import count
+    colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
+    # User needs to give three planar views but the names could be different 
+    # Ask to inout names or have different options already available 
+    # (https://www.researchgate.net/figure/Axes-applied-to-organism-parts-In-vascular-A-and-non-vascular-plants-B-the_fig4_264936044)
+    # Once planar views are selected, mH will use them for the stack
+    views = ['top', 'ventral', 'left']
+    planar_views = {}
+    for n, view, color in zip(count(), views, colors): 
+        planar_views[view] = {'color': color}
+    
+    organ.get_stack_orientation(planar_views)
+    
     # Save organ
     organ.save_organ()
     # Load project, organ
@@ -427,7 +443,7 @@ if partB:
   
     # Create Cardiac Jelly
     plot = True
-    fcMeshes.extractNSCh(organ, plot)
+    fcMeshes.extract_chNS(organ, plot)
         
     # Save organ
     organ.save_organ()
@@ -445,10 +461,10 @@ if partB_vmtk:
     
     # Create meshes to extract CL
     plot = True; tol=2
-    fcMeshes.cutMeshes4CL(organ, tol=tol, plot=plot)
-    fcMeshes.extractCL(organ)
+    fcMeshes.proc_meshes4cl(organ, tol=tol, plot=plot)
+    fcMeshes.extract_cl(organ)
     nPoints = 300
-    fcMeshes.createCLs(organ, nPoints = nPoints)
+    fcMeshes.create_CLs(organ, nPoints = nPoints)
     
     # Get CL measurements
     fcMeshes.measure_centreline(organ, nPoints=nPoints)
@@ -472,8 +488,8 @@ if partC_thk:
 
     # 3D Thickness and Ballooning Heatmaps 
     plot = False
-    fcMeshes.extractThickness(organ, color_map='turbo', plot=plot)
-    fcMeshes.extractBallooning(organ, color_map='turbo', plot=plot)
+    fcMeshes.extract_thickness(organ, color_map='turbo', plot=plot)
+    fcMeshes.extract_ballooning(organ, color_map='turbo', plot=plot)
     
     fcMeshes.plot_meas_meshes(organ, meas=['thickness int>ext']) 
     fcMeshes.plot_meas_meshes(organ, meas=['thickness ext>int']) 
@@ -507,11 +523,11 @@ if partC:
     from itertools import count
     colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
     views = ['top', 'ventral', 'left']
-    planar_views = {}
-    for n, view, color in zip(count(), views, colors): 
-        planar_views[view] = {'color': color}
+    # planar_views = {}
+    # for n, view, color in zip(count(), views, colors): 
+    #     planar_views[view] = {'color': color}
     
-    organ.get_stack_orientation(planar_views)
+    # organ.get_stack_orientation(planar_views)
     
     # Get organ orientation
     plane = 'YZ'
@@ -525,7 +541,7 @@ if partC:
     nRes = 601; nPoints = 300; clRib_type = 'ext2sides'
     fcMeshes.get_organ_ribbon(organ, nRes, nPoints, clRib_type)
     # organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
-    fcMeshes.get_cube_clRibbon(organ, plotshow=True)
+    fcMeshes.get_sect_mask(organ, plotshow=True)
     
     # Cut organ into sections
     subms = fcMeshes.get_sections(organ, plotshow=True)
@@ -533,180 +549,11 @@ if partC:
     left_myo = subms[0].get_mesh()
     right_myo = subms[1].get_mesh()
     
+    fcMeshes.get_segm_discs(organ)
+    organ.mH_settings['general_info']['rotateZ_90'] = True
+    fcMeshes.create_disc_mask(organ, h_min = 0.1125)
     
-    
-#%% 
-    # Cut organ into segments
-    q = 'Do you want to use the centreline to aid cut of tissue into segments?'
-    res = {0: 'No, I would like to define the cuts by hand', 1: 'yes, please!'}
-    segm_using_cl = fcBasics.ask4input(q, res, bool)
-    if segm_using_cl: 
-        #Find centreline first
-        dict_cl = fcMeshes.plot_organCLs(organ)
-        q = 'Select the centreline you want to use to aid organ cut into segments:'
-        select = fcBasics.ask4input(q, dict_cl, int)
-        ch_cont_cl = dict_cl[select].split(' (')[1].split('-')
-        ch = ch_cont_cl[0]
-        cont = ch_cont_cl[1]
-        cl = organ.obj_meshes[ch+'_'+cont].get_centreline()
-        spheres_spl = fcMeshes.sphs_in_spline(kspl = cl, colour = True)
-    
-    segm_names = [item for item in organ.parent_project.mH_param2meas if 'segm1' in item]
-    
-    ext_ch, _ = organ.get_ext_int_chs()
-    if (ext_ch.channel_no, 'tiss', 'segm1', 'volume') in segm_names:
-        mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_tiss']
-    else: 
-        ch = segm_names[0][0]; cont = segm_names[0][1]
-        mesh_ext = organ.obj_meshes[ch+'_'+cont]
-        
-    happyWithCut = False
-    happyWithDisc = False
-    number_cuts_4segm = 2
-    segm_name = organ.mH_settings['general_info']['segments']['name_segments']
-    for n in range(number_cuts_4segm):
-        print('Creating disc No.'+str(n)+' for cutting tissues into segments!')
-        while not happyWithDisc: 
-            if segm_using_cl:
-                vp = vedo.Plotter(N=1, axes = 7)
-                text = organ.user_organName+"\n\n >> Define the centreline point number to use to initialise \n  disc to divide heart into chambers \n  [NOTE: Spheres appear in centreline every 10 points, starting from \n  outflow (blue) to inflow (red) tract]"
-                txt = vedo.Text2D(text, c="k")#, font= font)
-                vp.show(mesh_ext.mesh, cl, spheres_spl, txt, at=0, azimuth = 0, interactive=True)
-    
-                q = 'Enter the centreline point number you want to use to initialise the disc to divide the heart into chambers:'
-                num_pt = fcBasics.ask4input(q,{},int)
-                # Use flat disc or centreline orientation at point to define disc?
-                q2 = 'Select the object you want to use: '
-                res = {0:'Use the centreline orientation at the selected point to define disc orientation', 1: 'Initialise the disc in a plane normal to the y-z plane?'}
-                cl_or_flat = fcBasics.ask4input(q2, res, bool)
-             
-                if not cl_or_flat:
-                    pl_normal, pl_centre = fcMeshes.get_plane_normal2pt(pt_num = num_pt, points = cl.points())
-                else:
-                    pl_centre = cl.points()[num_pt]
-                    pl_normal = [1,0,0]
-            else: 
-                
-                pl_centre = mesh_ext.mesh.center_of_mass()
-                pl_normal = [0,1,0]
-                
-            radius = 60
-            # Modify (rotate and move cylinder/disc)
-            cyl_test, sph_test, rotX, rotY, rotZ = fcMeshes.modify_disc(filename = organ.user_organName,
-                                                                txt = 'cut tissues into segments', 
-                                                                mesh = mesh_ext.mesh,
-                                                                option = [True,True,True,True,True,True],
-                                                                def_pl = {'pl_normal': pl_normal, 'pl_centre': pl_centre},
-                                                                radius = radius)
-            
-            # Get new normal of rotated disc
-            pl_normal_corrected = fcMeshes.newNormal3DRot(normal = pl_normal, rotX = rotX, rotY = rotY, rotZ = rotZ)
-            normal_unit = fcMeshes.unit_vector(pl_normal_corrected)*10
-            # Get central point of newly defined disc
-            pl_centre_new = sph_test.pos()
-            
-            # Newly defined centreline point
-            cl_point = pl_centre_new# kspl_CL.points()[num_pt]
-            sph_cut = vedo.Sphere(pos = pl_centre_new, r=4, c='gold').legend('sph_ChamberCut')
-    
-            # Build new disc to confirm
-            cyl_final = vedo.Cylinder(pos = pl_centre_new, r = radius, height = 2*0.225, axis = normal_unit, c = 'purple', cap = True, res = 300)
-            
-            text = organ.user_organName+"\n\n >> Check the position and the radius of the disc to cut the heart into chambers.\n  Make sure it is cutting the heart through the AVC and hopefully not cutting any other chamber regions. \n >> Close the window when done"
-            txt = vedo.Text2D(text, c='k')#, font=font)
-            vp = vedo.Plotter(N=1, axes=4)
-            vp.show(mesh_ext.mesh, cyl_final, cl, txt, at=0, viewup="y", azimuth=0, elevation=0, interactive=True)
-            
-            disc_radius = radius
-            q_happy = 'Are you happy with the position of the disc [radius: '+str(disc_radius)+'um] to cut heart into chambers?'
-            res_happy = {0: 'no, I would like to define a new position for the disc', 1: 'yes, but I would like to redefine the disc radius', 2: 'yes, I am happy with both, disc position and radius'}
-            happy = fcBasics.ask4input(q_happy, res_happy, int)
-            if happy == 1:
-                happy_rad = False
-                while not happy_rad:
-                    disc_radius = fcBasics.ask4input('Input disc radius [um]: ',{}, float)
-                    text = organ.user_organName+"\n\n >> New radius \n  Check the radius of the disc to cut the myocardial tissue into \n   chambers. Make sure it is cutting through the AVC and not catching any other chamber regions. \n >> Close the window when done"
-                    cyl_final = vedo.Cylinder(pos = pl_centre_new, r = disc_radius, height = 2*0.225, axis = normal_unit, c = 'purple', cap = True, res = 300)
-                    txt = vedo.Text2D(text, c="k"), #font= font)
-                    vp = vedo.Plotter(N=1, axes = 10)
-                    vp.show(mesh_ext.mesh.alpha(1), cl, cyl_final, sph_cut, txt, at = 0, interactive=True)
-                    q_happy_rad = 'Is the selected radius ['+str(disc_radius)+'um] sufficient to cut heart into chambers?'
-                    res_happy_rad = {0: 'no, I would like to change its value', 1: 'yes, it cuts the heart without disrupting too much the chambers!'}
-                    happy_rad = fcBasics.ask4input(q_happy_rad, res_happy_rad, bool)
-                happyWithDisc = True
-            elif happy == 2:
-                happyWithDisc = True
-       
-        #HEREE!!!
-        # Save disc info
-        cyl_final.legend('cyl2CutChambers_o')
-        cyl_data = [r_circle_max, r_circle_min, normal_unit, pl_Ch_centre]
-        dict_shapes = addShapes2Dict (shapes = [cyl_final], dict_shapes = dict_shapes, radius = [cyl_data], print_txt = False)
-
-        # Create mask for created disc
-        print('- Creating disc mask to cut chambers... (this takes about 2mins)')
-        r_circle_max = dict_shapes['cyl2CutChambers_o']['radius_max']
-        r_circle_min = dict_shapes['cyl2CutChambers_o']['radius_min']
-        normal_unit = dict_shapes['cyl2CutChambers_o']['cyl_axis']
-        cl_point = dict_shapes['cyl2CutChambers_o']['cyl_centre']
- 
-        # Create a disc with better resolution to transform into pixels to mask stack
-        res_cyl = 2000
-        num_rad = int(3*int(r_circle_max)) #int(((r_circle_max-r_circle_min)/0.225)+1)
-        num_h = 9; h_min = 0.225/2; h_max = 0.225*2
-        for j, rad in enumerate(np.linspace(r_circle_min/2, r_circle_max, num_rad)):
-            for i,h in enumerate(np.linspace(h_min,h_max, num_h)):
-                cyl = Cylinder(pos = cl_point,r = rad, height = h, axis = normal_unit, c = 'lime', cap = True, res = res_cyl)#.wireframe(True)
-                if i == 0 and j == 0:
-                    cyl_pts = cyl.points()
-                else:
-                    cyl_pts = np.concatenate((cyl_pts, cyl.points()))
- 
-        cyl.legend('cyl2CutChambers_final')
-        cyl_data = [r_circle_max, r_circle_min/2, num_rad, h_max, h_min, num_h, normal_unit, cl_point, res_cyl]
-        dict_shapes = addShapes2Dict (shapes = [cyl], dict_shapes = dict_shapes, radius = [cyl_data], print_txt = False)
- 
-        # Rotate the points that make up the HR disc, to convert them to a stack
-        cyl_points_rot = np.zeros_like(cyl_pts)
-        if 'CJ' not in filename:
-            axis = [0,0,1]
-        else:
-            axis = [1,0,0]
- 
-        for i, pt in enumerate(cyl_pts):
-            cyl_points_rot[i] = (np.dot(rotation_matrix(axis = axis, theta = np.radians(90)),pt))
- 
-        cyl_pix = np.transpose(np.asarray([cyl_points_rot[:,i]//resolution[i] for i in range(len(resolution))]))
-        cyl_pix = cyl_pix.astype(int)
-        cyl_pix = np.unique(cyl_pix, axis =0)
-        # print(cyl_pix.shape)
- 
-        cyl_pix_out = cyl_pix.copy()
-        index_out = []
-        # Clean cyl_pix if out of stack shape
-        for index, pt in enumerate(cyl_pix):
-            # print(index, pt)
-            if pt[0] > xdim-2 or pt[0] < 0:
-                delete = True
-            elif pt[1] > ydim-2 or pt[1] < 0:
-                delete = True
-            elif pt[2] > zdim+2-1 or pt[2] < 0:
-                delete = True
-            else:
-                delete = False
- 
-            if delete:
-                # print(pt)
-                index_out.append(index)
- 
-        cyl_pix_out = np.delete(cyl_pix_out, index_out, axis = 0)
- 
-        # Create mask of ring
-        s3_cyl = np.zeros((xdim, ydim, zdim+2))
-        s3_cyl[cyl_pix_out[:,0],cyl_pix_out[:,1],cyl_pix_out[:,2]] = 1
-        
-        
-        
+    segms = fcMeshes.get_segments(organ)
     
     #%%
     ext_ch, _ = organ.get_ext_int_chs()
@@ -714,6 +561,67 @@ if partC:
     fcMeshes.sphs_in_spline()
     
 #%%
+"""Hover mouse onto an object
+to pop a flag-style label"""
+from vedo import *
+
+b = Mesh(dataurl+'bunny.obj').color('m')
+c = Cube(side=0.1).compute_normals().alpha(0.8).y(-0.02).lighting("off").lw(1)
+
+fp = b.flagpole('A flag pole descriptor\nfor a rabbit', font='Quikhand')
+fp.scale(0.5).color('v').use_bounds() # tell camera to take fp bounds into account
+
+c.caption('2d caption for a cube\nwith face indices', point=[0.044, 0.03, -0.04],
+          size=(0.3,0.06), font="VictorMono", alpha=1)
+
+# create a new object made of polygonal text labels to indicate the cell numbers
+flabs = c.labels('id', on="cells", font='Theemim', scale=0.02, c='k')
+vlabs = c.clone().clean().labels2d(font='ComicMono', scale=3, bc='orange7')
+
+# create a custom entry to the legend
+b.legend('Bugs the bunny')
+c.legend('The Cube box')
+lbox = LegendBox([b,c], font="Bongas", width=0.25)
+
+show(b, c, fp, flabs, vlabs, lbox, __doc__, axes=11, bg2='linen').close()
+#%%
+"""Modify a spline interactively.
+- Drag points with mouse
+- Add points by clicking on the line
+- Remove them by selecting&pressing DEL
+--- PRESS q TO PROCEED ---"""
+from vedo import Circle, show
+
+# Create a set of points in space
+pts = Circle(res=8).extrude(zshift=0.5).ps(4)
+
+# Visualize the points
+plt = show(pts, __doc__, interactive=False, axes=1)
+
+# Add the spline tool using the same points and interact with it
+sptool = plt.add_spline_tool(pts, closed=True)
+plt.interactive()
+
+# Switch off the tool
+sptool.off()
+
+# Extract and visualize the resulting spline
+sp = sptool.spline().lw(4)
+show(sp, "My spline is ready!", interactive=True, resetcam=False).close()
+
+#%%
+"""Drag the sphere to cut the mesh interactively
+Use mouse buttons to zoom and pan"""
+from vedo import *
+
+# s = Mesh(dataurl+'cow.vtk')
+
+plt = show(s, __doc__, bg='black', bg2='white', interactive=False)
+plt.add_cutter_tool(s, mode='sphere') #modes= sphere, plane, box
+plt.close()
+
+#%%
+
 import vedo as vedo
 
 mesh_ext = vedo.Mesh(vedo.dataurl + "bunny.obj").color("m")

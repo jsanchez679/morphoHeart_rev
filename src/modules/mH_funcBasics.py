@@ -121,7 +121,8 @@ def ask4input(text:str, res:dict, type_response:type, keep=False):
                 print('>> Error: -'+response+'- The number entered needs to be a [0]:no or [1]:yes!')
                 alert('error_beep')
                 pass
-
+    
+    # print('\n')
     return response
 
 #%% func - ask4inputList

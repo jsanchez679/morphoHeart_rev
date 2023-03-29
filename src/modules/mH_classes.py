@@ -23,6 +23,7 @@ from time import perf_counter
 import vedo as vedo
 from vedo import write
 from scipy.interpolate import splprep, splev, interpn
+from itertools import count
 
 #%% ##### - Other Imports - ##################################################
 #from ...config import dict_gui
@@ -186,6 +187,7 @@ class Project():
             
             if mH_settings['segments']['cutLayersIn2Segments']:
                 dict_segments = {'no_segments': mH_settings['segments']['no_segments'],
+                                 'no_cuts_4segments': mH_settings['segments']['no_cuts_4segments'],
                                  'name_segments': mH_settings['segments']['name_segments'],
                                  'ch_segments': mH_settings['segments']['ch_segments']}
                 
@@ -228,6 +230,7 @@ class Project():
             
             mH_set['general_info']['segments'] = dict_segments
             mH_set['general_info']['sections'] = dict_sections
+            mH_set['general_info']['rotateZ_90'] = mH_settings['rotateZ_90']
     
             if mH_settings['ns']['layer_btw_chs']:
                 ch_str = 'chNS'
@@ -1234,82 +1237,104 @@ class Organ():
             return False  
     
     def get_stack_orientation(self, planar_views):
-        
-        im_orient = self.info['im_orientation']
-        rotateY = False
-        if im_orient == 'custom': 
-            cust_angle = self.info['custom_angle']
-            rotateY = True
-        
-        ext_ch, _ = self.get_ext_int_chs()
-        mesh_ext = self.obj_meshes[ext_ch.channel_no+'_tiss']
-        
-        pos = mesh_ext.mesh.center_of_mass()
-        side = max(self.get_maj_bounds())
-        color_o = [152,251,152,255]
-        orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
-        orient_cube.linewidth(1).force_opaque()
-        
-        if rotateY: 
-            orient_cube.rotate_y(cust_angle)
-        
-        orient_cube.pos(pos)
-        orient_cube_clear = orient_cube.clone().alpha(0.5)
-        
-        def select_cube_face(evt):
-            orient_cube = evt.actor
-            if not orient_cube:
-                return
-            pt = evt.picked3d
-            idcell = orient_cube.closest_point(pt, return_cell_id=True)
-            print('You clicked (idcell):', idcell)
-            if set(orient_cube.cellcolors[idcell]) == set(color_o):
-                orient_cube.cellcolors[idcell] = color_selected #RGBA 
-                for cell_no in range(len(orient_cube.cells())):
-                    if cell_no != idcell and cell_no not in selected_faces: 
-                        orient_cube.cellcolors[cell_no] = color_o #RGBA 
-                        
-            planar_views[planar_view]['idcell'] = idcell
-            cells = orient_cube.cells()[idcell]
-            points = [orient_cube.points()[cell] for cell in cells]
+        #Check if the orientation has alredy been stablished
+        if 'orientation' in self.mH_settings.keys(): 
+            if 'stack' in self.mH_settings['orientation'].keys():
+                q = 'You already selected the stack orientation of this organ. Do you want to re-assign it?'
+                res = {0: 'no, continue with next step', 1: 'yes, re-assign it!'}
+                proceed = ask4input(q, res, bool)
+            else: 
+                proceed = True
+        else: 
+            proceed = True
+                
+        if proceed: 
+            im_orient = self.info['im_orientation']
+            rotateY = False
+            if im_orient == 'custom': 
+                cust_angle = self.info['custom_angle']
+                rotateY = True
             
-            plane_fit = vedo.fit_plane(points, signed=True)
-            planar_views[planar_view]['pl_normal'] = plane_fit.normal
-            msg.text('You selected face number: '+str(idcell)+' as '+planar_view.upper()+' face')
+            ext_ch, _ = self.get_ext_int_chs()
+            mesh_ext = self.obj_meshes[ext_ch.channel_no+'_tiss']
             
-        selected_faces = []
-        for planar_view in planar_views.keys(): 
-            print('Selecting '+planar_view.upper()+'...')
-            color_selected = planar_views[planar_view]['color']
+            pos = mesh_ext.mesh.center_of_mass()
+            side = max(self.get_maj_bounds())
+            color_o = [152,251,152,255]
+            orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
+            orient_cube.linewidth(1).force_opaque()
             
-            msg = vedo.Text2D("", pos="bottom-center", c='k', bg='white', alpha=0.8, s=txt_size)
-            txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select '+planar_view.upper()+' planar view ...', c=txt_color, font=txt_font, s=txt_size)
-            txt1 = vedo.Text2D('Select (click) the cube face that represents the '+planar_view.upper()+' face and close the window when done.\nNote: The face that is last selected will be used for that planar face.', c=txt_color, font=txt_font, s=txt_size)
-          
-            plt = vedo.Plotter(N=2, axes=1)
-            plt.add_callback("mouse click", select_cube_face)
-            plt.show(mesh_ext.mesh, orient_cube_clear, txt0, at=0)
-            plt.show(orient_cube, txt1, msg, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)        
+            if rotateY: 
+                orient_cube.rotate_y(cust_angle)
             
-            selected_faces.append(planar_views[planar_view]['idcell'])
+            orient_cube.pos(pos)
+            orient_cube_clear = orient_cube.clone().alpha(0.5)
             
-        self.mH_settings['orientation'] = {'stack': {'planar_views': planar_views}}
+            def select_cube_face(evt):
+                orient_cube = evt.actor
+                if not orient_cube:
+                    return
+                pt = evt.picked3d
+                idcell = orient_cube.closest_point(pt, return_cell_id=True)
+                print('You clicked (idcell):', idcell)
+                if set(orient_cube.cellcolors[idcell]) == set(color_o):
+                    orient_cube.cellcolors[idcell] = color_selected #RGBA 
+                    for cell_no in range(len(orient_cube.cells())):
+                        if cell_no != idcell and cell_no not in selected_faces: 
+                            orient_cube.cellcolors[cell_no] = color_o #RGBA 
+                            
+                planar_views[planar_view]['idcell'] = idcell
+                cells = orient_cube.cells()[idcell]
+                points = [orient_cube.points()[cell] for cell in cells]
+                
+                plane_fit = vedo.fit_plane(points, signed=True)
+                planar_views[planar_view]['pl_normal'] = plane_fit.normal
+                msg.text('You selected face number: '+str(idcell)+' as '+planar_view.upper()+' face')
+                
+            selected_faces = []
+            for planar_view in planar_views.keys(): 
+                print('Selecting '+planar_view.upper()+'...')
+                color_selected = planar_views[planar_view]['color']
+                
+                msg = vedo.Text2D("", pos="bottom-center", c='k', bg='white', alpha=0.8, s=txt_size)
+                txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select '+planar_view.upper()+' planar view ...', c=txt_color, font=txt_font, s=txt_size)
+                txt1 = vedo.Text2D('Select (click) the cube face that represents the '+planar_view.upper()+' face and close the window when done.\nNote: The face that is last selected will be used for that planar face.', c=txt_color, font=txt_font, s=txt_size)
+              
+                plt = vedo.Plotter(N=2, axes=1)
+                plt.add_callback("mouse click", select_cube_face)
+                plt.show(mesh_ext.mesh, orient_cube_clear, txt0, at=0)
+                plt.show(orient_cube, txt1, msg, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)        
+                
+                selected_faces.append(planar_views[planar_view]['idcell'])
+                
+            self.mH_settings['orientation'] = {'stack': {'planar_views': planar_views}}
     
            
     def get_ROI_orientation(self, planar_views:dict, plane:str, ref_vect='Y+'):
-        
-        q = 'How do you want to define the Organ (ROI) orientation?:'
-        res = {0: 'I want to use the centreline (project linLine, measure angle and define ROI orientation', 
-               1: 'I want to use the same images orientation defined',
-               2: 'Other...'}
-        opt = ask4input(q, res, int)
-        
-        if opt == 0: 
-            self.orient_by_cl(planar_views, plane, ref_vect)
-        elif opt == 1: 
-            print('Opt1: Code under development!')
-        elif opt == 2: 
-            print('Opt2: Code under development!')
+        #Check if the orientation has alredy been stablished
+        if 'orientation' in self.mH_settings.keys(): 
+            if 'ROI' in self.mH_settings['orientation'].keys():
+                q = 'You already selected the ROI (organ) orientation for this organ. Do you want to re-assign it?'
+                res = {0: 'no, continue with next step', 1: 'yes, re-assign it!'}
+                proceed = ask4input(q, res, bool)
+            else: 
+                proceed = True
+        else: 
+            proceed = True
+                
+        if proceed: 
+            q = 'How do you want to define the Organ (ROI) orientation?:'
+            res = {0: 'I want to use the centreline (project linLine, measure angle and define ROI orientation', 
+                   1: 'I want to use the same images orientation defined',
+                   2: 'Other...'}
+            opt = ask4input(q, res, int)
+            
+            if opt == 0: 
+                self.orient_by_cl(planar_views, plane, ref_vect)
+            elif opt == 1: 
+                print('Opt1: Code under development!')
+            elif opt == 2: 
+                print('Opt2: Code under development!')
         
     def orient_by_cl(self, planar_views:dict, plane:str, ref_vect='Y+'):
         
@@ -1423,7 +1448,6 @@ class Organ():
         
     #Get all the set mH variables in __init__
     def get_notes(self):
-        
         return self.info['user_organNotes']
 
     def get_custom_angle(self):
@@ -2899,7 +2923,7 @@ class Mesh_mH():
         mesh_area = self.mesh.area()
         return mesh_area
     
-    def create_section(self, name, color, alpha=0.5):#, invert=False): 
+    def create_section(self, name, color, alpha=0.05):#, invert=False): 
         
         im_ch = self.imChannel     
         sect_info = self.parent_organ.mH_settings['general_info']['sections']['name_sections']
@@ -2925,6 +2949,30 @@ class Mesh_mH():
         
         return submesh
         
+    def create_segments(self):
+        
+        im_ch = self.imChannel
+        segm_info = self.parent_organ.mH_settings['general_info']['segments']['name_segments']
+        no_segm = self.parent_organ.mH_settings['general_info']['segments']['no_segments']
+        colors = [np.random.choice(range(255),size=3) for num in range(no_segm)]
+        submeshes = []
+        
+        for n, segm, color in zip(count(), segm_info, colors):
+            submesh = SubMesh(parent_mesh = self, 
+                              sub_mesh_type='Segment', 
+                              name = segm, color=color, 
+                              alpha = self.alpha,
+                              imChannel= im_ch, 
+                              mesh_type=self.mesh_type,
+                              keep_largest=self.keep_largest,
+                              rotateZ_90=self.rotateZ_90, 
+                              new_set=True)
+            
+            self.parent_organ.add_submesh(submesh)
+            submeshes.append(submesh)
+            
+        return submeshes
+    
 class SubMesh(Mesh_mH):
     
     def __init__(self, parent_mesh: Mesh_mH, sub_mesh_type:str, 
