@@ -24,6 +24,9 @@ import vedo as vedo
 from vedo import write
 from scipy.interpolate import splprep, splev, interpn
 from itertools import count
+import random
+from skimage.draw import line_aa
+# import seaborn as sns
 
 #%% ##### - Other Imports - ##################################################
 #from ...config import dict_gui
@@ -1068,11 +1071,15 @@ class Organ():
             self.submeshes[submesh.sub_name]['keep_largest'] = submesh.keep_largest
             self.submeshes[submesh.sub_name]['rotateZ_90'] = submesh.rotateZ_90
             #New to submesh
+            self.submeshes[submesh.sub_name]['sub_name'] = submesh.sub_name
             self.submeshes[submesh.sub_name]['parent_mesh'] = submesh.parent_mesh.name
             self.submeshes[submesh.sub_name]['sub_mesh_type'] = submesh.sub_mesh_type
             self.submeshes[submesh.sub_name]['sub_legend'] = submesh.sub_legend
-            self.submeshes[submesh.sub_name]['s3_invert'] = submesh.s3_invert
-            self.submeshes[submesh.sub_name]['s3_mask_dir'] = submesh.s3_mask_dir
+            if submesh.sub_mesh_type == 'Section':
+                self.submeshes[submesh.sub_name]['s3_invert'] = submesh.s3_invert
+                self.submeshes[submesh.sub_name]['s3_mask_dir'] = submesh.s3_mask_dir
+            # else: # submesh.sub_mesh_type == 'Segment':
+                
             self.submeshes[submesh.sub_name]['sub_name'] = submesh.sub_name
             
         else: #Just updating things that could change
@@ -2927,14 +2934,16 @@ class Mesh_mH():
         
         im_ch = self.imChannel     
         sect_info = self.parent_organ.mH_settings['general_info']['sections']['name_sections']
-        if name == sect_info['sect1']:
+        if name == 'sect1':
             invert = True
         else: 
             invert = False
+        print('name:', name, '- invert:', invert)
             
         submesh = SubMesh(parent_mesh = self, 
                           sub_mesh_type='Section', 
-                          name = name, color=color, 
+                          name = name, user_name = sect_info[name],
+                          color=color, 
                           alpha = alpha,
                           imChannel= im_ch, 
                           mesh_type=self.mesh_type,
@@ -2943,47 +2952,100 @@ class Mesh_mH():
                           new_set=True)
         
         submesh.s3_invert = invert
+        submesh.sub_name = name
         name2save = self.parent_organ.user_organName + '_mask_sect.npy'
         submesh.s3_mask_dir = self.parent_organ.info['dirs']['s3_numpy'] / name2save
         self.parent_organ.add_submesh(submesh)
         
         return submesh
         
-    def create_segments(self):
-        
+    def mask_segments(self):
+          
+        # Get segments info
+        no_discs = self.parent_organ.mH_settings['general_info']['segments']['no_cuts_4segments']
+
+        # Mask im_channel
         im_ch = self.imChannel
+        im_ch.load_chS3s([self.mesh_type])
+        cont_tiss = getattr(im_ch, 's3_'+self.mesh_type)
+        s3 = cont_tiss.s3()
+        masked_s3 = s3.copy()
+        
+        for nn in range(no_discs):
+            name_s3 = self.parent_organ.user_organName + '_mask_DiscNo'+str(nn)+'.npy'
+            s3_dir = self.parent_organ.info['dirs']['s3_numpy'] / name_s3
+            s3_mask = np.load(str(s3_dir))
+            s3_mask = s3_mask.astype('bool')
+            masked_s3 = mask_disc(self.parent_organ.info['shape_s3'], masked_s3, s3_mask)
+        
+        rotateZ_90=self.rotateZ_90
+        print('rotateZ_90:', rotateZ_90)
+        masked_mesh = create_submesh(masked_s3, self.resolution, keep_largest=False, rotateZ_90=self.rotateZ_90)
+        cut_masked = masked_mesh.split(maxdepth=100)
+        print(len(cut_masked))
+        alert('frog')
+        #https://seaborn.pydata.org/tutorial/color_palettes.html
+        # palette = sns.color_palette("husl", len(cut_masked))
+        palette = [np.random.choice(range(255),size=3) for num in range(len(cut_masked))]
+        cut_masked_rot = []
+        if rotateZ_90:
+            for n, mesh, color in zip(count(), cut_masked, palette):
+                cut_masked_rot.append(mesh.rotate_z(-90).alpha(0.1).color(color).legend('No.'+str(n)))
+        
+        return cut_masked_rot
+        
+
+    def create_segments(self):
+        # tweak this so that one subsegment gets created individually and avoid
+        #for loops in everything
+        
+        #create the submesh class individually without parent class and check if things work out
+        #just keeping the parent_mesh as the mesh from which it came
+        #keep the settings of the parent mesh to create submeshes
+        #check if add_submesh to organ still works
+        #see if in the classification of the next meshes the external_external mesh can 
+        #be used as a guidance to contain the other meshes. 
+        #think about how to make sure at least one external mesh is being cut
+        #into segments to make this approach useful
+        
+        # Get segments info
         segm_info = self.parent_organ.mH_settings['general_info']['segments']['name_segments']
         no_segm = self.parent_organ.mH_settings['general_info']['segments']['no_segments']
         colors = [np.random.choice(range(255),size=3) for num in range(no_segm)]
         submeshes = []
-        
+       
         for n, segm, color in zip(count(), segm_info, colors):
+            print(segm, color)
             submesh = SubMesh(parent_mesh = self, 
                               sub_mesh_type='Segment', 
-                              name = segm, color=color, 
+                              name = segm, user_name = segm_info[segm], 
+                              color=color, 
                               alpha = self.alpha,
-                              imChannel= im_ch, 
+                              imChannel= self.imChannel, 
                               mesh_type=self.mesh_type,
                               keep_largest=self.keep_largest,
                               rotateZ_90=self.rotateZ_90, 
                               new_set=True)
+            submesh.sub_name = segm
             
             self.parent_organ.add_submesh(submesh)
             submeshes.append(submesh)
             
         return submeshes
     
+    
 class SubMesh(Mesh_mH):
     
     def __init__(self, parent_mesh: Mesh_mH, sub_mesh_type:str, 
-                 name: str,
+                 name: str, user_name: str, 
                  color: str, alpha:float,
+                 # init param for Mesh_mH
                  imChannel:ImChannel, mesh_type:str, 
                  keep_largest:bool, rotateZ_90=True, new_set=False):
         
         self.parent_mesh = parent_mesh
         self.sub_mesh_type = sub_mesh_type
-        self.sub_legend = parent_mesh.legend + '_' + name
+        self.sub_legend = parent_mesh.legend + '_' + user_name
         self.sub_name = parent_mesh.name + '_' + name
         self.color = color
         self.alpha = alpha
@@ -2992,7 +3054,8 @@ class SubMesh(Mesh_mH):
     
         super().__init__(imChannel, mesh_type, keep_largest, rotateZ_90, new_set)
         
-    def get_mesh(self):
+        
+    def get_sect_mesh(self):
         
         s3_mask = np.load(str(self.s3_mask_dir))
         s3_mask = s3_mask.astype('bool')
@@ -3009,26 +3072,86 @@ class SubMesh(Mesh_mH):
         masked_s3 = s3.copy()
     
         masked_s3[maskF] = 0
-        self.create_subMesh(masked_s3, self.keep_largest, self.rotateZ_90)
-        self.mesh.alpha(self.alpha)
-        self.mesh.color(self.color)
+        mesh = create_submesh(masked_s3, self.resolution, self.keep_largest, self.rotateZ_90)
+        mesh.legend(self.sub_legend).wireframe()
+        mesh.alpha(self.alpha)
+        mesh.color(self.color)
+        self.mesh = mesh
     
         return self.mesh
+
+
+#%% - Drawing Functions
+#%% func - draw_line
+def draw_line (clicks, myIm, color_draw):
+    """
+    Function that draws white or black line connecting all the clicks received as input
+    """
+    for num, click in enumerate(clicks):
+        if num < len(clicks)-1:
+            pt1x, pt1y = click
+            pt2x, pt2y = clicks[num+1]
+            rr, cc, val = line_aa(int(pt1x), int(pt1y),
+                                  int(pt2x), int(pt2y))
+            rr1, cc1, val1 = line_aa(int(pt1x)+1, int(pt1y),
+                                     int(pt2x)+1, int(pt2y))
+            rr2, cc2, val2 = line_aa(int(pt1x)-1, int(pt1y),
+                                     int(pt2x)-1, int(pt2y))
+            if color_draw == "white" or color_draw == "":
+                myIm[rr, cc] = val * 50000
+            elif color_draw == "1":
+                myIm[rr, cc] = 1
+                myIm[rr1, cc1] = 1
+                myIm[rr2, cc2] = 1
+            elif color_draw == "0":
+                myIm[rr, cc] = 0
+                myIm[rr1, cc1] = 0
+                myIm[rr2, cc2] = 0
+            else: #"black"
+                myIm[rr, cc] = val * 0
+                myIm[rr1, cc1] = val1 * 0
+                
+    return myIm
+
+#%% - Masking
+#%% func - mask_disc
+def mask_disc(shape_s3, s3, s3_cyl):
+    
+    #Load stack shape
+    zdim, xdim, ydim = shape_s3
+    s3_mask = copy.deepcopy(s3)
+    
+    for slc in range(zdim):
+        im_cyl =s3_cyl[:,:,slc]
+        pos_pts = np.where(im_cyl == 1)
+        clicks = [(pos_pts[0][i], pos_pts[1][i]) for i in range(pos_pts[0].shape[0])]
+        if len(clicks+clicks) > 200:
+            clicks_random = random.sample(clicks+clicks, 200)#2*len(clicks))
+        else:
+            clicks_random = random.sample(clicks+clicks, 2*len(clicks))
+            
+        im = s3_mask[:,:,slc]
+        myIm = draw_line(clicks_random, im, '0')
+        s3_mask[:,:,slc] = myIm
+
+    return s3_mask
+
+#%% - Mesh functions
+#%% func - create_mesh
+def create_submesh(masked_s3, resolution, keep_largest:bool, rotateZ_90:bool):
+    
+    verts, faces, _, _ = measure.marching_cubes(masked_s3, spacing=resolution, method='lewiner')
+   
+    # Create meshes
+    mesh = vedo.Mesh([verts, faces])
+    if keep_largest:
+        mesh = mesh.extract_largest_region()
+    if rotateZ_90:
+        mesh.rotate_z(-90)
         
-    def create_subMesh(self, masked_s3, keep_largest:bool, rotateZ_90:bool):
-        
-        verts, faces, _, _ = measure.marching_cubes(masked_s3, spacing=self.resolution, method='lewiner')
-       
-        # Create meshes
-        mesh = vedo.Mesh([verts, faces])
-        if keep_largest:
-            mesh = mesh.extractLargestRegion()
-        if rotateZ_90:
-            mesh.rotateZ(-90)
-        mesh.legend(self.sub_legend).wireframe()
-        self.mesh = mesh
-        alert('woohoo')
-        
-        
+    alert('woohoo')
+    
+    return mesh
+ 
 #%%
 print('morphoHeart! - Loaded Module Classes')

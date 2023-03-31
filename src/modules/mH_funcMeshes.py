@@ -23,8 +23,6 @@ from time import perf_counter
 import copy
 from typing import Union
 from skimage import measure
-import random
-from skimage.draw import line_aa
 
 path_fcMeshes = os.path.abspath(__file__)
 path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
@@ -1218,27 +1216,28 @@ def get_organ_ribbon(organ, nRes, nPoints, clRib_type):
 #%% func - get_sect_mask
 def get_sect_mask(organ, plotshow=True):
     
-    name_sections = organ.mH_settings['general_info']['sections']['name_sections']
-    user_names = '('+', '.join([name_sections[val] for val in name_sections])+')'
-  
-    #Check if there ir already a created mask
-    name2save = organ.user_organName + '_mask_sect.npy'
-    mask_file = organ.info['dirs']['s3_numpy'] / name2save
-    
-    if mask_file.is_file(): 
-        q = 'You already created the mask to cut tissues into sections '+user_names+'. Do you want to create it again?'
-        res = {0: 'no, continue with next step', 1: 'yes, re-create it!'}
-        proceed = ask4input(q, res, bool)
-
-    else: 
-        proceed = True
-            
-    if proceed: 
-        cl_settings =  organ.mH_settings['orientation']['cl_ribbon']
-        mesh_cl = organ.obj_meshes[cl_settings['mesh_cl']]
+    if organ.check_method(method = 'E-Sections'): 
+        name_sections = organ.mH_settings['general_info']['sections']['name_sections']
+        user_names = '('+', '.join([name_sections[val] for val in name_sections])+')'
+      
+        #Check if there ir already a created mask
+        name2save = organ.user_organName + '_mask_sect.npy'
+        mask_file = organ.info['dirs']['s3_numpy'] / name2save
         
-        s3_filledCube, test_rib = get_stack_clRibbon(organ, mesh_cl, plotshow)
-        get_cube_clRibbon(organ, mesh_cl, s3_filledCube, test_rib, plotshow)
+        if mask_file.is_file(): 
+            q = 'You already created the mask to cut tissues into sections '+user_names+'. Do you want to create it again?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-create it!'}
+            proceed = ask4input(q, res, bool)
+    
+        else: 
+            proceed = True
+                
+        if proceed: 
+            cl_settings =  organ.mH_settings['orientation']['cl_ribbon']
+            mesh_cl = organ.obj_meshes[cl_settings['mesh_cl']]
+            
+            s3_filledCube, test_rib = get_stack_clRibbon(organ, mesh_cl, plotshow)
+            get_cube_clRibbon(organ, mesh_cl, s3_filledCube, test_rib, plotshow)
     
 #%% func - get_stack_clRibbon
 def get_stack_clRibbon(organ, mesh_cl, plotshow=True):
@@ -1450,17 +1449,17 @@ def get_cube_clRibbon(organ, mesh_cl, s3_filledCube, test_rib, plotshow=True):
 #%% func - get_sections
 def get_sections(organ, plotshow):
     
-    subms = []
-    name_sections = organ.mH_settings['general_info']['sections']['name_sections']
-    user_names = '('+', '.join([name_sections[val] for val in name_sections])+')'
-  
     #Check first if sections is a method involved in this organ
     if organ.check_method(method = 'E-Sections'): 
+        subms = []
+        name_sections = organ.mH_settings['general_info']['sections']['name_sections']
+        user_names = '('+', '.join([name_sections[val] for val in name_sections])+')'
+      
         workflow = organ.workflow
         process = ['MeshesProc','E-Sections','Status']
         check_proc = get_by_path(workflow, process)
         if check_proc == 'DONE': 
-            q = 'You already divided the tissues into sections'+user_names+'. Do you want to repeat this process?'
+            q = 'You already divided the tissues into sections '+user_names+'. Do you want to repeat this process?'
             res = {0: 'no, continue with next step', 1: 'yes, I want to repeat it!'}
             proceed = ask4input(q, res, bool)
         else: 
@@ -1471,7 +1470,7 @@ def get_sections(organ, plotshow):
         
     if proceed: 
         # Get user section names
-        sect_names = [item for item in organ.parent_project.mH_param2meas if 'sect1' in item]
+        sect_names = [item for item in organ.parent_project.mH_param2meas if 'sect1' in item and 'volume' in item]
     
         for name in sect_names: 
             ch = name[0]; cont = name[1]
@@ -1479,10 +1478,9 @@ def get_sections(organ, plotshow):
             print('\n- Dividing '+mesh.legend+' into sections '+user_names)
             submeshes = [(mesh.mesh)]; 
             for n, sect, color in zip(count(), name_sections, ['mediumvioletred', 'indigo']):
-                name = name_sections[sect]
-                # print(n, name, color)
-                subm = mesh.create_section(name = name, color = color)
-                sub_mesh = subm.get_mesh()
+                print(n, sect, color)
+                subm = mesh.create_section(name = sect, color = color)
+                sub_mesh = subm.get_sect_mesh()
                 submeshes.append((sub_mesh))
                 subms.append(subm)
                 
@@ -1554,26 +1552,171 @@ def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
 #%% func - get_segm_discs
 def get_segm_discs(organ): 
     
-    segm_names = [item for item in organ.parent_project.mH_param2meas if 'segm1' in item]
+    if organ.check_method(method = 'E-Segments'): 
+        name_segments = organ.mH_settings['general_info']['segments']['name_segments']
+        user_names = '('+', '.join([name_segments[val] for val in name_segments])+')'
+      
+        if 'segm_cuts' in organ.mH_settings.keys():
+            if 'Disc No.0' in organ.mH_settings['segm_cuts']: 
+                q = 'You already created the disc(s) to cut tissues into segments '+user_names+'. Do you want to repeat this process?'
+                res = {0: 'no, continue with next step', 1: 'yes, I want to repeat it!'}
+                proceed = ask4input(q, res, bool)
+            else: 
+                proceed = True
+        else: 
+            proceed = True
+            
+        if proceed: 
+            segm_names = [item for item in organ.parent_project.mH_param2meas if 'segm1' in item]
+            
+            if len(segm_names)>0:
+                # Get user segment names
+                dict_names = organ.mH_settings['general_info']['segments']['name_segments']
+                user_names = '('+', '.join([dict_names[val] for val in dict_names])+')'
+                # Cut organ into segments
+                q = 'Do you want to use the centreline to aid cut of tissue into segments '+user_names+'?'
+                res = {0: 'No, I would like to define the cuts by hand', 1: 'yes, please!'}
+                segm_using_cl = ask4input(q, res, bool)
+                if segm_using_cl: 
+                    #Find centreline first
+                    dict_cl = plot_organCLs(organ, plotshow=False)
+                    q = 'Select the centreline you want to use to aid organ cut into segments '+user_names+':'
+                    select = ask4input(q, dict_cl, int)
+                    ch_cont_cl = dict_cl[select].split(' (')[1].split('-')
+                    ch = ch_cont_cl[0]
+                    cont = ch_cont_cl[1]
+                    cl = organ.obj_meshes[ch+'_'+cont].get_centreline()
+                    spheres_spl = sphs_in_spline(kspl = cl, colour = True)
+                
+                ext_ch, _ = organ.get_ext_int_chs()
+                if (ext_ch.channel_no, 'tiss', 'segm1', 'volume') in segm_names:
+                    mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_tiss']
+                else: 
+                    ch = segm_names[0][0]; cont = segm_names[0][1]
+                    mesh_ext = organ.obj_meshes[ch+'_'+cont]
+                    
+                # Number of discs expected to be created
+                no_cuts_4segments = organ.mH_settings['general_info']['segments']['no_cuts_4segments']
+                
+                # Create new key in mH_settings to save disc info
+                proc = ['segm_cuts']
+                organ.update_settings(proc, update = {}, mH = 'mH')
+                    
+                for n in range(no_cuts_4segments):
+                    happyWithDisc = False
+                    print('Creating disc No.'+str(n)+' for cutting tissues into segments!')
+                    while not happyWithDisc: 
+                        if segm_using_cl:
+                            msg = '\n> Define the centreline point number to use to initialise disc to divide heart into segments '+user_names+' \n[NOTE: Spheres appear in centreline every 10 points, but you can select intermediate points, eg. 142].'
+                            txt = [(0, organ.user_organName + msg)]
+                            obj = [(mesh_ext.mesh.alpha(0.05), cl, spheres_spl)]
+                            plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+                            
+                            q = 'Enter the centreline point number you want to use to initialise the disc to divide the tissue into segments '+user_names+':'
+                            num_pt = ask4input(q,{},int)
+                            # Use flat disc or centreline orientation at point to define disc?
+                            q2 = 'What would you like to use to initialise disc: '
+                            res = {0:'Use the centreline orientation at the selected point to define disc orientation', 1: 'Initialise the disc in the selected position but in plane normal to the y-z plane?'}
+                            cl_or_flat = ask4input(q2, res, bool)
+                         
+                            if not cl_or_flat:
+                                pl_normal, pl_centre = get_plane_normal2pt(pt_num = num_pt, points = cl.points())
+                            else:
+                                pl_centre = cl.points()[num_pt]
+                                pl_normal = [1,0,0]
+                        else: 
+                            pl_centre = mesh_ext.mesh.center_of_mass()
+                            pl_normal = [1,0,0]
+                            
+                        radius = 60
+                        height = 2*0.225
+                        disc_color = 'purple'
+                        disc_res = 300
+                        # Modify (rotate and move cylinder/disc)
+                        cyl_test, sph_test, rotX, rotY, rotZ = modify_disc(filename = organ.user_organName,
+                                                                            txt = 'cut tissues into segments '+user_names, 
+                                                                            mesh = mesh_ext.mesh,
+                                                                            option = [True,True,True,True,True,True],
+                                                                            def_pl = {'pl_normal': pl_normal, 'pl_centre': pl_centre},
+                                                                            radius = radius, height = height, 
+                                                                            color = disc_color, res = disc_res, 
+                                                                            zoom=0.8)
+                        
+                        # Get new normal of rotated disc
+                        pl_normal_corrected = new_normal_3DRot(normal = pl_normal, rotX = rotX, rotY = rotY, rotZ = rotZ)
+                        normal_unit = unit_vector(pl_normal_corrected)*10
+                        # Get central point of newly defined disc
+                        pl_centre_new = sph_test.pos()
+                        
+                        # Newly defined centreline point
+                        sph_cut = vedo.Sphere(pos = pl_centre_new, r=4, c='gold').legend('sph_ChamberCut')
+                
+                        # Build new disc to confirm
+                        cyl_final = vedo.Cylinder(pos = pl_centre_new, r = radius, height = height, axis = normal_unit, c = disc_color, cap = True, res = disc_res)
+                        cyl_final.legend('Disc')
+                        
+                        msg = '\n> Check the position and the radius of the disc to cut the tissue into segments '+user_names+'.\n Make sure it is cutting the tissue effectively separating it into individual segments.\n > Close the window when done.'
+                        txt = [(0, organ.user_organName + msg)]
+                        obj = [(mesh_ext.mesh, cyl_final, cl)]
+                        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+            
+                        disc_radius = radius
+                        q_happy = 'Are you happy with the position of the disc [radius: '+str(disc_radius)+'um] to cut tissue into segments  '+user_names+'?'
+                        res_happy = {0: 'no, I would like to define a new position for the disc', 1: 'yes, but I would like to redefine the disc radius', 2: 'yes, I am happy with both, disc position and radius'}
+                        happy = ask4input(q_happy, res_happy, int)
+                        if happy == 1:
+                            happy_rad = False
+                            while not happy_rad:
+                                disc_radius = ask4input('Input disc radius [um]: ',{}, float)
+                                cyl_final = vedo.Cylinder(pos = pl_centre_new, r = disc_radius, height = height, axis = normal_unit, c = disc_color, cap = True, res = disc_res)
+                            
+                                msg = '\n> New radius: Check the radius of the disc to cut the tissue into segments '+user_names+'. \nMake sure it is cutting the tissue effectively separating it into individual segments.\n Close the window when done.'
+                                txt = [(0, organ.user_organName + msg)]
+                                obj = [(mesh_ext.mesh.alpha(1), cl, cyl_final, sph_cut)]
+                                plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+                                
+                                q_happy_rad = 'Is the selected radius ['+str(disc_radius)+'um] sufficient to cut the tissue into segments '+user_names+'?'
+                                res_happy_rad = {0: 'no, I would like to change its value', 1: 'yes, it cuts the tissue without disrupting too much the segments!'}
+                                happy_rad = ask4input(q_happy_rad, res_happy_rad, bool)
+                            happyWithDisc = True
+                        elif happy == 2:
+                            happyWithDisc = True
+                    
+                    # Save disc info
+                    cyl_name = 'Disc No.'+str(n)
+                    cyl_final.legend(cyl_name)
+                    cyl_dict = {'radius': disc_radius,
+                                'normal_unit': normal_unit,
+                                'pl_centre': pl_centre_new,
+                                'height': height, 
+                                'color': disc_color}
+             
+                    proc_disc = ['segm_cuts', cyl_name]
+                    organ.update_settings(proc_disc, update = cyl_dict, mH = 'mH')
+    else: 
+        print('None')
+        
+#%% func - create_disc_mask
+def create_disc_mask(organ, h_min = 0.1125): 
     
-    if len(segm_names)>0:
-        # Get user segment names
-        dict_names = organ.mH_settings['general_info']['segments']['name_segments']
-        user_names = '('+', '.join([dict_names[val] for val in dict_names])+')'
-        # Cut organ into segments
-        q = 'Do you want to use the centreline to aid cut of tissue into segments '+user_names+'?'
-        res = {0: 'No, I would like to define the cuts by hand', 1: 'yes, please!'}
-        segm_using_cl = ask4input(q, res, bool)
-        if segm_using_cl: 
-            #Find centreline first
-            dict_cl = plot_organCLs(organ, plotshow=False)
-            q = 'Select the centreline you want to use to aid organ cut into segments '+user_names+':'
-            select = ask4input(q, dict_cl, int)
-            ch_cont_cl = dict_cl[select].split(' (')[1].split('-')
-            ch = ch_cont_cl[0]
-            cont = ch_cont_cl[1]
-            cl = organ.obj_meshes[ch+'_'+cont].get_centreline()
-            spheres_spl = sphs_in_spline(kspl = cl, colour = True)
+    if organ.check_method(method = 'E-Segments'): 
+        name_segments = organ.mH_settings['general_info']['segments']['name_segments']
+        user_names = '('+', '.join([name_segments[val] for val in name_segments])+')'
+      
+        #Check if there ir already a created mask
+        name2save = organ.user_organName + '_mask_DiscNo0.npy'
+        mask_file = organ.info['dirs']['s3_numpy'] / name2save
+        
+        if mask_file.is_file(): 
+            q = 'You already created the disc mask(s) to cut tissues into segments '+user_names+'. Do you want to re-run this process?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
+            proceed = ask4input(q, res, bool)
+    
+        else: 
+            proceed = True
+        
+    if proceed: 
+        segm_names = [item for item in organ.parent_project.mH_param2meas if 'segm1' in item]
         
         ext_ch, _ = organ.get_ext_int_chs()
         if (ext_ch.channel_no, 'tiss', 'segm1', 'volume') in segm_names:
@@ -1582,267 +1725,353 @@ def get_segm_discs(organ):
             ch = segm_names[0][0]; cont = segm_names[0][1]
             mesh_ext = organ.obj_meshes[ch+'_'+cont]
             
-        # Number of discs expected to be created
-        no_cuts_4segments = organ.mH_settings['general_info']['segments']['no_cuts_4segments']
+        res = mesh_ext.resolution
         
-        # Create new key in mH_settings to save disc info
-        proc = ['segm_cuts']
-        organ.update_settings(proc, update = {}, mH = 'mH')
+        #Load stack shape
+        shape_s3 = organ.info['shape_s3']
+        zdim, xdim, ydim = shape_s3
+        print('shape_s3:',shape_s3, '- xdim:', xdim, '- ydim:',ydim, '- zdim:', zdim)
             
-        for n in range(no_cuts_4segments):
-            happyWithDisc = False
-            print('Creating disc No.'+str(n)+' for cutting tissues into segments!')
-            while not happyWithDisc: 
-                if segm_using_cl:
-                    msg = '\n> Define the centreline point number to use to initialise disc to divide heart into segments '+user_names+' \n[NOTE: Spheres appear in centreline every 10 points, but you can select intermediate points, eg. 142].'
-                    txt = [(0, organ.user_organName + msg)]
-                    obj = [(mesh_ext.mesh.alpha(0.05), cl, spheres_spl)]
-                    plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-                    
-                    q = 'Enter the centreline point number you want to use to initialise the disc to divide the tissue into segments '+user_names+':'
-                    num_pt = ask4input(q,{},int)
-                    # Use flat disc or centreline orientation at point to define disc?
-                    q2 = 'What would you like to use to initialise disc: '
-                    res = {0:'Use the centreline orientation at the selected point to define disc orientation', 1: 'Initialise the disc in the selected position but in plane normal to the y-z plane?'}
-                    cl_or_flat = ask4input(q2, res, bool)
-                 
-                    if not cl_or_flat:
-                        pl_normal, pl_centre = get_plane_normal2pt(pt_num = num_pt, points = cl.points())
+        disc_info = organ.mH_settings['segm_cuts']
+        for disc in disc_info:
+            print('Creating mask for '+ disc)
+            disc_name = disc.replace(' ', '').replace('.','')
+            
+            disc_radius = disc_info[disc]['radius']
+            normal_unit = disc_info[disc]['normal_unit']
+            pl_centre = disc_info[disc]['pl_centre']
+            height = disc_info[disc]['height']
+            
+            # Create a disc with better resolution to transform into pixels to mask stack
+            res_cyl = 2000
+            num_rad = int(3*int(disc_radius)) #int(((r_circle_max-r_circle_min)/0.225)+1)
+            num_h = 9
+            for j, rad in enumerate(np.linspace((disc_radius*0.2)/2, disc_radius, num_rad)):
+                for i, h in enumerate(np.linspace(h_min,height, num_h)):
+                    cyl = vedo.Cylinder(pos = pl_centre, r = rad, height = h, axis = normal_unit, c = 'lime', cap = True, res = res_cyl)#.wireframe(True)
+                    if i == 0 and j == 0:
+                        cyl_pts = cyl.points()
                     else:
-                        pl_centre = cl.points()[num_pt]
-                        pl_normal = [1,0,0]
-                else: 
-                    pl_centre = mesh_ext.mesh.center_of_mass()
-                    pl_normal = [1,0,0]
-                    
-                radius = 60
-                height = 2*0.225
-                disc_color = 'purple'
-                disc_res = 300
-                # Modify (rotate and move cylinder/disc)
-                cyl_test, sph_test, rotX, rotY, rotZ = modify_disc(filename = organ.user_organName,
-                                                                    txt = 'cut tissues into segments '+user_names, 
-                                                                    mesh = mesh_ext.mesh,
-                                                                    option = [True,True,True,True,True,True],
-                                                                    def_pl = {'pl_normal': pl_normal, 'pl_centre': pl_centre},
-                                                                    radius = radius, height = height, 
-                                                                    color = disc_color, res = disc_res, 
-                                                                    zoom=0.8)
-                
-                # Get new normal of rotated disc
-                pl_normal_corrected = new_normal_3DRot(normal = pl_normal, rotX = rotX, rotY = rotY, rotZ = rotZ)
-                normal_unit = unit_vector(pl_normal_corrected)*10
-                # Get central point of newly defined disc
-                pl_centre_new = sph_test.pos()
-                
-                # Newly defined centreline point
-                sph_cut = vedo.Sphere(pos = pl_centre_new, r=4, c='gold').legend('sph_ChamberCut')
-        
-                # Build new disc to confirm
-                cyl_final = vedo.Cylinder(pos = pl_centre_new, r = radius, height = height, axis = normal_unit, c = disc_color, cap = True, res = disc_res)
-                cyl_final.legend('Disc')
-                
-                msg = '\n> Check the position and the radius of the disc to cut the tissue into segments '+user_names+'.\n Make sure it is cutting the tissue effectively separating it into individual segments.\n > Close the window when done.'
-                txt = [(0, organ.user_organName + msg)]
-                obj = [(mesh_ext.mesh, cyl_final, cl)]
-                plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+                        cyl_pts = np.concatenate((cyl_pts, cyl.points()))
     
-                disc_radius = radius
-                q_happy = 'Are you happy with the position of the disc [radius: '+str(disc_radius)+'um] to cut tissue into segments  '+user_names+'?'
-                res_happy = {0: 'no, I would like to define a new position for the disc', 1: 'yes, but I would like to redefine the disc radius', 2: 'yes, I am happy with both, disc position and radius'}
-                happy = ask4input(q_happy, res_happy, int)
-                if happy == 1:
-                    happy_rad = False
-                    while not happy_rad:
-                        disc_radius = ask4input('Input disc radius [um]: ',{}, float)
-                        cyl_final = vedo.Cylinder(pos = pl_centre_new, r = disc_radius, height = height, axis = normal_unit, c = disc_color, cap = True, res = disc_res)
-                    
-                        msg = '\n> New radius: Check the radius of the disc to cut the tissue into segments '+user_names+'. \nMake sure it is cutting the tissue effectively separating it into individual segments.\n Close the window when done.'
-                        txt = [(0, organ.user_organName + msg)]
-                        obj = [(mesh_ext.mesh.alpha(1), cl, cyl_final, sph_cut)]
-                        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-                        
-                        q_happy_rad = 'Is the selected radius ['+str(disc_radius)+'um] sufficient to cut the tissue into segments '+user_names+'?'
-                        res_happy_rad = {0: 'no, I would like to change its value', 1: 'yes, it cuts the tissue without disrupting too much the segments!'}
-                        happy_rad = ask4input(q_happy_rad, res_happy_rad, bool)
-                    happyWithDisc = True
-                elif happy == 2:
-                    happyWithDisc = True
-            
-            # Save disc info
-            cyl_name = 'Disc No.'+str(n)
-            cyl_final.legend(cyl_name)
-            cyl_dict = {'radius': disc_radius,
-                        'normal_unit': normal_unit,
-                        'pl_centre': pl_centre_new,
-                        'height': height, 
-                        'color': disc_color}
+            # Rotate the points that make up the HR disc, to convert them to a stack
+            cyl_points_rot = np.zeros_like(cyl_pts)
+            if organ.mH_settings['general_info']['rotateZ_90']: #'CJ' not in filename: 
+                axis = [0,0,1]
+            else: 
+                axis = [0,0,0]
      
-            proc_disc = ['segm_cuts', cyl_name]
-            organ.update_settings(proc_disc, update = cyl_dict, mH = 'mH')
-        
-#%% func - create_disc_mask
-def create_disc_mask(organ, h_min = 0.1125): 
-    
-    segm_names = [item for item in organ.parent_project.mH_param2meas if 'segm1' in item]
-    
-    ext_ch, _ = organ.get_ext_int_chs()
-    if (ext_ch.channel_no, 'tiss', 'segm1', 'volume') in segm_names:
-        mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_tiss']
-    else: 
-        ch = segm_names[0][0]; cont = segm_names[0][1]
-        mesh_ext = organ.obj_meshes[ch+'_'+cont]
-        
-    res = mesh_ext.resolution
-    
-    #Load stack shape
-    shape_s3 = organ.info['shape_s3']
-    zdim, xdim, ydim = shape_s3
-    print('shape_s3:',shape_s3, '- xdim:', xdim, '- ydim:',ydim, '- zdim:', zdim)
-        
-    disc_info = organ.mH_settings['segm_cuts']
-    for disc in disc_info:
-        print('Creating mask for '+ disc)
-        disc_name = disc.replace(' ', '').replace('.','')
-        
-        disc_radius = disc_info[disc]['radius']
-        normal_unit = disc_info[disc]['normal_unit']
-        pl_centre = disc_info[disc]['pl_centre']
-        height = disc_info[disc]['height']
-        
-        # Create a disc with better resolution to transform into pixels to mask stack
-        res_cyl = 2000
-        num_rad = int(3*int(disc_radius)) #int(((r_circle_max-r_circle_min)/0.225)+1)
-        num_h = 9
-        for j, rad in enumerate(np.linspace((disc_radius*0.2)/2, disc_radius, num_rad)):
-            for i, h in enumerate(np.linspace(h_min,height, num_h)):
-                cyl = vedo.Cylinder(pos = pl_centre, r = rad, height = h, axis = normal_unit, c = 'lime', cap = True, res = res_cyl)#.wireframe(True)
-                if i == 0 and j == 0:
-                    cyl_pts = cyl.points()
+            for i, pt in enumerate(cyl_pts):
+                cyl_points_rot[i] = (np.dot(rotation_matrix(axis = axis, theta = np.radians(90)),pt))
+     
+            cyl_pix = np.transpose(np.asarray([cyl_points_rot[:,i]//res[i] for i in range(len(res))]))
+            cyl_pix = cyl_pix.astype(int)
+            cyl_pix = np.unique(cyl_pix, axis=0)
+            
+            cyl_pix_out = cyl_pix.copy()
+            index_out = []
+            # Clean cyl_pix if out of stack shape
+            for index, pt in enumerate(cyl_pix):
+                # print(index, pt)
+                if pt[0] > xdim-2 or pt[0] < 0:
+                    delete = True
+                elif pt[1] > ydim-2 or pt[1] < 0:
+                    delete = True
+                elif pt[2] > zdim+2-1 or pt[2] < 0:
+                    delete = True
                 else:
-                    cyl_pts = np.concatenate((cyl_pts, cyl.points()))
-
-        # Rotate the points that make up the HR disc, to convert them to a stack
-        cyl_points_rot = np.zeros_like(cyl_pts)
-        if organ.mH_settings['general_info']['rotateZ_90']: #'CJ' not in filename: 
-            axis = [0,0,1]
-        else: 
-            axis = [0,0,0]
- 
-        for i, pt in enumerate(cyl_pts):
-            cyl_points_rot[i] = (np.dot(rotation_matrix(axis = axis, theta = np.radians(90)),pt))
- 
-        cyl_pix = np.transpose(np.asarray([cyl_points_rot[:,i]//res[i] for i in range(len(res))]))
-        cyl_pix = cyl_pix.astype(int)
-        cyl_pix = np.unique(cyl_pix, axis=0)
-        
-        cyl_pix_out = cyl_pix.copy()
-        index_out = []
-        # Clean cyl_pix if out of stack shape
-        for index, pt in enumerate(cyl_pix):
-            # print(index, pt)
-            if pt[0] > xdim-2 or pt[0] < 0:
-                delete = True
-            elif pt[1] > ydim-2 or pt[1] < 0:
-                delete = True
-            elif pt[2] > zdim+2-1 or pt[2] < 0:
-                delete = True
-            else:
-                delete = False
- 
-            if delete:
-                # print(pt)
-                index_out.append(index)
-        
-        cyl_pix_out = np.delete(cyl_pix_out, index_out, axis = 0)
- 
-        # Create mask of ring
-        s3_cyl = np.zeros((xdim, ydim, zdim+2))
-        s3_cyl[cyl_pix_out[:,0],cyl_pix_out[:,1],cyl_pix_out[:,2]] = 1
-        s3_cyl = s3_cyl.astype('uint8')
-        
-        name2save = organ.user_organName + '_mask_'+disc_name+'.npy'
-        dir2save = organ.info['dirs']['s3_numpy'] / name2save
-        np.save(dir2save, s3_cyl)
-        
-        if not dir2save.is_file():
-            print('>> Error: s3 mask of '+disc+' was not saved correctly!\n>> File: mask_'+disc_name+'.npy')
-            alert('error_beep')
-        else: 
-            print('>> s3 mask of '+disc+' saved correctly!')
-            alert('countdown')
-    
-#%% func - mask_ring
-def mask_ring(organ, s3, s3_cyl):
-    
-    #Load stack shape
-    shape_s3 = organ.info['shape_s3']
-    zdim, xdim, ydim = shape_s3
-    
-    s3_mask = copy.deepcopy(s3)
-    
-    for slc in range(zdim):
-        im_cyl =s3_cyl[:,:,slc]
-        pos_pts = np.where(im_cyl == 1)
-        im = s3_mask[:,:,slc]
-
-        clicks = [(pos_pts[0][i], pos_pts[1][i]) for i in range(pos_pts[0].shape[0])]
-        if len(clicks+clicks) > 200:
-            clicks_random = random.sample(clicks+clicks, 200)#2*len(clicks))
-        else:
-            clicks_random = random.sample(clicks+clicks, 2*len(clicks))
-        myIm = draw_line(clicks_random, im, '0')
-        s3_mask[:,:,slc] = myIm
-
-    return s3_mask
+                    delete = False
+     
+                if delete:
+                    # print(pt)
+                    index_out.append(index)
+            
+            cyl_pix_out = np.delete(cyl_pix_out, index_out, axis = 0)
+     
+            # Create mask of ring
+            s3_cyl = np.zeros((xdim, ydim, zdim+2))
+            s3_cyl[cyl_pix_out[:,0],cyl_pix_out[:,1],cyl_pix_out[:,2]] = 1
+            s3_cyl = s3_cyl.astype('uint8')
+            
+            name2save = organ.user_organName + '_mask_'+disc_name+'.npy'
+            dir2save = organ.info['dirs']['s3_numpy'] / name2save
+            np.save(dir2save, s3_cyl)
+            
+            if not dir2save.is_file():
+                print('>> Error: s3 mask of '+disc+' was not saved correctly!\n>> File: mask_'+disc_name+'.npy')
+                alert('error_beep')
+            else: 
+                print('>> s3 mask of '+disc+' saved correctly!')
+                alert('countdown')
 
 #%% func - cut_into_segments
-def get_segments(organ): 
+def get_segments(organ, plotshow): 
     
     segms = []
     name_segments = organ.mH_settings['general_info']['segments']['name_segments']
     user_names = '('+', '.join([name_segments[val] for val in name_segments])+')'
   
-    #Check first if segments is a method involved in this organ
-    if organ.check_method(method = 'E-Segments'): 
-        #Check workflow status
-        workflow = organ.workflow
-        process = ['MeshesProc','E-Segments','Status']
-        check_proc = get_by_path(workflow, process)
-        if check_proc == 'DONE': 
-            q = 'You already divided the tissues into segments '+user_names+'. Do you want to repeat this process?'
-            res = {0: 'no, continue with next step', 1: 'yes, I want to repeat it!'}
-            proceed = ask4input(q, res, bool)
-        else: 
-            proceed = True
-    else:
-        proceed = False
-        return None
+    # #Check first if segments is a method involved in this organ
+    # if organ.check_method(method = 'E-Segments'): 
+    #     #Check workflow status
+    #     workflow = organ.workflow
+    #     process = ['MeshesProc','E-Segments','Status']
+    #     check_proc = get_by_path(workflow, process)
+    #     if check_proc == 'DONE': 
+    #         q = 'You already divided the tissues into segments '+user_names+'. Do you want to repeat this process?'
+    #         res = {0: 'no, continue with next step', 1: 'yes, I want to repeat it!'}
+    #         proceed = ask4input(q, res, bool)
+    #     else: 
+    #         proceed = True
+    # else:
+    #     proceed = False
+    #     return None
     
+    proceed = True
     if proceed: 
-        segm_names = [item for item in organ.parent_project.mH_param2meas if 'segm1' in item]
-    
-        for name in segm_names: 
+        segm_names = [item for item in organ.parent_project.mH_param2meas if 'segm1' in item and 'volume' in item]
+        for name in segm_names[0:1]: 
             ch = name[0]; cont = name[1]
             mesh = organ.obj_meshes[ch+'_'+cont]
             print('\n- Dividing '+mesh.legend+' into segments '+user_names)
-            submeshes = [(mesh.mesh)]; 
             
-            subm = mesh.create_segments()
+            cut_masked = mesh.mask_segments()
+            submeshes = [(mesh.mesh),tuple(cut_masked)]
+            
+            dict_segm = fcMeshes.dict_segments(organ)
+            dict_segm = fcMeshes.classify_segments(meshes=segms[0], dict_segm=dict_segm)
+            
+            sub_segments = mesh.create_segments()
+            
+            final_meshes = []
+            for segm in name_segments:
+                #Find corresponding submesh
+                for subsgm in sub_segments: 
+                    if subsgm.sub_name == segm: 
+                        break
+
+                print('Assigning meshes into segments for '+mesh.legend)
+                print(subsgm.sub_name, subsgm.sub_legend)
+                list_meshes = dict_segm[segm]['meshes_number']
+                dict_segm[segm]['meshes_info'] = {}
+                
+                #Find meshes and add them to the mesh
+                mesh_segm = []; 
+                for cut_mesh in cut_masked:
+                    if cut_mesh.info['legend'] in list_meshes: 
+                        print(cut_mesh.info)
+                        mesh_segm.append(cut_mesh)
+                        com = cut_mesh.center_of_mass()
+                        vol = cut_mesh.volume()
+                        dict_segm[segm]['meshes_info'][cut_mesh.info['legend']] = {'COM': com,
+                                                                                   'volume': vol}
+                        
+                
+                subsgm.dict_segm = dict_segm[segm]
+                final_segm_mesh = vedo.merge(mesh_segm)
+                final_segm_mesh.color('pink').alpha(0.1).legend(subsgm.sub_legend)
+                final_meshes.append(final_segm_mesh)
+                        
+            if plotshow: 
+                obj = (final_meshes)
+                txt = [(0, organ.user_organName +' - '+mesh.legend)]
+                fcMeshes.plot_grid(obj=obj, txt=txt, axes=1, sc_side=max(organ.get_maj_bounds()))
+        
+                
+                
+                
+           
+            
+            # subm = mesh.create_segments()
+            
             # sub_mesh = subm.get_mesh()
             # submeshes.append((sub_mesh))
-            segms.append(subm)
+            segms.append(tuple(cut_masked))
                 
             # if plotshow: 
             #     obj = submeshes
             #     txt = [(0, organ.user_organName +' - '+mesh.legend)]
-            #     plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+            #     plot_grid(obj=obj, txt=txt, axes=1, sc_side=max(organ.get_maj_bounds()))
         
-        return segms
+    return segms
+
+#%% func - dict_segments
+def dict_segments(organ):
+    
+    segments_info = organ.mH_settings['general_info']['segments']
+    no_segm = segments_info['no_segments']
+    #https://seaborn.pydata.org/tutorial/color_palettes.html
+    # palette = sns.color_palette("husl", len(cut_masked))
+    palette = [np.random.choice(range(255),size=3) for num in range(no_segm)]
+    
+    dict_segm = {'other': {'user_name': 'other',
+                           'color': np.array([128,128,128]),
+                           'meshes_number': []}}
+    
+    for n, segm in enumerate(segments_info['name_segments']): 
+        dict_segm[segm] = {}
+        dict_segm[segm]['user_name'] = segments_info['name_segments'][segm]
+        dict_segm[segm]['color'] = palette[n]
+        dict_segm[segm]['meshes_number'] = []
+    
+    return dict_segm
+    
+#%% func - classify_segments
+#Working clicking 
+def classify_segments(meshes, dict_segm):
+    
+    flat_segm = flatdict.FlatDict(dict_segm)
+    colors = [flat_segm[key] for key in flat_segm if 'color' in key]
+    mesh_classif = [flat_segm[key] for key in flat_segm if 'meshes_number' in key]
+    names = [flat_segm[key] for key in flat_segm if 'user_name' in key]
+    print(mesh_classif)
+    
+    #https://seaborn.pydata.org/tutorial/color_palettes.html
+    palette = [np.random.choice(range(255),size=3) for num in range(len(meshes))]
+    for n, mesh in enumerate(meshes):
+        mesh.color(palette[n])
+    
+    def func(evt):
+        if not evt.actor:
+            return
+        mesh_no = evt.actor.info['legend']
+        mesh_color = evt.actor.color()*255
+        vedo.printc("You clicked: "+mesh_no)
+        print(mesh_classif)
+        is_in_list = np.any(np.all(mesh_color == colors, axis=1))
+        if is_in_list:
+            bool_list = np.all(mesh_color == colors, axis=1)
+            ind = np.where(bool_list == True)[0][0]
+            ind_plus1 = ind+1
+            new_ind = (ind_plus1)%len(colors)
+            print(ind, new_ind)
+            new_color = colors[new_ind]
+            evt.actor.color(new_color)
+            mesh_classif[ind].remove(mesh_no)
+            mesh_classif[new_ind].append(mesh_no)
+        else: 
+            evt.actor.color(colors[1])
+            mesh_classif[1].append(mesh_no)
+        msg.text("You clicked mesh "+mesh_no+' to classify it as '+names[new_ind])
+        
+    mks = []; sym = ['o']*len(dict_segm)
+    for segm in dict_segm:
+        mks.append(vedo.Marker('*').c(dict_segm[segm]['color']).legend(dict_segm[segm]['user_name']))
+        
+        
+    lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
+                        width=leg_width, height=leg_height)
+    
+    msg = vedo.Text2D("", pos="bottom-center", c='k', bg='r9', alpha=0.8)
+    plt = vedo.Plotter(axes=1, bg='white')
+    plt.add_callback('mouse click', func)
+    plt.show(meshes, lb, msg, zoom=1.2)
+    
+    return dict_segm
+    
+#%% func - 
+# import vedo as vedo
+def testing_callbacks(meshes, dict_info):
+    
+    
+    colors = {0: 'grey', 1: 'darkorange', 2: 'blueviolet'}
+    # name = {'segm1': 'left', 'segm2': 'right'}
+    names = ['atrium', 'ventricle']
+            # darkorange # blueviolet
+    colors = [[128,128,128], [255,140,0], [138,43,226]]
+    names = ['other','atrium', 'ventricle']
+    mesh_classif = [[],[],[]]
+    
+    #https://seaborn.pydata.org/tutorial/color_palettes.html
+    palette = [np.random.choice(range(255),size=3) for num in range(len(meshes))]
+    for n, mesh in enumerate(meshes):
+        mesh.color(palette[n])
+    
+    def func(evt):
+        if not evt.actor:
+            return
+        # sil = evt.actor.silhouette().linewidth(6).c('red5')
+        # sil.name = "silu" # give it a name so we can remove the old one
+        mesh_no = evt.actor.info['legend']
+        mesh_color = evt.actor.color()*255
+        vedo.printc("You clicked: "+mesh_no)
+        is_in_list = np.any(np.all(mesh_color == colors, axis=1))
+        if is_in_list:
+            bool_list = np.all(mesh_color == colors, axis=1)
+            ind = np.where(bool_list == True)[0][0]
+            ind_plus1 = ind+1
+            new_ind = (ind_plus1)%len(colors)
+            print(ind, new_ind)
+            new_color = colors[new_ind]
+            evt.actor.color(new_color)
+            mesh_classif[ind].remove(mesh_no)
+            mesh_classif[new_ind].append(mesh_no)
+        else: 
+            evt.actor.color(colors[1])
+            mesh_classif[1].append(mesh_no)
+            
+        # plt.remove('silu').add(sil)
+    
+    msg = vedo.Text2D("", pos="bottom-center", c='k', bg='r9', alpha=0.8)
+    plt = vedo.Plotter(axes=1, bg='white')
+    plt.add_callback('mouse click', func)
+    plt.show(meshes, msg, zoom=1.2)
+    # plt.close()
+    
+    return mesh_classif
     
 #%% func - get_rings2cut_segm
-# def get_rings2cut_segm(organ):
+    # while not happy: 
+    #     def classify_cells_into_chambers(evt):
+    #         if not evt.actor: return
+    #         if isinstance(evt.actor, shapes.Sphere): 
+    #             sil = evt.actor.silhouette().lineWidth(6).c('red')
+    #             print("You clicked: "+evt.actor.name)
+    #             cell_no = evt.actor.name
+    #             cell_no = int(cell_no.split('.')[-1])
+    #             if cells_class[cell_no] == 'atrium':
+    #                 cells_class[cell_no] = 'ventricle'
+    #                 sphs[cell_no].color('lime')
+    #             elif cells_class[cell_no] == 'ventricle':
+    #                 cells_class[cell_no] = 'atrium'
+    #                 sphs[cell_no].color('gold')
+    #             plt.remove(silcont.pop()).add(sil)
+    #             silcont.append(sil)
+    #     silcont = [None]
+        
+    #     plt = Plotter(axes=1)
+    #     plt.addCallback('mouse click', classify_cells_into_chambers)
+    #     plt.show(sphs, zoom=1.2).close()
+        
     
+    # def remove_cells(evt):
+    #         if not evt.actor: 
+    #             return
+    #         if isinstance(evt.actor, shapes.Sphere): 
+    #             sil = evt.actor.silhouette().lineWidth(6).c('red')
+    #             print("You clicked: "+evt.actor.name)
+    #             cell_no = evt.actor.name
+    #             cell_no = int(cell_no.split('.')[-1])
+    #             if cell_no < 10000: # remove
+    #                 cells2remove.append(cell_no)
+    #                 sphs[cell_no].color('black')
+    #                 new_no = 10000+cell_no
+    #                 sphs[cell_no].name = f"Cell Nr.{new_no}"
+    #             else: # add back
+    #                 ind2rem = cells2remove.index(cell_no-10000)
+    #                 cells2remove.pop(ind2rem)
+    #                 old_no = cell_no-10000
+    #                 sphs[old_no].color('gold')
+    #                 sphs[old_no].name = f"Cell Nr.{old_no}"
+                   
+    #             plt.remove(silcont.pop()).add(sil)
+    #             silcont.append(sil)
+    #     silcont = [None]
+       
+    #     plt = Plotter(axes=1)
+    #     txt = Text2D('Remove cells', c=c, font=font)
+    #     plt.addCallback('mouse click', remove_cells)
+    #     plt.show(sphs, myoc, txt,  zoom=1.2).close()
    
     
 #%% func - getRing2CutChambers
@@ -2039,6 +2268,7 @@ def measure_volume(organ):
     for name in vol_names: 
         # print(name)
         ch = name[0]; cont = name[1]; segm= name[2]
+        # print(ch, cont, segm)
         mesh_mH = organ.obj_meshes[ch+'_'+cont]
         if segm == 'whole': 
             volume = mesh_mH.get_volume()
@@ -2046,8 +2276,8 @@ def measure_volume(organ):
         elif 'sect' in segm: 
             sect_names = organ.mH_settings['general_info']['sections']['name_sections']
             sect_name = sect_names[segm]
-            sub_sect = organ.submeshes[ch+'_'+cont+'_'+sect_name]
-            subm = mesh_mH.create_section(name = sect_name, color = sub_sect['color'])
+            sub_sect = organ.submeshes[ch+'_'+cont+'_'+segm]
+            subm = mesh_mH.create_section(name = segm, color = sub_sect['color'])
             volume = subm.get_mesh().volume()
         
         else: 
@@ -2551,38 +2781,6 @@ def get_pts_at_plane (points, pl_normal, pl_centre, tol=2, addData = []):
     data_cut = np.asarray(data_cut)
 
     return pts_cut, data_cut
-
-#%% - Drawing Functions
-#%% func - draw_line
-def draw_line (clicks, myIm, color_draw):
-    """
-    Function that draws white or black line connecting all the clicks received as input
-    """
-    for num, click in enumerate(clicks):
-        if num < len(clicks)-1:
-            pt1x, pt1y = click
-            pt2x, pt2y = clicks[num+1]
-            rr, cc, val = line_aa(int(pt1x), int(pt1y),
-                                  int(pt2x), int(pt2y))
-            rr1, cc1, val1 = line_aa(int(pt1x)+1, int(pt1y),
-                                     int(pt2x)+1, int(pt2y))
-            rr2, cc2, val2 = line_aa(int(pt1x)-1, int(pt1y),
-                                     int(pt2x)-1, int(pt2y))
-            if color_draw == "white" or color_draw == "":
-                myIm[rr, cc] = val * 50000
-            elif color_draw == "1":
-                myIm[rr, cc] = 1
-                myIm[rr1, cc1] = 1
-                myIm[rr2, cc2] = 1
-            elif color_draw == "0":
-                myIm[rr, cc] = 0
-                myIm[rr1, cc1] = 0
-                myIm[rr2, cc2] = 0
-            else: #"black"
-                myIm[rr, cc] = val * 0
-                myIm[rr1, cc1] = val1 * 0
-                
-    return myIm
 
 #%% - Math operations 
 #%% func - new_normal_3DRot
