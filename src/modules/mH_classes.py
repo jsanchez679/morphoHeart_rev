@@ -6,7 +6,7 @@ Version: Dec 01, 2022
 
 '''
 #%% ##### - Imports - ########################################################
-# import os
+import os
 from datetime import datetime
 import pathlib
 from pathlib import Path
@@ -26,12 +26,15 @@ from scipy.interpolate import splprep, splev, interpn
 from itertools import count
 import random
 from skimage.draw import line_aa
-# import seaborn as sns
+import seaborn as sns
+
+path_fcMeshes = os.path.abspath(__file__)
+path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
 
 #%% ##### - Other Imports - ##################################################
 #from ...config import dict_gui
 from .mH_funcBasics import alert, ask4input, make_Paths, make_tuples, get_by_path, set_by_path
-from .mH_funcMeshes import unit_vector, plot_organCLs, find_angle_btw_pts
+from .mH_funcMeshes import unit_vector, plot_organCLs, find_angle_btw_pts, classify_segments_from_ext, create_asign_subsg
 
 alert_all=True
 heart_default=False
@@ -257,6 +260,7 @@ class Project():
                 
                 mH_set['setup'][ch_str] = dict_setupNS
                 mH_set['measure'][ch_str] = dict_measNS
+                mH_set['orientation'] = {}
                 mH_channels.append(ch_str)
     
             if mH_settings['segments']['cutLayersIn2Segments']:
@@ -983,7 +987,7 @@ class Organ():
             channel_dict['dir_stckproc'] = imChannel.dir_stckproc
             
             self.imChannels[imChannel.channel_no] = channel_dict
-            self.parent_organ.info['shape_s3'] = imChannel.shape
+            self.info['shape_s3'] = imChannel.shape
             
         else: # just update im_proc 
             self.imChannels[imChannel.channel_no]['process'] = imChannel.process
@@ -1053,41 +1057,44 @@ class Organ():
     
     def add_submesh(self, submesh):
         new = False
-        if submesh.sub_name not in self.submeshes.keys():
+        if submesh.sub_name_all not in self.submeshes.keys():
             new = True
         if new:
-            print('>> Adding SubMesh - ', submesh.sub_name)
-            self.submeshes[submesh.sub_name] = {}
-            #Inherited from mesh
-            self.submeshes[submesh.sub_name]['parent_organ'] = submesh.parent_organ.user_organName
-            self.submeshes[submesh.sub_name]['channel_no'] = submesh.imChannel.channel_no
-            self.submeshes[submesh.sub_name]['user_meshName'] = submesh.user_meshName
-            self.submeshes[submesh.sub_name]['mesh_type'] = submesh.mesh_type
-            self.submeshes[submesh.sub_name]['legend'] = submesh.legend
-            self.submeshes[submesh.sub_name]['name'] = submesh.name
-            self.submeshes[submesh.sub_name]['resolution'] = submesh.resolution
-            self.submeshes[submesh.sub_name]['color'] = submesh.color
-            self.submeshes[submesh.sub_name]['alpha'] = submesh.alpha
-            self.submeshes[submesh.sub_name]['keep_largest'] = submesh.keep_largest
-            self.submeshes[submesh.sub_name]['rotateZ_90'] = submesh.rotateZ_90
+            print('>> Adding SubMesh - ', submesh.sub_name_all)
+            self.submeshes[submesh.sub_name_all] = {}
             #New to submesh
-            self.submeshes[submesh.sub_name]['sub_name'] = submesh.sub_name
-            self.submeshes[submesh.sub_name]['parent_mesh'] = submesh.parent_mesh.name
-            self.submeshes[submesh.sub_name]['sub_mesh_type'] = submesh.sub_mesh_type
-            self.submeshes[submesh.sub_name]['sub_legend'] = submesh.sub_legend
-            if submesh.sub_mesh_type == 'Section':
-                self.submeshes[submesh.sub_name]['s3_invert'] = submesh.s3_invert
-                self.submeshes[submesh.sub_name]['s3_mask_dir'] = submesh.s3_mask_dir
-            # else: # submesh.sub_mesh_type == 'Segment':
-                
-            self.submeshes[submesh.sub_name]['sub_name'] = submesh.sub_name
-            
-        else: #Just updating things that could change
-            self.submeshes[submesh.sub_name]['color'] = submesh.color
-            self.submeshes[submesh.sub_name]['alpha'] = submesh.alpha
-            self.submeshes[submesh.sub_name]['keep_largest'] = submesh.keep_largest
+            self.submeshes[submesh.sub_name_all]['sub_name'] = submesh.sub_name
+            self.submeshes[submesh.sub_name_all]['sub_name_all'] = submesh.sub_name_all
+            self.submeshes[submesh.sub_name_all]['parent_mesh'] = submesh.parent_mesh.name
+            self.submeshes[submesh.sub_name_all]['sub_mesh_type'] = submesh.sub_mesh_type
+            self.submeshes[submesh.sub_name_all]['sub_legend'] = submesh.sub_legend
+            self.submeshes[submesh.sub_name_all]['sub_user_name'] = submesh.sub_user_name
+            #Mesh related
+            self.submeshes[submesh.sub_name_all]['resolution'] = submesh.resolution
+            self.submeshes[submesh.sub_name_all]['color'] = submesh.color
+            self.submeshes[submesh.sub_name_all]['alpha'] = submesh.alpha
+            self.submeshes[submesh.sub_name_all]['keep_largest'] = submesh.keep_largest
+            self.submeshes[submesh.sub_name_all]['rotateZ_90'] = submesh.rotateZ_90
+            #Inherited from parent_mesh
+            self.submeshes[submesh.sub_name_all]['parent_mesh'] = {}
+            self.submeshes[submesh.sub_name_all]['parent_mesh']['legend'] = submesh.parent_mesh.legend
+            self.submeshes[submesh.sub_name_all]['parent_mesh']['name'] = submesh.parent_mesh.name
+            self.submeshes[submesh.sub_name_all]['parent_mesh']['imChannel'] = submesh.parent_mesh.imChannel.channel_no
 
+        else: #Just updating things that could change
+            self.submeshes[submesh.sub_name_all]['color'] = submesh.color
+            self.submeshes[submesh.sub_name_all]['alpha'] = submesh.alpha
+            self.submeshes[submesh.sub_name_all]['keep_largest'] = submesh.keep_largest
             print('>> SubMesh data updated!')
+            
+        if submesh.sub_mesh_type == 'Section':
+            self.submeshes[submesh.sub_name_all]['s3_invert'] = submesh.s3_invert
+            self.submeshes[submesh.sub_name_all]['s3_mask_dir'] = submesh.s3_mask_dir
+        elif submesh.sub_mesh_type == 'Segment':
+            if hasattr(submesh, 'dict_segm'):
+                self.submeshes[submesh.sub_name_all]['dict_segm'] = submesh.dict_segm
+       
+            
 
     def add_object(self, obj, proc:str, class_name:Union[list,str], name):
         
@@ -1243,17 +1250,18 @@ class Organ():
         else:
             return False  
     
-    def get_stack_orientation(self, planar_views):
+    def get_stack_orientation(self, views, 
+                              colors=[[255,215,0,200],[0,0,205,200],[255,0,0,200]],):
         #Check if the orientation has alredy been stablished
-        if 'orientation' in self.mH_settings.keys(): 
-            if 'stack' in self.mH_settings['orientation'].keys():
-                q = 'You already selected the stack orientation of this organ. Do you want to re-assign it?'
-                res = {0: 'no, continue with next step', 1: 'yes, re-assign it!'}
-                proceed = ask4input(q, res, bool)
-            else: 
-                proceed = True
+        # if 'orientation' in self.mH_settings.keys(): 
+        if 'stack' in self.mH_settings['orientation'].keys():
+            q = 'You already selected the stack orientation of this organ. Do you want to re-assign it?'
+            res = {0: 'no, continue with next step', 1: 'yes, re-assign it!'}
+            proceed = ask4input(q, res, bool)
         else: 
             proceed = True
+        # else: 
+        #     proceed = True
                 
         if proceed: 
             im_orient = self.info['im_orientation']
@@ -1276,48 +1284,33 @@ class Organ():
             
             orient_cube.pos(pos)
             orient_cube_clear = orient_cube.clone().alpha(0.5)
+            txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select planar views in STACK...', c=txt_color, font=txt_font, s=txt_size)
             
-            def select_cube_face(evt):
-                orient_cube = evt.actor
-                if not orient_cube:
-                    return
-                pt = evt.picked3d
-                idcell = orient_cube.closest_point(pt, return_cell_id=True)
-                print('You clicked (idcell):', idcell)
-                if set(orient_cube.cellcolors[idcell]) == set(color_o):
-                    orient_cube.cellcolors[idcell] = color_selected #RGBA 
-                    for cell_no in range(len(orient_cube.cells())):
-                        if cell_no != idcell and cell_no not in selected_faces: 
-                            orient_cube.cellcolors[cell_no] = color_o #RGBA 
-                            
-                planar_views[planar_view]['idcell'] = idcell
-                cells = orient_cube.cells()[idcell]
-                points = [orient_cube.points()[cell] for cell in cells]
-                
-                plane_fit = vedo.fit_plane(points, signed=True)
-                planar_views[planar_view]['pl_normal'] = plane_fit.normal
-                msg.text('You selected face number: '+str(idcell)+' as '+planar_view.upper()+' face')
-                
-            selected_faces = []
-            for planar_view in planar_views.keys(): 
-                print('Selecting '+planar_view.upper()+'...')
-                color_selected = planar_views[planar_view]['color']
-                
-                msg = vedo.Text2D("", pos="bottom-center", c='k', bg='white', alpha=0.8, s=txt_size)
-                txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select '+planar_view.upper()+' planar view ...', c=txt_color, font=txt_font, s=txt_size)
-                txt1 = vedo.Text2D('Select (click) the cube face that represents the '+planar_view.upper()+' face and close the window when done.\nNote: The face that is last selected will be used for that planar face.', c=txt_color, font=txt_font, s=txt_size)
-              
-                plt = vedo.Plotter(N=2, axes=1)
-                plt.add_callback("mouse click", select_cube_face)
-                plt.show(mesh_ext.mesh, orient_cube_clear, txt0, at=0)
-                plt.show(orient_cube, txt1, msg, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)        
-                
-                selected_faces.append(planar_views[planar_view]['idcell'])
-                
-            self.mH_settings['orientation'] = {'stack': {'planar_views': planar_views}}
-    
-           
-    def get_ROI_orientation(self, planar_views:dict, plane:str, ref_vect='Y+'):
+            mks = []; sym = ['o']*len(views)
+            for n, view, col in zip(count(), views, colors):
+                mks.append(vedo.Marker('*').c(col[0:-1]).legend(view))
+            lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
+                                width=leg_width/1.5, height=leg_height/1.5)
+            
+            path_logo = path_mHImages / 'logo-07.jpg'
+            logo = vedo.Picture(str(path_logo))
+            
+            vpt = MyFaceSelectingPlotter(N=2, axes=1,colors=colors, color_o=color_o, 
+                                         views=views)
+            vpt.add_icon(logo, pos=(0.1,1), size=0.25)
+            vpt.add_callback("key press", vpt.on_key_press)
+            vpt.add_callback("mouse click", vpt.select_cube_face)
+            vpt.show(mesh_ext.mesh, orient_cube_clear,txt0, at=0)
+            vpt.show(orient_cube, lb, vpt.msg, vpt.msg_face, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)
+               
+            print('vpt.planar_views:',vpt.planar_views)
+            print('vpt.selected_faces:',vpt.selected_faces)
+            
+            stack_dict = {'planar_views': vpt.planar_views}
+            proc = ['orientation', 'stack']
+            self.update_settings(proc, update = stack_dict, mH = 'mH')
+            
+    def get_ROI_orientation(self, views, colors, plane:str, ref_vect='Y+'):
         #Check if the orientation has alredy been stablished
         if 'orientation' in self.mH_settings.keys(): 
             if 'ROI' in self.mH_settings['orientation'].keys():
@@ -1337,13 +1330,13 @@ class Organ():
             opt = ask4input(q, res, int)
             
             if opt == 0: 
-                self.orient_by_cl(planar_views, plane, ref_vect)
+                self.orient_by_cl(views, colors, plane, ref_vect)
             elif opt == 1: 
                 print('Opt1: Code under development!')
             elif opt == 2: 
                 print('Opt2: Code under development!')
         
-    def orient_by_cl(self, planar_views:dict, plane:str, ref_vect='Y+'):
+    def orient_by_cl(self, views, colors, plane:str, ref_vect='Y+'):
         
         # Select the mesh to use to measure organ orientation
         dict_cl = plot_organCLs(self)
@@ -1388,56 +1381,42 @@ class Organ():
         orient_cube.pos(pos)
         orient_cube_clear = orient_cube.clone().alpha(0.5)
         
-        def select_cube_face(evt):
-            orient_cube = evt.actor
-            if not orient_cube:
-                return
-            pt = evt.picked3d
-            idcell = orient_cube.closest_point(pt, return_cell_id=True)
-            print('You clicked (idcell):', idcell)
-            if set(orient_cube.cellcolors[idcell]) == set(color_o):
-                orient_cube.cellcolors[idcell] = color_selected #RGBA 
-                for cell_no in range(len(orient_cube.cells())):
-                    if cell_no != idcell and cell_no not in selected_faces: 
-                        orient_cube.cellcolors[cell_no] = color_o #RGBA 
-                        
-            planar_views[planar_view]['idcell'] = idcell
-            cells = orient_cube.cells()[idcell]
-            points = [orient_cube.points()[cell] for cell in cells]
-            
-            plane_fit = vedo.fit_plane(points, signed=True)
-            planar_views[planar_view]['pl_normal'] = plane_fit.normal
-            msg.text('You selected face number: '+str(idcell)+' as '+planar_view.upper()+' face')
-            
-        color_o = [152,251,152,255]
+        txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select planar views in RIO (organ)...', c=txt_color, font=txt_font, s=txt_size)
         
-        selected_faces = []
-        for planar_view in planar_views.keys(): 
-            print('Selecting '+planar_view.upper()+'...')
-            color_selected = planar_views[planar_view]['color']
-            
-            msg = vedo.Text2D("", pos="bottom-center", c='k', bg='white', alpha=0.8, s=txt_size)
-            txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select '+planar_view.upper()+' planar view ...', c=txt_color, font=txt_font, s=txt_size)
-            txt1 = vedo.Text2D('Select (click) the cube face that represents the '+planar_view.upper()+' face and close the window when done.\nNote: The face that is last selected will be used for that planar face.', c=txt_color, font=txt_font, s=txt_size)
-          
-            plt = vedo.Plotter(N=2, axes=1)
-            plt.add_callback("mouse click", select_cube_face)
-            plt.show(cl_mesh.mesh, orient_cube_clear, txt0, at=0)
-            plt.show(orient_cube, txt1, msg, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)        
-            
-            selected_faces.append(planar_views[planar_view]['idcell'])
+        mks = []; sym = ['o']*len(views)
+        for n, view, col in zip(count(), views, colors):
+            mks.append(vedo.Marker('*').c(col[0:-1]).legend(view))
+        lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
+                            width=leg_width/1.5, height=leg_height/1.5)
+        # Load logo
+        path_logo = path_mHImages / 'logo-07.jpg'
+        logo = vedo.Picture(str(path_logo))
         
-        roi_dict = {'planar_views': planar_views, 
+        vpt = MyFaceSelectingPlotter(N=2, axes=1,colors=colors, color_o=color_o, 
+                                     views=views)
+        vpt.add_icon(logo, pos=(0.1,1), size=0.25)
+        vpt.add_callback("key press", vpt.on_key_press)
+        vpt.add_callback("mouse click", vpt.select_cube_face)
+        vpt.show(cl_mesh.mesh, orient_cube_clear, txt0, at=0)
+        vpt.show(orient_cube, lb, vpt.msg, vpt.msg_face, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)
+           
+        print('vpt.planar_views:',vpt.planar_views)
+        print('vpt.selected_faces:',vpt.selected_faces)
+        
+        roi_dict = {'planar_views': vpt.planar_views, 
                     'proj_plane': plane, 
                     'ref_vect': ref_vect,
                     'ref_vectF': ref_vectF,
                     'orient_vect': pts,
                     'angle_deg': angle}
         
-        if 'orientation' not in list(self.mH_settings.keys()): 
-            self.mH_settings['orientation'] = {'ROI': roi_dict}
-        else: 
-            self.mH_settings['orientation']['ROI'] = roi_dict
+        proc = ['orientation', 'ROI']
+        self.update_settings(proc, update = roi_dict, mH = 'mH')
+        
+        # if 'orientation' not in list(self.mH_settings.keys()): 
+        #     self.mH_settings['orientation'] = {'ROI': roi_dict}
+        # else: 
+        #     self.mH_settings['orientation']['ROI'] = roi_dict
 
     def get_maj_bounds(self):
         x_b = 0; y_b = 0; z_b = 0
@@ -2536,84 +2515,81 @@ class Mesh_mH():
         self.name = self.channel_no +'_'+self.mesh_type
         self.resolution = imChannel.get_resolution()
         
-        if not hasattr(self, 'sub_mesh_type'):
-            wf = ['MeshesProc','A-Create3DMesh', imChannel.channel_no, mesh_type] 
-            if self.name not in self.parent_organ.meshes.keys():
-                print('>> New mesh -', self.name)
-                new = True
+        wf = ['MeshesProc','A-Create3DMesh', imChannel.channel_no, mesh_type] 
+        if self.name not in self.parent_organ.meshes.keys():
+            print('>> New mesh -', self.name)
+            new = True
+            self.keep_largest = keep_largest
+            self.rotateZ_90 = rotateZ_90
+            
+            self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
+            self.color = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['color']
+            self.alpha = 0.05
+            
+            #Update settings
+            set_proc = ['setup', self.channel_no, self.mesh_type]
+            self.parent_organ.update_settings(set_proc+['keep_largest'], self.keep_largest, 'mH')
+            self.parent_organ.update_settings(set_proc+['rotateZ_90'], self.rotateZ_90, 'mH')
+            self.parent_organ.update_settings(set_proc+['alpha'], self.alpha, 'mH')
+            
+            # Update workflow
+            if 'NS' not in self.channel_no:
+                self.parent_organ.update_workflow(wf+['Status'], update = 'DONE')
+            else: 
+                self.parent_organ.update_workflow(wf[0:3]+['Status'], update = 'DONE')
+            
+            process_up = ['MeshesProc','A-Create3DMesh','Status']
+            if get_by_path(self.parent_organ.workflow, process_up) == 'NI':
+                self.parent_organ.update_workflow(process_up, update = 'Initialised')
+            
+            process_up2 = ['MeshesProc','Status']
+            if get_by_path(self.parent_organ.workflow, process_up2) == 'NI':
+                self.parent_organ.update_workflow(process_up2, update = 'Initialised')
+                
+            self.dirs = {'mesh': None, 'arrays': None}
+            self.parent_organ.check_status(process = 'MeshesProc')
+            self.mesh_meas = {}
+        
+        else: 
+            new = False
+            self.color = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['color']
+            self.alpha = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['alpha']
+            self.s3_dir = self.imChannel.contStack[self.mesh_type]['s3_dir']
+            if new_set: 
                 self.keep_largest = keep_largest
                 self.rotateZ_90 = rotateZ_90
-                
-                # if not hasattr(self, 'sub_mesh_type'):
+                print('>> Re-creating mesh -', self.name)
                 self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
-                self.color = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['color']
-                self.alpha = 0.05
-                
-                #Update settings
-                set_proc = ['setup', self.channel_no, self.mesh_type]
-                self.parent_organ.update_settings(set_proc+['keep_largest'], self.keep_largest, 'mH')
-                self.parent_organ.update_settings(set_proc+['rotateZ_90'], self.rotateZ_90, 'mH')
-                self.parent_organ.update_settings(set_proc+['alpha'], self.alpha, 'mH')
-                
-                # Update workflow
-                if 'NS' not in self.channel_no:
-                    self.parent_organ.update_workflow(wf+['Status'], update = 'DONE')
-                else: 
-                    self.parent_organ.update_workflow(wf[0:3]+['Status'], update = 'DONE')
-                
-                process_up = ['MeshesProc','A-Create3DMesh','Status']
-                if get_by_path(self.parent_organ.workflow, process_up) == 'NI':
-                    self.parent_organ.update_workflow(process_up, update = 'Initialised')
-                
-                process_up2 = ['MeshesProc','Status']
-                if get_by_path(self.parent_organ.workflow, process_up2) == 'NI':
-                    self.parent_organ.update_workflow(process_up2, update = 'Initialised')
-                    
-                self.dirs = {'mesh': None, 'arrays': None}
-                self.parent_organ.check_status(process = 'MeshesProc')
+            else: 
+                self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['keep_largest']
+                self.rotateZ_90 = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['rotateZ_90']
+                print('>> Loading mesh-', self.name)
+                self.load_mesh()
+                if self.name in self.parent_organ.objects['Centreline'].keys():
+                    if self.parent_organ.workflow['MeshesProc']['C-Centreline']['buildCL']['Status'] == 'DONE':
+                        self.set_centreline()
+            self.dirs = self.parent_organ.meshes[self.name]['dirs']
+            if self.dirs['mesh'] != None: 
+                for n, meas_mesh in enumerate(self.dirs['mesh'].keys()):
+                    if n == 0:
+                        self.mesh_meas = {}
+                    if 'ball' in meas_mesh:
+                        n_type = meas_mesh.split('(')[1][:-1]
+                        m_ball = self.balloon_mesh(n_type = n_type)
+                        self.mesh_meas[meas_mesh] = m_ball
+                    elif 'thck' in meas_mesh: 
+                        n_type = meas_mesh.split('(')[1][:-1]
+                        m_thck = self.thickness_mesh(n_type = n_type)
+                        self.mesh_meas[meas_mesh] = m_thck
+            else: 
                 self.mesh_meas = {}
             
-            else: 
-                new = False
-                self.color = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['color']
-                self.alpha = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['alpha']
-                self.s3_dir = self.imChannel.contStack[self.mesh_type]['s3_dir']
-                if new_set: 
-                    self.keep_largest = keep_largest
-                    self.rotateZ_90 = rotateZ_90
-                    print('>> Re-creating mesh -', self.name)
-                    self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
-                else: 
-                    self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['keep_largest']
-                    self.rotateZ_90 = self.parent_organ.mH_settings['setup'][self.channel_no][self.mesh_type]['rotateZ_90']
-                    print('>> Loading mesh-', self.name)
-                    self.load_mesh()
-                    if self.name in self.parent_organ.objects['Centreline'].keys():
-                        if self.parent_organ.workflow['MeshesProc']['C-Centreline']['buildCL']['Status'] == 'DONE':
-                            self.set_centreline()
-                self.dirs = self.parent_organ.meshes[self.name]['dirs']
-                if self.dirs['mesh'] != None: 
-                    for n, meas_mesh in enumerate(self.dirs['mesh'].keys()):
-                        if n == 0:
-                            self.mesh_meas = {}
-                        if 'ball' in meas_mesh:
-                            n_type = meas_mesh.split('(')[1][:-1]
-                            m_ball = self.balloon_mesh(n_type = n_type)
-                            self.mesh_meas[meas_mesh] = m_ball
-                        elif 'thck' in meas_mesh: 
-                            n_type = meas_mesh.split('(')[1][:-1]
-                            m_thck = self.thickness_mesh(n_type = n_type)
-                            self.mesh_meas[meas_mesh] = m_thck
-                else: 
-                    self.mesh_meas = {}
-                
-            self.mesh.color(self.color)
-            self.mesh.alpha(self.alpha)
-            if new or new_set: 
-                self.parent_organ.add_mesh(self)
-                self.save_mesh()
-        else: 
-            print('SubMesh being created '+self.sub_legend)
+        self.mesh.color(self.color)
+        self.mesh.alpha(self.alpha)
+        if new or new_set: 
+            self.parent_organ.add_mesh(self)
+            self.save_mesh()
+
     
     def create_mesh(self, keep_largest:bool, rotateZ_90:bool):
         # Extract vertices, faces, normals and values of each mesh
@@ -2930,31 +2906,26 @@ class Mesh_mH():
         mesh_area = self.mesh.area()
         return mesh_area
     
-    def create_section(self, name, color, alpha=0.05):#, invert=False): 
-        
-        im_ch = self.imChannel     
+    def create_section(self, name, color, alpha=0.05):
+           
         sect_info = self.parent_organ.mH_settings['general_info']['sections']['name_sections']
         if name == 'sect1':
             invert = True
         else: 
             invert = False
-        print('name:', name, '- invert:', invert)
+        # print('name:', name, '- invert:', invert)
             
-        submesh = SubMesh(parent_mesh = self, 
-                          sub_mesh_type='Section', 
+        submesh = SubMesh(parent_mesh = self, sub_mesh_type='Section', 
                           name = name, user_name = sect_info[name],
-                          color=color, 
-                          alpha = alpha,
-                          imChannel= im_ch, 
-                          mesh_type=self.mesh_type,
-                          keep_largest=self.keep_largest,
-                          rotateZ_90=self.rotateZ_90, 
-                          new_set=True)
+                          color = color, alpha = alpha)#,
         
         submesh.s3_invert = invert
-        submesh.sub_name = name
         name2save = self.parent_organ.user_organName + '_mask_sect.npy'
         submesh.s3_mask_dir = self.parent_organ.info['dirs']['s3_numpy'] / name2save
+        
+        segments_info = self.parent_organ.mH_settings['general_info']['sections']
+        submesh.sub_user_name = segments_info['name_sections'][submesh.sub_name]
+        
         self.parent_organ.add_submesh(submesh)
         
         return submesh
@@ -2979,14 +2950,13 @@ class Mesh_mH():
             masked_s3 = mask_disc(self.parent_organ.info['shape_s3'], masked_s3, s3_mask)
         
         rotateZ_90=self.rotateZ_90
-        print('rotateZ_90:', rotateZ_90)
+        # print('rotateZ_90:', rotateZ_90)
         masked_mesh = create_submesh(masked_s3, self.resolution, keep_largest=False, rotateZ_90=self.rotateZ_90)
         cut_masked = masked_mesh.split(maxdepth=100)
-        print(len(cut_masked))
+        print('> Meshes making up tissue: ', len(cut_masked))
         alert('frog')
-        #https://seaborn.pydata.org/tutorial/color_palettes.html
-        # palette = sns.color_palette("husl", len(cut_masked))
-        palette = [np.random.choice(range(255),size=3) for num in range(len(cut_masked))]
+       
+        palette = sns.color_palette("Set2", len(cut_masked))
         cut_masked_rot = []
         if rotateZ_90:
             for n, mesh, color in zip(count(), cut_masked, palette):
@@ -2995,66 +2965,69 @@ class Mesh_mH():
         return cut_masked_rot
         
 
-    def create_segments(self):
-        # tweak this so that one subsegment gets created individually and avoid
-        #for loops in everything
+    def create_segment(self, sub_name, color):
         
-        #create the submesh class individually without parent class and check if things work out
-        #just keeping the parent_mesh as the mesh from which it came
-        #keep the settings of the parent mesh to create submeshes
-        #check if add_submesh to organ still works
-        #see if in the classification of the next meshes the external_external mesh can 
-        #be used as a guidance to contain the other meshes. 
-        #think about how to make sure at least one external mesh is being cut
-        #into segments to make this approach useful
-        
-        # Get segments info
         segm_info = self.parent_organ.mH_settings['general_info']['segments']['name_segments']
-        no_segm = self.parent_organ.mH_settings['general_info']['segments']['no_segments']
-        colors = [np.random.choice(range(255),size=3) for num in range(no_segm)]
-        submeshes = []
-       
-        for n, segm, color in zip(count(), segm_info, colors):
-            print(segm, color)
-            submesh = SubMesh(parent_mesh = self, 
-                              sub_mesh_type='Segment', 
-                              name = segm, user_name = segm_info[segm], 
-                              color=color, 
-                              alpha = self.alpha,
-                              imChannel= self.imChannel, 
-                              mesh_type=self.mesh_type,
-                              keep_largest=self.keep_largest,
-                              rotateZ_90=self.rotateZ_90, 
-                              new_set=True)
-            submesh.sub_name = segm
+        alpha = self.alpha
+
+        submesh = SubMesh(parent_mesh = self, sub_mesh_type='Segment', 
+                          name = sub_name, user_name = segm_info[sub_name], 
+                          color=color, alpha = alpha)
+        
+        segments_info = self.parent_organ.mH_settings['general_info']['segments']
+        submesh.sub_user_name = segments_info['name_segments'][submesh.sub_name]
+        
+        self.parent_organ.add_submesh(submesh)
             
-            self.parent_organ.add_submesh(submesh)
-            submeshes.append(submesh)
-            
-        return submeshes
+        return submesh
+    
+    #add load segment to just create ir again based on info saved in organ
+    #add to organ.ext_segms the original mesh name from which the meshes where extracted
+    #remove all info from dict_segm (COM, volume, area, etc)
+    #make the inits more easy to follow, do not contain that much info
     
     
-class SubMesh(Mesh_mH):
+class SubMesh():
     
-    def __init__(self, parent_mesh: Mesh_mH, sub_mesh_type:str, 
-                 name: str, user_name: str, 
-                 color: str, alpha:float,
-                 # init param for Mesh_mH
-                 imChannel:ImChannel, mesh_type:str, 
-                 keep_largest:bool, rotateZ_90=True, new_set=False):
+    def __init__(self, parent_mesh: Mesh_mH, sub_mesh_type:str, name: str,
+                 user_name='', color='gold', alpha=0.05):
         
         self.parent_mesh = parent_mesh
-        self.sub_mesh_type = sub_mesh_type
-        self.sub_legend = parent_mesh.legend + '_' + user_name
-        self.sub_name = parent_mesh.name + '_' + name
-        self.color = color
-        self.alpha = alpha
-        self.keep_largest = keep_largest
-        self.rotateZ_90 = rotateZ_90
-    
-        super().__init__(imChannel, mesh_type, keep_largest, rotateZ_90, new_set)
+        self.sub_name = name # ch_cont_segm/sect
+        self.sub_name_all = parent_mesh.name + '_' + name
+        self.sub_mesh_type = sub_mesh_type # Section, Segment
+        self.keep_largest = False#keep_largest
         
+        parent_organ = self.parent_mesh.parent_organ
         
+        if self.sub_name_all not in parent_organ.submeshes.keys():
+            print('>> New submesh - ', self.sub_name_all)
+            # new = True
+            self.sub_name = name # ch_cont_segm/sect
+            self.sub_legend = parent_mesh.legend + '_' + user_name # e.g. myoc_ext_atrium
+            self.color = color
+            self.alpha = alpha
+            self.rotateZ_90 = parent_mesh.rotateZ_90
+            self.imChannel = parent_mesh.imChannel
+            self.mesh_type = parent_mesh.mesh_type
+            self.resolution = parent_mesh.resolution
+        else: 
+            # new = False
+            print('>> Recreating submesh - ', self.sub_name_all)
+            #Get data from submesh dict
+            submesh_dict = parent_organ.submeshes[self.sub_name_all]
+            self.sub_legend = submesh_dict['sub_legend']
+            self.color = submesh_dict['color']
+            self.alpha = submesh_dict['alpha']
+            self.rotateZ_90 = submesh_dict['rotateZ_90']
+            self.imChannel = parent_mesh.imChannel
+            self.mesh_type = parent_mesh.mesh_type
+            self.resolution = submesh_dict['resolution']
+            for attr in ['s3_invert', 's3_mask_dir', 'dict_segm', 'sub_user_name']:
+                if attr in submesh_dict.keys():
+                    value = submesh_dict[attr]
+                    setattr(self, attr, value)
+                    
     def get_sect_mesh(self):
         
         s3_mask = np.load(str(self.s3_mask_dir))
@@ -3076,11 +3049,179 @@ class SubMesh(Mesh_mH):
         mesh.legend(self.sub_legend).wireframe()
         mesh.alpha(self.alpha)
         mesh.color(self.color)
-        self.mesh = mesh
+
+        return mesh
+
+    def get_segm_mesh(self):
+        
+        parent_organ = self.parent_mesh.parent_organ
+        dict_ext_segm = parent_organ.mH_settings['general_info']['segments']['ext_segm']
+        organ_ext_meshes = [dict_ext_segm[key]['name'] for key in dict_ext_segm.keys()]
+        if self.sub_name_all in organ_ext_meshes: 
+            mesh_name = parent_organ.user_organName+'_'+self.sub_name_all+'.vtk'
+            mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
+            if mesh_dir.is_file():
+                # print('> '+self.sub_name_all+' is an external segment mesh!')
+                segm_mesh = vedo.load(str(mesh_dir))
+                segm_mesh.legend(self.sub_legend).wireframe()
+                segm_mesh.color(self.color).alpha(self.alpha)
+                self.mesh = segm_mesh
+        else: 
+            mesh = self.parent_mesh
+            cut_masked = mesh.mask_segments()
+        
+            #Get the name of the ext_ext mesh and load it
+            name_ext_mesh = parent_organ.mH_settings['general_info']['segments']['ext_ext']
+            # print('name_ext_mesh:', name_ext_mesh)
+            mesh_ext = parent_organ.obj_meshes[name_ext_mesh]
+            
+            # Get the name and color of the corresponding ext_ext_segm
+            name_ext_mesh_segm = parent_organ.mH_settings['general_info']['segments']['ext_segm'][self.sub_name]
+            # Create the submesh
+            ext_sub = mesh_ext.create_segment(sub_name = self.sub_name, color = '')
+            
+            #Recreating dict_segm
+            # segments_info = parent_organ.mH_settings['general_info']['segments']
+            sp_dict_segm = {'user_name': self.sub_user_name,#segments_info['name_segments'][self.sub_name],
+                            'color': self.color, 
+                            'meshes_number': []}
+            
+            print('sp_dict_segm - get_segm_mesh', sp_dict_segm)
+            # Classify resulting segments using ext_ext submesh
+            sp_dict_segm = classify_segments_from_ext(meshes = cut_masked, 
+                                                   dict_segm = sp_dict_segm,
+                                                   ext_sub = ext_sub)
+            # Assign meshes to submesh
+            _, segm_mesh = create_asign_subsg(parent_organ, mesh, 
+                                                    cut_masked, self.sub_name, 
+                                                    sp_dict_segm, self.color)
+            
+        return segm_mesh
     
-        return self.mesh
+    def set_alpha(self, mesh_alpha):      
+        self.alpha = mesh_alpha
+        #Update settings
+        self.parent_mesh.parent_organ.submeshes[self.sub_name_all]['alpha'] = self.alpha
+        self.parent_mesh.parent_organ.save_organ()
+    
+    def get_alpha(self):
+        return self.parent_mesh.parent_organ.submeshes[self.sub_name_all]['alpha']
+        
+    def set_color(self, mesh_color):
+        self.color = mesh_color
+        #Update settings
+        self.parent_mesh.parent_organ.submeshes[self.sub_name_all]['color'] = self.color
+        self.parent_mesh.parent_organ.save_organ()
+        
+    def get_color(self):
+        return self.parent_mesh.parent_organ.submeshes[self.sub_name_all]['color'] 
 
+class MyFaceSelectingPlotter(vedo.Plotter):
+    def __init__(self, colors, color_o, views, **kwargs):
+        
+        # Create planar_views dictionary
+        planar_views = {}
+        for n, view, color in zip(count(), views, colors): 
+            planar_views[view] = {'color': color}
+            
+        self.planar_views = planar_views
+        self.views = views
+        self.color_o = color_o
+        self.done = False
+        
+        # Create message that displays instructions
+        self.msg = vedo.Text2D("", pos="top-center", c=txt_color, bg='white', font=txt_font, alpha=0.8, s=0.7)
+        self.msg_face = vedo.Text2D("", pos="bottom-center", c=txt_color, bg='red', font=txt_font, alpha=0.2, s=0.7)
+        
+        # Initialise plotter with current planar view
+        self.active_n = 0
+        self.selected_faces = []
+        self.active_color = self.planar_views[self.current_view()]['color']
+        self.get_msg()
+        vedo.printc('Selecting '+self.current_view().upper()+'...', c="g", invert=True)
 
+        #Initialise Plotter 
+        super().__init__(**kwargs)
+    
+    def current_view(self):
+        return self.views[self.active_n]
+        
+    def get_msg(self):
+        if self.active_n < len(self.views)-1:
+            msg1 = 'Instructions: Select (click) the cube face that represents the '+self.current_view().upper()+' face'
+            msg2 = '\n press -c- and then click to continue.'
+            self.msg.text(msg1+msg2)
+        else:
+            if self.check_full():
+                msg_close = 'Instructions: You are done selecting planar views. Close the window to continue.'
+                self.msg.text(msg_close)
+            else: 
+                msg1 = 'Instructions: Select (click) the cube face that represents the '+self.current_view().upper()+' face'
+                msg2 = '\n press -c- and then click to continue.'
+                self.msg.text(msg1+msg2)
+    
+    def check_full(self):
+        check = []
+        for pv in self.planar_views:
+            if 'pl_normal' in self.planar_views[pv].keys():
+                check.append(isinstance(self.planar_views[pv]['pl_normal'], np.ndarray))
+            else: 
+                check.append(False)
+        # print('\n')
+        return all(check)
+        
+    def on_key_press(self, evt):
+        if not self.done: 
+            if evt.keypress == "c":
+                planar_view = self.current_view()
+                if 'idcell' in self.planar_views[planar_view].keys():
+                    self.selected_faces.append(self.planar_views[planar_view]['idcell'])
+                    self.get_msg()
+                    vedo.printc('>> n:'+str(self.active_n)+'-'+str(len(self.views)), c='orange', invert=True)
+                    if self.active_n < len(self.views)-1:
+                        self.active_n += 1
+                        planar_view = self.current_view()
+                        self.active_color = self.planar_views[planar_view]['color']
+                        vedo.printc('Now selecting '+planar_view.upper()+'...', c="g", invert=True)
+                        self.get_msg()
+                    else: 
+                        # print('BBB')
+                        self.get_msg()
+                        if self.check_full(): 
+                            self.done = True
+                            vedo.printc('You are done, now close the window!', c='orange', invert=True)
+                    vedo.printc('n:'+str(self.active_n), c='orange', invert=True)
+                else: 
+                    msg_warning = "You need to select a cube's face for the "+planar_view.upper()+" face to continue."
+                    self.msg_face.text(msg_warning)
+                    vedo.printc('No cell has been selected',c='r', invert=True)
+        else: 
+            vedo.printc('You are done, now close the window!', c='orange', invert=True)
+        
+    def select_cube_face(self, evt):
+        if not self.done: 
+            if isinstance(evt.actor, vedo.shapes.Cube):
+                orient_cube = evt.actor
+                if not orient_cube:
+                    return
+                pt = evt.picked3d
+                idcell = orient_cube.closest_point(pt, return_cell_id=True)
+                vedo.printc('You clicked (idcell):', idcell, c='y', invert=True)
+                if set(orient_cube.cellcolors[idcell]) == set(self.color_o):
+                    orient_cube.cellcolors[idcell] = self.active_color #RGBA 
+                    for cell_no in range(len(orient_cube.cells())):
+                        if cell_no != idcell and cell_no not in self.selected_faces: 
+                            orient_cube.cellcolors[cell_no] = self.color_o #RGBA 
+                planar_view =  self.current_view()
+                self.msg_face.text("You selected cube's face number "+str(idcell)+" as the "+planar_view.upper()+" face")
+                self.planar_views[planar_view]['idcell'] = idcell
+                cells = orient_cube.cells()[idcell]
+                points = [orient_cube.points()[cell] for cell in cells]
+                plane_fit = vedo.fit_plane(points, signed=True)
+                self.planar_views[planar_view]['pl_normal'] = plane_fit.normal
+        else: 
+            vedo.printc('You are done, now close the window!', c='orange', invert=True)
+        
 #%% - Drawing Functions
 #%% func - draw_line
 def draw_line (clicks, myIm, color_draw):

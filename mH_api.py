@@ -89,7 +89,7 @@ if partA:
         # By default the volume and surface area of the segments per tissue selected will be measured
         cutLayersIn2Segments = True
         no_segments = 2
-        no_cuts_4segments = 2,
+        no_cuts_4segments = 2
         name_segments = {'segm1': 'atrium', 'segm2': 'ventricle'}
         # channels/meshes that will be divided into segments 
         ch_segments = {'ch1':['tiss', 'ext'],'ch2':['tiss', 'int'],'chNS':['tiss']}
@@ -358,7 +358,7 @@ if partA:
     # Load project, organ
     fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
-    
+
     # CODE A ---------------------------------------------------------
     print('\n---CREATING CHANNELS 1 AND 2----')
     ## CHANNEL 1
@@ -398,18 +398,9 @@ if partB:
     
     # Using one of the just created meshes, ask the user to select the stack 
     # planar views 
-    from itertools import count
     colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
-    # User needs to give three planar views but the names could be different 
-    # Ask to inout names or have different options already available 
-    # (https://www.researchgate.net/figure/Axes-applied-to-organism-parts-In-vascular-A-and-non-vascular-plants-B-the_fig4_264936044)
-    # Once planar views are selected, mH will use them for the stack
     views = ['top', 'ventral', 'left']
-    planar_views = {}
-    for n, view, color in zip(count(), views, colors): 
-        planar_views[view] = {'color': color}
-    
-    organ.get_stack_orientation(planar_views)
+    organ.get_stack_orientation(views, colors)
     
     # Save organ
     organ.save_organ()
@@ -505,7 +496,7 @@ if partC_thk:
     # Load project, organ
     fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
-#%%
+#%% Part C-sect/segm
 if partC: 
     if not partA and not partB and not partB_vmtk and not partC_thk: 
         # proj_name = proj_name
@@ -515,63 +506,50 @@ if partC:
         # organName2Load = 'LS52_F02_V_SR_1029'
         organ = proj.load_organ(user_organName = organName2Load)
         fcMeshes.plot_all_organ(organ)
-
-    # Get volume measurements
-    fcMeshes.measure_volume(organ)
-    fcMeshes.measure_area(organ)
     
-    from itertools import count
+    # Get roi (organ) orientation
     colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
     views = ['top', 'ventral', 'left']
-    # planar_views = {}
-    # for n, view, color in zip(count(), views, colors): 
-    #     planar_views[view] = {'color': color}
-    
-    # organ.get_stack_orientation(planar_views)
+    organ.get_stack_orientation(views, colors)
     
     # Get organ orientation
     plane = 'YZ'
     ref_vect = 'Y+'
-    planar_views = {}
-    for n, view, color in zip(count(), views, colors): 
-        planar_views[view] = {'color': color}
-    organ.get_ROI_orientation(planar_views, plane='YZ',ref_vect=ref_vect)
+    colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
+    views = ['top', 'ventral', 'left']
+    organ.get_ROI_orientation(views, colors, plane='YZ',ref_vect=ref_vect)
     
+    #--- CUT SECTIONS
     # Get organ centreline ribbon 
     nRes = 601; nPoints = 300; clRib_type = 'ext2sides'
     fcMeshes.get_organ_ribbon(organ, nRes, nPoints, clRib_type)
     # organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
     fcMeshes.get_sect_mask(organ, plotshow=True)
-    
+
     # Cut organ into sections
     subms = fcMeshes.get_sections(organ, plotshow=True)
+    # myoc_tiss_left = subms[0].get_sect_mesh()
+    # obj = [myoc_tiss_left]; txt = [(0,'test')]
+    # fcMeshes.plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
     
-    left_myo = subms[0].get_sect_mesh()
-    right_myo = subms[1].get_sect_mesh()
-    
-    obj = [(organ.obj_meshes['ch1_tiss'].mesh),(left_myo,right_myo)]
-    txt = [(0,'test'),(1,'cut')]
-    fcMeshes.plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-    
-    
+    #--- CUT SEGMENTS
     fcMeshes.get_segm_discs(organ)
-    organ.mH_settings['general_info']['rotateZ_90'] = True
+    # organ.mH_settings['general_info']['rotateZ_90'] = True
     fcMeshes.create_disc_mask(organ, h_min = 0.1125)
-    
-    segms = fcMeshes.get_segments(organ, plotshow=True)
-    
-    #%%
-    dict_segm = fcMeshes.dict_segments(organ)
-    dict_segm = fcMeshes.classify_segments(meshes=segms[0], dict_segm=dict_segm)
-    #%%
-    
-    obj = [segms[0]]
-    txt = [(0,'test')]
+    # Cut organ into segments
+    m_subg, segms = fcMeshes.get_segments(organ, plotshow=True)
+    cj_tiss_vent = segms[-1].get_segm_mesh()
+    obj = [cj_tiss_vent]; txt = [(0,'test')]
     fcMeshes.plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
     
-#%%
-    mesh_classif = fcMeshes.classify_segments(segms[0], dic)
+    # Save organ
+    organ.save_organ()
+    # Load project, organ
+    fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
+    #%%
+    
+#%% Vedo examples
     #%%
     from vedo import *
 
@@ -723,6 +701,157 @@ plt.add_callback("left mouse click", plt.on_left_click)
 plt.add_callback("right mouse click", plt.on_right_click)
 plt.show(pic, mode="image", zoom=1.2)
 plt.close()
+
+#%%
+from vedo import settings, Plotter, ParametricShape, VedoLogo, Text2D
+
+settings.renderer_frame_width = 1
+
+##############################################################################
+def on_left_click(evt):
+    if not evt.actor: return
+    shapename.text(f'This is called: {evt.actor.name}, on renderer nr.{evt.at}')
+    plt.at(1).remove(actsonshow).add(evt.actor).reset_camera()
+    actsonshow.clear()
+    actsonshow.append(evt.actor)
+
+##############################################################################
+sy, sx, dx = 0.12, 0.12, 0.01
+# Define the renderers rectangle areas
+# to help finding bottomleft&topright corners check out utils.grid_corners()
+shape = [
+    dict(bottomleft=(0,0), topright=(1,1), bg='k7'), # the full empty window
+    dict(bottomleft=(dx*2+sx,0.01), topright=(1-dx,1-dx), bg='w'), # the display window
+    dict(bottomleft=(dx,sy*1), topright=(dx+sx,sy*2), bg='k8', bg2='lb'), # CrossCap
+    dict(bottomleft=(dx,sy*2), topright=(dx+sx,sy*3), bg='k8', bg2='lb'),
+    dict(bottomleft=(dx,sy*3), topright=(dx+sx,sy*4), bg='k8', bg2='lb'),
+    dict(bottomleft=(dx,sy*4), topright=(dx+sx,sy*5), bg='k8', bg2='lb'),
+    dict(bottomleft=(dx,sy*5), topright=(dx+sx,sy*6), bg='k8', bg2='lb'),
+    dict(bottomleft=(dx,sy*6), topright=(dx+sx,sy*7), bg='k8', bg2='lb'),
+    dict(bottomleft=(dx,sy*7), topright=(dx+sx,sy*8), bg='k8', bg2='lb'), # RandomHills
+]
+
+plt = Plotter(shape=shape, sharecam=False, size=(1050, 980))
+plt.add_callback("when i click my mouse button please call", on_left_click)
+
+for i in range(2,9):
+    ps = ParametricShape(i).color(i)
+    pname = Text2D(ps.name, c='k', bg='blue', s=0.7, font='Calco')
+    plt.at(i).show(ps, pname)
+
+shapename = Text2D(pos='top-center', c='r', bg='y', font='Calco') # empty text
+
+vlogo = VedoLogo(distance=5)
+actsonshow = [vlogo]
+
+title = "My Multi Viewer 1.0"
+instr = "Click on the left panel to select a shape\n"
+instr+= "Press h to print the full list of options"
+
+plt.at(1).show(
+    vlogo, shapename,
+    Text2D(title, pos=(0.5,0.85), s=2.5, c='dg', font='Kanopus', justify='center'),
+    Text2D(instr, bg='g', pos=(0.5,0.05), s=1.2, font='Quikhand', justify='center'),
+)
+plt.interactive().close()
+
+#%%
+# Create a class which wraps the vedo.Plotter class and adds a timer callback
+# Credits: Nicolas Antille, https://github.com/nantille
+# Check out the simpler example: timer_callback1.py
+import vedo
+
+
+class Viewer:
+
+    def __init__(self, *args, **kwargs):
+        self.dt = kwargs.pop("dt", 100) # update every dt milliseconds
+        self.timer_id = None
+        self.isplaying = False
+        self.counter = 0 # frame counter
+        self.button = None
+
+        self.plotter = vedo.Plotter(*args, **kwargs) # setup the Plotter object
+        self.timerevt = self.plotter.add_callback('timer', self.handle_timer)
+
+    def initialize(self):
+        # initialize here extra elements like buttons etc..
+        self.button = self.plotter.add_button(
+            self._buttonfunc,
+            states=["\u23F5 Play  ","\u23F8 Pause"],
+            font="Kanopus",
+            size=32,
+        )
+        return self
+
+    def show(self, *args, **kwargs):
+        plt = self.plotter.show(*args, **kwargs)
+        return plt
+
+    def _buttonfunc(self):
+        if self.timer_id is not None:
+            self.plotter.timer_callback("destroy", self.timer_id)
+        if not self.isplaying:
+            self.timer_id = self.plotter.timer_callback("create", dt=100)
+        self.button.switch()
+        self.isplaying = not self.isplaying
+
+    def handle_timer(self, event):
+        #####################################################################
+        ### Animate your stuff here                                       ###
+        #####################################################################
+        #print(event)               # info about what was clicked and more
+        moon.color(self.counter)    # change color to the Moon
+        earth.rotate_z(2)           # rotate the Earth
+        moon.rotate_z(1)
+        txt2d.text("Moon color is:").color(self.counter).background(self.counter,0.1)
+        txt2d.text(vedo.get_color_name(self.counter), "top-center")
+        txt2d.text("..press q to quit", "bottom-right")
+        self.plotter.render()
+        self.counter += 1
+
+
+viewer = Viewer(axes=1, dt=150).initialize()
+
+earth  = vedo.Earth()
+moon   = vedo.Sphere(r=0.1).x(1.5).color('k7')
+txt2d  = vedo.CornerAnnotation().font("Kanopus")
+
+viewer.show(earth, moon, txt2d, viewup='z').close()
+#%%
+"""Create a scatter plot to overlay
+three different distributions"""
+from vedo import *
+from numpy.random import randn
+
+### first cloud in blue, place it at z=0:
+x = randn(2000) * 3
+y = randn(2000) * 2
+pts1 = Points([x,y], c="blue", alpha=0.5).z(0.0)
+bra1 = Brace([-7,-8], [7,-8],
+             comment='whole population', s=0.4, c='b')
+
+### second cloud in red
+x = randn(1200) + 4
+y = randn(1200) + 2
+pts2 = Points([x,y], c="red", alpha=0.5).z(0.1)
+bra2 = Brace([8,2,0.3], [6,5,0.3], comment='red zone',
+             angle=180, justify='bottom-center', c='r')
+
+### third cloud with a black marker
+x = randn(20) + 4
+y = randn(20) - 4
+mark = Marker('*', s=0.25)
+pts3 = Glyph([x,y], mark, c='k').z(0.2)
+bra3 = Brace([8,-6], [8,-2], comment='my stars').z(0.3)
+
+# some text message
+msg = Text3D("preliminary\nresults!", font='Quikhand', s=1.5)
+msg.c('black').rotate_z(20).pos(-10,3,.2)
+
+show(pts1, pts2, pts3, msg, bra1, bra2, bra3, __doc__,
+     axes=1, zoom=1.2, viewup="2d",
+).close()
 
 #%%
 """Hover mouse onto an object
