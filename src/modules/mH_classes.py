@@ -2968,13 +2968,13 @@ class Mesh_mH():
         return cut_masked_rot
         
 
-    def create_segment(self, sub_name, color):
+    def create_segment(self, name, color):
         
         segm_info = self.parent_organ.mH_settings['general_info']['segments']['name_segments']
         alpha = self.alpha
 
         submesh = SubMesh(parent_mesh = self, sub_mesh_type='Segment', 
-                          name = sub_name, user_name = segm_info[sub_name], 
+                          name = name, user_name = segm_info[name], 
                           color=color, alpha = alpha)
         
         segments_info = self.parent_organ.mH_settings['general_info']['segments']
@@ -2983,11 +2983,6 @@ class Mesh_mH():
         self.parent_organ.add_submesh(submesh)
             
         return submesh
-    
-    #add load segment to just create ir again based on info saved in organ
-    #add to organ.ext_segms the original mesh name from which the meshes where extracted
-    #remove all info from dict_segm (COM, volume, area, etc)
-    #make the inits more easy to follow, do not contain that much info
     
     
 class SubMesh():
@@ -3079,17 +3074,17 @@ class SubMesh():
             mesh_ext = parent_organ.obj_meshes[name_ext_mesh]
             
             # Get the name of the corresponding ext_ext_segm
-            name_ext_mesh_segm = parent_organ.mH_settings['general_info']['segments']['ext_segm'][self.sub_name]
+            # name_ext_mesh_segm = parent_organ.mH_settings['general_info']['segments']['ext_segm'][self.sub_name]
             # Create the submesh
-            ext_sub = mesh_ext.create_segment(sub_name = self.sub_name, color = '')
+            ext_sub = mesh_ext.create_segment(name = self.sub_name, color = '')
             
             #Recreating dict_segm
             # segments_info = parent_organ.mH_settings['general_info']['segments']
             sp_dict_segm = {'user_name': self.sub_user_name,#segments_info['name_segments'][self.sub_name],
                             'color': self.color, 
                             'meshes_number': []}
+            # print('sp_dict_segm - get_segm_mesh', sp_dict_segm)
             
-            print('sp_dict_segm - get_segm_mesh', sp_dict_segm)
             # Classify resulting segments using ext_ext submesh
             sp_dict_segm = classify_segments_from_ext(meshes = cut_masked, 
                                                    dict_segm = sp_dict_segm,

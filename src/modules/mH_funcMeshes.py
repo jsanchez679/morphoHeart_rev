@@ -1974,7 +1974,7 @@ def save_submesh(organ, submesh, mesh, ext='.vtk'):
 #%% func - create_assign_subsg
 def create_asign_subsg(organ, mesh, cut_masked, segm, sp_dict_segm, color):
     
-    subsgm = mesh.create_segment(sub_name = segm, color = color)
+    subsgm = mesh.create_segment(name = segm, color = color)
     final_segm_mesh, subsgm = assign_meshes2segm(organ, mesh, cut_masked, 
                                                  subsgm, sp_dict_segm, color)
     
@@ -2157,19 +2157,15 @@ def measure_volume(organ):
         elif 'sect' in segm: 
             print(segm)
             if ch+'_'+cont+'_'+segm in organ.submeshes.keys():
-                # sect_names = organ.mH_settings['general_info']['sections']['name_sections']
-                # sect_name = sect_names[segm]
                 sub_sect = organ.submeshes[ch+'_'+cont+'_'+segm]
                 subm = mesh_mH.create_section(name = segm, color = sub_sect['color'])
-                volume = subm.get_mesh().volume()
-        
+                volume = subm.get_sect_mesh().volume()
         else: 
             print(segm)
-            
             if ch+'_'+cont+'_'+segm in organ.submeshes.keys():
-                print('advance!')
-                
-            continue
+                sub_sect = organ.submeshes[ch+'_'+cont+'_'+segm]
+                subm = mesh_mH.create_segment(name = segm, color = sub_sect['color'])
+                volume = subm.get_segm_mesh().volume()
             
         process = ['measure', ch, cont, segm, 'volume']
         organ.update_settings(process = process, 
@@ -2190,16 +2186,16 @@ def measure_area(organ):
         elif 'sect' in segm: 
             print(segm)
             if ch+'_'+cont+'_'+segm in organ.submeshes.keys():
-                # sect_names = organ.mH_settings['general_info']['sections']['name_sections']
-                # sect_name = sect_names[segm]
                 sub_sect = organ.submeshes[ch+'_'+cont+'_'+segm]
                 subm = mesh_mH.create_section(name = segm, color = sub_sect['color'])
                 area = subm.get_mesh().area()
-            
         else: 
             print(segm)
-            continue
-            
+            if ch+'_'+cont+'_'+segm in organ.submeshes.keys():
+                sub_sect = organ.submeshes[ch+'_'+cont+'_'+segm]
+                subm = mesh_mH.create_segment(name = segm, color = sub_sect['color'])
+                area = subm.get_segm_mesh().area()
+                
         process = ['measure', ch, cont, segm, 'surf_area']
         organ.update_settings(process = process, 
                               update = area, mH='mH')

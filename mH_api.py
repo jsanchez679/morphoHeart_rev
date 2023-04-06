@@ -548,7 +548,11 @@ if partC:
     fcBasics.check_gral_loading(proj, proj_name, dir_proj, organ, organName2Load)
     
     #%%
-    
+    # Get volume measurements
+    fcMeshes.measure_volume(organ)
+    fcMeshes.measure_area(organ)
+
+
 #%% Vedo examples
     #%%
     from vedo import *
@@ -818,6 +822,7 @@ moon   = vedo.Sphere(r=0.1).x(1.5).color('k7')
 txt2d  = vedo.CornerAnnotation().font("Kanopus")
 
 viewer.show(earth, moon, txt2d, viewup='z').close()
+
 #%%
 """Create a scatter plot to overlay
 three different distributions"""
