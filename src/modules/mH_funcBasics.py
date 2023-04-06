@@ -189,7 +189,7 @@ def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=
             key_err += "\tKey %s%s not in %s\n" % (dict_1_name, path, dict_2_name)
         else:
             if isinstance(dict_1[k], dict) and isinstance(dict_2[k], dict):
-                err += compare_dicts(dict_1[k],dict_2[k],'d1','d2', path)
+                err += compare_dicts(dict_1[k],dict_2[k], dict_1_name, dict_2_name, path)#'d1','d2', path)
             else:
                 if 'dir' in k: 
                     if str(dict_1[k]) != str(dict_2[k]):

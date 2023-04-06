@@ -1943,7 +1943,6 @@ def segm_ext_ext(organ, ch, cont, user_names, colors):
     dict_segm = classify_segments(meshes=cut_masked, dict_segm=dict_segm)
 
     meshes_segm = []; final_subsgm = {}
-    # organ.ext_segms = {}
     organ.update_settings(['general_info','segments','ext_ext'], mesh.name, 'mH')
     proc = ['general_info','segments','ext_segm']
     organ.update_settings(proc, {}, 'mH')

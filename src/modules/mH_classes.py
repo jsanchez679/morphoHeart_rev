@@ -862,8 +862,11 @@ class Organ():
             self.load_objMeshes()
             # submeshes
             if 'submeshes' in load_dict.keys():
-                self.submeshes = load_dict['submeshes']
-                print('aja!')
+                submeshes_dict = load_dict['submeshes']
+                flat_subm_dict = flatdict.FlatDict(submeshes_dict)
+                list_colors = [key.split(':') for key in flat_subm_dict if 'color' in key]
+                submeshes_dict_new = make_tuples(submeshes_dict, list_colors)
+                self.submeshes = submeshes_dict_new
             else: 
                 self.submeshes = {}
             # objects
@@ -3075,7 +3078,7 @@ class SubMesh():
             # print('name_ext_mesh:', name_ext_mesh)
             mesh_ext = parent_organ.obj_meshes[name_ext_mesh]
             
-            # Get the name and color of the corresponding ext_ext_segm
+            # Get the name of the corresponding ext_ext_segm
             name_ext_mesh_segm = parent_organ.mH_settings['general_info']['segments']['ext_segm'][self.sub_name]
             # Create the submesh
             ext_sub = mesh_ext.create_segment(sub_name = self.sub_name, color = '')
