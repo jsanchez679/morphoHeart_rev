@@ -34,6 +34,9 @@
       <height>31</height>
      </rect>
     </property>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
     </property>
@@ -68,6 +71,9 @@ font: 11pt &quot;Calibri&quot;;</string>
     <property name="text">
      <string>Create New Project</string>
     </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QLabel" name="mH_logo_XS">
     <property name="geometry">
@@ -89,6 +95,9 @@ font: 11pt &quot;Calibri&quot;;</string>
     </property>
    </widget>
    <widget class="QGroupBox" name="gral_proj_settings">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -98,7 +107,7 @@ font: 11pt &quot;Calibri&quot;;</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QGroupBox#gral_proj_settings{text-decoration: underline; font: 80 11pt &quot;Calibri Light&quot;;}
+     <string notr="true">QGroupBox#gral_proj_settings{text-decoration: underline; font: 80 10pt &quot;Calibri Light&quot;;}
 </string>
     </property>
     <property name="title">
@@ -145,6 +154,12 @@ font: 11pt &quot;Calibri&quot;;</string>
        <height>20</height>
       </rect>
      </property>
+     <property name="mouseTracking">
+      <bool>true</bool>
+     </property>
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
      <property name="styleSheet">
       <string notr="true">border-radius:10px;
 border-width: 1px;
@@ -157,6 +172,9 @@ font: 10pt &quot;Calibri Light&quot;;</string>
      <property name="text">
       <string>Select Directory...</string>
      </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QLineEdit" name="lineEdit_proj_name">
      <property name="geometry">
@@ -168,7 +186,8 @@ font: 10pt &quot;Calibri Light&quot;;</string>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color: rgba(0,0,0,0);</string>
+      <string notr="true">background-color: rgba(0,0,0,0);
+font: 25 10pt &quot;Calibri Light&quot;;</string>
      </property>
      <property name="maxLength">
       <number>20</number>
@@ -217,15 +236,22 @@ color: rgb(100, 100, 100);</string>
        <height>38</height>
       </rect>
      </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgba(0,0,0,0);
+font: 25 10pt &quot;Calibri Light&quot;;</string>
+     </property>
     </widget>
     <widget class="QPushButton" name="button_validate_new_proj">
      <property name="geometry">
       <rect>
-       <x>590</x>
+       <x>523</x>
        <y>130</y>
-       <width>80</width>
+       <width>71</width>
        <height>20</height>
       </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
      </property>
      <property name="styleSheet">
       <string notr="true">border-radius:10px;
@@ -234,10 +260,16 @@ border-style: outset;
 border-color: rgb(66, 66, 66);
 background-color: rgb(211, 211, 211);
 color: rgb(71, 71, 71);
-font: 10pt &quot;Calibri Light&quot;;</string>
+font: 10pt &quot;Calibri Light&quot;;;</string>
      </property>
      <property name="text">
       <string>Validate</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="autoExclusive">
+      <bool>false</bool>
      </property>
     </widget>
     <widget class="QLabel" name="lab_validate_create_new_proj">
@@ -245,7 +277,7 @@ font: 10pt &quot;Calibri Light&quot;;</string>
       <rect>
        <x>10</x>
        <y>130</y>
-       <width>561</width>
+       <width>501</width>
        <height>20</height>
       </rect>
      </property>
@@ -253,7 +285,7 @@ font: 10pt &quot;Calibri Light&quot;;</string>
       <enum>Qt::LeftToRight</enum>
      </property>
      <property name="styleSheet">
-      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+      <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
 color: rgb(170, 0, 127);
 background-color: rgb(250, 250, 250);</string>
      </property>
@@ -283,7 +315,7 @@ background-color: rgb(250, 250, 250);</string>
       <string>Morphological</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBox_mC">
@@ -340,8 +372,45 @@ background-color: rgb(250, 250, 250);</string>
       <string>Im/Plot</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="button_create_initial_proj">
+     <property name="geometry">
+      <rect>
+       <x>600</x>
+       <y>130</y>
+       <width>71</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(71, 71, 71);
+font: 10pt &quot;Calibri Light&quot;;</string>
+     </property>
+     <property name="text">
+      <string>Create</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="autoExclusive">
+      <bool>true</bool>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
+    </widget>
    </widget>
    <widget class="QTabWidget" name="tabWidget">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -351,8 +420,10 @@ background-color: rgb(250, 250, 250);</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QWidget#tab_mCell{background-color: rgb(235, 235, 235);}
-QWidget#tab_mHeart{background-color:rgb(200, 200, 200);}</string>
+     <string notr="true">QWidget#tab_mCell{background-color: rgb(235, 235, 235);
+border-color: rgb(170, 0, 127);}
+QWidget#tab_mHeart{background-color:rgb(200, 200, 200);
+border-color: rgb(85, 0, 127);}</string>
     </property>
     <property name="currentIndex">
      <number>0</number>
@@ -364,7 +435,10 @@ QWidget#tab_mHeart{background-color:rgb(200, 200, 200);}</string>
      <attribute name="title">
       <string>Tab 1</string>
      </attribute>
-     <widget class="QGroupBox" name="proj_settings_2">
+     <widget class="QGroupBox" name="initial_setup">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -374,7 +448,7 @@ QWidget#tab_mHeart{background-color:rgb(200, 200, 200);}</string>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QGroupBox#proj_settings{text-decoration: underline; font: 80 11pt &quot;Calibri Light&quot;;}
+       <string notr="true">QGroupBox#initial_setup{text-decoration: underline; font: 80 10pt &quot;Calibri Light&quot;;}
 </string>
       </property>
       <property name="title">
@@ -426,7 +500,7 @@ background-color: rgb(250, 250, 250);</string>
         <set>Qt::AlignCenter</set>
        </property>
       </widget>
-      <widget class="QSpinBox" name="spinBox">
+      <widget class="QSpinBox" name="spinBox_noCh">
        <property name="geometry">
         <rect>
          <x>170</x>
@@ -436,7 +510,7 @@ background-color: rgb(250, 250, 250);</string>
         </rect>
        </property>
       </widget>
-      <widget class="QLabel" name="lab_proj_name_2">
+      <widget class="QLabel" name="lab_no_ch">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -452,7 +526,7 @@ background-color: rgb(250, 250, 250);</string>
         <string>Number of Channels:</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_mH_2">
+      <widget class="QCheckBox" name="checkBox_chNS">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -471,12 +545,12 @@ background-color: rgb(250, 250, 250);</string>
         <string>Segment channel between layers? </string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_mH_3">
+      <widget class="QCheckBox" name="checkBox_segments">
        <property name="geometry">
         <rect>
-         <x>235</x>
+         <x>241</x>
          <y>20</y>
-         <width>181</width>
+         <width>161</width>
          <height>20</height>
         </rect>
        </property>
@@ -490,7 +564,7 @@ background-color: rgb(250, 250, 250);</string>
         <string>Cut layers into segments?</string>
        </property>
       </widget>
-      <widget class="QLabel" name="lab_proj_name_3">
+      <widget class="QLabel" name="lab_no_segm">
        <property name="geometry">
         <rect>
          <x>235</x>
@@ -506,7 +580,7 @@ background-color: rgb(250, 250, 250);</string>
         <string>Number of Segments:</string>
        </property>
       </widget>
-      <widget class="QSpinBox" name="spinBox_2">
+      <widget class="QSpinBox" name="spinBox_noSegm">
        <property name="geometry">
         <rect>
          <x>375</x>
@@ -516,10 +590,10 @@ background-color: rgb(250, 250, 250);</string>
         </rect>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_mH_4">
+      <widget class="QCheckBox" name="checkBox_sections">
        <property name="geometry">
         <rect>
-         <x>470</x>
+         <x>456</x>
          <y>20</y>
          <width>161</width>
          <height>20</height>
@@ -535,7 +609,7 @@ background-color: rgb(250, 250, 250);</string>
         <string>Cut layers into sections?</string>
        </property>
       </widget>
-      <widget class="QLabel" name="lab_proj_name_4">
+      <widget class="QLabel" name="lab_no_sect">
        <property name="geometry">
         <rect>
          <x>450</x>
@@ -548,10 +622,10 @@ background-color: rgb(250, 250, 250);</string>
         <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
        </property>
        <property name="text">
-        <string>Number of sections</string>
+        <string>Number of Sections</string>
        </property>
       </widget>
-      <widget class="QSpinBox" name="spinBox_3">
+      <widget class="QSpinBox" name="spinBox_noSect">
        <property name="geometry">
         <rect>
          <x>590</x>
@@ -561,7 +635,7 @@ background-color: rgb(250, 250, 250);</string>
         </rect>
        </property>
       </widget>
-      <widget class="QSpinBox" name="spinBox_4">
+      <widget class="QSpinBox" name="spinBox_segm_noObj">
        <property name="geometry">
         <rect>
          <x>375</x>
@@ -587,7 +661,7 @@ background-color: rgb(250, 250, 250);</string>
         <string>Number of Cut Objects:</string>
        </property>
       </widget>
-      <widget class="QLabel" name="lab_proj_name_6">
+      <widget class="QLabel" name="lab_obj_cut_segm">
        <property name="geometry">
         <rect>
          <x>235</x>
@@ -603,7 +677,7 @@ background-color: rgb(250, 250, 250);</string>
         <string>Object used to cut: </string>
        </property>
       </widget>
-      <widget class="QComboBox" name="comboBox">
+      <widget class="QComboBox" name="comboBox_obj_segm">
        <property name="geometry">
         <rect>
          <x>345</x>
@@ -616,13 +690,15 @@ background-color: rgb(250, 250, 250);</string>
         <bool>false</bool>
        </property>
        <property name="styleSheet">
-        <string notr="true">border-color: rgb(173, 173, 173);</string>
+        <string notr="true">border-color: rgb(173, 173, 173);
+background-color:rgba(225, 225, 225, 180);
+font: 25 10pt &quot;Calibri Light&quot;;</string>
        </property>
        <property name="frame">
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QComboBox" name="comboBox_2">
+      <widget class="QComboBox" name="comboBox_obj_sect">
        <property name="geometry">
         <rect>
          <x>560</x>
@@ -635,13 +711,15 @@ background-color: rgb(250, 250, 250);</string>
         <bool>false</bool>
        </property>
        <property name="styleSheet">
-        <string notr="true">border-color: rgb(173, 173, 173);</string>
+        <string notr="true">border-color: rgb(173, 173, 173);
+background-color:rgba(225, 225, 225, 180);
+font: 25 10pt &quot;Calibri Light&quot;;</string>
        </property>
        <property name="frame">
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QLabel" name="lab_proj_name_7">
+      <widget class="QLabel" name="lab_obj_cut_sect">
        <property name="geometry">
         <rect>
          <x>450</x>
@@ -657,7 +735,7 @@ background-color: rgb(250, 250, 250);</string>
         <string>Object used to cut: </string>
        </property>
       </widget>
-      <widget class="QLabel" name="lab_proj_name_8">
+      <widget class="QLabel" name="lab_no_sect_cuts">
        <property name="geometry">
         <rect>
          <x>450</x>
@@ -670,10 +748,10 @@ background-color: rgb(250, 250, 250);</string>
         <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
        </property>
        <property name="text">
-        <string>Number of Cut Objects:</string>
+        <string>Number of Section Cuts</string>
        </property>
       </widget>
-      <widget class="QSpinBox" name="spinBox_5">
+      <widget class="QSpinBox" name="spinBox_noSectCuts">
        <property name="geometry">
         <rect>
          <x>590</x>
@@ -683,7 +761,7 @@ background-color: rgb(250, 250, 250);</string>
         </rect>
        </property>
       </widget>
-      <widget class="QPushButton" name="button_validate_new_proj_3">
+      <widget class="QPushButton" name="button_validate_initial_set">
        <property name="geometry">
         <rect>
          <x>49</x>
@@ -691,6 +769,9 @@ background-color: rgb(250, 250, 250);</string>
          <width>121</width>
          <height>20</height>
         </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
        </property>
        <property name="styleSheet">
         <string notr="true">border-radius:10px;
@@ -704,11 +785,14 @@ font: 10pt &quot;Calibri Light&quot;;</string>
        <property name="text">
         <string>Set Initial Settings</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QLabel" name="lab_proj_name_9">
        <property name="geometry">
         <rect>
-         <x>42</x>
+         <x>30</x>
          <y>70</y>
          <width>141</width>
          <height>22</height>
@@ -722,6 +806,72 @@ font: 10pt &quot;Calibri Light&quot;;</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="q_negativeSpace">
+       <property name="geometry">
+        <rect>
+         <x>173</x>
+         <y>72</y>
+         <width>15</width>
+         <height>15</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-radius:7px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>?</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="q_segments">
+       <property name="geometry">
+        <rect>
+         <x>399</x>
+         <y>23</y>
+         <width>15</width>
+         <height>15</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-radius:7px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>?</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="q_sections">
+       <property name="geometry">
+        <rect>
+         <x>610</x>
+         <y>23</y>
+         <width>15</width>
+         <height>15</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-radius:7px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>?</string>
        </property>
       </widget>
      </widget>
@@ -763,12 +913,525 @@ font: 10pt &quot;Calibri Light&quot;;</string>
        <enum>Qt::Vertical</enum>
       </property>
      </widget>
+     <widget class="QGroupBox" name="setup">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>160</y>
+        <width>651</width>
+        <height>191</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QGroupBox#setup{text-decoration: underline; font: 80 10pt &quot;Calibri Light&quot;;}
+</string>
+      </property>
+      <property name="title">
+       <string>Channels/Segments/Sections Setup</string>
+      </property>
+      <widget class="QPushButton" name="button_validate_new_proj_3">
+       <property name="geometry">
+        <rect>
+         <x>590</x>
+         <y>293</y>
+         <width>80</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(71, 71, 71);
+font: 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Validate</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_validate_create_new_proj_3">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>293</y>
+         <width>561</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+color: rgb(170, 0, 127);
+background-color: rgb(250, 250, 250);</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBox_noCh_2">
+       <property name="geometry">
+        <rect>
+         <x>170</x>
+         <y>20</y>
+         <width>40</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_no_ch_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>111</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Number of Channels:</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBox_chNS_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>201</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Segment channel between layers? </string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBox_segments_2">
+       <property name="geometry">
+        <rect>
+         <x>241</x>
+         <y>20</y>
+         <width>161</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Cut layers into segments?</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_no_segm_2">
+       <property name="geometry">
+        <rect>
+         <x>235</x>
+         <y>80</y>
+         <width>111</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Number of Segments:</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBox_noSegm_2">
+       <property name="geometry">
+        <rect>
+         <x>375</x>
+         <y>80</y>
+         <width>40</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBox_sections_2">
+       <property name="geometry">
+        <rect>
+         <x>456</x>
+         <y>20</y>
+         <width>161</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Cut layers into sections?</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_no_sect_2">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>80</y>
+         <width>111</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Number of sections</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBox_noSect_2">
+       <property name="geometry">
+        <rect>
+         <x>590</x>
+         <y>80</y>
+         <width>42</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBox_7">
+       <property name="geometry">
+        <rect>
+         <x>375</x>
+         <y>110</y>
+         <width>40</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_proj_name_6">
+       <property name="geometry">
+        <rect>
+         <x>235</x>
+         <y>110</y>
+         <width>131</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Number of Cut Objects:</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_obj_cut_segm_2">
+       <property name="geometry">
+        <rect>
+         <x>235</x>
+         <y>50</y>
+         <width>111</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Object used to cut: </string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox_obj_segm_2">
+       <property name="geometry">
+        <rect>
+         <x>345</x>
+         <y>50</y>
+         <width>69</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-color: rgb(173, 173, 173);</string>
+       </property>
+       <property name="frame">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox_obj_sect_2">
+       <property name="geometry">
+        <rect>
+         <x>560</x>
+         <y>50</y>
+         <width>69</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-color: rgb(173, 173, 173);</string>
+       </property>
+       <property name="frame">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_obj_cut_sect_2">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>50</y>
+         <width>111</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Object used to cut: </string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_proj_name_11">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>110</y>
+         <width>131</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Number of Cut Objects:</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBox_8">
+       <property name="geometry">
+        <rect>
+         <x>590</x>
+         <y>110</y>
+         <width>40</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="button_validate_initial_set_2">
+       <property name="geometry">
+        <rect>
+         <x>49</x>
+         <y>107</y>
+         <width>121</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(71, 71, 71);
+font: 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Set Initial Settings</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_proj_name_12">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>70</y>
+         <width>141</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>(from the negative space)</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="button_q_negativeSpace_2">
+       <property name="geometry">
+        <rect>
+         <x>173</x>
+         <y>72</y>
+         <width>15</width>
+         <height>15</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-radius:7px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>?</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="button_q_segments_2">
+       <property name="geometry">
+        <rect>
+         <x>399</x>
+         <y>23</y>
+         <width>15</width>
+         <height>15</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-radius:7px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>?</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="button_q_sections_2">
+       <property name="geometry">
+        <rect>
+         <x>610</x>
+         <y>23</y>
+         <width>15</width>
+         <height>15</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-radius:7px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>?</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QTableWidget" name="table_channel_settings">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>370</y>
+        <width>256</width>
+        <height>192</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_mCell">
      <attribute name="title">
       <string>Tab 2</string>
      </attribute>
+     <widget class="QLabel" name="lab_proj_name_10">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>111</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Number of Channels:</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBox_6">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>10</y>
+        <width>40</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
+   </widget>
+   <widget class="QPushButton" name="button_go_back">
+    <property name="geometry">
+     <rect>
+      <x>449</x>
+      <y>870</y>
+      <width>81</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(134, 134, 134); 
+color: rgb(255, 255, 255);
+font: 11pt &quot;Calibri&quot;;</string>
+    </property>
+    <property name="text">
+     <string>Go Back...</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>880</y>
+      <width>15</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(0, 255, 127);
+border-radius:7px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+
+</string>
+    </property>
    </widget>
   </widget>
  </widget>

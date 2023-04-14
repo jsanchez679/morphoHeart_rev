@@ -76,25 +76,30 @@ if partA:
     if proj.analysis['morphoHeart']: 
         print('>> Setting up morphoHeart')
         # Ask for settings the settings for morphoHeart
+        #Initial set-up
         no_chs = 2
+        layer_btw_chs = True
+        cutLayersIn2Segments = True
+        no_segments = 2
+        no_cuts_4segments = 2
+        cutLayersIn2Sections = True
+        no_sections = 2
+
+        #Setup 
         name_chs = {'ch1': 'myocardium', 'ch2': 'endocardium'}
         chs_relation =  {'ch1': 'external', 'ch2': 'internal'}
         color_chs = {'ch1':{'tiss':'lightseagreen','int':'gold','ext':'crimson'}, 
                      'ch2':{'tiss':'darkmagenta','int':'deepskyblue','ext':'deeppink'}}
-        layer_btw_chs = True
         ch_ext = ('ch1', 'int')
         ch_int = ('ch2', 'ext')
         user_nsChName = 'cardiac jelly'
         color_chNS = {'tiss':'darkorange','ext':'powderblue', 'int':'greenyellow'}
         # By default the volume and surface area of the segments per tissue selected will be measured
-        cutLayersIn2Segments = True
-        no_segments = 2
-        no_cuts_4segments = 2
+
         name_segments = {'segm1': 'atrium', 'segm2': 'ventricle'}
         # channels/meshes that will be divided into segments 
         ch_segments = {'ch1':['tiss', 'ext'],'ch2':['tiss', 'int'],'chNS':['tiss']}
-        cutLayersIn2Sections = True
-        no_sections = 2
+        
         name_sections = {'sect1': 'left', 'sect2': 'right'}
         ch_sections = {'ch1':['tiss'],'ch2':['tiss'],'chNS':['tiss']}
         rotateZ_90 = True
