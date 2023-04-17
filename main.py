@@ -1,8 +1,9 @@
 import sys
 from PyQt6 import uic
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtWidgets import QDialog, QApplication, QWidget, QFileDialog, QTabWidget
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
+                              QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit)
+from PyQt6.QtGui import QPixmap, QFont
 
 from pathlib import Path
 import os
@@ -58,46 +59,46 @@ class CreateNewProj(QDialog):
 
         #Initial set-up objects
         #---- No Channels and ChNegativeSpace
-        self.spinBox_noCh.setMinimum(1)
-        self.spinBox_noCh.setMaximum(5)
+        # self.spinBox_noCh.setMinimum(1)
+        # self.spinBox_noCh.setMaximum(5)
 
         #---- Segments
-        self.checkBox_segments.stateChanged.connect(self.checked_segm)
-        self.checked_segm()
-        list_obj_segm = ['Disc']#, 'Plane']
-        for obj in list_obj_segm: 
-            self.comboBox_obj_segm.addItem(obj)
-        self.spinBox_noSegm.setMinimum(1)
-        self.spinBox_noSegm.setMaximum(5)
-        self.spinBox_segm_noObj.setMinimum(1)
-        self.spinBox_segm_noObj.setMaximum(5)
+        # self.checkBox_segments.stateChanged.connect(self.checked_segm)
+        # self.checked_segm()
+        # list_obj_segm = ['Disc']#, 'Plane']
+        # for obj in list_obj_segm: 
+        #     self.comboBox_obj_segm.addItem(obj)
+        # self.spinBox_noSegm.setMinimum(1)
+        # self.spinBox_noSegm.setMaximum(5)
+        # self.spinBox_segm_noObj.setMinimum(1)
+        # self.spinBox_segm_noObj.setMaximum(5)
 
         #---- Sections
-        self.checkBox_sections.stateChanged.connect(self.checked_sect)
-        self.checked_sect()
-        list_obj_sect = ['Centreline']#, 'Plane']
-        for obj in list_obj_sect: 
-            self.comboBox_obj_sect.addItem(obj)
-        self.spinBox_noSect.setMinimum(1)
-        self.spinBox_noSect.setMaximum(5)
-        self.spinBox_noSectCuts.setMinimum(1)
-        self.spinBox_noSectCuts.setMaximum(5)
-
-        #Setup of channels, segments, sections
+        # self.checkBox_sections.stateChanged.connect(self.checked_sect)
+        # self.checked_sect()
+        # list_obj_sect = ['Centreline']#, 'Plane']
+        # for obj in list_obj_sect: 
+        #     self.comboBox_obj_sect.addItem(obj)
+        # self.spinBox_noSect.setMinimum(1)
+        # self.spinBox_noSect.setMaximum(5)
+        # self.spinBox_noSectCuts.setMinimum(1)
+        # self.spinBox_noSectCuts.setMaximum(5)
         
-
         #Go back to Welcome Page
         self.button_go_back.clicked.connect(self.go_to_welcome)
+    
 
     def checked_analysis(self):
         self.user_analysis = {'morphoHeart': self.checkBox_mH.isChecked(), 'morphoCell': self.checkBox_mC.isChecked(), 'morphoPlot': self.checkBox_mP.isChecked()}
 
     def toggled(self, button_name): 
+        style = 'border-radius:10px; border-width: 1px; border-style: outset; color: rgb(71, 71, 71); font: 10pt "Calibri Light";'
         if button_name.isChecked():
-            button_name.setStyleSheet('QPushButton {background-color: rgba(170, 0, 127, 80); border-radius:10px; border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); color: rgb(71, 71, 71); font: 10pt "Calibri Light";}')
+            style_f = 'QPushButton{background-color: #eb6fbd; border-color: #672146;'+style+'}'
         else: 
-            button_name.setStyleSheet('QPushButton {background-color: rgb(211, 211, 211); border-radius:10px; border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); color: rgb(71, 71, 71); font: 10pt "Calibri Light";}')
-            
+            style_f = 'QPushButton{background-color: rgb(211, 211, 211); border-color: rgb(66, 66, 66);'+style+'}'
+        button_name.setStyleSheet(style_f)
+
     def get_proj_dir(self):
         self.button_validate_new_proj.setChecked(False)
         self.toggled(self.button_validate_new_proj)
@@ -197,7 +198,28 @@ class CreateNewProj(QDialog):
         print(cutLayersIn2Segments, obj2cutSegm, no_segments, no_cuts_4segments)
         print(cutLayersIn2Sections, obj2cutSect, no_sections, no_sect_cuts)
 
-        self.table_channel_settings.setRowCount(no_chs)
+        # #Setup of channels, segments, sections
+        # #Set the initial labels 
+        # initial_row = QHBoxLayout(QWidget())
+        # initial_row.addWidget(QLabel('Channel', self))
+        # initial_row.addWidget(QLabel('Name', self))
+        # initial_row.addWidget(QLabel('color-int', self))
+        # initial_row.addWidget(QLabel('color-tiss', self))
+        # initial_row.addWidget(QLabel('color-ext', self))
+        # initial_row.addWidget(QLabel('Apply mask', self))
+        # self.verticalLayout.addLayout(initial_row)
+        # for n, ch in enumerate(range(no_chs)): 
+        #     row_layout = QHBoxLayout()
+        #     #Add widgets
+        #     row_layout.addWidget(QLabel('Ch'+str(n), self))
+        #     row_layout.addWidget(QLineEdit(placeholderText='Channel name'))
+        #     row_layout.addWidget(QPushButton('Pick-color'))
+        #     row_layout.addWidget(QPushButton('Pick-color'))
+        #     row_layout.addWidget(QPushButton('Pick-color'))
+        #     row_layout.addWidget(QPushButton('Toggle'))
+        #     self.verticalLayout.addLayout(row_layout)
+
+        # self.table_channel_settings.setRowCount(no_chs)
 
     def tabChanged(self):
         print('Tab was changed to ', self.tabWidget.currentIndex())
@@ -210,7 +232,25 @@ class CreateNewProj(QDialog):
         print(response)
 
     def go_to_welcome(self):
-        widget.setCurrentIndex(widget.currentIndex()-1)
+        import vedo as vedo
+
+        s1 = vedo.Sphere().pos(10,20,30)
+        s2 = vedo.Cube(c='grey4').scale([2,1,1]).pos(14,20,30)
+
+        def func(evt):
+            if not evt.actor:
+                return
+            sil = evt.actor.silhouette().linewidth(6).c('red5')
+            sil.name = "silu" # give it a name so we can remove the old one
+            msg.text("You clicked: "+evt.actor.name)
+            plt.remove('silu').add(sil)
+            
+        msg = vedo.Text2D("", pos="bottom-center", c='k', bg='r9', alpha=0.8)
+            
+        plt = vedo.Plotter(axes=1)
+        plt.add_callback('mouse click', func)
+        plt.show(s1, s2, msg, zoom=1.2, interactive=True)
+        #widget.setCurrentIndex(widget.currentIndex()-1)
 
 class LoadProj(QDialog):
     def __init__(self):
@@ -222,6 +262,10 @@ class LoadProj(QDialog):
 
         #Browse project
         self.button_browse_proj.clicked.connect(self.load_proj)
+
+        #Table of organs
+        self.tableWidget.setColumnWidth(0,250)
+        self.tableWidget.setColumnWidth(1,100)
 
     def load_proj(self):
         response = QFileDialog.getExistingDirectory(self, caption="Select the Project's directory")
@@ -240,15 +284,40 @@ class LoadProj(QDialog):
         else: 
             self.lab_validate_create_new_proj.setText('There is no settings file for a project within the selected directory. Please select a new directory.')
 
+    def load_organs_data(self):
+        row=0
+        self.tableWidget.setRowCount(len(df_organs))
+        for organ in df_organs: 
+            self.tableWidget.setItem(row,0,QWidgets.QTableWidgetItem(df_organs[organ]['organ_UserName']))
+            row += 1
+            
 
-class MainWindow(QDialog):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('main_window_screen.ui', self)
         mH_logoXS = QPixmap('images/logos_1o75mm.png')
         self.mH_logo_XS.setPixmap(mH_logoXS)
 
+        self.actionSave_Project.triggered.connect(self.save_project_pressed)
+        self.actionSave_Organ.triggered.connect(self.save_organ_pressed)
+        self.actionClose.triggered.connect(self.close_morphoHeart_pressed)
+
+    def save_project_pressed(self):
+        print('Save project was pressed')
+
+    def save_organ_pressed(self):
+        print('Save organ was pressed')
     
+    def close_morphoHeart_pressed(self):
+        print('Close was pressed')
+
+# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
+#     ui = MainWindow()
+#     ui.show()
+#     app.exec()
+
 # class Controller: 
 #     def __init__(self):
 #         pass
@@ -279,3 +348,22 @@ except:
 
 #python pyuic6 -x name.ui -o name.py
 #C:\Users\bi1jsa\Desktop\pyqt6>D:\Applications\Miniconda\envs\mHpy39_qt\Scripts\pyuic6.exe -x C:\Users\bi1jsa\Desktop\pyqt6\test.ui -o C:\Users\bi1jsa\Desktop\pyqt6\test.py dragging and dropping all the files to get their path
+
+# #--- form layout to set names of channels 
+        # form_layout = QtWidgets.QFormLayout()
+        # self.setLayout(form_layout)
+
+        # #Add stuff/widgets
+        # label_1 = QtWidgets.QLabel('This is a cool Label Row')
+        # label_1.setFont(QFont('Calibri', 10))
+        # f_name = QtWidgets.QLineEdit(self)
+        # l_name = QtWidgets.QLineEdit(self)
+
+        # #Add rows to app
+        # form_layout.addRow(label_1)
+        # form_layout.addRow('First Name', f_name)
+        # form_layout.addRow('Last Name', l_name)
+        # form_layout.addRow(QtWidgets.QPushButton('Press me', clicked = lambda: press_it()))
+
+        # def press_it():
+        #     label_1.setText(f'You clicked the button, {f_name.text()}!')

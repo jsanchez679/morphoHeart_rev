@@ -38,10 +38,10 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true">font: 25 14pt &quot;Calibri Light&quot;; color: rgb(116, 116, 116)</string>
+     <string notr="true">font: bold 14pt &quot;Calibri&quot;; color: rgb(116, 116, 116)</string>
     </property>
     <property name="text">
-     <string>Load Project</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Load Project&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -50,23 +50,29 @@
    <widget class="QPushButton" name="button_new_proj">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>509</x>
       <y>870</y>
-      <width>150</width>
+      <width>181</width>
       <height>25</height>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">border-radius:10px;
+     <string notr="true">QPushButton{border-radius:10px;
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
 background-color: rgb(134, 134, 134); 
 color: rgb(255, 255, 255);
-font: 11pt &quot;Calibri&quot;;</string>
+font: 11pt &quot;Calibri&quot;;}
+
+QPushButton:hover{
+	background-color: rgba(162, 0, 122,180);
+	border-color: rgba(162, 0, 122,180);
+	border-width: 2px}
+</string>
     </property>
     <property name="text">
-     <string>Create New Project</string>
+     <string>Open Project and Organ</string>
     </property>
    </widget>
    <widget class="QLabel" name="mH_logo_XS">
@@ -139,23 +145,28 @@ font: 11pt &quot;Calibri&quot;;</string>
     <widget class="QPushButton" name="button_browse_proj">
      <property name="geometry">
       <rect>
-       <x>590</x>
+       <x>549</x>
        <y>20</y>
-       <width>80</width>
+       <width>121</width>
        <height>20</height>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">border-radius:10px;
+      <string notr="true">QPushButton{border-radius:10px;
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
 background-color: rgb(211, 211, 211);
-color: rgb(71, 71, 71);
-font: 10pt &quot;Calibri Light&quot;;</string>
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
      </property>
      <property name="text">
-      <string>Browse...</string>
+      <string>Browse project...</string>
      </property>
     </widget>
     <widget class="QLabel" name="lab_proj_dir">
@@ -197,7 +208,7 @@ color: rgb(100, 100, 100);</string>
       <rect>
        <x>10</x>
        <y>130</y>
-       <width>661</width>
+       <width>561</width>
        <height>20</height>
       </rect>
      </property>
@@ -252,6 +263,82 @@ color: rgb(100, 100, 100);</string>
       <string/>
      </property>
     </widget>
+    <widget class="QPushButton" name="button_validate_new_proj">
+     <property name="geometry">
+      <rect>
+       <x>600</x>
+       <y>130</y>
+       <width>71</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+     </property>
+     <property name="text">
+      <string>Validate</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="autoExclusive">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QTableWidget" name="table_channel_settings">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>220</y>
+      <width>601</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <column>
+     <property name="text">
+      <string>Organ Name</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Strain</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Stage</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>A</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>B</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>C</string>
+     </property>
+    </column>
    </widget>
   </widget>
  </widget>
