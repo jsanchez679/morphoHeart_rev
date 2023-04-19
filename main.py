@@ -1,8 +1,10 @@
 import sys
 from PyQt6 import uic
 from PyQt6 import QtWidgets, QtCore
+from PyQt6.QtCore import QDate
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
-                              QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit)
+                              QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
+                              QColorDialog)
 from PyQt6.QtGui import QPixmap, QFont
 
 from pathlib import Path
@@ -18,8 +20,8 @@ class WelcomeScreen(QDialog):
         self.setWindowTitle('Welcome to morphoHeart...')
         mH_logoXL = QPixmap('images/logos_7o5mm.png')
         self.mH_logo_XL.setPixmap(mH_logoXL)
-        self.button_new_proj.clicked.connect(self.go_to_create_new_proj)
-        self.button_load_proj.clicked.connect(self.go_to_load_proj)
+        self.button_new_proj.clicked.connect(lambda: self.go_to_create_new_proj())
+        self.button_load_proj.clicked.connect(lambda: self.go_to_load_proj())
 
     def go_to_create_new_proj(self): 
         # self.switch_window.emit()
@@ -43,13 +45,17 @@ class CreateNewProj(QDialog):
         mH_logoXS = QPixmap('images/logos_1o75mm.png')
         self.mH_logo_XS.setPixmap(mH_logoXS)
 
+        now = QDate.currentDate()
+        self.dateEdit.setDate(now)
+
+        # Create a new project
+        self.tE_validate.setText("Create a new project by providing a project's name, directory and analysis pipeline. Then press -Validate- and -Create-.")
+
         #Get project directory
-        self.button_select_proj_dir.clicked.connect(self.get_proj_dir)
+        self.button_select_proj_dir.clicked.connect(lambda: self.get_proj_dir())
         #Validate and Create Initial Project (proj_name, analysis_pipeline, proj_dir)
-        self.button_validate_new_proj.clicked.connect(self.validate_new_proj)
-        self.button_create_initial_proj.clicked.connect(self.create_new_proj)
-        #Validate initial settings
-        self.button_validate_initial_set.clicked.connect(self.create_user_settings_to_fill)
+        self.button_validate_new_proj.clicked.connect(lambda: self.validate_new_proj())
+        self.button_create_initial_proj.clicked.connect(lambda: self.create_new_proj())
 
         #Set Tab Widgets
         self.tabWidget.currentChanged.connect(self.tabChanged)
@@ -58,47 +64,68 @@ class CreateNewProj(QDialog):
         self.tabWidget.setEnabled(False)
 
         #Initial set-up objects
-        #---- No Channels and ChNegativeSpace
-        # self.spinBox_noCh.setMinimum(1)
-        # self.spinBox_noCh.setMaximum(5)
+        # -- Channels
+        #Ch1
+        self.hLayout_Ch1.setEnabled(True)
+        self.fillcolor_ch1_int_btn.clicked.connect(lambda: self.color_picker('ch1_int'))
+        self.fillcolor_ch1_tiss_btn.clicked.connect(lambda: self.color_picker('ch1_tiss'))
+        self.fillcolor_ch1_ext_btn.clicked.connect(lambda: self.color_picker('ch1_ext'))
+        #Ch2
+        self.hLayout_Ch2.setEnabled(True)
+        self.tick_ch2.stateChanged.connect(lambda: self.add_channel('ch2'))
+        self.fillcolor_ch2_int_btn.clicked.connect(lambda: self.color_picker('ch2_int'))
+        self.fillcolor_ch2_tiss_btn.clicked.connect(lambda: self.color_picker('ch2_tiss'))
+        self.fillcolor_ch2_ext_btn.clicked.connect(lambda: self.color_picker('ch2_ext'))
+        #Ch3
+        self.hLayout_Ch3.setEnabled(True)
+        self.tick_ch3.stateChanged.connect(lambda: self.add_channel('ch3'))
+        self.fillcolor_ch3_int_btn.clicked.connect(lambda: self.color_picker('ch3_int'))
+        self.fillcolor_ch3_tiss_btn.clicked.connect(lambda: self.color_picker('ch3_tiss'))
+        self.fillcolor_ch3_ext_btn.clicked.connect(lambda: self.color_picker('ch3_ext'))
+        #Ch4
+        self.hLayout_Ch4.setEnabled(True)
+        self.tick_ch4.stateChanged.connect(lambda: self.add_channel('ch4'))
+        self.fillcolor_ch4_int_btn.clicked.connect(lambda: self.color_picker('ch4_int'))
+        self.fillcolor_ch4_tiss_btn.clicked.connect(lambda: self.color_picker('ch4_tiss'))
+        self.fillcolor_ch4_ext_btn.clicked.connect(lambda: self.color_picker('ch4_ext'))
 
-        #---- Segments
-        # self.checkBox_segments.stateChanged.connect(self.checked_segm)
-        # self.checked_segm()
-        # list_obj_segm = ['Disc']#, 'Plane']
-        # for obj in list_obj_segm: 
-        #     self.comboBox_obj_segm.addItem(obj)
-        # self.spinBox_noSegm.setMinimum(1)
-        # self.spinBox_noSegm.setMaximum(5)
-        # self.spinBox_segm_noObj.setMinimum(1)
-        # self.spinBox_segm_noObj.setMaximum(5)
+        #Default colors (Channels)
+        self.ck_def_colors.stateChanged.connect(lambda: self.default_colors('ch'))
 
-        #---- Sections
-        # self.checkBox_sections.stateChanged.connect(self.checked_sect)
-        # self.checked_sect()
-        # list_obj_sect = ['Centreline']#, 'Plane']
-        # for obj in list_obj_sect: 
-        #     self.comboBox_obj_sect.addItem(obj)
-        # self.spinBox_noSect.setMinimum(1)
-        # self.spinBox_noSect.setMaximum(5)
-        # self.spinBox_noSectCuts.setMinimum(1)
-        # self.spinBox_noSectCuts.setMaximum(5)
+        #Validate initial settings
+        self.button_validate_initial_set.clicked.connect(lambda: self.validate_initial_settings())
+
+        # -- Channel NS
+        self.set_chNS.setDisabled(True)
+        self.set_chNS.setVisible(False)
+        self.fillcolor_chNS_int_btn.clicked.connect(lambda: self.color_picker('chNS_int'))
+        self.fillcolor_chNS_tiss_btn.clicked.connect(lambda: self.color_picker('chNS_tiss'))
+        self.fillcolor_chNS_ext_btn.clicked.connect(lambda: self.color_picker('chNS_ext'))
+        
+        #Default colors (ChannelNS)
+        self.ck_def_colorsNS.stateChanged.connect(lambda: self.default_colors('chNS'))
+
+        # -- Segments
+        self.set_segm.setVisible(False)
+        list_obj_segm = ['Disc']#, 'Plane']
+        for cB in [self.cB_obj_segm1, self.cB_obj_segm2]:
+            for obj in list_obj_segm: 
+                cB.addItem(obj)
+        for sB in [self.sB_no_segm1, self.sB_no_segm2, self.sB_segm_noObj1, self.sB_segm_noObj2]:
+            sB.setMinimum(1)
+            sB.setMaximum(5)
+
+        # -- Sections
+        self.set_sect.setVisible(False)
+        list_obj_sect = ['Centreline']#, 'Plane']
+        for cB in [self.cB_obj_sect1, self.cB_obj_sect2]:
+            for obj in list_obj_sect: 
+                cB.addItem(obj)
         
         #Go back to Welcome Page
         self.button_go_back.clicked.connect(self.go_to_welcome)
-    
 
-    def checked_analysis(self):
-        self.user_analysis = {'morphoHeart': self.checkBox_mH.isChecked(), 'morphoCell': self.checkBox_mC.isChecked(), 'morphoPlot': self.checkBox_mP.isChecked()}
-
-    def toggled(self, button_name): 
-        style = 'border-radius:10px; border-width: 1px; border-style: outset; color: rgb(71, 71, 71); font: 10pt "Calibri Light";'
-        if button_name.isChecked():
-            style_f = 'QPushButton{background-color: #eb6fbd; border-color: #672146;'+style+'}'
-        else: 
-            style_f = 'QPushButton{background-color: rgb(211, 211, 211); border-color: rgb(66, 66, 66);'+style+'}'
-        button_name.setStyleSheet(style_f)
-
+    #Functions for General Project Settings   
     def get_proj_dir(self):
         self.button_validate_new_proj.setChecked(False)
         self.toggled(self.button_validate_new_proj)
@@ -109,13 +136,20 @@ class CreateNewProj(QDialog):
         response = QFileDialog.getExistingDirectory(self, caption='Select a Directory to save New Project Files')
         self.proj_dir_parent = Path(response)
         self.lab_filled_proj_dir.setText(str(self.proj_dir_parent))
-    
+
     def validate_new_proj(self): 
         #Get project name
-        self.proj_name = self.lineEdit_proj_name.text()
+        if len(self.lineEdit_proj_name.text())<=5:
+            error_txt = 'Project name needs to be longer than five (5) characters'
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            self.proj_name = self.lineEdit_proj_name.text()
         #Get Analysis Pipeline
-        self.checked_analysis()
-        checked = [self.user_analysis[key] for key in self.user_analysis]
+        self.checked_analysis = {'morphoHeart': self.checkBox_mH.isChecked(), 
+                              'morphoCell': self.checkBox_mC.isChecked(), 
+                              'morphoPlot': self.checkBox_mP.isChecked()}
+        checked = [self.checked_analysis[key] for key in self.checked_analysis]
         if len(self.proj_name) == 0 or isinstance(self.proj_dir_parent, str) or not(any(checked)):
             error_txt = '*Please '
             if len(self.proj_name) == 0: 
@@ -129,7 +163,7 @@ class CreateNewProj(QDialog):
                     error_txt += ' and '
                 error_txt += 'Select Directory'
             error_txt += '.'
-            self.lab_validate_create_new_proj.setText(error_txt)
+            self.tE_validate.setText(error_txt)
             self.button_validate_new_proj.setChecked(False)
         else: 
             self.button_validate_new_proj.setChecked(True)
@@ -138,48 +172,270 @@ class CreateNewProj(QDialog):
             self.proj_dir = self.proj_dir_parent / proj_folder
             print(self.proj_dir, type(self.proj_dir))
             if self.proj_dir.is_dir():
-                self.lab_validate_create_new_proj.setText('*There is already a project named "'+self.proj_name+'" in the selected directory.')
+                self.tE_validate.setText('*There is already a project named "'+self.proj_name+'" in the selected directory.')
             else: 
                 self.lab_filled_proj_dir.setText(str(self.proj_dir))
-                self.lab_validate_create_new_proj.setText('All good. Select -Create- to create "'+self.proj_name+'" as a new project.')
+                self.tE_validate.setText('All good. Select -Create- to create "'+self.proj_name+'" as a new project.')
 
     def create_new_proj(self):
         if self.button_validate_new_proj.isChecked(): 
             self.toggled(self.button_create_initial_proj)
             self.tabWidget.setEnabled(True)
-            self.tab_mHeart.setEnabled(self.user_analysis['morphoHeart'])
-            self.tab_mCell.setEnabled(self.user_analysis['morphoCell'])
-
+            self.tab_mHeart.setEnabled(self.checked_analysis['morphoHeart'])
+            self.tab_mCell.setEnabled(self.checked_analysis['morphoCell'])
+            if self.checked_analysis['morphoHeart']:
+                self.mH_settings = {'no_chs': 0,
+                                    'name_chs': 0,
+                                    'chs_relation': 0,
+                                    'color_chs': 0,
+                                    'chNS': 0,
+                                    'segm': 0,
+                                    'sect': 0,
+                                    'rotateZ_90': True}
+            if self.checked_analysis['morphoCell']:
+                self.mC_settings = {}
+        
             #Disable all fields from Gral Project Settings
-            self.lab_validate_create_new_proj.setText('New project  "'+self.proj_name+'" has been created!')
+            self.tE_validate.setText('New project  "'+self.proj_name+'" has been created! Continue by setting the channel information.')
             self.gral_proj_settings.setDisabled(True)
-
-            if self.user_analysis['morphoHeart']:
+            if self.checked_analysis['morphoHeart']:
                 self.tabWidget.setCurrentIndex(0)
             else: 
                 self.tabWidget.setCurrentIndex(1)
         else: 
-            self.lab_validate_create_new_proj.setText("*Project's name, analysis pipeline and directory need to be validated for the new project to be created!")
+            self.tE_validate.setText("*Project's name, analysis pipeline and directory need to be validated for the new project to be created!")
 
-    def checked_segm(self):
-        if self.checkBox_segments.isChecked():
-            self.comboBox_obj_segm.setDisabled(False)
-            self.spinBox_noSegm.setDisabled(False)
-            self.spinBox_segm_noObj.setDisabled(False)
-        else:
-            self.comboBox_obj_segm.setDisabled(True)
-            self.spinBox_noSegm.setDisabled(True)
-            self.spinBox_segm_noObj.setDisabled(True)
+    #Functions for Initial Set-up 
+    # Functions for channels
+    def add_channel(self, name):
+        tick = getattr(self, 'tick_'+name)
+        if tick.isChecked():
+            #Activate all widgets
+            user_name = getattr(self, name+'_username')
+            fill_int = getattr(self, 'fillcolor_'+name+'_int')
+            btn_int = getattr(self, 'fillcolor_'+name+'_int_btn')
+            fill_tiss = getattr(self, 'fillcolor_'+name+'_tiss')
+            btn_tiss = getattr(self, 'fillcolor_'+name+'_tiss_btn')
+            fill_ext = getattr(self, 'fillcolor_'+name+'_ext')
+            btn_ext = getattr(self, 'fillcolor_'+name+'_ext_btn')
+            ck_mask = getattr(self, name+'_mask')
 
-    def checked_sect(self):
-        if self.checkBox_sections.isChecked():
-            self.comboBox_obj_sect.setDisabled(False)
-            self.spinBox_noSect.setDisabled(False)
-            self.spinBox_noSectCuts.setDisabled(False)
-        else:
-            self.comboBox_obj_sect.setDisabled(True)
-            self.spinBox_noSect.setDisabled(True)
-            self.spinBox_noSectCuts.setDisabled(True)
+            user_name.setEnabled(True)
+            fill_int.setEnabled(True)
+            btn_int.setEnabled(True)
+            fill_tiss.setEnabled(True)
+            btn_tiss.setEnabled(True)
+            fill_ext.setEnabled(True)
+            btn_ext.setEnabled(True)
+            ck_mask.setEnabled(True)
+
+    def color_picker(self, name):
+        color = QColorDialog.getColor()
+        if color.isValid():
+            print('The selected color is: ', color.name())
+            fill = getattr(self, 'fillcolor_'+name)
+            fill.setStyleSheet("background-color: "+color.name()+"; color: "+color.name()+"; font: 25 2pt 'Calibri Light'")#+"; border: 1px solid "+color.name())
+            fill.setText(color.name())
+            print('Color:', fill.text())
+            
+    def default_colors(self, name):
+        if self.ck_def_colors.isChecked():
+            if name == 'ch': 
+                df_colors = {'ch1': {'int': 'gold', 'tiss': 'lightseagreen', 'ext':'crimson'},
+                            'ch2': {'int': 'deepskyblue', 'tiss': 'darkmagenta', 'ext':'deeppink'},
+                            'ch3': {'int': 'cyan', 'tiss': 'indigo', 'ext':'hotpink'},
+                            'ch4': {'int': 'chocolate', 'tiss': 'seagreen', 'ext':'salmon'}}
+            elif name == 'chNS':
+                df_colors = {'chNS': {'int': 'greenyellow', 'tiss': 'darkorange', 'ext':'powderblue'}}
+                             
+            for ch in df_colors:
+                for cont in df_colors[ch]:
+                    color = df_colors[ch][cont]
+                    fill = getattr(self, 'fillcolor_'+ch+'_'+cont)
+                    fill.setStyleSheet("background-color: "+color+"; color: "+color+"; font: 25 2pt 'Calibri Light'")#+"; border: 1px solid "+color.name())
+                    fill.setText(color)
+
+    def checked(self, stype):
+        ck_type = getattr(self, 'checkBox_'+stype)
+        s_set = getattr(self, 'set_'+stype)
+        if ck_type.isChecked():
+            s_set.setVisible(True)
+            s_set.setEnabled(True)
+            self.mH_settings[stype] = {}
+        else: 
+            s_set.setVisible(False)
+            s_set.setEnabled(False)
+            self.mH_settings[stype] = False
+    
+    def validate_initial_settings(self):
+        valid = []; error_txt = ''
+        self.tick_ch1.setChecked(True)
+        # Get ticked channels:
+        ch_ticked = [self.tick_ch1.isChecked(), self.tick_ch2.isChecked(), 
+                     self.tick_ch3.isChecked(), self.tick_ch4.isChecked()]
+        print('ch_ticked:',ch_ticked)
+        if not any(ch_ticked):
+            error_txt = '*Please select at least one channel.'
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            valid.append(True)
+
+        #Check names
+        names_valid = []
+        names = []
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
+            tick = getattr(self, 'tick_'+ch)
+            if tick.isChecked(): 
+                names.append(getattr(self, ch+'_username').text())
+                if len(getattr(self, ch+'_username').text()) <= 3:
+                    names_valid.append(False)
+                else: 
+                    names_valid.append(True)
+
+        if not all(names_valid):
+            error_txt = '*Active channels must have a name longer than three (3) characters.'
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            valid.append(True)
+
+        #Check names are different
+        if len(names) > len(set(names)):
+            error_txt = '*The names given to the selected channels need to be unique.'
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            valid.append(True)
+
+        # Check colors
+        all_colors = []
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
+            tick = getattr(self, 'tick_'+ch)
+            if tick.isChecked(): 
+                for cont in ['int', 'tiss', 'ext']:
+                    all_colors.append(getattr(self, 'fillcolor_'+ch+'_'+cont).text() != '')
+        # print(all_colors)
+        if not all(all_colors):
+            error_txt = '*Make sure you have selected colors for all the active channel contours.'
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            valid.append(True)
+        
+        #Check relation
+        ch_relation = []
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
+            tick = getattr(self, 'tick_'+ch)
+            if tick.isChecked():
+                ch_relation.append(getattr(self, 'cB_'+ch).currentText())
+
+        internal_count = ch_relation.count('internal layer')
+        external_count = ch_relation.count('external layer') 
+        
+        if sum(ch_ticked) == 1: 
+            if external_count != 1: 
+                error_txt = '*Please define the active channel as external.'
+            else: 
+                valid.append(True)
+                print('AAA: internal_count', internal_count, '-external_count', external_count)
+        elif sum(ch_ticked) == 2: 
+            if internal_count != 1 or external_count != 1:
+                error_txt = '*One channel needs to be selected as the internal layer and other as the external.'
+                self.tE_validate.setText(error_txt)
+            elif internal_count == 1 and external_count == 1:
+                valid.append(True)
+            else:  
+                print('BBB: internal_count', internal_count, '-external_count', external_count)
+        elif sum(ch_ticked) > 2: 
+            if internal_count != 1 or external_count != 1:
+                error_txt = '*One channel needs to be selected as the internal layer, other as the external and the other(s) as middle.'
+                self.tE_validate.setText(error_txt)
+            elif internal_count == 1 and external_count == 1:
+                valid.append(True)
+            else: 
+                print('CCC: internal_count', internal_count, '-external_count', external_count)
+
+        if sum(ch_ticked) == 1 and self.checkBox_chNS.isChecked():
+            error_txt = 'At least two channels need to be selected to create a tissue from the negative space.'
+            self.tE_validate.setText(error_txt)
+        else: 
+            valid.append(True)
+
+        print('valid:', valid)
+        if len(valid)== 6 and all(valid):
+            self.set_initial_settings()
+            self.tE_validate.setText('All done, check...')
+
+    def set_initial_settings(self):
+        self.tick_ch1.setChecked(True)
+        #Get data from initial settings
+        # Get data form ticked channels:
+        ch_ticked = [self.tick_ch1.isChecked(), self.tick_ch2.isChecked(), 
+                     self.tick_ch3.isChecked(), self.tick_ch4.isChecked()]
+        
+        self.mH_settings['no_chs'] = sum(ch_ticked)
+        user_name = {}
+        color_chs = {}
+        ch_relation = {}
+        ch_selected = []
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
+            tick = getattr(self, 'tick_'+ch)
+            if tick.isChecked(): 
+                ch_selected.append(ch)
+                user_name[ch] = getattr(self, ch+'_username').text()
+                ch_relation[ch] = getattr(self, 'cB_'+ch).currentText()
+                color_chs['ch'] = {}
+                for cont in ['int', 'tiss', 'ext']:
+                    color_chs['ch'][cont] = getattr(self, 'fillcolor_'+ch+'_'+cont).text()
+
+        self.mH_settings['name_chs'] = user_name
+        self.mH_settings['chs_relation'] = ch_relation
+        self.mH_settings['color_chs'] = color_chs
+
+        #Get info from checked boxes
+        self.checked('chNS')
+        #---- Segments
+        self.checked('segm')
+        #---- Sections
+        self.checked('sect')
+        print(self.mH_settings)
+
+        if self.checkBox_chNS.isChecked():
+            #Set the comboBoxes for chNS
+            self.ext_chNS.addItems(['----']+ch_selected)
+            self.int_chNS.addItems(['----']+ch_selected)
+            ch_selected.append('chNS')
+
+        #Set table for segments and sections 
+        if self.checkBox_segm.isChecked():       
+            self.set_tables(self.tabW_segm, ch_selected)
+                
+            # col = 1
+            # self.tabW_segm.setItem(0,0, QtGui.QTableWidgetItem)
+            # for ch in ch_selected:
+            #     for cont in ['int', 'tiss', 'ext']:
+            #         self.tabW_segm.setItem(0,col, )
+
+    def set_tables(self, table, ch_selected):
+        table.insertColumn(table.columnCount())
+        row_segm = table.rowCount()
+        table.insertRow(row_segm)
+        table.setItem(0,0, QtWidgets.QTableWidgetItem('---'))
+        table.insertRow(row_segm+1)
+        table.setItem(0,1, QtWidgets.QTableWidgetItem('Cut1'))
+        
+        #https://www.color-hex.com/color-palette/96194
+        #https://www.color-hex.com/color-palette/96197
+        #https://www.color-hex.com/color-palette/1024322
+
+        print('NUM:',len(ch_selected)*3+1)
+        # col_segm = table.rowCount()
+        # for num_cols in range(len(ch_selected)*3+1):
+        #     table.insertColumn(col_segm+num_cols)
+
+    # def apply_segm(self):
+
 
     def create_user_settings_to_fill(self): 
         self.toggled(self.button_validate_initial_set)
@@ -221,8 +477,7 @@ class CreateNewProj(QDialog):
 
         # self.table_channel_settings.setRowCount(no_chs)
 
-    def tabChanged(self):
-        print('Tab was changed to ', self.tabWidget.currentIndex())
+    
 
     def get_image_dir(self): 
         file_filter = 'Image File (*.png *.jpg *.tif)'
@@ -232,25 +487,20 @@ class CreateNewProj(QDialog):
         print(response)
 
     def go_to_welcome(self):
-        import vedo as vedo
+        widget.setCurrentIndex(widget.currentIndex()-1)
 
-        s1 = vedo.Sphere().pos(10,20,30)
-        s2 = vedo.Cube(c='grey4').scale([2,1,1]).pos(14,20,30)
+    # Button general functions
+    def toggled(self, button_name): 
+        style = 'border-radius:10px; border-width: 1px; border-style: outset; color: rgb(71, 71, 71); font: 10pt "Calibri Light";'
+        if button_name.isChecked():
+            style_f = 'QPushButton{background-color: #eb6fbd; border-color: #672146;'+style+'}'
+        else: 
+            style_f = 'QPushButton{background-color: rgb(211, 211, 211); border-color: rgb(66, 66, 66);'+style+'}'
+        button_name.setStyleSheet(style_f)
 
-        def func(evt):
-            if not evt.actor:
-                return
-            sil = evt.actor.silhouette().linewidth(6).c('red5')
-            sil.name = "silu" # give it a name so we can remove the old one
-            msg.text("You clicked: "+evt.actor.name)
-            plt.remove('silu').add(sil)
-            
-        msg = vedo.Text2D("", pos="bottom-center", c='k', bg='r9', alpha=0.8)
-            
-        plt = vedo.Plotter(axes=1)
-        plt.add_callback('mouse click', func)
-        plt.show(s1, s2, msg, zoom=1.2, interactive=True)
-        #widget.setCurrentIndex(widget.currentIndex()-1)
+    #Tab general functions
+    def tabChanged(self):
+        print('Tab was changed to ', self.tabWidget.currentIndex())
 
 class LoadProj(QDialog):
     def __init__(self):
@@ -280,9 +530,9 @@ class LoadProj(QDialog):
             print(self.proj_dir.name)
             self.lab_filled_proj_dir.setText(str(self.proj_dir))
             self.lab_filled_proj_name.setText(str(self.proj_name))
-            self.lab_validate_create_new_proj.setText('Project -'+self.proj_name+'- was loaded successfully!')
+            self.tE_validate.setText('Project -'+self.proj_name+'- was loaded successfully!')
         else: 
-            self.lab_validate_create_new_proj.setText('There is no settings file for a project within the selected directory. Please select a new directory.')
+            self.tE_validate.setText('There is no settings file for a project within the selected directory. Please select a new directory.')
 
     def load_organs_data(self):
         row=0
@@ -337,7 +587,7 @@ app = QApplication(sys.argv)
 welcome = WelcomeScreen()
 widget = QtWidgets.QStackedWidget()
 widget.addWidget(welcome)
-widget.setFixedSize(700,900)
+widget.setFixedSize(1000,940)
 widget.show()
 
 try: 
