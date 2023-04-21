@@ -1,14 +1,19 @@
 import sys
 from PyQt6 import uic
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtCore import QDate
+from PyQt6.QtCore import QDate, Qt
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
-                              QColorDialog)
+                              QColorDialog, QTableWidgetItem, QCheckBox)
 from PyQt6.QtGui import QPixmap, QFont
 
 from pathlib import Path
 import os
+
+#https://www.color-hex.com/color-palette/96194
+#https://www.color-hex.com/color-palette/96197
+#https://www.color-hex.com/color-palette/1024322
+
 
 class WelcomeScreen(QDialog):
 
@@ -47,6 +52,10 @@ class CreateNewProj(QDialog):
 
         now = QDate.currentDate()
         self.dateEdit.setDate(now)
+
+        self.checked_analysis = {'morphoHeart': self.checkBox_mH.isChecked(), 
+                                'morphoCell': self.checkBox_mC.isChecked(), 
+                                'morphoPlot': self.checkBox_mP.isChecked()}
 
         # Create a new project
         self.tE_validate.setText("Create a new project by providing a project's name, directory and analysis pipeline. Then press -Validate- and -Create-.")
@@ -94,6 +103,7 @@ class CreateNewProj(QDialog):
 
         #Validate initial settings
         self.button_validate_initial_set.clicked.connect(lambda: self.validate_initial_settings())
+        self.button_set_initial_set.clicked.connect(lambda: self.set_initial_settings())
 
         # -- Channel NS
         self.set_chNS.setDisabled(True)
@@ -114,6 +124,7 @@ class CreateNewProj(QDialog):
         for sB in [self.sB_no_segm1, self.sB_no_segm2, self.sB_segm_noObj1, self.sB_segm_noObj2]:
             sB.setMinimum(1)
             sB.setMaximum(5)
+        self.apply_segm.clicked.connect(lambda: self.set_tables(self.tabW_segm, self.ch_selected, 'segm'))
 
         # -- Sections
         self.set_sect.setVisible(False)
@@ -121,6 +132,7 @@ class CreateNewProj(QDialog):
         for cB in [self.cB_obj_sect1, self.cB_obj_sect2]:
             for obj in list_obj_sect: 
                 cB.addItem(obj)
+        self.apply_segm.clicked.connect(lambda: self.set_tables(self.tabW_sect, self.ch_selected, 'sect'))
         
         #Go back to Welcome Page
         self.button_go_back.clicked.connect(self.go_to_welcome)
@@ -209,17 +221,19 @@ class CreateNewProj(QDialog):
     # Functions for channels
     def add_channel(self, name):
         tick = getattr(self, 'tick_'+name)
+        
+        user_name = getattr(self, name+'_username')
+        fill_int = getattr(self, 'fillcolor_'+name+'_int')
+        btn_int = getattr(self, 'fillcolor_'+name+'_int_btn')
+        fill_tiss = getattr(self, 'fillcolor_'+name+'_tiss')
+        btn_tiss = getattr(self, 'fillcolor_'+name+'_tiss_btn')
+        fill_ext = getattr(self, 'fillcolor_'+name+'_ext')
+        btn_ext = getattr(self, 'fillcolor_'+name+'_ext_btn')
+        ck_mask = getattr(self, name+'_mask')
+        cB_dist = getattr(self, 'cB_'+name)
+        
         if tick.isChecked():
             #Activate all widgets
-            user_name = getattr(self, name+'_username')
-            fill_int = getattr(self, 'fillcolor_'+name+'_int')
-            btn_int = getattr(self, 'fillcolor_'+name+'_int_btn')
-            fill_tiss = getattr(self, 'fillcolor_'+name+'_tiss')
-            btn_tiss = getattr(self, 'fillcolor_'+name+'_tiss_btn')
-            fill_ext = getattr(self, 'fillcolor_'+name+'_ext')
-            btn_ext = getattr(self, 'fillcolor_'+name+'_ext_btn')
-            ck_mask = getattr(self, name+'_mask')
-
             user_name.setEnabled(True)
             fill_int.setEnabled(True)
             btn_int.setEnabled(True)
@@ -228,6 +242,20 @@ class CreateNewProj(QDialog):
             fill_ext.setEnabled(True)
             btn_ext.setEnabled(True)
             ck_mask.setEnabled(True)
+            cB_dist.setEnabled(True)
+            if self.ck_def_colors.isChecked():
+                self.default_colors('ch')
+        else: 
+            #Deactivate all widgets
+            user_name.setEnabled(False)
+            fill_int.setEnabled(False)
+            btn_int.setEnabled(False)
+            fill_tiss.setEnabled(False)
+            btn_tiss.setEnabled(False)
+            fill_ext.setEnabled(False)
+            btn_ext.setEnabled(False)
+            ck_mask.setEnabled(False)
+            cB_dist.setEnabled(False)
 
     def color_picker(self, name):
         color = QColorDialog.getColor()
@@ -249,14 +277,15 @@ class CreateNewProj(QDialog):
                 df_colors = {'chNS': {'int': 'greenyellow', 'tiss': 'darkorange', 'ext':'powderblue'}}
                              
             for ch in df_colors:
-                for cont in df_colors[ch]:
-                    color = df_colors[ch][cont]
-                    fill = getattr(self, 'fillcolor_'+ch+'_'+cont)
-                    fill.setStyleSheet("background-color: "+color+"; color: "+color+"; font: 25 2pt 'Calibri Light'")#+"; border: 1px solid "+color.name())
-                    fill.setText(color)
+                if getattr(self, 'tick_'+ch).isChecked():
+                    for cont in df_colors[ch]:
+                        color = df_colors[ch][cont]
+                        fill = getattr(self, 'fillcolor_'+ch+'_'+cont)
+                        fill.setStyleSheet("background-color: "+color+"; color: "+color+"; font: 25 2pt 'Calibri Light'")#+"; border: 1px solid "+color.name())
+                        fill.setText(color)
 
     def checked(self, stype):
-        ck_type = getattr(self, 'checkBox_'+stype)
+        ck_type = getattr(self, 'tick_'+stype)
         s_set = getattr(self, 'set_'+stype)
         if ck_type.isChecked():
             s_set.setVisible(True)
@@ -356,7 +385,7 @@ class CreateNewProj(QDialog):
             else: 
                 print('CCC: internal_count', internal_count, '-external_count', external_count)
 
-        if sum(ch_ticked) == 1 and self.checkBox_chNS.isChecked():
+        if sum(ch_ticked) == 1 and self.tick_chNS.isChecked():
             error_txt = 'At least two channels need to be selected to create a tissue from the negative space.'
             self.tE_validate.setText(error_txt)
         else: 
@@ -364,75 +393,111 @@ class CreateNewProj(QDialog):
 
         print('valid:', valid)
         if len(valid)== 6 and all(valid):
-            self.set_initial_settings()
-            self.tE_validate.setText('All done, check...')
+            self.tE_validate.setText('All done!... Press -Set Initial Settings- to continue.')
+            self.button_validate_initial_set.setChecked(True)
+        else: 
+            self.button_validate_initial_set.setChecked(False)
+        self.toggled(self.button_validate_initial_set)
 
     def set_initial_settings(self):
-        self.tick_ch1.setChecked(True)
-        #Get data from initial settings
-        # Get data form ticked channels:
-        ch_ticked = [self.tick_ch1.isChecked(), self.tick_ch2.isChecked(), 
-                     self.tick_ch3.isChecked(), self.tick_ch4.isChecked()]
-        
-        self.mH_settings['no_chs'] = sum(ch_ticked)
-        user_name = {}
-        color_chs = {}
-        ch_relation = {}
-        ch_selected = []
-        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
-            tick = getattr(self, 'tick_'+ch)
-            if tick.isChecked(): 
-                ch_selected.append(ch)
-                user_name[ch] = getattr(self, ch+'_username').text()
-                ch_relation[ch] = getattr(self, 'cB_'+ch).currentText()
-                color_chs['ch'] = {}
-                for cont in ['int', 'tiss', 'ext']:
-                    color_chs['ch'][cont] = getattr(self, 'fillcolor_'+ch+'_'+cont).text()
+        if self.button_validate_initial_set.isChecked():
+            self.toggled(self.button_set_initial_set)
+            self.tick_ch1.setChecked(True)
+            #Get data from initial settings
+            # Get data form ticked channels:
+            ch_ticked = [self.tick_ch1.isChecked(), self.tick_ch2.isChecked(), 
+                        self.tick_ch3.isChecked(), self.tick_ch4.isChecked()]
+            
+            self.mH_settings['no_chs'] = sum(ch_ticked)
+            user_name = {}
+            color_chs = {}
+            ch_relation = {}
+            ch_selected = []
+            for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
+                tick = getattr(self, 'tick_'+ch)
+                if tick.isChecked(): 
+                    ch_selected.append(ch)
+                    user_name[ch] = getattr(self, ch+'_username').text()
+                    ch_relation[ch] = getattr(self, 'cB_'+ch).currentText()
+                    color_chs['ch'] = {}
+                    for cont in ['int', 'tiss', 'ext']:
+                        color_chs['ch'][cont] = getattr(self, 'fillcolor_'+ch+'_'+cont).text()
 
-        self.mH_settings['name_chs'] = user_name
-        self.mH_settings['chs_relation'] = ch_relation
-        self.mH_settings['color_chs'] = color_chs
+            self.mH_settings['name_chs'] = user_name
+            self.mH_settings['chs_relation'] = ch_relation
+            self.mH_settings['color_chs'] = color_chs
 
-        #Get info from checked boxes
-        self.checked('chNS')
-        #---- Segments
-        self.checked('segm')
-        #---- Sections
-        self.checked('sect')
-        print(self.mH_settings)
+            #Get info from checked boxes
+            self.checked('chNS')
+            #---- Segments
+            self.checked('segm')
+            #---- Sections
+            self.checked('sect')
+            print(self.mH_settings)
 
-        if self.checkBox_chNS.isChecked():
-            #Set the comboBoxes for chNS
-            self.ext_chNS.addItems(['----']+ch_selected)
-            self.int_chNS.addItems(['----']+ch_selected)
-            ch_selected.append('chNS')
+            if self.tick_chNS.isChecked():
+                #Set the comboBoxes for chNS
+                self.ext_chNS.addItems(['----']+ch_selected)
+                self.int_chNS.addItems(['----']+ch_selected)
+                ch_selected.append('chNS')
 
-        #Set table for segments and sections 
-        if self.checkBox_segm.isChecked():       
-            self.set_tables(self.tabW_segm, ch_selected)
-                
-            # col = 1
-            # self.tabW_segm.setItem(0,0, QtGui.QTableWidgetItem)
-            # for ch in ch_selected:
-            #     for cont in ['int', 'tiss', 'ext']:
-            #         self.tabW_segm.setItem(0,col, )
+            self.ch_selected = ch_selected
+        else: 
+            error_txt = "You first need to validate the channels' settings to continue setting the project."
+            self.tE_validate.setText(error_txt)
+    
+    def set_tables(self, table, ch_selected, stype):
+        table.horizontalHeader().setVisible(False)
+        #table.verticalHeader().setVisible(False)
+        h_labels = ['int', 'tiss', 'ext']*len(ch_selected)
+        print('h_labels:', h_labels)
+        table.setColumnCount(len(h_labels))
 
-    def set_tables(self, table, ch_selected):
-        table.insertColumn(table.columnCount())
-        row_segm = table.rowCount()
-        table.insertRow(row_segm)
-        table.setItem(0,0, QtWidgets.QTableWidgetItem('---'))
-        table.insertRow(row_segm+1)
-        table.setItem(0,1, QtWidgets.QTableWidgetItem('Cut1'))
-        
-        #https://www.color-hex.com/color-palette/96194
-        #https://www.color-hex.com/color-palette/96197
-        #https://www.color-hex.com/color-palette/1024322
+        #Get Number of cuts selected
+        cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
+        print('cuts_sel:', cuts_sel)
+        v_labels = ['---','---']+[key for key in cuts_sel.keys() if cuts_sel[key]==True]
+        print('v_labels:', v_labels)
+        table.setRowCount(len(v_labels))
+        table.setVerticalHeaderLabels(v_labels)
 
-        print('NUM:',len(ch_selected)*3+1)
-        # col_segm = table.rowCount()
-        # for num_cols in range(len(ch_selected)*3+1):
-        #     table.insertColumn(col_segm+num_cols)
+        for col in range(table.columnCount()):
+            table.setColumnWidth(col, 30)
+        for row in range(table.rowCount()):
+            table.setRowHeight(row, 16)
+
+        #Set first row labels
+        print(list(range(0,len(h_labels),3)))
+        for n, col in enumerate(range(0,len(h_labels),3)):
+            print(n, col)
+            table.setSpan(0,col,1,3)
+            table.setItem(0,col, QTableWidgetItem(ch_selected[n]))
+            print(ch_selected[n])
+        #Set second row labels
+        for n, ccl in enumerate(range(len(h_labels))):
+            table.setItem(1,ccl,QTableWidgetItem(h_labels[n]))
+
+        print('len(colum):', table.columnCount())
+        print('len(rows):', table.rowCount())
+
+        row_n = 2
+        for nn in range(len(v_labels[2:])):
+            col_n = 0
+            for mm in range(len(h_labels)):
+                print(row_n, col_n)
+                widget   = QWidget()
+                checkbox = QCheckBox()
+                checkbox.setChecked(False)
+                layoutH = QHBoxLayout(widget)
+                layoutH.addWidget(checkbox)
+                # layoutH.setAlignment(Qt.AlignCenter)
+                layoutH.setContentsMargins(0, 0, 0, 0)
+                table.setCellWidget(row_n, col_n, widget)   
+                col_n +=1   
+            row_n +=1 
+
+
+
 
     # def apply_segm(self):
 
@@ -441,12 +506,12 @@ class CreateNewProj(QDialog):
         self.toggled(self.button_validate_initial_set)
         #Get info from initial set-up
         no_chs = self.spinBox_noCh.value()
-        layer_btw_chs = self.checkBox_chNS.isChecked()
-        cutLayersIn2Segments = self.checkBox_segments.isChecked()
+        layer_btw_chs = self.tick_chNS.isChecked()
+        cutLayersIn2Segments = self.tick_segments.isChecked()
         obj2cutSegm = self.comboBox_obj_segm.currentText()
         no_segments = self.spinBox_noSegm.value()
         no_cuts_4segments = self.spinBox_segm_noObj.value()
-        cutLayersIn2Sections = self.checkBox_sections.isChecked()
+        cutLayersIn2Sections = self.tick_sections.isChecked()
         obj2cutSect = self.comboBox_obj_sect.currentText()
         no_sections = self.spinBox_noSect.value()
         no_sect_cuts = self.spinBox_noSectCuts.value()
