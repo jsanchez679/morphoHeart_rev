@@ -81,7 +81,7 @@
       <x>10</x>
       <y>40</y>
       <width>981</width>
-      <height>141</height>
+      <height>111</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -126,7 +126,7 @@
     <widget class="QPushButton" name="button_select_proj_dir">
      <property name="geometry">
       <rect>
-       <x>740</x>
+       <x>680</x>
        <y>80</y>
        <width>111</width>
        <height>20</height>
@@ -242,7 +242,7 @@ QTextEdit:focus { border: 1px solid #eb6fbd;}
       <rect>
        <x>110</x>
        <y>80</y>
-       <width>621</width>
+       <width>561</width>
        <height>21</height>
       </rect>
      </property>
@@ -357,9 +357,9 @@ background-color: rgb(255, 255, 255);</string>
     <widget class="QPushButton" name="button_validate_new_proj">
      <property name="geometry">
       <rect>
-       <x>860</x>
+       <x>800</x>
        <y>80</y>
-       <width>111</width>
+       <width>80</width>
        <height>20</height>
       </rect>
      </property>
@@ -393,9 +393,9 @@ border-color: #672146
     <widget class="QPushButton" name="button_create_initial_proj">
      <property name="geometry">
       <rect>
-       <x>860</x>
-       <y>110</y>
-       <width>111</width>
+       <x>890</x>
+       <y>80</y>
+       <width>80</width>
        <height>20</height>
       </rect>
      </property>
@@ -427,31 +427,6 @@ border-color: #672146
      </property>
      <property name="autoDefault">
       <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="tE_validate">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>110</y>
-       <width>841</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
-color: rgb(170, 0, 127);
-background-color: rgb(250, 250, 250);
-</string>
-     </property>
-     <property name="frame">
-      <bool>false</bool>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
      </property>
     </widget>
     <widget class="QDateEdit" name="dateEdit">
@@ -499,7 +474,6 @@ background-color: rgb(250, 250, 250);
     <zorder>button_validate_new_proj</zorder>
     <zorder>button_select_proj_dir</zorder>
     <zorder>button_create_initial_proj</zorder>
-    <zorder>tE_validate</zorder>
     <zorder>dateEdit</zorder>
     <zorder>lab_proj_name_2</zorder>
    </widget>
@@ -510,7 +484,7 @@ background-color: rgb(250, 250, 250);
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>186</y>
+      <y>160</y>
       <width>981</width>
       <height>711</height>
      </rect>
@@ -565,7 +539,7 @@ background-color: rgb(250, 250, 250);
         <rect>
          <x>10</x>
          <y>80</y>
-         <width>331</width>
+         <width>381</width>
          <height>51</height>
         </rect>
        </property>
@@ -622,7 +596,7 @@ background-color: rgb(250, 250, 250);
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lab_ch1_6">
+           <widget class="QLabel" name="lab_sect1">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -651,15 +625,18 @@ background-color: rgb(250, 250, 250);
           </item>
           <item>
            <widget class="QComboBox" name="cB_obj_sect1">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="minimumSize">
              <size>
-              <width>90</width>
+              <width>110</width>
               <height>0</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>90</width>
+              <width>110</width>
               <height>16777215</height>
              </size>
             </property>
@@ -678,6 +655,9 @@ font: 25 10pt &quot;Calibri Light&quot;;</string>
           </item>
           <item>
            <widget class="QLineEdit" name="names_sect1">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -686,13 +666,13 @@ font: 25 10pt &quot;Calibri Light&quot;;</string>
             </property>
             <property name="minimumSize">
              <size>
-              <width>120</width>
+              <width>180</width>
               <height>18</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>120</width>
+              <width>180</width>
               <height>16777215</height>
              </size>
             </property>
@@ -773,7 +753,10 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lab_ch1_7">
+           <widget class="QLabel" name="lab_sect2">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -804,13 +787,13 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
            <widget class="QComboBox" name="cB_obj_sect2">
             <property name="minimumSize">
              <size>
-              <width>90</width>
+              <width>110</width>
               <height>0</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>80</width>
+              <width>110</width>
               <height>16777215</height>
              </size>
             </property>
@@ -837,13 +820,13 @@ font: 25 10pt &quot;Calibri Light&quot;;</string>
             </property>
             <property name="minimumSize">
              <size>
-              <width>120</width>
+              <width>180</width>
               <height>18</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>120</width>
+              <width>180</width>
               <height>16777215</height>
              </size>
             </property>
@@ -917,7 +900,7 @@ used to cut:</string>
       <widget class="QLabel" name="lab_no_ch_9">
        <property name="geometry">
         <rect>
-         <x>370</x>
+         <x>420</x>
          <y>20</y>
          <width>331</width>
          <height>21</height>
@@ -928,37 +911,10 @@ used to cut:</string>
 background-color: rgb(255, 255, 255);</string>
        </property>
        <property name="text">
-        <string>Tick the channel contours you want to cut into segments...</string>
+        <string>Tick the channel contours you want to cut into sections...</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="apply_sect">
-       <property name="geometry">
-        <rect>
-         <x>260</x>
-         <y>140</y>
-         <width>80</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-       </property>
-       <property name="text">
-        <string>Apply</string>
        </property>
       </widget>
       <widget class="QLabel" name="lab_proj_name_9">
@@ -984,7 +940,7 @@ border-color: #672146
       <widget class="QTableWidget" name="tabW_sect">
        <property name="geometry">
         <rect>
-         <x>370</x>
+         <x>420</x>
          <y>43</y>
          <width>321</width>
          <height>115</height>
@@ -997,13 +953,13 @@ border-color: #672146
         </sizepolicy>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+        <string notr="true">font: 25 8pt &quot;Calibri Light&quot;;</string>
        </property>
       </widget>
       <widget class="QLabel" name="lab_no_ch_15">
        <property name="geometry">
         <rect>
-         <x>720</x>
+         <x>770</x>
          <y>20</y>
          <width>181</width>
          <height>51</height>
@@ -1016,16 +972,16 @@ background-color: rgb(255, 255, 255);</string>
        <property name="text">
         <string>Tick parameters you would like
 to measure from the created
- segments...</string>
+ sections...</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QCheckBox" name="cB_area_segm_2">
+      <widget class="QCheckBox" name="cB_area_sect">
        <property name="geometry">
         <rect>
-         <x>740</x>
+         <x>790</x>
          <y>100</y>
          <width>91</width>
          <height>20</height>
@@ -1041,10 +997,10 @@ to measure from the created
         <string>Surface area</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="cB_volume_segm_2">
+      <widget class="QCheckBox" name="cB_volume_sect">
        <property name="geometry">
         <rect>
-         <x>740</x>
+         <x>790</x>
          <y>80</y>
          <width>71</width>
          <height>20</height>
@@ -1063,37 +1019,10 @@ to measure from the created
         <bool>false</bool>
        </property>
       </widget>
-      <widget class="QPushButton" name="button_validate_new_proj_5">
-       <property name="geometry">
-        <rect>
-         <x>865</x>
-         <y>140</y>
-         <width>80</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-       </property>
-       <property name="text">
-        <string>Validate</string>
-       </property>
-      </widget>
       <widget class="Line" name="line_12">
        <property name="geometry">
         <rect>
-         <x>340</x>
+         <x>395</x>
          <y>20</y>
          <width>21</width>
          <height>141</height>
@@ -1115,7 +1044,7 @@ border-color: #672146
       <widget class="Line" name="line_13">
        <property name="geometry">
         <rect>
-         <x>696</x>
+         <x>745</x>
          <y>20</y>
          <width>21</width>
          <height>141</height>
@@ -1134,19 +1063,85 @@ border-color: #672146
         <enum>Qt::Vertical</enum>
        </property>
       </widget>
+      <widget class="QPushButton" name="button_set_sect">
+       <property name="geometry">
+        <rect>
+         <x>825</x>
+         <y>140</y>
+         <width>121</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+       </property>
+       <property name="text">
+        <string>Set Sections</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="apply_sect">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>140</y>
+         <width>80</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+       </property>
+       <property name="text">
+        <string>Apply</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
       <zorder>line_13</zorder>
       <zorder>lab_proj_name_9</zorder>
       <zorder>lab_no_segm_4</zorder>
       <zorder>verticalLayoutWidget_5</zorder>
       <zorder>lab_no_ch_16</zorder>
       <zorder>lab_no_ch_9</zorder>
-      <zorder>apply_sect</zorder>
       <zorder>tabW_sect</zorder>
       <zorder>lab_no_ch_15</zorder>
-      <zorder>cB_area_segm_2</zorder>
-      <zorder>cB_volume_segm_2</zorder>
-      <zorder>button_validate_new_proj_5</zorder>
+      <zorder>cB_area_sect</zorder>
+      <zorder>cB_volume_sect</zorder>
       <zorder>line_12</zorder>
+      <zorder>button_set_sect</zorder>
+      <zorder>apply_sect</zorder>
      </widget>
      <widget class="QGroupBox" name="set_channels">
       <property name="geometry">
@@ -3411,7 +3406,7 @@ border-color: #672146
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit_16">
+         <widget class="QLineEdit" name="chNS_username">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -4064,7 +4059,7 @@ background-color: rgb(255, 255, 255);</string>
         <string>Use default colors</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="button_validate_initial_set_2">
+      <widget class="QPushButton" name="button_set_chNS">
        <property name="geometry">
         <rect>
          <x>825</x>
@@ -4110,7 +4105,7 @@ border-color: #672146
       <zorder>line_9</zorder>
       <zorder>lab_no_ch_20</zorder>
       <zorder>ck_def_colorsNS</zorder>
-      <zorder>button_validate_initial_set_2</zorder>
+      <zorder>button_set_chNS</zorder>
      </widget>
      <widget class="QGroupBox" name="set_segm">
       <property name="enabled">
@@ -4194,7 +4189,7 @@ border-color: #672146
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lab_ch1_2">
+           <widget class="QLabel" name="lab_segm1">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -4369,7 +4364,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
              <bool>true</bool>
             </property>
             <property name="checked">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="tristate">
              <bool>false</bool>
@@ -4377,7 +4372,10 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lab_ch1_3">
+           <widget class="QLabel" name="lab_segm2">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -4614,33 +4612,6 @@ background-color: rgb(255, 255, 255);</string>
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QPushButton" name="apply_segm">
-       <property name="geometry">
-        <rect>
-         <x>310</x>
-         <y>140</y>
-         <width>80</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-       </property>
-       <property name="text">
-        <string>Apply</string>
-       </property>
-      </widget>
       <widget class="QLabel" name="lab_proj_name_6">
        <property name="geometry">
         <rect>
@@ -4715,7 +4686,7 @@ to measure from the created
        <property name="geometry">
         <rect>
          <x>790</x>
-         <y>80</y>
+         <y>70</y>
          <width>71</width>
          <height>20</height>
         </rect>
@@ -4737,7 +4708,7 @@ to measure from the created
        <property name="geometry">
         <rect>
          <x>790</x>
-         <y>100</y>
+         <y>90</y>
          <width>101</width>
          <height>20</height>
         </rect>
@@ -4750,33 +4721,6 @@ to measure from the created
        </property>
        <property name="text">
         <string>Surface area</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="button_validate_new_proj_3">
-       <property name="geometry">
-        <rect>
-         <x>865</x>
-         <y>140</y>
-         <width>80</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-       </property>
-       <property name="text">
-        <string>Validate</string>
        </property>
       </widget>
       <widget class="Line" name="line_10">
@@ -4823,6 +4767,91 @@ border-color: #672146
         <enum>Qt::Vertical</enum>
        </property>
       </widget>
+      <widget class="QPushButton" name="button_set_segm">
+       <property name="geometry">
+        <rect>
+         <x>825</x>
+         <y>140</y>
+         <width>121</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+       </property>
+       <property name="text">
+        <string>Set Segments</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="apply_segm">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>140</y>
+         <width>80</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+       </property>
+       <property name="text">
+        <string>Apply</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="cB_ellip_segm">
+       <property name="geometry">
+        <rect>
+         <x>790</x>
+         <y>110</y>
+         <width>101</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Ellipsoids</string>
+       </property>
+      </widget>
       <zorder>line_10</zorder>
       <zorder>lab_proj_name_6</zorder>
       <zorder>lab_no_segm_2</zorder>
@@ -4831,13 +4860,14 @@ border-color: #672146
       <zorder>verticalLayoutWidget_3</zorder>
       <zorder>lab_no_ch_12</zorder>
       <zorder>lab_no_ch_8</zorder>
-      <zorder>apply_segm</zorder>
       <zorder>tabW_segm</zorder>
       <zorder>lab_no_ch_14</zorder>
       <zorder>cB_volume_segm</zorder>
       <zorder>cB_area_segm</zorder>
-      <zorder>button_validate_new_proj_3</zorder>
       <zorder>line_11</zorder>
+      <zorder>button_set_segm</zorder>
+      <zorder>apply_segm</zorder>
+      <zorder>cB_ellip_segm</zorder>
      </widget>
      <widget class="QPushButton" name="set_meas_param_all">
       <property name="geometry">
@@ -4966,6 +4996,31 @@ QPushButton:hover{
      <string>Go Back...</string>
     </property>
     <property name="checkable">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="tE_validate">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>880</y>
+      <width>731</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
+color: rgb(170, 0, 127);
+background-color: rgb(250, 250, 250);
+</string>
+    </property>
+    <property name="frame">
+     <bool>false</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="readOnly">
      <bool>true</bool>
     </property>
    </widget>

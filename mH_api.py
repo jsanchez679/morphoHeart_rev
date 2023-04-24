@@ -108,19 +108,19 @@ if partA:
                         'name_chs': name_chs,
                         'chs_relation': chs_relation,
                         'color_chs': color_chs,
-                        'ns': 
+                        'ns': #chNS
                             {'layer_btw_chs': layer_btw_chs,
                             'ch_ext': ch_ext,
                             'ch_int': ch_int,
                             'user_nsChName': user_nsChName,
                             'color_chns': color_chNS},
-                        'segments': 
+                        'segments': #segm 
                             {'cutLayersIn2Segments': cutLayersIn2Segments,
                             'no_segments': no_segments,
                             'no_cuts_4segments': no_cuts_4segments,
                             'name_segments': name_segments,
                             'ch_segments': ch_segments},
-                        'sections': 
+                        'sections': #sect
                             {'cutLayersIn2Sections': cutLayersIn2Sections,
                             'no_sections': no_sections,
                             'name_sections': name_sections,
