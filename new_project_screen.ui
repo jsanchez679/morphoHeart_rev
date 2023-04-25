@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>CreateProjectW</class>
+ <widget class="QDialog" name="CreateProjectW">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1002</width>
-    <height>941</height>
+    <width>1001</width>
+    <height>980</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>941</height>
+     <height>981</height>
     </rect>
    </property>
    <property name="mouseTracking">
@@ -33,7 +33,7 @@
      <rect>
       <x>0</x>
       <y>10</y>
-      <width>1021</width>
+      <width>1001</width>
       <height>31</height>
      </rect>
     </property>
@@ -486,14 +486,14 @@ border-color: #672146
       <x>10</x>
       <y>160</y>
       <width>981</width>
-      <height>711</height>
+      <height>771</height>
      </rect>
     </property>
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="styleSheet">
-     <string notr="true"/>
+     <string notr="true">font: 25 italic 9pt &quot;Calibri Light&quot;;</string>
     </property>
     <property name="tabShape">
      <enum>QTabWidget::Rounded</enum>
@@ -521,7 +521,7 @@ border-color: #672146
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>485</y>
+        <y>540</y>
         <width>955</width>
         <height>171</height>
        </rect>
@@ -1147,7 +1147,7 @@ border-color: #672146
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>5</y>
+        <y>60</y>
         <width>955</width>
         <height>195</height>
        </rect>
@@ -3323,7 +3323,7 @@ border-color: #672146
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>205</y>
+        <y>260</y>
         <width>955</width>
         <height>101</height>
        </rect>
@@ -3880,7 +3880,7 @@ background-color: rgb(255, 255, 255);</string>
       <widget class="QPushButton" name="q_segm_2">
        <property name="geometry">
         <rect>
-         <x>618</x>
+         <x>620</x>
          <y>34</y>
          <width>15</width>
          <height>15</height>
@@ -4114,7 +4114,7 @@ border-color: #672146
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>310</y>
+        <y>365</y>
         <width>955</width>
         <height>171</height>
        </rect>
@@ -4873,7 +4873,7 @@ border-color: #672146
       <property name="geometry">
        <rect>
         <x>755</x>
-        <y>660</y>
+        <y>715</y>
         <width>211</width>
         <height>21</height>
        </rect>
@@ -4899,11 +4899,304 @@ border-color: #672146
        <string>Set Measurement Parameters</string>
       </property>
      </widget>
+     <widget class="QGroupBox" name="set_orientation">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>5</y>
+        <width>955</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QGroupBox#set_orientation{font: 25 italic 10pt &quot;Calibri Light&quot;;}
+
+</string>
+      </property>
+      <property name="title">
+       <string>Stack and ROI Orientation</string>
+      </property>
+      <widget class="QPushButton" name="button_set_orient">
+       <property name="geometry">
+        <rect>
+         <x>825</x>
+         <y>20</y>
+         <width>121</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+       </property>
+       <property name="text">
+        <string>Set Orientation</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="q_orient">
+       <property name="geometry">
+        <rect>
+         <x>795</x>
+         <y>23</y>
+         <width>15</width>
+         <height>15</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{border-radius:7px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+       </property>
+       <property name="text">
+        <string>?</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="cB_stack_orient">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>20</y>
+         <width>200</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>70</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>--select--</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>anterior, ventral, left</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>top, front, left</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>superior, anterior, left</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>custom</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLabel" name="lab_ch1_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>100</width>
+         <height>18</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>30</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Stack Orientation: </string>
+       </property>
+      </widget>
+      <widget class="Line" name="line_14">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>12</y>
+         <width>21</width>
+         <height>30</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color:rgb(188, 188, 188)</string>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
+       </property>
+       <property name="midLineWidth">
+        <number>2</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lab_ch1_3">
+       <property name="geometry">
+        <rect>
+         <x>390</x>
+         <y>20</y>
+         <width>140</width>
+         <height>18</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>140</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>30</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>ROI/Organ Orientation: </string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="cB_roi_orient">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>540</x>
+         <y>20</y>
+         <width>200</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>70</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>--select--</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>anterior, ventral, left</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>top, front, left</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>superior, anterior, left</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>custom</string>
+        </property>
+       </item>
+      </widget>
+     </widget>
      <zorder>set_sect</zorder>
      <zorder>set_channels</zorder>
      <zorder>set_chNS</zorder>
      <zorder>set_meas_param_all</zorder>
      <zorder>set_segm</zorder>
+     <zorder>set_orientation</zorder>
     </widget>
     <widget class="QWidget" name="tab_mCell">
      <attribute name="title">
@@ -4940,8 +5233,8 @@ border-color: #672146
    <widget class="QPushButton" name="button_new_proj">
     <property name="geometry">
      <rect>
-      <x>840</x>
-      <y>905</y>
+      <x>720</x>
+      <y>940</y>
       <width>150</width>
       <height>25</height>
      </rect>
@@ -4971,8 +5264,8 @@ QPushButton:hover{
    <widget class="QPushButton" name="button_go_back">
     <property name="geometry">
      <rect>
-      <x>750</x>
-      <y>905</y>
+      <x>630</x>
+      <y>940</y>
       <width>81</width>
       <height>25</height>
      </rect>
@@ -5003,9 +5296,9 @@ QPushButton:hover{
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>880</y>
-      <width>731</width>
-      <height>41</height>
+      <y>940</y>
+      <width>611</width>
+      <height>30</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -5021,6 +5314,37 @@ background-color: rgb(250, 250, 250);
      <set>Qt::AlignCenter</set>
     </property>
     <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_new_proj_2">
+    <property name="geometry">
+     <rect>
+      <x>880</x>
+      <y>940</y>
+      <width>111</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(134, 134, 134); 
+color: rgb(255, 255, 255);
+font: 11pt &quot;Calibri&quot;;}
+
+QPushButton:hover{
+	background-color: rgba(162, 0, 122,180);
+	border-color: rgba(162, 0, 122,180);
+	border-width: 2px}
+</string>
+    </property>
+    <property name="text">
+     <string>Add Organ</string>
+    </property>
+    <property name="checkable">
      <bool>true</bool>
     </property>
    </widget>

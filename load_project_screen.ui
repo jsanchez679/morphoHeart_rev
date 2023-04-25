@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>701</width>
-    <height>901</height>
+    <height>540</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>700</width>
-     <height>900</height>
+     <width>701</width>
+     <height>541</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -45,34 +45,6 @@
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="button_new_proj">
-    <property name="geometry">
-     <rect>
-      <x>509</x>
-      <y>870</y>
-      <width>181</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(134, 134, 134); 
-color: rgb(255, 255, 255);
-font: 11pt &quot;Calibri&quot;;}
-
-QPushButton:hover{
-	background-color: rgba(162, 0, 122,180);
-	border-color: rgba(162, 0, 122,180);
-	border-width: 2px}
-</string>
-    </property>
-    <property name="text">
-     <string>Open Project and Organ</string>
     </property>
    </widget>
    <widget class="QLabel" name="mH_logo_XS">
@@ -104,7 +76,7 @@ QPushButton:hover{
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QGroupBox#proj_settings{text-decoration: underline; font: 80 11pt &quot;Calibri Light&quot;;}
+     <string notr="true">QGroupBox#proj_settings{text-decoration: underline; font: 80 10pt &quot;Calibri Light&quot;;}
 </string>
     </property>
     <property name="title">
@@ -142,33 +114,6 @@ QPushButton:hover{
       <string>Reference Notes: </string>
      </property>
     </widget>
-    <widget class="QPushButton" name="button_browse_proj">
-     <property name="geometry">
-      <rect>
-       <x>549</x>
-       <y>20</y>
-       <width>121</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-     </property>
-     <property name="text">
-      <string>Browse project...</string>
-     </property>
-    </widget>
     <widget class="QLabel" name="lab_proj_dir">
      <property name="geometry">
       <rect>
@@ -185,54 +130,12 @@ border-color: #672146
       <string>Project Directory: </string>
      </property>
     </widget>
-    <widget class="QLabel" name="lab_filled_proj_dir">
-     <property name="geometry">
-      <rect>
-       <x>110</x>
-       <y>100</y>
-       <width>561</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
-background-color: rgb(240, 240, 240);
-color: rgb(100, 100, 100);</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-    <widget class="QLabel" name="lab_validate_create_new_proj">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>130</y>
-       <width>561</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-color: rgb(170, 0, 127);
-background-color: rgb(250, 250, 250);</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
     <widget class="QLabel" name="lab_filled_proj_name">
      <property name="geometry">
       <rect>
        <x>110</x>
        <y>20</y>
-       <width>181</width>
+       <width>251</width>
        <height>20</height>
       </rect>
      </property>
@@ -263,12 +166,181 @@ color: rgb(100, 100, 100);</string>
       <string/>
      </property>
     </widget>
-    <widget class="QPushButton" name="button_validate_new_proj">
+    <widget class="QPushButton" name="q_orient">
      <property name="geometry">
       <rect>
-       <x>600</x>
+       <x>520</x>
+       <y>22</y>
+       <width>15</width>
+       <height>15</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{border-radius:7px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+     </property>
+     <property name="text">
+      <string>?</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="button_browse_proj">
+     <property name="geometry">
+      <rect>
+       <x>550</x>
+       <y>20</y>
+       <width>121</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="mouseTracking">
+      <bool>true</bool>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+     </property>
+     <property name="text">
+      <string>Browse Project...</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="lab_filled_proj_dir">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>100</y>
+       <width>561</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::StrongFocus</enum>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
+background-color: rgb(240, 240, 240);
+color: rgb(100, 100, 100);</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Calibri Light'; font-size:9pt; font-weight:24; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="button_see_proj_settings">
+     <property name="geometry">
+      <rect>
+       <x>490</x>
        <y>130</y>
-       <width>71</width>
+       <width>181</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="mouseTracking">
+      <bool>true</bool>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+     </property>
+     <property name="text">
+      <string>Project Settings</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="set_orientation">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>210</y>
+      <width>681</width>
+      <height>271</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGroupBox#set_orientation{font: 25 italic 10pt &quot;Calibri Light&quot;;}
+
+</string>
+    </property>
+    <property name="title">
+     <string>Load or Create New Organ</string>
+    </property>
+    <widget class="QPushButton" name="button_create_new_organ">
+     <property name="geometry">
+      <rect>
+       <x>550</x>
+       <y>240</y>
+       <width>121</width>
        <height>20</height>
       </rect>
      </property>
@@ -290,55 +362,175 @@ border-color: #672146
 }</string>
      </property>
      <property name="text">
-      <string>Validate</string>
+      <string>Create New Organ</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
      </property>
      <property name="autoExclusive">
+      <bool>true</bool>
+     </property>
+     <property name="autoDefault">
       <bool>false</bool>
      </property>
     </widget>
+    <widget class="QLabel" name="lab_no_ch_7">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>221</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: bold 10pt &quot;Calibri&quot;;
+background-color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="text">
+      <string>Select the organ you want to load...</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QTableWidget" name="tabW_select_organ">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>45</y>
+       <width>661</width>
+       <height>186</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="cB_blind">
+     <property name="geometry">
+      <rect>
+       <x>570</x>
+       <y>20</y>
+       <width>101</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>95</width>
+       <height>18</height>
+      </size>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+     </property>
+     <property name="text">
+      <string>Blind Analysis</string>
+     </property>
+    </widget>
    </widget>
-   <widget class="QTableWidget" name="table_channel_settings">
+   <widget class="QPushButton" name="button_open_projorgan">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>220</y>
-      <width>601</width>
-      <height>181</height>
+      <x>510</x>
+      <y>500</y>
+      <width>181</width>
+      <height>25</height>
      </rect>
     </property>
-    <column>
-     <property name="text">
-      <string>Organ Name</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>Strain</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>Stage</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>A</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>B</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>C</string>
-     </property>
-    </column>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(134, 134, 134); 
+color: rgb(255, 255, 255);
+font: 11pt &quot;Calibri&quot;;}
+
+QPushButton:hover{
+	background-color: rgba(162, 0, 122,180);
+	border-color: rgba(162, 0, 122,180);
+	border-width: 2px}
+</string>
+    </property>
+    <property name="text">
+     <string>Open Project and Organ</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="tE_validate">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>490</y>
+      <width>401</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
+color: rgb(170, 0, 127);
+background-color: rgb(250, 250, 250);
+</string>
+    </property>
+    <property name="frame">
+     <bool>false</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_go_back">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>500</y>
+      <width>81</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(134, 134, 134); 
+color: rgb(255, 255, 255);
+font: 11pt &quot;Calibri&quot;;}
+
+QPushButton:hover{
+	background-color: rgba(162, 0, 122,180);
+	border-color: rgba(162, 0, 122,180);
+	border-width: 2px}
+</string>
+    </property>
+    <property name="text">
+     <string>Go Back...</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
    </widget>
   </widget>
  </widget>

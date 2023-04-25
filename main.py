@@ -10,6 +10,7 @@ from PyQt6.QtGui import QPixmap, QFont
 from pathlib import Path
 import flatdict
 import os
+from itertools import count
 
 #https://www.color-hex.com/color-palette/96194
 #https://www.color-hex.com/color-palette/96197
@@ -50,6 +51,9 @@ class CreateNewProj(QDialog):
         uic.loadUi('new_project_screen.ui', self)
         mH_logoXS = QPixmap('images/logos_1o75mm.png')
         self.mH_logo_XS.setPixmap(mH_logoXS)
+
+        #Initialise the other windows
+        self.meas_param = None
 
         now = QDate.currentDate()
         self.dateEdit.setDate(now)
@@ -174,11 +178,11 @@ class CreateNewProj(QDialog):
     #Functions for General Project Settings   
     def get_proj_dir(self):
         self.button_validate_new_proj.setChecked(False)
-        self.toggled(self.button_validate_new_proj)
+        toggled(self.button_validate_new_proj)
         self.button_create_initial_proj.setChecked(False)
-        self.toggled(self.button_create_initial_proj)
+        toggled(self.button_create_initial_proj)
         self.button_select_proj_dir.setChecked(True)
-        self.toggled(self.button_select_proj_dir)
+        toggled(self.button_select_proj_dir)
         response = QFileDialog.getExistingDirectory(self, caption='Select a Directory to save New Project Files')
         self.proj_dir_parent = Path(response)
         self.lab_filled_proj_dir.setText(str(self.proj_dir_parent))
@@ -218,7 +222,7 @@ class CreateNewProj(QDialog):
                 valid.append(True)
             else: 
                 self.button_select_proj_dir.setChecked(False)
-                self.toggled(self.button_select_proj_dir)
+                toggled(self.button_select_proj_dir)
                 error_txt = '*The selected project directory is invalid. Please select another directory.'
                 self.tE_validate.setText(error_txt)
                 return
@@ -237,11 +241,11 @@ class CreateNewProj(QDialog):
         else: 
             self.tE_validate.setText(error_txt)
             self.button_validate_new_proj.setChecked(False)
-        self.toggled(self.button_validate_new_proj)
+        toggled(self.button_validate_new_proj)
 
     def create_new_proj(self):
         if self.button_validate_new_proj.isChecked(): 
-            self.toggled(self.button_create_initial_proj)
+            toggled(self.button_create_initial_proj)
             self.tabWidget.setEnabled(True)
             self.tab_mHeart.setEnabled(self.checked_analysis['morphoHeart'])
             self.tab_mCell.setEnabled(self.checked_analysis['morphoCell'])
@@ -452,11 +456,11 @@ class CreateNewProj(QDialog):
             self.button_validate_initial_set.setChecked(True)
         else: 
             self.button_validate_initial_set.setChecked(False)
-        self.toggled(self.button_validate_initial_set)
+        toggled(self.button_validate_initial_set)
 
     def set_initial_settings(self):
         if self.button_validate_initial_set.isChecked():
-            self.toggled(self.button_set_initial_set)
+            toggled(self.button_set_initial_set)
             self.tick_ch1.setChecked(True)
             #Get data from initial settings
             # Get data form ticked channels:
@@ -559,7 +563,7 @@ class CreateNewProj(QDialog):
             self.get_chNS_settings()
         else: 
             self.button_set_chNS.setChecked(False)
-        self.toggled(self.button_set_chNS)
+        toggled(self.button_set_chNS)
 
     def get_chNS_settings(self):
         ch_ext = self.ext_chNS.currentText()
@@ -695,7 +699,7 @@ class CreateNewProj(QDialog):
             self.set_tables(self.tabW_segm, self.ch_selected, 'segm')
         else: 
             self.apply_segm.setChecked(False)
-        self.toggled(self.apply_segm)
+        toggled(self.apply_segm)
 
     def apply_sections(self): 
         valid_all = []
@@ -729,7 +733,7 @@ class CreateNewProj(QDialog):
             self.set_tables(self.tabW_sect, self.ch_selected, 'sect')
         else: 
             self.apply_sect.setChecked(False)
-        self.toggled(self.apply_sect)
+        toggled(self.apply_sect)
 
     def validate_segm_settings(self): 
         valid_all = []
@@ -765,7 +769,15 @@ class CreateNewProj(QDialog):
                     return
                 else: 
                     valid.append(True)
-
+                
+                #Check apply has been pressed
+                if self.apply_segm.isChecked(): 
+                    valid.append(True)
+                else: 
+                    error_txt = "You need to apply the segment cut's settings and select the channel contours to cut before continuing."
+                    self.tE_validate.setText(error_txt)
+                    return
+                
                 #Check box selection
                 tiss_cut = []
                 for btn in self.btn_segm:
@@ -843,7 +855,7 @@ class CreateNewProj(QDialog):
             self.tE_validate.setText('All good, continue!')
         else: 
             self.button_set_segm.setChecked(False)
-        self.toggled(self.button_set_segm)
+        toggled(self.button_set_segm)
 
     def validate_sect_settings(self): 
         valid_all = []
@@ -877,6 +889,14 @@ class CreateNewProj(QDialog):
                     return
                 else: 
                     valid.append(True)
+
+                #Check apply has been pressed
+                if self.apply_sect.isChecked(): 
+                    valid.append(True)
+                else: 
+                    error_txt = "You need to apply the section cut's settings and select the channel contours to cut before continuing."
+                    self.tE_validate.setText(error_txt)
+                    return
 
                 #Check box selection
                 tiss_cut = []
@@ -953,26 +973,58 @@ class CreateNewProj(QDialog):
             self.tE_validate.setText('All good, continue!')
         else: 
             self.button_set_sect.setChecked(False)
-        self.toggled(self.button_set_sect)
+        toggled(self.button_set_sect)
 
     def set_meas_param(self):
         print('aja')
-        self.set_meas_param_table()
-    
-    def set_meas_param_table(self): 
+        if self.meas_param is None: 
+            self.meas_param = SetMeasParam(mH_settings = self.mH_settings, parent=self)
+        self.meas_param.show()
+        
+    def go_to_welcome(self):
+        widget.setCurrentIndex(widget.currentIndex()-1)
+
+    #Tab general functions
+    def tabChanged(self):
+        print('Tab was changed to ', self.tabWidget.currentIndex())
+
+class SetMeasParam(QDialog):
+    def __init__(self, mH_settings:dict, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle('Set Parameters to Measure...')
+        uic.loadUi('set_meas_screen.ui', self)
+        mH_logoXS = QPixmap('images/logos_1o75mm.png')
+        self.mH_logo_XS.setPixmap(mH_logoXS)
+
+        print('New window:', mH_settings)
+
+        self.set_meas_param_table(self.tabW_meas, mH_settings)
+
+
+    def set_meas_param_table(self, table, mH_settings:dict): 
+        
+        ch_all = mH_settings['name_chs']
+        if isinstance(mH_settings['chNS'], dict):
+            if mH_settings['chNS']['layer_btw_chs']:
+                ch_all['chNS'] = mH_settings['chNS']['user_nsChName']
+        
+        # ch_selected = [mH_settings['name_chs'][key] for key in mH_settings['name_chs'].keys()]
+        # if isinstance(mH_settings['chNS'], dict):
+        #     if mH_settings['chNS']['layer_btw_chs']:
+        #         ch_selected.append(mH_settings['chNS']['user_nsChName'])
+            
         table.horizontalHeader().setVisible(False)
         #table.verticalHeader().setVisible(False)
-        h_labels = ['int', 'tiss', 'ext']*len(ch_selected)
+        h_labels = ['int', 'tiss', 'ext']*len(ch_all)
         print('h_labels:', h_labels)
         table.setColumnCount(len(h_labels))
 
         #Set Measurement Parameters
-        params = ['surface area','volume','centreline','centreline length','centreline looped length', 
-                  'thickness (int>ext)','thickness (ext>int)', 'segments ellipsoids', 'centreline>tissue (ballooning)', 
-                  ]
-        cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
-        print('cuts_sel:', cuts_sel)
-        v_labels = ['---','---']+[key for key in cuts_sel.keys() if cuts_sel[key]==True]
+        params = {'SA': 'surface area', 'Vol':'volume','CL':'centreline','CLlin':'centreline length','CLloop':'centreline looped length', 
+                  'th_i2e':'thickness (int>ext)','th_e2i':'thickness (ext>int)', 'bal': 'centreline>tissue (ballooning)'}
+        
+        print('params:', params)
+        v_labels = ['---','---']+[params[val] for val in params]
         print('v_labels:', v_labels)
         table.setRowCount(len(v_labels))
         table.setVerticalHeaderLabels(v_labels)
@@ -984,14 +1036,14 @@ class CreateNewProj(QDialog):
 
         #Set first row labels
         print(list(range(0,len(h_labels),3)))
-        for n, col in enumerate(range(0,len(h_labels),3)):
-            print(n, col)
+        for n, col, chn in zip(count(), range(0,len(h_labels),3), ch_all):
+            print(n, col, chn)
             table.setSpan(0,col,1,3)
-            table.setItem(0,col, QTableWidgetItem(ch_selected[n]))
-            print(ch_selected[n])
+            table.setItem(0,col, QTableWidgetItem(ch_all[chn]))
+            print(ch_all[chn])
         #Set second row labels
-        for n, ccl in enumerate(range(len(h_labels))):
-            table.setItem(1,ccl,QTableWidgetItem(h_labels[n]))
+        for ccl, h_lab in enumerate(h_labels):
+            table.setItem(1,ccl,QTableWidgetItem(h_lab))
 
         # print('len(colum):', table.columnCount())
         # print('len(rows):', table.rowCount())
@@ -999,20 +1051,20 @@ class CreateNewProj(QDialog):
 
         btn_stype = []
         row_n = 2
-        for v_lab in v_labels[2:]:
-            row_name = v_lab
+        for aa, v_lab, param in zip(count(), v_labels[2:], params):
+            row_name = params[param]
             col_n = 0
             for mm, h_lab in enumerate(h_labels):
                 cont_name = h_lab
                 ch_num = (mm//3)
                 print('mm:',mm, '-ch_num:',ch_num, h_lab)
-                ch_name = ch_selected[ch_num]
+                ch_name = list(ch_all.keys())[ch_num]
                 widget   = QWidget()
                 checkbox = QCheckBox()
                 checkbox.setChecked(False)
                 layoutH = QHBoxLayout(widget)
                 layoutH.addWidget(checkbox)
-                btn_name = 'cB_'+stype+'_('+row_name+'-'+ch_name+'_'+cont_name+')'
+                btn_name = 'cB_('+row_name+'-'+ch_name+'_'+cont_name+')'
                 btn_stype.append(btn_name)
                 setattr(self, btn_name, checkbox)
                 # layoutH.setAlignment(Qt.AlignCenter)
@@ -1021,34 +1073,8 @@ class CreateNewProj(QDialog):
                 col_n +=1   
             row_n +=1 
 
-        setattr(self, 'btn_'+stype, btn_stype)
-        print(getattr(self, 'btn_'+stype))
-
-        print('aja')
-
-
-    def get_image_dir(self): 
-        file_filter = 'Image File (*.png *.jpg *.tif)'
-        response = QFileDialog.getOpenFileName(parent=self, caption='Select file image', 
-                                               directory=os.getcwd(), filter=file_filter, 
-                                               initialFilter=file_filter)
-        print(response)
-
-    def go_to_welcome(self):
-        widget.setCurrentIndex(widget.currentIndex()-1)
-
-    # Button general functions
-    def toggled(self, button_name): 
-        style = 'border-radius:10px; border-width: 1px; border-style: outset; color: rgb(71, 71, 71); font: 10pt "Calibri Light";'
-        if button_name.isChecked():
-            style_f = 'QPushButton{background-color: #eb6fbd; border-color: #672146;'+style+'}'
-        else: 
-            style_f = 'QPushButton{background-color: rgb(211, 211, 211); border-color: rgb(66, 66, 66);'+style+'}'
-        button_name.setStyleSheet(style_f)
-
-    #Tab general functions
-    def tabChanged(self):
-        print('Tab was changed to ', self.tabWidget.currentIndex())
+        setattr(self, 'btn_meas', btn_stype)
+        print(getattr(self, 'btn_meas'))
 
 class LoadProj(QDialog):
     def __init__(self):
@@ -1131,11 +1157,27 @@ class MainWindow(QMainWindow):
 #     controller.show_login()
 #     sys.exit(app.exec_())
 
+# Button general functions
+def toggled(button_name): 
+    style = 'border-radius:10px; border-width: 1px; border-style: outset; color: rgb(71, 71, 71); font: 10pt "Calibri Light";'
+    if button_name.isChecked():
+        style_f = 'QPushButton{background-color: #eb6fbd; border-color: #672146;'+style+'}'
+    else: 
+        style_f = 'QPushButton{background-color: rgb(211, 211, 211); border-color: rgb(66, 66, 66);'+style+'}'
+    button_name.setStyleSheet(style_f)
+
+# def get_image_dir(self): 
+#     file_filter = 'Image File (*.png *.jpg *.tif)'
+#     response = QFileDialog.getOpenFileName(parent=self, caption='Select file image', 
+#                                             directory=os.getcwd(), filter=file_filter, 
+#                                             initialFilter=file_filter)
+#     print(response)
+
 app = QApplication(sys.argv)
 welcome = WelcomeScreen()
 widget = QtWidgets.QStackedWidget()
 widget.addWidget(welcome)
-widget.setFixedSize(1000,940)
+widget.setFixedSize(1001,981)
 widget.show()
 
 try: 
