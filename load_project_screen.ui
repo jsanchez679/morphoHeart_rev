@@ -532,6 +532,13 @@ QPushButton:hover{
      <bool>true</bool>
     </property>
    </widget>
+   <zorder>label_2</zorder>
+   <zorder>proj_settings</zorder>
+   <zorder>set_orientation</zorder>
+   <zorder>button_open_projorgan</zorder>
+   <zorder>tE_validate</zorder>
+   <zorder>button_go_back</zorder>
+   <zorder>mH_logo_XS</zorder>
   </widget>
  </widget>
  <resources>

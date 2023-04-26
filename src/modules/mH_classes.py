@@ -82,7 +82,7 @@ class Project():
     process all the organs contained in a project are set up when starting a 
     new project and can be amended if needed as the organs are processed.
     '''
-    def __init__(self, name=None, notes=None, analysis=None, dir_proj=None,
+    def __init__(self, name=None, notes=None, date=None, analysis=None, dir_proj=None,
                              new=True):
         
         if dir_proj.is_dir():
@@ -114,6 +114,7 @@ class Project():
             self.info = {'mH_projName': self.mH_projName,
                             'user_projName': self.user_projName,
                             'user_projNotes': notes, 
+                            'date_created' : date,
                             'dirs': []}
             self.analysis = analysis
             self.dir_proj = Path(dir_proj)

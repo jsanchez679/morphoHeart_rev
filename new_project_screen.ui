@@ -484,7 +484,7 @@ border-color: #672146
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>160</y>
+      <y>170</y>
       <width>981</width>
       <height>771</height>
      </rect>
@@ -4869,36 +4869,6 @@ border-color: #672146
       <zorder>apply_segm</zorder>
       <zorder>cB_ellip_segm</zorder>
      </widget>
-     <widget class="QPushButton" name="set_meas_param_all">
-      <property name="geometry">
-       <rect>
-        <x>755</x>
-        <y>715</y>
-        <width>211</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="layoutDirection">
-       <enum>Qt::LeftToRight</enum>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-      </property>
-      <property name="text">
-       <string>Set Measurement Parameters</string>
-      </property>
-     </widget>
      <widget class="QGroupBox" name="set_orientation">
       <property name="geometry">
        <rect>
@@ -5191,12 +5161,39 @@ border-color: #672146
        </item>
       </widget>
      </widget>
-     <zorder>set_sect</zorder>
-     <zorder>set_channels</zorder>
-     <zorder>set_chNS</zorder>
-     <zorder>set_meas_param_all</zorder>
-     <zorder>set_segm</zorder>
-     <zorder>set_orientation</zorder>
+     <widget class="QPushButton" name="set_meas_param_all">
+      <property name="geometry">
+       <rect>
+        <x>755</x>
+        <y>715</y>
+        <width>211</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+      </property>
+      <property name="text">
+       <string>Set Measurement Parameters</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_mCell">
      <attribute name="title">
@@ -5233,8 +5230,8 @@ border-color: #672146
    <widget class="QPushButton" name="button_new_proj">
     <property name="geometry">
      <rect>
-      <x>720</x>
-      <y>940</y>
+      <x>715</x>
+      <y>947</y>
       <width>150</width>
       <height>25</height>
      </rect>
@@ -5265,7 +5262,7 @@ QPushButton:hover{
     <property name="geometry">
      <rect>
       <x>630</x>
-      <y>940</y>
+      <y>947</y>
       <width>81</width>
       <height>25</height>
      </rect>
@@ -5295,9 +5292,9 @@ QPushButton:hover{
    <widget class="QLineEdit" name="tE_validate">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>940</y>
-      <width>611</width>
+      <x>310</x>
+      <y>155</y>
+      <width>681</width>
       <height>30</height>
      </rect>
     </property>
@@ -5320,9 +5317,9 @@ background-color: rgb(250, 250, 250);
    <widget class="QPushButton" name="button_new_proj_2">
     <property name="geometry">
      <rect>
-      <x>880</x>
-      <y>940</y>
-      <width>111</width>
+      <x>870</x>
+      <y>947</y>
+      <width>121</width>
       <height>25</height>
      </rect>
     </property>
@@ -5342,12 +5339,20 @@ QPushButton:hover{
 </string>
     </property>
     <property name="text">
-     <string>Add Organ</string>
+     <string>Add Organ/ROI</string>
     </property>
     <property name="checkable">
      <bool>true</bool>
     </property>
    </widget>
+   <zorder>lab_create_new_proj</zorder>
+   <zorder>gral_proj_settings</zorder>
+   <zorder>tabWidget</zorder>
+   <zorder>button_new_proj</zorder>
+   <zorder>button_go_back</zorder>
+   <zorder>tE_validate</zorder>
+   <zorder>button_new_proj_2</zorder>
+   <zorder>mH_logo_XS</zorder>
   </widget>
  </widget>
  <resources>

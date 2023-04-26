@@ -30,7 +30,7 @@
      <rect>
       <x>0</x>
       <y>10</y>
-      <width>701</width>
+      <width>736</width>
       <height>31</height>
      </rect>
     </property>
@@ -41,7 +41,7 @@
      <string notr="true">font: bold 14pt &quot;Calibri&quot;; color: rgb(116, 116, 116)</string>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Create New Organ&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Create New Organ/ROI&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -239,7 +239,7 @@ border-color: #672146
 }</string>
      </property>
      <property name="text">
-      <string>Project Settings</string>
+      <string>See Project Settings</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
@@ -267,7 +267,7 @@ border-color: #672146
 </string>
     </property>
     <property name="title">
-     <string>Load or Create New Organ</string>
+     <string>Load or Create New Organ/ROI</string>
     </property>
     <widget class="QPushButton" name="button_create_new_organ">
      <property name="geometry">
@@ -1008,7 +1008,7 @@ QTextEdit:focus { border: 1px solid #eb6fbd;}
       <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
      </property>
      <property name="text">
-      <string>Organ Name:</string>
+      <string>Organ/ROI Name:</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="lineEdit_organ_name">
@@ -1751,7 +1751,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
       <rect>
        <x>15</x>
        <y>390</y>
-       <width>111</width>
+       <width>126</width>
        <height>18</height>
       </rect>
      </property>
@@ -1759,15 +1759,15 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
       <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
      </property>
      <property name="text">
-      <string>Organ Directory: </string>
+      <string>Organ/ROI Directory: </string>
      </property>
     </widget>
     <widget class="QTextEdit" name="lab_filled_organ_dir">
      <property name="geometry">
       <rect>
-       <x>115</x>
+       <x>140</x>
        <y>390</y>
-       <width>461</width>
+       <width>436</width>
        <height>21</height>
       </rect>
      </property>
@@ -1806,9 +1806,9 @@ p, li { white-space: pre-wrap; }
    <widget class="QPushButton" name="button_open_projorgan">
     <property name="geometry">
      <rect>
-      <x>545</x>
+      <x>530</x>
       <y>645</y>
-      <width>181</width>
+      <width>196</width>
       <height>25</height>
      </rect>
     </property>
@@ -1828,7 +1828,7 @@ QPushButton:hover{
 </string>
     </property>
     <property name="text">
-     <string>Open Project and Organ</string>
+     <string>Open Project and Organ/ROI</string>
     </property>
     <property name="checkable">
      <bool>true</bool>
@@ -1839,7 +1839,7 @@ QPushButton:hover{
      <rect>
       <x>10</x>
       <y>635</y>
-      <width>441</width>
+      <width>426</width>
       <height>41</height>
      </rect>
     </property>
@@ -1862,7 +1862,7 @@ background-color: rgb(250, 250, 250);
    <widget class="QPushButton" name="button_go_back">
     <property name="geometry">
      <rect>
-      <x>455</x>
+      <x>440</x>
       <y>645</y>
       <width>81</width>
       <height>25</height>
@@ -1890,6 +1890,13 @@ QPushButton:hover{
      <bool>true</bool>
     </property>
    </widget>
+   <zorder>label_2</zorder>
+   <zorder>proj_settings</zorder>
+   <zorder>set_organ</zorder>
+   <zorder>button_open_projorgan</zorder>
+   <zorder>tE_validate</zorder>
+   <zorder>button_go_back</zorder>
+   <zorder>mH_logo_XS</zorder>
   </widget>
  </widget>
  <resources>

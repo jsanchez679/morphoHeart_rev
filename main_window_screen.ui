@@ -1492,15 +1492,18 @@ border-color: #672146
 font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
        </property>
        <property name="text">
-        <string> Pipeline Settings</string>
+        <string>Pipeline Settings</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
       <widget class="QLabel" name="lab_proj_name_3">
        <property name="geometry">
         <rect>
-         <x>445</x>
+         <x>860</x>
          <y>5</y>
-         <width>61</width>
+         <width>51</width>
          <height>18</height>
         </rect>
        </property>
@@ -1509,13 +1512,16 @@ font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
 font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
        </property>
        <property name="text">
-        <string>  Progress</string>
+        <string>Progress</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
       <widget class="QScrollArea" name="scrollArea_2">
        <property name="geometry">
         <rect>
-         <x>435</x>
+         <x>850</x>
          <y>15</y>
          <width>290</width>
          <height>600</height>
@@ -1582,7 +1588,7 @@ font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
       <widget class="QPushButton" name="button_set_orient_2">
        <property name="geometry">
         <rect>
-         <x>340</x>
+         <x>305</x>
          <y>620</y>
          <width>121</width>
          <height>20</height>
@@ -1651,12 +1657,85 @@ border-color: #672146
         <string>?</string>
        </property>
       </widget>
+      <widget class="QLabel" name="lab_proj_name_12">
+       <property name="geometry">
+        <rect>
+         <x>445</x>
+         <y>5</y>
+         <width>96</width>
+         <height>18</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Analysis Pipeline</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QScrollArea" name="scrollArea_3">
+       <property name="geometry">
+        <rect>
+         <x>435</x>
+         <y>15</y>
+         <width>290</width>
+         <height>600</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>290</width>
+         <height>600</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>290</width>
+         <height>600</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-color: rgb(220, 220, 220);</string>
+       </property>
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAsNeeded</enum>
+       </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents_3">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>288</width>
+          <height>598</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4"/>
+       </widget>
+      </widget>
       <zorder>scrollArea</zorder>
       <zorder>lab_proj_name_2</zorder>
       <zorder>scrollArea_2</zorder>
       <zorder>lab_proj_name_3</zorder>
       <zorder>button_set_orient_2</zorder>
       <zorder>q_orient_7</zorder>
+      <zorder>scrollArea_3</zorder>
+      <zorder>lab_proj_name_12</zorder>
      </widget>
      <widget class="QWidget" name="tab_mCell">
       <attribute name="title">
@@ -1709,7 +1788,7 @@ border-color: #672146
      <widget class="QLabel" name="mH_logo_XS_2">
       <property name="geometry">
        <rect>
-        <x>610</x>
+        <x>615</x>
         <y>10</y>
         <width>121</width>
         <height>31</height>
@@ -1989,8 +2068,8 @@ border-color: #672146
      <widget class="QCheckBox" name="cB_blind">
       <property name="geometry">
        <rect>
-        <x>630</x>
-        <y>15</y>
+        <x>445</x>
+        <y>117</y>
         <width>101</width>
         <height>19</height>
        </rect>
@@ -2017,6 +2096,21 @@ border-color: #672146
        <string>Blind Analysis</string>
       </property>
      </widget>
+     <zorder>lab_proj_name_7</zorder>
+     <zorder>lab_proj_name_8</zorder>
+     <zorder>lab_proj_name_9</zorder>
+     <zorder>lab_proj_name_11</zorder>
+     <zorder>lab_ref_notes_4</zorder>
+     <zorder>lab_filled_proj_name_8</zorder>
+     <zorder>lab_filled_proj_name_9</zorder>
+     <zorder>lab_filled_proj_name_10</zorder>
+     <zorder>lab_filled_proj_name_11</zorder>
+     <zorder>lab_ch1_3</zorder>
+     <zorder>lab_filled_ref_notes_4</zorder>
+     <zorder>lab_filled_proj_name_12</zorder>
+     <zorder>button_see_proj_settings_4</zorder>
+     <zorder>cB_blind</zorder>
+     <zorder>mH_logo_XS_2</zorder>
     </widget>
     <widget class="QProgressBar" name="progressBar">
      <property name="geometry">

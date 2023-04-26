@@ -1,13 +1,13 @@
 
 '''
-morphoHeart_api_B
+morphoHeart_api
 
 Version: Dec 01, 2022
 @author: Juliana Sanchez-Posada
 
 '''
 
-#%% ##### - Imports - ########################################################
+#%% Imports - ########################################################
 # import pathlib
 import sys
 from pathlib import Path
@@ -20,7 +20,7 @@ heart_default=False
 dict_gui = {'alert_all': alert_all,
             'heart_default': heart_default}
 
-#%% ##### - morphoHeart Imports - ##################################################
+#%% morphoHeart Imports - ##################################################
 # import src.mH_exceptions as mHExcp
 from src.modules import mH_classes as mHC
 from src.modules import mH_funcBasics as fcBasics

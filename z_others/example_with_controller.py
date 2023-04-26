@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtWidgets
 class MainWindow(QtWidgets.QWidget):
 
     switch_window = QtCore.pyqtSignal(str)
+    print(switch_window)
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
@@ -47,6 +48,7 @@ class WindowTwo(QtWidgets.QWidget):
 class Login(QtWidgets.QWidget):
 
     switch_window = QtCore.pyqtSignal()
+    print(switch_window)
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)

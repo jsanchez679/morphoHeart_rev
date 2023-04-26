@@ -47,7 +47,7 @@
      <string notr="true">font: bold 14pt &quot;Calibri&quot;; color: rgb(116, 116, 116)</string>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Set Measurements Parameters&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Set Measurement Parameters&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -72,7 +72,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QPushButton" name="button_new_proj">
+   <widget class="QPushButton" name="button_set_params">
     <property name="geometry">
      <rect>
       <x>660</x>
@@ -340,42 +340,6 @@ QTextEdit:focus { border: 1px solid #eb6fbd;}
      </property>
      <property name="placeholderText">
       <string>Enter the different parameter options for this new parameter (separated by comma -,-) (e.g. dextral looper, sinistral looper, dorso-ventral looper)</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="button_validate_meas">
-     <property name="geometry">
-      <rect>
-       <x>540</x>
-       <y>365</y>
-       <width>80</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-     </property>
-     <property name="text">
-      <string>Validate</string>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <property name="autoExclusive">
-      <bool>false</bool>
      </property>
     </widget>
     <widget class="QPushButton" name="q_add_param">
