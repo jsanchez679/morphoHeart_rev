@@ -123,17 +123,17 @@ class Controller:
         print(self.user_params)
 
     def new_proj(self):
-        self.meas_param_win.button_new_proj.setChecked(True)
+        self.new_proj_win.button_new_proj.setChecked(True)
         toggled(self.new_proj_win.button_new_proj)
-        self.meas_param_win.button_new_proj.setDisabled(True)
+        self.new_proj_win.button_new_proj.setDisabled(True)
         if self.new_proj_win.set_meas_param_all.isChecked(): 
             print('mH_settings:',self.new_proj_win.mH_settings)
             print('notes: ',self.new_proj_win.textEdit_ref_notes.toPlainText())
             self.proj = mHC.Project(name=self.new_proj_win.lineEdit_proj_name.text(), 
-                               notes=self.new_proj_win.textEdit_ref_notes.toPlainText(),
-                               date = self.new_proj_win.dateEdit.date().toPyDate(),
-                               analysis=self.new_proj_win.checked_analysis, 
-                               dir_proj = self.new_proj_win.proj_dir)
+                                    notes=self.new_proj_win.textEdit_ref_notes.toPlainText(),
+                                    date = str(self.new_proj_win.dateEdit.date().toPyDate()),
+                                    analysis=self.new_proj_win.checked_analysis, 
+                                    dir_proj = self.new_proj_win.proj_dir)
             print(self.proj.__dict__)
             # self.proj.set_settings(mH_settings=self.new_proj_win.mH_settings, 
             #                   mC_settings=self.new_proj_win.mC_settings)

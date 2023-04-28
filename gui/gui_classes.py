@@ -37,7 +37,38 @@ class WelcomeScreen(QDialog):
         self.mH_logo_XL.setPixmap(QPixmap(mH_big))
         self.setWindowIcon(QIcon(mH_icon))
 
+class PromptWindow(QDialog):
 
+    def __init__(self, msg:str, title:str, info:str, parent=None):
+        super().__init__()
+        uic.loadUi('prompt_user_input.ui', self)
+        self.setFixedSize(400,250)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.textEdit.setText(msg)
+        
+        if title == 'Custom Orientation':
+            self.custom_or = None
+            self.button_ok.clicked.connect(lambda: self.validate_custom_or(parent, info))
+        
+        self.show()
+
+    def validate_custom_or(self, parent, info):
+        user_input = split_str(self.lineEdit.text())
+        if len(set(user_input)) != 3:
+            error_txt = '*Three different names need to be given for each orientation'
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            self.custom_or = user_input
+            added_or = ','.join(self.custom_or)
+            user_or = getattr(parent, 'cB_'+info+'_orient')
+            user_or.addItem(added_or)
+            user_or.setCurrentText(added_or)
+            self.close()
+        print('self.custom_or:',self.custom_or)
+        
 class CreateNewProj(QDialog):
 
     def __init__(self, parent=None):
@@ -45,14 +76,28 @@ class CreateNewProj(QDialog):
         self.proj_name = ''
         self.proj_dir_parent = ''
         uic.loadUi('new_project_screen.ui', self)
-        self.setFixedSize(1001,981)
+        self.setFixedSize(1001,975)
         self.setWindowTitle('Create New Project...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
 
-        #Initialise the other windows
+        #Initialise variables
         self.meas_param = None
 
+        #Initialise window sections
+        self.init_gral_proj_set()
+        #Initialise Tabs for morphoHeart Analysis and morphoCell
+        self.init_analysis_tabs()
+        #- morphoHeart
+        self.init_mHeart_tab()
+        self.init_orient_group()
+        self.init_chNS_group()
+        self.init_segments_group()
+        self.init_sections_group()
+        #- morphoCell
+        self.init_mCell_tab()
+
+    def init_gral_proj_set(self):
         now = QDate.currentDate()
         self.dateEdit.setDate(now)
 
@@ -69,12 +114,14 @@ class CreateNewProj(QDialog):
         self.button_validate_new_proj.clicked.connect(lambda: self.validate_new_proj())
         self.button_create_initial_proj.clicked.connect(lambda: self.create_new_proj())
 
+    def init_analysis_tabs(self): 
         #Set Tab Widgets
         self.tabWidget.currentChanged.connect(self.tabChanged)
         self.tabWidget.setTabText(0,'Morphological [morphoHeart]')
         self.tabWidget.setTabText(1,'Cellular [morphoCell]')
         self.tabWidget.setEnabled(False)
 
+    def init_mHeart_tab(self):
         #Initial set-up objects
         # -- Channels
         #Ch1
@@ -108,6 +155,12 @@ class CreateNewProj(QDialog):
         self.button_validate_initial_set.clicked.connect(lambda: self.validate_initial_settings())
         self.button_set_initial_set.clicked.connect(lambda: self.set_initial_settings())
 
+    def init_orient_group(self): 
+        self.cB_stack_orient.currentIndexChanged.connect(lambda: self.custom_orient('stack'))
+        self.cB_roi_orient.currentIndexChanged.connect(lambda: self.custom_orient('roi'))
+        self.button_set_orient.clicked.connect(lambda: self.set_orientation_settings())
+
+    def init_chNS_group(self):
         # -- Channel NS
         self.set_chNS.setDisabled(True)
         self.set_chNS.setVisible(False)
@@ -119,17 +172,17 @@ class CreateNewProj(QDialog):
         #Default colors (ChannelNS)
         self.ck_def_colorsNS.stateChanged.connect(lambda: self.default_colors('chNS'))
 
+    def init_segments_group(self):
         # -- Segments
         self.set_segm.setVisible(False)
+        #Segm 1
         self.tick_segm1.setEnabled(True)
         self.tick_segm1.setChecked(True)
-        self.lab_segm1.setEnabled(True)
         self.sB_no_segm1.setEnabled(True)
         self.cB_obj_segm1.setEnabled(True)
         self.sB_segm_noObj1.setEnabled(True)
         self.names_segm1.setEnabled(True)
-
-        self.lab_segm2.setEnabled(True)
+        #Segm 2
         self.tick_segm2.setEnabled(True)
         self.tick_segm2.setChecked(False)
         self.sB_no_segm2.setEnabled(False)
@@ -147,17 +200,18 @@ class CreateNewProj(QDialog):
         self.apply_segm.clicked.connect(lambda: self.apply_segments())
         self.button_set_segm.clicked.connect(lambda: self.validate_segm_settings())
 
+    def init_sections_group(self):
+        # -- Segments
+        self.set_sect.setVisible(False)
         # -- Sections
         self.tick_sect1.setEnabled(True)
         self.tick_sect1.setChecked(True)
         self.set_sect.setVisible(False)
-        self.lab_sect1.setEnabled(True)
         self.cB_obj_sect1.setEnabled(True)
         self.names_sect1.setEnabled(True)
 
         self.tick_sect2.setEnabled(True)
         self.tick_sect2.setChecked(False)
-        self.lab_sect2.setEnabled(True)
         self.cB_obj_sect2.setEnabled(False)
         self.names_sect2.setEnabled(False)
         self.tick_sect2.stateChanged.connect(lambda: self.add_segm_sect('sect'))
@@ -167,6 +221,9 @@ class CreateNewProj(QDialog):
                 cB.addItem(obj)
         self.apply_sect.clicked.connect(lambda: self.apply_sections())
         self.button_set_sect.clicked.connect(lambda: self.validate_sect_settings())
+
+    def init_mCell_tab(self):
+        pass
 
     #Functions for General Project Settings   
     def get_proj_dir(self):
@@ -249,6 +306,7 @@ class CreateNewProj(QDialog):
                                     'name_chs': 0,
                                     'chs_relation': 0,
                                     'color_chs': 0,
+                                    'orientation': 0,
                                     'rotateZ_90': True}
             if self.checked_analysis['morphoCell']:
                 self.mC_settings = {}
@@ -265,7 +323,45 @@ class CreateNewProj(QDialog):
             self.tE_validate.setText("*Project's name, analysis pipeline and directory need to be validated for the new project to be created!")
 
     #Functions for Initial Set-up 
-    # Functions for channels
+    # -- Functions for orientation
+    def custom_orient(self, ortype): 
+        user_or = getattr(self,'cB_'+ortype+'_orient').currentText()
+        if user_or == 'custom':
+            self.prompt = PromptWindow(msg='Give the name of the three different custom orientations for the -'+ortype.upper()+'- separated by a comma:', 
+                                        title = 'Custom Orientation', info=ortype, parent = self)
+        else: 
+            pass 
+
+    def set_orientation_settings(self):
+        valid = []; error_txt = ''
+        stack_or = self.cB_stack_orient.currentText()
+        if stack_or == '--select--': 
+            error_txt = '*Please select a stack orientation coordinates'
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            valid.append(True)
+
+        roi_or = self.cB_roi_orient.currentText()
+        if roi_or == '--select--': 
+            error_txt = '*Please select an ROI orientation coordinates'
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            valid.append(True)
+
+        if len(valid) == 2 and all(valid):
+            print(self.cB_stack_orient.currentText())
+            self.mH_settings['orientation'] = {'stack': self.cB_stack_orient.currentText(),
+                                                'roi': self.cB_roi_orient.currentText()}
+            self.tE_validate.setText('Great! Continue setting up the new project!')
+            self.button_set_orient.setChecked(True)
+            print('self.mH_settings (set_orientation_settings):', self.mH_settings)
+        else: 
+            self.button_set_orient.setChecked(False)
+        toggled(self.button_set_orient)
+
+    # -- Functions for channels
     def add_channel(self, name):
         tick = getattr(self, 'tick_'+name)
 
@@ -469,6 +565,7 @@ class CreateNewProj(QDialog):
             user_name = {}
             color_chs = {}
             ch_relation = {}
+            mask_ch = {}
             ch_selected = []
             for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
                 tick = getattr(self, 'tick_'+ch)
@@ -476,6 +573,7 @@ class CreateNewProj(QDialog):
                     ch_selected.append(ch)
                     user_name[ch] = getattr(self, ch+'_username').text()
                     ch_relation[ch] = getattr(self, 'cB_'+ch).currentText().split(' ')[0]
+                    mask_ch[ch] = getattr(self, ch+'_mask').isChecked()
                     color_chs[ch] = {}
                     for cont in ['int', 'tiss', 'ext']:
                         color_chs[ch][cont] = getattr(self, 'fillcolor_'+ch+'_'+cont).text()
@@ -483,11 +581,12 @@ class CreateNewProj(QDialog):
             self.mH_settings['name_chs'] = user_name
             self.mH_settings['chs_relation'] = ch_relation
             self.mH_settings['color_chs'] = color_chs
+            self.mH_settings['mask_ch'] = mask_ch
 
             #Get info from checked boxes
             __ = self.checked('chNS')
             #---- Segments
-            __ = self.checked('segm')
+            __ = self.checked('segm')   
             #---- Sections
             __ = self.checked('sect')
             print(self.mH_settings)
@@ -498,12 +597,30 @@ class CreateNewProj(QDialog):
                 self.int_chNS.addItems(['----']+ch_selected)
                 ch_selected.append('chNS')
             self.ch_selected = ch_selected
+            print(self.ch_selected)
+            #Set Table for Segments
+            for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
+                for cont in ['int', 'tiss', 'ext']:
+                    for stype in ['segm', 'sect']:
+                        for cut in ['Cut1', 'Cut2']:
+                            if ch in ch_selected:
+                                getattr(self, 'label_'+stype+'_'+ch).setEnabled(True)
+                                getattr(self, 'label_'+stype+'_'+ch+'_'+cont).setEnabled(True)
+                                if cut == 'Cut1':
+                                    getattr(self, 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont).setEnabled(True) 
+                                else: 
+                                    getattr(self, 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont).setEnabled(False) 
+                            else: 
+                                getattr(self, 'label_'+stype+'_'+ch).setVisible(False)
+                                getattr(self, 'label_'+stype+'_'+ch+'_'+cont).setVisible(False)
+                                getattr(self, 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont).setVisible(False)
+
             self.tE_validate.setText("Great! Now setup details for the selected processes.")
         else: 
             error_txt = "You first need to validate the channels' settings to continue setting the project."
             self.tE_validate.setText(error_txt)
     
-    # Functions for ChannelNS
+    # -- Functions for ChannelNS
     def set_chNS_settings(self): 
         valid = []; error_txt = ''
         #Check name
@@ -581,7 +698,7 @@ class CreateNewProj(QDialog):
         self.mH_settings['chNS'] = chNS_settings
         # print(self.mH_settings)
 
-    #Functions for segments and sections
+    # -- Functions for segments and sections
     def add_segm_sect(self, stype):
         tick = getattr(self, 'tick_'+stype+'2')
         obj_type = getattr(self, 'cB_obj_'+stype+'2')
@@ -593,13 +710,18 @@ class CreateNewProj(QDialog):
             if stype == 'segm': 
                 self.sB_no_segm2.setEnabled(True)
                 self.sB_segm_noObj2.setEnabled(True)
-
+            for ch in self.ch_selected:
+                for cont in ['int', 'tiss', 'ext']:
+                    getattr(self, 'cB_'+stype+'_Cut2_'+ch+'_'+cont).setEnabled(True) 
         else: 
             obj_type.setEnabled(False)
             name_stype.setEnabled(False)
             if stype == 'segm': 
                 self.sB_no_segm2.setEnabled(False)
                 self.sB_segm_noObj2.setEnabled(False)
+            for ch in self.ch_selected:
+                for cont in ['int', 'tiss', 'ext']:
+                    getattr(self, 'cB_'+stype+'_Cut2_'+ch+'_'+cont).setDisabled(True) 
     
     def set_tables(self, table, ch_selected, stype):
         table.horizontalHeader().setVisible(False)
@@ -969,7 +1091,7 @@ class CreateNewProj(QDialog):
             self.button_set_sect.setChecked(False)
         toggled(self.button_set_sect)
 
-    #Tab general functions
+    # -- Tab general functions
     def tabChanged(self):
         print('Tab was changed to ', self.tabWidget.currentIndex())
 
@@ -1053,6 +1175,14 @@ class SetMeasParam(QDialog):
             row_n +=1 
 
         setattr(self, 'btn_meas', btn_stype)
+        disable_pars = {'th_i2e':['int', 'ext'],'th_e2i':['int', 'ext'], 'bal': ['tiss']}
+        for chs in ch_all.keys():
+            for pars in disable_pars:
+                for cont in disable_pars[pars]:
+                    cB_name = 'cB_('+pars+'_o_'+chs+'_'+cont+')'
+                    cB = getattr(self, cB_name)
+                    cB.setDisabled(True)
+
         print(getattr(self, 'btn_meas'))
         self.params = params
         self.h_labels = h_labels

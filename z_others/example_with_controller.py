@@ -2,6 +2,46 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 
 
+class Login(QtWidgets.QWidget):
+
+    switch_window = QtCore.pyqtSignal()
+    print(switch_window)
+
+    def __init__(self):
+        QtWidgets.QWidget.__init__(self)
+        self.setWindowTitle('Login')
+
+        layout = QtWidgets.QGridLayout()
+
+        self.button = QtWidgets.QPushButton('Login')
+        self.button.clicked.connect(self.login)
+
+        layout.addWidget(self.button)
+
+        self.setLayout(layout)
+
+    def login(self):
+        self.switch_window.emit()
+
+
+class WindowTwo(QtWidgets.QWidget):
+
+    def __init__(self, text):
+        QtWidgets.QWidget.__init__(self)
+        self.setWindowTitle('Window Two')
+
+        layout = QtWidgets.QGridLayout()
+
+        self.label = QtWidgets.QLabel(text)
+        layout.addWidget(self.label)
+
+        self.button = QtWidgets.QPushButton('Close')
+        self.button.clicked.connect(self.close)
+
+        layout.addWidget(self.button)
+
+        self.setLayout(layout)
+
 class MainWindow(QtWidgets.QWidget):
 
     switch_window = QtCore.pyqtSignal(str)
@@ -26,45 +66,6 @@ class MainWindow(QtWidgets.QWidget):
         self.switch_window.emit(self.line_edit.text())
 
 
-class WindowTwo(QtWidgets.QWidget):
-
-    def __init__(self, text):
-        QtWidgets.QWidget.__init__(self)
-        self.setWindowTitle('Window Two')
-
-        layout = QtWidgets.QGridLayout()
-
-        self.label = QtWidgets.QLabel(text)
-        layout.addWidget(self.label)
-
-        self.button = QtWidgets.QPushButton('Close')
-        self.button.clicked.connect(self.close)
-
-        layout.addWidget(self.button)
-
-        self.setLayout(layout)
-
-
-class Login(QtWidgets.QWidget):
-
-    switch_window = QtCore.pyqtSignal()
-    print(switch_window)
-
-    def __init__(self):
-        QtWidgets.QWidget.__init__(self)
-        self.setWindowTitle('Login')
-
-        layout = QtWidgets.QGridLayout()
-
-        self.button = QtWidgets.QPushButton('Login')
-        self.button.clicked.connect(self.login)
-
-        layout.addWidget(self.button)
-
-        self.setLayout(layout)
-
-    def login(self):
-        self.switch_window.emit()
 
 
 class Controller:

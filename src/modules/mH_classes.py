@@ -86,11 +86,11 @@ class Project():
                              new=True):
         
         if dir_proj.is_dir():
-            print('>> There is already a project in the directory selected!')
+            print(">> There is already a directory with the new project's name!")
             settings_name = 'mH_'+name+'_project.json'
             dir_settings = dir_proj / 'settings' / settings_name
             if dir_settings.is_file():
-                print('>> There is already a project settings file!')
+                print('>> There is already a project settings file within this !')
                 new = False
             else: 
                 print('>> New Project! (if2)')
@@ -192,16 +192,24 @@ class Project():
             
         if self.analysis['morphoHeart']:
             
-            if mH_settings['segments']['cutLayersIn2Segments']:
-                dict_segments = {'no_segments': mH_settings['segments']['no_segments'],
-                                 'no_cuts_4segments': mH_settings['segments']['no_cuts_4segments'],
-                                 'name_segments': mH_settings['segments']['name_segments'],
-                                 'ch_segments': mH_settings['segments']['ch_segments']}
+            if mH_settings['segm'] != False: 
+                if mH_settings['segm']['cutLayersIn2Segments']:
+                    for cut in [key for key in mH_settings['segm'] if key != 'cutLayersIn2Segments' and key!= 'measure']:
+                        dict_segments[cut] = mH_settings['segm'][cut]
+                    dict_segments['measure'] = mH_settings['segm']['measure']
+                        # dict_segments = {'no_segments': mH_settings['segments']['no_segments'],
+                        #                 'no_cuts_4segments': mH_settings['segments']['no_cuts_4segments'],
+                        #                 'name_segments': mH_settings['segments']['name_segments'],
+                        #                 'ch_segments': mH_settings['segments']['ch_segments']}
                 
-            if mH_settings['sections']['cutLayersIn2Sections']:
-                dict_sections = {'no_sections': mH_settings['sections']['no_sections'],
-                                 'name_sections': mH_settings['sections']['name_sections'],
-                                 'ch_sections': mH_settings['sections']['ch_sections']}
+            if mH_settings['sect'] != False: 
+                if mH_settings['sect']['cutLayersIn2Sections']:
+                    for cut in [key for key in mH_settings['sect'] if key != 'cutLayersIn2Sections' and key!= 'measure']:
+                        dict_sections[cut] = mH_settings['sect'][cut]
+                    dict_sections['measure'] = mH_settings['sect']['measure']
+                        # dict_sections = {'no_sections': mH_settings['sections']['no_sections'],
+                        #                 'name_sections': mH_settings['sections']['name_sections'],
+                        #                 'ch_sections': mH_settings['sections']['ch_sections']}
                 
             for ch_num in range(0, mH_settings['no_chs']):
                 ch_str = 'ch'+str(ch_num+1)
@@ -209,7 +217,7 @@ class Project():
                                 'user_chName':mH_settings['name_chs'][ch_str].replace(' ', '_'),
                                 'dir_cho': None, 
                                 'ch_relation': mH_settings['chs_relation'][ch_str],
-                                'mask_ch': None,
+                                'mask_ch': mH_settings['mask_ch'][ch_str],
                                 'dir_mk': None}
                 
                 if mH_settings['segments']['cutLayersIn2Segments']:   

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1002</width>
-    <height>976</height>
+    <height>1016</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>975</height>
+     <height>1016</height>
     </rect>
    </property>
    <property name="mouseTracking">
@@ -486,7 +486,7 @@ border-color: #672146
       <x>10</x>
       <y>170</y>
       <width>981</width>
-      <height>766</height>
+      <height>796</height>
      </rect>
     </property>
     <property name="layoutDirection">
@@ -516,14 +516,14 @@ border-color: #672146
      </attribute>
      <widget class="QGroupBox" name="set_sect">
       <property name="enabled">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>540</y>
+        <y>560</y>
         <width>955</width>
-        <height>171</height>
+        <height>181</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -599,7 +599,7 @@ background-color: rgb(255, 255, 255);</string>
        <property name="geometry">
         <rect>
          <x>825</x>
-         <y>140</y>
+         <y>150</y>
          <width>121</width>
          <height>20</height>
         </rect>
@@ -632,7 +632,7 @@ border-color: #672146
        <property name="geometry">
         <rect>
          <x>825</x>
-         <y>110</y>
+         <y>125</y>
          <width>121</width>
          <height>20</height>
         </rect>
@@ -655,7 +655,7 @@ border-color: #672146
 }</string>
        </property>
        <property name="text">
-        <string>Validate</string>
+        <string>Apply</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -665,7 +665,7 @@ border-color: #672146
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>40</y>
+         <y>45</y>
          <width>766</width>
          <height>122</height>
         </rect>
@@ -798,7 +798,7 @@ used to cut:</string>
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_sect_chNS">
+               <widget class="QLabel" name="label_ch1_8">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -837,7 +837,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>6</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_sect_chNS_int">
+               <widget class="QLabel" name="lab_no_ch_66">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -869,7 +869,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_sect_chNS_tiss">
+               <widget class="QLabel" name="lab_no_ch_67">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -901,7 +901,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_sect_chNS_ext">
+               <widget class="QLabel" name="lab_no_ch_68">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -951,7 +951,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_sect_ch3">
+               <widget class="QLabel" name="label_ch1_9">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -990,7 +990,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>6</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_sect_ch3_int">
+               <widget class="QLabel" name="lab_no_ch_69">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1022,7 +1022,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_sect_ch3_tiss">
+               <widget class="QLabel" name="lab_no_ch_70">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1054,7 +1054,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_sect_ch3_ext">
+               <widget class="QLabel" name="lab_no_ch_71">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1100,9 +1100,9 @@ background-color: rgb(255, 255, 255);</string>
            <enum>QLayout::SetFixedSize</enum>
           </property>
           <item>
-           <widget class="QCheckBox" name="tick_sect1">
+           <widget class="QCheckBox" name="tick_sect1_2">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1155,7 +1155,7 @@ background-color: rgb(255, 255, 255);</string>
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="cB_obj_sect1">
+           <widget class="QComboBox" name="cB_obj_sect1_2">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1188,7 +1188,7 @@ font: 25 10pt &quot;Calibri Light&quot;;</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="names_sect1">
+           <widget class="QLineEdit" name="names_sect1_2">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1245,7 +1245,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_sect_ch2">
+               <widget class="QLabel" name="label_ch1_10">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1284,7 +1284,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>6</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_sect_ch2_int">
+               <widget class="QLabel" name="lab_no_ch_72">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1316,7 +1316,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_sect_ch2_tiss">
+               <widget class="QLabel" name="lab_no_ch_73">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1348,7 +1348,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_sect_ch2_ext">
+               <widget class="QLabel" name="lab_no_ch_74">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1398,7 +1398,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_sect_ch4">
+               <widget class="QLabel" name="label_ch1_11">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1437,7 +1437,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>6</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_sect_ch4_int">
+               <widget class="QLabel" name="lab_no_ch_75">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1469,7 +1469,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_sect_ch4_tiss">
+               <widget class="QLabel" name="lab_no_ch_76">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1501,7 +1501,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_sect_ch4_ext">
+               <widget class="QLabel" name="lab_no_ch_77">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1551,7 +1551,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_sect_ch1">
+               <widget class="QLabel" name="label_ch1_2">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1590,7 +1590,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>6</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_sect_ch1_int">
+               <widget class="QLabel" name="lab_no_ch_78">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1622,7 +1622,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_sect_ch1_tiss">
+               <widget class="QLabel" name="lab_no_ch_79">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1654,7 +1654,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_sect_ch1_ext">
+               <widget class="QLabel" name="lab_no_ch_80">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1828,7 +1828,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch1_int">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1871,7 +1871,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch1_tiss">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1914,7 +1914,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch1_ext">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2100,7 +2100,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch2_int">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2143,7 +2143,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch2_tiss">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2186,7 +2186,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch2_ext">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2372,7 +2372,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch3_int">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2415,7 +2415,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch3_tiss">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2458,7 +2458,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch3_ext">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2644,7 +2644,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch4_int">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2687,7 +2687,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch4_tiss">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2730,7 +2730,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_ch4_ext">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2916,7 +2916,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_chNS_int">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2959,7 +2959,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_chNS_tiss">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -3002,7 +3002,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_sect_Cut1_chNS_ext">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -3183,9 +3183,6 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
        </layout>
       </widget>
       <widget class="QLabel" name="lab_no_ch_15">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
        <property name="geometry">
         <rect>
          <x>825</x>
@@ -6172,14 +6169,14 @@ border-color: #672146
      </widget>
      <widget class="QGroupBox" name="set_segm">
       <property name="enabled">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>365</y>
         <width>955</width>
-        <height>171</height>
+        <height>181</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -6214,7 +6211,7 @@ background-color: rgb(255, 255, 255);</string>
        <property name="geometry">
         <rect>
          <x>825</x>
-         <y>140</y>
+         <y>150</y>
          <width>121</width>
          <height>20</height>
         </rect>
@@ -6245,12 +6242,12 @@ border-color: #672146
       </widget>
       <widget class="QPushButton" name="apply_segm">
        <property name="enabled">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="geometry">
         <rect>
          <x>825</x>
-         <y>110</y>
+         <y>125</y>
          <width>121</width>
          <height>20</height>
         </rect>
@@ -6283,7 +6280,7 @@ border-color: #672146
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>40</y>
+         <y>45</y>
          <width>797</width>
          <height>122</height>
         </rect>
@@ -6481,7 +6478,7 @@ Objects:</string>
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_segm_chNS">
+               <widget class="QLabel" name="label_ch1_7">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -6520,7 +6517,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>6</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_segm_chNS_int">
+               <widget class="QLabel" name="lab_no_ch_54">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -6552,7 +6549,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_segm_chNS_tiss">
+               <widget class="QLabel" name="lab_no_ch_55">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -6584,7 +6581,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_segm_chNS_ext">
+               <widget class="QLabel" name="lab_no_ch_56">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -6634,7 +6631,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_segm_ch3">
+               <widget class="QLabel" name="label_ch1_5">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -6673,7 +6670,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>6</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_segm_ch3_int">
+               <widget class="QLabel" name="lab_no_ch_57">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -6705,7 +6702,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_segm_ch3_tiss">
+               <widget class="QLabel" name="lab_no_ch_58">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -6737,7 +6734,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_segm_ch3_ext">
+               <widget class="QLabel" name="lab_no_ch_59">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -6972,7 +6969,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_segm_ch2">
+               <widget class="QLabel" name="label_ch1_4">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7011,7 +7008,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>6</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_segm_ch2_int">
+               <widget class="QLabel" name="lab_no_ch_60">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7043,7 +7040,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_segm_ch2_tiss">
+               <widget class="QLabel" name="lab_no_ch_61">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7075,7 +7072,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_segm_ch2_ext">
+               <widget class="QLabel" name="lab_no_ch_62">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7125,7 +7122,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_segm_ch4">
+               <widget class="QLabel" name="label_ch1_6">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7164,7 +7161,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>6</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_segm_ch4_int">
+               <widget class="QLabel" name="lab_no_ch_63">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7196,7 +7193,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_segm_ch4_tiss">
+               <widget class="QLabel" name="lab_no_ch_64">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7228,7 +7225,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_segm_ch4_ext">
+               <widget class="QLabel" name="lab_no_ch_65">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7278,7 +7275,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_segm_ch1">
+               <widget class="QLabel" name="label_ch1">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7317,7 +7314,7 @@ background-color: rgb(255, 255, 255);</string>
                <number>6</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_segm_ch1_int">
+               <widget class="QLabel" name="lab_no_ch_35">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7349,7 +7346,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_segm_ch1_tiss">
+               <widget class="QLabel" name="lab_no_ch_36">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7381,7 +7378,7 @@ background-color: rgb(255, 255, 255);</string>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_segm_ch1_ext">
+               <widget class="QLabel" name="lab_no_ch_37">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -7599,7 +7596,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch1_int">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -7642,7 +7639,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch1_tiss">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -7685,7 +7682,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch1_ext">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -7871,7 +7868,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch2_int">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -7914,7 +7911,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch2_tiss">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -7957,7 +7954,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch2_ext">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -8143,7 +8140,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch3_int">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -8186,7 +8183,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch3_tiss">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -8229,7 +8226,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch3_ext">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -8415,7 +8412,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch4_int">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -8458,7 +8455,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch4_tiss">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -8501,7 +8498,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_ch4_ext">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -8687,7 +8684,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_chNS_int">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -8730,7 +8727,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_chNS_tiss">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -8773,7 +8770,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
           <item>
            <widget class="QCheckBox" name="cB_segm_Cut1_chNS_ext">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -9330,7 +9327,7 @@ border-color: #672146
       <property name="geometry">
        <rect>
         <x>755</x>
-        <y>715</y>
+        <y>745</y>
         <width>211</width>
         <height>20</height>
        </rect>
@@ -9396,7 +9393,7 @@ border-color: #672146
     <property name="geometry">
      <rect>
       <x>715</x>
-      <y>942</y>
+      <y>975</y>
       <width>150</width>
       <height>25</height>
      </rect>
@@ -9427,7 +9424,7 @@ QPushButton:hover{
     <property name="geometry">
      <rect>
       <x>630</x>
-      <y>942</y>
+      <y>975</y>
       <width>81</width>
       <height>25</height>
      </rect>
@@ -9483,7 +9480,7 @@ background-color: rgb(250, 250, 250);
     <property name="geometry">
      <rect>
       <x>870</x>
-      <y>942</y>
+      <y>975</y>
       <width>121</width>
       <height>25</height>
      </rect>
