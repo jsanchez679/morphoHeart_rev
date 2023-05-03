@@ -67,8 +67,36 @@ class PromptWindow(QDialog):
             user_or.addItem(added_or)
             user_or.setCurrentText(added_or)
             self.close()
+
         print('self.custom_or:',self.custom_or)
         
+class Prompt_ok_cancel(QDialog):
+
+    def __init__(self, msg:str, title:str, parent=None):
+        super().__init__()
+        uic.loadUi('prompt_ok_cancel.ui', self)
+        self.setFixedSize(400,250)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.textEdit.setText(msg)
+        
+        self.button_ok.clicked.connect(lambda: self.user_ok())
+        self.button_cancel.clicked.connect(lambda: self.user_cancel())
+        self.user_input = None
+
+        self.show()
+
+    def user_ok(self): 
+        self.user_input = 'OK'
+        print(self.user_input)
+        self.close()
+
+    def user_cancel(self): 
+        self.user_input = 'Cancel'
+        print(self.user_input)
+        self.close()
+
 class CreateNewProj(QDialog):
 
     def __init__(self, parent=None):
@@ -76,7 +104,7 @@ class CreateNewProj(QDialog):
         self.proj_name = ''
         self.proj_dir_parent = ''
         uic.loadUi('new_project_screen.ui', self)
-        self.setFixedSize(1001,975)
+        self.setFixedSize(1010,920)
         self.setWindowTitle('Create New Project...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
@@ -174,6 +202,7 @@ class CreateNewProj(QDialog):
 
     def init_segments_group(self):
         # -- Segments
+        self.set_segm.setDisabled(True)
         self.set_segm.setVisible(False)
         #Segm 1
         self.tick_segm1.setEnabled(True)
@@ -202,11 +231,11 @@ class CreateNewProj(QDialog):
 
     def init_sections_group(self):
         # -- Segments
+        self.set_sect.setDisabled(True)
         self.set_sect.setVisible(False)
         # -- Sections
         self.tick_sect1.setEnabled(True)
         self.tick_sect1.setChecked(True)
-        self.set_sect.setVisible(False)
         self.cB_obj_sect1.setEnabled(True)
         self.names_sect1.setEnabled(True)
 
@@ -269,7 +298,6 @@ class CreateNewProj(QDialog):
             self.tE_validate.setText(error_txt)
             return
         else: 
-            # print(self.proj_dir_parent)
             if self.proj_dir_parent.is_dir() and len(str(self.proj_dir_parent))>1:
                 valid.append(True)
             else: 
@@ -279,12 +307,10 @@ class CreateNewProj(QDialog):
                 self.tE_validate.setText(error_txt)
                 return
 
-        # print('valid:', valid)
         if len(valid)== 3 and all(valid):
             self.button_validate_new_proj.setChecked(True)
             proj_folder = 'R_'+self.proj_name
             self.proj_dir = self.proj_dir_parent / proj_folder
-            # print(self.proj_dir, type(self.proj_dir))
             if self.proj_dir.is_dir():
                 self.tE_validate.setText('*There is already a project named "'+self.proj_name+'" in the selected directory.')
             else: 
@@ -327,8 +353,9 @@ class CreateNewProj(QDialog):
     def custom_orient(self, ortype): 
         user_or = getattr(self,'cB_'+ortype+'_orient').currentText()
         if user_or == 'custom':
-            self.prompt = PromptWindow(msg='Give the name of the three different custom orientations for the -'+ortype.upper()+'- separated by a comma:', 
-                                        title = 'Custom Orientation', info=ortype, parent = self)
+            msg = "Give the name of the three different custom orientations for the  '"+ortype.upper()+"'  separated by a comma:"
+            title = 'Custom Orientation'
+            self.prompt = PromptWindow(msg = msg, title = title, info = ortype, parent = self)
         else: 
             pass 
 
@@ -437,6 +464,8 @@ class CreateNewProj(QDialog):
         s_set = getattr(self, 'set_'+stype)
         if ck_type.isChecked():
             if stype in list(self.mH_settings.keys()):
+                s_set.setVisible(True)
+                s_set.setEnabled(True)
                 return True
             else: 
                 s_set.setVisible(True)
@@ -469,17 +498,20 @@ class CreateNewProj(QDialog):
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             tick = getattr(self, 'tick_'+ch)
             if tick.isChecked(): 
-                names.append(getattr(self, ch+'_username').text())
-                if len(getattr(self, ch+'_username').text()) <= 3:
-                    names_valid.append(False)
+                ch_name = getattr(self, ch+'_username').text()
+                if len(ch_name) <= 3:
+                    error_txt = '*Active channels must have a name longer than three (3) characters.'
+                    self.tE_validate.setText(error_txt)
+                    return
+                elif validate_txt(ch_name) != None:
+                    error_txt = "Please avoid using invalid characters in the channel's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+                    self.tE_validate.setText(error_txt)
+                    return
                 else: 
+                    names.append(ch_name)
                     names_valid.append(True)
 
-        if not all(names_valid):
-            error_txt = '*Active channels must have a name longer than three (3) characters.'
-            self.tE_validate.setText(error_txt)
-            return
-        else: 
+        if all(names_valid):
             valid.append(True)
 
         #Check names are different
@@ -631,6 +663,10 @@ class CreateNewProj(QDialog):
             error_txt = '*Channel from the negative space must have a name longer than three (3) characters.'
             self.tE_validate.setText(error_txt)
             return
+        elif validate_txt(name_chNS) != None:
+            error_txt = "Please avoid using invalid characters in the chNS's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+            self.tE_validate.setText(error_txt)
+            return
         else: 
             if name_chNS not in names_ch:
                 valid.append(True)
@@ -667,11 +703,10 @@ class CreateNewProj(QDialog):
             else: 
                 valid.append(True)
         else: 
-            error_txt = '*Please select the internal and external channels and contours that need to be used to extract the channel from the negativa space.'
+            error_txt = '*Please select the internal and external channels and contours that need to be used to extract the channel from the negative space.'
             self.tE_validate.setText(error_txt)
             return
-
-        # print('valid:', valid)
+            
         if len(valid)== 3 and all(valid):
             self.tE_validate.setText('All done setting ChannelNS!...')
             self.button_set_chNS.setChecked(True)
@@ -723,67 +758,22 @@ class CreateNewProj(QDialog):
                 for cont in ['int', 'tiss', 'ext']:
                     getattr(self, 'cB_'+stype+'_Cut2_'+ch+'_'+cont).setDisabled(True) 
     
-    def set_tables(self, table, ch_selected, stype):
-        table.horizontalHeader().setVisible(False)
-        #table.verticalHeader().setVisible(False)
-        h_labels = ['int', 'tiss', 'ext']*len(ch_selected)
-        # print('h_labels:', h_labels)
-        table.setColumnCount(len(h_labels))
-
-        #Get Number of cuts selected
+    def check_checkBoxes(self, ch_selected, stype):
+        dict_stype = {}
+        #Get Cuts selected
         cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
-        # print('cuts_sel:', cuts_sel)
-        v_labels = ['---','---']+[key for key in cuts_sel.keys() if cuts_sel[key]==True]
-        # print('v_labels:', v_labels)
-        table.setRowCount(len(v_labels))
-        table.setVerticalHeaderLabels(v_labels)
+        for cut in cuts_sel.keys(): 
+            valid = []; error_txt = ''
+            if cuts_sel[cut]:
+                for ch in ch_selected: 
+                    for cont in ['int', 'tiss', 'ext']: 
+                        btn_name = 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont
+                        # print(btn_name, getattr(self, btn_name).isChecked())
+                        dict_stype[btn_name] = getattr(self, btn_name).isChecked()
 
-        for col in range(table.columnCount()):
-            table.setColumnWidth(col, 30)
-        for row in range(table.rowCount()):
-            table.setRowHeight(row, 16)
-
-        #Set first row labels
-        # print(list(range(0,len(h_labels),3)))
-        for n, col in enumerate(range(0,len(h_labels),3)):
-            # print(n, col)
-            table.setSpan(0,col,1,3)
-            table.setItem(0,col, QTableWidgetItem(ch_selected[n]))
-            # print(ch_selected[n])
-        #Set second row labels
-        for n, ccl in enumerate(range(len(h_labels))):
-            table.setItem(1,ccl,QTableWidgetItem(h_labels[n]))
-
-        # print('len(colum):', table.columnCount())
-        # print('len(rows):', table.rowCount())
-        # print(ch_selected)
-
-        btn_stype = []
-        row_n = 2
-        for v_lab in v_labels[2:]:
-            row_name = v_lab
-            col_n = 0
-            for mm, h_lab in enumerate(h_labels):
-                cont_name = h_lab
-                ch_num = (mm//3)
-                print('mm:',mm, '-ch_num:',ch_num, h_lab)
-                ch_name = ch_selected[ch_num]
-                widget   = QWidget()
-                checkbox = QCheckBox()
-                checkbox.setChecked(False)
-                layoutH = QHBoxLayout(widget)
-                layoutH.addWidget(checkbox)
-                btn_name = 'cB_'+stype+'_('+row_name+'-'+ch_name+'_'+cont_name+')'
-                btn_stype.append(btn_name)
-                setattr(self, btn_name, checkbox)
-                # layoutH.setAlignment(Qt.AlignCenter)
-                layoutH.setContentsMargins(0, 0, 0, 0)
-                table.setCellWidget(row_n, col_n, widget)   
-                col_n +=1   
-            row_n +=1 
-
-        setattr(self, 'btn_'+stype, btn_stype)
-        # print(getattr(self, 'btn_'+stype))
+        setattr(self, 'dict_'+stype, dict_stype)
+        # print(getattr(self, 'dict_'+stype))
+        # print(dict_stype.items())
 
     def apply_segments(self): 
         valid_all = []
@@ -813,14 +803,34 @@ class CreateNewProj(QDialog):
                     return
                 else: 
                     valid.append(True)
-                
-            if len(valid) == 1 and all(valid): 
+
+                #Get checkboxes
+                self.check_checkBoxes(self.ch_selected, 'segm')
+                bool_cB = [val for (key,val) in self.dict_segm.items() if cut in key]
+                if any(bool_cB): 
+                    valid.append(True)
+                else: 
+                    error_txt = '*'+cut+": At least one channel contour needs to be selected for each segment cut."
+                    self.tE_validate.setText(error_txt)
+                    return
+
+                #Check measurement parameters to measure
+                meas_vol = getattr(self, 'cB_volume_'+stype).isChecked()
+                meas_area = getattr(self, 'cB_area_'+stype).isChecked()
+                meas_ellip = getattr(self, 'cB_ellip_'+stype).isChecked()
+                if any([meas_vol, meas_area, meas_ellip]):
+                    valid.append(True)
+                else: 
+                    error_txt = "*Please select the measurement parameter(s) (e.g. volume and/or surface area) you want to extract from the segments"
+                    self.tE_validate.setText(error_txt)
+                    return
+
+            if len(valid) == 3 and all(valid): 
                 valid_all.append(True)
         
         if all(valid_all): 
             self.apply_segm.setChecked(True)
-            self.tE_validate.setText('All good, continue selecting the channel-contours from which these segments will be extracted!')
-            self.set_tables(self.tabW_segm, self.ch_selected, 'segm')
+            self.tE_validate.setText('All good, now press -Set Segments- to save selected settings!')
         else: 
             self.apply_segm.setChecked(False)
         toggled(self.apply_segm)
@@ -851,86 +861,57 @@ class CreateNewProj(QDialog):
                     return
                 else: 
                     valid.append(True)
+
+                #Get checkboxes
+                self.check_checkBoxes(self.ch_selected, 'sect')
+                bool_cB = [val for (key,val) in self.dict_sect.items() if cut in key]
+                if any(bool_cB): 
+                    valid.append(True)
+                else: 
+                    error_txt = '*'+cut+": At least one channel contour needs to be selected for this section cut."
+                    self.tE_validate.setText(error_txt)
+                    return
                 
-            if len(valid) == 1 and all(valid): 
+                #Check measurement parameters to measure
+                meas_vol = getattr(self, 'cB_volume_'+stype).isChecked()
+                meas_area = getattr(self, 'cB_area_'+stype).isChecked()
+                if any([meas_vol, meas_area]):
+                    valid.append(True)
+                else: 
+                    error_txt = "*Please select the measurement parameter(s) (e.g. volume and/or surface area) you want to extract from the sections"
+                    self.tE_validate.setText(error_txt)
+                    return
+                
+            if len(valid) == 3 and all(valid): 
                 valid_all.append(True)
         
         if all(valid_all): 
             self.apply_sect.setChecked(True)
-            self.tE_validate.setText('All good, continue selecting the channel-contours from which these sections will be extracted!')
-            self.set_tables(self.tabW_sect, self.ch_selected, 'sect')
+            self.tE_validate.setText('All good, now press -Set Sections- to save selected settings!')
         else: 
             self.apply_sect.setChecked(False)
         toggled(self.apply_sect)
 
     def validate_segm_settings(self): 
-        valid_all = []
-        segm_settings = {'cutLayersIn2Segments': True}
-        stype = 'segm'
-        cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
-        for cut in cuts_sel.keys(): 
-            valid = []; error_txt = ''
-            if cuts_sel[cut]:
-                cut_no = cut[-1]
-                #Get values
-                no_segm = getattr(self, 'sB_no_segm'+cut_no).value()
-                obj_type = getattr(self, 'cB_obj_segm'+cut_no).currentText()
-                no_obj = getattr(self, 'sB_segm_noObj'+cut_no).value()
-                names_segm = getattr(self, 'names_segm'+cut_no).text()
-                names_segm = split_str(names_segm)
+        if self.apply_segm.isChecked(): 
+            valid_all = []
+            segm_settings = {'cutLayersIn2Segments': True}
+            stype = 'segm'
+            cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
+            for cut in cuts_sel.keys(): 
+                if cuts_sel[cut]:
+                    cut_no = cut[-1]
+                    #Get values
+                    no_segm = getattr(self, 'sB_no_segm'+cut_no).value()
+                    obj_type = getattr(self, 'cB_obj_segm'+cut_no).currentText()
+                    no_obj = getattr(self, 'sB_segm_noObj'+cut_no).value()
+                    names_segm = getattr(self, 'names_segm'+cut_no).text()
+                    names_segm = split_str(names_segm)
+                    #Measure
+                    meas_vol = getattr(self, 'cB_volume_'+stype).isChecked()
+                    meas_area = getattr(self, 'cB_area_'+stype).isChecked()
+                    meas_ellip = getattr(self, 'cB_ellip_'+stype).isChecked()
 
-                #Check values
-                if len(names_segm) != int(no_segm):
-                    error_txt = '*'+cut+": The number of segments need to match the number of segment names given."
-                    self.tE_validate.setText(error_txt)
-                    return
-                elif len(set(names_segm)) != int(no_segm):
-                    error_txt = '*'+cut+": Segment names need to be different."
-                    self.tE_validate.setText(error_txt)
-                    return
-                else: 
-                    valid.append(True)
-
-                #Check apply has been pressed
-                if self.apply_segm.isChecked(): 
-                    valid.append(True)
-                else: 
-                    error_txt = "You need to apply the segment cut's settings and select the channel contours to cut before continuing."
-                    self.tE_validate.setText(error_txt)
-                    return
-                
-                #Check box selection
-                tiss_cut = []
-                for btn in self.btn_segm:
-                    if 'Cut'+cut_no in btn: 
-                        aaa = btn.split('(')[1]
-                        bbb = aaa.split('-')[1]
-                        ccc = bbb.split(')')[0]
-                        ch_s, cont_s = ccc.split('_')
-                        cB = getattr(self, btn).isChecked()
-                        if cB: 
-                            tiss_cut.append((ch_s,cont_s))
-
-                if len(tiss_cut) <= 0: 
-                    error_txt = '*'+cut+": At least one channel contour needs to be selected for this segments cut."
-                    self.tE_validate.setText(error_txt)
-                    return
-                else: 
-                    valid.append(True)
-
-                #Check measurement parameters to measure
-                meas_vol = getattr(self, 'cB_volume_'+stype).isChecked()
-                meas_area = getattr(self, 'cB_area_'+stype).isChecked()
-                meas_ellip = getattr(self, 'cB_ellip_'+stype).isChecked()
-                if any([meas_vol, meas_area, meas_ellip]):
-                    valid.append(True)
-                else: 
-                    error_txt = "*Please select the measurement parameter(s) (e.g. volume and/or surface area) you want to extract from the segments"
-                    self.tE_validate.setText(error_txt)
-                    return
-
-                print('segm:',valid)
-                if len(valid) == 4 and all(valid): 
                     #Get names
                     names_segmF = {}
                     for dd in range(int(no_segm)): 
@@ -938,15 +919,12 @@ class CreateNewProj(QDialog):
                         names_segmF[segm_no] = names_segm[dd]
                     
                     #Get selected contours
+                    self.check_checkBoxes(self.ch_selected, 'segm')
                     tiss_cut = []
-                    for btn in self.btn_segm:
-                        if 'Cut'+cut_no in btn: 
-                            aaa = btn.split('(')[1]
-                            bbb = aaa.split('-')[1]
-                            ccc = bbb.split(')')[0]
-                            ch_s, cont_s = ccc.split('_')
-                            cB = getattr(self, btn).isChecked()
-                            if cB: 
+                    for btn in self.dict_segm.keys():
+                        if 'Cut'+cut_no in btn:
+                            if self.dict_segm[btn]: 
+                                _,_,_,ch_s,cont_s = btn.split('_')
                                 tiss_cut.append((ch_s,cont_s))
                     
                     ch_segments = {}
@@ -968,82 +946,34 @@ class CreateNewProj(QDialog):
                     segm_settings[cut] = dict_cut
                     valid_all.append(True)
 
-        # print('valid_all:', valid_all)
-        segm_settings['measure'] = {'volume': meas_vol, 'area': meas_area, 'ellipsoids': meas_ellip}
-        self.mH_settings['segm'] = segm_settings
-        print('self.mH_settings (validate_segm_settings):',self.mH_settings)
-        if all(valid_all):
-            self.button_set_segm.setChecked(True)
-            self.tE_validate.setText('All good, continue!')
-        else: 
-            self.button_set_segm.setChecked(False)
-        toggled(self.button_set_segm)
+            # print('valid_all:', valid_all)
+            segm_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area, 'Ellip': meas_ellip}
+            self.mH_settings['segm'] = segm_settings
+            print('self.mH_settings (validate_segm_settings):',self.mH_settings)
+            if all(valid_all):
+                self.button_set_segm.setChecked(True)
+                self.tE_validate.setText('All good, continue!')
+            else: 
+                self.button_set_segm.setChecked(False)
+            toggled(self.button_set_segm)
 
     def validate_sect_settings(self): 
-        valid_all = []
-        sect_settings = {'cutLayersIn2Sections': True}
-        stype = 'sect'
-        cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
-        for cut in cuts_sel.keys(): 
-            valid = []; error_txt = ''
-            if cuts_sel[cut]:
-                cut_no = cut[-1]
-                #Get values
-                obj_type = getattr(self, 'cB_obj_sect'+cut_no).currentText()
-                names_sect = getattr(self, 'names_sect'+cut_no).text()
-                names_sect = split_str(names_sect)
+        if self.apply_sect.isChecked(): 
+            valid_all = []
+            sect_settings = {'cutLayersIn2Sections': True}
+            stype = 'sect'
+            cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
+            for cut in cuts_sel.keys(): 
+                if cuts_sel[cut]:
+                    cut_no = cut[-1]
+                    #Get values
+                    obj_type = getattr(self, 'cB_obj_sect'+cut_no).currentText()
+                    names_sect = getattr(self, 'names_sect'+cut_no).text()
+                    names_sect = split_str(names_sect)
+                    #Measure
+                    meas_vol = getattr(self, 'cB_volume_'+stype).isChecked()
+                    meas_area = getattr(self, 'cB_area_'+stype).isChecked()
 
-                #Check values
-                if len(names_sect) != 2:
-                    error_txt = '*'+cut+": Sections cut only produce two objects. Please provide two section names."
-                    self.tE_validate.setText(error_txt)
-                    return
-                elif len(set(names_sect)) != 2:
-                    error_txt = '*'+cut+": Section names need to be different."
-                    self.tE_validate.setText(error_txt)
-                    return
-                else: 
-                    valid.append(True)
-
-                #Check apply has been pressed
-                if self.apply_sect.isChecked(): 
-                    valid.append(True)
-                else: 
-                    error_txt = "You need to apply the section cut's settings and select the channel contours to cut before continuing."
-                    self.tE_validate.setText(error_txt)
-                    return
-
-                #Check box selection
-                tiss_cut = []
-                for btn in self.btn_sect:
-                    if 'Cut'+cut_no in btn: 
-                        aaa = btn.split('(')[1]
-                        bbb = aaa.split('-')[1]
-                        ccc = bbb.split(')')[0]
-                        ch_s, cont_s = ccc.split('_')
-                        cB = getattr(self, btn).isChecked()
-                        if cB: 
-                            tiss_cut.append((ch_s,cont_s))
-                
-                if len(tiss_cut) <= 0: 
-                    error_txt = '*'+cut+": At least one channel contour needs to be selected for this section cut."
-                    self.tE_validate.setText(error_txt)
-                    return
-                else: 
-                    valid.append(True)
-
-                #Check measurement parameters to measure
-                meas_vol = getattr(self, 'cB_volume_'+stype).isChecked()
-                meas_area = getattr(self, 'cB_area_'+stype).isChecked()
-                if any([meas_vol, meas_area]):
-                    valid.append(True)
-                else: 
-                    error_txt = "*Please select the measurement parameter(s) (e.g. volume and/or surface area) you want to extract from the sections"
-                    self.tE_validate.setText(error_txt)
-                    return
-
-                print('sect:',valid)
-                if len(valid) == 4 and all(valid): 
                     #Get names
                     names_sectF = {}
                     for dd in range(2): 
@@ -1051,15 +981,12 @@ class CreateNewProj(QDialog):
                         names_sectF[sect_no] = names_sect[dd]
                     
                     #Get selected contours
+                    self.check_checkBoxes(self.ch_selected, 'sect')
                     tiss_cut = []
-                    for btn in self.btn_sect:
-                        if 'Cut'+cut_no in btn: 
-                            aaa = btn.split('(')[1]
-                            bbb = aaa.split('-')[1]
-                            ccc = bbb.split(')')[0]
-                            ch_s, cont_s = ccc.split('_')
-                            cB = getattr(self, btn).isChecked()
-                            if cB: 
+                    for btn in self.dict_sect.keys():
+                        if 'Cut'+cut_no in btn:
+                            if self.dict_sect[btn]: 
+                                _,_,_,ch_s,cont_s = btn.split('_')
                                 tiss_cut.append((ch_s,cont_s))
                     
                     ch_sections = {}
@@ -1073,23 +1000,22 @@ class CreateNewProj(QDialog):
                         ch_sections[ch_a] = list_ch
 
                     dict_cut = {'no_sections': 2,
-                                'obj_segm': obj_type,
-                                'name_segments': names_sectF,
-                                'ch_segments': ch_sections}
+                                'obj_sect': obj_type,
+                                'name_sections': names_sectF,
+                                'ch_sections': ch_sections}
                                 
                     sect_settings[cut] = dict_cut
                     valid_all.append(True)
 
-        # print('valid_all:', valid_all)
-        sect_settings['measure'] = {'volume': meas_vol, 'area': meas_area}
-        self.mH_settings['sect'] = sect_settings
-        print('self.mH_settings (validate_sect_settings):',self.mH_settings)
-        if all(valid_all):
-            self.button_set_sect.setChecked(True)
-            self.tE_validate.setText('All good, continue!')
-        else: 
-            self.button_set_sect.setChecked(False)
-        toggled(self.button_set_sect)
+            sect_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area}
+            self.mH_settings['sect'] = sect_settings
+            print('self.mH_settings (validate_sect_settings):',self.mH_settings)
+            if all(valid_all):
+                self.button_set_sect.setChecked(True)
+                self.tE_validate.setText('All good, continue!')
+            else: 
+                self.button_set_sect.setChecked(False)
+            toggled(self.button_set_sect)
 
     # -- Tab general functions
     def tabChanged(self):
@@ -1102,96 +1028,148 @@ class SetMeasParam(QDialog):
         
         uic.loadUi('set_meas_screen.ui', self)
         self.setWindowTitle('Set Parameters to Measure...')
-        self.setFixedSize(791,561)
+        self.setFixedSize(690,860)
         self.setWindowTitle('Select the parameters to measure from the segmented channels...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
+        self.mH_settings = mH_settings
 
-        #Create table 
-        self.set_meas_param_table(mH_settings)
-
-        #Buttons
-        self.button_add_param.clicked.connect(lambda: self.add_user_param())
-
-    def set_meas_param_table(self, mH_settings:dict): 
-        
+        self.params = {0: {'s': 'SA', 'l':'surface area'},
+                        1: {'s': 'Vol', 'l':'volume'},
+                        2: {'s': 'CL', 'l':'centreline'},
+                        3: {'s': 'th_i2e', 'l':'thickness (int>ext)'},
+                        4: {'s': 'th_e2i','l':'thickness (ext>int)'}, 
+                        5: {'s': 'ball','l':'centreline>tissue (ballooning)'}}
+        self.ball_param = 5
+                
         ch_all = mH_settings['name_chs']
         if isinstance(mH_settings['chNS'], dict) and len(list(mH_settings['chNS'].keys()))>0:
             if mH_settings['chNS']['layer_btw_chs']:
                 ch_all['chNS'] = mH_settings['chNS']['user_nsChName']
-        
-        table = self.tabW_meas
-        table.horizontalHeader().setVisible(False)
-        #table.verticalHeader().setVisible(False)
-        h_labels = ['int', 'tiss', 'ext']*len(ch_all)
-        # print('h_labels:', h_labels)
-        table.setColumnCount(len(h_labels))
+        self.ch_all = ch_all
 
+        #Disable params
+        self.disable_pars = {2: {'ch1': ['tiss'], 'ch2': ['tiss'], 'ch3': ['tiss'], 'ch4': ['tiss'], 'chNS': ['tiss']},#centreline
+                             3: {'ch1': ['int', 'ext'],'ch2': ['int', 'ext'],'ch3': ['int', 'ext'],'ch4': ['int', 'ext'],'chNS': ['int', 'ext']}, #th_i2e
+                             4: {'ch1': ['int', 'ext'],'ch2': ['int', 'ext'],'ch3': ['int', 'ext'],'ch4': ['int', 'ext'],'chNS': ['int', 'ext']}, #th_e2i
+                             5: {'ch1': ['tiss'], 'ch2': ['tiss'], 'ch3': ['tiss'], 'ch4': ['tiss'], 'chNS': ['int','tiss','ext']}} #ball
+        
+        #Change names of unused params
+        aa = 1
+        for num in range(10): 
+            if num >= len(self.params):
+                getattr(self, 'lab_param'+str(num)).setText('User-Specific Param'+str(aa))
+                aa+=1
+
+        #Create table 
+        self.set_meas_param_table()
+
+        #Buttons
+        self.button_add_param.clicked.connect(lambda: self.add_user_param())
+
+        #Parameters all
+        self.lab_param0.clicked.connect(lambda: self.tick_all_param(0))
+        self.lab_param1.clicked.connect(lambda: self.tick_all_param(1))
+        self.lab_param2.clicked.connect(lambda: self.tick_all_param(2))
+        self.lab_param3.clicked.connect(lambda: self.tick_all_param(3))
+        self.lab_param4.clicked.connect(lambda: self.tick_all_param(4))
+        self.lab_param5.clicked.connect(lambda: self.tick_all_param(5))
+        self.lab_param6.clicked.connect(lambda: self.tick_all_param(6))
+        self.lab_param7.clicked.connect(lambda: self.tick_all_param(7))
+        self.lab_param8.clicked.connect(lambda: self.tick_all_param(8))
+        self.lab_param9.clicked.connect(lambda: self.tick_all_param(9))
+
+        #Param ballooning
+        self.cB_ch1_int_param5.clicked.connect(lambda: self.settings_ballooning('ch1_int'))
+        self.cB_ch1_ext_param5.clicked.connect(lambda: self.settings_ballooning('ch1_ext'))
+        self.cB_ch2_int_param5.clicked.connect(lambda: self.settings_ballooning('ch2_int'))
+        self.cB_ch2_ext_param5.clicked.connect(lambda: self.settings_ballooning('ch2_ext'))
+        self.cB_ch3_int_param5.clicked.connect(lambda: self.settings_ballooning('ch3_int'))
+        self.cB_ch3_ext_param5.clicked.connect(lambda: self.settings_ballooning('ch3_ext'))
+        self.cB_ch4_int_param5.clicked.connect(lambda: self.settings_ballooning('ch4_int'))
+        self.cB_ch4_ext_param5.clicked.connect(lambda: self.settings_ballooning('ch4_ext'))
+
+        self.ballooning_to = ['--select--']
+        self.set_ballooning_opt()
+
+    def tick_all_param(self, num:int): 
+        tick_o = getattr(self, 'lab_param'+str(num))
+        if tick_o.isChecked(): 
+            for ch_s in self.ch_all:
+                for cont in ['int', 'tiss', 'ext']: 
+                    cB = getattr(self, 'cB_'+ch_s+'_'+cont+'_param'+str(num))
+                    if cB.isEnabled(): 
+                        cB.setChecked(True)
+                        if num == 5: 
+                            self.settings_ballooning(name = ch_s+'_'+cont)
+                    # else: 
+                    #     print('Checkbox -'+'cB_'+ch_s+'_'+cont+'_param'+str(num)+ '- is disabled!')
+        else: 
+            for ch_s in self.ch_all:
+                for cont in ['int', 'tiss', 'ext']: 
+                    cB = getattr(self, 'cB_'+ch_s+'_'+cont+'_param'+str(num))
+                    if cB.isEnabled(): 
+                        cB.setChecked(False)
+                        if num == 5: 
+                            self.settings_ballooning(name = ch_s+'_'+cont)
+                    # else: 
+                    #     print('Checkbox -'+'cB_'+ch_s+'_'+cont+'_param'+str(num)+ '- is disabled!')
+
+    def check_checkBoxes(self):
+        if hasattr(self, 'dict_meas'):
+            delattr(self, 'dict_meas')
+
+        dict_meas = {}
+        for ch in self.ch_all: 
+            for cont in ['int', 'tiss', 'ext']: 
+                for num in range(10): 
+                    if num < len(self.params):
+                        btn_name = 'cB_'+ch+'_'+cont+'_param'+str(num)
+                        # print(btn_name, getattr(self, btn_name).isChecked())
+                        dict_meas[btn_name] = getattr(self, btn_name).isChecked()
+        setattr(self, 'dict_meas', dict_meas)
+
+    def set_meas_param_table(self): 
         #Set Measurement Parameters
-        params = {'SA': 'surface area', 'Vol':'volume','CL':'centreline','CLlin':'centreline length','CLloop':'centreline looped length', 
-                  'th_i2e':'thickness (int>ext)','th_e2i':'thickness (ext>int)', 'bal': 'centreline>tissue (ballooning)'}
-        
-        v_labels = ['---','---']+[params[val] for val in params]
-        # print('v_labels:', v_labels)
-        table.setRowCount(len(v_labels))
-        table.setVerticalHeaderLabels(v_labels)
+        for key in self.params.keys():
+            getattr(self, 'lab_param'+str(key)).setEnabled(True)
+            getattr(self, 'lab_param'+str(key)).setText(self.params[key]['l'])
+            
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']: 
+            if ch in self.ch_all: 
+                getattr(self, 'label_'+ch).setText(self.ch_all[ch])
+                for num in range(10): 
+                    if num < len(self.params):
+                        for cont in ['int', 'tiss', 'ext']:
+                            getattr(self, 'cB_'+ch+'_'+cont+'_param'+str(num)).setEnabled(True)
+                    else: 
+                        getattr(self, 'lab_param'+str(num)).setEnabled(False)
+                        for cont in ['int', 'tiss', 'ext']:
+                            getattr(self, 'cB_'+ch+'_'+cont+'_param'+str(num)).setEnabled(False)
+            else:
+                getattr(self, 'label_'+ch).setVisible(False)   
+                getattr(self, 'label_'+ch+'_2').setVisible(False)    
+                for cont in ['int', 'tiss', 'ext']:
+                    getattr(self, 'label_'+ch+'_'+cont).setVisible(False)
+                for num in range(10): 
+                    for cont in ['int', 'tiss', 'ext']:
+                        getattr(self, 'cB_'+ch+'_'+cont+'_param'+str(num)).setVisible(False)
 
-        for col in range(table.columnCount()):
-            table.setColumnWidth(col, 30)
-        for row in range(table.rowCount()):
-            table.setRowHeight(row, 16)
-
-        #Set first row labels
-        for n, col, chn in zip(count(), range(0,len(h_labels),3), ch_all):
-            # print(n, col, chn)
-            table.setSpan(0,col,1,3)
-            table.setItem(0,col, QTableWidgetItem(ch_all[chn]))
-        #Set second row labels
-        for ccl, h_lab in enumerate(h_labels):
-            table.setItem(1,ccl,QTableWidgetItem(h_lab))
-
-        btn_stype = []
-        row_n = 2
-        for aa, v_lab, param in zip(count(), v_labels[2:], params.keys()):
-            row_name = param#[param]
-            col_n = 0
-            for mm, h_lab in enumerate(h_labels):
-                cont_name = h_lab
-                ch_num = (mm//3)
-                # print('mm:',mm, '-ch_num:',ch_num, h_lab)
-                ch_name = list(ch_all.keys())[ch_num]
-                widget   = QWidget()
-                checkbox = QCheckBox()
-                checkbox.setChecked(False)
-                layoutH = QHBoxLayout(widget)
-                layoutH.addWidget(checkbox)
-                btn_name = 'cB_('+row_name+'_o_'+ch_name+'_'+cont_name+')'
-                btn_stype.append(btn_name)
-                setattr(self, btn_name, checkbox)
-                # layoutH.setAlignment(Qt.AlignCenter)
-                layoutH.setContentsMargins(0, 0, 0, 0)
-                table.setCellWidget(row_n, col_n, widget)   
-                col_n +=1   
-            row_n +=1 
-
-        setattr(self, 'btn_meas', btn_stype)
-        disable_pars = {'th_i2e':['int', 'ext'],'th_e2i':['int', 'ext'], 'bal': ['tiss']}
-        for chs in ch_all.keys():
-            for pars in disable_pars:
-                for cont in disable_pars[pars]:
-                    cB_name = 'cB_('+pars+'_o_'+chs+'_'+cont+')'
+        #Disable parameters
+        for pars in self.disable_pars:
+            for chn in self.disable_pars[pars]: 
+                for cont in self.disable_pars[pars][chn]:
+                    cB_name = 'cB_'+chn+'_'+cont+'_param'+str(pars)
                     cB = getattr(self, cB_name)
                     cB.setDisabled(True)
 
-        print(getattr(self, 'btn_meas'))
-        self.params = params
-        self.h_labels = h_labels
-        self.v_labels = v_labels
-        self.ch_all = ch_all
+        self.check_checkBoxes()
+        print(getattr(self, 'dict_meas'))
 
     def add_user_param(self):
-        error_txt = ''
+        valid = []; error_txt = ''
         param_name = self.lineEdit_param_name.text()
+        param_abbr = self.lineEdit_param_abbr.text()
         param_desc = self.textEdit_param_desc.toPlainText()
         param_class = self.textEdit_param_classes.toPlainText()
 
@@ -1199,38 +1177,79 @@ class SetMeasParam(QDialog):
             error_txt = "Parameter's name needs to be longer than 5 characters"
             self.tE_validate.setText(error_txt)
             return
+        elif validate_txt(param_name) != None:
+            error_txt = "Please avoid using invalid characters in the parameter's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+            self.tE_validate.setText(error_txt)
+            return
         else: 
-            param_name_line = param_name.replace(' ', '_')
+            valid.append(True)
         
+        if len(param_abbr)<=5: 
+            error_txt = "Parameter's name needs to be at least 5 characters long"
+            self.tE_validate.setText(error_txt)
+            return
+        elif validate_txt(param_abbr) != None:
+            error_txt = "Please avoid using invalid characters in the parameter's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            valid.append(True)
+            param_abbr_line = param_abbr.replace(' ', '_')
+        
+        try: 
             param_classes = split_str(param_class)
-            v_labels = ['---','---']+[self.params[val] for val in self.params]+[param_name]
-            self.params[param_name_line] = (param_name, param_desc, param_classes)
-
-            rowPosition = self.tabW_meas.rowCount()
-            self.tabW_meas.insertRow(rowPosition)
-            self.tabW_meas.setVerticalHeaderLabels(v_labels)
-
-            col_n = 0
-            for mm, h_lab in enumerate(self.h_labels):
-                cont_name = h_lab
-                ch_num = (mm//3)
-                ch_name = list(self.ch_all.keys())[ch_num]
-                widget   = QWidget()
-                checkbox = QCheckBox()
-                checkbox.setChecked(False)
-                layoutH = QHBoxLayout(widget)
-                layoutH.addWidget(checkbox)
-                btn_name = 'cB_('+param_name_line+'_o_'+ch_name+'_'+cont_name+')'
-                self.btn_meas.append(btn_name)
-                setattr(self, btn_name, checkbox)
-                # layoutH.setAlignment(Qt.AlignCenter)
-                layoutH.setContentsMargins(0, 0, 0, 0)
-                self.tabW_meas.setCellWidget(rowPosition, col_n, widget) 
-                col_n +=1  
-            
+            valid.append(True)
+        except: 
+            error_txt = "Please check the values introduced in Parameter Classes."
+            self.tE_validate.setText(error_txt)
+            return
+        
+        if len(valid) == 3 and all(valid):
+            param_num = len(self.params)
+            self.params[param_num]={'s': param_abbr_line, 'l': param_name, 
+                                        'description': param_desc, 'classes': param_classes}
             print(self.params)
-            print(self.btn_meas)
+            self.set_meas_param_table()
+            param_name = self.lineEdit_param_name.clear()
+            param_abbr = self.lineEdit_param_abbr.clear()
+            param_desc = self.textEdit_param_desc.clear()
+            param_class = self.textEdit_param_classes.clear()
+        
+    def set_ballooning_opt(self):
+        for opt in range(1,5,1):
+            label_bal = getattr(self, 'label_bal'+str(opt))
+            name_bal = getattr(self, 'cB_balto'+str(opt))
+            ch_bal = getattr(self, 'cB_ch_bal'+str(opt))
+            cont_bal = getattr(self, 'cB_cont_bal'+str(opt))
 
+            label_bal.setEnabled(True)
+            name_bal.setEnabled(True)
+            name_bal.addItems(self.ballooning_to)
+            poss_chs = [ch for ch in self.ch_all.keys() if ch != 'chNS']
+            ch_bal.setEnabled(True)
+            ch_bal.addItems(['--select--']+poss_chs)
+            cont_bal.setEnabled(True)
+
+    def settings_ballooning(self, name): 
+        print('settings_ballooning:'+name)
+        ch_to, cont_to = name.split('_') 
+        label_name = self.ch_all[ch_to]+' ('+ch_to+')'+'-'+cont_to
+        if getattr(self, 'cB_'+name+'_param5').isChecked(): 
+            self.ballooning_to.append(label_name)
+        else: 
+            if label_name in self.ballooning_to:
+                self.ballooning_to.remove(label_name)
+            else:
+                pass
+
+        for but in ['cB_balto1', 'cB_balto2', 'cB_balto3', 'cB_balto4']:
+            self.ballooning_to = list(set(self.ballooning_to))
+            cB_but = getattr(self, but)
+            cB_but.clear()
+            cB_but.addItems(self.ballooning_to)
+            cB_but.setCurrentText('--select--')
+
+                
 class LoadProj(QDialog):
 
     def __init__(self, parent=None):

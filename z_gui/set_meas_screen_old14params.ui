@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>690</width>
-    <height>859</height>
+    <width>1145</width>
+    <height>675</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>690</width>
-     <height>860</height>
+     <width>1145</width>
+     <height>606</height>
     </rect>
    </property>
    <property name="mouseTracking">
@@ -33,7 +33,7 @@
      <rect>
       <x>0</x>
       <y>10</y>
-      <width>691</width>
+      <width>1146</width>
       <height>31</height>
      </rect>
     </property>
@@ -56,7 +56,7 @@
    <widget class="QLabel" name="mH_logo_XS">
     <property name="geometry">
      <rect>
-      <x>570</x>
+      <x>1025</x>
       <y>0</y>
       <width>121</width>
       <height>31</height>
@@ -75,9 +75,9 @@
    <widget class="QPushButton" name="button_set_params">
     <property name="geometry">
      <rect>
-      <x>530</x>
-      <y>825</y>
-      <width>150</width>
+      <x>930</x>
+      <y>570</y>
+      <width>200</width>
       <height>25</height>
      </rect>
     </property>
@@ -111,8 +111,8 @@ QPushButton:hover{
      <rect>
       <x>10</x>
       <y>40</y>
-      <width>671</width>
-      <height>776</height>
+      <width>1121</width>
+      <height>351</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -125,8 +125,8 @@ QPushButton:hover{
     <widget class="QLabel" name="lab_proj_name">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>410</y>
+       <x>690</x>
+       <y>60</y>
        <width>111</width>
        <height>18</height>
       </rect>
@@ -141,8 +141,8 @@ QPushButton:hover{
     <widget class="QLabel" name="lab_ref_notes">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>470</y>
+       <x>690</x>
+       <y>115</y>
        <width>121</width>
        <height>18</height>
       </rect>
@@ -157,8 +157,8 @@ QPushButton:hover{
     <widget class="QLineEdit" name="lineEdit_param_name">
      <property name="geometry">
       <rect>
-       <x>150</x>
-       <y>410</y>
+       <x>825</x>
+       <y>60</y>
        <width>286</width>
        <height>20</height>
       </rect>
@@ -191,10 +191,10 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
     <widget class="QTextEdit" name="textEdit_param_desc">
      <property name="geometry">
       <rect>
-       <x>150</x>
-       <y>470</y>
-       <width>511</width>
-       <height>46</height>
+       <x>825</x>
+       <y>115</y>
+       <width>286</width>
+       <height>71</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -216,8 +216,8 @@ QTextEdit:focus { border: 1px solid #eb6fbd;}
     <widget class="QLabel" name="lab_no_ch_8">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>380</y>
+       <x>690</x>
+       <y>30</y>
        <width>276</width>
        <height>21</height>
       </rect>
@@ -236,8 +236,8 @@ background-color: rgb(255, 255, 255);</string>
     <widget class="QLabel" name="lab_proj_name_2">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>523</y>
+       <x>690</x>
+       <y>195</y>
        <width>111</width>
        <height>18</height>
       </rect>
@@ -252,8 +252,8 @@ background-color: rgb(255, 255, 255);</string>
     <widget class="QLabel" name="lab_proj_name_3">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>540</y>
+       <x>690</x>
+       <y>212</y>
        <width>141</width>
        <height>18</height>
       </rect>
@@ -268,10 +268,10 @@ background-color: rgb(255, 255, 255);</string>
     <widget class="QTextEdit" name="textEdit_param_classes">
      <property name="geometry">
       <rect>
-       <x>150</x>
-       <y>525</y>
-       <width>511</width>
-       <height>41</height>
+       <x>825</x>
+       <y>195</y>
+       <width>286</width>
+       <height>71</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -293,8 +293,8 @@ QTextEdit:focus { border: 1px solid #eb6fbd;}
     <widget class="QPushButton" name="q_add_param">
      <property name="geometry">
       <rect>
-       <x>640</x>
-       <y>390</y>
+       <x>1090</x>
+       <y>35</y>
        <width>18</width>
        <height>18</height>
       </rect>
@@ -321,7 +321,7 @@ border-color: #672146
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>55</y>
+       <y>25</y>
        <width>644</width>
        <height>312</height>
       </rect>
@@ -8704,11 +8704,33 @@ background-color: rgb(255, 255, 255);</string>
       </item>
      </layout>
     </widget>
+    <widget class="Line" name="line_5">
+     <property name="geometry">
+      <rect>
+       <x>665</x>
+       <y>25</y>
+       <width>21</width>
+       <height>316</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color:rgb(188, 188, 188)</string>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="midLineWidth">
+      <number>2</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
     <widget class="QLineEdit" name="lineEdit_param_abbr">
      <property name="geometry">
       <rect>
-       <x>150</x>
-       <y>440</y>
+       <x>825</x>
+       <y>85</y>
        <width>286</width>
        <height>20</height>
       </rect>
@@ -8741,8 +8763,8 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
     <widget class="QLabel" name="lab_proj_name_4">
      <property name="geometry">
       <rect>
-       <x>15</x>
-       <y>440</y>
+       <x>690</x>
+       <y>85</y>
        <width>136</width>
        <height>18</height>
       </rect>
@@ -8757,8 +8779,8 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
     <widget class="QPushButton" name="button_add_param">
      <property name="geometry">
       <rect>
-       <x>540</x>
-       <y>440</y>
+       <x>990</x>
+       <y>275</y>
        <width>121</width>
        <height>20</height>
       </rect>
@@ -8787,11 +8809,159 @@ border-color: #672146
       <bool>true</bool>
      </property>
     </widget>
+    <zorder>lab_proj_name</zorder>
+    <zorder>lab_ref_notes</zorder>
+    <zorder>lineEdit_param_name</zorder>
+    <zorder>textEdit_param_desc</zorder>
+    <zorder>lab_no_ch_8</zorder>
+    <zorder>lab_proj_name_2</zorder>
+    <zorder>lab_proj_name_3</zorder>
+    <zorder>textEdit_param_classes</zorder>
+    <zorder>q_add_param</zorder>
+    <zorder>gridLayoutWidget</zorder>
+    <zorder>line_5</zorder>
+    <zorder>lab_proj_name_4</zorder>
+    <zorder>lineEdit_param_abbr</zorder>
+    <zorder>button_add_param</zorder>
+   </widget>
+   <widget class="QLineEdit" name="tE_validate">
+    <property name="geometry">
+     <rect>
+      <x>700</x>
+      <y>405</y>
+      <width>431</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
+color: rgb(170, 0, 127);
+background-color: rgb(250, 250, 250);
+</string>
+    </property>
+    <property name="frame">
+     <bool>false</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="gral_proj_settings_2">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>395</y>
+      <width>676</width>
+      <height>196</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGroupBox#gral_proj_settings{text-decoration: underline; font: 80 10pt &quot;Calibri Light&quot;;}
+</string>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+    <widget class="QPushButton" name="q_ball">
+     <property name="geometry">
+      <rect>
+       <x>610</x>
+       <y>20</y>
+       <width>18</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+     </property>
+     <property name="text">
+      <string>?</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lab_no_ch_14">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>25</y>
+       <width>91</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: bold 10pt &quot;Calibri&quot;;
+background-color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="text">
+      <string>Centreline 
+ Measurements:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="Line" name="line_6">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>25</y>
+       <width>21</width>
+       <height>141</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color:rgb(188, 188, 188)</string>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="midLineWidth">
+      <number>2</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="cB_area_segm">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>115</y>
+       <width>121</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+     </property>
+     <property name="text">
+      <string>Linear length</string>
+     </property>
+    </widget>
     <widget class="QWidget" name="verticalLayoutWidget">
      <property name="geometry">
       <rect>
        <x>210</x>
-       <y>635</y>
+       <y>58</y>
        <width>421</width>
        <height>126</height>
       </rect>
@@ -8832,22 +9002,16 @@ border-color: #672146
         </item>
         <item>
          <widget class="QLabel" name="label_bal4_2">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>150</width>
-            <height>23</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>150</width>
-            <height>23</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -8863,22 +9027,16 @@ border-color: #672146
         </item>
         <item>
          <widget class="QLabel" name="label_bal4_3">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>100</width>
-            <height>23</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>100</width>
-            <height>23</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -8894,12 +9052,6 @@ border-color: #672146
         </item>
         <item>
          <widget class="QLabel" name="label_bal4_4">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>100</width>
@@ -8960,22 +9112,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>150</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>150</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -8988,22 +9134,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -9016,22 +9156,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -9091,22 +9225,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>150</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>150</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -9119,22 +9247,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -9147,22 +9269,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -9222,22 +9338,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>150</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>150</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -9250,22 +9360,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -9278,22 +9382,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -9353,22 +9451,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>150</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>150</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -9381,22 +9473,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -9409,22 +9495,16 @@ border-color: #672146
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>100</width>
-            <height>20</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="styleSheet">
@@ -9451,54 +9531,11 @@ border-color: #672146
       </item>
      </layout>
     </widget>
-    <widget class="QLabel" name="lab_no_ch_14">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>602</y>
-       <width>91</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: bold 10pt &quot;Calibri&quot;;
-background-color: rgb(255, 255, 255);</string>
-     </property>
-     <property name="text">
-      <string>Centreline 
- Measurements:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="cB_cl_LinLen">
+    <widget class="QCheckBox" name="cB_volume_segm">
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>692</y>
-       <width>121</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-     </property>
-     <property name="text">
-      <string>Linear length</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="cB_cl_LoopLen">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>657</y>
+       <y>80</y>
        <width>116</width>
        <height>20</height>
       </rect>
@@ -9513,14 +9550,14 @@ background-color: rgb(255, 255, 255);</string>
       <string>Centreline length</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
     <widget class="QLabel" name="lab_proj_name_5">
      <property name="geometry">
       <rect>
        <x>215</x>
-       <y>612</y>
+       <y>35</y>
        <width>416</width>
        <height>18</height>
       </rect>
@@ -9536,7 +9573,7 @@ background-color: rgb(255, 255, 255);</string>
      <property name="geometry">
       <rect>
        <x>145</x>
-       <y>607</y>
+       <y>30</y>
        <width>18</width>
        <height>18</height>
       </rect>
@@ -9563,7 +9600,7 @@ border-color: #672146
      <property name="geometry">
       <rect>
        <x>215</x>
-       <y>591</y>
+       <y>14</y>
        <width>171</width>
        <height>21</height>
       </rect>
@@ -9579,146 +9616,15 @@ background-color: rgb(255, 255, 255);</string>
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="Line" name="line_6">
-     <property name="geometry">
-      <rect>
-       <x>170</x>
-       <y>600</y>
-       <width>21</width>
-       <height>141</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color:rgb(188, 188, 188)</string>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <property name="midLineWidth">
-      <number>2</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="q_ball">
-     <property name="geometry">
-      <rect>
-       <x>610</x>
-       <y>595</y>
-       <width>18</width>
-       <height>18</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-     </property>
-     <property name="text">
-      <string>?</string>
-     </property>
-    </widget>
-    <widget class="Line" name="line_7">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>570</y>
-       <width>651</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color:rgb(188, 188, 188)</string>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <property name="midLineWidth">
-      <number>2</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-    <widget class="QLabel" name="lab_no_ch_10">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>30</y>
-       <width>581</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: bold 10pt &quot;Calibri&quot;;
-background-color: rgb(255, 255, 255);</string>
-     </property>
-     <property name="text">
-      <string>Select all the measurements you want to extract from each of the segmented channels-contours...</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-    <zorder>lab_proj_name</zorder>
-    <zorder>lab_ref_notes</zorder>
-    <zorder>lineEdit_param_name</zorder>
-    <zorder>textEdit_param_desc</zorder>
-    <zorder>lab_no_ch_8</zorder>
-    <zorder>lab_proj_name_2</zorder>
-    <zorder>lab_proj_name_3</zorder>
-    <zorder>textEdit_param_classes</zorder>
-    <zorder>q_add_param</zorder>
-    <zorder>gridLayoutWidget</zorder>
-    <zorder>lab_proj_name_4</zorder>
-    <zorder>lineEdit_param_abbr</zorder>
-    <zorder>button_add_param</zorder>
-    <zorder>verticalLayoutWidget</zorder>
     <zorder>lab_no_ch_14</zorder>
-    <zorder>cB_cl_LinLen</zorder>
-    <zorder>cB_cl_LoopLen</zorder>
+    <zorder>line_6</zorder>
+    <zorder>cB_area_segm</zorder>
+    <zorder>verticalLayoutWidget</zorder>
+    <zorder>cB_volume_segm</zorder>
     <zorder>lab_proj_name_5</zorder>
     <zorder>q_ball_2</zorder>
     <zorder>lab_no_ch_9</zorder>
-    <zorder>line_6</zorder>
     <zorder>q_ball</zorder>
-    <zorder>line_7</zorder>
-    <zorder>lab_no_ch_10</zorder>
-   </widget>
-   <widget class="QLineEdit" name="tE_validate">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>825</y>
-      <width>511</width>
-      <height>30</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
-color: rgb(170, 0, 127);
-background-color: rgb(250, 250, 250);
-</string>
-    </property>
-    <property name="frame">
-     <bool>false</bool>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-    <property name="readOnly">
-     <bool>true</bool>
-    </property>
    </widget>
   </widget>
  </widget>
