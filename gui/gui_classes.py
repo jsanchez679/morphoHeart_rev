@@ -334,8 +334,15 @@ class CreateNewProj(QDialog):
                                     'color_chs': 0,
                                     'orientation': 0,
                                     'rotateZ_90': True}
+            else: 
+                self.mH_settings = None
+                self.mH_user_params = None
+
             if self.checked_analysis['morphoCell']:
                 self.mC_settings = {}
+            else: 
+                self.mC_settings = None
+                self.mC_user_params = None
         
             #Disable all fields from Gral Project Settings
             self.tE_validate.setText('New project  "'+self.proj_name+'" has been created! Continue by setting the channel information.')

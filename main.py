@@ -14,7 +14,7 @@ from PyQt6 import QtWidgets#, QtCore
 
 #%% morphoHeart Imports - ##################################################
 from gui.gui_classes import *
-from src.modules import mH_classes as mHC
+from src.modules import mH_classes_new as mHC
 # from src.modules import mH_funcBasics as fcBasics
 # from src.modules import mH_funcContours as fcCont
 # from src.modules import mH_funcMeshes as fcMeshes
@@ -207,6 +207,7 @@ class Controller:
                                         'to_mesh_type': cont_to, 
                                         'from_cl': cl_ch,
                                         'from_cl_type': cl_cont[0:3]}
+                
         self.centreline = {'looped_length': getattr(self.meas_param_win, 'cB_cl_LoopLen').isChecked(),
                            'linear_length': getattr(self.meas_param_win, 'cB_cl_LinLen').isChecked()}
         
@@ -219,12 +220,18 @@ class Controller:
         self.new_proj_win.set_meas_param_all.setChecked(True)
         toggled(self.new_proj_win.set_meas_param_all)
 
-        self.params = self.meas_param_win.params
+        self.mH_params = self.meas_param_win.params
+        self.ch_all = self.meas_param_win.ch_all
+        self.mH_params[2]['measure'] = self.centreline
+        self.mH_params[5]['measure'] = self.ballooning
         self.set_proj_meas_param()
     
     def set_proj_meas_param(self):
         selected_params = {}
         #First add all whole measure parameters selected
+        for numa in self.meas_param_win.params: 
+            selected_params[self.meas_param_win.params[numa]['s']] = {}
+
         print(self.meas_param_win.dict_meas)
         for cbox in self.meas_param_win.dict_meas:
             _,chf,contf,param_num = cbox.split('_')
@@ -233,7 +240,7 @@ class Controller:
             cBox = getattr(self.meas_param_win, cbox)
             if cBox.isEnabled():
                 is_checked = cBox.isChecked()
-                selected_params[param_name+'_'+chf+':'+contf+':whole'] = is_checked
+                selected_params[param_name][chf+':'+contf+':whole'] = is_checked
         
         #Add measure params from segments
         segm_dict = self.new_proj_win.mH_settings['segm']
@@ -241,14 +248,15 @@ class Controller:
             if segm_dict['cutLayersIn2Segments']: 
                 cuts = [key for key in segm_dict if 'Cut' in key]
                 params_segm = [param for param in segm_dict['measure'].keys() if segm_dict['measure'][param]]
-                for cut_a in cuts: 
-                    cut_semg = segm_dict[cut_a]['ch_segments']
-                    no_segm = segm_dict[cut_a]['no_segments']
-                    for ch_a in cut_semg: 
-                        for cont_a in cut_semg[ch_a]:
-                            for param_a in params_segm: 
+                for param_a in params_segm: 
+                    for cut_a in cuts: 
+                        cut_semg = segm_dict[cut_a]['ch_segments']
+                        no_segm = segm_dict[cut_a]['no_segments']
+                        selected_params[param_a+'(segm)'] = {}
+                        for ch_a in cut_semg: 
+                            for cont_a in cut_semg[ch_a]:
                                 for segm in range(1,no_segm+1,1):
-                                    selected_params[param_a+'(segm)_'+ch_a+':'+cont_a+':'+cut_a+'-segm'+str(segm)] = True
+                                    selected_params[param_a+'(segm)'][ch_a+':'+cont_a+':'+cut_a+'-segm'+str(segm)] = True
         
         #Add measure params from sections
         sect_dict = self.new_proj_win.mH_settings['sect']
@@ -256,40 +264,46 @@ class Controller:
             if sect_dict['cutLayersIn2Sections']: 
                 cuts = [key for key in sect_dict if 'Cut' in key]
                 params_sect = [param for param in sect_dict['measure'].keys() if sect_dict['measure'][param]]
-                for cut_b in cuts: 
-                    cut_sect = sect_dict[cut_b]['ch_sections']
-                    no_sect = sect_dict[cut_b]['no_sections']
-                    for ch_b in cut_sect: 
-                        for cont_b in cut_sect[ch_b]:
-                            for param_b in params_sect: 
+                for param_b in params_sect: 
+                    for cut_b in cuts: 
+                        cut_sect = sect_dict[cut_b]['ch_sections']
+                        no_sect = sect_dict[cut_b]['no_sections']
+                        selected_params[param_b+'(sect)'] = {}
+                        for ch_b in cut_sect: 
+                            for cont_b in cut_sect[ch_b]:    
                                 for sect in range(1,no_sect+1,1):
-                                    selected_params[param_b+'(sect)_'+ch_b+':'+cont_b+':'+cut_b+'-sect'+str(sect)] = True
-        self.user_params = selected_params
+                                    selected_params[param_b+'(sect)'][ch_b+':'+cont_b+':'+cut_b+'-sect'+str(sect)] = True
+        
+        self.new_proj_win.mH_user_params = selected_params
         
     def new_proj(self):
 
-
-        self.new_proj_win.button_new_proj.setChecked(True)
-        toggled(self.new_proj_win.button_new_proj)
-        self.new_proj_win.button_new_proj.setDisabled(True)
         if self.new_proj_win.set_meas_param_all.isChecked(): 
+            self.new_proj_win.button_new_proj.setChecked(True)
+            toggled(self.new_proj_win.button_new_proj)
+            self.new_proj_win.button_new_proj.setDisabled(True)
+
+            proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text(), 
+                        'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText(),
+                        'date' : str(self.new_proj_win.dateEdit.date().toPyDate()),
+                        'analysis' : self.new_proj_win.checked_analysis, 
+                        'dir_proj' : self.new_proj_win.proj_dir}
+            
+            self.proj = mHC.Project(proj_dict, new=True)
             print('mH_settings:',self.new_proj_win.mH_settings)
-            print('self.user_params:',self.user_params)
-            print('self.params:',self.params)
+            print('self.mH_user_params:',self.new_proj_win.mH_user_params)
+            print('self.mH_params:',self.mH_params)
             print('self.ballooning:',self.ballooning)
             print('self.centreline:', self.centreline)
             print('notes:',self.new_proj_win.textEdit_ref_notes.toPlainText())
 
-            proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text(), 
-                            'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText(),
-                            'date' : str(self.new_proj_win.dateEdit.date().toPyDate()),
-                            'analysis' : self.new_proj_win.checked_analysis, 
-                            'dir_proj' : self.new_proj_win.proj_dir}
-            
-            self.proj = mHC.Project(proj_dict, new=True)
+            self.new_proj_win.mH_settings['chs_all'] = self.ch_all
+            self.new_proj_win.mH_settings['params'] = self.mH_params
+            self.proj.set_settings(settings={'mH': {'settings':self.new_proj_win.mH_settings, 
+                                                    'params': self.new_proj_win.mH_user_params},
+                                             'mC': {'settings': self.new_proj_win.mC_settings,
+                                                   'params': self.new_proj_win.mC_user_params}})
             print(self.proj.__dict__)
-            # self.proj.set_settings(mH_settings=self.new_proj_win.mH_settings, 
-            #                   mC_settings=self.new_proj_win.mC_settings)
             
         else: 
             print('not done!')
