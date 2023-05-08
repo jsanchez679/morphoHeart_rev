@@ -29,7 +29,7 @@
     <property name="geometry">
      <rect>
       <x>260</x>
-      <y>175</y>
+      <y>180</y>
       <width>120</width>
       <height>20</height>
      </rect>
@@ -64,7 +64,7 @@ border-color: #672146
       <x>20</x>
       <y>45</y>
       <width>360</width>
-      <height>60</height>
+      <height>90</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -82,7 +82,7 @@ border-color: #672146
     <property name="maximumSize">
      <size>
       <width>390</width>
-      <height>60</height>
+      <height>90</height>
      </size>
     </property>
     <property name="styleSheet">
@@ -136,7 +136,7 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>135</y>
+      <y>147</y>
       <width>360</width>
       <height>25</height>
      </rect>
@@ -157,7 +157,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
 					</string>
     </property>
     <property name="maxLength">
-     <number>20</number>
+     <number>80</number>
     </property>
     <property name="frame">
      <bool>true</bool>

@@ -10,11 +10,13 @@ Version: Apr 26, 2023
 # import sys
 from PyQt6 import uic
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtCore import QDate, Qt
+from PyQt6.QtCore import QDate, Qt, QRegularExpression
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
                               QColorDialog, QTableWidgetItem, QCheckBox)
-from PyQt6.QtGui import QPixmap, QIcon, QFont
+from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator
+# from PyQt6.QtCore import QRegExp
+# from PyQt6.QtGui import QRegExpValidator
 
 from pathlib import Path
 # import flatdict
@@ -32,7 +34,7 @@ class WelcomeScreen(QDialog):
     def __init__(self) -> None:
         super().__init__()
         uic.loadUi('welcome_screen.ui', self)
-        self.setFixedSize(601,401)
+        self.setFixedSize(600,560)
         self.setWindowTitle('Welcome to morphoHeart...')
         self.mH_logo_XL.setPixmap(QPixmap(mH_big))
         self.setWindowIcon(QIcon(mH_icon))
@@ -50,8 +52,18 @@ class PromptWindow(QDialog):
         
         if title == 'Custom Orientation':
             self.custom_or = None
+            reg_ex = QRegularExpression("[a-z-A-Z_ 0-9,]+")
             self.button_ok.clicked.connect(lambda: self.validate_custom_or(parent, info))
+
+        elif title == 'Custom Strain' or title == 'Custom Stage' or title == 'Custom Genotype': 
+            reg_ex = QRegularExpression("[a-z-A-Z_ 0-9,.:/+-()]+")
+            self.button_ok.clicked.connect(lambda: self.validate_organ_data(parent, info))
         
+        else: 
+            reg_ex = QRegularExpression('.*')
+
+        input_validator = QRegularExpressionValidator(reg_ex, self.lineEdit)
+        self.lineEdit.setValidator(input_validator)
         self.show()
 
     def validate_custom_or(self, parent, info):
@@ -67,8 +79,25 @@ class PromptWindow(QDialog):
             user_or.addItem(added_or)
             user_or.setCurrentText(added_or)
             self.close()
+    
+    def validate_organ_data(self, parent, name):
+        user_input = self.lineEdit.text()
+        if len(user_input) <=1: 
+            error_txt = "*The organ's "+name+" needs to have more than 1 character."
+            self.tE_validate.setText(error_txt)
+            return
+        # elif validate_txt(user_input) != None:
+        #     error_txt = "Please avoid using invalid characters in the organ's "+name+" e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+        #     self.tE_validate.setText(error_txt)
+        #     return
+        else: 
+            setattr(self, 'custom_'+name, user_input)
+            cB_data = getattr(parent, 'cB_'+name)
+            cB_data.addItem(user_input)
+            cB_data.setCurrentText(user_input)
+            self.close()
 
-        print('self.custom_or:',self.custom_or)
+        print('self.custom_',name,':',getattr(self,'custom_'+name))
         
 class Prompt_ok_cancel(QDialog):
 
@@ -110,7 +139,10 @@ class CreateNewProj(QDialog):
         self.setWindowIcon(QIcon(mH_icon))
 
         #Initialise variables
-        self.meas_param = None
+        # self.meas_param = None
+        self.reg_ex = QRegularExpression("[a-z-A-Z_ 0-9()]+")
+        self.reg_ex_no_spaces = QRegularExpression("[a-z-A-Z_0-9]+")
+        self.reg_ex_comma = QRegularExpression("[a-z-A-Z_ 0-9,]+")
 
         #Initialise window sections
         self.init_gral_proj_set()
@@ -132,6 +164,8 @@ class CreateNewProj(QDialog):
         self.checked_analysis = {'morphoHeart': self.checkBox_mH.isChecked(), 
                                 'morphoCell': self.checkBox_mC.isChecked(), 
                                 'morphoPlot': self.checkBox_mP.isChecked()}
+        #Set validator
+        self.lineEdit_proj_name.setValidator(QRegularExpressionValidator(self.reg_ex, self.lineEdit_proj_name))
 
         # Create a new project
         self.tE_validate.setText("Create a new project by providing a project's name, directory and analysis pipeline. Then press -Validate- and -Create-.")
@@ -179,6 +213,12 @@ class CreateNewProj(QDialog):
         #Default colors (Channels)
         self.ck_def_colors.stateChanged.connect(lambda: self.default_colors('ch'))
 
+        #Set validator
+        self.ch1_username.setValidator(QRegularExpressionValidator(self.reg_ex_no_spaces, self.ch1_username))
+        self.ch2_username.setValidator(QRegularExpressionValidator(self.reg_ex_no_spaces, self.ch2_username))
+        self.ch3_username.setValidator(QRegularExpressionValidator(self.reg_ex_no_spaces, self.ch3_username))
+        self.ch4_username.setValidator(QRegularExpressionValidator(self.reg_ex_no_spaces, self.ch4_username))
+
         #Validate initial settings
         self.button_validate_initial_set.clicked.connect(lambda: self.validate_initial_settings())
         self.button_set_initial_set.clicked.connect(lambda: self.set_initial_settings())
@@ -196,6 +236,9 @@ class CreateNewProj(QDialog):
         self.fillcolor_chNS_tiss_btn.clicked.connect(lambda: self.color_picker('chNS_tiss'))
         self.fillcolor_chNS_ext_btn.clicked.connect(lambda: self.color_picker('chNS_ext'))
         self.button_set_chNS.clicked.connect(lambda: self.set_chNS_settings())
+
+        #Set Validator
+        self.chNS_username.setValidator(QRegularExpressionValidator(self.reg_ex_no_spaces, self.chNS_username))
         
         #Default colors (ChannelNS)
         self.ck_def_colorsNS.stateChanged.connect(lambda: self.default_colors('chNS'))
@@ -226,19 +269,25 @@ class CreateNewProj(QDialog):
         for sB in [self.sB_no_segm1, self.sB_no_segm2, self.sB_segm_noObj1, self.sB_segm_noObj2]:
             sB.setMinimum(1)
             sB.setMaximum(5)
+
+        #Set validator
+        self.names_segm1.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_segm1))
+        self.names_segm2.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_segm2))
+
+        #Buttons
         self.apply_segm.clicked.connect(lambda: self.apply_segments())
         self.button_set_segm.clicked.connect(lambda: self.validate_segm_settings())
 
     def init_sections_group(self):
-        # -- Segments
+        # -- Sections
         self.set_sect.setDisabled(True)
         self.set_sect.setVisible(False)
-        # -- Sections
+        #Sect1
         self.tick_sect1.setEnabled(True)
         self.tick_sect1.setChecked(True)
         self.cB_obj_sect1.setEnabled(True)
         self.names_sect1.setEnabled(True)
-
+        #Sect2
         self.tick_sect2.setEnabled(True)
         self.tick_sect2.setChecked(False)
         self.cB_obj_sect2.setEnabled(False)
@@ -248,6 +297,12 @@ class CreateNewProj(QDialog):
         for cB in [self.cB_obj_sect1, self.cB_obj_sect2]:
             for obj in list_obj_sect: 
                 cB.addItem(obj)
+
+        #Set validator
+        self.names_sect1.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_sect1))
+        self.names_sect2.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_sect2))
+
+        #Buttons
         self.apply_sect.clicked.connect(lambda: self.apply_sections())
         self.button_set_sect.clicked.connect(lambda: self.validate_sect_settings())
 
@@ -275,6 +330,8 @@ class CreateNewProj(QDialog):
             return
         elif validate_txt(self.lineEdit_proj_name.text()) != None:
             error_txt = "Please avoid using invalid characters in the project's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+            self.tE_validate.setText(error_txt)
+            return
         else: 
             self.proj_name = self.lineEdit_proj_name.text()
             valid.append(True)
@@ -297,7 +354,7 @@ class CreateNewProj(QDialog):
             error_txt = '*Please select a project directory where the new project will be saved.'
             self.tE_validate.setText(error_txt)
             return
-        else: 
+        else:  
             if self.proj_dir_parent.is_dir() and len(str(self.proj_dir_parent))>1:
                 valid.append(True)
             else: 
@@ -308,12 +365,13 @@ class CreateNewProj(QDialog):
                 return
 
         if len(valid)== 3 and all(valid):
-            self.button_validate_new_proj.setChecked(True)
             proj_folder = 'R_'+self.proj_name
             self.proj_dir = self.proj_dir_parent / proj_folder
             if self.proj_dir.is_dir():
-                self.tE_validate.setText('*There is already a project named "'+self.proj_name+'" in the selected directory.')
+                self.button_validate_new_proj.setChecked(False)
+                self.tE_validate.setText('*There is already a project named "'+self.proj_name+'" in the selected directory. Please select a different name for the new project.')
             else: 
+                self.button_validate_new_proj.setChecked(True)
                 self.lab_filled_proj_dir.setText(str(self.proj_dir))
                 self.tE_validate.setText('All good. Select -Create- to create "'+self.proj_name+'" as a new project.')        
         else: 
@@ -632,6 +690,7 @@ class CreateNewProj(QDialog):
 
             if self.tick_chNS.isChecked():
                 #Set the comboBoxes for chNS
+                self.ext_chNS.clear(); self.int_chNS.clear()
                 self.ext_chNS.addItems(['----']+ch_selected)
                 self.int_chNS.addItems(['----']+ch_selected)
                 ch_selected.append('chNS')
@@ -1071,6 +1130,14 @@ class SetMeasParam(QDialog):
         #Create table 
         self.set_meas_param_table()
 
+        #Set validators
+        self.reg_ex = QRegularExpression("[a-z-A-Z_ 0-9,]+")
+        self.lineEdit_param_name.setValidator(QRegularExpressionValidator(self.reg_ex, self.lineEdit_param_name))
+        self.reg_ex_no_spaces = QRegularExpression("[a-z-A-Z_0-9]+")
+        self.lineEdit_param_abbr.setValidator(QRegularExpressionValidator(self.reg_ex_no_spaces, self.lineEdit_param_abbr))
+        self.reg_ex_most = QRegularExpression("[a-z-A-Z_ 0-9,.:/+-]+")
+        self.lineEdit_param_classes.setValidator(QRegularExpressionValidator(self.reg_ex_most, self.lineEdit_param_classes))
+
         #Buttons
         self.button_add_param.clicked.connect(lambda: self.add_user_param())
 
@@ -1178,7 +1245,7 @@ class SetMeasParam(QDialog):
         param_name = self.lineEdit_param_name.text()
         param_abbr = self.lineEdit_param_abbr.text()
         param_desc = self.textEdit_param_desc.toPlainText()
-        param_class = self.textEdit_param_classes.toPlainText()
+        param_class = self.lineEdit_param_classes.toPlainText()
 
         if len(param_name)<=5: 
             error_txt = "Parameter's name needs to be longer than 5 characters"
@@ -1220,7 +1287,7 @@ class SetMeasParam(QDialog):
             param_name = self.lineEdit_param_name.clear()
             param_abbr = self.lineEdit_param_abbr.clear()
             param_desc = self.textEdit_param_desc.clear()
-            param_class = self.textEdit_param_classes.clear()
+            param_class = self.lineEdit_param_classes.clear()
         
     def set_ballooning_opt(self):
         for opt in range(1,5,1):
@@ -1257,6 +1324,126 @@ class SetMeasParam(QDialog):
             cB_but.setCurrentText('--select--')
 
                 
+class NewOrgan(QDialog):
+    def __init__(self, proj, parent=None):
+        super().__init__()
+        uic.loadUi('create_organ_screen.ui', self)
+        self.setFixedSize(735,740)
+        self.setWindowTitle('Create New Organ...')
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+
+        now = QDate.currentDate()
+        self.dateEdit.setDate(now)
+        self.set_project_info(proj)
+
+        self.cB_strain.currentIndexChanged.connect(lambda: self.custom_data(name='strain'))
+        self.cB_stage.currentIndexChanged.connect(lambda: self.custom_data(name='stage'))
+        self.cB_genotype.currentIndexChanged.connect(lambda: self.custom_data(name='genotype'))
+        self.validate_organ.clicked.connect(lambda: self.validate_organ())
+
+        #Set validators for the scaling values
+        reg_ex = QRegularExpression(r"[+]?((\d+(\.\d*)?)|(\.\d+))([^a-d,f-z,A-D,F-Z][+-]?\d+)?")
+        scaling_validator_x = QRegularExpressionValidator(reg_ex, self.scaling_x)
+        self.scaling_x.setValidator(scaling_validator_x)
+        scaling_validator_y = QRegularExpressionValidator(reg_ex, self.scaling_y)
+        self.scaling_y.setValidator(scaling_validator_y)
+        scaling_validator_z = QRegularExpressionValidator(reg_ex, self.scaling_z)
+        self.scaling_z.setValidator(scaling_validator_z)
+
+    def set_project_info(self, proj):
+        self.lab_filled_proj_name.setText(proj.info['user_projName'])
+        self.lab_filled_ref_notes.setText(proj.info['user_projNotes'])
+        self.lab_filled_proj_dir.setText(str(proj.dir_proj))
+
+        self.cB_strain.clear()
+        self.cB_strain.addItems(['--select--', 'add']+proj.gui_custom_data['strain'])
+        self.cB_stage.clear()
+        self.cB_stage.addItems(['--select--', 'add']+proj.gui_custom_data['stage'])
+        self.cB_genotype.clear()
+        self.cB_genotype.addItems(['--select--', 'add']+proj.gui_custom_data['genotype'])
+        self.cB_stack_orient.clear()
+        self.cB_stack_orient.addItems(['--select--', 'add']+proj.gui_custom_data['im_orientation'])
+        for axis in ['x', 'y', 'z']:
+            units_cB = getattr(self, 'cB_units_'+axis)
+            units_cB.clear()
+            units_cB.addItems(['--select--']+proj.gui_custom_data['im_res_units'])
+
+    def custom_data(self, name:str):
+        user_data = getattr(self,'cB_'+name).currentText()
+        if user_data == 'add':
+            msg = "Provide the '"+name.upper()+"' of the organ being created."
+            title = 'Custom '+name.title()
+            self.prompt = PromptWindow(msg = msg, title = title, info = name, parent = self)
+        else: 
+            pass 
+
+    def validate_organ(self):
+        valid = []; error_txt = ''
+        #Get organ name
+        if len(self.lineEdit_organ_name.text())<=5:
+            error_txt = '*Organ name needs to be longer than five (5) characters'
+            self.tE_validate.setText(error_txt)
+            return
+        elif validate_txt(self.lineEdit_organ_name.text()) != None:
+            error_txt = "Please avoid using invalid characters in the project's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            self.organ_name = self.lineEdit_organ_name.text()
+            valid.append(True)
+        
+        #Get Strain, stage and genotype
+        for name in ['strain', 'stage', 'genotype', 'stack_orient', 'units_x', 'units_y', 'units_z']:
+            cB_data = getattr(self, 'cB_'+name).currentText()
+            if cB_data == '--select--':
+                error_txt = "*Please select the organ's "+name+"."
+                self.tE_validate.setText(error_txt)
+                return
+            else: 
+                setattr(self, name, cB_data)
+                valid.append(True)
+
+        #Get scaling
+        for axis in ['x', 'y', 'z']:
+            units_cB = getattr(self, 'cB_units_'+axis)
+            if units_cB == '': 
+                error_txt = "*Please enter the scaling value for "+axis+"."
+                self.tE_validate.setText(error_txt)
+                return
+            else:
+                print()
+        
+        #Get Directory
+        if isinstance(self.proj_dir_parent, str): 
+            error_txt = '*Please select a project directory where the new project will be saved.'
+            self.tE_validate.setText(error_txt)
+            return
+        else:  
+            if self.proj_dir_parent.is_dir() and len(str(self.proj_dir_parent))>1:
+                valid.append(True)
+            else: 
+                self.button_select_proj_dir.setChecked(False)
+                toggled(self.button_select_proj_dir)
+                error_txt = '*The selected project directory is invalid. Please select another directory.'
+                self.tE_validate.setText(error_txt)
+                return
+
+        if len(valid)== 3 and all(valid):
+            proj_folder = 'R_'+self.proj_name
+            self.proj_dir = self.proj_dir_parent / proj_folder
+            if self.proj_dir.is_dir():
+                self.button_validate_new_proj.setChecked(False)
+                self.tE_validate.setText('*There is already a project named "'+self.proj_name+'" in the selected directory. Please select a different name for the new project.')
+            else: 
+                self.button_validate_new_proj.setChecked(True)
+                self.lab_filled_proj_dir.setText(str(self.proj_dir))
+                self.tE_validate.setText('All good. Select -Create- to create "'+self.proj_name+'" as a new project.')        
+        else: 
+            self.tE_validate.setText(error_txt)
+            self.button_validate_new_proj.setChecked(False)
+        toggled(self.button_validate_new_proj)
+
 class LoadProj(QDialog):
 
     def __init__(self, parent=None):

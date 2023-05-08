@@ -29,7 +29,7 @@ class Controller:
         self.new_proj_win = None
         self.meas_param_win = None
         self.load_proj_win = None
-        pass
+        self.new_organ_win = None
 
     def show_welcome(self):
         if self.new_proj_win == None: 
@@ -53,6 +53,8 @@ class Controller:
         self.new_proj_win.set_meas_param_all.clicked.connect(lambda: self.set_meas_param())
         # Set Create New Project Button
         self.new_proj_win.button_new_proj.clicked.connect(lambda: self.new_proj())
+        # Set Create New Organ Button
+        self.new_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='new_proj_win'))
 
     def show_meas_param(self):
         if self.meas_param_win == None: 
@@ -67,6 +69,26 @@ class Controller:
         self.welcome_win.close()
         self.load_proj_win.show()
         self.load_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
+
+    def show_new_organ(self, parent_win:str):
+        if self.new_organ_win == None:
+            self.new_organ_win = NewOrgan(proj = self.proj)
+
+        #Identify parent and close it
+        if parent_win == 'new_proj_win':
+            self.new_proj_win.close()
+        elif parent_win == 'load_proj_win':
+            self.load_proj_win.close()
+        else: 
+            print('Other parent window?')
+        print('parent_win:', parent_win)
+        self.new_organ_win.show()
+        self.new_organ_win.button_go_back.clicked.connect(lambda: self.show_parent(parent_win))
+
+    
+    def show_parent(self, parent:str):
+        parent_win = getattr(self, parent)
+        parent_win.show()
 
     #Functions related to API
     def set_meas_param(self): 
@@ -171,13 +193,13 @@ class Controller:
             valid.append(True)
         else: 
             print('Looopppp!')
-            valid.append(self.ckeck_meas_param())
+            valid.append(self.check_meas_param())
 
         if all(valid): 
             self.meas_param_win.tE_validate.setText('All done setting measurement parameters!')
             self.set_params()
         
-    def ckeck_meas_param(self):
+    def check_meas_param(self):
         msg = "You have not selected any measurement parameters to obtain from the segmented channels. If you want to go back and select some measurement parameters, press 'Cancel', else if you are happy with this decision press 'OK'."
         title = 'No Measurement Parameters Selected'
         self.prompt_ok = Prompt_ok_cancel(msg = msg, title = title,  parent=self.meas_param_win)
@@ -256,7 +278,7 @@ class Controller:
                         for ch_a in cut_semg: 
                             for cont_a in cut_semg[ch_a]:
                                 for segm in range(1,no_segm+1,1):
-                                    selected_params[param_a+'(segm)'][ch_a+':'+cont_a+':'+cut_a+'-segm'+str(segm)] = True
+                                    selected_params[param_a+'(segm)'][cut_a+':'+ch_a+':'+cont_a+':segm'+str(segm)] = True
         
         #Add measure params from sections
         sect_dict = self.new_proj_win.mH_settings['sect']
@@ -272,7 +294,7 @@ class Controller:
                         for ch_b in cut_sect: 
                             for cont_b in cut_sect[ch_b]:    
                                 for sect in range(1,no_sect+1,1):
-                                    selected_params[param_b+'(sect)'][ch_b+':'+cont_b+':'+cut_b+'-sect'+str(sect)] = True
+                                    selected_params[param_b+'(sect)'][cut_b+':'+ch_b+':'+cont_b+':sect'+str(sect)] = True
         
         self.new_proj_win.mH_user_params = selected_params
         
@@ -290,12 +312,6 @@ class Controller:
                         'dir_proj' : self.new_proj_win.proj_dir}
             
             self.proj = mHC.Project(proj_dict, new=True)
-            print('mH_settings:',self.new_proj_win.mH_settings)
-            print('self.mH_user_params:',self.new_proj_win.mH_user_params)
-            print('self.mH_params:',self.mH_params)
-            print('self.ballooning:',self.ballooning)
-            print('self.centreline:', self.centreline)
-            print('notes:',self.new_proj_win.textEdit_ref_notes.toPlainText())
 
             self.new_proj_win.mH_settings['chs_all'] = self.ch_all
             self.new_proj_win.mH_settings['params'] = self.mH_params
@@ -303,13 +319,26 @@ class Controller:
                                                     'params': self.new_proj_win.mH_user_params},
                                              'mC': {'settings': self.new_proj_win.mC_settings,
                                                    'params': self.new_proj_win.mC_user_params}})
+            
+            self.proj.set_workflow()
+            self.proj.create_proj_dir()
+            self.proj.save_project()
             print(self.proj.__dict__)
             
         else: 
             print('not done!')
 
+
+
+
+
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
+    screen = app.primaryScreen()
+    print('screen.name', screen.name())
+    size = screen.size()
+    print('screen.size: ', size.width(), size.height())
     controller = Controller()
     controller.show_welcome()
     try: 
@@ -334,4 +363,35 @@ if __name__ == '__main__':
 #python pyuic6 -x name.ui -o name.py
 #C:\Users\bi1jsa\Desktop\pyqt6>D:\Applications\Miniconda\envs\mHpy39_qt\Scripts\pyuic6.exe -x C:\Users\bi1jsa\Desktop\pyqt6\test.ui -o C:\Users\bi1jsa\Desktop\pyqt6\test.py dragging and dropping all the files to get their path
 
+# import re
+# r = re.compile('[+]?((\d+(\.\d*)?)|(\.\d+))([eE][+-]?\d+)?')
+# if r.match('100e-5'): print ('it matches!')
 
+# [+]?((\d+(\.\d*)?)|(\.\d+))([^a-d,f-z,A-D,F-Z][+-]?\d+)?
+
+
+#https://pythex.org/
+#Running example! It works!
+# from PyQt6 import QtWidgets
+# from PyQt6.QtCore import QRegularExpression
+# from PyQt6.QtGui import QRegularExpressionValidator
+# from PyQt6.QtWidgets import QWidget, QLineEdit
+
+# import sys
+
+# class MyWidget(QWidget):
+#     def __init__(self, parent=None):
+#         super(QWidget, self).__init__(parent)
+#         self.le_input = QLineEdit(self)
+
+#         reg_ex = QRegularExpression("[+]?((\d+(\.\d*)?)|(\.\d+))([^a-d,f-z,A-D,F-Z][+-]?\d+)?")
+#         input_validator = QRegularExpressionValidator(reg_ex, self.le_input)
+#         self.le_input.setValidator(input_validator)
+
+# if __name__ == '__main__':
+#     a = QtWidgets.QApplication(sys.argv)
+
+#     w = MyWidget()
+#     w.show()
+
+#     a.exec()

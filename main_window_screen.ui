@@ -363,8 +363,8 @@ background-color: rgb(250, 250, 250);
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>398</width>
-          <height>812</height>
+          <width>402</width>
+          <height>820</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">

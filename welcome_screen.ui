@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>603</width>
-    <height>402</height>
+    <width>601</width>
+    <height>560</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>601</width>
-     <height>401</height>
+     <width>600</width>
+     <height>560</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -49,7 +49,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>230</y>
+      <y>310</y>
       <width>601</width>
       <height>51</height>
      </rect>
@@ -71,7 +71,7 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>290</y>
+      <y>370</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -99,7 +99,7 @@ QPushButton:hover{
     <property name="geometry">
      <rect>
       <x>320</x>
-      <y>290</y>
+      <y>370</y>
       <width>100</width>
       <height>31</height>
      </rect>
@@ -126,7 +126,7 @@ QPushButton:hover{
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>90</y>
+      <y>120</y>
       <width>601</width>
       <height>111</height>
      </rect>
@@ -136,6 +136,147 @@ QPushButton:hover{
     </property>
     <property name="text">
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_instructions_2">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>240</y>
+      <width>601</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Calibri Light</family>
+      <pointsize>12</pointsize>
+      <weight>3</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 25 12pt &quot;Calibri Light&quot;; color: rgb(116, 116, 116)</string>
+    </property>
+    <property name="text">
+     <string>v2.0.1</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_instructions_3">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>440</y>
+      <width>601</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 25 12pt &quot;Calibri Light&quot;; color: rgb(116, 116, 116)</string>
+    </property>
+    <property name="text">
+     <string>Please, don't forget to cite the lastest morphoHeart paper when 
+you publish your results using the software!</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_new_proj_2">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>500</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{ border: none;
+color:rgb(136, 136, 136);
+font: 12pt &quot;Calibri&quot;;}
+
+QPushButton:hover{
+	color: rgb(255, 60, 128)}
+</string>
+    </property>
+    <property name="text">
+     <string>Check GitHub</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="cB_obj_segm1">
+    <property name="geometry">
+     <rect>
+      <x>492</x>
+      <y>525</y>
+      <width>100</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>100</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>100</width>
+      <height>16777215</height>
+     </size>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-color: rgb(173, 173, 173);
+font: 25 10pt &quot;Calibri Light&quot;;</string>
+    </property>
+    <property name="frame">
+     <bool>true</bool>
+    </property>
+    <item>
+     <property name="text">
+      <string>Bright</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label_instructions_4">
+    <property name="geometry">
+     <rect>
+      <x>422</x>
+      <y>525</y>
+      <width>71</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 25 10pt &quot;Calibri Light&quot;; color: rgb(116, 116, 116)</string>
+    </property>
+    <property name="text">
+     <string>Theme: </string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>

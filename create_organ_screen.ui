@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>737</width>
-    <height>687</height>
+    <width>736</width>
+    <height>742</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>736</width>
-     <height>686</height>
+     <width>735</width>
+     <height>740</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -72,7 +72,7 @@
       <x>10</x>
       <y>40</y>
       <width>716</width>
-      <height>161</height>
+      <height>151</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -86,7 +86,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>20</y>
+       <y>23</y>
        <width>111</width>
        <height>18</height>
       </rect>
@@ -102,7 +102,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>50</y>
+       <y>49</y>
        <width>111</width>
        <height>18</height>
       </rect>
@@ -118,7 +118,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>100</y>
+       <y>93</y>
        <width>111</width>
        <height>18</height>
       </rect>
@@ -130,47 +130,11 @@
       <string>Project Directory: </string>
      </property>
     </widget>
-    <widget class="QLabel" name="lab_filled_proj_name">
-     <property name="geometry">
-      <rect>
-       <x>110</x>
-       <y>20</y>
-       <width>251</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
-background-color: rgb(240, 240, 240);
-color: rgb(100, 100, 100);</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-    <widget class="QLabel" name="lab_filled_ref_notes">
-     <property name="geometry">
-      <rect>
-       <x>110</x>
-       <y>50</y>
-       <width>596</width>
-       <height>38</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
-background-color: rgb(240, 240, 240);
-color: rgb(100, 100, 100);</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
     <widget class="QTextEdit" name="lab_filled_proj_dir">
      <property name="geometry">
       <rect>
        <x>110</x>
-       <y>100</y>
+       <y>93</y>
        <width>596</width>
        <height>21</height>
       </rect>
@@ -210,7 +174,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>525</x>
-       <y>130</y>
+       <y>122</y>
        <width>181</width>
        <height>20</height>
       </rect>
@@ -245,14 +209,94 @@ border-color: #672146
       <bool>true</bool>
      </property>
     </widget>
+    <widget class="QTextEdit" name="lab_filled_proj_name">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>23</y>
+       <width>596</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::StrongFocus</enum>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
+background-color: rgb(240, 240, 240);
+color: rgb(100, 100, 100);</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Calibri Light'; font-size:9pt; font-weight:24; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="lab_filled_ref_notes">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>49</y>
+       <width>596</width>
+       <height>38</height>
+      </rect>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::StrongFocus</enum>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
+background-color: rgb(240, 240, 240);
+color: rgb(100, 100, 100);</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Calibri Light'; font-size:9pt; font-weight:24; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="set_organ">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>210</y>
+      <y>200</y>
       <width>716</width>
-      <height>421</height>
+      <height>471</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -273,7 +317,7 @@ border-color: #672146
      <property name="geometry">
       <rect>
        <x>585</x>
-       <y>390</y>
+       <y>440</y>
        <width>121</width>
        <height>20</height>
       </rect>
@@ -315,7 +359,7 @@ border-color: #672146
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>185</y>
+       <y>235</y>
        <width>696</width>
        <height>191</height>
       </rect>
@@ -612,7 +656,7 @@ color: rgb(100, 100, 100);</string>
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="hLayout_Ch1_2">
+         <layout class="QHBoxLayout" name="hLayout_Ch2">
           <property name="spacing">
            <number>6</number>
           </property>
@@ -868,7 +912,7 @@ color: rgb(100, 100, 100);</string>
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="hLayout_Ch1_3">
+         <layout class="QHBoxLayout" name="hLayout_Ch3">
           <property name="spacing">
            <number>6</number>
           </property>
@@ -876,7 +920,7 @@ color: rgb(100, 100, 100);</string>
            <enum>QLayout::SetFixedSize</enum>
           </property>
           <item>
-           <widget class="QLabel" name="lab_ch2_2">
+           <widget class="QLabel" name="lab_ch3">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -899,12 +943,12 @@ color: rgb(100, 100, 100);</string>
              <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
             </property>
             <property name="text">
-             <string>Ch2</string>
+             <string>Ch3</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lab_filled_name_ch2_2">
+           <widget class="QLabel" name="lab_filled_name_ch3">
             <property name="minimumSize">
              <size>
               <width>120</width>
@@ -928,7 +972,7 @@ color: rgb(100, 100, 100);</string>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="browse_ch2_2">
+           <widget class="QPushButton" name="browse_ch3">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -973,7 +1017,7 @@ color: rgb(150, 150, 150);
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lab_filled_dir_ch2_2">
+           <widget class="QLabel" name="lab_filled_dir_ch3">
             <property name="minimumSize">
              <size>
               <width>100</width>
@@ -997,7 +1041,7 @@ color: rgb(100, 100, 100);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="check_ch2_2">
+           <widget class="QLineEdit" name="check_ch3">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -1025,7 +1069,7 @@ color: rgb(100, 100, 100);</string>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="browse_mask_ch2_2">
+           <widget class="QPushButton" name="browse_mask_ch3">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1070,7 +1114,7 @@ color: rgb(150, 150, 150);
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lab_filled_dir_mask_ch2_2">
+           <widget class="QLabel" name="lab_filled_dir_mask_ch3">
             <property name="minimumSize">
              <size>
               <width>100</width>
@@ -1094,7 +1138,7 @@ color: rgb(100, 100, 100);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="check_mask_ch2_2">
+           <widget class="QLineEdit" name="check_mask_ch3">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -1124,7 +1168,7 @@ color: rgb(100, 100, 100);</string>
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="hLayout_Ch1_4">
+         <layout class="QHBoxLayout" name="hLayout_Ch4">
           <property name="spacing">
            <number>6</number>
           </property>
@@ -1132,7 +1176,7 @@ color: rgb(100, 100, 100);</string>
            <enum>QLayout::SetFixedSize</enum>
           </property>
           <item>
-           <widget class="QLabel" name="lab_ch2_3">
+           <widget class="QLabel" name="lab_ch4">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1155,12 +1199,12 @@ color: rgb(100, 100, 100);</string>
              <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
             </property>
             <property name="text">
-             <string>Ch2</string>
+             <string>Ch4</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lab_filled_name_ch2_3">
+           <widget class="QLabel" name="lab_filled_name_ch4">
             <property name="minimumSize">
              <size>
               <width>120</width>
@@ -1184,7 +1228,7 @@ color: rgb(100, 100, 100);</string>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="browse_ch2_3">
+           <widget class="QPushButton" name="browse_ch4">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1229,7 +1273,7 @@ color: rgb(150, 150, 150);
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lab_filled_dir_ch2_3">
+           <widget class="QLabel" name="lab_filled_dir_ch4">
             <property name="minimumSize">
              <size>
               <width>100</width>
@@ -1253,7 +1297,7 @@ color: rgb(100, 100, 100);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="check_ch2_3">
+           <widget class="QLineEdit" name="check_ch4">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -1281,7 +1325,7 @@ color: rgb(100, 100, 100);</string>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="browse_mask_ch2_3">
+           <widget class="QPushButton" name="browse_mask_ch4">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1326,7 +1370,7 @@ color: rgb(150, 150, 150);
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="lab_filled_dir_mask_ch2_3">
+           <widget class="QLabel" name="lab_filled_dir_mask_ch4">
             <property name="minimumSize">
              <size>
               <width>100</width>
@@ -1350,7 +1394,7 @@ color: rgb(100, 100, 100);</string>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="check_mask_ch2_3">
+           <widget class="QLineEdit" name="check_mask_ch4">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -1472,7 +1516,7 @@ background-color: rgb(255, 255, 255);</string>
        <x>110</x>
        <y>50</y>
        <width>341</width>
-       <height>30</height>
+       <height>51</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -1610,6 +1654,31 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
       <item>
        <property name="text">
         <string>--select--</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>ventral</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>lateral-left</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>lateral-right</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>dorsal</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>custom</string>
        </property>
       </item>
      </widget>
@@ -2097,7 +2166,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>85</y>
+       <y>110</y>
        <width>96</width>
        <height>18</height>
       </rect>
@@ -2113,7 +2182,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>110</y>
+       <y>135</y>
        <width>96</width>
        <height>18</height>
       </rect>
@@ -2129,7 +2198,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>135</y>
+       <y>160</y>
        <width>91</width>
        <height>18</height>
       </rect>
@@ -2148,7 +2217,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
      <property name="geometry">
       <rect>
        <x>110</x>
-       <y>85</y>
+       <y>110</y>
        <width>200</width>
        <height>19</height>
       </rect>
@@ -2177,49 +2246,15 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
      <item>
       <property name="text">
        <string>--select--</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>add</string>
       </property>
      </item>
     </widget>
     <widget class="QComboBox" name="cB_stage">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>110</x>
-       <y>110</y>
-       <width>150</width>
-       <height>19</height>
-      </rect>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>150</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>150</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-     </property>
-     <item>
-      <property name="text">
-       <string>--select--</string>
-      </property>
-     </item>
-    </widget>
-    <widget class="QComboBox" name="cB_genotype">
      <property name="enabled">
       <bool>true</bool>
      </property>
@@ -2257,12 +2292,61 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
        <string>--select--</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>add</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QComboBox" name="cB_genotype">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>160</y>
+       <width>150</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>150</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>150</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>--select--</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>add</string>
+      </property>
+     </item>
     </widget>
     <widget class="QLabel" name="lab_proj_dir_2">
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>390</y>
+       <y>440</y>
        <width>126</width>
        <height>18</height>
       </rect>
@@ -2278,7 +2362,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>390</y>
+       <y>440</y>
        <width>436</width>
        <height>21</height>
       </rect>
@@ -2314,74 +2398,100 @@ p, li { white-space: pre-wrap; }
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
-   </widget>
-   <widget class="QPushButton" name="button_open_projorgan">
-    <property name="geometry">
-     <rect>
-      <x>530</x>
-      <y>645</y>
-      <width>196</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton{border-radius:10px;
+    <widget class="QPushButton" name="validate_organ">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>585</x>
+       <y>205</y>
+       <width>121</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{border-radius:10px;
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
-background-color: rgb(134, 134, 134); 
-color: rgb(255, 255, 255);
-font: 11pt &quot;Calibri&quot;;}
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
-	background-color: rgba(162, 0, 122,180);
-	border-color: rgba(162, 0, 122,180);
-	border-width: 2px}
-</string>
-    </property>
-    <property name="text">
-     <string>Open Project and Organ/ROI</string>
-    </property>
-    <property name="checkable">
-     <bool>true</bool>
-    </property>
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+     </property>
+     <property name="text">
+      <string>Validate</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+    </widget>
    </widget>
-   <widget class="QLineEdit" name="tE_validate">
+   <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>635</y>
-      <width>426</width>
-      <height>41</height>
+      <y>685</y>
+      <width>716</width>
+      <height>46</height>
      </rect>
     </property>
-    <property name="styleSheet">
-     <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLineEdit" name="tE_validate">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>35</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>35</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
 color: rgb(170, 0, 127);
 background-color: rgb(250, 250, 250);
 </string>
-    </property>
-    <property name="frame">
-     <bool>false</bool>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-    <property name="readOnly">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="button_go_back">
-    <property name="geometry">
-     <rect>
-      <x>440</x>
-      <y>645</y>
-      <width>81</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton{border-radius:10px;
+       </property>
+       <property name="frame">
+        <bool>false</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_go_back">
+       <property name="minimumSize">
+        <size>
+         <width>120</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>120</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{border-radius:10px;
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
@@ -2394,25 +2504,80 @@ QPushButton:hover{
 	border-color: rgba(162, 0, 122,180);
 	border-width: 2px}
 </string>
-    </property>
-    <property name="text">
-     <string>Go Back...</string>
-    </property>
-    <property name="checkable">
-     <bool>true</bool>
-    </property>
+       </property>
+       <property name="text">
+        <string>Go Back...</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_open_projorgan">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>200</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(134, 134, 134); 
+color: rgb(255, 255, 255);
+font: 11pt &quot;Calibri&quot;;}
+
+QPushButton:hover{
+	background-color: rgba(162, 0, 122,180);
+	border-color: rgba(162, 0, 122,180);
+	border-width: 2px}
+</string>
+       </property>
+       <property name="text">
+        <string>Open Project and Organ/ROI</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
    <zorder>label_2</zorder>
    <zorder>proj_settings</zorder>
    <zorder>set_organ</zorder>
-   <zorder>button_open_projorgan</zorder>
-   <zorder>tE_validate</zorder>
-   <zorder>button_go_back</zorder>
    <zorder>mH_logo_XS</zorder>
+   <zorder>horizontalLayoutWidget</zorder>
   </widget>
  </widget>
  <resources>
-  <include location="images/images.qrc"/>
+  <include location="../../../Desktop/cosas juli/mh/morphoHeart_rev/images/images.qrc"/>
  </resources>
  <connections/>
+ <designerdata>
+  <property name="gridDeltaX">
+   <number>5</number>
+  </property>
+  <property name="gridDeltaY">
+   <number>5</number>
+  </property>
+  <property name="gridSnapX">
+   <bool>true</bool>
+  </property>
+  <property name="gridSnapY">
+   <bool>true</bool>
+  </property>
+  <property name="gridVisible">
+   <bool>true</bool>
+  </property>
+ </designerdata>
 </ui>
