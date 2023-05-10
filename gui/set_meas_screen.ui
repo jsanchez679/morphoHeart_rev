@@ -126,7 +126,7 @@ QPushButton:hover{
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>410</y>
+       <y>417</y>
        <width>111</width>
        <height>18</height>
       </rect>
@@ -142,7 +142,7 @@ QPushButton:hover{
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>470</y>
+       <y>477</y>
        <width>121</width>
        <height>18</height>
       </rect>
@@ -158,7 +158,7 @@ QPushButton:hover{
      <property name="geometry">
       <rect>
        <x>150</x>
-       <y>410</y>
+       <y>417</y>
        <width>371</width>
        <height>20</height>
       </rect>
@@ -192,7 +192,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
      <property name="geometry">
       <rect>
        <x>150</x>
-       <y>470</y>
+       <y>477</y>
        <width>511</width>
        <height>46</height>
       </rect>
@@ -217,7 +217,7 @@ QTextEdit:focus { border: 1px solid #eb6fbd;}
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>380</y>
+       <y>387</y>
        <width>276</width>
        <height>21</height>
       </rect>
@@ -237,7 +237,7 @@ background-color: rgb(255, 255, 255);</string>
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>523</y>
+       <y>530</y>
        <width>111</width>
        <height>18</height>
       </rect>
@@ -253,7 +253,7 @@ background-color: rgb(255, 255, 255);</string>
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>540</y>
+       <y>547</y>
        <width>141</width>
        <height>18</height>
       </rect>
@@ -269,7 +269,7 @@ background-color: rgb(255, 255, 255);</string>
      <property name="geometry">
       <rect>
        <x>640</x>
-       <y>390</y>
+       <y>397</y>
        <width>18</width>
        <height>18</height>
       </rect>
@@ -296,7 +296,7 @@ border-color: #672146
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>55</y>
+       <y>45</y>
        <width>649</width>
        <height>334</height>
       </rect>
@@ -8683,7 +8683,7 @@ background-color: rgb(255, 255, 255);</string>
      <property name="geometry">
       <rect>
        <x>150</x>
-       <y>440</y>
+       <y>447</y>
        <width>371</width>
        <height>20</height>
       </rect>
@@ -8717,7 +8717,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
      <property name="geometry">
       <rect>
        <x>15</x>
-       <y>440</y>
+       <y>447</y>
        <width>136</width>
        <height>18</height>
       </rect>
@@ -8733,7 +8733,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
      <property name="geometry">
       <rect>
        <x>540</x>
-       <y>440</y>
+       <y>447</y>
        <width>121</width>
        <height>20</height>
       </rect>
@@ -8765,7 +8765,7 @@ border-color: #672146
     <widget class="QWidget" name="verticalLayoutWidget">
      <property name="geometry">
       <rect>
-       <x>210</x>
+       <x>15</x>
        <y>635</y>
        <width>421</width>
        <height>126</height>
@@ -9429,7 +9429,7 @@ border-color: #672146
     <widget class="QLabel" name="lab_no_ch_14">
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>490</x>
        <y>602</y>
        <width>91</width>
        <height>31</height>
@@ -9450,7 +9450,7 @@ background-color: rgb(255, 255, 255);</string>
     <widget class="QCheckBox" name="cB_cl_LinLen">
      <property name="geometry">
       <rect>
-       <x>30</x>
+       <x>500</x>
        <y>692</y>
        <width>121</width>
        <height>20</height>
@@ -9472,7 +9472,7 @@ background-color: rgb(255, 255, 255);</string>
     <widget class="QCheckBox" name="cB_cl_LoopLen">
      <property name="geometry">
       <rect>
-       <x>30</x>
+       <x>500</x>
        <y>657</y>
        <width>116</width>
        <height>20</height>
@@ -9494,7 +9494,7 @@ background-color: rgb(255, 255, 255);</string>
     <widget class="QLabel" name="lab_proj_name_5">
      <property name="geometry">
       <rect>
-       <x>215</x>
+       <x>20</x>
        <y>612</y>
        <width>416</width>
        <height>18</height>
@@ -9510,7 +9510,7 @@ background-color: rgb(255, 255, 255);</string>
     <widget class="QPushButton" name="q_ball_2">
      <property name="geometry">
       <rect>
-       <x>145</x>
+       <x>625</x>
        <y>607</y>
        <width>18</width>
        <height>18</height>
@@ -9537,7 +9537,7 @@ border-color: #672146
     <widget class="QLabel" name="lab_no_ch_9">
      <property name="geometry">
       <rect>
-       <x>215</x>
+       <x>20</x>
        <y>591</y>
        <width>171</width>
        <height>21</height>
@@ -9557,10 +9557,10 @@ background-color: rgb(255, 255, 255);</string>
     <widget class="Line" name="line_6">
      <property name="geometry">
       <rect>
-       <x>170</x>
-       <y>600</y>
+       <x>460</x>
+       <y>595</y>
        <width>21</width>
-       <height>141</height>
+       <height>166</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -9579,7 +9579,7 @@ background-color: rgb(255, 255, 255);</string>
     <widget class="QPushButton" name="q_ball">
      <property name="geometry">
       <rect>
-       <x>610</x>
+       <x>415</x>
        <y>595</y>
        <width>18</width>
        <height>18</height>
@@ -9607,7 +9607,7 @@ border-color: #672146
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>570</y>
+       <y>577</y>
        <width>651</width>
        <height>16</height>
       </rect>
@@ -9629,7 +9629,7 @@ border-color: #672146
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>30</y>
+       <y>20</y>
        <width>581</width>
        <height>21</height>
       </rect>
@@ -9649,7 +9649,7 @@ background-color: rgb(255, 255, 255);</string>
      <property name="geometry">
       <rect>
        <x>150</x>
-       <y>525</y>
+       <y>532</y>
        <width>511</width>
        <height>41</height>
       </rect>
@@ -9682,6 +9682,39 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
       <string>Enter new parameter classes (e.g. dextral looper, sinistral looper, dorso-ventral looper)</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="button_validate_params">
+     <property name="geometry">
+      <rect>
+       <x>540</x>
+       <y>745</y>
+       <width>121</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+     </property>
+     <property name="text">
+      <string>Validate</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+    </widget>
     <zorder>lab_proj_name</zorder>
     <zorder>lab_ref_notes</zorder>
     <zorder>lineEdit_param_name</zorder>
@@ -9706,12 +9739,13 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
     <zorder>line_7</zorder>
     <zorder>lab_no_ch_10</zorder>
     <zorder>lineEdit_param_classes</zorder>
+    <zorder>button_validate_params</zorder>
    </widget>
    <widget class="QLineEdit" name="tE_validate">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>825</y>
+      <y>820</y>
       <width>511</width>
       <height>30</height>
      </rect>

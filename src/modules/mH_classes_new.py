@@ -100,7 +100,7 @@ class Project():
                             'user_projName': self.user_projName,
                             'user_projNotes': proj_dict['notes'], 
                             'date_created' : proj_dict['date'],
-                            'dirs': []}
+                            'dirs': {}}
             self.analysis = proj_dict['analysis']
             self.dir_proj = Path(proj_dict['dir_proj'])
             self.organs = {}
@@ -108,59 +108,67 @@ class Project():
             self.gui_custom_data = {'strain': [], 
                                     'stage': [],
                                     'genotype': [],
-                                    'im_orientation': ['ventral', 'lateral-left', 'lateral-right', 'dorsal', 'custom'], 
-                                    'im_res_units': ['um', 'mm', 'custom']}
+                                    'manipulation': [],
+                                    'im_orientation': ['ventral', 'lateral-left', 'lateral-right', 'dorsal'], 
+                                    'im_res_units': ['um', 'mm', 'm']}
                 
         else: 
-            load_dict = {'name': proj_dict['name'], 'dir': proj_dict['dir_proj']}
+            load_dict = {'name': proj_dict['name'], 'dir': proj_dict['dir']}
             self.load_project(load_dict=load_dict)
     
-    # def load_project(self, load_dict:dict):
-    #     print('Loading project:', load_dict)
-    #     dir_res = load_dict['dir']
-    #     jsonDict_name = 'mH_'+load_dict['name']+'_project.json'
-    #     json2open_dir = dir_res / 'settings' / jsonDict_name
-    #     if json2open_dir.is_file():
-    #         with open(json2open_dir, "r") as read_file:
-    #             print(">> "+jsonDict_name+": Opening JSON encoded data")
-    #             load_dict = json.load(read_file)
+    def load_project(self, load_dict:dict):
+        print('Loading project:', load_dict)
+        proj_name = load_dict['name']
+        proj_name_us = proj_name.replace(' ', '_')
+        dir_res = Path(load_dict['dir'])
+        jsonDict_name = 'mH_'+proj_name_us+'_project.json'
+        json2open_dir = dir_res / 'settings' / jsonDict_name
+        if json2open_dir.is_file():
+            with open(json2open_dir, "r") as read_file:
+                print(">> "+jsonDict_name+": Opening JSON encoded data")
+                load_dict = json.load(read_file)
             
-    #         load_dict = make_Paths(load_dict)
+            #load_dict = make_Paths(load_dict)
             
-    #         tuple_keys = [['mH_settings','general_info','chNS','ch_ext'], 
-    #                       ['mH_settings','general_info','chNS','ch_int'], 
-    #                      ]
+            # tuple_keys = [['mH_settings','general_info','chNS','ch_ext'], 
+            #               ['mH_settings','general_info','chNS','ch_int'], 
+            #              ]
             
-    #         load_dict = make_tuples(load_dict, tuple_keys)
-           
-    #         self.info = load_dict['info']
-    #         self.user_projName = load_dict['info']['user_projName']
-    #         self.mH_projName = load_dict['info']['mH_projName']
-    #         self.analysis = load_dict['analysis']
+            # load_dict = make_tuples(load_dict, tuple_keys)
+        
+            self.info = load_dict['info']
+            self.user_projName = load_dict['info']['user_projName']
+            self.mH_projName = load_dict['info']['mH_projName']
+            self.analysis = load_dict['analysis']
             
-    #         self.mH_settings = load_dict['mH_settings']
-    #         self.mH_channels = load_dict['mH_channels']
-    #         self.mH_segments = load_dict['mH_segments']
-    #         self.mH_sections = load_dict['mH_sections']
-    #         self.mH_param2meas = [tuple(item) for item in load_dict['mH_param2meas']]
+            self.mH_settings = load_dict['mH_settings']
+            self.mH_channels = load_dict['mH_channels']
+            self.mH_segments = load_dict['mH_segments']
+            self.mH_sections = load_dict['mH_sections']
+            self.mH_param2meas = load_dict['mH_param2meas'] #[tuple(item) for item in load_dict['mH_param2meas']]
             
-    #         self.mC_settings = load_dict['mC_settings']
-    #         self.mC_channels = load_dict['mC_channels']
-    #         self.mC_segments = load_dict['mC_segments']
-    #         self.mC_param2meas = load_dict['mC_param2meas']
+            self.mC_settings = load_dict['mC_settings']
+            self.mC_channels = load_dict['mC_channels']
+            self.mC_segments = load_dict['mC_segments']
+            self.mC_sections = load_dict['mC_sections']
+            self.mC_param2meas = load_dict['mC_param2meas']
             
-    #         self.workflow = load_dict['workflow']
-    #         self.mH_methods = load_dict['mH_methods']
-    #         self.organs = load_dict['organs']
-    #         self.cellGroups = load_dict['cellGroups']
-          
-    #         self.dir_proj = load_dict['info']['dir_proj']
-    #         self.dir_info = load_dict['info']['dir_info']
-    #     else: 
-    #         print('>> Error: No project with name ',load_dict['name'],' was found!\n Directory: ',str(json2open_dir))
-    #         alert('error_beep')
+            self.workflow = load_dict['workflow']
+            self.mH_methods = load_dict['mH_methods']
+            self.mC_methods = load_dict['mC_methods']
+            self.organs = load_dict['organs']
+            self.cellGroups = load_dict['cellGroups']
 
-    def set_settings(self, settings:dict):
+            self.gui_custom_data = load_dict['gui_custom_data']
+          
+            self.dir_proj = load_dict['info']['dir_proj']
+            self.dir_info = load_dict['info']['dir_info']
+            
+        else: 
+            print('>> Error: No project with name ',load_dict['name'],' was found!\n Directory: ',str(json2open_dir))
+            alert('error_beep')
+
+    def set_settings(self, settings:dict):#
         '''
         func - Create general project settings
         This function will be called when the user creates a new project and 
@@ -175,7 +183,7 @@ class Project():
         self.set_mC_settings(mC_settings = settings['mC']['settings'], 
                              mC_params = settings['mC']['params'])
         
-    def set_mH_settings(self, mH_settings:dict, mH_params:dict):
+    def set_mH_settings(self, mH_settings:dict, mH_params:dict):#
         
         print('mH_settings: ', mH_settings)
         if self.analysis['morphoHeart']:
@@ -217,7 +225,7 @@ class Project():
         self.clean_False(user_param = mH_params)
         self.set_mH_methods()
 
-    def set_mC_settings(self, mC_settings:dict, mC_params:dict): 
+    def set_mC_settings(self, mC_settings:dict, mC_params:dict):# 
         
         # mC_set = {}
         # mC_channels = []
@@ -234,18 +242,18 @@ class Project():
             self.mC_param2meas = {}
             self.mC_methods = {}
         
-    def clean_False(self, user_param:dict):
+    def clean_False(self, user_param:dict):#
         user_param_new = copy.deepcopy(user_param)
         for param in user_param: 
             for key in user_param[param]: 
                 if not user_param[param][key]: 
                     user_param_new[param].pop(key, None)
-                    print('deleting: ', param,'-', key)
+                    # print('deleting: ', param,'-', key)
         
         self.mH_settings['measure'] = user_param_new
         self.mH_param2meas = user_param_new
     
-    def set_mH_methods(self):
+    def set_mH_methods(self):#
         mH_param2meas = self.mH_param2meas
 
         if len(mH_param2meas)>0: 
@@ -272,7 +280,7 @@ class Project():
         
         self.mH_methods = methods
     
-    def update_mH_settings(self):
+    def update_mH_settings(self):#to delete
         print('Check this as you go along')
         # methods = self.mH_methods
         # mH_settings = self.mH_settings
@@ -338,7 +346,7 @@ class Project():
         #                         'imgs_videos': 'NotAssigned', 
         #                         'settings': 'NotAssigned'}
 
-    def create_proj_dir(self):
+    def create_proj_dir(self):#
         self.dir_proj.mkdir(parents=True, exist_ok=True)
         if self.dir_proj.is_dir():
             self.info['dir_proj'] = self.dir_proj
@@ -346,7 +354,7 @@ class Project():
             print('>> Error: Project directory could not be created!\n>> Dir: '+str(self.dir_proj))
             alert('error_beep')
             
-    def set_workflow(self):
+    def set_workflow(self):#
         '''
         This function will initialise the dictionary that will contain the workflow of the
         project. This workflow will be assigned to each organ that is part of the created project
@@ -529,7 +537,7 @@ class Project():
         self.workflow = workflow
         print('self.workflow:',self.workflow)
 
-    def save_project(self):
+    def save_project(self, temp_dir=None):#
         #Create a new dictionary that contains all the settings
         jsonDict_name = 'mH_'+self.user_projName+'_project.json'
         json2save_par = self.dir_proj / 'settings'
@@ -575,6 +583,15 @@ class Project():
                 print('>> Project settings file saved correctly!\n>> File: '+jsonDict_name)
                 # print('>> File: '+ str(json2save_dir)+'\n')
                 alert('countdown')
+
+            if temp_dir != None and isinstance(temp_dir, Path): 
+                temp_name = temp_dir.stem
+                print(temp_name)
+                proj_temp = copy.deepcopy(all_info)
+                proj_temp['info']['user_projName'] = temp_name
+                with open(str(temp_dir), "w") as write_file:
+                    json.dump(proj_temp, write_file, cls=NumpyArrayEncoder)
+                print('>> Project template file saved correctly!\n>> Path: '+str(temp_dir))
     
     def add_organ(self, organ):
         dict_organ = copy.deepcopy(organ.info)
@@ -582,7 +599,13 @@ class Project():
         dict_organ['dir_res'] = organ.dir_res
         
         self.organs[organ.user_organName] = dict_organ
-        # self.gui_custom_data = {'strain': }
+
+        self.gui_custom_data['strain'].append(organ.info['strain'])
+        self.gui_custom_data['stage'].append(organ.info['stage'])
+        self.gui_custom_data['genotype'].append(organ.info['genotype'])
+        self.gui_custom_data['manipulation'].append(organ.info['manipulation'])
+        self.gui_custom_data['im_orientation'].append(organ.info['im_orientation'])
+        self.gui_custom_data['im_res_units'].append(organ.info['im_res_units'])
         self.save_project()
 
     def remove_organ(self, organ):
@@ -599,7 +622,7 @@ class Project():
             with open(json2open_dir, "r") as read_file:
                 print(">> "+jsonDict_name+": Opening JSON encoded data")
                 dict_out = json.load(read_file)
-            organ = Organ(project=self, user_settings={}, info_loadCh={}, 
+            organ = Organ(project=self, user_settings={}, img_dirs={}, 
                             new=False, load_dict=dict_out)
         else: 
             organ = None
@@ -611,15 +634,16 @@ class Project():
 class Organ():
     'Organ Class'
     
-    def __init__(self, project:Project, user_settings:dict, info_loadCh:dict, 
-                 new=True, load_dict={}):
+    def __init__(self, project:Project, organ_dict:dict, new:bool):# load_dict={},
         
+        user_settings = organ_dict['settings']
+        img_dirs = organ_dict['img_dirs']
         self.parent_project = project
         if new:
             self.user_organName = user_settings['user_organName'].replace(' ', '_')
             self.info = user_settings
-            self.info['dirs'] = project.info['dirs']
-            self.info_loadCh = info_loadCh
+            self.info['dirs'] = project.info['dirs']    
+            self.img_dirs = img_dirs
             self.create_mHName()
             self.analysis = copy.deepcopy(project.analysis)
             if self.analysis['morphoHeart']:
@@ -639,10 +663,14 @@ class Organ():
             if self.analysis['morphoCell']:
                 self.mC_settings = copy.deepcopy(project.mC_settings)
             self.workflow = copy.deepcopy(project.workflow)
+            self.create_folders()
         else: 
+            load_dict = organ_dict['load_dict']
             self.load_organ(load_dict=load_dict)
-        
-        self.check_channels(project)
+
+    def create_mHName(self):
+        now_str = datetime.now().strftime('%Y%m%d%H%M')
+        self.mH_organName = 'mH_Organ-'+now_str
 
     def load_organ(self, load_dict:dict):
         
@@ -651,8 +679,8 @@ class Organ():
         # user_settings = dict_out['Organ']
         self.info = load_dict['Organ']
         self.user_organName = self.info['user_organName'].replace(' ', '_')
-        # info_loadCh = dict_out['info_loadCh']
-        self.info_loadCh = load_dict['info_loadCh']
+        # img_dirs = dict_out['img_dirs']
+        self.img_dirs = load_dict['img_dirs']
         self.analysis = load_dict['analysis']
         
         tuple_keys = [['mH_settings','general_info','chNS','ch_ext'],
@@ -730,51 +758,47 @@ class Organ():
                               keep_largest = keep_largest, rotateZ_90 = rotateZ_90)#,
                               # new = False)
                 self.obj_meshes[mesh] = msh
-
-    def create_mHName(self):
-        now_str = datetime.now().strftime('%Y%m%d%H%M')
-        self.mH_organName = 'mH_Organ-'+now_str
-                 
-    def check_channels(self, project:Project):
-        info_loadCh = self.info_loadCh
-        chs = [x for x in project.mH_channels if x != 'chNS']    
-        array_sizes = {}
-        sizes = []
-        for ch in chs:
-            try:
-                images_o = io.imread(str(info_loadCh[ch]['dir_cho']))
-                array_sizes[ch]= {'cho': images_o.shape}
-                sizes.append(images_o.shape)
-            except: 
-                print('>> Error: Something went wrong opening the file -',ch)
-                alert('error_beep')
+          
+    def check_channels(self, project:Project):#to delete
+        img_dirs = self.img_dirs
+        # chs = [x for x in project.mH_channels if x != 'chNS']    
+        # array_sizes = {}
+        # sizes = []
+        # for ch in chs:
+        #     try:
+        #         images_o = io.imread(str(img_dirs[ch]['dir_cho']))
+        #         array_sizes[ch]= {'cho': images_o.shape}
+        #         sizes.append(images_o.shape)
+        #     except: 
+        #         print('>> Error: Something went wrong opening the file -',ch)
+        #         alert('error_beep')
             
-            if info_loadCh[ch]['mask_ch']:
-                try:
-                    images_mk = io.imread(str(info_loadCh[ch]['dir_mk']))
-                    array_sizes[ch]['mask']= images_mk.shape
-                    sizes.append(images_mk.shape)
-                except: 
-                    print('>> Error: Something went wrong opening the mask -',ch)
-                    alert('error_beep')
+        #     if img_dirs[ch]['mask_ch']:
+        #         try:
+        #             images_mk = io.imread(str(img_dirs[ch]['dir_mk']))
+        #             array_sizes[ch]['mask']= images_mk.shape
+        #             sizes.append(images_mk.shape)
+        #         except: 
+        #             print('>> Error: Something went wrong opening the mask -',ch)
+        #             alert('error_beep')
             
-        unique_size = list(set(sizes))
-        if len(unique_size) != 1: 
-            counter = collections.defaultdict(int)
-            for elem in unique_size:
-                counter[elem] += 1
-            print('>> Error: Dimensions of imported images do not match! Please check! \n Imported Data: ')
-            pprint.pprint(array_sizes)
-            alert('error_beep')
+        # unique_size = list(set(sizes))
+        # if len(unique_size) != 1: 
+        #     counter = collections.defaultdict(int)
+        #     for elem in unique_size:
+        #         counter[elem] += 1
+        #     print('>> Error: Dimensions of imported images do not match! Please check! \n Imported Data: ')
+        #     pprint.pprint(array_sizes)
+        #     alert('error_beep')
         
-        else:      
-            for ch in chs:
-                for param in ['dir_cho','mask_ch','dir_mk']:
-                    self.mH_settings['general_info'][ch][param] = info_loadCh[ch][param]
-            # print('>> Files have been checked! \n>> Images shape:')
-            # pprint.pprint(array_sizes)
+        # else:      
+        #     for ch in chs:
+        #         for param in ['dir_cho','mask_ch','dir_mk']:
+        #             self.mH_settings['general_info'][ch][param] = img_dirs[ch][param]
+        #     # print('>> Files have been checked! \n>> Images shape:')
+        #     # pprint.pprint(array_sizes)
 
-        self.create_folders()
+        # self.create_folders()
 
     def create_folders(self):
         dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'centreline', 'settings']
@@ -921,8 +945,6 @@ class Organ():
             if hasattr(submesh, 'dict_segm'):
                 self.submeshes[submesh.sub_name_all]['dict_segm'] = submesh.dict_segm
        
-            
-
     def add_object(self, obj, proc:str, class_name:Union[list,str], name):
         
         if isinstance(obj, vedo.shapes.KSpline):# or name == 'KSpline':
@@ -956,7 +978,7 @@ class Organ():
     def save_organ(self):
         all_info = {}
         all_info['Organ'] = self.info
-        all_info['info_loadCh'] = self.info_loadCh
+        all_info['img_dirs'] = self.img_dirs
         all_info['analysis'] = self.analysis
         
         jsonDict_name = 'mH_'+self.user_organName+'_organ.json'
@@ -1281,6 +1303,9 @@ class Organ():
     def get_genotype(self):
         return self.info['genotype']
 
+    def get_manipulation(self): 
+        return self.info['manipulation']
+    
     def get_dir_res(self):
         return self.dir_res
 

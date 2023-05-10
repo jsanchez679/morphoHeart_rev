@@ -632,5 +632,8 @@ zlib-ng                   2.0.6                h8ffe710_0    conda-forge
 zstd                      1.5.2                h12be248_6    conda-forge
 
 
-
+pip install PyQt6
+pip install PyQt-tools
+pip install qtwidgets
+pip install PySide2
 

@@ -32,306 +32,290 @@ class Controller:
         self.new_organ_win = None
 
     def show_welcome(self):
-        if self.new_proj_win == None: 
-            self.welcome_win = WelcomeScreen()
+        #Close previous windows if existent
         if self.new_proj_win != None:
             self.new_proj_win.close()
         if self.load_proj_win != None:
             self.load_proj_win.close()
+        #Create welcome window and show
+        if self.new_proj_win == None: 
+            self.welcome_win = WelcomeScreen()
         self.welcome_win.show()
+
+        #Connect Buttons
+        # -Create new project
         self.welcome_win.button_new_proj.clicked.connect(lambda: self.show_create_new_proj())
+        # -Load project
         self.welcome_win.button_load_proj.clicked.connect(lambda: self.show_load_proj())
+
+        #Save theme
+        self.theme = self.welcome_win.theme
+        print('Selected theme: ', self.theme)
     
     def show_create_new_proj(self):
+        #Close welcome window
+        self.welcome_win.close()
+        #Create new proj window and show
         if self.new_proj_win == None: 
             self.new_proj_win = CreateNewProj()
-        self.welcome_win.close()
         self.new_proj_win.show()
-        # Go Back Button
+
+        #Connect Buttons
+        # -Go Back 
         self.new_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
-        # Set Measurement Parameters Button
-        self.new_proj_win.set_meas_param_all.clicked.connect(lambda: self.set_meas_param())
-        # Set Create New Project Button
+        # -Set Measurement Parameters 
+        self.new_proj_win.set_meas_param_all.clicked.connect(lambda: self.show_meas_param())
+        # -Create New Project 
         self.new_proj_win.button_new_proj.clicked.connect(lambda: self.new_proj())
-        # Set Create New Organ Button
+        # -Show New Organ Window 
         self.new_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='new_proj_win'))
 
     def show_meas_param(self):
-        if self.meas_param_win == None: 
-            self.meas_param_win = SetMeasParam(mH_settings = self.new_proj_win.mH_settings, 
-                                               parent=self.new_proj_win)
-        self.meas_param_win.show()
-        self.meas_param_win.button_set_params.clicked.connect(lambda: self.validate_params())
+        #Create meas param window and show
+        if self.new_proj_win.check_to_set_params(): 
+            if self.meas_param_win == None: 
+                self.meas_param_win = SetMeasParam(mH_settings = self.new_proj_win.mH_settings, 
+                                                parent=self.new_proj_win)
+                self.meas_param_win.show()
+                self.meas_param_win.button_set_params.clicked.connect(lambda: self.set_proj_meas_param())
+        else: 
+            print('Something is wrong: show_meas_param')
+            return
 
     def show_load_proj(self): 
+        #Close welcome window
+        self.welcome_win.close()
+        #Create Load Project Window and show
         if self.load_proj_win == None:
             self.load_proj_win = LoadProj() 
-        self.welcome_win.close()
         self.load_proj_win.show()
+
+        #Connect buttons
+        # -Go Back
         self.load_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
+        # -Browse project
+        self.load_proj_win.button_browse_proj.clicked.connect(self.load_proj)
 
     def show_new_organ(self, parent_win:str):
-        if self.new_organ_win == None:
-            self.new_organ_win = NewOrgan(proj = self.proj)
+        if self.new_proj_win.button_new_proj.isChecked():
+            #Identify parent and close it
+            if parent_win == 'new_proj_win':
+                self.new_proj_win.close()
+            elif parent_win == 'load_proj_win':
+                self.load_proj_win.close()
+            else: 
+                print('Other parent window?')
+            print('parent_win:', parent_win)
 
-        #Identify parent and close it
-        if parent_win == 'new_proj_win':
-            self.new_proj_win.close()
-        elif parent_win == 'load_proj_win':
-            self.load_proj_win.close()
+            #Create new organ window and show
+            if self.new_organ_win == None:
+                self.new_organ_win = NewOrgan(proj = self.proj)
+            self.new_organ_win.show()
+
+            #Connect Buttons
+            # -Go Back 
+            self.new_organ_win.button_go_back.clicked.connect(lambda: self.show_parent(parent_win))
+            # - Create New Organ
+            self.new_organ_win.button_create_new_organ.clicked.connect(lambda: self.new_organ())
         else: 
-            print('Other parent window?')
-        print('parent_win:', parent_win)
-        self.new_organ_win.show()
-        self.new_organ_win.button_go_back.clicked.connect(lambda: self.show_parent(parent_win))
+            error_txt = "*Please create the New Project first before adding an organ to it."
+            self.new_proj_win.tE_validate.setText(error_txt)
+            self.new_proj_win.button_new_proj.setChecked(False)
+            toggled(self.new_proj_win.button_new_proj)
+            return
 
-    
     def show_parent(self, parent:str):
         parent_win = getattr(self, parent)
         parent_win.show()
 
-    #Functions related to API
-    def set_meas_param(self): 
-        print('self.mH_settings (set_meas_param):',self.new_proj_win.mH_settings)
-        valid = []
-        if self.new_proj_win.button_set_initial_set.isChecked(): 
-            valid.append(True)
+    #Functions related to API    
+    def set_proj_meas_param(self):
+        if self.meas_param_win.button_validate_params.isChecked(): 
+            self.mH_params = self.meas_param_win.params
+            self.ch_all = self.meas_param_win.ch_all
+            print('\nAAAAAA')
+            print(self.mH_params)
+            print(self.ch_all)
+            print(self.meas_param_win.final_params)
+            self.mH_params[2]['measure'] = self.meas_param_win.final_params['centreline']
+            self.mH_params[5]['measure'] = self.meas_param_win.final_params['ballooning']
+        
+            selected_params = {}
+            #First add all whole measure parameters selected
+            for numa in self.meas_param_win.params: 
+                selected_params[self.meas_param_win.params[numa]['s']] = {}
+
+            print('\nBB:',self.meas_param_win.dict_meas)
+            for cbox in self.meas_param_win.dict_meas:
+                _,chf,contf,param_num = cbox.split('_')
+                num_p = int(param_num.split('param')[1])
+                param_name = self.meas_param_win.params[num_p]['s']
+                cBox = getattr(self.meas_param_win, cbox)
+                if cBox.isEnabled():
+                    is_checked = cBox.isChecked()
+                    selected_params[param_name][chf+':'+contf+':whole'] = is_checked
+            
+            #Add measure params from segments
+            segm_dict = self.new_proj_win.mH_settings['segm']
+            if isinstance(segm_dict, dict): 
+                if segm_dict['cutLayersIn2Segments']: 
+                    cuts = [key for key in segm_dict if 'Cut' in key]
+                    params_segm = [param for param in segm_dict['measure'].keys() if segm_dict['measure'][param]]
+                    for param_a in params_segm: 
+                        for cut_a in cuts: 
+                            cut_semg = segm_dict[cut_a]['ch_segments']
+                            no_segm = segm_dict[cut_a]['no_segments']
+                            selected_params[param_a+'(segm)'] = {}
+                            for ch_a in cut_semg: 
+                                for cont_a in cut_semg[ch_a]:
+                                    for segm in range(1,no_segm+1,1):
+                                        selected_params[param_a+'(segm)'][cut_a+':'+ch_a+':'+cont_a+':segm'+str(segm)] = True
+            
+            #Add measure params from sections
+            sect_dict = self.new_proj_win.mH_settings['sect']
+            if isinstance(sect_dict, dict): 
+                if sect_dict['cutLayersIn2Sections']: 
+                    cuts = [key for key in sect_dict if 'Cut' in key]
+                    params_sect = [param for param in sect_dict['measure'].keys() if sect_dict['measure'][param]]
+                    for param_b in params_sect: 
+                        for cut_b in cuts: 
+                            cut_sect = sect_dict[cut_b]['ch_sections']
+                            no_sect = sect_dict[cut_b]['no_sections']
+                            selected_params[param_b+'(sect)'] = {}
+                            for ch_b in cut_sect: 
+                                for cont_b in cut_sect[ch_b]:    
+                                    for sect in range(1,no_sect+1,1):
+                                        selected_params[param_b+'(sect)'][cut_b+':'+ch_b+':'+cont_b+':sect'+str(sect)] = True
+            
+            self.new_proj_win.mH_user_params = selected_params
+            print('\nCC: ',self.new_proj_win.mH_user_params)
+            #Toogle button and close window
+            self.meas_param_win.button_set_params.setChecked(True)
+            toggled(self.meas_param_win.button_set_params)
+            self.meas_param_win.close()
+            #Toggle button in new project window
+            self.new_proj_win.set_meas_param_all.setChecked(True)
+            toggled(self.new_proj_win.set_meas_param_all)
+            error_txt = "Well done! Next, create the new project with all the selected settings."
+            self.new_proj_win.tE_validate.setText(error_txt)
         else: 
-            error_txt = 'You need to set initial settings first to set measurement parameters.'
+            error_txt = "Please validate selected measurement parameters first."
+            self.meas_param_win.tE_validate.setText(error_txt)
+            return 
+        
+    def new_proj(self):
+        if self.new_proj_win.set_meas_param_all.isChecked(): 
+            if self.new_proj_win.validate_set_all():# and self.validate_params(): 
+                temp_dir = None
+                if self.new_proj_win.cB_proj_as_template.isChecked():
+                    temp_name = self.new_proj_win.lineEdit_template_name.text()+'.json'
+                    cwd = Path().absolute()
+                    dir_temp = cwd / 'db' / 'templates' / temp_name 
+                    if dir_temp.is_file():
+                        self.new_proj_win.tE_validate.setText('*There is already a template with the selected name. Please give this template a new name.')
+                        return
+                    else: 
+                        print('New project template: ', dir_temp)
+                        temp_dir = dir_temp
+
+                self.new_proj_win.button_new_proj.setChecked(True)
+                toggled(self.new_proj_win.button_new_proj)
+                # self.new_proj_win.button_new_proj.setDisabled(True)
+
+                proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text(), 
+                            'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText(),
+                            'date' : str(self.new_proj_win.dateEdit.date().toPyDate()),
+                            'analysis' : self.new_proj_win.checked_analysis, 
+                            'dir_proj' : self.new_proj_win.proj_dir}
+                
+                self.proj = mHC.Project(proj_dict, new=True)
+
+                self.new_proj_win.mH_settings['chs_all'] = self.ch_all
+                self.new_proj_win.mH_settings['params'] = self.mH_params
+                self.proj.set_settings(settings={'mH': {'settings':self.new_proj_win.mH_settings, 
+                                                        'params': self.new_proj_win.mH_user_params},
+                                                'mC': {'settings': self.new_proj_win.mC_settings,
+                                                    'params': self.new_proj_win.mC_user_params}})
+                
+                self.proj.set_workflow()
+                self.proj.create_proj_dir()
+                self.proj.save_project(temp_dir = temp_dir)
+                print(self.proj.__dict__)
+            
+        else: 
+            error_txt = '*You have not selected any measurement parameter yet! Select some parameters to measure to continue.'
             self.new_proj_win.tE_validate.setText(error_txt)
             return
 
-        if self.new_proj_win.checked('chNS'): 
-            if self.new_proj_win.button_set_chNS.isChecked():
-                valid.append(True)
-            else: 
-                error_txt = 'You need to set Channel NS settings first to set measurement parameters.'
-                self.new_proj_win.tE_validate.setText(error_txt)
-                return
-        
-        if self.new_proj_win.checked('segm'): 
-            if self.new_proj_win.button_set_segm.isChecked():
-                valid.append(True)
-            else: 
-                error_txt = 'You need to set segments settings first to set measurement parameters.'
-                self.new_proj_win.tE_validate.setText(error_txt)
-                return
-            
-        if self.new_proj_win.checked('sect'): 
-            if self.new_proj_win.button_set_sect.isChecked():
-                valid.append(True)
-            else: 
-                error_txt = 'You need to set sections settings first to set measurement parameters.'
-                self.new_proj_win.tE_validate.setText(error_txt)
-                return
-            
-        if all(valid): 
-            self.show_meas_param()
+    def new_organ(self): 
+        if self.new_organ_win.button_validate_organ.isChecked(): 
+            if self.new_organ_win.check_selection(self.proj):
+                if self.new_organ_win.check_shapes(self.proj): 
+                    self.new_organ_win.button_create_new_organ.setChecked(True)
+                    toggled(self.new_organ_win.button_create_new_organ)
+                    # self.new_organ_win.button_create_new_organ.setDisabled(True)
 
-    def validate_params(self): 
-        valid = []
-        #First validate the ballooning options
-        #-- Get checkboxes info
-        cB_checked = {}
-        for cha in self.meas_param_win.ch_all:
-            for conta in ['int', 'ext']: 
-                chcb = getattr(self.meas_param_win, 'cB_'+cha+'_'+conta+'_param5')
-                if chcb.isEnabled() and chcb.isChecked():
-                    cB_checked[cha+'_'+conta] = True
-        print('cB_checked: ',cB_checked)
+                    name = self.new_organ_win.lineEdit_organ_name.text()
+                    notes = self.new_organ_win.textEdit_ref_notes.toPlainText()
+                    strain = self.new_organ_win.cB_strain.currentText()
+                    stage = self.new_organ_win.cB_stage.currentText()
+                    genotype = self.new_organ_win.cB_genotype.currentText()
+                    manipulation = self.new_organ_win.cB_manipulation.currentText()
+                    im_or = self.new_organ_win.cB_stack_orient.currentText()
+                    custom_angle = self.new_organ_win.cust_angle.text()
+                    res_units = self.new_organ_win.resolution
+                    resolution = [res_units[axis]['scaling'] for axis in ['x','y','z']]
+                    units = [res_units[axis]['units'] for axis in ['x','y','z']]
 
-        #-- Get settings
-        names = {}; 
-        for opt in range(1,5,1):
-            name_bal = getattr(self.meas_param_win, 'cB_balto'+str(opt)).currentText()
-            ch_bal = getattr(self.meas_param_win, 'cB_ch_bal'+str(opt)).currentText() != '--select--'
-            cont_bal = getattr(self.meas_param_win, 'cB_cont_bal'+str(opt)).currentText() != '--select--'
-            if name_bal != '--select--': 
-                aaa = name_bal.split('(')[1]
-                bbb = aaa.split('-')
-                ch_s = bbb[0].split(')')[0]
-                cont_s = bbb[1]
-                names[ch_s+'_'+cont_s] = {'ch': ch_bal, 
-                                          'cont': cont_bal}
-        print('names: ', names)
-        
-        #Now double check them 
-        if set(list(cB_checked.keys())) != set(list(names.keys())):
-            diff = set(list(cB_checked.keys())) - set(list(names.keys()))
-            error_txt = "You have not selected the centreline to use for "+str(diff)
-            self.meas_param_win.tE_validate.setText(error_txt)
+                    organ_settings = {'project': {'user': self.proj.user_projName,
+                                                'mH': self.proj.mH_projName,
+                                                'dict_dir_info': self.proj.dir_info},
+                                        'user_organName': name,
+                                        'user_organNotes': notes,
+                                        'im_orientation': im_or,
+                                        'custom_angle': custom_angle,
+                                        'resolution': resolution,
+                                        'im_res_units': units,
+                                        'stage': stage, 
+                                        'strain': strain, 
+                                        'genotype': genotype,
+                                        'manipulation': manipulation, 
+                                            }
+                    organ_dict = {'settings': organ_settings, 
+                                'img_dirs': self.new_organ_win.img_dirs}
+
+                    self.organ = mHC.Organ(project=self.proj, organ_dict=organ_dict, new = True)
+                    self.new_organ_win.lab_filled_organ_dir.setText(str(self.organ.dir_res))
+                    print('organ_dict', self.organ.__dict__)
+                    self.proj.add_organ(self.organ)
+                    self.organ.save_organ()
+                    self.new_organ_win.tE_validate.setText('New organ "'+name+'" has been created as part of project "'+self.proj.user_projName+'".')
+                else: 
+                    self.new_organ_win.button_create_new_organ.setChecked(False)
+                    toggled(self.new_organ_win.button_create_new_organ)
+                    return
+            else: 
+                self.new_organ_win.button_create_new_organ.setChecked(False)
+                toggled(self.new_organ_win.button_create_new_organ)
+                return 
+        else: 
+            error_txt = "*Please validate organ's settings first."
+            self.tE_validate.setText(error_txt)
+            self.new_organ_win.button_create_new_organ.setChecked(False)
+            toggled(self.new_organ_win.button_create_new_organ)
             return 
-        else: 
-            for name in names: 
-                if not names[name]['ch']: 
-                    error_txt = "You have not selected the channel centreline to use for "+name
-                    self.meas_param_win.tE_validate.setText(error_txt)
-                    return 
-                elif not names[name]['cont']: 
-                    error_txt = "You have not selected the contour type centreline to use for "+name
-                    self.meas_param_win.tE_validate.setText(error_txt)
-                    return 
-                else: 
-                    valid.append(True)
-
-        for opt in range(1,5,1):
-            name_bal = getattr(self.meas_param_win, 'cB_balto'+str(opt)).currentText()
-            if name_bal != '--select--': 
-                cl_ch = getattr(self.meas_param_win, 'cB_ch_bal'+str(opt)).currentText()
-                cl_cont = getattr(self.meas_param_win, 'cB_cont_bal'+str(opt)).currentText()
-                
-                cB_name = 'cB_'+cl_ch+'_'+cl_cont[0:3]+'_param2'
-                cB_cl = getattr(self.meas_param_win, cB_name)
-                if cB_cl.isChecked():
-                    pass
-                else: 
-                    cB_cl.setChecked(True)
-        
-        self.meas_param_win.check_checkBoxes()
-        bool_cB = [val for (_,val) in self.meas_param_win.dict_meas.items()]
-        if any(bool_cB): 
-            valid.append(True)
-        else: 
-            print('Looopppp!')
-            valid.append(self.check_meas_param())
-
-        if all(valid): 
-            self.meas_param_win.tE_validate.setText('All done setting measurement parameters!')
-            self.set_params()
-        
-    def check_meas_param(self):
-        msg = "You have not selected any measurement parameters to obtain from the segmented channels. If you want to go back and select some measurement parameters, press 'Cancel', else if you are happy with this decision press 'OK'."
-        title = 'No Measurement Parameters Selected'
-        self.prompt_ok = Prompt_ok_cancel(msg = msg, title = title,  parent=self.meas_param_win)
-
-        if self.prompt_ok.user_input == 'OK': 
-            return True
-        else: 
-            print('cancel? or close?')
-            error_txt = "Select measurement parameters for the channel-contours."
-            self.meas_param_win.tE_validate.setText(error_txt)
-            return False
-        
-    def set_params(self): 
-        self.ballooning = {}
-        for opt in range(1,5,1):
-            name_bal = getattr(self.meas_param_win, 'cB_balto'+str(opt)).currentText()
-            if name_bal != '--select--': 
-                aaa = name_bal.split('(')[1]; bbb = aaa.split('-')
-                ch_to = bbb[0].split(')')[0]
-                cont_to = bbb[1]
-
-                cl_ch = getattr(self.meas_param_win, 'cB_ch_bal'+str(opt)).currentText()
-                cl_cont = getattr(self.meas_param_win, 'cB_cont_bal'+str(opt)).currentText()
-                print('Opt'+str(opt)+':'+name_bal, cl_ch, cl_cont)
-
-                self.ballooning[opt] = {'to_mesh': ch_to, 
-                                        'to_mesh_type': cont_to, 
-                                        'from_cl': cl_ch,
-                                        'from_cl_type': cl_cont[0:3]}
-                
-        self.centreline = {'looped_length': getattr(self.meas_param_win, 'cB_cl_LoopLen').isChecked(),
-                           'linear_length': getattr(self.meas_param_win, 'cB_cl_LinLen').isChecked()}
-        
-        # Toggle button and close window
-        self.meas_param_win.button_set_params.setChecked(True)
-        toggled(self.meas_param_win.button_set_params)
-        self.meas_param_win.close()
-
-        # Toggle button and close window
-        self.new_proj_win.set_meas_param_all.setChecked(True)
-        toggled(self.new_proj_win.set_meas_param_all)
-
-        self.mH_params = self.meas_param_win.params
-        self.ch_all = self.meas_param_win.ch_all
-        self.mH_params[2]['measure'] = self.centreline
-        self.mH_params[5]['measure'] = self.ballooning
-        self.set_proj_meas_param()
-    
-    def set_proj_meas_param(self):
-        selected_params = {}
-        #First add all whole measure parameters selected
-        for numa in self.meas_param_win.params: 
-            selected_params[self.meas_param_win.params[numa]['s']] = {}
-
-        print(self.meas_param_win.dict_meas)
-        for cbox in self.meas_param_win.dict_meas:
-            _,chf,contf,param_num = cbox.split('_')
-            num_p = int(param_num.split('param')[1])
-            param_name = self.meas_param_win.params[num_p]['s']
-            cBox = getattr(self.meas_param_win, cbox)
-            if cBox.isEnabled():
-                is_checked = cBox.isChecked()
-                selected_params[param_name][chf+':'+contf+':whole'] = is_checked
-        
-        #Add measure params from segments
-        segm_dict = self.new_proj_win.mH_settings['segm']
-        if isinstance(segm_dict, dict): 
-            if segm_dict['cutLayersIn2Segments']: 
-                cuts = [key for key in segm_dict if 'Cut' in key]
-                params_segm = [param for param in segm_dict['measure'].keys() if segm_dict['measure'][param]]
-                for param_a in params_segm: 
-                    for cut_a in cuts: 
-                        cut_semg = segm_dict[cut_a]['ch_segments']
-                        no_segm = segm_dict[cut_a]['no_segments']
-                        selected_params[param_a+'(segm)'] = {}
-                        for ch_a in cut_semg: 
-                            for cont_a in cut_semg[ch_a]:
-                                for segm in range(1,no_segm+1,1):
-                                    selected_params[param_a+'(segm)'][cut_a+':'+ch_a+':'+cont_a+':segm'+str(segm)] = True
-        
-        #Add measure params from sections
-        sect_dict = self.new_proj_win.mH_settings['sect']
-        if isinstance(sect_dict, dict): 
-            if sect_dict['cutLayersIn2Sections']: 
-                cuts = [key for key in sect_dict if 'Cut' in key]
-                params_sect = [param for param in sect_dict['measure'].keys() if sect_dict['measure'][param]]
-                for param_b in params_sect: 
-                    for cut_b in cuts: 
-                        cut_sect = sect_dict[cut_b]['ch_sections']
-                        no_sect = sect_dict[cut_b]['no_sections']
-                        selected_params[param_b+'(sect)'] = {}
-                        for ch_b in cut_sect: 
-                            for cont_b in cut_sect[ch_b]:    
-                                for sect in range(1,no_sect+1,1):
-                                    selected_params[param_b+'(sect)'][cut_b+':'+ch_b+':'+cont_b+':sect'+str(sect)] = True
-        
-        self.new_proj_win.mH_user_params = selected_params
-        
-    def new_proj(self):
-
-        if self.new_proj_win.set_meas_param_all.isChecked(): 
-            self.new_proj_win.button_new_proj.setChecked(True)
-            toggled(self.new_proj_win.button_new_proj)
-            self.new_proj_win.button_new_proj.setDisabled(True)
-
-            proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text(), 
-                        'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText(),
-                        'date' : str(self.new_proj_win.dateEdit.date().toPyDate()),
-                        'analysis' : self.new_proj_win.checked_analysis, 
-                        'dir_proj' : self.new_proj_win.proj_dir}
             
-            self.proj = mHC.Project(proj_dict, new=True)
-
-            self.new_proj_win.mH_settings['chs_all'] = self.ch_all
-            self.new_proj_win.mH_settings['params'] = self.mH_params
-            self.proj.set_settings(settings={'mH': {'settings':self.new_proj_win.mH_settings, 
-                                                    'params': self.new_proj_win.mH_user_params},
-                                             'mC': {'settings': self.new_proj_win.mC_settings,
-                                                   'params': self.new_proj_win.mC_user_params}})
-            
-            self.proj.set_workflow()
-            self.proj.create_proj_dir()
-            self.proj.save_project()
-            print(self.proj.__dict__)
-            
-        else: 
-            print('not done!')
-
-
-
-
-
+    def load_proj(self):
+        path_folder = QFileDialog.getExistingDirectory(self.load_proj_win, caption="Select the Project's directory")
+        proj_name = str(Path(path_folder).name)[2:]
+        proj_name_us = proj_name.replace(' ', '_')
+        json_name = 'mH_'+proj_name_us+'_project.json'
+        proj_settings_path = Path(path_folder) / 'settings' / json_name
+        if proj_settings_path.is_file(): 
+            proj_dict = {'name': proj_name, 
+                         'dir': path_folder}
+            self.proj = mHC.Project(proj_dict, new=False)
+            print('Loaded project:',self.proj.__dict__)
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
@@ -353,9 +337,6 @@ def main():
     # # widget.setFixedSize(1001,981)
     # widget.show()
 
-
-
-   
 
 if __name__ == '__main__':
     main()
