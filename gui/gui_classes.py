@@ -20,11 +20,17 @@ from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator
 from qtwidgets import Toggle, AnimatedToggle
 
 from pathlib import Path
-# import flatdict
+import flatdict
 # import os
 from itertools import count
 import webbrowser
 from skimage import measure, io
+import copy
+
+#%% morphoHeart Imports - ##################################################
+# from ..src.modules.mH_funcBasics import get_by_path
+from functools import reduce  
+import operator
 
 #%% Link to images
 mH_icon = 'images/logos_w_icon_2o5mm.png'#'images/cat-its-mouth-open.jpg'
@@ -1150,7 +1156,7 @@ class CreateNewProj(QDialog):
             toggled(self.button_set_sect)
 
     def validate_set_all(self): #to develop? 
-        print('Validating Project!')
+        print('\n\nValidating Project!')
         return True
         # valid = []
         # if self.set_orientation_settings():
@@ -1201,7 +1207,7 @@ class CreateNewProj(QDialog):
 
     # -- Functions Set Measurement Parameters
     def check_to_set_params(self): 
-        print('self.mH_settings (set_meas_param):',self.mH_settings)
+        # print('self.mH_settings (set_meas_param):',self.mH_settings)
         valid = []
         if self.button_set_orient.isChecked(): 
             valid.append(True)
@@ -1365,6 +1371,7 @@ class SetMeasParam(QDialog):
                         # print(btn_name, getattr(self, btn_name).isChecked())
                         dict_meas[btn_name] = getattr(self, btn_name).isChecked()
         setattr(self, 'dict_meas', dict_meas)
+        # print('self.dict_meas:',self.dict_meas)
 
     def set_meas_param_table(self): 
         #Set Measurement Parameters
@@ -1496,7 +1503,7 @@ class SetMeasParam(QDialog):
                 chcb = getattr(self, 'cB_'+cha+'_'+conta+'_param5')
                 if chcb.isEnabled() and chcb.isChecked():
                     cB_checked[cha+'_'+conta] = True
-        print('cB_checked: ',cB_checked)
+        # print('cB_checked: ',cB_checked)
 
         #-- Get settings
         names = {}; 
@@ -1511,7 +1518,7 @@ class SetMeasParam(QDialog):
                 cont_s = bbb[1]
                 names[ch_s+'_'+cont_s] = {'ch': ch_bal, 
                                           'cont': cont_bal}
-        print('names: ', names)
+        # print('names: ', names)
         
         #Now double check them 
         if set(list(cB_checked.keys())) != set(list(names.keys())):
@@ -1600,7 +1607,7 @@ class SetMeasParam(QDialog):
         # Toggle button and close window
         self.final_params = {'ballooning': ballooning, 
                              'centreline': centreline}
-        print('self.final_params:',self.final_params)
+        # print('self.final_params:',self.final_params)
 
 class NewOrgan(QDialog):
     def __init__(self, proj, parent=None):
@@ -1820,7 +1827,7 @@ class NewOrgan(QDialog):
             images_o = io.imread(str(file_name))
             #Save files img_dirs
             self.img_dirs[ch]['image'] = {}
-            self.img_dirs[ch]['image']['path'] = Path(file_name)
+            self.img_dirs[ch]['image']['dir'] = Path(file_name)
             self.img_dirs[ch]['image']['shape'] = images_o.shape
             self.user_dir = Path(file_name).parent
         else: 
@@ -1856,7 +1863,7 @@ class NewOrgan(QDialog):
                     return
                 else: 
                     self.img_dirs[ch]['mask'] = {}
-                    self.img_dirs[ch]['mask']['path'] = Path(file_name)
+                    self.img_dirs[ch]['mask']['dir'] = Path(file_name)
                     self.img_dirs[ch]['mask']['shape'] = mask_o.shape
                     check.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(0, 255, 0); color: rgb(0, 255, 0); font: 25 2pt 'Calibri Light'")
                     check.setText('Done')
@@ -1873,10 +1880,10 @@ class NewOrgan(QDialog):
         paths = []
         for ch in proj.mH_channels.keys():
             if ch != 'chNS': 
-                paths_chs.append(self.img_dirs[ch]['image']['path'])
-                paths.append(self.img_dirs[ch]['image']['path'])
+                paths_chs.append(self.img_dirs[ch]['image']['dir'])
+                paths.append(self.img_dirs[ch]['image']['dir'])
                 if proj.mH_settings['setup']['mask_ch'][ch]: 
-                    paths.append(self.img_dirs[ch]['mask']['path'])
+                    paths.append(self.img_dirs[ch]['mask']['dir'])
             else: 
                 pass
         valid = [val.is_file() for val in paths]
@@ -1910,8 +1917,16 @@ class NewOrgan(QDialog):
             for im in ['image','mask']: 
                 if im in self.img_dirs[ch].keys():
                     shapes.append(self.img_dirs[ch][im]['shape'])
+
         if len(set(shapes)) == 1: 
             print('All files have same shape!')
+            #Remove shapes keys from the img_dict
+            flat_im_dirs = flatdict.FlatDict(self.img_dirs)
+            for key in flat_im_dirs:
+                if 'shape' in key: 
+                    flat_im_dirs.pop(key, None)
+            self.img_dirs = flat_im_dirs.as_dict()
+            print('cleaned img_dirs:', self.img_dirs)
             return True
         else:
             error_txt = '*The shape of all the selected images do not match. Check and try again.'
@@ -1944,8 +1959,10 @@ class LoadProj(QDialog):
         self.setWindowTitle('Load Existing Project...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
+        self.proj = None
 
-        
+        #Buttons
+        self.button_load_organs.clicked.connect(lambda: self.load_proj_organs(proj = self.proj))
 
     def load_proj(self):
         response = QFileDialog.getExistingDirectory(self, caption="Select the Project's directory")
@@ -1966,13 +1983,99 @@ class LoadProj(QDialog):
         else: 
             self.tE_validate.setText('There is no settings file for a project within the selected directory. Please select a new directory.')
 
-    def load_organs_data(self):
-        row=0
-        self.tableWidget.setRowCount(len(df_organs))
-        for organ in df_organs: 
-            self.tableWidget.setItem(row,0,QWidgets.QTableWidgetItem(df_organs[organ]['organ_UserName']))
-            row += 1
+    def fill_proj_info(self, proj):
+
+        self.lineEdit_proj_name.setText(proj.info['user_projName'])
+        self.textEdit_ref_notes.setText(proj.info['user_projNotes'])
+        self.lab_filled_proj_dir.setText(str(proj.dir_proj))
+
+        if proj.analysis['morphoHeart']:
+            self.checkBox_mH.setChecked(True)
+        if proj.analysis['morphoCell']:
+            self.checkBox_mC.setChecked(True)
+        if proj.analysis['morphoPlot']:
+            self.checkBox_mP.setChecked(True)
+
+        date = proj.info['date_created']
+        date_qt = QDate.fromString(date, "yyyy-MM-dd")
+        self.dateEdit.setDate(date_qt)
+
+    
+    def get_proj_wf(self, proj): 
+        flat_wf = flatdict.FlatDict(copy.deepcopy(proj.workflow))
+        keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))== 4 and 'Status' in key]
+        for key in flat_wf.keys(): 
+            if key not in keep_keys: 
+                flat_wf.pop(key, None)
+        out_dict = flat_wf.as_dict()
+        for keyi in out_dict: 
+            if isinstance(out_dict[keyi], flatdict.FlatDict):
+                out_dict[keyi] = out_dict[keyi].as_dict()
+
+        return flatdict.FlatDict(out_dict)
+    
+    def load_proj_organs(self, proj):
+        cBs = []
+        if len(proj.organs) > 0: 
+            self.tabW_select_organ.clear()
+            wf_flat = self.get_proj_wf(proj)
+            blind = self.cB_blind.isChecked()
+            self.tabW_select_organ.setRowCount(len(proj.organs)+2)
+            keys = {'X':['select'],'Name': ['user_organName'], 'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
+                    'Genotype':['genotype'], 'Manipulation': ['manipulation']}
+            for wf_key in wf_flat.keys():
+                nn,proc,sp,_ = wf_key.split(':')
+                keys[sp] = ['workflow']+wf_key.split(':')
+            if blind:
+                keys.pop('Genotype', None); keys.pop('Manipulation', None) 
+            print(keys) 
+
+            self.tabW_select_organ.setColumnCount(len(keys))
+            row = 2
+            for organ in proj.organs:
+                print('Loading info organ: ', organ)   
+                col = 0        
+                for nn, key in keys.items(): 
+                    if len(key) == 1 and nn == 'X': 
+                        widget   = QWidget()
+                        checkbox = QCheckBox()
+                        checkbox.setChecked(False)
+                        layoutH = QHBoxLayout(widget)
+                        layoutH.addWidget(checkbox)
+                        # layoutH.setAlignment(Qt.AlignCenter)
+                        layoutH.setContentsMargins(0, 0, 0, 0)
+                        self.tabW_select_organ.setCellWidget(row, 0, widget)
+                        cB_name = 'cB_'+proj.organs[organ]['user_organName']
+                        setattr(self, cB_name, checkbox)
+                        cBs.append(cB_name)
+                    elif 'workflow' not in key: 
+                        self.tabW_select_organ.setItem(row,col,QtWidgets.QTableWidgetItem(get_by_path(proj.organs[organ],key)))
+                    else: 
+                        widget   = QWidget()
+                        checkbox = QCheckBox()
+                        checkbox.setChecked(False)
+                        layoutH = QHBoxLayout(widget)
+                        layoutH.addWidget(checkbox)
+                        # layoutH.setAlignment(Qt.AlignCenter)
+                        layoutH.setContentsMargins(0, 0, 0, 0)
+                        value = get_by_path(proj.organs[organ],key)
+                        if value == 'NI':
+                            checkbox.setStyleSheet("QCheckBox::indicator {background-color : rgb(255, 255, 127);}")
+                        elif value == 'Initialised':
+                            checkbox.setStyleSheet("QCheckBox::indicator {background-color : rgb(255, 151, 60);}")
+                        else:# value == 'Done':
+                            checkbox.setStyleSheet("QCheckBox::indicator {background-color :  rgb(0, 255, 0);}")
+                        self.tabW_select_organ.setCellWidget(row, col, widget)
+                    col+=1
+                row +=1
+            self.tabW_select_organ.setHorizontalHeaderLabels([key for key in keys])
+            self.tabW_select_organ.resizeColumnsToContents()
+            self.tabW_select_organ.resizeRowsToContents()
+            self.tabW_select_organ.verticalHeader().setVisible(False)
             
+        print(cBs)
+
+      
 class MainWindow(QMainWindow):
 
     def __init__(self):
@@ -2040,3 +2143,9 @@ def validate_txt(input_str):
             error = None
     return error
 
+
+def get_by_path(root_dict, items):
+    """Access a nested object in root_dict by item sequence.
+    by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
+    """
+    return reduce(operator.getitem, items, root_dict)

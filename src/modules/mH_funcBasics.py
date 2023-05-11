@@ -273,7 +273,7 @@ def make_Paths(load_dict):
         # print('key:', key)
         value = get_by_path(load_dict, key)
         # print('value:', value)
-        if value != None and value != 'NotAssigned':
+        if value != None and value != 'NotAssigned' and not isinstance(value, bool):
             set_by_path(load_dict, key, Path(value))
     
     return load_dict

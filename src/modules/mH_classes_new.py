@@ -121,6 +121,7 @@ class Project():
         proj_name = load_dict['name']
         proj_name_us = proj_name.replace(' ', '_')
         dir_res = Path(load_dict['dir'])
+        print(dir_res)
         jsonDict_name = 'mH_'+proj_name_us+'_project.json'
         json2open_dir = dir_res / 'settings' / jsonDict_name
         if json2open_dir.is_file():
@@ -128,13 +129,11 @@ class Project():
                 print(">> "+jsonDict_name+": Opening JSON encoded data")
                 load_dict = json.load(read_file)
             
-            #load_dict = make_Paths(load_dict)
+            load_dict = make_Paths(load_dict)
             
-            # tuple_keys = [['mH_settings','general_info','chNS','ch_ext'], 
-            #               ['mH_settings','general_info','chNS','ch_int'], 
-            #              ]
-            
-            # load_dict = make_tuples(load_dict, tuple_keys)
+            tuple_keys = [['mH_settings','setup','chNS','ch_ext'], 
+                          ['mH_settings','setup','chNS','ch_int'],]
+            load_dict = make_tuples(load_dict, tuple_keys)
         
             self.info = load_dict['info']
             self.user_projName = load_dict['info']['user_projName']
@@ -145,24 +144,28 @@ class Project():
             self.mH_channels = load_dict['mH_channels']
             self.mH_segments = load_dict['mH_segments']
             self.mH_sections = load_dict['mH_sections']
-            self.mH_param2meas = load_dict['mH_param2meas'] #[tuple(item) for item in load_dict['mH_param2meas']]
+            # self.mH_param2meas = load_dict['mH_param2meas'] #[tuple(item) for item in load_dict['mH_param2meas']]
             
             self.mC_settings = load_dict['mC_settings']
             self.mC_channels = load_dict['mC_channels']
             self.mC_segments = load_dict['mC_segments']
             self.mC_sections = load_dict['mC_sections']
-            self.mC_param2meas = load_dict['mC_param2meas']
+            # self.mC_param2meas = load_dict['mC_param2meas']
             
             self.workflow = load_dict['workflow']
             self.mH_methods = load_dict['mH_methods']
             self.mC_methods = load_dict['mC_methods']
             self.organs = load_dict['organs']
+            
             self.cellGroups = load_dict['cellGroups']
 
             self.gui_custom_data = load_dict['gui_custom_data']
           
-            self.dir_proj = load_dict['info']['dir_proj']
-            self.dir_info = load_dict['info']['dir_info']
+            self.dir_proj = dir_res# load_dict['info']['dir_proj']
+            self.dir_info = dir_res / 'settings' / jsonDict_name #load_dict['info']['dir_info']
+            self.info['dir_proj'] = self.dir_proj
+            self.info['dir_info'] = self.dir_info
+            print(self.dir_info)
             
         else: 
             print('>> Error: No project with name ',load_dict['name'],' was found!\n Directory: ',str(json2open_dir))
@@ -177,7 +180,7 @@ class Project():
         The output of this function will create an attribute to the project containing 
         most of the user settings except for the selected parameters. 
         '''
-        print('settings:', settings)
+        print('Settings to create new project:', settings)
         self.set_mH_settings(mH_settings = settings['mH']['settings'], 
                              mH_params = settings['mH']['params'])
         self.set_mC_settings(mC_settings = settings['mC']['settings'], 
@@ -185,7 +188,7 @@ class Project():
         
     def set_mH_settings(self, mH_settings:dict, mH_params:dict):#
         
-        print('mH_settings: ', mH_settings)
+        # print('mH_settings: ', mH_settings)
         if self.analysis['morphoHeart']:
             self.mH_settings = {}
             #Add setup dict containing all mH_settings for the new project
@@ -219,7 +222,7 @@ class Project():
             self.mH_channels = {}
             self.mH_segments = {}
             self.mH_sections = {}
-            self.mH_param2meas = {}
+            # self.mH_param2meas = {}
             self.mH_methods = {}
 
         self.clean_False(user_param = mH_params)
@@ -239,7 +242,7 @@ class Project():
             self.mC_channels = {}
             self.mC_segments = {}
             self.mC_sections = {}
-            self.mC_param2meas = {}
+            # self.mC_param2meas = {}
             self.mC_methods = {}
         
     def clean_False(self, user_param:dict):#
@@ -251,10 +254,10 @@ class Project():
                     # print('deleting: ', param,'-', key)
         
         self.mH_settings['measure'] = user_param_new
-        self.mH_param2meas = user_param_new
+        # self.mH_param2meas = user_param_new
     
     def set_mH_methods(self):#
-        mH_param2meas = self.mH_param2meas
+        mH_param2meas = self.mH_settings['measure'] #self.mH_param2meas
 
         if len(mH_param2meas)>0: 
             methods = ['A-Create3DMesh','B-TrimMesh']
@@ -363,8 +366,8 @@ class Project():
         workflow = dict()
         dict_mH = dict()
         dict_cell = dict()
-        # flat_param = flatdict.FlatDict(self.mH_param2meas)
-        # dict_mH_params = flat_param.as_dict()
+        mH_param2meas = self.mH_settings['measure']
+       
         if self.analysis['morphoHeart']: 
             mH_channels = sorted(self.mH_channels)
     
@@ -373,50 +376,51 @@ class Project():
             dict_MeshesProc = dict()
     
             # Find the meas_param that include the extraction of a centreline
-            item_centreline = [tuple(item.split(':')) for item in self.mH_param2meas['CL'].keys()]
+            item_centreline = [tuple(item.split(':')) for item in mH_param2meas['CL'].keys()]
             # Find the meas_param that include the extraction of mH_segments
-            if 'Vol(segm)' in self.mH_param2meas:
-                segm_vol = [item for item in self.mH_param2meas['Vol(segm)'].keys()]
+            if 'Vol(segm)' in mH_param2meas:
+                segm_vol = [item for item in mH_param2meas['Vol(segm)'].keys()]
             else: 
                 segm_vol = []
-            if 'SA(segm)' in self.mH_param2meas:
-                segm_sa = [item for item in self.mH_param2meas['SA(segm)'].keys()]
+            if 'SA(segm)' in mH_param2meas:
+                segm_sa = [item for item in mH_param2meas['SA(segm)'].keys()]
             else: 
                 segm_sa = []
-            if 'Ellip(segm)' in self.mH_param2meas:
-                segm_ellip = [item for item in self.mH_param2meas['Ellip(segm)'].keys()]
+            if 'Ellip(segm)' in mH_param2meas:
+                segm_ellip = [item for item in mH_param2meas['Ellip(segm)'].keys()]
             else:
                 segm_ellip = []
             segm_list = list(set(segm_vol) | set(segm_sa) | set(segm_ellip))
             if len(segm_list) > 0: 
-                segm_list = [tuple(tup.split(':')) for tup in segm_list]
+                segm_list = [tuple(tup.split('_')) for tup in segm_list]
                 cut_segm = sorted(list(set([tup for (tup,_,_,_) in segm_list])))
                 ch_segm = sorted(list(set([tup for (_,tup,_,_) in segm_list])))
             else: 
                 segm_list = []; cut_segm = []; ch_segm = []
             
             # Find the meas_param that include the extraction of mH_sections
-            if 'Vol(sect)' in self.mH_param2meas:
-                sect_vol = [item for item in self.mH_param2meas['Vol(sect)'].keys()]
+            if 'Vol(sect)' in mH_param2meas:
+                sect_vol = [item for item in mH_param2meas['Vol(sect)'].keys()]
             else: 
                 sect_vol = []
-            if 'SA(sect)' in self.mH_param2meas:
-                sect_sa = [item for item in self.mH_param2meas['SA(sect)'].keys()]
+            if 'SA(sect)' in mH_param2meas:
+                sect_sa = [item for item in mH_param2meas['SA(sect)'].keys()]
             else: 
                 sect_sa = []
             sect_list = list(set(sect_vol) | set(sect_sa))
             if len(sect_list) > 0: 
-                sect_list = [tuple(item.split(':')) for item in sect_list]
+                sect_list = [tuple(item.split('_')) for item in sect_list]
                 cut_sect = sorted(list(set([tup for (tup,_,_,_) in sect_list])))
                 ch_sect=  sorted(list(set([tup for (_,tup,_,_) in sect_list])))
             else: 
                 sect_list = []; cut_sect = []; ch_sect = []
 
             # Find the meas_param that include the extraction of ballooning
-            item_ballooning = [tuple(item.split(':')) for item in self.mH_param2meas['ball'].keys()]
+            item_ballooning = [tuple(item.split('_')) for item in mH_param2meas['ball'].keys()]
+            ball_opts = self.mH_settings['setup']['params'][5]['measure']
             # Find the meas_param that include the extraction of thickness
-            item_thickness_intext = [tuple(item.split(':')) for item in self.mH_param2meas['th_i2e'].keys()]
-            item_thickness_extint = [tuple(item.split(':')) for item in self.mH_param2meas['th_e2i'].keys()]
+            item_thickness_intext = [tuple(item.split('_')) for item in mH_param2meas['th_i2e'].keys()]
+            item_thickness_extint = [tuple(item.split('_')) for item in mH_param2meas['th_e2i'].keys()]
     
             dict_MeshesProc = {'Status' : 'NI'}
             for met in self.mH_methods:
@@ -425,6 +429,9 @@ class Project():
             # Project status
             for ch in mH_channels:
                 if 'A-Create3DMesh' in dict_MeshesProc.keys():
+                    dict_MeshesProc['A-Create3DMesh']['Set_Orientation'] = {'Status': 'NI', 
+                                                                            'Stack': 'NI', 
+                                                                            'ROI': 'NI'}
                     if 'NS' not in ch:
                         dict_ImProc[ch] = {'Status': 'NI',
                                             'A-MaskChannel': {'Status': 'NI'},
@@ -455,7 +462,6 @@ class Project():
                     else: 
                         dict_ImProc[ch] = {'Status': 'NI',
                                             'D-S3Create':{'Status': 'NI'}} 
-                 
             for nn, ch in enumerate(mH_channels):
                 for process in ['A-Create3DMesh','B-TrimMesh','C-Centreline']:
                     if 'NS' not in ch:
@@ -482,16 +488,11 @@ class Project():
                                     dict_MeshesProc[process]['SimplifyMesh'][ch][cont] = {'Status': 'NI'}
                                     dict_MeshesProc[process]['vmtk_CL'][ch][cont] = {'Status': 'NI'}
                                     dict_MeshesProc[process]['buildCL'][ch][cont] = {'Status': 'NI'}
-                                    
                     else: 
                         if process == 'A-Create3DMesh':
                             dict_MeshesProc[process][ch] = {'Status': 'NI'}
-    
+
                 for cont in ['tiss', 'int', 'ext']:
-                    if (ch, cont, 'whole') in item_ballooning:
-                        dict_MeshesProc['D-Ballooning'][ch] = {}
-                        dict_MeshesProc['D-Ballooning'][ch][cont] =  {'Status': 'NI'}
-    
                     if (ch, cont, 'whole') in item_thickness_intext:
                         dict_MeshesProc['D-Thickness_int>ext'][ch] = {}
                         dict_MeshesProc['D-Thickness_int>ext'][ch][cont] = {'Status': 'NI'}
@@ -499,7 +500,17 @@ class Project():
                     if (ch, cont, 'whole') in item_thickness_extint:
                          dict_MeshesProc['D-Thickness_ext>int'][ch] = {}
                          dict_MeshesProc['D-Thickness_ext>int'][ch][cont] = {'Status': 'NI'}
-                                                       
+            
+            for opt in ball_opts: 
+                ch = ball_opts[opt]['to_mesh']
+                cont = ball_opts[opt]['to_mesh_type']
+                cl_ch = ball_opts[opt]['from_cl']
+                cl_cont = ball_opts[opt]['from_cl_type']
+                if ch in dict_MeshesProc['D-Ballooning'].keys():
+                    dict_MeshesProc['D-Ballooning'][ch][cont+'_('+cl_ch+'_'+cl_cont+')'] =  {'Status': 'NI'}
+                else: 
+                    dict_MeshesProc['D-Ballooning'][ch] = {}
+                    dict_MeshesProc['D-Ballooning'][ch][cont+'_('+cl_ch+'_'+cl_cont+')'] =  {'Status': 'NI'}                              
             # Segments
             for cutg in cut_segm: 
                 dict_MeshesProc['E-Segments'][cutg] = {}
@@ -508,7 +519,6 @@ class Project():
                     for cont in ['tiss', 'int', 'ext']:
                         if (cutg, ch, cont, 'segm1') in segm_list:
                             dict_MeshesProc['E-Segments'][cutg][ch][cont] = {'Status': 'NI'}
-                        
             # Sections
             for cutc in cut_sect: 
                 dict_MeshesProc['E-Sections'][cutc] = {}
@@ -517,14 +527,18 @@ class Project():
                     for cont in ['tiss', 'int', 'ext']:
                         if (cutc, ch, cont, 'sect1') in sect_list:
                             dict_MeshesProc['E-Sections'][cutc][ch][cont] = {'Status': 'NI'}
-
             # Measure Dictionary
-            dict_meas = flatdict.FlatDict(self.mH_param2meas).as_dict()
+            dict_meas = flatdict.FlatDict(mH_param2meas).as_dict()
             for dicti in dict_meas: 
                 if isinstance(dict_meas[dicti], flatdict.FlatDict):
                     dict_meas[dicti] = dict_meas[dicti].as_dict()
 
+            for param in dict_meas: 
+                flat_param = flatdict.FlatDict(dict_meas[param], delimiter='_').as_dict()
+                dict_meas[param] = flat_param
+
             dict_MeshesProc['F-Measure'] = dict_meas
+            dict_MeshesProc['F-Measure']['Status'] = 'NI'
                                                                                        
             dict_mH['ImProc'] = dict_ImProc
             dict_mH['MeshesProc'] = dict_MeshesProc
@@ -535,15 +549,15 @@ class Project():
         workflow['morphoHeart'] = dict_mH
         workflow['morphoCell'] = dict_cell
         self.workflow = workflow
-        print('self.workflow:',self.workflow)
+        # print('self.workflow:',self.workflow)
 
     def save_project(self, temp_dir=None):#
         #Create a new dictionary that contains all the settings
         jsonDict_name = 'mH_'+self.user_projName+'_project.json'
-        json2save_par = self.dir_proj / 'settings'
+        json2save_par = Path(self.dir_proj) / 'settings'
         json2save_par.mkdir(parents=True, exist_ok=True)
         
-        self.dir_info = self.dir_proj / 'settings' / jsonDict_name
+        self.dir_info = Path(self.dir_proj) / 'settings' / jsonDict_name
         self.info['dir_info'] = self.dir_info
         
         all_info = {}
@@ -554,14 +568,14 @@ class Project():
         all_info['mH_channels'] = self.mH_channels#
         all_info['mH_segments'] = self.mH_segments#
         all_info['mH_sections'] = self.mH_sections#
-        all_info['mH_param2meas'] = self.mH_param2meas#
+        # all_info['mH_param2meas'] = self.mH_param2meas#
         
         all_info['mC_methods'] = self.mC_methods#
         all_info['mC_settings'] = self.mC_settings#
         all_info['mC_channels'] = self.mC_channels#
         all_info['mC_segments'] = self.mC_segments#
         all_info['mC_sections'] = self.mC_sections#
-        all_info['mC_param2meas'] = self.mC_param2meas#
+        # all_info['mC_param2meas'] = self.mC_param2meas#
         
         all_info['workflow'] = self.workflow#
         all_info['organs'] = self.organs#
@@ -586,7 +600,7 @@ class Project():
 
             if temp_dir != None and isinstance(temp_dir, Path): 
                 temp_name = temp_dir.stem
-                print(temp_name)
+                # print(temp_name)
                 proj_temp = copy.deepcopy(all_info)
                 proj_temp['info']['user_projName'] = temp_name
                 with open(str(temp_dir), "w") as write_file:
@@ -596,10 +610,13 @@ class Project():
     def add_organ(self, organ):
         dict_organ = copy.deepcopy(organ.info)
         dict_organ.pop('project', None)
-        dict_organ['dir_res'] = organ.dir_res
-        
+        dict_organ['dir_res'] = organ.dir_res()
+        #Get current workflow
+        wf_so_far = self.get_current_wf()
+        dict_organ['workflow'] = wf_so_far
+        #Add organ to project's organs
         self.organs[organ.user_organName] = dict_organ
-
+        #Add current organ data to gui data
         self.gui_custom_data['strain'].append(organ.info['strain'])
         self.gui_custom_data['stage'].append(organ.info['stage'])
         self.gui_custom_data['genotype'].append(organ.info['genotype'])
@@ -608,6 +625,19 @@ class Project():
         self.gui_custom_data['im_res_units'].append(organ.info['im_res_units'])
         self.save_project()
 
+    def get_current_wf(self): 
+        flat_wf = flatdict.FlatDict(copy.deepcopy(self.workflow))
+        keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))==4 and 'Status' in key]
+        for key in flat_wf.keys(): 
+            if key not in keep_keys: 
+                flat_wf.pop(key, None)
+        out_dict = flat_wf.as_dict()
+        for keyi in out_dict: 
+            if isinstance(out_dict[keyi], flatdict.FlatDict):
+                out_dict[keyi] = out_dict[keyi].as_dict()
+        
+        return out_dict
+
     def remove_organ(self, organ):
         organs = copy.deepcopy(self.organs)
         organs.pop(organ.user_organName, None)
@@ -615,8 +645,8 @@ class Project():
         self.save_project()
 
     def load_organ(self, user_organName:str):
-        dir_res = self.organs[user_organName]['dir_res']
-        jsonDict_name = 'mH_'+self.organs[user_organName]['user_organName']+'_organ.json'
+        dir_res = Path(self.dir_proj) / self.organs['user_organName']
+        jsonDict_name = 'mH_'+self.organs['user_organName']+'_organ.json'
         json2open_dir = Path(dir_res) / 'settings' / jsonDict_name
         if json2open_dir.is_file():
             with open(json2open_dir, "r") as read_file:
@@ -668,7 +698,7 @@ class Organ():
             load_dict = organ_dict['load_dict']
             self.load_organ(load_dict=load_dict)
 
-    def create_mHName(self):
+    def create_mHName(self): #
         now_str = datetime.now().strftime('%Y%m%d%H%M')
         self.mH_organName = 'mH_Organ-'+now_str
 
@@ -804,14 +834,29 @@ class Organ():
         dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'centreline', 'settings']
         organ_folder = self.user_organName
         for direc in dirResults:
-            dir2create = self.parent_project.dir_proj / organ_folder / direc
+            dir2create = Path(self.parent_project.dir_proj) / organ_folder / direc
             dir2create.mkdir(parents=True, exist_ok=True)
             if dir2create.is_dir():
-                self.info['dirs'][direc] = dir2create
+                self.info['dirs'][direc] = True#dir2create
             else: 
                 print('>> Error: Directory ', self.user_organName, '/', direc, ' could not be created!')
                 alert('error_beep')
-        self.dir_res = self.parent_project.dir_proj / organ_folder
+        self.folder = organ_folder
+        # self.dir_res = self.parent_project.dir_proj / organ_folder
+
+    def dir_res(self, dir=None): 
+        dir_proj = Path(self.parent_project.dir_proj)
+        dir_res = dir_proj / self.folder
+        if dir == None: 
+            return dir_res
+        else: 
+            sp_dir = self.info['dirs'][dir]
+            if sp_dir: 
+                dir_sp = dir_res / dir
+                return Path(dir_sp)
+            else: 
+                print("The specified directory doesn't exist: (dir_res: "+ str(dir_res)+", dir: "+dir)
+                return None
 
     def add_channel(self, imChannel):
         # Check first if the channel has been already added to the organ
@@ -979,10 +1024,11 @@ class Organ():
         all_info = {}
         all_info['Organ'] = self.info
         all_info['img_dirs'] = self.img_dirs
+        all_info['folder'] = self.folder
         all_info['analysis'] = self.analysis
         
         jsonDict_name = 'mH_'+self.user_organName+'_organ.json'
-        json2save_dir = self.info['dirs']['settings'] / jsonDict_name
+        json2save_dir = self.dir_res(dir='settings') / jsonDict_name
         if self.analysis['morphoHeart']:
             all_info['mH_settings'] = self.mH_settings
             
@@ -1005,7 +1051,7 @@ class Organ():
         
         all_info['workflow'] = self.workflow
     
-        self.dir_info = self.dir_res / 'settings' / jsonDict_name
+        self.dir_info = Path('settings') / jsonDict_name
         all_info['dir_info'] = self.dir_info
         all_info['mH_organName'] = self.mH_organName
 
@@ -1307,10 +1353,10 @@ class Organ():
         return self.info['manipulation']
     
     def get_dir_res(self):
-        return self.dir_res
+        return self.dir_res()
 
     def get_direc(self, name:str):
-        return self.info['dirs'][name]
+        return self.dir_res(dir=name)
 
 class ImChannel(): #channel
     'morphoHeart Image Channel Class (this class will be used to contain the images as tiffs that have been'
@@ -1826,7 +1872,7 @@ class ImChannel(): #channel
 
     def save_channel(self, im_proc):
         im_name = self.parent_organ.user_organName + '_StckProc_' + self.channel_no + '.npy'
-        im_dir = self.parent_organ.info['dirs']['s3_numpy'] / im_name
+        im_dir = self.parent_organ.dir_res(dir='s3_numpy') / im_name
         np.save(im_dir, im_proc)
         if not im_dir.is_file():
             print('>> Error: Processed channel was not saved correctly!\n>> File: '+im_name)
@@ -2177,7 +2223,7 @@ class ContStack():
         
         parent_organ = im_channel.parent_organ
         self.s3_file = parent_organ.user_organName + '_s3_' + im_channel.channel_no + '_' + self.cont_type + '.npy'
-        self.s3_dir = parent_organ.dir_res / 's3_numpy' / self.s3_file
+        self.s3_dir = parent_organ.dir_res(dir='s3_numpy') / self.s3_file
         
         if self.cont_type not in self.im_channel.contStack.keys():
         # if new: 
@@ -2223,7 +2269,7 @@ class ContStack():
 
     def s3_save(self, s3):
         organ = self.im_channel.parent_organ
-        dir2save = organ.info['dirs']['s3_numpy'] / self.s3_file
+        dir2save = organ.dir_res(dir='s3_numpy') / self.s3_file
         np.save(dir2save, s3)
         if not dir2save.is_file():
             print('>> Error: s3 file was not saved correctly!\n>> File: '+self.s3_file)
@@ -2482,7 +2528,7 @@ class Mesh_mH():
                 mesh_name = parent_organ.user_organName+'_'+self.legend+ext
             else: #== .vtk
                 mesh_name = parent_organ.user_organName+'_'+self.name+ext
-            mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
+            mesh_dir = parent_organ.dir_res(dir='meshes') / mesh_name
             self.dir_out = mesh_dir
             mesh_out = self.mesh
             
@@ -2491,7 +2537,7 @@ class Mesh_mH():
                 mesh_name = parent_organ.user_organName+'_'+self.legend+'_CM'+m_type+ext
             else: #== .vtk
                 mesh_name = parent_organ.user_organName+'_'+self.name+'_CM'+m_type+ext
-            mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
+            mesh_dir = parent_organ.dir_res(dir='meshes') / mesh_name
             mesh_out = self.mesh_meas[m_type]
             if self.dirs['mesh'] == None: 
                 self.dirs['mesh'] = {m_type: mesh_dir}
@@ -2508,7 +2554,7 @@ class Mesh_mH():
         parent_organ = self.parent_organ        
         # title = parent_organ.user_organName+'_'+self.legend+'--'+m_type
         title = parent_organ.user_organName+'_'+self.name+'_CM'+m_type
-        np2save_dir = self.parent_organ.info['dirs']['csv_all'] / title
+        np2save_dir = self.parent_organ.dir_res(dir='csv_all') / title
         np.save(np2save_dir, array)
         if self.dirs['arrays'] == None: 
             self.dirs['arrays'] = {m_type: np2save_dir}
@@ -2773,7 +2819,7 @@ class Mesh_mH():
         
         submesh.s3_invert = invert
         name2save = self.parent_organ.user_organName + '_mask_sect.npy'
-        submesh.s3_mask_dir = self.parent_organ.info['dirs']['s3_numpy'] / name2save
+        submesh.s3_mask_dir = self.parent_organ.dir_res(dir='s3_numpy') / name2save
         
         segments_info = self.parent_organ.mH_settings['general_info']['sections']
         submesh.sub_user_name = segments_info['name_sections'][submesh.sub_name]
@@ -2796,7 +2842,7 @@ class Mesh_mH():
         
         for nn in range(no_discs):
             name_s3 = self.parent_organ.user_organName + '_mask_DiscNo'+str(nn)+'.npy'
-            s3_dir = self.parent_organ.info['dirs']['s3_numpy'] / name_s3
+            s3_dir = self.parent_organ.dir_res(dir='s3_numpy') / name_s3
             s3_mask = np.load(str(s3_dir))
             s3_mask = s3_mask.astype('bool')
             masked_s3 = mask_disc(self.parent_organ.info['shape_s3'], masked_s3, s3_mask)
@@ -2906,7 +2952,7 @@ class SubMesh():
         organ_ext_meshes = [dict_ext_segm[key]['name'] for key in dict_ext_segm.keys()]
         if self.sub_name_all in organ_ext_meshes: 
             mesh_name = parent_organ.user_organName+'_'+self.sub_name_all+'.vtk'
-            mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
+            mesh_dir = parent_organ.dir_res(dir='meshes') / mesh_name
             if mesh_dir.is_file():
                 # print('> '+self.sub_name_all+' is an external segment mesh!')
                 segm_mesh = vedo.load(str(mesh_dir))

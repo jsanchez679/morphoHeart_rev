@@ -5,7 +5,7 @@ Version: Apr 26, 2023
 @author: Juliana Sanchez-Posada
 
 '''
-
+# Relative import problems: stackoverflow.com/a/14132912/8682868
 #%% Imports - ########################################################
 import sys
 # from PyQt6 import uic
@@ -79,6 +79,8 @@ class Controller:
                 self.meas_param_win.show()
                 self.meas_param_win.button_set_params.clicked.connect(lambda: self.set_proj_meas_param())
         else: 
+            error_txt = "Make sure all the 'Set' Buttons are toggled to continue."
+            self.new_proj_win.tE_validate.setText(error_txt)
             print('Something is wrong: show_meas_param')
             return
 
@@ -133,10 +135,10 @@ class Controller:
         if self.meas_param_win.button_validate_params.isChecked(): 
             self.mH_params = self.meas_param_win.params
             self.ch_all = self.meas_param_win.ch_all
-            print('\nAAAAAA')
-            print(self.mH_params)
-            print(self.ch_all)
-            print(self.meas_param_win.final_params)
+            # print('\nAAAAAA')
+            # print(self.mH_params)
+            # print(self.ch_all)
+            # print(self.meas_param_win.final_params)
             self.mH_params[2]['measure'] = self.meas_param_win.final_params['centreline']
             self.mH_params[5]['measure'] = self.meas_param_win.final_params['ballooning']
         
@@ -145,7 +147,7 @@ class Controller:
             for numa in self.meas_param_win.params: 
                 selected_params[self.meas_param_win.params[numa]['s']] = {}
 
-            print('\nBB:',self.meas_param_win.dict_meas)
+            # print('\nBB:',self.meas_param_win.dict_meas)
             for cbox in self.meas_param_win.dict_meas:
                 _,chf,contf,param_num = cbox.split('_')
                 num_p = int(param_num.split('param')[1])
@@ -153,7 +155,7 @@ class Controller:
                 cBox = getattr(self.meas_param_win, cbox)
                 if cBox.isEnabled():
                     is_checked = cBox.isChecked()
-                    selected_params[param_name][chf+':'+contf+':whole'] = is_checked
+                    selected_params[param_name][chf+'_'+contf+'_whole'] = is_checked
             
             #Add measure params from segments
             segm_dict = self.new_proj_win.mH_settings['segm']
@@ -169,7 +171,7 @@ class Controller:
                             for ch_a in cut_semg: 
                                 for cont_a in cut_semg[ch_a]:
                                     for segm in range(1,no_segm+1,1):
-                                        selected_params[param_a+'(segm)'][cut_a+':'+ch_a+':'+cont_a+':segm'+str(segm)] = True
+                                        selected_params[param_a+'(segm)'][cut_a+'_'+ch_a+'_'+cont_a+'_segm'+str(segm)] = True
             
             #Add measure params from sections
             sect_dict = self.new_proj_win.mH_settings['sect']
@@ -185,10 +187,10 @@ class Controller:
                             for ch_b in cut_sect: 
                                 for cont_b in cut_sect[ch_b]:    
                                     for sect in range(1,no_sect+1,1):
-                                        selected_params[param_b+'(sect)'][cut_b+':'+ch_b+':'+cont_b+':sect'+str(sect)] = True
+                                        selected_params[param_b+'(sect)'][cut_b+'_'+ch_b+'_'+cont_b+'_sect'+str(sect)] = True
             
             self.new_proj_win.mH_user_params = selected_params
-            print('\nCC: ',self.new_proj_win.mH_user_params)
+            # print('\nCC: ',self.new_proj_win.mH_user_params)
             #Toogle button and close window
             self.meas_param_win.button_set_params.setChecked(True)
             toggled(self.meas_param_win.button_set_params)
@@ -208,7 +210,9 @@ class Controller:
             if self.new_proj_win.validate_set_all():# and self.validate_params(): 
                 temp_dir = None
                 if self.new_proj_win.cB_proj_as_template.isChecked():
-                    temp_name = self.new_proj_win.lineEdit_template_name.text()+'.json'
+                    line_temp = self.new_proj_win.lineEdit_template_name.text()
+                    line_temp = line_temp.replace(' ', '_')
+                    temp_name = 'mH_'+line_temp+'_project.json'
                     cwd = Path().absolute()
                     dir_temp = cwd / 'db' / 'templates' / temp_name 
                     if dir_temp.is_file():
@@ -240,7 +244,7 @@ class Controller:
                 self.proj.set_workflow()
                 self.proj.create_proj_dir()
                 self.proj.save_project(temp_dir = temp_dir)
-                print(self.proj.__dict__)
+                print('\n>>> New Project: ',self.proj.__dict__)
             
         else: 
             error_txt = '*You have not selected any measurement parameter yet! Select some parameters to measure to continue.'
@@ -285,11 +289,11 @@ class Controller:
                                 'img_dirs': self.new_organ_win.img_dirs}
 
                     self.organ = mHC.Organ(project=self.proj, organ_dict=organ_dict, new = True)
-                    self.new_organ_win.lab_filled_organ_dir.setText(str(self.organ.dir_res))
-                    print('organ_dict', self.organ.__dict__)
+                    self.new_organ_win.lab_filled_organ_dir.setText(str(self.organ.dir_res()))
+                    print('\n>>> New Organ: ', self.organ.__dict__)
                     self.proj.add_organ(self.organ)
                     self.organ.save_organ()
-                    self.new_organ_win.tE_validate.setText('New organ "'+name+'" has been created as part of project "'+self.proj.user_projName+'".')
+                    self.new_organ_win.tE_validate.setText('New organ "'+name+'" has been created as part of "'+self.proj.user_projName+'" project.')
                 else: 
                     self.new_organ_win.button_create_new_organ.setChecked(False)
                     toggled(self.new_organ_win.button_create_new_organ)
@@ -316,6 +320,11 @@ class Controller:
                          'dir': path_folder}
             self.proj = mHC.Project(proj_dict, new=False)
             print('Loaded project:',self.proj.__dict__)
+            self.load_proj_win.proj = self.proj
+
+            #Fill window with project info
+            self.load_proj_win.fill_proj_info(proj = self.proj)
+
 
 def main():
     app = QtWidgets.QApplication(sys.argv)

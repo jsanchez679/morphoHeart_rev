@@ -164,38 +164,8 @@ background-color: rgb(255, 255, 255);</string>
       </sizepolicy>
      </property>
      <property name="styleSheet">
-      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="cB_blind">
-     <property name="geometry">
-      <rect>
-       <x>700</x>
-       <y>20</y>
-       <width>101</width>
-       <height>19</height>
-      </rect>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>95</width>
-       <height>18</height>
-      </size>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-     </property>
-     <property name="text">
-      <string>Blind Analysis</string>
+      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+border-color: rgb(170, 0, 127);</string>
      </property>
     </widget>
    </widget>
@@ -338,6 +308,9 @@ QPushButton:hover{
      </property>
     </widget>
     <widget class="QLineEdit" name="lineEdit_proj_name">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>110</x>
@@ -388,6 +361,9 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
      </property>
     </widget>
     <widget class="QTextEdit" name="textEdit_ref_notes">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>110</x>
@@ -413,6 +389,9 @@ QTextEdit:focus { border: 1px solid #eb6fbd;}
      </property>
     </widget>
     <widget class="QTextEdit" name="lab_filled_proj_dir">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>110</x>
@@ -470,6 +449,9 @@ background-color: rgb(255, 255, 255);</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBox_mH">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>120</x>
@@ -492,6 +474,9 @@ background-color: rgb(255, 255, 255);</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBox_mC">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>240</x>
@@ -511,6 +496,9 @@ background-color: rgb(255, 255, 255);</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBox_mP">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>320</x>
@@ -530,6 +518,9 @@ background-color: rgb(255, 255, 255);</string>
      </property>
     </widget>
     <widget class="QDateEdit" name="dateEdit">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>435</x>
@@ -667,6 +658,79 @@ border-color: #672146
      </property>
     </widget>
    </widget>
+   <widget class="QPushButton" name="button_load_organs">
+    <property name="geometry">
+     <rect>
+      <x>630</x>
+      <y>190</y>
+      <width>181</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+    </property>
+    <property name="text">
+     <string>Load Organs</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="cB_blind">
+    <property name="geometry">
+     <rect>
+      <x>515</x>
+      <y>190</y>
+      <width>101</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>95</width>
+      <height>18</height>
+     </size>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+    </property>
+    <property name="text">
+     <string>Blind Analysis</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
    <zorder>label_2</zorder>
    <zorder>set_orientation</zorder>
    <zorder>button_open_projorgan</zorder>
@@ -674,6 +738,8 @@ border-color: #672146
    <zorder>button_go_back</zorder>
    <zorder>mH_logo_XS</zorder>
    <zorder>gral_proj_settings</zorder>
+   <zorder>button_load_organs</zorder>
+   <zorder>cB_blind</zorder>
   </widget>
  </widget>
  <resources>
