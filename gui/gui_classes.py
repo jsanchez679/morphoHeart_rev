@@ -68,6 +68,7 @@ class WelcomeScreen(QDialog):
         #https://raw.githubusercontent.com/NiklasWyld/Wydbid/main/Assets/stylesheet
         #https://github.com/ColinDuquesnoy/QDarkStyleSheet/blob/master/qdarkstyle/dark/darkstyle.qss
         # https://matiascodesal.com/blog/spice-your-qt-python-font-awesome-icons/
+        # https://www.geeksforgeeks.org/pyqt5-change-color-of-check-box-indicator/
         if index == 0: 
             file = 'gui/themes/Light.qss'
         else: 
