@@ -89,7 +89,7 @@
     <property name="title">
      <string>Load or Create New Organ</string>
     </property>
-    <widget class="QPushButton" name="button_create_new_organ">
+    <widget class="QPushButton" name="button_add_organ">
      <property name="geometry">
       <rect>
        <x>680</x>
@@ -166,6 +166,45 @@ background-color: rgb(255, 255, 255);</string>
      <property name="styleSheet">
       <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
 border-color: rgb(170, 0, 127);</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="button_add_organ_other_proj">
+     <property name="geometry">
+      <rect>
+       <x>475</x>
+       <y>240</y>
+       <width>200</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+     </property>
+     <property name="text">
+      <string>Add Organ from another project</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="autoExclusive">
+      <bool>true</bool>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
      </property>
     </widget>
    </widget>

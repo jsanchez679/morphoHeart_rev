@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>601</width>
-    <height>590</height>
+    <width>600</width>
+    <height>680</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>590</height>
+     <height>680</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -142,8 +142,8 @@ you publish your results using the software!</string>
    <widget class="QComboBox" name="cB_theme">
     <property name="geometry">
      <rect>
-      <x>490</x>
-      <y>555</y>
+      <x>475</x>
+      <y>625</y>
       <width>100</width>
       <height>25</height>
      </rect>
@@ -196,8 +196,8 @@ color: rgb(255, 255, 255)
    <widget class="QLabel" name="label_instructions_4">
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>555</y>
+      <x>405</x>
+      <y>625</y>
       <width>71</width>
       <height>25</height>
      </rect>
@@ -464,13 +464,13 @@ QPushButton:hover{
    <widget class="QWidget" name="horizontalLayoutWidget_3">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>555</y>
+      <x>25</x>
+      <y>625</y>
       <width>201</width>
       <height>26</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="hL_toggle_on_off">
+    <layout class="QHBoxLayout" name="hL_sound_on_off">
      <item>
       <widget class="QLabel" name="label_instructions_5">
        <property name="sizePolicy">

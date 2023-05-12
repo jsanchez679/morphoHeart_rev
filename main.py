@@ -22,6 +22,7 @@ from src.modules import mH_classes_new as mHC
 #https://www.color-hex.com/color-palette/96194
 #https://www.color-hex.com/color-palette/96197
 #https://www.color-hex.com/color-palette/1024322
+# https://www.pythonguis.com/tutorials/pyqt6-bitmap-graphics/
 #%% API
 class Controller: 
     def __init__(self):
@@ -54,6 +55,7 @@ class Controller:
     
     def show_create_new_proj(self):
         #Close welcome window
+        self.sound = self.welcome_win.sound
         self.welcome_win.close()
         #Create new proj window and show
         if self.new_proj_win == None: 
@@ -97,34 +99,37 @@ class Controller:
         self.load_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
         # -Browse project
         self.load_proj_win.button_browse_proj.clicked.connect(self.load_proj)
+        # -Show New Organ Window 
+        self.load_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='load_proj_win'))
 
     def show_new_organ(self, parent_win:str):
-        if self.new_proj_win.button_new_proj.isChecked():
-            #Identify parent and close it
-            if parent_win == 'new_proj_win':
+        #Identify parent and close it
+        if parent_win == 'new_proj_win':
+            if self.new_proj_win.button_new_proj.isChecked():
                 self.new_proj_win.close()
-            elif parent_win == 'load_proj_win':
-                self.load_proj_win.close()
             else: 
-                print('Other parent window?')
-            print('parent_win:', parent_win)
-
-            #Create new organ window and show
-            if self.new_organ_win == None:
-                self.new_organ_win = NewOrgan(proj = self.proj)
-            self.new_organ_win.show()
-
-            #Connect Buttons
-            # -Go Back 
-            self.new_organ_win.button_go_back.clicked.connect(lambda: self.show_parent(parent_win))
-            # - Create New Organ
-            self.new_organ_win.button_create_new_organ.clicked.connect(lambda: self.new_organ())
+                error_txt = "*Please create the New Project first before adding an organ to it."
+                self.new_proj_win.tE_validate.setText(error_txt)
+                self.new_proj_win.button_new_proj.setChecked(False)
+                toggled(self.new_proj_win.button_new_proj)
+                return
+        elif parent_win == 'load_proj_win':
+            self.load_proj_win.close()
         else: 
-            error_txt = "*Please create the New Project first before adding an organ to it."
-            self.new_proj_win.tE_validate.setText(error_txt)
-            self.new_proj_win.button_new_proj.setChecked(False)
-            toggled(self.new_proj_win.button_new_proj)
-            return
+            print('Other parent window?')
+        print('parent_win:', parent_win)
+
+        #Create new organ window and show
+        if self.new_organ_win == None:
+            self.new_organ_win = NewOrgan(proj = self.proj)
+        self.new_organ_win.show()
+
+        #Connect Buttons
+        # -Go Back 
+        self.new_organ_win.button_go_back.clicked.connect(lambda: self.show_parent(parent_win))
+        # - Create New Organ
+        self.new_organ_win.button_create_new_organ.clicked.connect(lambda: self.new_organ())
+        
 
     def show_parent(self, parent:str):
         parent_win = getattr(self, parent)
@@ -321,10 +326,12 @@ class Controller:
             self.proj = mHC.Project(proj_dict, new=False)
             print('Loaded project:',self.proj.__dict__)
             self.load_proj_win.proj = self.proj
-
             #Fill window with project info
             self.load_proj_win.fill_proj_info(proj = self.proj)
-
+        else: 
+            self.load_proj_win.button_browse_proj.setChecked(False)
+            toggled(self.load_proj_win.button_browse_proj)
+            self.load_proj_win.tE_validate.setText('There is no settings file for a project within the selected directory. Please select a new directory.')
 
 def main():
     app = QtWidgets.QApplication(sys.argv)

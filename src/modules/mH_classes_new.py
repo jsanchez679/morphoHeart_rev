@@ -110,7 +110,7 @@ class Project():
                                     'genotype': [],
                                     'manipulation': [],
                                     'im_orientation': ['ventral', 'lateral-left', 'lateral-right', 'dorsal'], 
-                                    'im_res_units': ['um', 'mm', 'm']}
+                                    'im_res_units': ['um', 'mm', 'cm', 'm']}
                 
         else: 
             load_dict = {'name': proj_dict['name'], 'dir': proj_dict['dir']}
@@ -617,12 +617,24 @@ class Project():
         #Add organ to project's organs
         self.organs[organ.user_organName] = dict_organ
         #Add current organ data to gui data
-        self.gui_custom_data['strain'].append(organ.info['strain'])
-        self.gui_custom_data['stage'].append(organ.info['stage'])
-        self.gui_custom_data['genotype'].append(organ.info['genotype'])
-        self.gui_custom_data['manipulation'].append(organ.info['manipulation'])
-        self.gui_custom_data['im_orientation'].append(organ.info['im_orientation'])
-        self.gui_custom_data['im_res_units'].append(organ.info['im_res_units'])
+        strain_it = self.gui_custom_data['strain']
+        strain_it.append(organ.info['strain'])
+        self.gui_custom_data['strain'] = list(set(strain_it))
+        stage_it = self.gui_custom_data['stage']
+        stage_it.append(organ.info['stage'])
+        self.gui_custom_data['stage'] = list(set(stage_it))
+        genot_it = self.gui_custom_data['genotype']
+        genot_it.append(organ.info['genotype'])
+        self.gui_custom_data['genotype'] =list(set(genot_it))
+        manip_it = self.gui_custom_data['manipulation']
+        manip_it.append(organ.info['manipulation'])
+        self.gui_custom_data['manipulation'] = list(set(manip_it))
+        imOr_it = self.gui_custom_data['im_orientation']
+        imOr_it.append(organ.info['im_orientation'])
+        self.gui_custom_data['im_orientation'] = list(set(imOr_it))
+        units_it = self.gui_custom_data['im_res_units']
+        units_it.append(organ.info['im_res_units'][0])
+        self.gui_custom_data['im_res_units'] = list(set(units_it))
         self.save_project()
 
     def get_current_wf(self): 

@@ -10,11 +10,11 @@ Version: Apr 26, 2023
 # import sys
 from PyQt6 import uic
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtCore import QDate, Qt, QRegularExpression
+from PyQt6.QtCore import pyqtSlot, QDate, Qt, QRegularExpression, QRect
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
                               QColorDialog, QTableWidgetItem, QCheckBox)
-from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator
+from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush
 # from PyQt6.QtCore import QRegExp
 # from PyQt6.QtGui import QRegExpValidator
 from qtwidgets import Toggle, AnimatedToggle
@@ -33,7 +33,7 @@ from functools import reduce
 import operator
 
 #%% Link to images
-mH_icon = 'images/logos_w_icon_2o5mm.png'#'images/cat-its-mouth-open.jpg'
+mH_icon = 'images/cat-its-mouth-open.jpg'#'images/logos_w_icon_2o5mm.png'#
 mH_big = 'images/logos_7o5mm.png'
 mH_top_corner = 'images/logos_1o75mm.png'
 
@@ -43,7 +43,7 @@ class WelcomeScreen(QDialog):
     def __init__(self) -> None:
         super().__init__()
         uic.loadUi('gui/welcome_screen.ui', self)
-        self.setFixedSize(600,590)
+        self.setFixedSize(600,680)
         self.setWindowTitle('Welcome to morphoHeart...')
         self.mH_logo_XL.setPixmap(QPixmap(mH_big))
         self.setWindowIcon(QIcon(mH_icon))
@@ -53,21 +53,31 @@ class WelcomeScreen(QDialog):
         self.btn_link2github.clicked.connect(lambda: webbrowser.open('https://github.com/jsanchez679/morphoHeart'))
 
         self.theme = self.cB_theme.currentText()
-        self.cB_theme.currentIndexChanged.connect(lambda: self.theme_changed())
+        # https://www.youtube.com/watch?v=ePG_t9bJQ5I
+        #self.cB_theme.currentIndexChanged.connect(lambda: self.theme_changed())
 
-        layout = self.hL_toggle_on_off 
-        # print(layout.__dict__)
-        # toggle_2 = AnimatedToggle(
-        #     checked_color="#FFB000",
-        #     pulse_checked_color="#44FFB000")
-        # layout.insertWidget(len(layout) - 2, toggle_2)
+        # Sound Buttons
+        layout = self.hL_sound_on_off 
+        add_sound_bar(self, layout)
 
-    # def get_file(self): 
-    #     title = 'Import images for '
-    #     cwd = Path().absolute()
-    #     file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image Files (*.tif)")
-    #     print(file_name)
-    #     return True
+        self.on_cB_theme_currentIndexChanged(0)
+
+    @pyqtSlot(int)
+    def on_cB_theme_currentIndexChanged(self, index):
+        #https://www.youtube.com/watch?v=ePG_t9bJQ5I
+        #https://raw.githubusercontent.com/NiklasWyld/Wydbid/main/Assets/stylesheet
+        #https://github.com/ColinDuquesnoy/QDarkStyleSheet/blob/master/qdarkstyle/dark/darkstyle.qss
+        # https://matiascodesal.com/blog/spice-your-qt-python-font-awesome-icons/
+        if index == 0: 
+            file = 'gui/themes/Light.qss'
+        else: 
+            file = 'gui/themes/Dark.qss'
+        #Open the file
+        with open(file, 'r') as f: 
+            style_str = f.read()
+            print('aaaa', str(index), style_str)
+        #Set the theme
+        self.setStyleSheet(style_str)
 
     def theme_changed(self):
         if self.cB_theme.currentText() == 'Dark': 
@@ -1673,17 +1683,23 @@ class NewOrgan(QDialog):
         self.lab_filled_proj_dir.setText(str(proj.dir_proj))
 
         self.cB_strain.clear()
-        self.cB_strain.addItems(['--select--', 'add']+proj.gui_custom_data['strain'])
+        strain_it = list(['--select--']+proj.gui_custom_data['strain']+['add'])
+        self.cB_strain.addItems(strain_it)
         self.cB_stage.clear()
-        self.cB_stage.addItems(['--select--', 'add']+proj.gui_custom_data['stage'])
+        stage_it = list(['--select--']+proj.gui_custom_data['stage']+['add'])
+        self.cB_stage.addItems(stage_it)
         self.cB_genotype.clear()
-        self.cB_genotype.addItems(['--select--', 'add']+proj.gui_custom_data['genotype'])
+        genot_it = list(['--select--']+proj.gui_custom_data['genotype']+['add'])
+        self.cB_genotype.addItems(genot_it)
         self.cB_manipulation.clear()
-        self.cB_manipulation.addItems(['None', 'add']+proj.gui_custom_data['manipulation'])
+        manip_it = list(['--select--', 'None']+proj.gui_custom_data['manipulation']+['add'])
+        self.cB_manipulation.addItems(manip_it)
         self.cB_stack_orient.clear()
-        self.cB_stack_orient.addItems(['--select--', 'add']+proj.gui_custom_data['im_orientation'])
+        imOr_it = list(['--select--']+proj.gui_custom_data['im_orientation']+['add'])
+        self.cB_stack_orient.addItems(imOr_it)
         self.cB_units.clear()
-        self.cB_units.addItems(['--select--']+proj.gui_custom_data['im_res_units'])
+        units_it = list(['--select--']+proj.gui_custom_data['im_res_units']+['add'])
+        self.cB_units.addItems(units_it)
 
         #Change channels
         mH_channels = proj.mH_channels
@@ -1902,11 +1918,6 @@ class NewOrgan(QDialog):
                 check_ch = getattr(self, 'check_'+ch)
                 check_ch.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(255, 255, 255); color: rgb(0, 255, 0); font: 25 2pt 'Calibri Light'")
                 check_ch.setText('')
-                # getattr(self, 'browse_mask_'+ch).setChecked(False)
-                # getattr(self, 'lab_filled_dir_mask_'+ch).clear()
-                # check_mk = getattr(self, 'check_mask_'+ch)
-                # check_mk.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(255, 255, 255); color: rgb(0, 255, 0); font: 25 2pt 'Calibri Light'")
-                # check_mk.setText('')
             return
         else: 
             return True
@@ -1964,25 +1975,6 @@ class LoadProj(QDialog):
         #Buttons
         self.button_load_organs.clicked.connect(lambda: self.load_proj_organs(proj = self.proj))
 
-    def load_proj(self):
-        response = QFileDialog.getExistingDirectory(self, caption="Select the Project's directory")
-        print(response)
-        test_proj_name = str(Path(response).name)[2:]
-        json_name = 'mH_'+test_proj_name+'_project.json'
-        test_proj_sett = Path(response) / 'settings' / json_name
-        print(test_proj_name, '\n', json_name,'\n', test_proj_sett)
-        if test_proj_sett.is_file(): 
-            self.proj = mHC.Project(name = proj_name, dir_proj = dir_proj)
-            proj_dir = Path(response)
-            proj_name = test_proj_name
-            print(proj_dir.name)
-            self.lineEdit_proj_name.setText(test_proj_name)
-            self.lab_filled_proj_dir.setText(str(self.proj_dir))
-            self.lab_filled_proj_name.setText(str(self.proj_name))
-            self.tE_validate.setText('Project -'+self.proj_name+'- was loaded successfully!')
-        else: 
-            self.tE_validate.setText('There is no settings file for a project within the selected directory. Please select a new directory.')
-
     def fill_proj_info(self, proj):
 
         self.lineEdit_proj_name.setText(proj.info['user_projName'])
@@ -1999,7 +1991,9 @@ class LoadProj(QDialog):
         date = proj.info['date_created']
         date_qt = QDate.fromString(date, "yyyy-MM-dd")
         self.dateEdit.setDate(date_qt)
-
+        self.tE_validate.setText('Project "'+proj.info['user_projName']+'" was loaded successfully!')
+        self.button_browse_proj.setChecked(True)
+        toggled(self.button_browse_proj)
     
     def get_proj_wf(self, proj): 
         flat_wf = flatdict.FlatDict(copy.deepcopy(proj.workflow))
@@ -2015,65 +2009,112 @@ class LoadProj(QDialog):
         return flatdict.FlatDict(out_dict)
     
     def load_proj_organs(self, proj):
-        cBs = []
-        if len(proj.organs) > 0: 
-            self.tabW_select_organ.clear()
-            wf_flat = self.get_proj_wf(proj)
-            blind = self.cB_blind.isChecked()
-            self.tabW_select_organ.setRowCount(len(proj.organs)+2)
-            keys = {'X':['select'],'Name': ['user_organName'], 'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
-                    'Genotype':['genotype'], 'Manipulation': ['manipulation']}
-            for wf_key in wf_flat.keys():
-                nn,proc,sp,_ = wf_key.split(':')
-                keys[sp] = ['workflow']+wf_key.split(':')
-            if blind:
-                keys.pop('Genotype', None); keys.pop('Manipulation', None) 
-            print(keys) 
+        #https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/
+        #https://www.pythonguis.com/faq/qtablewidget-for-list-of-dict/
+        if self.button_browse_proj.isChecked(): 
+            cBs = []
+            if len(proj.organs) > 0: 
+                self.tabW_select_organ.clear()
+                wf_flat = self.get_proj_wf(proj)
+                blind = self.cB_blind.isChecked()
+                self.tabW_select_organ.setRowCount(len(proj.organs)+2)
+                keys = {'X':['select'],'Name': ['user_organName'], 'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
+                        'Genotype':['genotype'], 'Manipulation': ['manipulation']}
+                if blind:
+                    keys.pop('Genotype', None); keys.pop('Manipulation', None) 
+                print(keys) 
+                name_keys = list(range(len(keys)))
 
-            self.tabW_select_organ.setColumnCount(len(keys))
-            row = 2
-            for organ in proj.organs:
-                print('Loading info organ: ', organ)   
-                col = 0        
-                for nn, key in keys.items(): 
-                    if len(key) == 1 and nn == 'X': 
-                        widget   = QWidget()
-                        checkbox = QCheckBox()
-                        checkbox.setChecked(False)
-                        layoutH = QHBoxLayout(widget)
-                        layoutH.addWidget(checkbox)
-                        # layoutH.setAlignment(Qt.AlignCenter)
-                        layoutH.setContentsMargins(0, 0, 0, 0)
-                        self.tabW_select_organ.setCellWidget(row, 0, widget)
-                        cB_name = 'cB_'+proj.organs[organ]['user_organName']
-                        setattr(self, cB_name, checkbox)
-                        cBs.append(cB_name)
-                    elif 'workflow' not in key: 
-                        self.tabW_select_organ.setItem(row,col,QtWidgets.QTableWidgetItem(get_by_path(proj.organs[organ],key)))
-                    else: 
-                        widget   = QWidget()
-                        checkbox = QCheckBox()
-                        checkbox.setChecked(False)
-                        layoutH = QHBoxLayout(widget)
-                        layoutH.addWidget(checkbox)
-                        # layoutH.setAlignment(Qt.AlignCenter)
-                        layoutH.setContentsMargins(0, 0, 0, 0)
-                        value = get_by_path(proj.organs[organ],key)
-                        if value == 'NI':
-                            checkbox.setStyleSheet("QCheckBox::indicator {background-color : rgb(255, 255, 127);}")
-                        elif value == 'Initialised':
-                            checkbox.setStyleSheet("QCheckBox::indicator {background-color : rgb(255, 151, 60);}")
-                        else:# value == 'Done':
-                            checkbox.setStyleSheet("QCheckBox::indicator {background-color :  rgb(0, 255, 0);}")
-                        self.tabW_select_organ.setCellWidget(row, col, widget)
-                    col+=1
-                row +=1
-            self.tabW_select_organ.setHorizontalHeaderLabels([key for key in keys])
-            self.tabW_select_organ.resizeColumnsToContents()
-            self.tabW_select_organ.resizeRowsToContents()
-            self.tabW_select_organ.verticalHeader().setVisible(False)
-            
-        print(cBs)
+                keys_wf = {}
+                for wf_key in wf_flat.keys():
+                    nn,proc,sp,_ = wf_key.split(':')
+                    keys_wf[sp] = ['workflow']+wf_key.split(':')
+                print(keys_wf) 
+                
+                # Workflow
+                # - Get morphoHeart Labels
+                mH_keys = [num+len(name_keys) for num, key in enumerate(list(keys_wf.keys())) if 'morphoHeart' in keys_wf[key]]
+                # - Get morphoCell Labels
+                mC_keys = [num+len(name_keys)+len(mH_keys) for num, key in enumerate(list(keys_wf.keys())) if 'morphoCell' in keys_wf[key]]
+
+                #Changing big labels: 
+                big_labels = ['General Info']
+                index_big = [0]
+                len_ind_big = [len(keys)]
+                if len(mH_keys)>0:
+                    index_big.append(mH_keys[0]); big_labels.append('morphoHeart'); len_ind_big.append(len(mH_keys))
+                if len(mC_keys)>0:
+                    index_big.append(mC_keys[0]); big_labels.append('morphoCell'); len_ind_big.append(len(mC_keys))       
+
+                self.tabW_select_organ.setColumnCount(len(name_keys)+len(mH_keys)+len(mC_keys))
+                all_labels = keys |  keys_wf
+                aa = 0
+                for col in range(len(name_keys)+len(mH_keys)+len(mC_keys)):
+                    if col in index_big:
+                        self.tabW_select_organ.setSpan(0,col,1,len_ind_big[aa])
+                        self.tabW_select_organ.setItem(0,col, QTableWidgetItem(big_labels[aa]))
+                        aa+= 1
+                    self.tabW_select_organ.setItem(1,col, QTableWidgetItem(list(all_labels.keys())[col]))
+
+                row = 2
+                for organ in proj.organs:
+                    print('Loading info organ: ', organ)   
+                    col = 0        
+                    for nn, key in all_labels.items(): 
+                        if len(key) == 1 and nn == 'X': 
+                            widget   = QWidget()
+                            checkbox = QCheckBox()
+                            checkbox.setChecked(False)
+                            layoutH = QHBoxLayout(widget)
+                            layoutH.addWidget(checkbox)
+                            # layoutH.setAlignment(Qt.AlignCenter)
+                            layoutH.setContentsMargins(0, 0, 0, 0)
+                            self.tabW_select_organ.setCellWidget(row, 0, widget)
+                            cB_name = 'cB_'+proj.organs[organ]['user_organName']
+                            setattr(self, cB_name, checkbox)
+                            cBs.append(cB_name)
+                        elif 'workflow' not in key: 
+                            self.tabW_select_organ.setItem(row,col,QtWidgets.QTableWidgetItem(get_by_path(proj.organs[organ],key)))
+                        else: 
+                            widget   = QWidget()
+                            checkbox = QCheckBox()
+                            checkbox.setChecked(False)
+                            layoutH = QHBoxLayout(widget)
+                            layoutH.addWidget(checkbox)
+                            # layoutH.setAlignment(Qt.AlignCenter)
+                            layoutH.setContentsMargins(0, 0, 0, 0)
+                            value = get_by_path(proj.organs[organ],key)
+                            if value == 'NI':
+                                checkbox.setStyleSheet("QCheckBox::indicator {background-color : rgb(255, 255, 127);}")
+                            elif value == 'Initialised':
+                                checkbox.setStyleSheet("QCheckBox::indicator {background-color : rgb(255, 151, 60);}")
+                            else:# value == 'Done':
+                                checkbox.setStyleSheet("QCheckBox::indicator {background-color :  rgb(0, 255, 0);}")
+                            self.tabW_select_organ.setCellWidget(row, col, widget)
+                        col+=1
+                    row +=1
+                # self.tabW_select_organ.setHorizontalHeaderLabels([key for key in keys])
+                self.tabW_select_organ.resizeColumnsToContents()
+                self.tabW_select_organ.resizeRowsToContents()
+                self.tabW_select_organ.verticalHeader().setVisible(False)
+                self.tabW_select_organ.horizontalHeader().setVisible(False)
+                # delegate = AlignDelegate(self.tabW_select_organ)
+                # self.tabW_select_organ.setItemDelegate(delegate)
+
+                # for rr in range(self.tabW_select_organ.rowCount()): 
+                #     for cc in range(self.tabW_select_organ.columnCount()):
+                #         item = self.tabW_select_organ.item(rr, cc)
+                #         # print(item)
+                #         if item != None: 
+                #             item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
+            print(cBs)
+            self.button_load_organs.setChecked(True)
+            toggled(self.button_load_organs)
+        else: 
+            self.button_load_organs.setChecked(False)
+            toggled(self.button_load_organs)
+            error_txt = '*First load a project.'
+            self.tE_validate.setText(error_txt)
 
       
 class MainWindow(QMainWindow):
@@ -2097,6 +2138,97 @@ class MainWindow(QMainWindow):
     
     def close_morphoHeart_pressed(self):
         print('Close was pressed')
+
+#%% Other classes GUI related - ########################################################
+class MyToggle(QtWidgets.QPushButton):
+    #https://stackoverflow.com/questions/56806987/switch-button-in-pyqt
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        print('init')
+        self.setCheckable(True)
+        self.setMinimumWidth(66)
+        self.setMinimumHeight(22)
+        self.setStyleSheet("color: rgb(0,0,0)")
+
+    def paintEvent(self, event):
+        label = "ON" if self.isChecked() else "OFF"
+        bg_color = QColor(162,0,122,180) if self.isChecked() else QColor(255,255,255)
+        brush_color = QColor(255,255,255) if self.isChecked() else QColor(0,0,0)
+
+        radius = 10
+        width = 25
+        center = self.rect().center()
+
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.translate(center)
+        painter.setBrush(brush_color)
+
+        pen = QPen(QColor(192,192,192))
+        pen.setWidth(1)
+        painter.setPen(pen)
+
+        painter.drawRoundedRect(QRect(-width, -radius, 2*width, 2*radius), radius, radius)
+        painter.setBrush(QBrush(bg_color))
+        sw_rect = QRect(-radius, -radius, width + radius, 2*radius)
+        if not self.isChecked():
+            sw_rect.moveLeft(-width)
+        painter.drawRoundedRect(sw_rect, radius, radius)
+        painter.drawText(sw_rect, Qt.AlignmentFlag.AlignCenter, label)
+
+        font = QFont()
+        font.setFamily('Calibri Light')
+        font.setBold(True)
+        font.setPointSize(10)
+        painter.setFont(font)
+
+# class AlignDelegate(QtWidgets.QStyledItemDelegate):
+#     def initStyleOption(self, option, index):
+#         super(AlignDelegate, self).initStyleOption(option, index)
+#         option.displayAlignment = QtCore.Qt.AlignmentFlag.AlignCenter
+
+#%% SOUNDS - ########################################################
+# Sound functions
+def add_sound_bar(win, layout):
+    win.sound_on_off = MyToggle()
+    win.sound_on_off.setChecked(True)
+    layout.insertWidget(len(layout), win.sound_on_off)
+
+    win.sound_type = QtWidgets.QComboBox()
+    sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+    sizePolicy.setHorizontalStretch(0)
+    sizePolicy.setVerticalStretch(0)
+    sizePolicy.setHeightForWidth(win.sound_type.sizePolicy().hasHeightForWidth())
+    win.sound_type.setSizePolicy(sizePolicy)
+    win.sound_type.setMinimumSize(QtCore.QSize(80, 25))
+    win.sound_type.setMaximumSize(QtCore.QSize(80, 25))
+    win.sound_type.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+    win.sound_type.setAutoFillBackground(False)
+    win.sound_type.setStyleSheet("border-color: rgb(173, 173, 173); font: 25 10pt 'Calibri Light';")
+    win.sound_type.setFrame(True)
+    win.sound_type.addItems(['All', 'Minimal'])
+    layout.insertWidget(len(layout), win.sound_type)
+
+    # Buttons
+    # - Sounds on/off
+    win.sound_on_off.clicked.connect(lambda: sound_toggled(win))
+    win.sound_type.currentIndexChanged.connect(lambda: sound_opt(win))
+
+def sound_toggled(win): 
+    if win.sound_on_off.isChecked(): 
+        # print('button is ON')
+        win.sound_type.setEnabled(True)
+        win.sound = (True, win.sound_type.currentText())
+    else: 
+        # print('button is OFF')
+        win.sound_type.setEnabled(False)
+        win.sound = (False, )
+    print(win.sound)
+
+def sound_opt(win): 
+    win.sound = (True, win.sound_type.currentText())
+    print(win.sound)
+    
 
 #%% GUI Related Functions - ########################################################
 # Button general functions
