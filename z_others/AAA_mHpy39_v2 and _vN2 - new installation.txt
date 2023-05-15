@@ -636,4 +636,5 @@ pip install PyQt6
 pip install PyQt-tools
 pip install qtwidgets
 pip install PySide2
-
+pip install pyqtgraph
+pip install qtawesome

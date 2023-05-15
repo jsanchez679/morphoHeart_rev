@@ -31,6 +31,7 @@ class Controller:
         self.meas_param_win = None
         self.load_proj_win = None
         self.new_organ_win = None
+        self.main_win = None
 
     def show_welcome(self):
         #Close previous windows if existent
@@ -101,6 +102,8 @@ class Controller:
         self.load_proj_win.button_browse_proj.clicked.connect(self.load_proj)
         # -Show New Organ Window 
         self.load_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='load_proj_win'))
+        # -Go to main_window
+        self.load_proj_win.go_to_main_window.clicked.connect(lambda: self.show_main_window(parent_win='load_proj_win'))
 
     def show_new_organ(self, parent_win:str):
         #Identify parent and close it
@@ -134,6 +137,29 @@ class Controller:
     def show_parent(self, parent:str):
         parent_win = getattr(self, parent)
         parent_win.show()
+
+    def show_main_window(self, parent_win:str):
+        #Close new organ or load organ window window
+        if parent_win == 'new_proj_win':
+            if self.new_proj_win.button_create_new_organ.isChecked():
+                self.new_proj_win.close()
+            else: 
+                print('Error in new proj window')
+        elif parent_win == 'load_proj_win':
+            if self.load_proj_win.organ_selected != None:
+                self.organ_to_analyse = self.load_proj_win.organ_selected
+                self.load_proj_win.close()
+                print(self.organ_to_analyse)
+            else: 
+                print('Error in loading window')
+        else: 
+            print('Other parent window?')
+        print('parent_win:', parent_win)
+
+        #Create Main Project Window and show
+        if self.main_win == None:
+            self.main_win = MainWindow() 
+        self.main_win.show()
 
     #Functions related to API    
     def set_proj_meas_param(self):

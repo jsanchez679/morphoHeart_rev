@@ -18,6 +18,7 @@ from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QCol
 # from PyQt6.QtCore import QRegExp
 # from PyQt6.QtGui import QRegExpValidator
 from qtwidgets import Toggle, AnimatedToggle
+import qtawesome as qta
 
 from pathlib import Path
 import flatdict
@@ -43,13 +44,16 @@ class WelcomeScreen(QDialog):
     def __init__(self) -> None:
         super().__init__()
         uic.loadUi('gui/welcome_screen.ui', self)
-        self.setFixedSize(600,680)
+        # self.setFixedSize(600,680)
         self.setWindowTitle('Welcome to morphoHeart...')
         self.mH_logo_XL.setPixmap(QPixmap(mH_big))
         self.setWindowIcon(QIcon(mH_icon))
 
+        # self.btn_link2paper
         # self.btn_link2paper.clicked.connect(lambda: self.get_file())#webbrowser.open('https://github.com/jsanchez679/morphoHeart'))
+        # self.btn_link2docs
         # self.btn_link2docs.clicked.connect(lambda: webbrowser.open('https://github.com/jsanchez679/morphoHeart'))
+        # self.btn_link2github.setIcon(qta.icon("fa5b.github"))
         self.btn_link2github.clicked.connect(lambda: webbrowser.open('https://github.com/jsanchez679/morphoHeart'))
 
         self.theme = self.cB_theme.currentText()
@@ -181,7 +185,7 @@ class CreateNewProj(QDialog):
         self.proj_name = ''
         self.proj_dir_parent = ''
         uic.loadUi('gui/new_project_screen.ui', self)
-        self.setFixedSize(1035,851)
+        # self.setFixedSize(1035,851)
         self.setWindowTitle('Create New Project...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
@@ -1273,7 +1277,7 @@ class SetMeasParam(QDialog):
         
         uic.loadUi('gui/set_meas_screen.ui', self)
         self.setWindowTitle('Set Parameters to Measure...')
-        self.setFixedSize(690,860)
+        # self.setFixedSize(690,860)
         self.setWindowTitle('Select the parameters to measure from the segmented channels...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
@@ -1624,7 +1628,7 @@ class NewOrgan(QDialog):
     def __init__(self, proj, parent=None):
         super().__init__()
         uic.loadUi('gui/create_organ_screen.ui', self)
-        self.setFixedSize(735,845)
+        # self.setFixedSize(735,845)
         self.setWindowTitle('Create New Organ...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
@@ -1967,11 +1971,12 @@ class LoadProj(QDialog):
     def __init__(self, parent=None):
         super().__init__()
         uic.loadUi('gui/load_project_screen.ui', self)
-        self.setFixedSize(830,540)
+        # self.setFixedSize(830,540)
         self.setWindowTitle('Load Existing Project...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
         self.proj = None
+        self.organ_selected = 'LS52_F02'
 
         #Buttons
         self.button_load_organs.clicked.connect(lambda: self.load_proj_organs(proj = self.proj))
@@ -2123,7 +2128,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('gui/main_window_screen.ui', self)
-        self.setFixedSize(1176,866)
+        # self.setFixedSize(1176,866)
         mH_logoXS = QPixmap('images/logos_1o75mm.png')
         self.mH_logo_XS.setPixmap(mH_logoXS)
 
@@ -2131,6 +2136,9 @@ class MainWindow(QMainWindow):
         self.actionSave_Organ.triggered.connect(self.save_organ_pressed)
         self.actionClose.triggered.connect(self.close_morphoHeart_pressed)
 
+        layout = self.hL_sound_on_off 
+        add_sound_bar(self, layout)
+        
     def save_project_pressed(self):
         print('Save project was pressed')
 
