@@ -82,9 +82,9 @@ class Project():
     process all the organs contained in a project are set up when starting a 
     new project and can be amended if needed as the organs are processed.
     '''
-    def __init__(self, proj_dict:dict, new:bool):
+    def __init__(self, proj_dict:dict, new:bool):#
             
-        def create_mHName(self):
+        def create_mHName(self):#
             '''
             func - create name for a morphoHeart project
             This function will assign the newly created project a name using a
@@ -116,7 +116,7 @@ class Project():
             load_dict = {'name': proj_dict['name'], 'dir': proj_dict['dir']}
             self.load_project(load_dict=load_dict)
     
-    def load_project(self, load_dict:dict):
+    def load_project(self, load_dict:dict):#
         print('Loading project:', load_dict)
         proj_name = load_dict['name']
         proj_name_us = proj_name.replace(' ', '_')
@@ -607,7 +607,7 @@ class Project():
                     json.dump(proj_temp, write_file, cls=NumpyArrayEncoder)
                 print('>> Project template file saved correctly!\n>> Path: '+str(temp_dir))
     
-    def add_organ(self, organ):
+    def add_organ(self, organ):#
         dict_organ = copy.deepcopy(organ.info)
         dict_organ.pop('project', None)
         dict_organ['dir_res'] = organ.dir_res()
@@ -637,7 +637,7 @@ class Project():
         self.gui_custom_data['im_res_units'] = list(set(units_it))
         self.save_project()
 
-    def get_current_wf(self): 
+    def get_current_wf(self): #
         flat_wf = flatdict.FlatDict(copy.deepcopy(self.workflow))
         keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))==4 and 'Status' in key]
         for key in flat_wf.keys(): 
@@ -656,19 +656,21 @@ class Project():
         self.organs = organs
         self.save_project()
 
-    def load_organ(self, user_organName:str):
-        dir_res = Path(self.dir_proj) / self.organs['user_organName']
-        jsonDict_name = 'mH_'+self.organs['user_organName']+'_organ.json'
+    def load_organ(self, organ_to_load:str):#
+        print(Path(self.dir_proj))
+        print(self.organs[organ_to_load]['user_organName'])
+        dir_res = Path(self.dir_proj) / self.organs[organ_to_load]['user_organName']
+        jsonDict_name = 'mH_'+self.organs[organ_to_load]['user_organName']+'_organ.json'
         json2open_dir = Path(dir_res) / 'settings' / jsonDict_name
         if json2open_dir.is_file():
             with open(json2open_dir, "r") as read_file:
                 print(">> "+jsonDict_name+": Opening JSON encoded data")
                 dict_out = json.load(read_file)
-            organ = Organ(project=self, user_settings={}, img_dirs={}, 
-                            new=False, load_dict=dict_out)
+            organ_dict = {'load_dict': dict_out}
+            organ = Organ(project=self, organ_dict=organ_dict, new=False)
         else: 
             organ = None
-            print('>> Error: No organ name with name ',user_organName,' was found!\n Directory: ',str(json2open_dir))
+            print('>> Error: No organ name with name ',organ_to_load,' was found!\n Directory: ',str(json2open_dir))
             alert('error_beep')
             
         return organ
@@ -676,12 +678,12 @@ class Project():
 class Organ():
     'Organ Class'
     
-    def __init__(self, project:Project, organ_dict:dict, new:bool):# load_dict={},
+    def __init__(self, project:Project, organ_dict:dict, new:bool):# 
         
-        user_settings = organ_dict['settings']
-        img_dirs = organ_dict['img_dirs']
         self.parent_project = project
         if new:
+            user_settings = organ_dict['settings']
+            img_dirs = organ_dict['img_dirs']
             self.user_organName = user_settings['user_organName'].replace(' ', '_')
             self.info = user_settings
             self.info['dirs'] = project.info['dirs']    
@@ -709,24 +711,29 @@ class Organ():
         else: 
             load_dict = organ_dict['load_dict']
             self.load_organ(load_dict=load_dict)
+        print('self.organ:', self.__dict__)
 
     def create_mHName(self): #
         now_str = datetime.now().strftime('%Y%m%d%H%M')
         self.mH_organName = 'mH_Organ-'+now_str
 
-    def load_organ(self, load_dict:dict):
-        
+    def load_organ(self, load_dict:dict):#
+        print('load_dict:', load_dict)
         load_dict = make_Paths(load_dict)
-        
-        # user_settings = dict_out['Organ']
+
         self.info = load_dict['Organ']
-        self.user_organName = self.info['user_organName'].replace(' ', '_')
-        # img_dirs = dict_out['img_dirs']
+        self.user_organName = self.info['user_organName']#.replace(' ', '_')
+        self.mH_organName = load_dict['mH_organName']
+        
         self.img_dirs = load_dict['img_dirs']
+        self.folder = load_dict['folder']
         self.analysis = load_dict['analysis']
         
-        tuple_keys = [['mH_settings','general_info','chNS','ch_ext'],
-                      ['mH_settings','general_info','chNS','ch_int']]
+        if self.analysis['morphoHeart']:
+            tuple_keys = [['mH_settings','setup','chNS','ch_ext'], 
+                            ['mH_settings','setup','chNS','ch_int'],]
+        else: 
+            tuple_keys = []
         
         for ch in load_dict['imChannels'].keys():
             tuple_keys.append(['imChannels', ch, 'shape'])
@@ -734,13 +741,13 @@ class Organ():
             for cont in load_dict['imChannels'][ch]['contStack'].keys():
                 tuple_keys.append(['imChannels', ch, 'contStack',cont,'shape_s3'])
         
+        print('tuple_keys:',tuple_keys)
         load_dict = make_tuples(load_dict, tuple_keys)
         
         # Workflow
         self.workflow = load_dict['workflow']
-        self.dir_info = Path(load_dict['dir_info'])
-        self.mH_organName = load_dict['mH_organName']
-        
+        # self.dir_info = Path(load_dict['dir_info'])
+
         self.objects = load_dict['objects']
         if self.analysis['morphoHeart']:
             # mH_Settings
@@ -763,8 +770,6 @@ class Organ():
                 self.submeshes = submeshes_dict_new
             else: 
                 self.submeshes = {}
-            # objects
-            self.objects = load_dict['objects']
             
         if self.analysis['morphoCell']:
             # mC_Settings
@@ -802,7 +807,8 @@ class Organ():
                 self.obj_meshes[mesh] = msh
           
     def check_channels(self, project:Project):#to delete
-        img_dirs = self.img_dirs
+        print('AAAA check')
+        # img_dirs = self.img_dirs
         # chs = [x for x in project.mH_channels if x != 'chNS']    
         # array_sizes = {}
         # sizes = []

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>601</width>
-    <height>681</height>
+    <height>687</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -518,6 +518,19 @@ QPushButton:hover{
     </widget>
    </item>
    <item>
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <layout class="QHBoxLayout" name="hL_sound_on_off">
@@ -556,19 +569,6 @@ QPushButton:hover{
         </widget>
        </item>
       </layout>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
      <item>
       <widget class="QLabel" name="label_instructions_4">
@@ -621,7 +621,7 @@ font: 25 10pt &quot;Calibri Light&quot;;</string>
        </property>
        <item>
         <property name="text">
-         <string>Bright</string>
+         <string>Light</string>
         </property>
        </item>
        <item>

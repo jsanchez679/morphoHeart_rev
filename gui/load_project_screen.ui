@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>796</width>
-    <height>686</height>
+    <height>722</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -560,19 +560,6 @@ border-color: #672146
     </widget>
    </item>
    <item>
-    <spacer name="horizontalSpacer_6">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
       <spacer name="horizontalSpacer_5">
@@ -739,8 +726,37 @@ background-color: rgb(255, 255, 255);</string>
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-border-color: rgb(170, 0, 127);</string>
+         <string notr="true">/* Horizontal*/
+QScrollBar:horizontal {
+	background-color: rgb(255, 255, 255);
+  	height: 12px;
+}
+
+QScrollBar::handle:horizontal {
+	background-color: rgb(162, 0, 122);
+	min-width: 30px;
+	border-radius: 6px;
+}
+
+QScrollBar::handle:horizontal:hover {
+	background-color:rgb(0, 0, 0);
+}
+
+/* Vertical*/
+QScrollBar:vertical {
+	background-color: rgb(255, 255, 255);
+  	width: 12px;
+}
+
+QScrollBar::handle:vertical {
+	background-color: rgb(162, 0, 122);
+	min-height: 30px;
+	border-radius: 6px;
+}
+
+QScrollBar::handle:vertical:hover {
+	background-color:rgb(0, 0, 0);
+}</string>
         </property>
        </widget>
       </item>

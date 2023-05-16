@@ -83,7 +83,7 @@ class Controller:
                 self.meas_param_win.button_set_params.clicked.connect(lambda: self.set_proj_meas_param())
         else: 
             error_txt = "Make sure all the 'Set' Buttons are toggled to continue."
-            self.new_proj_win.tE_validate.setText(error_txt)
+            self.new_proj_win.tE_validate2.setText(error_txt)
             print('Something is wrong: show_meas_param')
             return
 
@@ -112,7 +112,7 @@ class Controller:
                 self.new_proj_win.close()
             else: 
                 error_txt = "*Please create the New Project first before adding an organ to it."
-                self.new_proj_win.tE_validate.setText(error_txt)
+                self.new_proj_win.tE_validate2.setText(error_txt)
                 self.new_proj_win.button_new_proj.setChecked(False)
                 toggled(self.new_proj_win.button_new_proj)
                 return
@@ -133,7 +133,6 @@ class Controller:
         # - Create New Organ
         self.new_organ_win.button_create_new_organ.clicked.connect(lambda: self.new_organ())
         
-
     def show_parent(self, parent:str):
         parent_win = getattr(self, parent)
         parent_win.show()
@@ -145,31 +144,33 @@ class Controller:
                 self.new_proj_win.close()
             else: 
                 print('Error in new proj window')
+                return
         elif parent_win == 'load_proj_win':
+            self.load_proj_win.check_unique_organ_selected()
+            print('organ-selected: ',self.load_proj_win.organ_selected)
             if self.load_proj_win.organ_selected != None:
                 self.organ_to_analyse = self.load_proj_win.organ_selected
+                self.load_organ(proj = self.proj, organ_to_load = self.organ_to_analyse)
                 self.load_proj_win.close()
-                print(self.organ_to_analyse)
             else: 
+                error_txt = '*Please select one organ to analyse.'
+                self.load_proj_win.tE_validate.setText(error_txt)
                 print('Error in loading window')
+                return
         else: 
             print('Other parent window?')
         print('parent_win:', parent_win)
 
         #Create Main Project Window and show
         if self.main_win == None:
-            self.main_win = MainWindow() 
+            self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
         self.main_win.show()
 
     #Functions related to API    
     def set_proj_meas_param(self):
-        if self.meas_param_win.button_validate_params.isChecked(): 
+        if self.meas_param_win.validate_params(): 
             self.mH_params = self.meas_param_win.params
             self.ch_all = self.meas_param_win.ch_all
-            # print('\nAAAAAA')
-            # print(self.mH_params)
-            # print(self.ch_all)
-            # print(self.meas_param_win.final_params)
             self.mH_params[2]['measure'] = self.meas_param_win.final_params['centreline']
             self.mH_params[5]['measure'] = self.meas_param_win.final_params['ballooning']
         
@@ -229,63 +230,79 @@ class Controller:
             #Toggle button in new project window
             self.new_proj_win.set_meas_param_all.setChecked(True)
             toggled(self.new_proj_win.set_meas_param_all)
-            error_txt = "Well done! Next, create the new project with all the selected settings."
-            self.new_proj_win.tE_validate.setText(error_txt)
+            error_txt = "Well done! Continue setting up new project."
+            self.new_proj_win.tE_validate2.setText(error_txt)
         else: 
             error_txt = "Please validate selected measurement parameters first."
             self.meas_param_win.tE_validate.setText(error_txt)
             return 
         
     def new_proj(self):
-        if self.new_proj_win.set_meas_param_all.isChecked(): 
-            if self.new_proj_win.validate_set_all():# and self.validate_params(): 
-                temp_dir = None
-                if self.new_proj_win.cB_proj_as_template.isChecked():
-                    line_temp = self.new_proj_win.lineEdit_template_name.text()
-                    line_temp = line_temp.replace(' ', '_')
-                    temp_name = 'mH_'+line_temp+'_project.json'
-                    cwd = Path().absolute()
-                    dir_temp = cwd / 'db' / 'templates' / temp_name 
-                    if dir_temp.is_file():
-                        self.new_proj_win.tE_validate.setText('*There is already a template with the selected name. Please give this template a new name.')
-                        return
-                    else: 
-                        print('New project template: ', dir_temp)
-                        temp_dir = dir_temp
+        if self.new_proj_win.validate_set_all():
+            self.new_proj_win.tE_validate2.setText("Creating and saving new project...")
+            temp_dir = None
+            if self.new_proj_win.cB_proj_as_template.isChecked():
+                line_temp = self.new_proj_win.lineEdit_template_name.text()
+                line_temp = line_temp.replace(' ', '_')
+                temp_name = 'mH_'+line_temp+'_project.json'
+                cwd = Path().absolute()
+                dir_temp = cwd / 'db' / 'templates' / temp_name 
+                if dir_temp.is_file():
+                    self.new_proj_win.tE_validate2.setText('*There is already a template with the selected name. Please give this template a new name.')
+                    return
+                else: 
+                    print('New project template: ', dir_temp)
+                    temp_dir = dir_temp
 
-                self.new_proj_win.button_new_proj.setChecked(True)
-                toggled(self.new_proj_win.button_new_proj)
-                # self.new_proj_win.button_new_proj.setDisabled(True)
+            self.new_proj_win.button_new_proj.setChecked(True)
+            toggled(self.new_proj_win.button_new_proj)
+            # self.new_proj_win.button_new_proj.setDisabled(True)
 
-                proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text(), 
-                            'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText(),
-                            'date' : str(self.new_proj_win.dateEdit.date().toPyDate()),
-                            'analysis' : self.new_proj_win.checked_analysis, 
-                            'dir_proj' : self.new_proj_win.proj_dir}
-                
-                self.proj = mHC.Project(proj_dict, new=True)
-
-                self.new_proj_win.mH_settings['chs_all'] = self.ch_all
-                self.new_proj_win.mH_settings['params'] = self.mH_params
-                self.proj.set_settings(settings={'mH': {'settings':self.new_proj_win.mH_settings, 
-                                                        'params': self.new_proj_win.mH_user_params},
-                                                'mC': {'settings': self.new_proj_win.mC_settings,
-                                                    'params': self.new_proj_win.mC_user_params}})
-                
-                self.proj.set_workflow()
-                self.proj.create_proj_dir()
-                self.proj.save_project(temp_dir = temp_dir)
-                print('\n>>> New Project: ',self.proj.__dict__)
+            proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text(), 
+                        'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText(),
+                        'date' : str(self.new_proj_win.dateEdit.date().toPyDate()),
+                        'analysis' : self.new_proj_win.checked_analysis, 
+                        'dir_proj' : self.new_proj_win.proj_dir}
             
+            self.proj = mHC.Project(proj_dict, new=True)
+
+            self.new_proj_win.mH_settings['chs_all'] = self.ch_all
+            self.new_proj_win.mH_settings['params'] = self.mH_params
+            self.proj.set_settings(settings={'mH': {'settings':self.new_proj_win.mH_settings, 
+                                                    'params': self.new_proj_win.mH_user_params},
+                                            'mC': {'settings': self.new_proj_win.mC_settings,
+                                                'params': self.new_proj_win.mC_user_params}})
+            
+            self.proj.set_workflow()
+            self.proj.create_proj_dir()
+            self.proj.save_project(temp_dir = temp_dir)
+            print('\n>>> New Project: ',self.proj.__dict__)
+            self.new_proj_win.tE_validate2.setText("New project '"+self.new_proj_win.lineEdit_proj_name.text()+"' has been created and saved! Continue creating an organ as part of this project. ")
+    
+    def load_proj(self):
+        path_folder = QFileDialog.getExistingDirectory(self.load_proj_win, caption="Select the Project's directory")
+        proj_name = str(Path(path_folder).name)[2:]
+        proj_name_us = proj_name.replace(' ', '_')
+        json_name = 'mH_'+proj_name_us+'_project.json'
+        proj_settings_path = Path(path_folder) / 'settings' / json_name
+        if proj_settings_path.is_file(): 
+            proj_dict = {'name': proj_name, 
+                         'dir': path_folder}
+            self.proj = mHC.Project(proj_dict, new=False)
+            print('Loaded project:',self.proj.__dict__)
+            self.load_proj_win.proj = self.proj
+            #Fill window with project info
+            self.load_proj_win.fill_proj_info(proj = self.proj)
         else: 
-            error_txt = '*You have not selected any measurement parameter yet! Select some parameters to measure to continue.'
-            self.new_proj_win.tE_validate.setText(error_txt)
-            return
+            self.load_proj_win.button_browse_proj.setChecked(False)
+            toggled(self.load_proj_win.button_browse_proj)
+            self.load_proj_win.tE_validate.setText('There is no settings file for a project within the selected directory. Please select a new directory.')
 
     def new_organ(self): 
-        if self.new_organ_win.button_validate_organ.isChecked(): 
+        if self.new_organ_win.validate_organ(self.proj): 
             if self.new_organ_win.check_selection(self.proj):
                 if self.new_organ_win.check_shapes(self.proj): 
+                    self.new_organ_win.tE_validate.setText('Creating and saving new organ...')
                     self.new_organ_win.button_create_new_organ.setChecked(True)
                     toggled(self.new_organ_win.button_create_new_organ)
                     # self.new_organ_win.button_create_new_organ.setDisabled(True)
@@ -333,31 +350,13 @@ class Controller:
                 self.new_organ_win.button_create_new_organ.setChecked(False)
                 toggled(self.new_organ_win.button_create_new_organ)
                 return 
-        else: 
-            error_txt = "*Please validate organ's settings first."
-            self.tE_validate.setText(error_txt)
+        else:
             self.new_organ_win.button_create_new_organ.setChecked(False)
             toggled(self.new_organ_win.button_create_new_organ)
             return 
-            
-    def load_proj(self):
-        path_folder = QFileDialog.getExistingDirectory(self.load_proj_win, caption="Select the Project's directory")
-        proj_name = str(Path(path_folder).name)[2:]
-        proj_name_us = proj_name.replace(' ', '_')
-        json_name = 'mH_'+proj_name_us+'_project.json'
-        proj_settings_path = Path(path_folder) / 'settings' / json_name
-        if proj_settings_path.is_file(): 
-            proj_dict = {'name': proj_name, 
-                         'dir': path_folder}
-            self.proj = mHC.Project(proj_dict, new=False)
-            print('Loaded project:',self.proj.__dict__)
-            self.load_proj_win.proj = self.proj
-            #Fill window with project info
-            self.load_proj_win.fill_proj_info(proj = self.proj)
-        else: 
-            self.load_proj_win.button_browse_proj.setChecked(False)
-            toggled(self.load_proj_win.button_browse_proj)
-            self.load_proj_win.tE_validate.setText('There is no settings file for a project within the selected directory. Please select a new directory.')
+    
+    def load_organ(self, proj, organ_to_load):
+        self.organ = proj.load_organ(organ_to_load = organ_to_load)
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
@@ -372,12 +371,6 @@ def main():
     except: 
         print('Exiting')
 
-    
-    # widget = QtWidgets.QStackedWidget()
-    # welcome = WelcomeScreen(widget)
-    # widget.addWidget(welcome)
-    # # widget.setFixedSize(1001,981)
-    # widget.show()
 
 
 if __name__ == '__main__':

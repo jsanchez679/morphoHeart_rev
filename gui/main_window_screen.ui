@@ -176,7 +176,7 @@
             </widget>
            </item>
            <item row="0" column="10">
-            <widget class="QLabel" name="label_8">
+            <widget class="QLabel" name="lineEdit_stack_orient">
              <property name="minimumSize">
               <size>
                <width>120</width>
@@ -235,7 +235,7 @@ color: rgb(100, 100, 100);</string>
             </spacer>
            </item>
            <item row="1" column="4">
-            <widget class="QLabel" name="label_5">
+            <widget class="QLabel" name="lineEdit_stage">
              <property name="minimumSize">
               <size>
                <width>150</width>
@@ -259,7 +259,7 @@ color: rgb(100, 100, 100);</string>
             </widget>
            </item>
            <item row="0" column="7">
-            <widget class="QLabel" name="label_3">
+            <widget class="QLabel" name="lineEdit_genotype">
              <property name="minimumSize">
               <size>
                <width>120</width>
@@ -353,7 +353,7 @@ color: rgb(100, 100, 100);</string>
             </widget>
            </item>
            <item row="0" column="4">
-            <widget class="QLabel" name="label_7">
+            <widget class="QLabel" name="lineEdit_strain">
              <property name="minimumSize">
               <size>
                <width>150</width>
@@ -377,7 +377,7 @@ color: rgb(100, 100, 100);</string>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLabel" name="label">
+            <widget class="QLabel" name="lineEdit_proj_name">
              <property name="minimumSize">
               <size>
                <width>200</width>
@@ -423,7 +423,7 @@ color: rgb(100, 100, 100);</string>
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLabel" name="label_2">
+            <widget class="QLabel" name="lineEdit_organ_name">
              <property name="minimumSize">
               <size>
                <width>200</width>
@@ -447,7 +447,7 @@ color: rgb(100, 100, 100);</string>
             </widget>
            </item>
            <item row="1" column="7">
-            <widget class="QLabel" name="label_4">
+            <widget class="QLabel" name="lineEdit_manipulation">
              <property name="minimumSize">
               <size>
                <width>120</width>
@@ -484,7 +484,7 @@ color: rgb(100, 100, 100);</string>
             </spacer>
            </item>
            <item row="1" column="10">
-            <widget class="QLabel" name="label_6">
+            <widget class="QLabel" name="lineEdit_ref_notes">
              <property name="minimumSize">
               <size>
                <width>120</width>
@@ -556,7 +556,7 @@ color: rgb(100, 100, 100);</string>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="button_see_proj_settings_4">
+            <widget class="QPushButton" name="button_see_organ_settings">
              <property name="minimumSize">
               <size>
                <width>180</width>
