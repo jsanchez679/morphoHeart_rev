@@ -186,10 +186,11 @@ class CreateNewProj(QDialog):
         self.proj_name = ''
         self.proj_dir_parent = ''
         uic.loadUi('gui/new_project_screen.ui', self)
-        # self.setFixedSize(1035,851)
         self.setWindowTitle('Create New Project...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
+
+        self.mH_user_params = None
 
         #Initialise variables
         # self.meas_param = None
@@ -275,13 +276,8 @@ class CreateNewProj(QDialog):
         #Validate initial settings
         self.button_set_initial_set.clicked.connect(lambda: self.validate_initial_settings())
 
-        #Checkboxes for ChNS, Segm, Sect
-        #---- ChNS
-        self.tick_chNS.stateChanged.connect(lambda: self.checked('chNS'))
-        #---- Segments
-        self.tick_segm.stateChanged.connect(lambda: self.checked('segm'))  
-        #---- Sections
-        self.tick_sect.stateChanged.connect(lambda: self.checked('sect'))
+        #Set processes
+        self.button_set_processes.clicked.connect(lambda: self.set_selected_processes())
 
     def init_orient_group(self): 
         self.cB_stack_orient.currentIndexChanged.connect(lambda: self.custom_orient('stack'))
@@ -437,7 +433,7 @@ class CreateNewProj(QDialog):
                 return 
             else: 
                 self.lab_filled_proj_dir.setText(str(self.proj_dir))
-                self.tE_validate.setText('All good.')   
+                self.tE_validate.setText('All good. Continue setting up new project!')   
                 self.create_new_proj()  
         else: 
             self.tE_validate.setText(error_txt)
@@ -448,6 +444,8 @@ class CreateNewProj(QDialog):
         self.tabWidget.setEnabled(True)
         self.tab_mHeart.setEnabled(self.checked_analysis['morphoHeart'])
         self.tab_mCell.setEnabled(self.checked_analysis['morphoCell'])
+        self.tab_mHeart.setVisible(self.checked_analysis['morphoHeart'])
+        self.tab_mCell.setVisible(self.checked_analysis['morphoCell'])
         if self.checked_analysis['morphoHeart']:
             self.mH_settings = {'no_chs': 0,
                                 'name_chs': 0,
@@ -458,6 +456,7 @@ class CreateNewProj(QDialog):
         else: 
             self.mH_settings = None
             self.mH_user_params = None
+            
 
         if self.checked_analysis['morphoCell']:
             self.mC_settings = {}
@@ -744,7 +743,16 @@ class CreateNewProj(QDialog):
         self.mH_settings['mask_ch'] = mask_ch
 
         self.ch_selected = ch_selected
+        #Set the comboBoxes for chNS
+        self.ext_chNS.clear(); self.int_chNS.clear()
+        self.ext_chNS.addItems(['----']+self.ch_selected)
+        self.int_chNS.addItems(['----']+self.ch_selected)
+        
+        self.tE_validate2.setText("Great! Now select the processes you would like to include in the workflow and setup their details.")
 
+        return True
+    
+    def set_selected_processes(self): 
         #Get info from checked boxes
         __ = self.checked('chNS')
         #---- Segments
@@ -753,18 +761,12 @@ class CreateNewProj(QDialog):
         __ = self.checked('sect')
         # print(self.mH_settings)
 
-        #Set the comboBoxes for chNS
-        self.ext_chNS.clear(); self.int_chNS.clear()
-        self.ext_chNS.addItems(['----']+ch_selected)
-        self.int_chNS.addItems(['----']+ch_selected)
-        
-
         #Set Table for Segments and Sections
         for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
             for cont in ['int', 'tiss', 'ext']:
                 for stype in ['segm', 'sect']:
                     for cut in ['Cut1', 'Cut2']:
-                        if ch in ch_selected:
+                        if ch in self.ch_selected:
                             getattr(self, 'label_'+stype+'_'+ch).setEnabled(True)
                             getattr(self, 'label_'+stype+'_'+ch+'_'+cont).setEnabled(True)
                             if cut == 'Cut1':
@@ -776,9 +778,9 @@ class CreateNewProj(QDialog):
                             getattr(self, 'label_'+stype+'_'+ch+'_'+cont).setVisible(False)
                             getattr(self, 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont).setVisible(False)
 
-        self.tE_validate2.setText("Great! Now select the processes you would like to include in the workflow and setup its details.")
-        return True
-    
+        self.button_set_processes.setChecked(True)
+        toggled(self.button_set_processes)
+
     # -- Functions for ChannelNS
     def validate_chNS_settings(self): 
         valid = []; error_txt = ''
@@ -970,7 +972,7 @@ class CreateNewProj(QDialog):
                 valid_all.append(True)
         
         if all(valid_all): 
-            self.tE_validate2.setText('All good! Segments have been set.')
+            self.tE_validate2.setText('All good! Segments have been set (1).')
             self.set_segm_settings()
         else: 
             print('Aja? - segments')
@@ -1026,7 +1028,7 @@ class CreateNewProj(QDialog):
                 valid_all.append(True)
         
         if all(valid_all): 
-            self.tE_validate2.setText('All good! Sections have been set.')
+            self.tE_validate2.setText('All good! Sections have been set (1).')
             self.set_sect_settings()
         else: 
             print('Aja? - sections')
@@ -1086,11 +1088,27 @@ class CreateNewProj(QDialog):
 
         # print('valid_all:', valid_all)
         segm_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area, 'Ellip': meas_ellip}
+        
+        #Add parameters to segments
+        selected_params = self.mH_user_params 
+        #Add measure params from segments
+        cuts = [key for key in segm_settings if 'Cut' in key]
+        params_segm = [param for param in segm_settings['measure'].keys() if segm_settings['measure'][param]]
+        for param_a in params_segm: 
+            for cut_a in cuts: 
+                cut_semg = segm_settings[cut_a]['ch_segments']
+                no_segm = segm_settings[cut_a]['no_segments']
+                selected_params[param_a+'(segm)'] = {}
+                for ch_a in cut_semg: 
+                    for cont_a in cut_semg[ch_a]:
+                        for segm in range(1,no_segm+1,1):
+                            selected_params[param_a+'(segm)'][cut_a+'_'+ch_a+'_'+cont_a+'_segm'+str(segm)] = True
+
+        self.mH_user_params = selected_params
         self.mH_settings['segm'] = segm_settings
-        # print('self.mH_settings (set_segm_settings):',self.mH_settings)
         if all(valid_all):
             self.button_set_segm.setChecked(True)
-            self.tE_validate2.setText('All good, continue!')
+            self.tE_validate2.setText('All good! Segments have been set.')
         else: 
             self.button_set_segm.setChecked(False)
         toggled(self.button_set_segm)
@@ -1145,11 +1163,28 @@ class CreateNewProj(QDialog):
                 valid_all.append(True)
 
         sect_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area}
+
+        #Add parameters to segments
+        selected_params = self.mH_user_params 
+        #Add measure params from sections
+        cuts = [key for key in sect_settings if 'Cut' in key]
+        params_sect = [param for param in sect_settings['measure'].keys() if sect_settings['measure'][param]]
+        for param_b in params_sect: 
+            for cut_b in cuts: 
+                cut_sect = sect_settings[cut_b]['ch_sections']
+                no_sect = sect_settings[cut_b]['no_sections']
+                selected_params[param_b+'(sect)'] = {}
+                for ch_b in cut_sect: 
+                    for cont_b in cut_sect[ch_b]:    
+                        for sect in range(1,no_sect+1,1):
+                            selected_params[param_b+'(sect)'][cut_b+'_'+ch_b+'_'+cont_b+'_sect'+str(sect)] = True
+
+        self.mH_user_params = selected_params
         self.mH_settings['sect'] = sect_settings
         # print('self.mH_settings (set_sect_settings):',self.mH_settings)
         if all(valid_all):
             self.button_set_sect.setChecked(True)
-            self.tE_validate2.setText('All good, continue!')
+            self.tE_validate2.setText('All good! Sections have been set.')
         else: 
             self.button_set_sect.setChecked(False)
         toggled(self.button_set_sect)
@@ -1157,7 +1192,7 @@ class CreateNewProj(QDialog):
     def validate_set_all(self): 
         print('\n\nValidating Project!')
         valid = []
-        if self.set_meas_param_all.isChecked():
+        if self.mH_user_params != None: # self.set_meas_param_all.isChecked() or 
             valid.append(True)
         else: 
             error_txt = 'You need to set the parameters you want to extract from the segmented tissues before creating the new project.'
@@ -1226,10 +1261,8 @@ class SetMeasParam(QDialog):
 
     def __init__(self, mH_settings:dict, parent=None):
         super().__init__(parent)
-        
         uic.loadUi('gui/set_meas_screen.ui', self)
         self.setWindowTitle('Set Parameters to Measure...')
-        # self.setFixedSize(690,860)
         self.setWindowTitle('Select the parameters to measure from the segmented channels...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
@@ -1570,10 +1603,10 @@ class SetMeasParam(QDialog):
         # print('self.final_params:',self.final_params)
 
 class NewOrgan(QDialog):
+
     def __init__(self, proj, parent=None):
         super().__init__()
         uic.loadUi('gui/create_organ_screen.ui', self)
-        # self.setFixedSize(735,845)
         self.setWindowTitle('Create New Organ...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
@@ -1618,13 +1651,17 @@ class NewOrgan(QDialog):
 
         if proj.analysis['morphoHeart']: 
             self.tab_mHeart.setEnabled(True)
+            self.tab_mHeart.setVisible(True)
         else: 
             self.tab_mHeart.setEnabled(False)
+            self.tab_mHeart.setVisible(False)
 
         if proj.analysis['morphoCell']: 
             self.tab_mCell.setEnabled(True)
+            self.tab_mCell.setVisible(True)
         else: 
             self.tab_mCell.setEnabled(False)  
+            self.tab_mCell.setVisible(False)
 
         self.lab_filled_proj_name.setText(proj.info['user_projName'])
         self.lab_filled_ref_notes.setText(proj.info['user_projNotes'])
@@ -1781,6 +1818,7 @@ class NewOrgan(QDialog):
             cwd = Path().absolute()
         file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image Files (*.tif)")
         if Path(file_name).is_file(): 
+            self.tE_validate.setText('Loading '+ch+'... Wait for the indicator to turn green, then continue.')
             label = getattr(self, 'lab_filled_dir_'+ch)
             label.setText(str(file_name))
             check = getattr(self, 'check_'+ch)
@@ -1815,6 +1853,7 @@ class NewOrgan(QDialog):
                 cwd = Path().absolute()
             file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), 'Image Files (*.tif)')
             if Path(file_name).is_file(): 
+                self.tE_validate.setText('Loading mask for '+ch+'... Wait for the indicator to turn green, then continue.')
                 label = getattr(self, 'lab_filled_dir_mask_'+ch)
                 label.setText(str(file_name))
                 check = getattr(self, 'check_mask_'+ch)
@@ -1912,7 +1951,6 @@ class LoadProj(QDialog):
     def __init__(self, parent=None):
         super().__init__()
         uic.loadUi('gui/load_project_screen.ui', self)
-        # self.setFixedSize(830,540)
         self.setWindowTitle('Load Existing Project...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
@@ -2092,17 +2130,280 @@ class MainWindow(QMainWindow):
     def __init__(self, proj, organ):
         super().__init__()
         uic.loadUi('gui/main_window_screen.ui', self)
-        # self.setFixedSize(1176,866)
         mH_logoXS = QPixmap('images/logos_1o75mm.png')
         self.mH_logo_XS.setPixmap(mH_logoXS)
 
+        self.proj = proj
+        self.organ = organ
+
+        #Menu options
         self.actionSave_Project.triggered.connect(self.save_project_pressed)
         self.actionSave_Organ.triggered.connect(self.save_organ_pressed)
         self.actionClose.triggered.connect(self.close_morphoHeart_pressed)
 
+        #Blind analysis
+        self.cB_blind.stateChanged.connect(lambda: self.blind_analysis())
+
+        #Sounds
         layout = self.hL_sound_on_off 
         add_sound_bar(self, layout)
+        self.fill_proj_organ_info(self.proj, self.organ)
 
+        #Setting up tabs
+        self.init_segment_tab()
+        self.init_pandq_tab()
+        self.init_morphoCell_tab()
+        self.init_plot_tab()
+        self.tE_validate.setText('Organ "'+organ.info['user_organName']+'" was successfully loaded!')
+
+        #Activate first tab
+        if self.organ.analysis['morphoHeart']:
+            self.tabWidget.setCurrentIndex(0)
+        else: 
+            if self.organ.analysis['morphoCell']:
+                self.tabWidget.setCurrentIndex(2)
+            else: 
+                self.tabWidget.setCurrentIndex(3)
+
+    def fill_proj_organ_info(self, proj, organ):
+        self.lineEdit_proj_name.setText(proj.info['user_projName'])
+        organ_data = ['user_organName','strain','stage','genotype','manipulation','im_orientation','user_organNotes']
+        for data in organ_data: 
+            lineEdit = getattr(self, 'lineEdit_'+data)
+            if data in ['genotype', 'manipulation']:
+                if not self.cB_blind.isChecked(): 
+                    lineEdit.setText(organ.info[data])
+                else: 
+                    pass
+            else: 
+                lineEdit.setText(organ.info[data])
+        
+        date = organ.info['date_created']
+        date_qt = QDate.fromString(date, "yyyy-MM-dd")
+        self.dateEdit.setDate(date_qt)
+
+        if proj.analysis['morphoHeart']:
+            self.tab_segm.setEnabled(True)
+            self.tab_PandQ.setEnabled(True)
+        else: 
+            self.tab_segm.setVisible(False)
+            self.tab_PandQ.setVisible(False)
+
+        if proj.analysis['morphoCell']:
+            self.tab_segm.setEnabled(True)
+        else: 
+            self.tab_segm.setVisible(False)
+        if proj.analysis['morphoPlot']:
+            self.tab_plot.setEnabled(True)
+        else: 
+            self.tab_plot.setVisible(False)
+
+    def blind_analysis(self):
+        if not self.cB_blind.isChecked(): 
+            self.lineEdit_genotype.setText(self.organ.info['genotype'])
+            self.lineEdit_manipulation.setText(self.organ.info['manipulation'])
+        else: 
+            self.lineEdit_genotype.clear()
+            self.lineEdit_manipulation.clear()
+    
+    def init_segment_tab(self): 
+        print('Setting up Segmentation Tab')
+        self.channels = self.organ.mH_settings['setup']['name_chs']
+        self.cB_channel.clear()
+        channels = [self.channels[ch]+' ('+ch+')' for ch in self.channels if ch != 'chNS']
+        self.cB_channel.addItems(channels)
+
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
+            label = getattr(self, 'status_'+ch)
+            colour_status = getattr(self, 'fillcolor_'+ch)
+            if ch not in self.channels.keys(): 
+                label.setVisible(False)
+                colour_status.setVisible(False)
+            else: 
+                root_dict = self.organ.workflow
+                items = ['morphoHeart','ImProc',ch,'Status']
+                self.update_status(root_dict, items, colour_status)
+        
+        self.button_continue.clicked.connect(lambda: self.continue_next_tab())
+
+    def init_pandq_tab(self): 
+        #Segmentation cleanup setup
+        self.clean_ch1.clicked.connect(lambda: self.activate_clean_ch(name = 'ch1'))
+        self.clean_ch2.clicked.connect(lambda: self.activate_clean_ch(name = 'ch2'))
+        self.clean_ch3.clicked.connect(lambda: self.activate_clean_ch(name = 'ch3'))
+        self.clean_ch4.clicked.connect(lambda: self.activate_clean_ch(name = 'ch4'))
+
+        for chs in ['ch1', 'ch2', 'ch3', 'ch4']:
+            if chs not in self.channels.keys():
+                getattr(self, 'clean_'+chs).setVisible(False)
+                getattr(self, 'clean_withch_'+chs).setVisible(False)
+                getattr(self, 'clean_withcont_'+chs).setVisible(False)
+                getattr(self, 'inverted_'+chs).setVisible(False)
+                for cont in ['int', 'tiss', 'ext']:
+                    getattr(self, 'clean_'+chs+'_'+cont).setVisible(False)
+            else: 
+                getattr(self, 'clean_'+chs).setText(self.channels[chs]+' ('+chs+')')
+                ch_opt = [cho for cho in self.channels if cho != 'chNS' and cho != chs]
+                getattr(self, 'clean_withch_'+chs).addItems(ch_opt)
+                getattr(self, 'clean_withcont_'+chs).addItems(['int', 'ext'])
+
+        #Keep largest
+        self.fillcolor_ch1_int.clicked.connect(lambda: self.color_picker(name = 'ch1_int'))
+        self.fillcolor_ch1_tiss.clicked.connect(lambda: self.color_picker(name = 'ch1_tiss'))
+        self.fillcolor_ch1_ext.clicked.connect(lambda: self.color_picker(name = 'ch1_ext'))
+        self.fillcolor_ch2_int.clicked.connect(lambda: self.color_picker(name = 'ch2_int'))
+        self.fillcolor_ch2_tiss.clicked.connect(lambda: self.color_picker(name = 'ch2_tiss'))
+        self.fillcolor_ch2_ext.clicked.connect(lambda: self.color_picker(name = 'ch2_ext'))
+        self.fillcolor_ch3_int.clicked.connect(lambda: self.color_picker(name = 'ch3_int'))
+        self.fillcolor_ch3_tiss.clicked.connect(lambda: self.color_picker(name = 'ch3_tiss'))
+        self.fillcolor_ch3_ext.clicked.connect(lambda: self.color_picker(name = 'ch3_ext'))
+        self.fillcolor_ch4_int.clicked.connect(lambda: self.color_picker(name = 'ch4_int'))
+        self.fillcolor_ch4_tiss.clicked.connect(lambda: self.color_picker(name = 'ch4_tiss'))
+        self.fillcolor_ch4_ext.clicked.connect(lambda: self.color_picker(name = 'ch4_ext'))
+        self.fillcolor_chNS_int.clicked.connect(lambda: self.color_picker(name = 'chNS_int'))
+        self.fillcolor_chNS_tiss.clicked.connect(lambda: self.color_picker(name = 'chNS_tiss'))
+        self.fillcolor_chNS_ext.clicked.connect(lambda: self.color_picker(name = 'chNS_ext'))
+
+        for chk in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
+            if chk not in self.channels.keys():
+                getattr(self, 'kl_label_'+chk).setVisible(False)
+                for contk in ['int', 'tiss', 'ext']:
+                    getattr(self, 'kl_'+chk+'_'+contk).setVisible(False)
+                    getattr(self, 'fillcolor_'+chk+'_'+contk).setVisible(False)
+            else: 
+                getattr(self, 'kl_label_'+chk).setText(self.channels[chk]+' ('+chk+')')
+                for contk in ['int', 'tiss', 'ext']:
+                    if chk != 'chNS': 
+                        color = self.organ.mH_settings['setup']['color_chs'][chk][contk]
+                    else: 
+                        color = self.organ.mH_settings['setup'][chk]['color_chns'][contk]
+                    color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+color+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
+                    color_btn = getattr(self, 'fillcolor_'+chk+'_'+contk)
+                    color_btn.setStyleSheet(color_txt)
+
+        #Heatmap settings
+        heatmap_dict = {}
+        lists = [['measure','th_i2e'], ['measure','th_e2i'], ['measure','ball']]
+        names = ['Th(int>ext)', 'Th(ext>int)', 'Ball']
+        min_val = [0,0,0]
+        max_val = [20,20,60]
+        print(self.organ.mH_settings)
+        for aa, ll, nn, minn, maxx in zip(count(), lists, names, min_val, max_val): 
+            print(aa, ll, nn, minn, maxx)
+            variable = ll[1]
+            sp_dict = get_by_path(self.organ.mH_settings, ll)
+            for item in sp_dict: 
+                if nn != 'Ball':
+                    chh, conth, _ = item.split('_')
+                    heatmap_dict[variable+'['+chh+'-'+conth+']'] = {'name': nn+'['+chh+'-'+conth+']',
+                                                                'min_val': minn, 
+                                                                'max_val': maxx}
+                else: 
+                    namef = item.replace('_(', '(CL:')
+                    namef = namef.replace('_', '-')
+                    heatmap_dict[variable+'['+namef+']'] = {'name': nn+'['+namef+']',
+                                                                'min_val': minn, 
+                                                                'max_val': maxx}
+                
+        print(heatmap_dict)
+        hm_items = list(heatmap_dict.keys())
+        for num in range(1,13,1):
+            label = getattr(self,'label_hm'+str(num))
+            mina = getattr(self,'min_hm'+str(num))
+            maxa = getattr(self,'max_hm'+str(num))
+            cm = getattr(self,'colormap'+str(num))
+            d3d2 = getattr(self,'d3d2_'+str(num))
+            if num < len(hm_items): 
+                label.setText(heatmap_dict[hm_items[num]]['name'])
+                mina.setValue(heatmap_dict[hm_items[num]]['min_val'])
+                maxa.setValue(heatmap_dict[hm_items[num]]['max_val'])
+                d3d2.setChecked(True)
+            else: 
+                label.setVisible(False)
+                mina.setVisible(False)
+                maxa.setVisible(False)
+                cm.setVisible(False)
+                d3d2.setVisible(False)
+
+        print('Setting up Process and Analysis Tab')
+
+    def init_morphoCell_tab(self): 
+        print('Setting up morphoCell Tab')
+
+    def init_plot_tab(self): 
+        print('Setting Plot Tab')
+
+    def update_status(self, root_dict, items, fillcolor): 
+        wf_status = get_by_path(root_dict, items)
+        print(wf_status)
+        if wf_status == 'NI': 
+            color_txt = "background-color: rgb(255, 255, 127);"
+        elif wf_status == 'Initialised': 
+            color_txt = "background-color: rgb(255, 151, 60);"
+        else: # wf_status == 'Done':
+            color_txt = "background-color:  rgb(0, 255, 0);"
+        fillcolor.setStyleSheet(color_txt)
+
+    def continue_next_tab(self): #A delete bit
+        #TO DELETEE!!
+        chs = [ch for ch in self.channels if ch != 'chNS']
+        root_dict = self.organ.workflow
+        for chan in chs: 
+            self.organ.workflow['morphoHeart']['ImProc'][chan]['Status'] = 'DONE'
+            items = ['morphoHeart','ImProc',chan,'Status']
+            colour_status = getattr(self, 'fillcolor_'+chan)
+            self.update_status(root_dict, items, colour_status)
+        ####
+
+        if self.tabWidget.currentIndex() == 0: 
+            #check the status of all channels 
+            channels = [ch for ch in self.channels if ch != 'chNS']
+            ch_status = []
+            for ch in channels: 
+                ch_status.append(self.organ.workflow['morphoHeart']['ImProc'][ch]['Status'])
+
+            if all(ch_status):
+                self.tabWidget.setCurrentIndex(1)
+        
+        elif self.tabWidget.currentIndex() == 1:
+            print('develop') 
+        
+        elif self.tabWidget.currentIndex() == 2:
+            print('develop')
+
+        else: #self.tabWidget.currentIndex() == 3: 
+            print('develop') 
+
+    def color_picker(self, name): #Add update color in mesh!
+        print(name)
+        color = QColorDialog.getColor()
+        if color.isValid():
+            # print('The selected color is: ', color.name())
+            fill = getattr(self, 'fillcolor_'+name)
+            color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+color.name()+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
+            fill.setStyleSheet(color_txt)
+            chk, contk = name.split('_')
+            if chk != 'chNS': 
+                print('not chNS')
+                self.organ.mH_settings['setup']['color_chs'][chk][contk] = color.name()
+            else: 
+                print('chNS')
+                self.organ.mH_settings['setup'][chk]['color_chns'][contk] = color.name()
+    
+    def activate_clean_ch(self, ch):
+        cB_clean = getattr(self, 'clean_'+ch)
+        if cB_clean.isChecked(): 
+            bool_val = True
+        else: 
+            bool_val = False
+
+        getattr(self, 'clean_'+ch).setEnabled(bool_val)
+        getattr(self, 'clean_withch_'+ch).setEnabled(bool_val)
+        getattr(self, 'clean_withcont_'+ch).setEnabled(bool_val)
+        getattr(self, 'inverted_'+ch).setEnabled(bool_val)
+        for cont in ['int', 'tiss', 'ext']:
+            getattr(self, 'clean_'+ch+'_'+cont).setEnabled(bool_val)
+    
     def save_project_pressed(self):
         print('Save project was pressed')
 
@@ -2129,7 +2430,7 @@ class MyToggle(QtWidgets.QPushButton):
         brush_color = QColor(255,255,255) if self.isChecked() else QColor(0,0,0)
 
         radius = 10
-        width = 25
+        width = 20
         center = self.rect().center()
 
         painter = QPainter(self)
@@ -2173,8 +2474,8 @@ def add_sound_bar(win, layout):
     sizePolicy.setVerticalStretch(0)
     sizePolicy.setHeightForWidth(win.sound_type.sizePolicy().hasHeightForWidth())
     win.sound_type.setSizePolicy(sizePolicy)
-    win.sound_type.setMinimumSize(QtCore.QSize(80, 25))
-    win.sound_type.setMaximumSize(QtCore.QSize(80, 25))
+    win.sound_type.setMinimumSize(QtCore.QSize(80, 20))
+    win.sound_type.setMaximumSize(QtCore.QSize(80, 20))
     win.sound_type.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
     win.sound_type.setAutoFillBackground(False)
     win.sound_type.setStyleSheet("border-color: rgb(173, 173, 173); font: 25 10pt 'Calibri Light';")
@@ -2249,6 +2550,7 @@ def validate_txt(input_str):
     return error
 
 
+#Others to try and load from Basics
 def get_by_path(root_dict, items):
     """Access a nested object in root_dict by item sequence.
     by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)

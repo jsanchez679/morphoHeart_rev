@@ -659,8 +659,9 @@ class Project():
     def load_organ(self, organ_to_load:str):#
         print(Path(self.dir_proj))
         print(self.organs[organ_to_load]['user_organName'])
-        dir_res = Path(self.dir_proj) / self.organs[organ_to_load]['user_organName']
-        jsonDict_name = 'mH_'+self.organs[organ_to_load]['user_organName']+'_organ.json'
+        organ_folder = self.organs[organ_to_load]['user_organName'].replace(' ', '_')
+        dir_res = Path(self.dir_proj) / organ_folder
+        jsonDict_name = 'mH_'+organ_folder+'_organ.json'
         json2open_dir = Path(dir_res) / 'settings' / jsonDict_name
         if json2open_dir.is_file():
             with open(json2open_dir, "r") as read_file:

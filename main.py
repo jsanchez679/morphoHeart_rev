@@ -79,8 +79,10 @@ class Controller:
             if self.meas_param_win == None: 
                 self.meas_param_win = SetMeasParam(mH_settings = self.new_proj_win.mH_settings, 
                                                 parent=self.new_proj_win)
-                self.meas_param_win.show()
-                self.meas_param_win.button_set_params.clicked.connect(lambda: self.set_proj_meas_param())
+            self.meas_param_win.show()
+            self.meas_param_win.button_set_params.clicked.connect(lambda: self.set_proj_meas_param())
+            self.new_proj_win.set_meas_param_all.setChecked(True)
+            toggled(self.new_proj_win.set_meas_param_all)
         else: 
             error_txt = "Make sure all the 'Set' Buttons are toggled to continue."
             self.new_proj_win.tE_validate2.setText(error_txt)
@@ -132,24 +134,29 @@ class Controller:
         self.new_organ_win.button_go_back.clicked.connect(lambda: self.show_parent(parent_win))
         # - Create New Organ
         self.new_organ_win.button_create_new_organ.clicked.connect(lambda: self.new_organ())
-        
+        # -Go to main_window
+        self.new_organ_win.go_to_main_window.clicked.connect(lambda: self.show_main_window(parent_win='new_organ_win'))
+
     def show_parent(self, parent:str):
         parent_win = getattr(self, parent)
         parent_win.show()
 
     def show_main_window(self, parent_win:str):
         #Close new organ or load organ window window
-        if parent_win == 'new_proj_win':
-            if self.new_proj_win.button_create_new_organ.isChecked():
-                self.new_proj_win.close()
+        if parent_win == 'new_organ_win':
+            if self.new_organ_win.button_create_new_organ.isChecked():
+                self.new_organ_win.close()
             else: 
+                error_txt = '*You need to create the organ to continue.'
+                self.new_organ_win.tE_validate.setText(error_txt)
                 print('Error in new proj window')
                 return
+            
         elif parent_win == 'load_proj_win':
             self.load_proj_win.check_unique_organ_selected()
             print('organ-selected: ',self.load_proj_win.organ_selected)
             if self.load_proj_win.organ_selected != None:
-                self.organ_to_analyse = self.load_proj_win.organ_selected
+                self.organ_to_analyse = self.load_proj_win.organ_selected.replace(' ', '_')
                 self.load_organ(proj = self.proj, organ_to_load = self.organ_to_analyse)
                 self.load_proj_win.close()
             else: 
@@ -163,6 +170,8 @@ class Controller:
 
         #Create Main Project Window and show
         if self.main_win == None:
+            print('proj:', self.proj.__dict__)
+            print('organ:', self.organ.__dict__)
             self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
         self.main_win.show()
 
@@ -179,7 +188,6 @@ class Controller:
             for numa in self.meas_param_win.params: 
                 selected_params[self.meas_param_win.params[numa]['s']] = {}
 
-            # print('\nBB:',self.meas_param_win.dict_meas)
             for cbox in self.meas_param_win.dict_meas:
                 _,chf,contf,param_num = cbox.split('_')
                 num_p = int(param_num.split('param')[1])
@@ -188,41 +196,22 @@ class Controller:
                 if cBox.isEnabled():
                     is_checked = cBox.isChecked()
                     selected_params[param_name][chf+'_'+contf+'_whole'] = is_checked
-            
-            #Add measure params from segments
-            segm_dict = self.new_proj_win.mH_settings['segm']
-            if isinstance(segm_dict, dict): 
-                if segm_dict['cutLayersIn2Segments']: 
-                    cuts = [key for key in segm_dict if 'Cut' in key]
-                    params_segm = [param for param in segm_dict['measure'].keys() if segm_dict['measure'][param]]
-                    for param_a in params_segm: 
-                        for cut_a in cuts: 
-                            cut_semg = segm_dict[cut_a]['ch_segments']
-                            no_segm = segm_dict[cut_a]['no_segments']
-                            selected_params[param_a+'(segm)'] = {}
-                            for ch_a in cut_semg: 
-                                for cont_a in cut_semg[ch_a]:
-                                    for segm in range(1,no_segm+1,1):
-                                        selected_params[param_a+'(segm)'][cut_a+'_'+ch_a+'_'+cont_a+'_segm'+str(segm)] = True
-            
-            #Add measure params from sections
-            sect_dict = self.new_proj_win.mH_settings['sect']
-            if isinstance(sect_dict, dict): 
-                if sect_dict['cutLayersIn2Sections']: 
-                    cuts = [key for key in sect_dict if 'Cut' in key]
-                    params_sect = [param for param in sect_dict['measure'].keys() if sect_dict['measure'][param]]
-                    for param_b in params_sect: 
-                        for cut_b in cuts: 
-                            cut_sect = sect_dict[cut_b]['ch_sections']
-                            no_sect = sect_dict[cut_b]['no_sections']
-                            selected_params[param_b+'(sect)'] = {}
-                            for ch_b in cut_sect: 
-                                for cont_b in cut_sect[ch_b]:    
-                                    for sect in range(1,no_sect+1,1):
-                                        selected_params[param_b+'(sect)'][cut_b+'_'+ch_b+'_'+cont_b+'_sect'+str(sect)] = True
-            
+                        
+            #Add ballooning measurements
+            param_name = self.meas_param_win.params[5]['s']
+            selected_params[param_name] = {}
+            for opt in self.mH_params[5]['measure']:
+                to_mesh = self.mH_params[5]['measure'][opt]['to_mesh']
+                to_mesh_type = self.mH_params[5]['measure'][opt]['to_mesh_type']
+                from_cl = self.mH_params[5]['measure'][opt]['from_cl']
+                from_cl_type = self.mH_params[5]['measure'][opt]['from_cl_type']
+                selected_params[param_name][to_mesh+'_'+to_mesh_type+'_('+from_cl+'_'+from_cl_type+')'] = True
+
             self.new_proj_win.mH_user_params = selected_params
-            # print('\nCC: ',self.new_proj_win.mH_user_params)
+            print('\n\n\n\n')
+            print('selected_params', selected_params)
+            print('\n\n\n\n')
+
             #Toogle button and close window
             self.meas_param_win.button_set_params.setChecked(True)
             toggled(self.meas_param_win.button_set_params)
@@ -305,6 +294,7 @@ class Controller:
                     self.new_organ_win.tE_validate.setText('Creating and saving new organ...')
                     self.new_organ_win.button_create_new_organ.setChecked(True)
                     toggled(self.new_organ_win.button_create_new_organ)
+                    self.new_organ_win.tE_validate.setText('Creating organ "'+name+'"')
                     # self.new_organ_win.button_create_new_organ.setDisabled(True)
 
                     name = self.new_organ_win.lineEdit_organ_name.text()
@@ -318,6 +308,7 @@ class Controller:
                     res_units = self.new_organ_win.resolution
                     resolution = [res_units[axis]['scaling'] for axis in ['x','y','z']]
                     units = [res_units[axis]['units'] for axis in ['x','y','z']]
+                    date = str(self.new_organ_win.dateEdit.date().toPyDate())
 
                     organ_settings = {'project': {'user': self.proj.user_projName,
                                                 'mH': self.proj.mH_projName,
@@ -332,6 +323,7 @@ class Controller:
                                         'strain': strain, 
                                         'genotype': genotype,
                                         'manipulation': manipulation, 
+                                        'date_created': date
                                             }
                     organ_dict = {'settings': organ_settings, 
                                 'img_dirs': self.new_organ_win.img_dirs}
