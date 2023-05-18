@@ -390,6 +390,7 @@ class Project():
                 segm_ellip = [item for item in mH_param2meas['Ellip(segm)'].keys()]
             else:
                 segm_ellip = []
+
             segm_list = list(set(segm_vol) | set(segm_sa) | set(segm_ellip))
             if len(segm_list) > 0: 
                 segm_list = [tuple(tup.split('_')) for tup in segm_list]
@@ -397,7 +398,8 @@ class Project():
                 ch_segm = sorted(list(set([tup for (_,tup,_,_) in segm_list])))
             else: 
                 segm_list = []; cut_segm = []; ch_segm = []
-            
+            print('Segments:', segm_list, cut_segm, ch_segm)
+
             # Find the meas_param that include the extraction of mH_sections
             if 'Vol(sect)' in mH_param2meas:
                 sect_vol = [item for item in mH_param2meas['Vol(sect)'].keys()]
@@ -407,6 +409,7 @@ class Project():
                 sect_sa = [item for item in mH_param2meas['SA(sect)'].keys()]
             else: 
                 sect_sa = []
+
             sect_list = list(set(sect_vol) | set(sect_sa))
             if len(sect_list) > 0: 
                 sect_list = [tuple(item.split('_')) for item in sect_list]
@@ -414,6 +417,7 @@ class Project():
                 ch_sect=  sorted(list(set([tup for (_,tup,_,_) in sect_list])))
             else: 
                 sect_list = []; cut_sect = []; ch_sect = []
+            print('Sections:', sect_list, cut_sect, ch_sect)
 
             # Find the meas_param that include the extraction of ballooning
             item_ballooning = [tuple(item.split('_')) for item in mH_param2meas['ball'].keys()]
@@ -510,7 +514,8 @@ class Project():
                     dict_MeshesProc['D-Ballooning'][ch][cont+'_('+cl_ch+'_'+cl_cont+')'] =  {'Status': 'NI'}
                 else: 
                     dict_MeshesProc['D-Ballooning'][ch] = {}
-                    dict_MeshesProc['D-Ballooning'][ch][cont+'_('+cl_ch+'_'+cl_cont+')'] =  {'Status': 'NI'}                              
+                    dict_MeshesProc['D-Ballooning'][ch][cont+'_('+cl_ch+'_'+cl_cont+')'] =  {'Status': 'NI'}    
+
             # Segments
             for cutg in cut_segm: 
                 dict_MeshesProc['E-Segments'][cutg] = {}
@@ -519,6 +524,7 @@ class Project():
                     for cont in ['tiss', 'int', 'ext']:
                         if (cutg, ch, cont, 'segm1') in segm_list:
                             dict_MeshesProc['E-Segments'][cutg][ch][cont] = {'Status': 'NI'}
+
             # Sections
             for cutc in cut_sect: 
                 dict_MeshesProc['E-Sections'][cutc] = {}
@@ -527,6 +533,7 @@ class Project():
                     for cont in ['tiss', 'int', 'ext']:
                         if (cutc, ch, cont, 'sect1') in sect_list:
                             dict_MeshesProc['E-Sections'][cutc][ch][cont] = {'Status': 'NI'}
+
             # Measure Dictionary
             dict_meas = flatdict.FlatDict(mH_param2meas).as_dict()
             for dicti in dict_meas: 
@@ -657,11 +664,12 @@ class Project():
         self.save_project()
 
     def load_organ(self, organ_to_load:str):#
-        print(Path(self.dir_proj))
-        print(self.organs[organ_to_load]['user_organName'])
+        # print(Path(self.dir_proj))
+        # print(self.organs[organ_to_load]['user_organName'])
         organ_folder = self.organs[organ_to_load]['user_organName'].replace(' ', '_')
         dir_res = Path(self.dir_proj) / organ_folder
         jsonDict_name = 'mH_'+organ_folder+'_organ.json'
+        # print(organ_folder, dir_res, jsonDict_name)
         json2open_dir = Path(dir_res) / 'settings' / jsonDict_name
         if json2open_dir.is_file():
             with open(json2open_dir, "r") as read_file:
@@ -671,7 +679,7 @@ class Project():
             organ = Organ(project=self, organ_dict=organ_dict, new=False)
         else: 
             organ = None
-            print('>> Error: No organ name with name ',organ_to_load,' was found!\n Directory: ',str(json2open_dir))
+            print('>> Error: No organ name with name ',self.organs[organ_to_load]['user_organName'],' was found!\n Directory: ',str(json2open_dir))
             alert('error_beep')
             
         return organ
@@ -1082,7 +1090,6 @@ class Organ():
             alert('error_beep')
         else: 
             print('\n>> Organ settings file saved correctly! - '+jsonDict_name)
-            #print('>> Directory: '+ str(json2save_dir)+'\n')
             alert('countdown')
             
     def check_status(self, process:str):
@@ -1095,11 +1102,9 @@ class Organ():
                 for key_a in ['A-Autom', 'B-Manual', 'C-CloseInOut']:
                     val = get_by_path(self.workflow, [process,ch,'B-CloseCont','Steps',key_a,'Status'])
                     close_done.append(val)
-                   # close_done.append(self.workflow[process][ch]['B-CloseCont']['Steps'][key_a]['Status'])
                 print('-> channel:',ch, '-CloseCont:', close_done)
                 if all(flag == 'DONE' for flag in close_done):
                     self.update_workflow([process,ch,'B-CloseCont','Status'], 'DONE')
-                    # self.workflow[process][ch]['B-CloseCont']['Status'] = 'DONE'
 
                 # Now update all the workflow
                 proc_done = []
@@ -1107,18 +1112,14 @@ class Organ():
                     if key_b != 'Status':
                         val_b = get_by_path(self.workflow, [process,ch,key_b,'Status'])
                         proc_done.append(val_b)
-                        # proc_done.append(self.workflow[process][ch][key_b]['Status'])
                 print('-> channel:',ch, '-ImProc:', proc_done)
                 if all('DONE' in flag for flag in proc_done):
                     self.update_workflow([process,ch,'Status'], 'DONE')
-                    # self.workflow[process][ch]['Status'] = 'DONE'
                 val_c = get_by_path(self.workflow, [process,ch,'Status'])
                 ch_done.append(val_c)
-                # ch_done.append(self.workflow[process][ch]['Status'])
             
             if all(flag == 'DONE' for flag in ch_done):
                 self.update_workflow([process,'Status'], 'DONE')
-                # self.workflow[process]['Status'] = 'DONE'
                 
         if process == 'MeshesProc':
             proc_done = []

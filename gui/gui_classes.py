@@ -13,7 +13,7 @@ from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtCore import pyqtSlot, QDate, Qt, QRegularExpression, QRect
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
-                              QColorDialog, QTableWidgetItem, QCheckBox)
+                              QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem)
 from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush
 # from PyQt6.QtCore import QRegExp
 # from PyQt6.QtGui import QRegExpValidator
@@ -1091,14 +1091,16 @@ class CreateNewProj(QDialog):
         
         #Add parameters to segments
         selected_params = self.mH_user_params 
+        if selected_params == None: 
+            selected_params = {}
         #Add measure params from segments
         cuts = [key for key in segm_settings if 'Cut' in key]
         params_segm = [param for param in segm_settings['measure'].keys() if segm_settings['measure'][param]]
         for param_a in params_segm: 
+            selected_params[param_a+'(segm)'] = {}
             for cut_a in cuts: 
                 cut_semg = segm_settings[cut_a]['ch_segments']
                 no_segm = segm_settings[cut_a]['no_segments']
-                selected_params[param_a+'(segm)'] = {}
                 for ch_a in cut_semg: 
                     for cont_a in cut_semg[ch_a]:
                         for segm in range(1,no_segm+1,1):
@@ -1166,14 +1168,16 @@ class CreateNewProj(QDialog):
 
         #Add parameters to segments
         selected_params = self.mH_user_params 
+        if selected_params == None: 
+            selected_params = {}
         #Add measure params from sections
         cuts = [key for key in sect_settings if 'Cut' in key]
         params_sect = [param for param in sect_settings['measure'].keys() if sect_settings['measure'][param]]
         for param_b in params_sect: 
+            selected_params[param_b+'(sect)'] = {}
             for cut_b in cuts: 
                 cut_sect = sect_settings[cut_b]['ch_sections']
                 no_sect = sect_settings[cut_b]['no_sections']
-                selected_params[param_b+'(sect)'] = {}
                 for ch_b in cut_sect: 
                     for cont_b in cut_sect[ch_b]:    
                         for sect in range(1,no_sect+1,1):
@@ -1192,7 +1196,7 @@ class CreateNewProj(QDialog):
     def validate_set_all(self): 
         print('\n\nValidating Project!')
         valid = []
-        if self.mH_user_params != None: # self.set_meas_param_all.isChecked() or 
+        if self.mH_user_params != None and self.set_meas_param_all.isChecked():
             valid.append(True)
         else: 
             error_txt = 'You need to set the parameters you want to extract from the segmented tissues before creating the new project.'
@@ -1298,6 +1302,14 @@ class SetMeasParam(QDialog):
         #Create table 
         self.set_meas_param_table()
 
+        #Set radiobuttons options
+        self.rB_continuous.toggled.connect(lambda: self.radio_button(opt ='continuous'))
+        self.rB_continuous.opt = 'continuous'
+        self.rB_categorical.toggled.connect(lambda: self.radio_button(opt ='categorical'))
+        self.rB_categorical.opt = 'categorical'
+        self.rB_descriptive.toggled.connect(lambda: self.radio_button(opt ='descriptive'))
+        self.rB_descriptive.opt = 'descriptive'
+
         #Set validators
         self.reg_ex = QRegularExpression("[a-z-A-Z_ 0-9,]+")
         self.lineEdit_param_name.setValidator(QRegularExpressionValidator(self.reg_ex, self.lineEdit_param_name))
@@ -1333,6 +1345,18 @@ class SetMeasParam(QDialog):
 
         self.ballooning_to = ['--select--']
         self.set_ballooning_opt()
+
+    def radio_button(self, opt): 
+        if getattr(self, 'rB_'+opt).isChecked(): 
+            if opt == 'categorical': 
+                self.lab_categories.setEnabled(True)
+                self.lineEdit_param_classes.setEnabled(True)
+            else: 
+                self.lab_categories.setEnabled(False)
+                self.lineEdit_param_classes.setEnabled(False)
+                self.lineEdit_param_classes.clear()
+        else: 
+            pass
 
     def tick_all_param(self, num:int): 
         tick_o = getattr(self, 'lab_param'+str(num))
@@ -1414,7 +1438,8 @@ class SetMeasParam(QDialog):
         param_name = self.lineEdit_param_name.text()
         param_abbr = self.lineEdit_param_abbr.text()
         param_desc = self.textEdit_param_desc.toPlainText()
-        param_class = self.lineEdit_param_classes.text()
+        param_type = [getattr(self, 'rB_'+opt).opt for opt in ['descriptive', 'continuous', 'categorical'] if getattr(self, 'rB_'+opt).isChecked()]
+        param_categ = self.lineEdit_param_classes.text()
 
         if len(param_name)<=5: 
             error_txt = "Parameter's name needs to be longer than 5 characters"
@@ -1428,35 +1453,40 @@ class SetMeasParam(QDialog):
             valid.append(True)
         
         if len(param_abbr)<=5: 
-            error_txt = "Parameter's name needs to be at least 5 characters long"
+            error_txt = "Parameter's abbreviation needs to have between 5 and 12 characters."
             self.tE_validate.setText(error_txt)
             return
         elif validate_txt(param_abbr) != None:
-            error_txt = "Please avoid using invalid characters in the parameter's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+            error_txt = "Please avoid using invalid characters in the parameter's abbreviation e.g.['(',')', ':', '-', '/', '\', '.', ',']"
             self.tE_validate.setText(error_txt)
             return
         else: 
             valid.append(True)
             param_abbr_line = param_abbr.replace(' ', '_')
         
-        try: 
-            param_classes = split_str(param_class)
+        if self.rB_categorical.isChecked(): 
+            try: 
+                param_categs = split_str(param_categ)
+                valid.append(True)
+            except: 
+                error_txt = "Please check the values introduced in Parameter Classes."
+                self.tE_validate.setText(error_txt)
+                return
+        else: 
+            param_categs = []
             valid.append(True)
-        except: 
-            error_txt = "Please check the values introduced in Parameter Classes."
-            self.tE_validate.setText(error_txt)
-            return
         
-        if len(valid) == 3 and all(valid):
+        if all(valid):
             param_num = len(self.params)
             self.params[param_num]={'s': param_abbr_line, 'l': param_name, 
-                                        'description': param_desc, 'classes': param_classes}
+                                        'description': param_desc, 'type': param_type[0], 'categories': param_categs}
             # print(self.params)
             self.set_meas_param_table()
             param_name = self.lineEdit_param_name.clear()
             param_abbr = self.lineEdit_param_abbr.clear()
             param_desc = self.textEdit_param_desc.clear()
-            param_class = self.lineEdit_param_classes.clear()
+            param_categ = self.lineEdit_param_classes.clear()
+            self.tE_validate.setText('New parameter '+param_name+' has been added! Now select the tissues from which you would like to measure this new parameter.')
         
     def set_ballooning_opt(self):
         for opt in range(1,5,1):
@@ -1956,6 +1986,7 @@ class LoadProj(QDialog):
         self.setWindowIcon(QIcon(mH_icon))
         self.proj = None
         self.organ_selected = None
+        self.organ_checkboxes = None
 
         #Buttons
         self.button_load_organs.clicked.connect(lambda: self.load_proj_organs(proj = self.proj))
@@ -1997,8 +2028,8 @@ class LoadProj(QDialog):
         #https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/
         #https://www.pythonguis.com/faq/qtablewidget-for-list-of-dict/
         if self.button_browse_proj.isChecked(): 
-            cBs = []
             if len(proj.organs) > 0: 
+                cBs = []
                 self.tabW_select_organ.clear()
                 wf_flat = self.get_proj_wf(proj)
                 blind = self.cB_blind.isChecked()
@@ -2093,6 +2124,14 @@ class LoadProj(QDialog):
                 #         # print(item)
                 #         if item != None: 
                 #             item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
+            else: 
+                error_txt = "The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
+                self.tE_validate.setText(error_txt)
+                self.button_load_organs.setChecked(True)
+                toggled(self.button_load_organs)
+                self.organ_checkboxes = None
+                return
+
             print(cBs)
             self.organ_checkboxes = cBs
             self.button_load_organs.setChecked(True)
@@ -2103,27 +2142,32 @@ class LoadProj(QDialog):
             error_txt = '*You need to first load a project to load all the organs comprising it.'
             self.tE_validate.setText(error_txt)
     
-    def check_unique_organ_selected(self): 
-        checked = []
-        for organ_cB in self.organ_checkboxes:
-            print(organ_cB)
-            cb = getattr(self, organ_cB).isChecked()
-            checked.append(cb)
-        
-        if sum(checked) <= 0: 
-            self.organ_selected = None
-        elif sum(checked) > 1:
-            error_txt = '*Please select only one organ to analyse'
-            self.tE_validate.setText(error_txt)
-        else: 
-            if len(checked) > 1:
-                index = [i for i, x in enumerate(checked) if x][0]
-                print('len>1:',index)
-                self.organ_selected = organ_cB[index].split('cB_')[1]
+    def check_unique_organ_selected(self, proj): 
+        print('self.organ_checkboxes:',self.organ_checkboxes)
+        if self.organ_checkboxes != None: 
+            checked = []
+            for organ_cB in self.organ_checkboxes:
+                print(organ_cB)
+                cb = getattr(self, organ_cB).isChecked()
+                checked.append(cb)
+            
+            if sum(checked) <= 0: 
+                self.organ_selected = None
+            elif sum(checked) > 1:
+                error_txt = '*Please select only one organ to analyse.'
+                self.tE_validate.setText(error_txt)
             else: 
-                print('len=1:',organ_cB)
-                self.organ_selected = organ_cB.split('cB_')[1]
-        print(self.organ_selected)
+                if len(checked) > 1:
+                    index = [i for i, x in enumerate(checked) if x][0]
+                    print('len>1:',index)
+                    self.organ_selected = organ_cB[index].split('cB_')[1]
+                else: 
+                    print('len=1:',organ_cB)
+                    self.organ_selected = organ_cB.split('cB_')[1]
+            print(self.organ_selected)
+        else: 
+            error_txt = '*Please select one organ to analyse.'
+            self.tE_validate.setText(error_txt)
 
 class MainWindow(QMainWindow):
 
@@ -2228,10 +2272,10 @@ class MainWindow(QMainWindow):
 
     def init_pandq_tab(self): 
         #Segmentation cleanup setup
-        self.clean_ch1.clicked.connect(lambda: self.activate_clean_ch(name = 'ch1'))
-        self.clean_ch2.clicked.connect(lambda: self.activate_clean_ch(name = 'ch2'))
-        self.clean_ch3.clicked.connect(lambda: self.activate_clean_ch(name = 'ch3'))
-        self.clean_ch4.clicked.connect(lambda: self.activate_clean_ch(name = 'ch4'))
+        self.clean_ch1.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch1'))
+        self.clean_ch2.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch2'))
+        self.clean_ch3.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch3'))
+        self.clean_ch4.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch4'))
 
         for chs in ['ch1', 'ch2', 'ch3', 'ch4']:
             if chs not in self.channels.keys():
@@ -2281,6 +2325,21 @@ class MainWindow(QMainWindow):
                     color_btn = getattr(self, 'fillcolor_'+chk+'_'+contk)
                     color_btn.setStyleSheet(color_txt)
 
+        #Trimming options
+        for chs in ['ch1', 'ch2', 'ch3', 'ch4']:
+            if chs not in self.channels.keys():
+                getattr(self, 'lab_trim_'+chs).setVisible(False)
+                getattr(self, 'trim_top_'+chs).setVisible(False)
+                getattr(self, 'trim_bottom_'+chs).setVisible(False)
+            else: 
+                getattr(self, 'lab_trim_'+chs).setText(self.channels[chs]+' ('+chs+')')
+
+        self.lab_trim_ch1.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch1'))
+        self.lab_trim_ch2.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch2'))
+        self.lab_trim_ch3.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch3'))
+        self.lab_trim_ch4.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch4'))
+
+
         #Heatmap settings
         heatmap_dict = {}
         lists = [['measure','th_i2e'], ['measure','th_e2i'], ['measure','ball']]
@@ -2326,6 +2385,10 @@ class MainWindow(QMainWindow):
                 d3d2.setVisible(False)
 
         print('Setting up Process and Analysis Tab')
+        
+        #Setup workflow
+        self.fill_workflow(tree= self.treeWorkflow, value = self.organ.workflow['morphoHeart']['MeshesProc'])
+
 
     def init_morphoCell_tab(self): 
         print('Setting up morphoCell Tab')
@@ -2390,19 +2453,101 @@ class MainWindow(QMainWindow):
                 print('chNS')
                 self.organ.mH_settings['setup'][chk]['color_chns'][contk] = color.name()
     
-    def activate_clean_ch(self, ch):
-        cB_clean = getattr(self, 'clean_'+ch)
-        if cB_clean.isChecked(): 
-            bool_val = True
-        else: 
-            bool_val = False
+    def activate_ch(self, proc, ch):
+        if proc == 'clean': 
+            cB_clean = getattr(self, 'clean_'+ch)
+            if cB_clean.isChecked(): 
+                bool_val = True
+            else: 
+                bool_val = False
 
-        getattr(self, 'clean_'+ch).setEnabled(bool_val)
-        getattr(self, 'clean_withch_'+ch).setEnabled(bool_val)
-        getattr(self, 'clean_withcont_'+ch).setEnabled(bool_val)
-        getattr(self, 'inverted_'+ch).setEnabled(bool_val)
-        for cont in ['int', 'tiss', 'ext']:
-            getattr(self, 'clean_'+ch+'_'+cont).setEnabled(bool_val)
+            getattr(self, 'clean_withch_'+ch).setEnabled(bool_val)
+            getattr(self, 'clean_withcont_'+ch).setEnabled(bool_val)
+            getattr(self, 'inverted_'+ch).setEnabled(bool_val)
+            for cont in ['int', 'tiss', 'ext']:
+                getattr(self, 'clean_'+ch+'_'+cont).setEnabled(bool_val)
+        else: #'trim
+            cB_clean = getattr(self, 'lab_trim_'+ch)
+            if cB_clean.isChecked(): 
+                bool_val = True
+            else: 
+                bool_val = False
+
+            getattr(self, 'trim_top_'+ch).setEnabled(bool_val)
+            getattr(self, 'trim_bottom_'+ch).setEnabled(bool_val)
+            
+    
+    def fill_workflow(self, tree, value):
+
+        tree.setColumnCount(2)
+        tree.setHeaderLabels(['Process', 'Status'])
+        tree.invisibleRootItem().setExpanded(True)
+        for method in self.proj.mH_methods:
+            print(method)
+            method_item = QTreeWidgetItem(tree)
+            method_item.setText(0,method)
+            #set child 
+            keys_method = self.organ.workflow['morphoHeart']['MeshesProc'][method].keys()
+            print(keys_method)
+            for subproc in keys_method:
+                if subproc != 'Status':
+                    subproc_item = QTreeWidgetItem(method_item)
+                    subproc_item.setText(0,subproc)
+                    method_item.addChild(subproc_item)
+                    method_item.setExpanded(True)
+
+
+
+        #  for department in departments:
+        #     department_item = QTreeWidgetItem(tree)
+        #     department_item.setText(0,department)
+        #     # set the child
+        #     for employee in employees[department]:
+        #         employee_item   = QTreeWidgetItem(tree)
+        #         employee_item.setText(1,employee)
+
+        #         department_item.addChild(employee_item)
+
+        #///
+        # tree.clear()
+        # self.fill_wf_item(tree.invisibleRootItem(), value)
+
+    def fill_wf_item(self, item, value):
+        item.setExpanded(True)
+        if type(value) is dict:
+            print('dict:',value)
+            print('type val', type(value))
+            for key, val in value.items():
+                child = QTreeWidgetItem()
+                child.setText(0, str(key))#0, unicode(key))
+                item.addChild(child)
+                self.fill_wf_item(child, val)
+        elif type(value) is list:
+            print('list:',value)
+            for val in value:
+                child = QTreeWidgetItem()
+                item.addChild(child)
+                print('type val', type(val))
+                if type(val) is dict:     
+                    print('dict2:',val) 
+                    child.setText(0, '[dict]')
+                    self.fill_wf_item(child, val)
+                elif type(val) is list:
+                    print('list2:',val) 
+                    child.setText(0, '[list]')
+                    self.fill_wf_item(child, val)
+                else:
+                    print('??2:',val) 
+                    child.setText(0, str(val))              
+                child.setExpanded(True)
+        else:
+            if value == 'Status': 
+                print('Aja')
+            else: 
+                child = QTreeWidgetItem()
+                child.setText(0, str(value))#unicode(value))
+                item.addChild(child)
+            
     
     def save_project_pressed(self):
         print('Save project was pressed')

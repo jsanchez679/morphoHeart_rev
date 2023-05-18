@@ -8600,13 +8600,13 @@ border-color: #672146
          <widget class="QLabel" name="lab_proj_name">
           <property name="minimumSize">
            <size>
-            <width>130</width>
+            <width>95</width>
             <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>130</width>
+            <width>95</width>
             <height>16777215</height>
            </size>
           </property>
@@ -8618,57 +8618,13 @@ border-color: #672146
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="lab_proj_name_4">
-          <property name="minimumSize">
-           <size>
-            <width>130</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>130</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-          </property>
-          <property name="text">
-           <string>Parameter Abbreviation: </string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="lab_ref_notes">
-          <property name="minimumSize">
-           <size>
-            <width>130</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>130</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-          </property>
-          <property name="text">
-           <string>Parameter Description:</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="1">
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
            <widget class="QLineEdit" name="lineEdit_param_name">
             <property name="minimumSize">
              <size>
-              <width>0</width>
+              <width>250</width>
               <height>20</height>
              </size>
             </property>
@@ -8700,39 +8656,32 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
              <bool>true</bool>
             </property>
             <property name="placeholderText">
-             <string>Enter new parameter's name (e.g. looping direction)</string>
+             <string>Enter new parameter's name </string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="blank_2">
+           <widget class="QLabel" name="lab_proj_name_4">
             <property name="minimumSize">
              <size>
-              <width>120</width>
-              <height>20</height>
+              <width>75</width>
+              <height>0</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>120</width>
-              <height>20</height>
+              <width>75</width>
+              <height>16777215</height>
              </size>
             </property>
-            <property name="frameShape">
-             <enum>QFrame::NoFrame</enum>
+            <property name="styleSheet">
+             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
             </property>
             <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
+             <string>Abbreviation: </string>
             </property>
            </widget>
           </item>
-         </layout>
-        </item>
-        <item row="1" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <widget class="QLineEdit" name="lineEdit_param_abbr">
             <property name="minimumSize">
@@ -8763,13 +8712,216 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
 					</string>
             </property>
             <property name="maxLength">
-             <number>20</number>
+             <number>12</number>
             </property>
             <property name="frame">
              <bool>true</bool>
             </property>
             <property name="placeholderText">
-             <string>Enter new parameter's abbreviation (e.g. LoopDir)</string>
+             <string>Parameter's abbreviation</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="lab_ref_notes">
+          <property name="minimumSize">
+           <size>
+            <width>95</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>95</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+          </property>
+          <property name="text">
+           <string>Description:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="lab_ref_notes_2">
+          <property name="minimumSize">
+           <size>
+            <width>95</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>95</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+          </property>
+          <property name="text">
+           <string>Parameter type: </string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_14">
+          <item>
+           <widget class="QRadioButton" name="rB_descriptive">
+            <property name="styleSheet">
+             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+            </property>
+            <property name="text">
+             <string>Descriptive</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rB_continuous">
+            <property name="styleSheet">
+             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+            </property>
+            <property name="text">
+             <string>Continuous</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rB_categorical">
+            <property name="styleSheet">
+             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+            </property>
+            <property name="text">
+             <string>Categorical</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="lab_categories">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>95</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>95</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+          </property>
+          <property name="text">
+           <string>Categories:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QTextEdit" name="textEdit_param_desc">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>38</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>38</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QTextEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QTextEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+          </property>
+          <property name="documentTitle">
+           <string/>
+          </property>
+          <property name="placeholderText">
+           <string>Enter new parameter's description</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLineEdit" name="lineEdit_param_classes">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+            </property>
+            <property name="maxLength">
+             <number>100</number>
+            </property>
+            <property name="frame">
+             <bool>true</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            </property>
+            <property name="placeholderText">
+             <string>Enter new parameter categories separated by a comma ',' (e.g. no fins, fins)</string>
             </property>
            </widget>
           </item>
@@ -8813,103 +8965,6 @@ border-color: #672146
            </widget>
           </item>
          </layout>
-        </item>
-        <item row="2" column="1">
-         <widget class="QTextEdit" name="textEdit_param_desc">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>38</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>38</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QTextEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QTextEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
-          </property>
-          <property name="documentTitle">
-           <string/>
-          </property>
-          <property name="placeholderText">
-           <string>Enter new parameter's description</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="lab_proj_name_2">
-          <property name="minimumSize">
-           <size>
-            <width>130</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>130</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-          </property>
-          <property name="text">
-           <string>Parameter classes: 
-(separated by comma -,-)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QLineEdit" name="lineEdit_param_classes">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="focusPolicy">
-           <enum>Qt::StrongFocus</enum>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QLineEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
-          </property>
-          <property name="maxLength">
-           <number>100</number>
-          </property>
-          <property name="frame">
-           <bool>true</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-          </property>
-          <property name="placeholderText">
-           <string>Enter new parameter classes (e.g. dextral looper, sinistral looper, dorso-ventral looper)</string>
-          </property>
-         </widget>
         </item>
        </layout>
       </item>

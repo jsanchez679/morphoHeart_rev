@@ -153,16 +153,19 @@ class Controller:
                 return
             
         elif parent_win == 'load_proj_win':
-            self.load_proj_win.check_unique_organ_selected()
-            print('organ-selected: ',self.load_proj_win.organ_selected)
+            self.load_proj_win.check_unique_organ_selected(self.proj)
             if self.load_proj_win.organ_selected != None:
                 self.organ_to_analyse = self.load_proj_win.organ_selected.replace(' ', '_')
                 self.load_organ(proj = self.proj, organ_to_load = self.organ_to_analyse)
                 self.load_proj_win.close()
             else: 
-                error_txt = '*Please select one organ to analyse.'
-                self.load_proj_win.tE_validate.setText(error_txt)
-                print('Error in loading window')
+                if len(self.proj.organs) == 0: 
+                    error_txt = "The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
+                    self.load_proj_win.tE_validate.setText(error_txt)
+                else: 
+                    error_txt = '*Please select one organ to analyse.'
+                    self.load_proj_win.tE_validate.setText(error_txt)
+                    print('Error in loading window')
                 return
         else: 
             print('Other parent window?')
@@ -183,7 +186,9 @@ class Controller:
             self.mH_params[2]['measure'] = self.meas_param_win.final_params['centreline']
             self.mH_params[5]['measure'] = self.meas_param_win.final_params['ballooning']
         
-            selected_params = {}
+            selected_params = self.new_proj_win.mH_user_params 
+            if selected_params == None: 
+                selected_params = {}
             #First add all whole measure parameters selected
             for numa in self.meas_param_win.params: 
                 selected_params[self.meas_param_win.params[numa]['s']] = {}

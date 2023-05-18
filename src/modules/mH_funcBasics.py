@@ -270,10 +270,12 @@ def make_Paths(load_dict):
     dir_keys = [key.split(':') for key in flat_dict.keys() if 'dir' in key]
     # print(dir_keys)
     for key in dir_keys:
-        # print('key:', key)
+        print('key:', key)
         value = get_by_path(load_dict, key)
-        # print('value:', value)
-        if value != None and value != 'NotAssigned' and not isinstance(value, bool):
+        print('value:', value)
+        if isinstance(value, dict) and len(value) == 0: 
+            pass
+        elif value != None and value != 'NotAssigned' and not isinstance(value, bool):
             set_by_path(load_dict, key, Path(value))
     
     return load_dict
