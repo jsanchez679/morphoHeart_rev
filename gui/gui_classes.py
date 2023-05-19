@@ -57,6 +57,9 @@ class WelcomeScreen(QDialog):
         self.btn_link2github.clicked.connect(lambda: webbrowser.open('https://github.com/jsanchez679/morphoHeart'))
 
         self.theme = self.cB_theme.currentText()
+        # https://www.pythontutorial.net/pyqt/qt-style-sheets/
+        # https://doc.qt.io/qtforpython-6/overviews/stylesheet-examples.html
+        # https://doc.qt.io/qt-6/stylesheet-examples.html
         # https://www.youtube.com/watch?v=ePG_t9bJQ5I
         #self.cB_theme.currentIndexChanged.connect(lambda: self.theme_changed())
 
@@ -2196,8 +2199,8 @@ class MainWindow(QMainWindow):
         #Setting up tabs
         self.init_segment_tab()
         self.init_pandq_tab()
-        self.init_morphoCell_tab()
-        self.init_plot_tab()
+        # self.init_morphoCell_tab()
+        # self.init_plot_tab()
         self.tE_validate.setText('Organ "'+organ.info['user_organName']+'" was successfully loaded!')
 
         #Activate first tab
@@ -2208,6 +2211,8 @@ class MainWindow(QMainWindow):
                 self.tabWidget.setCurrentIndex(2)
             else: 
                 self.tabWidget.setCurrentIndex(3)
+
+        # https://stackoverflow.com/questions/23634241/put-an-image-on-a-qpushbutton
 
     def fill_proj_organ_info(self, proj, organ):
         self.lineEdit_proj_name.setText(proj.info['user_projName'])
@@ -2271,118 +2276,123 @@ class MainWindow(QMainWindow):
         self.button_continue.clicked.connect(lambda: self.continue_next_tab())
 
     def init_pandq_tab(self): 
-        #Segmentation cleanup setup
-        self.clean_ch1.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch1'))
-        self.clean_ch2.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch2'))
-        self.clean_ch3.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch3'))
-        self.clean_ch4.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch4'))
 
-        for chs in ['ch1', 'ch2', 'ch3', 'ch4']:
-            if chs not in self.channels.keys():
-                getattr(self, 'clean_'+chs).setVisible(False)
-                getattr(self, 'clean_withch_'+chs).setVisible(False)
-                getattr(self, 'clean_withcont_'+chs).setVisible(False)
-                getattr(self, 'inverted_'+chs).setVisible(False)
-                for cont in ['int', 'tiss', 'ext']:
-                    getattr(self, 'clean_'+chs+'_'+cont).setVisible(False)
-            else: 
-                getattr(self, 'clean_'+chs).setText(self.channels[chs]+' ('+chs+')')
-                ch_opt = [cho for cho in self.channels if cho != 'chNS' and cho != chs]
-                getattr(self, 'clean_withch_'+chs).addItems(ch_opt)
-                getattr(self, 'clean_withcont_'+chs).addItems(['int', 'ext'])
+        # https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
+        def init_segmentation(self):
+            #Segmentation cleanup setup
+            self.clean_ch1.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch1'))
+            self.clean_ch2.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch2'))
+            self.clean_ch3.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch3'))
+            self.clean_ch4.clicked.connect(lambda: self.activate_ch(proc = 'clean', ch = 'ch4'))
 
-        #Keep largest
-        self.fillcolor_ch1_int.clicked.connect(lambda: self.color_picker(name = 'ch1_int'))
-        self.fillcolor_ch1_tiss.clicked.connect(lambda: self.color_picker(name = 'ch1_tiss'))
-        self.fillcolor_ch1_ext.clicked.connect(lambda: self.color_picker(name = 'ch1_ext'))
-        self.fillcolor_ch2_int.clicked.connect(lambda: self.color_picker(name = 'ch2_int'))
-        self.fillcolor_ch2_tiss.clicked.connect(lambda: self.color_picker(name = 'ch2_tiss'))
-        self.fillcolor_ch2_ext.clicked.connect(lambda: self.color_picker(name = 'ch2_ext'))
-        self.fillcolor_ch3_int.clicked.connect(lambda: self.color_picker(name = 'ch3_int'))
-        self.fillcolor_ch3_tiss.clicked.connect(lambda: self.color_picker(name = 'ch3_tiss'))
-        self.fillcolor_ch3_ext.clicked.connect(lambda: self.color_picker(name = 'ch3_ext'))
-        self.fillcolor_ch4_int.clicked.connect(lambda: self.color_picker(name = 'ch4_int'))
-        self.fillcolor_ch4_tiss.clicked.connect(lambda: self.color_picker(name = 'ch4_tiss'))
-        self.fillcolor_ch4_ext.clicked.connect(lambda: self.color_picker(name = 'ch4_ext'))
-        self.fillcolor_chNS_int.clicked.connect(lambda: self.color_picker(name = 'chNS_int'))
-        self.fillcolor_chNS_tiss.clicked.connect(lambda: self.color_picker(name = 'chNS_tiss'))
-        self.fillcolor_chNS_ext.clicked.connect(lambda: self.color_picker(name = 'chNS_ext'))
-
-        for chk in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
-            if chk not in self.channels.keys():
-                getattr(self, 'kl_label_'+chk).setVisible(False)
-                for contk in ['int', 'tiss', 'ext']:
-                    getattr(self, 'kl_'+chk+'_'+contk).setVisible(False)
-                    getattr(self, 'fillcolor_'+chk+'_'+contk).setVisible(False)
-            else: 
-                getattr(self, 'kl_label_'+chk).setText(self.channels[chk]+' ('+chk+')')
-                for contk in ['int', 'tiss', 'ext']:
-                    if chk != 'chNS': 
-                        color = self.organ.mH_settings['setup']['color_chs'][chk][contk]
-                    else: 
-                        color = self.organ.mH_settings['setup'][chk]['color_chns'][contk]
-                    color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+color+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
-                    color_btn = getattr(self, 'fillcolor_'+chk+'_'+contk)
-                    color_btn.setStyleSheet(color_txt)
-
-        #Trimming options
-        for chs in ['ch1', 'ch2', 'ch3', 'ch4']:
-            if chs not in self.channels.keys():
-                getattr(self, 'lab_trim_'+chs).setVisible(False)
-                getattr(self, 'trim_top_'+chs).setVisible(False)
-                getattr(self, 'trim_bottom_'+chs).setVisible(False)
-            else: 
-                getattr(self, 'lab_trim_'+chs).setText(self.channels[chs]+' ('+chs+')')
-
-        self.lab_trim_ch1.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch1'))
-        self.lab_trim_ch2.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch2'))
-        self.lab_trim_ch3.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch3'))
-        self.lab_trim_ch4.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch4'))
-
-
-        #Heatmap settings
-        heatmap_dict = {}
-        lists = [['measure','th_i2e'], ['measure','th_e2i'], ['measure','ball']]
-        names = ['Th(int>ext)', 'Th(ext>int)', 'Ball']
-        min_val = [0,0,0]
-        max_val = [20,20,60]
-        print(self.organ.mH_settings)
-        for aa, ll, nn, minn, maxx in zip(count(), lists, names, min_val, max_val): 
-            print(aa, ll, nn, minn, maxx)
-            variable = ll[1]
-            sp_dict = get_by_path(self.organ.mH_settings, ll)
-            for item in sp_dict: 
-                if nn != 'Ball':
-                    chh, conth, _ = item.split('_')
-                    heatmap_dict[variable+'['+chh+'-'+conth+']'] = {'name': nn+'['+chh+'-'+conth+']',
-                                                                'min_val': minn, 
-                                                                'max_val': maxx}
+            for chs in ['ch1', 'ch2', 'ch3', 'ch4']:
+                if chs not in self.channels.keys():
+                    getattr(self, 'clean_'+chs).setVisible(False)
+                    getattr(self, 'clean_withch_'+chs).setVisible(False)
+                    getattr(self, 'clean_withcont_'+chs).setVisible(False)
+                    getattr(self, 'inverted_'+chs).setVisible(False)
+                    for cont in ['int', 'tiss', 'ext']:
+                        getattr(self, 'clean_'+chs+'_'+cont).setVisible(False)
                 else: 
-                    namef = item.replace('_(', '(CL:')
-                    namef = namef.replace('_', '-')
-                    heatmap_dict[variable+'['+namef+']'] = {'name': nn+'['+namef+']',
-                                                                'min_val': minn, 
-                                                                'max_val': maxx}
+                    getattr(self, 'clean_'+chs).setText(self.channels[chs]+' ('+chs+')')
+                    ch_opt = [cho for cho in self.channels if cho != 'chNS' and cho != chs]
+                    getattr(self, 'clean_withch_'+chs).addItems(ch_opt)
+                    getattr(self, 'clean_withcont_'+chs).addItems(['int', 'ext'])
+
+            #Trimming options
+            for chs in ['ch1', 'ch2', 'ch3', 'ch4']:
+                if chs not in self.channels.keys():
+                    getattr(self, 'lab_trim_'+chs).setVisible(False)
+                    getattr(self, 'trim_top_'+chs).setVisible(False)
+                    getattr(self, 'trim_bottom_'+chs).setVisible(False)
+                else: 
+                    getattr(self, 'lab_trim_'+chs).setText(self.channels[chs]+' ('+chs+')')
+
+            self.lab_trim_ch1.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch1'))
+            self.lab_trim_ch2.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch2'))
+            self.lab_trim_ch3.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch3'))
+            self.lab_trim_ch4.clicked.connect(lambda: self.activate_ch(proc = 'trim', ch = 'ch4'))
+
+        
+        def init_keeplargest(self): 
+            #Keep largest
+            self.fillcolor_ch1_int.clicked.connect(lambda: self.color_picker(name = 'ch1_int'))
+            self.fillcolor_ch1_tiss.clicked.connect(lambda: self.color_picker(name = 'ch1_tiss'))
+            self.fillcolor_ch1_ext.clicked.connect(lambda: self.color_picker(name = 'ch1_ext'))
+            self.fillcolor_ch2_int.clicked.connect(lambda: self.color_picker(name = 'ch2_int'))
+            self.fillcolor_ch2_tiss.clicked.connect(lambda: self.color_picker(name = 'ch2_tiss'))
+            self.fillcolor_ch2_ext.clicked.connect(lambda: self.color_picker(name = 'ch2_ext'))
+            self.fillcolor_ch3_int.clicked.connect(lambda: self.color_picker(name = 'ch3_int'))
+            self.fillcolor_ch3_tiss.clicked.connect(lambda: self.color_picker(name = 'ch3_tiss'))
+            self.fillcolor_ch3_ext.clicked.connect(lambda: self.color_picker(name = 'ch3_ext'))
+            self.fillcolor_ch4_int.clicked.connect(lambda: self.color_picker(name = 'ch4_int'))
+            self.fillcolor_ch4_tiss.clicked.connect(lambda: self.color_picker(name = 'ch4_tiss'))
+            self.fillcolor_ch4_ext.clicked.connect(lambda: self.color_picker(name = 'ch4_ext'))
+            self.fillcolor_chNS_int.clicked.connect(lambda: self.color_picker(name = 'chNS_int'))
+            self.fillcolor_chNS_tiss.clicked.connect(lambda: self.color_picker(name = 'chNS_tiss'))
+            self.fillcolor_chNS_ext.clicked.connect(lambda: self.color_picker(name = 'chNS_ext'))
+
+            for chk in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
+                if chk not in self.channels.keys():
+                    getattr(self, 'kl_label_'+chk).setVisible(False)
+                    for contk in ['int', 'tiss', 'ext']:
+                        getattr(self, 'kl_'+chk+'_'+contk).setVisible(False)
+                        getattr(self, 'fillcolor_'+chk+'_'+contk).setVisible(False)
+                else: 
+                    getattr(self, 'kl_label_'+chk).setText(self.channels[chk]+' ('+chk+')')
+                    for contk in ['int', 'tiss', 'ext']:
+                        if chk != 'chNS': 
+                            color = self.organ.mH_settings['setup']['color_chs'][chk][contk]
+                        else: 
+                            color = self.organ.mH_settings['setup'][chk]['color_chns'][contk]
+                        color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+color+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
+                        color_btn = getattr(self, 'fillcolor_'+chk+'_'+contk)
+                        color_btn.setStyleSheet(color_txt)
+
+        def init_thickness_ballooning(self):
+            #Heatmap settings
+            heatmap_dict = {}
+            lists = [['measure','th_i2e'], ['measure','th_e2i'], ['measure','ball']]
+            names = ['Th(int>ext)', 'Th(ext>int)', 'Ball']
+            min_val = [0,0,0]
+            max_val = [20,20,60]
+            print(self.organ.mH_settings)
+            for aa, ll, nn, minn, maxx in zip(count(), lists, names, min_val, max_val): 
+                print(aa, ll, nn, minn, maxx)
+                variable = ll[1]
+                sp_dict = get_by_path(self.organ.mH_settings, ll)
+                for item in sp_dict: 
+                    if nn != 'Ball':
+                        chh, conth, _ = item.split('_')
+                        heatmap_dict[variable+'['+chh+'-'+conth+']'] = {'name': nn+'['+chh+'-'+conth+']',
+                                                                    'min_val': minn, 
+                                                                    'max_val': maxx}
+                    else: 
+                        namef = item.replace('_(', '(CL:')
+                        namef = namef.replace('_', '-')
+                        heatmap_dict[variable+'['+namef+']'] = {'name': nn+'['+namef+']',
+                                                                    'min_val': minn, 
+                                                                    'max_val': maxx}
                 
-        print(heatmap_dict)
-        hm_items = list(heatmap_dict.keys())
-        for num in range(1,13,1):
-            label = getattr(self,'label_hm'+str(num))
-            mina = getattr(self,'min_hm'+str(num))
-            maxa = getattr(self,'max_hm'+str(num))
-            cm = getattr(self,'colormap'+str(num))
-            d3d2 = getattr(self,'d3d2_'+str(num))
-            if num < len(hm_items): 
-                label.setText(heatmap_dict[hm_items[num]]['name'])
-                mina.setValue(heatmap_dict[hm_items[num]]['min_val'])
-                maxa.setValue(heatmap_dict[hm_items[num]]['max_val'])
-                d3d2.setChecked(True)
-            else: 
-                label.setVisible(False)
-                mina.setVisible(False)
-                maxa.setVisible(False)
-                cm.setVisible(False)
-                d3d2.setVisible(False)
+            print(heatmap_dict)
+            hm_items = list(heatmap_dict.keys())
+            for num in range(1,13,1):
+                label = getattr(self,'label_hm'+str(num))
+                mina = getattr(self,'min_hm'+str(num))
+                maxa = getattr(self,'max_hm'+str(num))
+                cm = getattr(self,'colormap'+str(num))
+                d3d2 = getattr(self,'d3d2_'+str(num))
+                if num < len(hm_items): 
+                    label.setText(heatmap_dict[hm_items[num]]['name'])
+                    mina.setValue(heatmap_dict[hm_items[num]]['min_val'])
+                    maxa.setValue(heatmap_dict[hm_items[num]]['max_val'])
+                    d3d2.setChecked(True)
+                else: 
+                    label.setVisible(False)
+                    mina.setVisible(False)
+                    maxa.setVisible(False)
+                    cm.setVisible(False)
+                    d3d2.setVisible(False)
 
         print('Setting up Process and Analysis Tab')
         
