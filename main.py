@@ -299,7 +299,7 @@ class Controller:
                     self.new_organ_win.tE_validate.setText('Creating and saving new organ...')
                     self.new_organ_win.button_create_new_organ.setChecked(True)
                     toggled(self.new_organ_win.button_create_new_organ)
-                    self.new_organ_win.tE_validate.setText('Creating organ "'+name+'"')
+                    self.new_organ_win.tE_validate.setText('Creating organ "'+self.new_organ_win.lineEdit_organ_name.text()+'"')
                     # self.new_organ_win.button_create_new_organ.setDisabled(True)
 
                     name = self.new_organ_win.lineEdit_organ_name.text()
@@ -367,8 +367,6 @@ def main():
         sys.exit(app.exec())
     except: 
         print('Exiting')
-
-
 
 if __name__ == '__main__':
     main()
