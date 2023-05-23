@@ -13,10 +13,8 @@ from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtCore import pyqtSlot, QDate, Qt, QRegularExpression, QRect, QSize
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
-                              QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem)
+                              QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem, QSpacerItem, QSizePolicy)
 from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush
-# from PyQt6.QtCore import QRegExp
-# from PyQt6.QtGui import QRegExpValidator
 from qtwidgets import Toggle, AnimatedToggle
 import qtawesome as qta
 from pathlib import Path
@@ -27,11 +25,12 @@ import webbrowser
 from skimage import measure, io
 import copy
 import seaborn as sns
+from functools import reduce  
+import operator
 
 #%% morphoHeart Imports - ##################################################
 # from ..src.modules.mH_funcBasics import get_by_path
-from functools import reduce  
-import operator
+# from ..src.modules.mH_funcMeshes import * 
 
 #%% Link to images
 mH_icon = 'images/cat-its-mouth-open.jpg'#'images/logos_w_icon_2o5mm.png'#
@@ -47,6 +46,7 @@ play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-r
 hover_btn = "QPushButton:hover {border-image: url("+play_bw+")}"
 pressed_btn = "QPushButton:pressed {border-image: url("+play_gb+");"
 style_play = play_btn+hover_btn+pressed_btn
+ # https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
 
 #%% Classes - ########################################################
 class WelcomeScreen(QDialog):
@@ -152,8 +152,8 @@ class PromptWindow(QDialog):
     
     def validate_organ_data(self, parent, name):
         user_input = self.lineEdit.text()
-        if len(user_input) <=1: 
-            error_txt = "*The organ's "+name+" needs to have more than 1 character."
+        if len(user_input) <= 1: 
+            error_txt = "*The organ's "+name+" needs to have at least two (2) characters."
             self.tE_validate.setText(error_txt)
             return
         else: 
@@ -204,6 +204,7 @@ class CreateNewProj(QDialog):
         self.setWindowIcon(QIcon(mH_icon))
 
         self.mH_user_params = None
+        self.mC_user_params = None
 
         #Initialise variables
         # self.meas_param = None
@@ -290,6 +291,7 @@ class CreateNewProj(QDialog):
         self.button_set_initial_set.clicked.connect(lambda: self.validate_initial_settings())
 
         #Set processes
+        self.set_processes.setEnabled(False)
         self.button_set_processes.clicked.connect(lambda: self.set_selected_processes())
 
     def init_orient_group(self): 
@@ -397,8 +399,8 @@ class CreateNewProj(QDialog):
     def validate_new_proj(self): 
         valid = []; error_txt = ''
         #Get project name
-        if len(self.lineEdit_proj_name.text())<=5:
-            error_txt = '*Project name needs to be longer than five (5) characters'
+        if len(self.lineEdit_proj_name.text())<5:
+            error_txt = '*Project name needs to have at least five (5) characters'
             self.tE_validate.setText(error_txt)
             return
         elif validate_txt(self.lineEdit_proj_name.text()) != None:
@@ -469,13 +471,14 @@ class CreateNewProj(QDialog):
         else: 
             self.mH_settings = None
             self.mH_user_params = None
+            self.mH_methods = None
             
-
         if self.checked_analysis['morphoCell']:
             self.mC_settings = {}
         else: 
             self.mC_settings = None
             self.mC_user_params = None
+            self.mC_methods = None
     
         #Disable all fields from Gral Project Settings
         self.tE_validate.setText('New project  "'+self.proj_name+'" has been created! Continue by setting the channel information.')
@@ -500,7 +503,7 @@ class CreateNewProj(QDialog):
         valid = []; error_txt = ''
         stack_or = self.cB_stack_orient.currentText()
         if stack_or == '--select--': 
-            error_txt = '*Please select a stack orientation coordinates'
+            error_txt = '*Please select axis labels for the stack'
             self.tE_validate2.setText(error_txt)
             return
         else: 
@@ -508,7 +511,7 @@ class CreateNewProj(QDialog):
 
         roi_or = self.cB_roi_orient.currentText()
         if roi_or == '--select--': 
-            error_txt = '*Please select an ROI orientation coordinates'
+            error_txt = '*Please select axis labels for the Organ/ROI'
             self.tE_validate2.setText(error_txt)
             return
         else: 
@@ -644,8 +647,8 @@ class CreateNewProj(QDialog):
             tick = getattr(self, 'tick_'+ch)
             if tick.isChecked(): 
                 ch_name = getattr(self, ch+'_username').text()
-                if len(ch_name) <= 3:
-                    error_txt = '*Active channels must have a name longer than three (3) characters.'
+                if len(ch_name) < 3:
+                    error_txt = '*Active channels must have a name with at least three (3) characters.'
                     self.tE_validate2.setText(error_txt)
                     return
                 elif validate_txt(ch_name) != None:
@@ -688,44 +691,66 @@ class CreateNewProj(QDialog):
             tick = getattr(self, 'tick_'+ch)
             if tick.isChecked():
                 ch_relation.append(getattr(self, 'cB_'+ch).currentText())
+        print('ch_relation:', ch_relation)
 
         internal_count = ch_relation.count('internal layer')
         external_count = ch_relation.count('external layer') 
-        
-        if sum(ch_ticked) == 1: 
-            if external_count != 1: 
-                error_txt = '*Please define the active channel as external.'
+        indep_count = ch_relation.count('independent layer') 
+        blank_count = ch_relation.count('--select--')
+        print('blank_count:',blank_count)
+
+        if self.ck_chs_contained.isChecked() or self.ck_chs_allcontained.isChecked():
+            if sum(ch_ticked) == 1: 
+                if external_count != 1: 
+                    error_txt = '*Please define the active channel as external.'
+                    self.tE_validate2.setText(error_txt)
+                    return
+                else: 
+                    valid.append(True)
+            elif sum(ch_ticked) == 2: 
+                if internal_count != 1 or external_count != 1:
+                    error_txt = '*One channel needs to be selected as the internal layer and other as the external.'
+                    self.tE_validate2.setText(error_txt)
+                    return
+                elif internal_count == 1 and external_count == 1:
+                    valid.append(True)
+
+            elif sum(ch_ticked) > 2: 
+                if internal_count != 1 or external_count != 1:
+                    error_txt = '*One channel needs to be selected as the internal layer, other as the external and the other(s) as middle/independent.'
+                    self.tE_validate2.setText(error_txt)
+                    return
+                elif internal_count == 1 and external_count == 1:
+                    valid.append(True)
+        else: 
+            if sum(ch_ticked) == 1: 
+                if indep_count != 1: 
+                    error_txt = '*Please define the active channel as independent layer.'
+                    self.tE_validate2.setText(error_txt)
+                    return
+                else: 
+                    valid.append(True)
+            elif blank_count != 0: 
+                error_txt = '*Please define the channel organisation for all channels.'
+                self.tE_validate2.setText(error_txt)
+                return
             else: 
                 valid.append(True)
-        elif sum(ch_ticked) == 2: 
-            if internal_count != 1 or external_count != 1:
-                error_txt = '*One channel needs to be selected as the internal layer and other as the external.'
-                self.tE_validate2.setText(error_txt)
-            elif internal_count == 1 and external_count == 1:
-                valid.append(True)
 
-        elif sum(ch_ticked) > 2: 
-            if internal_count != 1 or external_count != 1:
-                error_txt = '*One channel needs to be selected as the internal layer, other as the external and the other(s) as middle.'
-                self.tE_validate2.setText(error_txt)
-            elif internal_count == 1 and external_count == 1:
-                valid.append(True)
-
-
-        if sum(ch_ticked) == 1 and self.tick_chNS.isChecked():
-            error_txt = 'At least two channels need to be selected to create a tissue from the negative space.'
+        if sum(ch_ticked) == 1 and self.tick_chNS.isChecked() and (self.ck_chs_contained.isChecked() or self.ck_chs_allcontained.isChecked()):
+            error_txt = 'At least an external channel and an internal channel need to be selected to create a tissue from the negative space.'
             self.tE_validate2.setText(error_txt)
         else: 
             valid.append(True)
 
-        if len(valid)== 6 and all(valid):
+        if all(valid):
             self.tE_validate2.setText('All done!... Press -Set Initial Settings- to continue.')
             self.set_initial_settings()
         else: 
             return False
 
     def set_initial_settings(self):
-    
+        self.set_processes.setEnabled(True)
         toggled(self.button_set_initial_set)
         self.tick_ch1.setChecked(True)
         #Get data from initial settings
@@ -754,6 +779,8 @@ class CreateNewProj(QDialog):
         self.mH_settings['chs_relation'] = ch_relation
         self.mH_settings['color_chs'] = color_chs
         self.mH_settings['mask_ch'] = mask_ch
+        self.mH_settings['all_contained'] = self.ck_chs_allcontained.isChecked()
+        self.mH_settings['one_contained'] = self.ck_chs_contained.isChecked()
 
         self.ch_selected = ch_selected
         #Set the comboBoxes for chNS
@@ -801,8 +828,8 @@ class CreateNewProj(QDialog):
         name_chNS = self.chNS_username.text()
         names_ch = [self.mH_settings['name_chs'][key] for key in self.mH_settings['name_chs'].keys()]
         # print('names_ch:',names_ch)
-        if len(name_chNS)<= 3: 
-            error_txt = '*Channel from the negative space must have a name longer than three (3) characters.'
+        if len(name_chNS)< 3: 
+            error_txt = '*Channel from the negative space must have a name with at least three (3) characters.'
             self.tE_validate2.setText(error_txt)
             return
         elif validate_txt(name_chNS) != None:
@@ -858,7 +885,7 @@ class CreateNewProj(QDialog):
             self.tE_validate2.setText(error_txt)
             return
             
-        if len(valid)== 4 and all(valid):
+        if all(valid): # and len(valid)== 4 
             self.tE_validate2.setText('All done setting ChannelNS!...')
             self.button_set_chNS.setChecked(True)
             self.set_chNS_settings()
@@ -1288,8 +1315,8 @@ class SetMeasParam(QDialog):
         self.params = {0: {'s': 'SA', 'l':'surface area'},
                         1: {'s': 'Vol', 'l':'volume'},
                         2: {'s': 'CL', 'l':'centreline'},
-                        3: {'s': 'th_i2e', 'l':'thickness (int>ext)'},
-                        4: {'s': 'th_e2i','l':'thickness (ext>int)'}, 
+                        3: {'s': 'th_i2e', 'l':'thickness (int>ext) - Colormap in ext.mesh'},
+                        4: {'s': 'th_e2i','l':'thickness (ext>int) - Colormap in int.mesh'}, 
                         5: {'s': 'ball','l':'centreline>tissue (ballooning)'}}
         self.ball_param = 5
                 
@@ -1381,6 +1408,9 @@ class SetMeasParam(QDialog):
                         cB.setChecked(True)
                         if num == 5: 
                             self.settings_ballooning(name = ch_s+'_'+cont)
+                cB_roi = getattr(self, 'cB_roi_param'+str(num))
+                if num > 5: 
+                    cB_roi.setChecked(True)
                     # else: 
                     #     print('Checkbox -'+'cB_'+ch_s+'_'+cont+'_param'+str(num)+ '- is disabled!')
         else: 
@@ -1391,6 +1421,9 @@ class SetMeasParam(QDialog):
                         cB.setChecked(False)
                         if num == 5: 
                             self.settings_ballooning(name = ch_s+'_'+cont)
+                cB_roi = getattr(self, 'cB_roi_param'+str(num))
+                if num > 5: 
+                    cB_roi.setChecked(False)
                     # else: 
                     #     print('Checkbox -'+'cB_'+ch_s+'_'+cont+'_param'+str(num)+ '- is disabled!')
 
@@ -1406,15 +1439,23 @@ class SetMeasParam(QDialog):
                         btn_name = 'cB_'+ch+'_'+cont+'_param'+str(num)
                         # print(btn_name, getattr(self, btn_name).isChecked())
                         dict_meas[btn_name] = getattr(self, btn_name).isChecked()
+
+        for num in range(6,10,1):
+            if num < len(self.params):
+                btn_name = 'cB_roi_param'+str(num)
+                # print(btn_name, getattr(self, btn_name).isChecked())
+                dict_meas[btn_name] = getattr(self, btn_name).isChecked()
+
         setattr(self, 'dict_meas', dict_meas)
-        # print('self.dict_meas:',self.dict_meas)
+        print('self.dict_meas:',self.dict_meas)
 
     def set_meas_param_table(self): 
         #Set Measurement Parameters
         for key in self.params.keys():
             getattr(self, 'lab_param'+str(key)).setEnabled(True)
             getattr(self, 'lab_param'+str(key)).setText(self.params[key]['l'])
-            
+        
+        print(len(self.params),'---', self.params)
         for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']: 
             if ch in self.ch_all: 
                 getattr(self, 'label_'+ch).setText(self.ch_all[ch])
@@ -1435,6 +1476,12 @@ class SetMeasParam(QDialog):
                     for cont in ['int', 'tiss', 'ext']:
                         getattr(self, 'cB_'+ch+'_'+cont+'_param'+str(num)).setVisible(False)
 
+        for num in range(6,10,1):
+            if num < len(self.params):
+                getattr(self, 'cB_roi_param'+str(num)).setEnabled(True)
+            else: 
+                getattr(self, 'cB_roi_param'+str(num)).setEnabled(False)
+
         #Disable parameters
         for pars in self.disable_pars:
             for chn in self.disable_pars[pars]: 
@@ -1454,8 +1501,8 @@ class SetMeasParam(QDialog):
         param_type = [getattr(self, 'rB_'+opt).opt for opt in ['descriptive', 'continuous', 'categorical'] if getattr(self, 'rB_'+opt).isChecked()]
         param_categ = self.lineEdit_param_classes.text()
 
-        if len(param_name)<=5: 
-            error_txt = "Parameter's name needs to be longer than 5 characters"
+        if len(param_name)<5: 
+            error_txt = "Parameter's name needs have at least five (5) characters."
             self.tE_validate.setText(error_txt)
             return
         elif validate_txt(param_name) != None:
@@ -1465,8 +1512,8 @@ class SetMeasParam(QDialog):
         else: 
             valid.append(True)
         
-        if len(param_abbr)<=5: 
-            error_txt = "Parameter's abbreviation needs to have between 5 and 12 characters."
+        if len(param_abbr)<3: 
+            error_txt = "Parameter's abbreviation needs to have between 3 and 12 characters."
             self.tE_validate.setText(error_txt)
             return
         elif validate_txt(param_abbr) != None:
@@ -1789,7 +1836,7 @@ class NewOrgan(QDialog):
             valid.append(True)
 
         #Get organ name
-        if len(self.lineEdit_organ_name.text())<=5:
+        if len(self.lineEdit_organ_name.text())<5:
             error_txt = '*Organ name needs to be longer than five (5) characters'
             self.tE_validate.setText(error_txt)
             return
@@ -2188,6 +2235,7 @@ class MainWindow(QMainWindow):
         uic.loadUi('gui/main_window_screen.ui', self)
         mH_logoXS = QPixmap('images/logos_1o75mm.png')
         self.mH_logo_XS.setPixmap(mH_logoXS)
+        self.setWindowIcon(QIcon(mH_icon))
 
         self.proj = proj
         self.organ = organ
@@ -2309,15 +2357,21 @@ class MainWindow(QMainWindow):
             self.init_thickness_ballooning()
         else: 
             self.thickness_ballooning_all_widget.setVisible(False)
-        # if 
-        self.init_segments()
-        self.init_sections()
-
+        if isinstance(self.organ.mH_settings['setup']['segm'], dict):
+            self.init_segments()
+        else: 
+            self.segments_widget.setVisible(False)
+        if isinstance(self.organ.mH_settings['setup']['sect'], dict):
+            self.init_sections()
+        else: 
+            self.sections_widget.setVisible(False)
+        
         #Setup workflow
         self.fill_workflow(tree= self.treeWorkflow, value = self.organ.workflow['morphoHeart']['MeshesProc'])
 
         # self.organ.save_organ()
 
+    #Initialise all modules of Process and Analyse
     def init_keeplargest(self): 
         #Buttons
         self.fillcolor_ch1_int.clicked.connect(lambda: self.color_picker(name = 'ch1_int'))
@@ -2335,7 +2389,7 @@ class MainWindow(QMainWindow):
       
         # -Keep largest
         self.keeplargest_open.clicked.connect(lambda: self.open_section(name = 'keeplargest'))
-        # self.keeplargest_set.clicked.connect(lambda: )
+        self.keeplargest_set.clicked.connect(lambda: self.set_keeplargest())
         self.keeplargest_play.setStyleSheet(style_play)
         # self.keeplargest_play.clicked.connect(lambda: )
         # self.keeplargest_plot.clicked.connect(lambda: )
@@ -2425,6 +2479,7 @@ class MainWindow(QMainWindow):
         #Buttons
         self.chNS_open.clicked.connect(lambda: self.open_section(name='chNS'))
         # self.chNS_plot
+        self.chNS_plot.setEnabled(False)
         # self.q_chNS
         self.chNS_play.setStyleSheet(style_play)
         # self.chNS_play
@@ -2448,7 +2503,6 @@ class MainWindow(QMainWindow):
             color_btn = getattr(self, 'fillcolor_chNS_'+contk)
             color_btn.setStyleSheet(color_txt)
 
-    # https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
     def init_centreline(self):
         #Buttons
         self.centreline_open.clicked.connect(lambda: self.open_section(name='centreline'))
@@ -2643,6 +2697,7 @@ class MainWindow(QMainWindow):
 
         print('Sect: ', self.organ.mH_settings['setup']['sect'])
 
+    #Functions specific to morphoHeart B,C,D sections
     def open_section(self, name): 
         print('Open-close: '+name)
         #Get button
@@ -2654,53 +2709,6 @@ class MainWindow(QMainWindow):
         else:
             wdg.setVisible(True)
             btn.setText('o')
-
-    def init_morphoCell_tab(self): 
-        print('Setting up morphoCell Tab')
-
-    def init_plot_tab(self): 
-        print('Setting Plot Tab')
-
-    def update_status(self, root_dict, items, fillcolor): 
-        wf_status = get_by_path(root_dict, items)
-        print(wf_status)
-        if wf_status == 'NI': 
-            color_txt = "background-color: rgb(255, 255, 127);"
-        elif wf_status == 'Initialised': 
-            color_txt = "background-color: rgb(255, 151, 60);"
-        else: # wf_status == 'Done':
-            color_txt = "background-color:  rgb(0, 255, 0);"
-        fillcolor.setStyleSheet(color_txt)
-
-    def continue_next_tab(self): #A delete bit
-        #TO DELETEE!!
-        chs = [ch for ch in self.channels if ch != 'chNS']
-        root_dict = self.organ.workflow
-        for chan in chs: 
-            self.organ.workflow['morphoHeart']['ImProc'][chan]['Status'] = 'DONE'
-            items = ['morphoHeart','ImProc',chan,'Status']
-            colour_status = getattr(self, 'fillcolor_'+chan)
-            self.update_status(root_dict, items, colour_status)
-        ####
-
-        if self.tabWidget.currentIndex() == 0: 
-            #check the status of all channels 
-            channels = [ch for ch in self.channels if ch != 'chNS']
-            ch_status = []
-            for ch in channels: 
-                ch_status.append(self.organ.workflow['morphoHeart']['ImProc'][ch]['Status'])
-
-            if all(ch_status):
-                self.tabWidget.setCurrentIndex(1)
-        
-        elif self.tabWidget.currentIndex() == 1:
-            print('develop') 
-        
-        elif self.tabWidget.currentIndex() == 2:
-            print('develop')
-
-        else: #self.tabWidget.currentIndex() == 3: 
-            print('develop') 
 
     def color_picker(self, name): #Add update color in mesh!
         print(name)
@@ -2724,14 +2732,17 @@ class MainWindow(QMainWindow):
                     stype - 'sect'
                 self.organ.mH_settings['setup'][stype]['Cut'+chk[-1]]['colors'][contk] = color.name()
             
-    def run_segmentationAll(self): 
-        print('Running segmentation All!')
-    
     def fill_workflow(self, tree, value):
 
         tree.setColumnCount(2)
         tree.setHeaderLabels(['Process', 'Status'])
-        tree.invisibleRootItem().setExpanded(True)
+        tree.setColumnWidth(0, 100)
+        tree.setColumnWidth(1, 20)
+
+        # tree.invisibleRootItem().setExpanded(True)
+        root_item = tree.invisibleRootItem()
+        root_item.setExpanded(True)
+        self.topLevelItem = QTreeWidgetItem()
         for method in self.proj.mH_methods:
             print(method)
             method_item = QTreeWidgetItem(tree)
@@ -2741,10 +2752,33 @@ class MainWindow(QMainWindow):
             print(keys_method)
             for subproc in keys_method:
                 if subproc != 'Status':
-                    subproc_item = QTreeWidgetItem(method_item)
-                    subproc_item.setText(0,subproc)
-                    method_item.addChild(subproc_item)
-                    method_item.setExpanded(True)
+                    child = QtWidgets.QTreeWidgetItem(tree)
+                    labeltree = MyTreeItem(subproc, tree)
+                    # method_item.addChild(labeltree)
+                    tree.setItemWidget(child, 1, labeltree)
+
+                    # root = QTreeWidgetItem(self.treeWidget, ["root"])
+                    # A = QTreeWidgetItem(root, ["A"])
+                    # barA = QTreeWidgetItem(A, ["bar", "i", "ii"])
+                    # bazA = QTreeWidgetItem(A, ["baz", "a", "b"])
+
+                    # labeltree = QTreeWidgetItem(method_item)
+                    # subproc_label =  QtWidgets.QLabel()
+                    # subproc_label.setStyleSheet("QLabel {background-color:rgb(255, 255, 0); border-width: 2px; border-style: outset; border-color: rgb(0,0, 0);}")
+                    # subproc_label.resize(18, 18)
+
+                    # subproc_method = QTreeWidgetItem(method_item, [subproc, subproc_label])
+                    # # subproc_method.setText(0, subproc)
+                    # method_item.addChild(subproc_method)
+                    # method_item.setExpanded(True)
+
+                    #Create the label widget
+                    # labeltree = QTreeWidgetItem(method_item)
+                    # subproc_label =  QtWidgets.QLabel()
+                    # subproc_label.setStyleSheet("QLabel {background-color:rgb(255, 255, 0); border-width: 2px; border-style: outset; border-color: rgb(0,0, 0);}")
+                    # subproc_label.resize(18, 18)
+                    # tree.setItemWidget(labeltree, 1, subproc_label)
+
 
         #  for department in departments:
         #     department_item = QTreeWidgetItem(tree)
@@ -2796,12 +2830,89 @@ class MainWindow(QMainWindow):
                 child.setText(0, str(value))#unicode(value))
                 item.addChild(child)
             
+    def set_keeplargest(self): 
+        self.gui_keep_largest = {}
+        for ch in self.channels: 
+            if ch != 'chNS':
+                self.gui_keep_largest[ch] = {}
+                for cont in ['int', 'tiss', 'ext']:
+                    print(ch, cont, 'kl_'+ch+'_'+cont)
+                    cB = getattr(self, 'kl_'+ch+'_'+cont)
+                    self.gui_keep_largest[ch][cont] = cB.isChecked() 
+
+        self.rotateZ_90 = True
+        self.keeplargest_set.setChecked(True)
+        toggled(self.keeplargest_set)
+        print(self.gui_keep_largest)
+
+    def run_keeplargest(self):
+        pass
+
+    def plotAll_keeplargest(self):
+        pass
     
+    def run_segmentationAll(self): 
+        print('Running segmentation All!')
+    
+    #Functions for all tabs
+    def continue_next_tab(self): #A delete bit
+        #TO DELETEE!!
+        chs = [ch for ch in self.channels if ch != 'chNS']
+        root_dict = self.organ.workflow
+        for chan in chs: 
+            self.organ.workflow['morphoHeart']['ImProc'][chan]['Status'] = 'DONE'
+            items = ['morphoHeart','ImProc',chan,'Status']
+            colour_status = getattr(self, 'fillcolor_'+chan)
+            self.update_status(root_dict, items, colour_status)
+        ####
+
+        if self.tabWidget.currentIndex() == 0: 
+            #check the status of all channels 
+            channels = [ch for ch in self.channels if ch != 'chNS']
+            ch_status = []
+            for ch in channels: 
+                ch_status.append(self.organ.workflow['morphoHeart']['ImProc'][ch]['Status'])
+
+            if all(ch_status):
+                self.tabWidget.setCurrentIndex(1)
+        
+        elif self.tabWidget.currentIndex() == 1:
+            print('develop') 
+        
+        elif self.tabWidget.currentIndex() == 2:
+            print('develop')
+
+        else: #self.tabWidget.currentIndex() == 3: 
+            print('develop') 
+    
+    def update_status(self, root_dict, items, fillcolor): 
+        wf_status = get_by_path(root_dict, items)
+        print(wf_status)
+        if wf_status == 'NI': 
+            color_txt = "background-color: rgb(255, 255, 127);"
+        elif wf_status == 'Initialised': 
+            color_txt = "background-color: rgb(255, 151, 60);"
+        elif wf_status == 'DONE' or wf_status == 'Done':
+            color_txt = "background-color:  rgb(0, 255, 0);"
+        else: 
+            color_txt = "background-color:  rgb(255, 0, 255);"
+            print('other status unknown')
+        fillcolor.setStyleSheet(color_txt)
+
+    def init_morphoCell_tab(self): 
+        print('Setting up morphoCell Tab')
+
+    def init_plot_tab(self): 
+        print('Setting Plot Tab')
+
+    #Menu functions
     def save_project_pressed(self):
         print('Save project was pressed')
+        self.proj.save_project()
 
     def save_organ_pressed(self):
         print('Save organ was pressed')
+        self.organ.save_organ()
     
     def close_morphoHeart_pressed(self):
         print('Close was pressed')
@@ -2853,6 +2964,37 @@ class MyToggle(QtWidgets.QPushButton):
 #     def initStyleOption(self, option, index):
 #         super(AlignDelegate, self).initStyleOption(option, index)
 #         option.displayAlignment = QtCore.Qt.AlignmentFlag.AlignCenter
+
+class MyTreeItem(QtWidgets.QWidget):
+    def __init__(self, subproc, parent=None):
+        super().__init__(parent)
+
+        layout = QtWidgets.QHBoxLayout(self)
+        # keep only the default margin on the left
+        layout.setContentsMargins(-1, 0, 0, 0)
+        self.label = QtWidgets.QLabel()
+        self.label.setText(subproc)
+
+        # verticalSpacer = QSpacerItem(20, 40)#, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        
+        self.status = QtWidgets.QLabel()
+        self.status.setStyleSheet("QLabel {background-color:rgb(255, 255, 0); border-width: 2px; border-style: outset; border-color: rgb(0,0, 0);}")
+        self.status.resize(18, 18)
+        self.status.setMaximumWidth(20)
+
+        layout.addWidget(self.label)
+        # layout.addItem(verticalSpacer)
+        layout.addWidget(self.status)
+        layout.addStretch()
+        self.setMaximumWidth(200)
+
+        # self.spinBox1 = QtWidgets.QSpinBox()
+        # # make sure the spin-box doesn't get too small
+        # self.spinBox1.setMinimumWidth(80)
+        # layout.addWidget(self.label)
+        # layout.addWidget(self.spinBox1)
+        # # don't allow the spin-box to exapnd too much
+        # layout.addStretch()
 
 #%% SOUNDS - ########################################################
 # Sound functions

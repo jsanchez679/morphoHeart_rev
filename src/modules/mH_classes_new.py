@@ -92,7 +92,7 @@ class Project():
             '''
             now_str = datetime.now().strftime('%Y%m%d%H%M')
             return 'mH_Proj-'+now_str
-            
+
         if new:
             self.mH_projName = create_mHName(self)
             self.user_projName = proj_dict['name'].replace(' ', '_')
@@ -218,12 +218,11 @@ class Project():
             else: 
                 self.mH_sections = False
         else: 
-            self.mH_settings = {}
-            self.mH_channels = {}
-            self.mH_segments = {}
-            self.mH_sections = {}
-            # self.mH_param2meas = {}
-            self.mH_methods = {}
+            self.mH_settings = None
+            self.mH_channels = None
+            self.mH_segments = None
+            self.mH_sections = None
+            self.mH_methods = None
 
         self.clean_False(user_param = mH_params)
         self.set_mH_methods()
@@ -236,14 +235,16 @@ class Project():
         self.mC_settings = {}
         if self.analysis['morphoCell']:
             self.mC_settings['setup'] = mC_settings
-
-        else: 
-            self.mC_settings = {}
             self.mC_channels = {}
             self.mC_segments = {}
             self.mC_sections = {}
-            # self.mC_param2meas = {}
             self.mC_methods = {}
+        else: 
+            self.mC_settings = None
+            self.mC_channels = None
+            self.mC_segments = None
+            self.mC_sections = None
+            self.mC_methods = None
         
     def clean_False(self, user_param:dict):#
         user_param_new = copy.deepcopy(user_param)

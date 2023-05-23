@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1250</width>
+    <width>1342</width>
     <height>952</height>
    </rect>
   </property>
@@ -36,10 +36,19 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_7">
+    <property name="spacing">
+     <number>4</number>
+    </property>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
        <widget class="QGroupBox" name="groupBox_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -773,15 +782,27 @@ border-color: #672146
     </item>
     <item>
      <widget class="QTabWidget" name="tabWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="minimumSize">
        <size>
         <width>0</width>
         <height>750</height>
        </size>
       </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>1100</height>
+       </size>
+      </property>
       <property name="sizeIncrement">
        <size>
-        <width>0</width>
+        <width>1</width>
         <height>1</height>
        </size>
       </property>
@@ -843,7 +864,7 @@ background-color: rgb(255, 255, 255);</string>
                <x>0</x>
                <y>0</y>
                <width>398</width>
-               <height>651</height>
+               <height>655</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_33">
@@ -1314,7 +1335,7 @@ border-color: #672146
          <widget class="QScrollArea" name="scrollArea_2">
           <property name="minimumSize">
            <size>
-            <width>400</width>
+            <width>600</width>
             <height>0</height>
            </size>
           </property>
@@ -1352,7 +1373,7 @@ QScrollBar::handle:vertical:hover {
              <x>0</x>
              <y>0</y>
              <width>589</width>
-             <height>2073</height>
+             <height>2097</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1600,6 +1621,9 @@ border-color: rgb(0,0, 0);</string>
                </item>
                <item>
                 <widget class="QWidget" name="keeplargest_widget" native="true">
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
                  <layout class="QVBoxLayout" name="verticalLayout_8">
                   <property name="leftMargin">
                    <number>0</number>
@@ -6220,8 +6244,8 @@ border-color: rgb(0,0, 0);</string>
                   </property>
                   <item>
                    <layout class="QHBoxLayout" name="horizontalLayout_6">
-                    <item alignment="Qt::AlignLeft">
-                     <widget class="QLabel" name="lab_ch1_2">
+                    <item>
+                     <widget class="QLabel" name="lab_ch1_7">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                         <horstretch>0</horstretch>
@@ -6230,7 +6254,7 @@ border-color: rgb(0,0, 0);</string>
                       </property>
                       <property name="minimumSize">
                        <size>
-                        <width>50</width>
+                        <width>65</width>
                         <height>20</height>
                        </size>
                       </property>
@@ -6241,10 +6265,39 @@ border-color: rgb(0,0, 0);</string>
                        </size>
                       </property>
                       <property name="styleSheet">
+                       <string notr="true">font: 75 10pt &quot;Calibri&quot;;
+</string>
+                      </property>
+                      <property name="text">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Axis Labels: &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item alignment="Qt::AlignLeft">
+                     <widget class="QLabel" name="lab_ch1_2">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>45</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>45</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                      <property name="styleSheet">
                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                       </property>
                       <property name="text">
-                       <string>Stack: </string>
+                       <string>Stack:</string>
                       </property>
                      </widget>
                     </item>
@@ -6258,13 +6311,13 @@ border-color: rgb(0,0, 0);</string>
                       </property>
                       <property name="minimumSize">
                        <size>
-                        <width>150</width>
+                        <width>130</width>
                         <height>20</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
-                        <width>150</width>
+                        <width>130</width>
                         <height>20</height>
                        </size>
                       </property>
@@ -6362,7 +6415,7 @@ border-color: #672146
                       </property>
                       <property name="minimumSize">
                        <size>
-                        <width>50</width>
+                        <width>65</width>
                         <height>20</height>
                        </size>
                       </property>
@@ -6390,13 +6443,13 @@ border-color: #672146
                       </property>
                       <property name="minimumSize">
                        <size>
-                        <width>150</width>
+                        <width>130</width>
                         <height>20</height>
                        </size>
                       </property>
                       <property name="maximumSize">
                        <size>
-                        <width>150</width>
+                        <width>130</width>
                         <height>20</height>
                        </size>
                       </property>
@@ -9965,51 +10018,8 @@ border-color: rgb(0,0, 0);</string>
                      </property>
                      <item>
                       <layout class="QGridLayout" name="gridLayout">
-                       <item row="3" column="4" alignment="Qt::AlignHCenter">
-                        <widget class="QCheckBox" name="d3d2_3">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>15</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>15</width>
-                           <height>16777215</height>
-                          </size>
-                         </property>
-                         <property name="layoutDirection">
-                          <enum>Qt::LeftToRight</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                         <property name="checked">
-                          <bool>false</bool>
-                         </property>
-                         <property name="tristate">
-                          <bool>false</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="10" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm10">
+                       <item row="3" column="1">
+                        <widget class="QDoubleSpinBox" name="min_hm3">
                          <property name="minimumSize">
                           <size>
                            <width>50</width>
@@ -10030,8 +10040,8 @@ border-color: rgb(0,0, 0);</string>
                          </property>
                         </widget>
                        </item>
-                       <item row="4" column="0">
-                        <widget class="QLabel" name="label_hm4">
+                       <item row="10" column="0">
+                        <widget class="QLabel" name="label_hm10">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                            <horstretch>0</horstretch>
@@ -10058,30 +10068,36 @@ border-color: rgb(0,0, 0);</string>
                          </property>
                         </widget>
                        </item>
-                       <item row="11" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm11">
+                       <item row="3" column="0">
+                        <widget class="QLabel" name="label_hm3">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
                          <property name="minimumSize">
                           <size>
-                           <width>50</width>
+                           <width>130</width>
                            <height>19</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
-                           <width>50</width>
+                           <width>16777215</width>
                            <height>19</height>
                           </size>
                          </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                          </property>
-                         <property name="decimals">
-                          <number>1</number>
+                         <property name="text">
+                          <string>Name</string>
                          </property>
                         </widget>
                        </item>
-                       <item row="5" column="4" alignment="Qt::AlignHCenter">
-                        <widget class="QCheckBox" name="d3d2_5">
+                       <item row="10" column="4" alignment="Qt::AlignHCenter">
+                        <widget class="QCheckBox" name="d3d2_10">
                          <property name="enabled">
                           <bool>true</bool>
                          </property>
@@ -10120,218 +10136,6 @@ border-color: rgb(0,0, 0);</string>
                          </property>
                          <property name="tristate">
                           <bool>false</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="7" column="4" alignment="Qt::AlignHCenter">
-                        <widget class="QCheckBox" name="d3d2_7">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>15</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>15</width>
-                           <height>16777215</height>
-                          </size>
-                         </property>
-                         <property name="layoutDirection">
-                          <enum>Qt::LeftToRight</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                         <property name="checked">
-                          <bool>false</bool>
-                         </property>
-                         <property name="tristate">
-                          <bool>false</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="7" column="5" alignment="Qt::AlignHCenter">
-                        <widget class="QPushButton" name="hm_plot7">
-                         <property name="minimumSize">
-                          <size>
-                           <width>18</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>18</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QPushButton{
-border-width: 1px;
-border-style: outset;
-border-color: rgb(0, 170, 255);
-
-background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
-font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-                         </property>
-                         <property name="text">
-                          <string>V</string>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="12" column="4" alignment="Qt::AlignHCenter">
-                        <widget class="QCheckBox" name="d3d2_12">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>15</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>15</width>
-                           <height>16777215</height>
-                          </size>
-                         </property>
-                         <property name="layoutDirection">
-                          <enum>Qt::LeftToRight</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                         <property name="checked">
-                          <bool>false</bool>
-                         </property>
-                         <property name="tristate">
-                          <bool>false</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="2" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm2">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="5" column="5" alignment="Qt::AlignHCenter">
-                        <widget class="QPushButton" name="hm_plot5">
-                         <property name="minimumSize">
-                          <size>
-                           <width>18</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>18</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QPushButton{
-border-width: 1px;
-border-style: outset;
-border-color: rgb(0, 170, 255);
-
-background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
-font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-                         </property>
-                         <property name="text">
-                          <string>V</string>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="6" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm6">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
                          </property>
                         </widget>
                        </item>
@@ -10378,8 +10182,30 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="1" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap1">
+                       <item row="11" column="1">
+                        <widget class="QDoubleSpinBox" name="min_hm11">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="4" alignment="Qt::AlignHCenter">
+                        <widget class="QCheckBox" name="d3d2_1">
                          <property name="enabled">
                           <bool>true</bool>
                          </property>
@@ -10391,18 +10217,85 @@ border-color: #672146
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>80</width>
+                           <width>15</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>15</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="layoutDirection">
+                          <enum>Qt::LeftToRight</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <property name="checked">
+                          <bool>false</bool>
+                         </property>
+                         <property name="tristate">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="5" column="2">
+                        <widget class="QDoubleSpinBox" name="max_hm5">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
                            <height>19</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
-                           <width>80</width>
+                           <width>50</width>
                            <height>19</height>
                           </size>
                          </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="6" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_67">
+                         <item>
+                          <widget class="QComboBox" name="colormap6">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
     border: 1px solid gray;
 	font: 25 10pt &quot;Calibri Light&quot;;
 }
@@ -10426,26 +10319,54 @@ QComboBox QAbstractItemView {
 	font: 25 10pt &quot;Calibri Light&quot;;
 }
 </string>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
                          </item>
                          <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
+                          <widget class="QLabel" name="cm_eg6">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
                          </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
-                        </widget>
+                        </layout>
                        </item>
-                       <item row="12" column="5" alignment="Qt::AlignHCenter">
-                        <widget class="QPushButton" name="hm_plot12">
+                       <item row="11" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="hm_plot11">
                          <property name="minimumSize">
                           <size>
                            <width>18</width>
@@ -10485,8 +10406,322 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="1" column="4" alignment="Qt::AlignHCenter">
-                        <widget class="QCheckBox" name="d3d2_1">
+                       <item row="7" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="hm_plot7">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+
+background-color:  rgb(0, 255, 255);
+	color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>V</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="2">
+                        <widget class="QDoubleSpinBox" name="max_hm1">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="2" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_63">
+                         <item>
+                          <widget class="QComboBox" name="colormap2">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="cm_eg2">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="8" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="hm_plot8">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+
+background-color:  rgb(0, 255, 255);
+	color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>V</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="9" column="0">
+                        <widget class="QLabel" name="label_hm9">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>130</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Name</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="2" column="4" alignment="Qt::AlignHCenter">
+                        <widget class="QCheckBox" name="d3d2_2">
+                         <property name="enabled">
+                          <bool>true</bool>
+                         </property>
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>15</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>15</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="layoutDirection">
+                          <enum>Qt::LeftToRight</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <property name="checked">
+                          <bool>false</bool>
+                         </property>
+                         <property name="tristate">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="11" column="4" alignment="Qt::AlignHCenter">
+                        <widget class="QCheckBox" name="d3d2_11">
+                         <property name="enabled">
+                          <bool>true</bool>
+                         </property>
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>15</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>15</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="layoutDirection">
+                          <enum>Qt::LeftToRight</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <property name="checked">
+                          <bool>false</bool>
+                         </property>
+                         <property name="tristate">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="3" column="4" alignment="Qt::AlignHCenter">
+                        <widget class="QCheckBox" name="d3d2_3">
                          <property name="enabled">
                           <bool>true</bool>
                          </property>
@@ -10550,8 +10785,8 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="1" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm1">
+                       <item row="3" column="2">
+                        <widget class="QDoubleSpinBox" name="max_hm3">
                          <property name="minimumSize">
                           <size>
                            <width>50</width>
@@ -10572,8 +10807,8 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="10" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm10">
+                       <item row="2" column="2">
+                        <widget class="QDoubleSpinBox" name="max_hm2">
                          <property name="minimumSize">
                           <size>
                            <width>50</width>
@@ -10594,11 +10829,52 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="2" column="4" alignment="Qt::AlignHCenter">
-                        <widget class="QCheckBox" name="d3d2_2">
-                         <property name="enabled">
-                          <bool>true</bool>
+                       <item row="9" column="2">
+                        <widget class="QDoubleSpinBox" name="max_hm9">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
                          </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="6" column="1">
+                        <widget class="QDoubleSpinBox" name="min_hm6">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="0">
+                        <widget class="QLabel" name="label_hm1">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                            <horstretch>0</horstretch>
@@ -10607,38 +10883,26 @@ border-color: #672146
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>15</width>
-                           <height>18</height>
+                           <width>130</width>
+                           <height>19</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
-                           <width>15</width>
-                           <height>16777215</height>
+                           <width>16777215</width>
+                           <height>19</height>
                           </size>
-                         </property>
-                         <property name="layoutDirection">
-                          <enum>Qt::LeftToRight</enum>
                          </property>
                          <property name="styleSheet">
                           <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                          </property>
                          <property name="text">
-                          <string/>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                         <property name="checked">
-                          <bool>false</bool>
-                         </property>
-                         <property name="tristate">
-                          <bool>false</bool>
+                          <string>Name</string>
                          </property>
                         </widget>
                        </item>
-                       <item row="12" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm12">
+                       <item row="8" column="1">
+                        <widget class="QDoubleSpinBox" name="min_hm8">
                          <property name="minimumSize">
                           <size>
                            <width>50</width>
@@ -10659,74 +10923,33 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="9" column="4" alignment="Qt::AlignHCenter">
-                        <widget class="QCheckBox" name="d3d2_9">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>15</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>15</width>
-                           <height>16777215</height>
-                          </size>
-                         </property>
-                         <property name="layoutDirection">
-                          <enum>Qt::LeftToRight</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                         <property name="checked">
-                          <bool>false</bool>
-                         </property>
-                         <property name="tristate">
-                          <bool>false</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="4" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap4">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
+                       <item row="8" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_69">
+                         <item>
+                          <widget class="QComboBox" name="colormap8">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
     border: 1px solid gray;
 	font: 25 10pt &quot;Calibri Light&quot;;
 }
@@ -10750,26 +10973,194 @@ QComboBox QAbstractItemView {
 	font: 25 10pt &quot;Calibri Light&quot;;
 }
 </string>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="cm_eg8">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="9" column="1">
+                        <widget class="QDoubleSpinBox" name="min_hm9">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
                          </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
                         </widget>
                        </item>
-                       <item row="11" column="5" alignment="Qt::AlignHCenter">
-                        <widget class="QPushButton" name="hm_plot11">
+                       <item row="8" column="2">
+                        <widget class="QDoubleSpinBox" name="max_hm8">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="4" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_65">
+                         <item>
+                          <widget class="QComboBox" name="colormap4">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="cm_eg4">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="3" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="hm_plot3">
                          <property name="minimumSize">
                           <size>
                            <width>18</width>
@@ -10809,39 +11200,104 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="0" column="4">
-                        <widget class="QLabel" name="lab_proj_name_12">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>65</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string>3D&gt;2D</string>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                        </widget>
+                       <item row="3" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_64">
+                         <item>
+                          <widget class="QComboBox" name="colormap3">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="cm_eg3">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
                        </item>
-                       <item row="9" column="0">
-                        <widget class="QLabel" name="label_hm9">
+                       <item row="8" column="0">
+                        <widget class="QLabel" name="label_hm8">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                            <horstretch>0</horstretch>
@@ -10868,31 +11324,44 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="2" column="0">
-                        <widget class="QLabel" name="label_hm2">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
+                       <item row="1" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="hm_plot1">
                          <property name="minimumSize">
                           <size>
-                           <width>130</width>
-                           <height>19</height>
+                           <width>18</width>
+                           <height>18</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
-                           <width>16777215</width>
-                           <height>19</height>
+                           <width>18</width>
+                           <height>18</height>
                           </size>
                          </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
                          <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                          <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+
+background-color:  rgb(0, 255, 255);
+	color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
                          </property>
                          <property name="text">
-                          <string>Name</string>
+                          <string>V</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
                          </property>
                         </widget>
                        </item>
@@ -10921,380 +11390,6 @@ border-color: #672146
                          </property>
                          <property name="text">
                           <string>Name</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="12" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap12">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
-                        </widget>
-                       </item>
-                       <item row="9" column="5" alignment="Qt::AlignHCenter">
-                        <widget class="QPushButton" name="hm_plot9">
-                         <property name="minimumSize">
-                          <size>
-                           <width>18</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>18</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QPushButton{
-border-width: 1px;
-border-style: outset;
-border-color: rgb(0, 170, 255);
-
-background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
-font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-                         </property>
-                         <property name="text">
-                          <string>V</string>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="10" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap10">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
-                        </widget>
-                       </item>
-                       <item row="4" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm4">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="8" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm8">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="5" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap5">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
-                        </widget>
-                       </item>
-                       <item row="3" column="0">
-                        <widget class="QLabel" name="label_hm3">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>130</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>16777215</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string>Name</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="6" column="5" alignment="Qt::AlignHCenter">
-                        <widget class="QPushButton" name="hm_plot6">
-                         <property name="minimumSize">
-                          <size>
-                           <width>18</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>18</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QPushButton{
-border-width: 1px;
-border-style: outset;
-border-color: rgb(0, 170, 255);
-
-background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
-font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-                         </property>
-                         <property name="text">
-                          <string>V</string>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="8" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm8">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
                          </property>
                         </widget>
                        </item>
@@ -11339,8 +11434,8 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="2" column="5" alignment="Qt::AlignHCenter">
-                        <widget class="QPushButton" name="hm_plot2">
+                       <item row="9" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="hm_plot9">
                          <property name="minimumSize">
                           <size>
                            <width>18</width>
@@ -11380,100 +11475,8 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="7" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap7">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
-                        </widget>
-                       </item>
-                       <item row="0" column="5" alignment="Qt::AlignHCenter">
-                        <widget class="QLabel" name="lab_no_ch_54">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>16777215</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                         </property>
-                         <property name="text">
-                          <string>Plot (3D)</string>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="9" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm9">
+                       <item row="11" column="2">
+                        <widget class="QDoubleSpinBox" name="max_hm11">
                          <property name="minimumSize">
                           <size>
                            <width>50</width>
@@ -11494,90 +11497,44 @@ background-color: rgb(255, 255, 255);</string>
                          </property>
                         </widget>
                        </item>
-                       <item row="7" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm7">
+                       <item row="5" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="hm_plot5">
                          <property name="minimumSize">
                           <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="11" column="4" alignment="Qt::AlignHCenter">
-                        <widget class="QCheckBox" name="d3d2_11">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>15</width>
+                           <width>18</width>
                            <height>18</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
-                           <width>15</width>
-                           <height>16777215</height>
+                           <width>18</width>
+                           <height>18</height>
                           </size>
                          </property>
-                         <property name="layoutDirection">
-                          <enum>Qt::LeftToRight</enum>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
                          </property>
                          <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                          <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+
+background-color:  rgb(0, 255, 255);
+	color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
                          </property>
                          <property name="text">
-                          <string/>
+                          <string>V</string>
                          </property>
                          <property name="checkable">
                           <bool>true</bool>
-                         </property>
-                         <property name="checked">
-                          <bool>false</bool>
-                         </property>
-                         <property name="tristate">
-                          <bool>false</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm1">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
                          </property>
                         </widget>
                        </item>
@@ -11622,236 +11579,8 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="4" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm4">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="10" column="0">
-                        <widget class="QLabel" name="label_hm10">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>130</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>16777215</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string>Name</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="6" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap6">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
-                        </widget>
-                       </item>
-                       <item row="0" column="1">
-                        <widget class="QLabel" name="lab_proj_name_13">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>60</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string>min</string>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="8" column="0">
-                        <widget class="QLabel" name="label_hm8">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>130</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>16777215</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string>Name</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="11" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm11">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="0" column="2">
-                        <widget class="QLabel" name="lab_proj_name_14">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>60</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string>max</string>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="10" column="4" alignment="Qt::AlignHCenter">
-                        <widget class="QCheckBox" name="d3d2_10">
+                       <item row="6" column="4" alignment="Qt::AlignHCenter">
+                        <widget class="QCheckBox" name="d3d2_6">
                          <property name="enabled">
                           <bool>true</bool>
                          </property>
@@ -11893,8 +11622,39 @@ QComboBox QAbstractItemView {
                          </property>
                         </widget>
                        </item>
-                       <item row="1" column="0">
-                        <widget class="QLabel" name="label_hm1">
+                       <item row="0" column="1">
+                        <widget class="QLabel" name="lab_proj_name_13">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>60</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>min</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="6" column="0">
+                        <widget class="QLabel" name="label_hm6">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                            <horstretch>0</horstretch>
@@ -11921,166 +11681,29 @@ QComboBox QAbstractItemView {
                          </property>
                         </widget>
                        </item>
-                       <item row="2" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm2">
+                       <item row="0" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QLabel" name="lab_no_ch_54">
                          <property name="minimumSize">
                           <size>
                            <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="2" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap2">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
-                        </widget>
-                       </item>
-                       <item row="0" column="3">
-                        <widget class="QLabel" name="lab_proj_name_4">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>100</width>
                            <height>20</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
-                           <width>80</width>
+                           <width>16777215</width>
                            <height>20</height>
                           </size>
                          </property>
                          <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
                          </property>
                          <property name="text">
-                          <string>Colormap:</string>
+                          <string>Plot (3D)</string>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="12" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm12">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="5" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm5">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
                          </property>
                         </widget>
                        </item>
@@ -12127,8 +11750,30 @@ QComboBox QAbstractItemView {
                          </property>
                         </widget>
                        </item>
-                       <item row="8" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap8">
+                       <item row="1" column="1">
+                        <widget class="QDoubleSpinBox" name="min_hm1">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="7" column="4" alignment="Qt::AlignHCenter">
+                        <widget class="QCheckBox" name="d3d2_7">
                          <property name="enabled">
                           <bool>true</bool>
                          </property>
@@ -12140,18 +11785,63 @@ QComboBox QAbstractItemView {
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>80</width>
-                           <height>19</height>
+                           <width>15</width>
+                           <height>18</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
-                           <width>80</width>
-                           <height>19</height>
+                           <width>15</width>
+                           <height>16777215</height>
                           </size>
                          </property>
+                         <property name="layoutDirection">
+                          <enum>Qt::LeftToRight</enum>
+                         </property>
                          <property name="styleSheet">
-                          <string notr="true">QComboBox {
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <property name="checked">
+                          <bool>false</bool>
+                         </property>
+                         <property name="tristate">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="5" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_66">
+                         <item>
+                          <widget class="QComboBox" name="colormap5">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
     border: 1px solid gray;
 	font: 25 10pt &quot;Calibri Light&quot;;
 }
@@ -12175,26 +11865,310 @@ QComboBox QAbstractItemView {
 	font: 25 10pt &quot;Calibri Light&quot;;
 }
 </string>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="cm_eg5">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="5" column="1">
+                        <widget class="QDoubleSpinBox" name="min_hm5">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
                          </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
                         </widget>
                        </item>
-                       <item row="8" column="5" alignment="Qt::AlignHCenter">
-                        <widget class="QPushButton" name="hm_plot8">
+                       <item row="4" column="1">
+                        <widget class="QDoubleSpinBox" name="min_hm4">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="12" column="1">
+                        <widget class="QDoubleSpinBox" name="min_hm12">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="10" column="2">
+                        <widget class="QDoubleSpinBox" name="max_hm10">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="2" column="0">
+                        <widget class="QLabel" name="label_hm2">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>130</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Name</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="4" column="2">
+                        <widget class="QDoubleSpinBox" name="max_hm4">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="2" column="1">
+                        <widget class="QDoubleSpinBox" name="min_hm2">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="7" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_68">
+                         <item>
+                          <widget class="QComboBox" name="colormap7">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="cm_eg7">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="12" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="hm_plot12">
                          <property name="minimumSize">
                           <size>
                            <width>18</width>
@@ -12231,6 +12205,226 @@ border-color: #672146
                          </property>
                          <property name="checkable">
                           <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="9" column="4" alignment="Qt::AlignHCenter">
+                        <widget class="QCheckBox" name="d3d2_9">
+                         <property name="enabled">
+                          <bool>true</bool>
+                         </property>
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>15</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>15</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="layoutDirection">
+                          <enum>Qt::LeftToRight</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <property name="checked">
+                          <bool>false</bool>
+                         </property>
+                         <property name="tristate">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="9" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_70">
+                         <item>
+                          <widget class="QComboBox" name="colormap9">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="cm_eg9">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="0" column="2">
+                        <widget class="QLabel" name="lab_proj_name_14">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>60</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>max</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="10" column="1">
+                        <widget class="QDoubleSpinBox" name="min_hm10">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="4" column="0">
+                        <widget class="QLabel" name="label_hm4">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>130</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Name</string>
                          </property>
                         </widget>
                        </item>
@@ -12262,8 +12456,324 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="3" column="5" alignment="Qt::AlignHCenter">
-                        <widget class="QPushButton" name="hm_plot3">
+                       <item row="0" column="4">
+                        <widget class="QLabel" name="lab_proj_name_12">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>65</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>3D&gt;2D</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="0" column="3">
+                        <widget class="QLabel" name="lab_proj_name_4">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>100</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>80</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Colormap:</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="5" column="4" alignment="Qt::AlignHCenter">
+                        <widget class="QCheckBox" name="d3d2_5">
+                         <property name="enabled">
+                          <bool>true</bool>
+                         </property>
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>15</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>15</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="layoutDirection">
+                          <enum>Qt::LeftToRight</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <property name="checked">
+                          <bool>false</bool>
+                         </property>
+                         <property name="tristate">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="12" column="2">
+                        <widget class="QDoubleSpinBox" name="max_hm12">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_62">
+                         <item>
+                          <widget class="QComboBox" name="colormap1">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="cm_eg1">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="7" column="2">
+                        <widget class="QDoubleSpinBox" name="max_hm7">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="12" column="4" alignment="Qt::AlignHCenter">
+                        <widget class="QCheckBox" name="d3d2_12">
+                         <property name="enabled">
+                          <bool>true</bool>
+                         </property>
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>15</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>15</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="layoutDirection">
+                          <enum>Qt::LeftToRight</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <property name="checked">
+                          <bool>false</bool>
+                         </property>
+                         <property name="tristate">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="11" column="0">
+                        <widget class="QLabel" name="label_hm11">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>130</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Name</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="2" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="hm_plot2">
                          <property name="minimumSize">
                           <size>
                            <width>18</width>
@@ -12303,190 +12813,8 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="5" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm5">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="11" column="0">
-                        <widget class="QLabel" name="label_hm11">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>130</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>16777215</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string>Name</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="11" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap11">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
-                        </widget>
-                       </item>
-                       <item row="3" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap3">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
-                        </widget>
-                       </item>
-                       <item row="1" column="5" alignment="Qt::AlignHCenter">
-                        <widget class="QPushButton" name="hm_plot1">
+                       <item row="6" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="hm_plot6">
                          <property name="minimumSize">
                           <size>
                            <width>18</width>
@@ -12548,71 +12876,6 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="3" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm3">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="6" column="4" alignment="Qt::AlignHCenter">
-                        <widget class="QCheckBox" name="d3d2_6">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>15</width>
-                           <height>18</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>15</width>
-                           <height>16777215</height>
-                          </size>
-                         </property>
-                         <property name="layoutDirection">
-                          <enum>Qt::LeftToRight</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                         <property name="checked">
-                          <bool>false</bool>
-                         </property>
-                         <property name="tristate">
-                          <bool>false</bool>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="7" column="0">
                         <widget class="QLabel" name="label_hm7">
                          <property name="sizePolicy">
@@ -12641,53 +12904,33 @@ border-color: #672146
                          </property>
                         </widget>
                        </item>
-                       <item row="9" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm9">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="9" column="3" alignment="Qt::AlignHCenter">
-                        <widget class="QComboBox" name="colormap9">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
+                       <item row="10" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_71">
+                         <item>
+                          <widget class="QComboBox" name="colormap10">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
     border: 1px solid gray;
 	font: 25 10pt &quot;Calibri Light&quot;;
 }
@@ -12711,73 +12954,243 @@ QComboBox QAbstractItemView {
 	font: 25 10pt &quot;Calibri Light&quot;;
 }
 </string>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>turbo</string>
-                          </property>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
                          </item>
                          <item>
-                          <property name="text">
-                           <string>jet</string>
-                          </property>
+                          <widget class="QLabel" name="cm_eg10">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
                          </item>
-                         <item>
-                          <property name="text">
-                           <string>viridis</string>
-                          </property>
-                         </item>
-                        </widget>
+                        </layout>
                        </item>
-                       <item row="3" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm3">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
+                       <item row="11" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_72">
+                         <item>
+                          <widget class="QComboBox" name="colormap11">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="cm_eg11">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
                        </item>
-                       <item row="6" column="0">
-                        <widget class="QLabel" name="label_hm6">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>130</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>16777215</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string>Name</string>
-                         </property>
-                        </widget>
+                       <item row="12" column="3">
+                        <layout class="QHBoxLayout" name="horizontalLayout_73">
+                         <item>
+                          <widget class="QComboBox" name="colormap12">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>80</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                           </property>
+                           <item>
+                            <property name="text">
+                             <string>turbo</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>jet</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>viridis</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="cm_eg12">
+                           <property name="minimumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>19</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
                        </item>
                       </layout>
                      </item>
@@ -13059,6 +13472,7 @@ border-color: rgb(66, 66, 66);
 border-width: 1px;
 border-style: outset;
 }
+
 
 </string>
                    </property>
@@ -15431,6 +15845,12 @@ border-style: outset;
         </item>
         <item>
          <widget class="QFrame" name="frame_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
             <width>200</width>
@@ -15446,10 +15866,10 @@ border-style: outset;
           <widget class="QGroupBox" name="user_parameters">
            <property name="geometry">
             <rect>
-             <x>165</x>
-             <y>580</y>
-             <width>426</width>
-             <height>685</height>
+             <x>115</x>
+             <y>415</y>
+             <width>350</width>
+             <height>689</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -15460,13 +15880,13 @@ border-style: outset;
            </property>
            <property name="minimumSize">
             <size>
-             <width>0</width>
+             <width>350</width>
              <height>0</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>16777215</width>
+             <width>350</width>
              <height>16777215</height>
             </size>
            </property>
@@ -17585,13 +18005,47 @@ border-color: #672146
             </item>
            </layout>
           </widget>
+          <widget class="QLabel" name="lab_ch1_6">
+           <property name="geometry">
+            <rect>
+             <x>170</x>
+             <y>690</y>
+             <width>100</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>65</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+           </property>
+           <property name="text">
+            <string>Stack Axis Labels: </string>
+           </property>
+          </widget>
          </widget>
         </item>
         <item>
          <widget class="QTreeWidget" name="treeWorkflow">
           <property name="minimumSize">
            <size>
-            <width>200</width>
+            <width>300</width>
             <height>0</height>
            </size>
           </property>
@@ -17766,7 +18220,7 @@ background-color: rgb(250, 250, 250);
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1250</width>
+     <width>1342</width>
      <height>21</height>
     </rect>
    </property>

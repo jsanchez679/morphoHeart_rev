@@ -17,7 +17,7 @@ from gui.gui_classes import *
 from src.modules import mH_classes_new as mHC
 # from src.modules import mH_funcBasics as fcBasics
 # from src.modules import mH_funcContours as fcCont
-# from src.modules import mH_funcMeshes as fcMeshes
+from src.modules import mH_funcMeshes as fcM
 
 #https://www.color-hex.com/color-palette/96194
 #https://www.color-hex.com/color-palette/96197
@@ -178,6 +178,9 @@ class Controller:
             self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
         self.main_win.show()
 
+        self.main_win.keeplargest_play.clicked.connect(lambda: self.run_keeplargest())
+
+
     #Functions related to API    
     def set_proj_meas_param(self):
         if self.meas_param_win.validate_params(): 
@@ -194,13 +197,16 @@ class Controller:
                 selected_params[self.meas_param_win.params[numa]['s']] = {}
 
             for cbox in self.meas_param_win.dict_meas:
-                _,chf,contf,param_num = cbox.split('_')
-                num_p = int(param_num.split('param')[1])
-                param_name = self.meas_param_win.params[num_p]['s']
-                cBox = getattr(self.meas_param_win, cbox)
-                if cBox.isEnabled():
-                    is_checked = cBox.isChecked()
-                    selected_params[param_name][chf+'_'+contf+'_whole'] = is_checked
+                if 'roi' not in cbox:
+                    _,chf,contf,param_num = cbox.split('_')
+                    num_p = int(param_num.split('param')[1])
+                    param_name = self.meas_param_win.params[num_p]['s']
+                    cBox = getattr(self.meas_param_win, cbox)
+                    if cBox.isEnabled():
+                        is_checked = cBox.isChecked()
+                        selected_params[param_name][chf+'_'+contf+'_whole'] = is_checked
+                else: 
+                    acaaa!!!
                         
             #Add ballooning measurements
             param_name = self.meas_param_win.params[5]['s']
@@ -354,6 +360,9 @@ class Controller:
     
     def load_organ(self, proj, organ_to_load):
         self.organ = proj.load_organ(organ_to_load = organ_to_load)
+
+    def run_keeplargest(self):
+        fcM.s32Meshes(self.organ, self.main_win.gui_keep_largest, self.main_win.rotateZ_90)
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
