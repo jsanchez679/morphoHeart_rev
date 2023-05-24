@@ -15,9 +15,21 @@ from PyQt6 import QtWidgets#, QtCore
 #%% morphoHeart Imports - ##################################################
 from gui.gui_classes import *
 from src.modules import mH_classes_new as mHC
-# from src.modules import mH_funcBasics as fcBasics
-# from src.modules import mH_funcContours as fcCont
+# from src.modules import mH_funcBasics as fcB
+from src.modules import mH_funcContours as fcC
 from src.modules import mH_funcMeshes as fcM
+
+# Create an installer
+#https://build-system.fman.io/pyqt5-tutorial
+# Style sheets
+#https://doc.qt.io/qt-5/stylesheet.html
+#https://doc.qt.io/qt-6.4/stylesheet-examples.html#customizing-qheaderview
+# Images 
+#https://doc.qt.io/qtdesignstudio/quick-images.html
+
+# QDialog ButtonBox
+#https://www.pythonguis.com/tutorials/pyqt-dialogs/
+
 
 #https://www.color-hex.com/color-palette/96194
 #https://www.color-hex.com/color-palette/96197
@@ -178,10 +190,22 @@ class Controller:
             self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
         self.main_win.show()
 
+        #Segmentation Tab
+        # - Buttons inside channels
+        self.main_win.ch1_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch1'))
+        self.main_win.ch1_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch1'))
+        self.main_win.ch2_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch2'))
+        self.main_win.ch2_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch2'))
+        self.main_win.ch3_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch3'))
+        self.main_win.ch3_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch3'))
+        self.main_win.ch4_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch4'))
+        self.main_win.ch4_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch4'))
+
+        #Process and Analyse Tab
         self.main_win.keeplargest_play.clicked.connect(lambda: self.run_keeplargest())
 
-
-    #Functions related to API    
+    #Functions related to API  
+    # Project Related  
     def set_proj_meas_param(self):
         if self.meas_param_win.validate_params(): 
             self.mH_params = self.meas_param_win.params
@@ -206,7 +230,13 @@ class Controller:
                         is_checked = cBox.isChecked()
                         selected_params[param_name][chf+'_'+contf+'_whole'] = is_checked
                 else: 
-                    acaaa!!!
+                    _,roi,param_num = cbox.split('_')
+                    num_p = int(param_num.split('param')[1])
+                    param_name = self.meas_param_win.params[num_p]['s']
+                    cBox = getattr(self.meas_param_win, cbox)
+                    if cBox.isEnabled():
+                        is_checked = cBox.isChecked()
+                        selected_params[param_name]['roi'] = is_checked
                         
             #Add ballooning measurements
             param_name = self.meas_param_win.params[5]['s']
@@ -298,11 +328,12 @@ class Controller:
             toggled(self.load_proj_win.button_browse_proj)
             self.load_proj_win.tE_validate.setText('There is no settings file for a project within the selected directory. Please select a new directory.')
 
+    #Organ related
     def new_organ(self): 
         if self.new_organ_win.validate_organ(self.proj): 
+            self.new_organ_win.tE_validate.setText('Creating and saving new organ...')
             if self.new_organ_win.check_selection(self.proj):
                 if self.new_organ_win.check_shapes(self.proj): 
-                    self.new_organ_win.tE_validate.setText('Creating and saving new organ...')
                     self.new_organ_win.button_create_new_organ.setChecked(True)
                     toggled(self.new_organ_win.button_create_new_organ)
                     self.new_organ_win.tE_validate.setText('Creating organ "'+self.new_organ_win.lineEdit_organ_name.text()+'"')
@@ -361,6 +392,71 @@ class Controller:
     def load_organ(self, proj, organ_to_load):
         self.organ = proj.load_organ(organ_to_load = organ_to_load)
 
+    #Channels related
+    def close_cont(self, ch_name):
+        workflow = self.organ.workflow['morphoHeart']
+        print('workflow:',workflow)
+        process = ['ImProc',ch_name,'Status']
+        check_proc = get_by_path(workflow, process)
+        close_done = fcC.checkWfCloseCont(workflow, ch_name)
+
+        title = 'AAAA'
+        msg = 'Aja!'
+        self.button_clicked(title, msg, parent = self.main_win)
+        # if all(flag == 'DONE' for flag in close_done):
+        #     ch_userName = self.organ.imChannels[ch_name]['user_chName']
+        #     q = 'You already finished processing the contours of this channel ('+ch_userName+'). Do you want to re-run any of the processes?'
+        #     res = {0: 'no, continue with next step', 1: 'yes, I would like to re-run some process(es)!'}
+        #     proceed_q = ask4input(q, res, bool)
+            
+        #     if proceed_q:
+        #         # Here ask for processes that the user might want to re-run
+        #         q = 'Select the process(es) you want to run:'
+        #         res = {0: 'Mask Stack', 1: 'Close contours Automatically', 2: 'Close contours manually', 3: 'Close Inflow/Outflow'}
+        #         num_proc = ask4inputList(q, res)
+        #         for num in num_proc:
+        #             close_done[num] = 'Re-run'
+        #         proceed = True
+        #         print(close_done)
+        #     else: 
+        #         proceed = False
+                
+        # elif check_proc == 'Initialised': 
+        #     proceed = True
+        #     print('Processing had been initialised!')
+        # else: 
+        #     close_done = ['NI']*4
+        #     print('\tchannel:',ch_name, '-CloseCont:', close_done)
+        #     proceed = True
+            
+        # if proceed: 
+        #     ch_new = fcC.closeContours(organ=self.organ, ch_name=ch_name)
+        #     setattr(self, 'im_'+ch_name, ch_new)
+
+    def button_clicked(self, title, msg, parent):
+        print("click")
+
+        # dlg = Prompt_ok_cancel(title, msg, parent)
+        # if dlg.exec():
+        #     print("Success!")
+        # else:
+        #     print("Cancel!")
+        
+        items = ['AAA', 'BBB', 'CCC']
+        dlg = Prompt_ok_cancel_comboBox(title, msg, items, parent)
+        if dlg.exec():
+            print("Success!")
+            print(dlg.comboBox.currentText())
+        else:
+            print("Cancel!")
+            print(dlg.comboBox.currentText())
+
+    
+    def select_cont(self, ch):
+        im_o = getattr(self, 'im_'+ch)
+        ch_new = fcC.selectContours(organ=self.organ, im_ch = im_o)
+        setattr(self, 'im_'+ch, ch_new)
+    
     def run_keeplargest(self):
         fcM.s32Meshes(self.organ, self.main_win.gui_keep_largest, self.main_win.rotateZ_90)
 

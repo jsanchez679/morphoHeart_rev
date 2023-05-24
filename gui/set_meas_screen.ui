@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>786</width>
+    <width>967</width>
     <height>925</height>
    </rect>
   </property>
@@ -9298,6 +9298,28 @@ background-color: rgb(255, 255, 255);</string>
        </layout>
       </item>
       <item>
+       <widget class="QLabel" name="lab_proj_name_2">
+        <property name="minimumSize">
+         <size>
+          <width>75</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+        </property>
+        <property name="text">
+         <string>* Tissue mesh into which the heatmap/colormap will be visualised</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer_6">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -10784,6 +10806,215 @@ QPushButton:hover{
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>lab_param0</tabstop>
+  <tabstop>lab_param1</tabstop>
+  <tabstop>lab_param2</tabstop>
+  <tabstop>lab_param3</tabstop>
+  <tabstop>lab_param4</tabstop>
+  <tabstop>lab_param5</tabstop>
+  <tabstop>lab_param6</tabstop>
+  <tabstop>lab_param7</tabstop>
+  <tabstop>lab_param8</tabstop>
+  <tabstop>lab_param9</tabstop>
+  <tabstop>lineEdit_param_name</tabstop>
+  <tabstop>lineEdit_param_abbr</tabstop>
+  <tabstop>textEdit_param_desc</tabstop>
+  <tabstop>rB_descriptive</tabstop>
+  <tabstop>rB_continuous</tabstop>
+  <tabstop>rB_categorical</tabstop>
+  <tabstop>lineEdit_param_classes</tabstop>
+  <tabstop>button_add_param</tabstop>
+  <tabstop>cB_balto1</tabstop>
+  <tabstop>cB_ch_bal1</tabstop>
+  <tabstop>cB_cont_bal1</tabstop>
+  <tabstop>cB_balto2</tabstop>
+  <tabstop>cB_ch_bal2</tabstop>
+  <tabstop>cB_cont_bal2</tabstop>
+  <tabstop>cB_balto3</tabstop>
+  <tabstop>cB_ch_bal3</tabstop>
+  <tabstop>cB_cont_bal3</tabstop>
+  <tabstop>cB_balto4</tabstop>
+  <tabstop>cB_ch_bal4</tabstop>
+  <tabstop>cB_cont_bal4</tabstop>
+  <tabstop>cB_cl_LoopLen</tabstop>
+  <tabstop>cB_cl_LinLen</tabstop>
+  <tabstop>button_set_params</tabstop>
+  <tabstop>cB_ch2_int_param2</tabstop>
+  <tabstop>cB_ch2_tiss_param2</tabstop>
+  <tabstop>cB_ch2_ext_param2</tabstop>
+  <tabstop>cB_ch3_int_param9</tabstop>
+  <tabstop>cB_ch3_tiss_param9</tabstop>
+  <tabstop>cB_ch3_ext_param9</tabstop>
+  <tabstop>cB_chNS_int_param6</tabstop>
+  <tabstop>cB_chNS_tiss_param6</tabstop>
+  <tabstop>cB_chNS_ext_param6</tabstop>
+  <tabstop>cB_ch2_int_param6</tabstop>
+  <tabstop>cB_ch2_tiss_param6</tabstop>
+  <tabstop>cB_ch2_ext_param6</tabstop>
+  <tabstop>cB_ch4_int_param8</tabstop>
+  <tabstop>cB_ch4_tiss_param8</tabstop>
+  <tabstop>cB_ch4_ext_param8</tabstop>
+  <tabstop>cB_chNS_int_param1</tabstop>
+  <tabstop>cB_chNS_tiss_param1</tabstop>
+  <tabstop>cB_chNS_ext_param1</tabstop>
+  <tabstop>cB_ch1_int_param5</tabstop>
+  <tabstop>cB_ch1_tiss_param5</tabstop>
+  <tabstop>cB_ch1_ext_param5</tabstop>
+  <tabstop>cB_chNS_int_param5</tabstop>
+  <tabstop>cB_chNS_tiss_param5</tabstop>
+  <tabstop>cB_chNS_ext_param5</tabstop>
+  <tabstop>cB_ch2_int_param5</tabstop>
+  <tabstop>cB_ch2_tiss_param5</tabstop>
+  <tabstop>cB_ch2_ext_param5</tabstop>
+  <tabstop>cB_ch1_int_param3</tabstop>
+  <tabstop>cB_ch1_tiss_param3</tabstop>
+  <tabstop>cB_ch1_ext_param3</tabstop>
+  <tabstop>cB_ch2_int_param7</tabstop>
+  <tabstop>cB_ch2_tiss_param7</tabstop>
+  <tabstop>cB_ch2_ext_param7</tabstop>
+  <tabstop>cB_ch4_int_param2</tabstop>
+  <tabstop>cB_ch4_tiss_param2</tabstop>
+  <tabstop>cB_ch4_ext_param2</tabstop>
+  <tabstop>cB_chNS_int_param8</tabstop>
+  <tabstop>cB_chNS_tiss_param8</tabstop>
+  <tabstop>cB_chNS_ext_param8</tabstop>
+  <tabstop>cB_chNS_ext_param2</tabstop>
+  <tabstop>q_param2</tabstop>
+  <tabstop>cB_ch1_tiss_param6</tabstop>
+  <tabstop>q_param8</tabstop>
+  <tabstop>cB_ch1_int_param2</tabstop>
+  <tabstop>cB_ch1_tiss_param2</tabstop>
+  <tabstop>cB_ch1_ext_param2</tabstop>
+  <tabstop>cB_ch2_int_param8</tabstop>
+  <tabstop>cB_ch2_tiss_param8</tabstop>
+  <tabstop>cB_ch2_ext_param8</tabstop>
+  <tabstop>cB_ch1_int_param8</tabstop>
+  <tabstop>cB_ch1_tiss_param8</tabstop>
+  <tabstop>cB_ch1_ext_param8</tabstop>
+  <tabstop>cB_ch1_int_param4</tabstop>
+  <tabstop>cB_ch1_tiss_param4</tabstop>
+  <tabstop>cB_ch1_ext_param4</tabstop>
+  <tabstop>cB_ch1_int_param7</tabstop>
+  <tabstop>cB_ch1_tiss_param7</tabstop>
+  <tabstop>cB_ch1_ext_param7</tabstop>
+  <tabstop>cB_chNS_tiss_param2</tabstop>
+  <tabstop>q_param1</tabstop>
+  <tabstop>cB_ch1_ext_param6</tabstop>
+  <tabstop>q_param9</tabstop>
+  <tabstop>cB_ch2_int_param9</tabstop>
+  <tabstop>cB_ch2_tiss_param9</tabstop>
+  <tabstop>cB_ch2_ext_param9</tabstop>
+  <tabstop>cB_ch4_int_param0</tabstop>
+  <tabstop>cB_ch4_tiss_param0</tabstop>
+  <tabstop>cB_ch4_ext_param0</tabstop>
+  <tabstop>cB_ch4_ext_param9</tabstop>
+  <tabstop>q_param6</tabstop>
+  <tabstop>cB_ch3_int_param4</tabstop>
+  <tabstop>cB_ch3_tiss_param4</tabstop>
+  <tabstop>cB_ch3_ext_param4</tabstop>
+  <tabstop>cB_ch3_int_param3</tabstop>
+  <tabstop>cB_ch3_tiss_param3</tabstop>
+  <tabstop>cB_ch3_ext_param3</tabstop>
+  <tabstop>cB_chNS_ext_param7</tabstop>
+  <tabstop>q_param4</tabstop>
+  <tabstop>cB_ch3_int_param0</tabstop>
+  <tabstop>cB_ch3_tiss_param0</tabstop>
+  <tabstop>cB_ch3_ext_param0</tabstop>
+  <tabstop>cB_ch2_int_param3</tabstop>
+  <tabstop>cB_ch2_tiss_param3</tabstop>
+  <tabstop>cB_ch2_ext_param3</tabstop>
+  <tabstop>cB_ch4_int_param1</tabstop>
+  <tabstop>cB_ch4_tiss_param1</tabstop>
+  <tabstop>cB_ch4_ext_param1</tabstop>
+  <tabstop>cB_ch1_int_param0</tabstop>
+  <tabstop>cB_ch1_tiss_param0</tabstop>
+  <tabstop>cB_ch1_ext_param0</tabstop>
+  <tabstop>cB_chNS_int_param4</tabstop>
+  <tabstop>cB_chNS_tiss_param4</tabstop>
+  <tabstop>cB_chNS_ext_param4</tabstop>
+  <tabstop>cB_ch1_int_param6</tabstop>
+  <tabstop>q_param7</tabstop>
+  <tabstop>cB_ch3_int_param6</tabstop>
+  <tabstop>cB_ch3_tiss_param6</tabstop>
+  <tabstop>cB_ch3_ext_param6</tabstop>
+  <tabstop>cB_chNS_int_param2</tabstop>
+  <tabstop>q_param3</tabstop>
+  <tabstop>cB_chNS_int_param9</tabstop>
+  <tabstop>cB_chNS_tiss_param9</tabstop>
+  <tabstop>cB_chNS_ext_param9</tabstop>
+  <tabstop>cB_chNS_int_param3</tabstop>
+  <tabstop>cB_chNS_tiss_param3</tabstop>
+  <tabstop>cB_chNS_ext_param3</tabstop>
+  <tabstop>cB_ch1_int_param1</tabstop>
+  <tabstop>cB_ch1_tiss_param1</tabstop>
+  <tabstop>cB_ch1_ext_param1</tabstop>
+  <tabstop>cB_ch2_int_param4</tabstop>
+  <tabstop>cB_ch2_tiss_param4</tabstop>
+  <tabstop>cB_ch2_ext_param4</tabstop>
+  <tabstop>cB_ch4_int_param7</tabstop>
+  <tabstop>cB_ch4_tiss_param7</tabstop>
+  <tabstop>cB_ch4_ext_param7</tabstop>
+  <tabstop>cB_ch3_int_param5</tabstop>
+  <tabstop>cB_ch3_tiss_param5</tabstop>
+  <tabstop>cB_ch3_ext_param5</tabstop>
+  <tabstop>cB_ch3_int_param8</tabstop>
+  <tabstop>cB_ch3_tiss_param8</tabstop>
+  <tabstop>cB_ch3_ext_param8</tabstop>
+  <tabstop>cB_ch1_int_param9</tabstop>
+  <tabstop>cB_ch1_tiss_param9</tabstop>
+  <tabstop>cB_ch1_ext_param9</tabstop>
+  <tabstop>cB_ch4_int_param3</tabstop>
+  <tabstop>cB_ch4_tiss_param3</tabstop>
+  <tabstop>cB_ch4_ext_param3</tabstop>
+  <tabstop>cB_ch2_int_param0</tabstop>
+  <tabstop>cB_ch2_tiss_param0</tabstop>
+  <tabstop>cB_ch2_ext_param0</tabstop>
+  <tabstop>cB_ch4_int_param9</tabstop>
+  <tabstop>q_param0</tabstop>
+  <tabstop>cB_ch2_int_param1</tabstop>
+  <tabstop>cB_ch2_tiss_param1</tabstop>
+  <tabstop>cB_ch2_ext_param1</tabstop>
+  <tabstop>cB_chNS_int_param0</tabstop>
+  <tabstop>cB_chNS_tiss_param0</tabstop>
+  <tabstop>cB_chNS_ext_param0</tabstop>
+  <tabstop>cB_roi_param0</tabstop>
+  <tabstop>cB_roi_param1</tabstop>
+  <tabstop>cB_roi_param2</tabstop>
+  <tabstop>cB_roi_param3</tabstop>
+  <tabstop>cB_roi_param4</tabstop>
+  <tabstop>cB_roi_param5</tabstop>
+  <tabstop>cB_roi_param6</tabstop>
+  <tabstop>cB_roi_param7</tabstop>
+  <tabstop>cB_roi_param8</tabstop>
+  <tabstop>cB_roi_param9</tabstop>
+  <tabstop>q_add_param</tabstop>
+  <tabstop>tE_validate</tabstop>
+  <tabstop>cB_ch3_int_param7</tabstop>
+  <tabstop>cB_ch3_ext_param7</tabstop>
+  <tabstop>cB_ch4_tiss_param9</tabstop>
+  <tabstop>q_param5</tabstop>
+  <tabstop>cB_ch3_tiss_param7</tabstop>
+  <tabstop>cB_ch3_int_param1</tabstop>
+  <tabstop>cB_ch3_tiss_param1</tabstop>
+  <tabstop>q_ball</tabstop>
+  <tabstop>cB_ch3_ext_param1</tabstop>
+  <tabstop>cB_ch4_int_param5</tabstop>
+  <tabstop>cB_ch4_tiss_param5</tabstop>
+  <tabstop>cB_ch4_ext_param5</tabstop>
+  <tabstop>cB_ch4_int_param4</tabstop>
+  <tabstop>cB_ch4_tiss_param4</tabstop>
+  <tabstop>cB_ch4_ext_param4</tabstop>
+  <tabstop>cB_ch4_int_param6</tabstop>
+  <tabstop>cB_ch4_tiss_param6</tabstop>
+  <tabstop>cB_ch4_ext_param6</tabstop>
+  <tabstop>cB_ch3_int_param2</tabstop>
+  <tabstop>cB_ch3_tiss_param2</tabstop>
+  <tabstop>q_ball_2</tabstop>
+  <tabstop>cB_ch3_ext_param2</tabstop>
+  <tabstop>cB_chNS_int_param7</tabstop>
+  <tabstop>cB_chNS_tiss_param7</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
  <designerdata>

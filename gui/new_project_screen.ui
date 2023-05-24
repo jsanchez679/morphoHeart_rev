@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1093</width>
-    <height>819</height>
+    <height>814</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -72,7 +72,7 @@ QScrollBar::handle:vertical:hover {
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-447</y>
+        <y>-452</y>
         <width>1070</width>
         <height>1248</height>
        </rect>
@@ -1346,7 +1346,7 @@ background-color: rgb(255, 255, 255);</string>
                    <string>At least one channel is contained inside other </string>
                   </property>
                   <property name="checked">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -10778,6 +10778,182 @@ QPushButton:hover{
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>lineEdit_proj_name</tabstop>
+  <tabstop>checkBox_mH</tabstop>
+  <tabstop>checkBox_mC</tabstop>
+  <tabstop>checkBox_mP</tabstop>
+  <tabstop>textEdit_ref_notes</tabstop>
+  <tabstop>button_create_initial_proj</tabstop>
+  <tabstop>cB_stack_orient</tabstop>
+  <tabstop>cB_roi_orient</tabstop>
+  <tabstop>button_set_orient</tabstop>
+  <tabstop>ck_def_colors</tabstop>
+  <tabstop>ck_chs_allcontained</tabstop>
+  <tabstop>ck_chs_contained</tabstop>
+  <tabstop>tick_ch1</tabstop>
+  <tabstop>ch1_username</tabstop>
+  <tabstop>fillcolor_ch1_int_btn</tabstop>
+  <tabstop>fillcolor_ch1_tiss_btn</tabstop>
+  <tabstop>fillcolor_ch1_ext_btn</tabstop>
+  <tabstop>ch1_mask</tabstop>
+  <tabstop>cB_ch1</tabstop>
+  <tabstop>tick_ch2</tabstop>
+  <tabstop>ch2_username</tabstop>
+  <tabstop>fillcolor_ch2_int_btn</tabstop>
+  <tabstop>fillcolor_ch2_tiss_btn</tabstop>
+  <tabstop>fillcolor_ch2_ext_btn</tabstop>
+  <tabstop>ch2_mask</tabstop>
+  <tabstop>cB_ch2</tabstop>
+  <tabstop>tick_ch3</tabstop>
+  <tabstop>ch3_username</tabstop>
+  <tabstop>fillcolor_ch3_int_btn</tabstop>
+  <tabstop>fillcolor_ch3_tiss_btn</tabstop>
+  <tabstop>fillcolor_ch3_ext_btn</tabstop>
+  <tabstop>ch3_mask</tabstop>
+  <tabstop>cB_ch3</tabstop>
+  <tabstop>tick_ch4</tabstop>
+  <tabstop>ch4_username</tabstop>
+  <tabstop>fillcolor_ch4_int_btn</tabstop>
+  <tabstop>fillcolor_ch4_tiss_btn</tabstop>
+  <tabstop>fillcolor_ch4_ext_btn</tabstop>
+  <tabstop>ch4_mask</tabstop>
+  <tabstop>cB_ch4</tabstop>
+  <tabstop>button_set_initial_set</tabstop>
+  <tabstop>tick_chNS</tabstop>
+  <tabstop>tick_segm</tabstop>
+  <tabstop>tick_sect</tabstop>
+  <tabstop>button_set_processes</tabstop>
+  <tabstop>chNS_username</tabstop>
+  <tabstop>fillcolor_chNS_int_btn</tabstop>
+  <tabstop>fillcolor_chNS_tiss_btn</tabstop>
+  <tabstop>fillcolor_chNS_ext_btn</tabstop>
+  <tabstop>ext_chNS</tabstop>
+  <tabstop>ext_contNS</tabstop>
+  <tabstop>chNS_operation</tabstop>
+  <tabstop>int_chNS</tabstop>
+  <tabstop>int_contNS</tabstop>
+  <tabstop>ck_def_colorsNS</tabstop>
+  <tabstop>button_set_chNS</tabstop>
+  <tabstop>set_meas_param_all</tabstop>
+  <tabstop>sB_no_segm1</tabstop>
+  <tabstop>cB_obj_segm1</tabstop>
+  <tabstop>sB_segm_noObj1</tabstop>
+  <tabstop>names_segm1</tabstop>
+  <tabstop>tick_segm2</tabstop>
+  <tabstop>sB_no_segm2</tabstop>
+  <tabstop>cB_obj_segm2</tabstop>
+  <tabstop>sB_segm_noObj2</tabstop>
+  <tabstop>names_segm2</tabstop>
+  <tabstop>cB_volume_segm</tabstop>
+  <tabstop>cB_area_segm</tabstop>
+  <tabstop>cB_ellip_segm</tabstop>
+  <tabstop>button_set_segm</tabstop>
+  <tabstop>tick_sect1</tabstop>
+  <tabstop>cB_obj_sect1</tabstop>
+  <tabstop>names_sect1</tabstop>
+  <tabstop>tick_sect2</tabstop>
+  <tabstop>cB_obj_sect2</tabstop>
+  <tabstop>names_sect2</tabstop>
+  <tabstop>cB_volume_sect</tabstop>
+  <tabstop>cB_area_sect</tabstop>
+  <tabstop>button_set_sect</tabstop>
+  <tabstop>cB_proj_as_template</tabstop>
+  <tabstop>lineEdit_template_name</tabstop>
+  <tabstop>button_new_proj</tabstop>
+  <tabstop>button_add_organ</tabstop>
+  <tabstop>fillcolor_ch1_int</tabstop>
+  <tabstop>fillcolor_ch1_tiss</tabstop>
+  <tabstop>q_operation</tabstop>
+  <tabstop>fillcolor_ch3_int</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>tick_segm1</tabstop>
+  <tabstop>fillcolor_ch4_int</tabstop>
+  <tabstop>fillcolor_ch2_ext</tabstop>
+  <tabstop>dateEdit</tabstop>
+  <tabstop>q_mask</tabstop>
+  <tabstop>fillcolor_ch4_ext</tabstop>
+  <tabstop>cB_segm_Cut1_ch1_int</tabstop>
+  <tabstop>cB_segm_Cut1_ch1_tiss</tabstop>
+  <tabstop>cB_segm_Cut1_ch1_ext</tabstop>
+  <tabstop>cB_segm_Cut1_ch2_int</tabstop>
+  <tabstop>cB_segm_Cut1_ch2_tiss</tabstop>
+  <tabstop>cB_segm_Cut1_ch2_ext</tabstop>
+  <tabstop>button_go_back</tabstop>
+  <tabstop>scrollArea_2</tabstop>
+  <tabstop>cB_sect_Cut2_chNS_ext</tabstop>
+  <tabstop>cB_segm_Cut1_ch3_int</tabstop>
+  <tabstop>cB_segm_Cut1_ch3_tiss</tabstop>
+  <tabstop>q_ellip</tabstop>
+  <tabstop>cB_segm_Cut1_ch3_ext</tabstop>
+  <tabstop>cB_sect_Cut2_ch4_ext</tabstop>
+  <tabstop>cB_segm_Cut1_ch4_int</tabstop>
+  <tabstop>cB_segm_Cut1_ch4_tiss</tabstop>
+  <tabstop>cB_segm_Cut1_ch4_ext</tabstop>
+  <tabstop>cB_sect_Cut2_ch4_tiss</tabstop>
+  <tabstop>cB_segm_Cut1_chNS_int</tabstop>
+  <tabstop>cB_segm_Cut1_chNS_tiss</tabstop>
+  <tabstop>cB_segm_Cut1_chNS_ext</tabstop>
+  <tabstop>fillcolor_ch4_tiss</tabstop>
+  <tabstop>q_negativeSpace</tabstop>
+  <tabstop>tE_validate2</tabstop>
+  <tabstop>q_segm</tabstop>
+  <tabstop>lab_filled_proj_dir</tabstop>
+  <tabstop>cB_segm_Cut2_ch1_int</tabstop>
+  <tabstop>cB_segm_Cut2_ch1_tiss</tabstop>
+  <tabstop>cB_segm_Cut2_ch1_ext</tabstop>
+  <tabstop>cB_segm_Cut2_ch2_int</tabstop>
+  <tabstop>cB_segm_Cut2_ch2_tiss</tabstop>
+  <tabstop>cB_segm_Cut2_ch2_ext</tabstop>
+  <tabstop>cB_segm_Cut2_ch3_int</tabstop>
+  <tabstop>cB_segm_Cut2_ch3_tiss</tabstop>
+  <tabstop>cB_segm_Cut2_ch3_ext</tabstop>
+  <tabstop>cB_segm_Cut2_ch4_int</tabstop>
+  <tabstop>cB_segm_Cut2_ch4_tiss</tabstop>
+  <tabstop>cB_segm_Cut2_ch4_ext</tabstop>
+  <tabstop>cB_segm_Cut2_chNS_int</tabstop>
+  <tabstop>cB_segm_Cut2_chNS_tiss</tabstop>
+  <tabstop>cB_segm_Cut2_chNS_ext</tabstop>
+  <tabstop>q_sect</tabstop>
+  <tabstop>fillcolor_ch3_tiss</tabstop>
+  <tabstop>tE_validate</tabstop>
+  <tabstop>fillcolor_chNS_int</tabstop>
+  <tabstop>fillcolor_ch3_ext</tabstop>
+  <tabstop>fillcolor_chNS_tiss</tabstop>
+  <tabstop>fillcolor_ch2_int</tabstop>
+  <tabstop>cB_sect_Cut1_ch1_int</tabstop>
+  <tabstop>cB_sect_Cut1_ch1_tiss</tabstop>
+  <tabstop>cB_sect_Cut1_ch1_ext</tabstop>
+  <tabstop>cB_sect_Cut1_ch2_int</tabstop>
+  <tabstop>cB_sect_Cut1_ch2_tiss</tabstop>
+  <tabstop>cB_sect_Cut2_chNS_tiss</tabstop>
+  <tabstop>spinBox_6</tabstop>
+  <tabstop>cB_sect_Cut1_ch2_ext</tabstop>
+  <tabstop>cB_sect_Cut1_ch3_int</tabstop>
+  <tabstop>cB_sect_Cut1_ch3_tiss</tabstop>
+  <tabstop>cB_sect_Cut1_ch3_ext</tabstop>
+  <tabstop>cB_sect_Cut1_ch4_int</tabstop>
+  <tabstop>cB_sect_Cut1_ch4_tiss</tabstop>
+  <tabstop>cB_sect_Cut1_ch4_ext</tabstop>
+  <tabstop>cB_sect_Cut1_chNS_int</tabstop>
+  <tabstop>cB_sect_Cut1_chNS_tiss</tabstop>
+  <tabstop>cB_sect_Cut1_chNS_ext</tabstop>
+  <tabstop>fillcolor_chNS_ext</tabstop>
+  <tabstop>fillcolor_ch1_ext</tabstop>
+  <tabstop>q_orient</tabstop>
+  <tabstop>cB_sect_Cut2_ch1_int</tabstop>
+  <tabstop>cB_sect_Cut2_ch1_tiss</tabstop>
+  <tabstop>cB_sect_Cut2_ch1_ext</tabstop>
+  <tabstop>cB_sect_Cut2_ch2_int</tabstop>
+  <tabstop>cB_sect_Cut2_ch2_tiss</tabstop>
+  <tabstop>fillcolor_ch2_tiss</tabstop>
+  <tabstop>cB_sect_Cut2_ch2_ext</tabstop>
+  <tabstop>cB_sect_Cut2_ch3_int</tabstop>
+  <tabstop>cB_sect_Cut2_ch3_tiss</tabstop>
+  <tabstop>cB_sect_Cut2_ch3_ext</tabstop>
+  <tabstop>cB_sect_Cut2_ch4_int</tabstop>
+  <tabstop>cB_sect_Cut2_chNS_int</tabstop>
+ </tabstops>
  <resources>
   <include location="../images/images.qrc"/>
  </resources>

@@ -248,7 +248,7 @@ border-color: #672146
 }</string>
             </property>
             <property name="text">
-             <string>Browse Project...</string>
+             <string>&amp;Browse Project...</string>
             </property>
             <property name="checkable">
              <bool>true</bool>

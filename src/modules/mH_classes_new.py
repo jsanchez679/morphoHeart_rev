@@ -504,18 +504,22 @@ class Project():
                         
                     if (ch, cont, 'whole') in item_thickness_extint:
                          dict_MeshesProc['D-Thickness_ext>int'][ch] = {}
-                         dict_MeshesProc['D-Thickness_ext>int'][ch][cont] = {'Status': 'NI'}
-            
+                         dict_MeshesProc['D-Thickness_ext>int'][ch][cont] = {'Status': 'NI'} 
+
+            #Ballooning
             for opt in ball_opts: 
                 ch = ball_opts[opt]['to_mesh']
                 cont = ball_opts[opt]['to_mesh_type']
                 cl_ch = ball_opts[opt]['from_cl']
                 cl_cont = ball_opts[opt]['from_cl_type']
+                print('\n\n\nBallooning Workflow')
+                print(ch, cont, cl_ch, cl_cont)
+                print(cont+'_('+cl_ch+'_'+cl_cont+')')
                 if ch in dict_MeshesProc['D-Ballooning'].keys():
                     dict_MeshesProc['D-Ballooning'][ch][cont+'_('+cl_ch+'_'+cl_cont+')'] =  {'Status': 'NI'}
                 else: 
                     dict_MeshesProc['D-Ballooning'][ch] = {}
-                    dict_MeshesProc['D-Ballooning'][ch][cont+'_('+cl_ch+'_'+cl_cont+')'] =  {'Status': 'NI'}    
+                    dict_MeshesProc['D-Ballooning'][ch][cont+'_('+cl_ch+'_'+cl_cont+')'] =  {'Status': 'NI'}
 
             # Segments
             for cutg in cut_segm: 
@@ -541,10 +545,30 @@ class Project():
                 if isinstance(dict_meas[dicti], flatdict.FlatDict):
                     dict_meas[dicti] = dict_meas[dicti].as_dict()
 
+            ball_dict = {}
+            for keyb in dict_meas['ball']:
+                print(keyb)
+                value = dict_meas['ball'][keyb]
+                split_key = keyb.split('_')
+                ch = split_key[0]
+                cont = split_key[1]
+                cl_ch = split_key[2].split('(')[1]
+                cl_cont = split_key[3].split(')')[0]
+                if ch+'_'+cont in ball_dict.keys():
+                    ball_dict[ch+'_'+cont][cl_ch+'_'+cl_cont] =  value
+                else: 
+                    ball_dict[ch+'_'+cont] = {}
+                    ball_dict[ch+'_'+cont][cl_ch+'_'+cl_cont] = value
+            #Remove ballooning from dict_meas
+            dict_meas.pop('ball', None)
+
             for param in dict_meas: 
                 flat_param = flatdict.FlatDict(dict_meas[param], delimiter='_').as_dict()
                 dict_meas[param] = flat_param
 
+            #Add balloning dict 
+            dict_meas['ball'] = ball_dict
+            print('dict_meas', dict_meas)
             dict_MeshesProc['F-Measure'] = dict_meas
             dict_MeshesProc['F-Measure']['Status'] = 'NI'
                                                                                        

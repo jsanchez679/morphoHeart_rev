@@ -13,7 +13,7 @@ from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtCore import pyqtSlot, QDate, Qt, QRegularExpression, QRect, QSize
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
-                              QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem, QSpacerItem, QSizePolicy)
+                              QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem, QSpacerItem, QSizePolicy, QDialogButtonBox)
 from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush
 from qtwidgets import Toggle, AnimatedToggle
 import qtawesome as qta
@@ -109,6 +109,7 @@ class WelcomeScreen(QDialog):
         self.setWindowIcon(QIcon(mH_icon))
         self.theme = self.cB_theme.currentText()
 
+# https://www.pythonguis.com/tutorials/pyqt-dialogs/
 class PromptWindow(QDialog):
 
     def __init__(self, msg:str, title:str, info:str, parent=None):
@@ -165,32 +166,55 @@ class PromptWindow(QDialog):
 
         # print('self.custom_',name,':',getattr(self,'custom_'+name))
         
-class Prompt_ok_cancel(QDialog):
 
-    def __init__(self, msg:str, title:str, parent=None):
-        super().__init__()
+class Prompt_ok_cancel(QDialog):
+    def __init__(self, title:str, msg:str, parent=None):
+        super().__init__(parent)
         uic.loadUi('gui/prompt_ok_cancel.ui', self)
-        self.setFixedSize(400,250)
         self.setWindowTitle(title)
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
         self.textEdit.setText(msg)
-        
-        self.button_ok.clicked.connect(lambda: self.user_ok())
-        self.button_cancel.clicked.connect(lambda: self.user_cancel())
-        self.user_input = None
+
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+        self.other = 'AKA'
+        self.show()
+
+class Prompt_ok_cancel_comboBox(QDialog):
+    def __init__(self, title:str, msg:str, items:list, parent=None):
+        super().__init__(parent)
+        uic.loadUi('gui/prompt_ok_cancel_comboBox.ui', self)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.textEdit.setText(msg)
+        self.comboBox.addItems(items)
+
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
 
         self.show()
 
-    def user_ok(self): 
-        self.user_input = 'OK'
-        print(self.user_input)
-        self.close()
+# class MainWindow(QMainWindow):
+#     def __init__(self):
+#         super().__init__()
 
-    def user_cancel(self): 
-        self.user_input = 'Cancel'
-        print(self.user_input)
-        self.close()
+#         self.setWindowTitle("My App")
+
+#         button = QPushButton("Press me for a dialog!")
+#         button.clicked.connect(self.button_clicked)
+#         self.setCentralWidget(button)
+
+#     def button_clicked(self, s):
+#         print("click", s)
+
+#         dlg = CustomDialog()
+#         if dlg.exec():
+#             print("Success!")
+#         else:
+#             print("Cancel!")
+
 
 class CreateNewProj(QDialog):
 
@@ -1312,12 +1336,12 @@ class SetMeasParam(QDialog):
         self.setWindowIcon(QIcon(mH_icon))
         self.mH_settings = mH_settings
 
-        self.params = {0: {'s': 'SA', 'l':'surface area'},
-                        1: {'s': 'Vol', 'l':'volume'},
-                        2: {'s': 'CL', 'l':'centreline'},
-                        3: {'s': 'th_i2e', 'l':'thickness (int>ext) - Colormap in ext.mesh'},
-                        4: {'s': 'th_e2i','l':'thickness (ext>int) - Colormap in int.mesh'}, 
-                        5: {'s': 'ball','l':'centreline>tissue (ballooning)'}}
+        self.params = {0: {'s': 'SA', 'l':'Surface Area'},
+                        1: {'s': 'Vol', 'l':'Volume'},
+                        2: {'s': 'CL', 'l':'Centreline'},
+                        3: {'s': 'th_i2e', 'l':'Thickness Heatmap (int>ext*)'},
+                        4: {'s': 'th_e2i','l':'Thickness Heatmap (ext>int*)'}, 
+                        5: {'s': 'ball','l':'Centreline>Tissue (Ballooning)'}}
         self.ball_param = 5
                 
         ch_all = mH_settings['name_chs']
@@ -2017,22 +2041,23 @@ class NewOrgan(QDialog):
             error_txt = '*The shape of all the selected images do not match. Check and try again.'
             self.tE_validate.setText(error_txt)
             for ch in proj.mH_channels: 
-                bws_ch = getattr(self,'browse_'+ch)
-                bws_ch.setChecked(False)
-                toggled(bws_ch)
-                label = getattr(self, 'lab_filled_dir_'+ch)
-                label.clear()
-                check_ch = getattr(self, 'check_'+ch)
-                check_ch.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);")
-                check_ch.clear()
-                bws_mk = getattr(self, 'browse_mask_'+ch) 
-                bws_mk.setChecked(False)
-                toggled(bws_mk)
-                label_mk = getattr(self,'lab_filled_dir_mask_'+ch)
-                label_mk.clear()
-                check_mk = getattr(self,'check_mask_'+ch)
-                check_mk.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);")
-                check_mk.clear()
+                if ch != 'chNS':
+                    bws_ch = getattr(self,'browse_'+ch)
+                    bws_ch.setChecked(False)
+                    toggled(bws_ch)
+                    label = getattr(self, 'lab_filled_dir_'+ch)
+                    label.clear()
+                    check_ch = getattr(self, 'check_'+ch)
+                    check_ch.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);")
+                    check_ch.clear()
+                    bws_mk = getattr(self, 'browse_mask_'+ch) 
+                    bws_mk.setChecked(False)
+                    toggled(bws_mk)
+                    label_mk = getattr(self,'lab_filled_dir_mask_'+ch)
+                    label_mk.clear()
+                    check_mk = getattr(self,'check_mask_'+ch)
+                    check_mk.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);")
+                    check_mk.clear()
             return False
 
 class LoadProj(QDialog):
@@ -2315,21 +2340,24 @@ class MainWindow(QMainWindow):
     def init_segment_tab(self): 
         print('Setting up Segmentation Tab')
         self.channels = self.organ.mH_settings['setup']['name_chs']
-        self.cB_channel.clear()
         channels = [self.channels[ch]+' ('+ch+')' for ch in self.channels if ch != 'chNS']
-        self.cB_channel.addItems(channels)
-
+        num = 0
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             label = getattr(self, 'status_'+ch)
             colour_status = getattr(self, 'fillcolor_'+ch)
+            ch_tab = getattr(self, 'tab_chs')
             if ch not in self.channels.keys(): 
                 label.setVisible(False)
                 colour_status.setVisible(False)
+                ch_tab.setTabVisible(num, False)
             else: 
                 root_dict = self.organ.workflow
                 items = ['morphoHeart','ImProc',ch,'Status']
                 self.update_status(root_dict, items, colour_status)
-        
+                tab_num = ch[-1]
+                ch_tab.setTabText(num, 'Ch'+tab_num+': '+self.channels[ch])
+            num +=1
+
         self.button_continue.clicked.connect(lambda: self.continue_next_tab())
 
     def init_pandq_tab(self): 
@@ -2563,19 +2591,24 @@ class MainWindow(QMainWindow):
                                                                 'min_val': minn, 
                                                                 'max_val': maxx}
             
+        cmaps = ['turbo','viridis', 'jet', 'magma', 'inferno', 'plasma']
         hm_items = list(heatmap_dict.keys())
         for num in range(1,13,1):
             label = getattr(self,'label_hm'+str(num))
             mina = getattr(self,'min_hm'+str(num))
             maxa = getattr(self,'max_hm'+str(num))
             cm = getattr(self,'colormap'+str(num))
+            cm.clear()
+            cm.addItems(cmaps)
             d3d2 = getattr(self,'d3d2_'+str(num))
             hm_plot = getattr(self, 'hm_plot'+str(num))
+            hm_eg = getattr(self, 'cm_eg'+str(num))
             if num < len(hm_items): 
                 label.setText(heatmap_dict[hm_items[num]]['name'])
                 mina.setValue(heatmap_dict[hm_items[num]]['min_val'])
                 maxa.setValue(heatmap_dict[hm_items[num]]['max_val'])
                 d3d2.setChecked(True)
+                hm_eg.setEnabled(True)
                 hm_plot.setEnabled(False)
             else: 
                 label.setVisible(False)
@@ -2583,8 +2616,26 @@ class MainWindow(QMainWindow):
                 maxa.setVisible(False)
                 cm.setVisible(False)
                 d3d2.setVisible(False)
+                hm_eg.setVisible(False)
                 hm_plot.setVisible(False)
-    
+
+        #Set all colormaps eg
+        self.colormap1.currentIndexChanged.connect(lambda: self.set_colormap('1'))
+        self.colormap2.currentIndexChanged.connect(lambda: self.set_colormap('2'))
+        self.colormap3.currentIndexChanged.connect(lambda: self.set_colormap('3'))
+        self.colormap4.currentIndexChanged.connect(lambda: self.set_colormap('4'))
+        self.colormap5.currentIndexChanged.connect(lambda: self.set_colormap('5'))
+        self.colormap6.currentIndexChanged.connect(lambda: self.set_colormap('6'))
+        self.colormap7.currentIndexChanged.connect(lambda: self.set_colormap('7'))
+        self.colormap8.currentIndexChanged.connect(lambda: self.set_colormap('8'))
+        self.colormap9.currentIndexChanged.connect(lambda: self.set_colormap('9'))
+        self.colormap10.currentIndexChanged.connect(lambda: self.set_colormap('10'))
+        self.colormap11.currentIndexChanged.connect(lambda: self.set_colormap('11'))
+        self.colormap12.currentIndexChanged.connect(lambda: self.set_colormap('12'))
+
+        for num in range(1,13,1): 
+            self.set_colormap(str(num))
+
     def init_segments(self):
         #Buttons
         self.segments_open.clicked.connect(lambda: self.open_section(name='segments'))
@@ -2732,6 +2783,14 @@ class MainWindow(QMainWindow):
                     stype - 'sect'
                 self.organ.mH_settings['setup'][stype]['Cut'+chk[-1]]['colors'][contk] = color.name()
             
+    def set_colormap(self, name):
+        value = getattr(self, 'colormap'+name).currentText()
+        dir_pix = 'images/'+value+'.png'
+        pixmap = QPixmap(dir_pix)
+        cm_eg = getattr(self, 'cm_eg'+name)
+        cm_eg.setPixmap(pixmap)
+        cm_eg.setScaledContents(True)
+
     def fill_workflow(self, tree, value):
 
         tree.setColumnCount(2)

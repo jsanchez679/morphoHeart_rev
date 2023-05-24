@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>781</width>
-    <height>739</height>
+    <height>813</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -467,6 +467,9 @@ border-color: #672146
                  <height>20</height>
                 </size>
                </property>
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
+               </property>
                <property name="styleSheet">
                 <string notr="true">QComboBox {
     border: 1px solid gray;
@@ -544,7 +547,7 @@ QComboBox QAbstractItemView {
                 </size>
                </property>
                <property name="focusPolicy">
-                <enum>Qt::StrongFocus</enum>
+                <enum>Qt::NoFocus</enum>
                </property>
                <property name="layoutDirection">
                 <enum>Qt::RightToLeft</enum>
@@ -610,7 +613,7 @@ background-color: rgb(255, 255, 255);</string>
                   </size>
                  </property>
                  <property name="focusPolicy">
-                  <enum>Qt::StrongFocus</enum>
+                  <enum>Qt::NoFocus</enum>
                  </property>
                  <property name="layoutDirection">
                   <enum>Qt::RightToLeft</enum>
@@ -678,7 +681,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                   </size>
                  </property>
                  <property name="focusPolicy">
-                  <enum>Qt::StrongFocus</enum>
+                  <enum>Qt::NoFocus</enum>
                  </property>
                  <property name="layoutDirection">
                   <enum>Qt::RightToLeft</enum>
@@ -746,7 +749,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                   </size>
                  </property>
                  <property name="focusPolicy">
-                  <enum>Qt::StrongFocus</enum>
+                  <enum>Qt::NoFocus</enum>
                  </property>
                  <property name="layoutDirection">
                   <enum>Qt::RightToLeft</enum>
@@ -823,6 +826,9 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                  <width>70</width>
                  <height>70</height>
                 </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::ClickFocus</enum>
                </property>
                <property name="styleSheet">
                 <string notr="true">QComboBox {
@@ -1032,6 +1038,9 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
               <height>38</height>
              </size>
             </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
             <property name="styleSheet">
              <string notr="true">QTextEdit {background-color: rgba(0,0,0,0);
 border: 1px solid rgb(156, 156, 156);
@@ -1099,6 +1108,9 @@ QTextEdit:focus { border: 1px solid #eb6fbd;}
               <width>16777215</width>
               <height>20</height>
              </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::ClickFocus</enum>
             </property>
             <property name="styleSheet">
              <string notr="true">QComboBox {
@@ -1189,6 +1201,9 @@ QComboBox QAbstractItemView {
               <height>20</height>
              </size>
             </property>
+            <property name="focusPolicy">
+             <enum>Qt::ClickFocus</enum>
+            </property>
             <property name="styleSheet">
              <string notr="true">QComboBox {
     border: 1px solid gray;
@@ -1277,6 +1292,9 @@ QComboBox QAbstractItemView {
               <width>16777215</width>
               <height>20</height>
              </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::ClickFocus</enum>
             </property>
             <property name="styleSheet">
              <string notr="true">QComboBox {
@@ -1367,6 +1385,9 @@ QComboBox QAbstractItemView {
               <height>20</height>
              </size>
             </property>
+            <property name="focusPolicy">
+             <enum>Qt::ClickFocus</enum>
+            </property>
             <property name="styleSheet">
              <string notr="true">QComboBox {
     border: 1px solid gray;
@@ -1417,13 +1438,13 @@ QComboBox QAbstractItemView {
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>0</height>
+          <height>220</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>16777215</height>
+          <height>260</height>
          </size>
         </property>
         <property name="layoutDirection">
@@ -2981,6 +3002,36 @@ QPushButton:hover{
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>lineEdit_organ_name</tabstop>
+  <tabstop>browse_ch1</tabstop>
+  <tabstop>browse_mask_ch1</tabstop>
+  <tabstop>browse_ch2</tabstop>
+  <tabstop>browse_mask_ch2</tabstop>
+  <tabstop>browse_ch3</tabstop>
+  <tabstop>browse_mask_ch3</tabstop>
+  <tabstop>browse_ch4</tabstop>
+  <tabstop>browse_mask_ch4</tabstop>
+  <tabstop>button_create_new_organ</tabstop>
+  <tabstop>go_to_main_window</tabstop>
+  <tabstop>check_mask_ch1</tabstop>
+  <tabstop>lab_filled_proj_dir</tabstop>
+  <tabstop>check_ch2</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>check_mask_ch2</tabstop>
+  <tabstop>check_ch1</tabstop>
+  <tabstop>check_ch3</tabstop>
+  <tabstop>tE_validate</tabstop>
+  <tabstop>check_mask_ch3</tabstop>
+  <tabstop>dateEdit</tabstop>
+  <tabstop>check_ch4</tabstop>
+  <tabstop>lab_filled_proj_name</tabstop>
+  <tabstop>check_mask_ch4</tabstop>
+  <tabstop>spinBox_6</tabstop>
+  <tabstop>lab_filled_organ_dir</tabstop>
+  <tabstop>button_go_back</tabstop>
+  <tabstop>lab_filled_ref_notes</tabstop>
+ </tabstops>
  <resources>
   <include location="../images/images.qrc"/>
  </resources>

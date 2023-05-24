@@ -73,7 +73,7 @@ def checkWfCloseCont(workflow, ch_name):
     for key_a in ['A-Autom', 'B-Manual', 'C-CloseInOut']:
         val = get_by_path(workflow, ['ImProc',ch_name,'B-CloseCont','Steps',key_a,'Status'])
         close_done.append(val)
-    print('\tchannel:',ch_name, '-CloseCont:', close_done)
+    print('\tChannel:',ch_name, '-CloseCont:', close_done)
     
     return close_done
 

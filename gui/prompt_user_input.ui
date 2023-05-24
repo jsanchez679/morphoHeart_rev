@@ -34,6 +34,9 @@
       <height>20</height>
      </rect>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
     <property name="autoFillBackground">
      <bool>false</bool>
     </property>
@@ -84,6 +87,9 @@ border-color: #672146
       <width>390</width>
       <height>90</height>
      </size>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
     </property>
     <property name="styleSheet">
      <string notr="true">QTextEdit {background-color: rgba(0,0,0,0);
