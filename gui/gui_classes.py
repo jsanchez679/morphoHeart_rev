@@ -13,7 +13,8 @@ from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtCore import pyqtSlot, QDate, Qt, QRegularExpression, QRect, QSize
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
-                              QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem, QSpacerItem, QSizePolicy, QDialogButtonBox)
+                              QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem, QSpacerItem, QSizePolicy, 
+                              QDialogButtonBox, QMessageBox)
 from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush
 from qtwidgets import Toggle, AnimatedToggle
 import qtawesome as qta
@@ -33,7 +34,7 @@ import operator
 # from ..src.modules.mH_funcMeshes import * 
 
 #%% Link to images
-mH_icon = 'images/cat-its-mouth-open.jpg'#'images/logos_w_icon_2o5mm.png'#
+mH_icon = 'images/logos_w_icon_2o5mm.png'#'images/cat-its-mouth-open.jpg'#
 mH_big = 'images/logos_7o5mm.png'
 mH_top_corner = 'images/logos_1o75mm.png'
 
@@ -110,6 +111,52 @@ class WelcomeScreen(QDialog):
         self.theme = self.cB_theme.currentText()
 
 # https://www.pythonguis.com/tutorials/pyqt-dialogs/
+#
+
+class Dialog_mH(QDialog):
+    def __init__(self, title:str, msg:str, parent=None):
+        super().__init__()
+        uic.loadUi('gui/prompt_options_select.ui', self)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.textEdit.setText(msg)
+        self.parent = parent
+        layout = self.hLayout
+        btn_stylesheet = "QPushButton{border-radius:10px; border-width: 1px;border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb(211, 211, 211); color: rgb(39, 39, 39); font: 11pt \"Calibri Light\"; height:20; padding:0px; width:100;} QPushButton:hover{background-color: #eb6fbd; border-color: #672146;}"
+        
+        btn_yes =  QtWidgets.QPushButton()
+        btn_yes.setStyleSheet(btn_stylesheet)
+        btn_yes_name = 'Yes'
+        btn_yes.setObjectName(btn_yes_name)
+        btn_yes.setText(btn_yes_name)
+        self.btn_yes = btn_yes
+        self.hLayout.addWidget(self.btn_yes)
+        btn_yes.clicked.connect(lambda: self.yes_func())
+
+        btn_no =  QtWidgets.QPushButton()
+        btn_no.setStyleSheet(btn_stylesheet)
+        btn_no_name = 'No'
+        btn_no.setObjectName(btn_no_name)
+        btn_no.setText(btn_no_name)
+        self.btn_no = btn_no
+        self.hLayout.addWidget(self.btn_no)
+        btn_no.clicked.connect(lambda: self.no_func())
+
+        self.setModal(True)
+        self.show()
+    
+    def yes_func(self):
+        print('Yes!')
+        self.parent.prompt_val.setText('Yes')
+        self.close()
+
+    def no_func(self):
+        print('No!')
+        self.parent.prompt_val.setText('No')
+        self.close()
+    
+
 class PromptWindow(QDialog):
 
     def __init__(self, msg:str, title:str, info:str, parent=None):
@@ -135,6 +182,7 @@ class PromptWindow(QDialog):
 
         input_validator = QRegularExpressionValidator(reg_ex, self.lineEdit)
         self.lineEdit.setValidator(input_validator)
+        self.setModal(True)
         self.show()
 
     def validate_custom_or(self, parent, info):
@@ -166,7 +214,6 @@ class PromptWindow(QDialog):
 
         # print('self.custom_',name,':',getattr(self,'custom_'+name))
         
-
 class Prompt_ok_cancel(QDialog):
     def __init__(self, title:str, msg:str, parent=None):
         super().__init__(parent)
@@ -178,7 +225,7 @@ class Prompt_ok_cancel(QDialog):
 
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
-        self.other = 'AKA'
+        self.setModal(True)
         self.show()
 
 class Prompt_ok_cancel_comboBox(QDialog):
@@ -193,8 +240,79 @@ class Prompt_ok_cancel_comboBox(QDialog):
 
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
-
         self.show()
+
+class Prompt_options_input(QDialog):
+    def __init__(self, title:str, msg:str, res:dict, parent=None):
+        super().__init__(parent)
+        uic.loadUi('gui/prompt_options_input.ui', self)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.textEdit_msg.setText(msg)
+
+        #Set options list 
+        res_txt = ''
+        for num, item in res.items():
+            res_txt += '#'+str(num)+': '+ item+'\n'
+        self.textEdit_options.setText(res_txt)
+        print(res_txt)
+
+        reg_ex = QRegularExpression("(\d+(?:-\d+)?)((?:(?:,)(\d+(?:-\d+)?))*)")
+        input_validator = QRegularExpressionValidator(reg_ex, self.user_input)
+        self.user_input.setValidator(input_validator)
+
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+        self.show()
+
+class Prompt_yes_no(QDialog): 
+    def __init__(self, title:str, msg:str, parent=None):
+        super().__init__(parent)
+        uic.loadUi('gui/prompt_yes_no.ui', self)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.textEdit.setText(msg)
+        self.msg = QMessageBox(parent)
+        # self.buttonBox = QtWidgets.QDialogButtonBox()
+        # self.buttonBox.setStyleSheet("QDialogButtonBox QPushButton{\n"
+        #                             "color: rgb(39, 39, 39);\n"
+        #                             "font: 11pt \"Calibri Light\";\n"
+        #                             "height:20;\n"
+        #                             "padding:0px;\n"
+        #                             "width:120;\n"
+        #                             "background-color: rgb(211, 211, 211);\n"
+        #                             "border-radius: 10px;\n"
+        #                             "border-width: 1px;\n"
+        #                             "border-style: outset;\n"
+        #                             "border-color: rgb(66, 66, 66);\n"
+        #                             "}\n"
+        #                             "\n"
+        #                             "QDialogButtonBox QPushButton:hover{\n"
+        #                             "background-color: #eb6fbd;\n"
+        #                             "border-color: #672146\n"
+        #                             "}\n"
+        #                             "\n"
+        #                             "")
+        
+        # self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
+        self.msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        # self.buttonBox.QDialogButtonBox(QDialogButtonBox.Yes | QDialogButtonBox.No)
+        # self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Cancel|QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        # self.buttonBox.setCenterButtons(True)
+        # self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout.addWidget(self.msg)
+        # self.verticalLayout.addWidget(self.buttonBox)
+        self.msg.buttonClicked.connect(self.yes_no_clicked)
+    
+    def yes_no_clicked(self, button_clicked):
+        print(button_clicked.text())
+
+    # def msgbtn(self, i):
+    #     print( "Button pressed is:",i.text() )
+    #     self.output = i.text()
+    #     self.close()
 
 # class MainWindow(QMainWindow):
 #     def __init__(self):
@@ -1409,6 +1527,7 @@ class SetMeasParam(QDialog):
 
         self.ballooning_to = ['--select--']
         self.set_ballooning_opt()
+        self.setModal(True)
 
     def radio_button(self, opt): 
         if getattr(self, 'rB_'+opt).isChecked(): 

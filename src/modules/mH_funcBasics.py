@@ -165,6 +165,25 @@ def ask4inputList(text, res, res_all=True):
 
     return obj_num
 
+def input_range(response):
+    try: 
+        obj_num = []
+        comma_split = response.split(',')
+        print(comma_split)
+        for string in comma_split:
+            if '-' in string:
+                minus_split = string.split('-')
+                print(minus_split)
+                for n in list(range(int(minus_split[0]),int(minus_split[1])+1,1)):
+                    obj_num.append(n)
+                    print('Appended: ', str(n))
+            else:
+                obj_num.append(int(string))
+                print('Appended2: ', string)
+        return obj_num
+    except: 
+        obj_num = 'error'
+
 #%% func - compare_dicts
 def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=False):
     """Compare two dictionaries recursively to find non mathcing elements

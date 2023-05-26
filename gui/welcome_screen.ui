@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>601</width>
-    <height>687</height>
+    <height>662</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,7 @@
      </property>
     </widget>
    </item>
-   <item alignment="Qt::AlignBottom">
+   <item>
     <widget class="QLabel" name="mH_logo_XL">
      <property name="minimumSize">
       <size>
@@ -321,19 +321,24 @@ QPushButton:hover{
      </item>
     </layout>
    </item>
-   <item>
-    <widget class="QLabel" name="mH_logo_XL_2">
+   <item alignment="Qt::AlignHCenter">
+    <widget class="QLabel" name="prompt_val">
      <property name="minimumSize">
       <size>
-       <width>0</width>
-       <height>50</height>
+       <width>120</width>
+       <height>30</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>16777215</width>
-       <height>110</height>
+       <width>120</width>
+       <height>30</height>
       </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(170, 0, 127);
+font: 25 8pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
@@ -534,7 +539,7 @@ QPushButton:hover{
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <layout class="QHBoxLayout" name="hL_sound_on_off">
-       <item alignment="Qt::AlignVCenter">
+       <item>
         <widget class="QLabel" name="label_instructions_5">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">

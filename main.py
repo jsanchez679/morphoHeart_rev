@@ -15,7 +15,7 @@ from PyQt6 import QtWidgets#, QtCore
 #%% morphoHeart Imports - ##################################################
 from gui.gui_classes import *
 from src.modules import mH_classes_new as mHC
-# from src.modules import mH_funcBasics as fcB
+from src.modules import mH_funcBasics as fcB
 from src.modules import mH_funcContours as fcC
 from src.modules import mH_funcMeshes as fcM
 
@@ -61,10 +61,17 @@ class Controller:
         self.welcome_win.button_new_proj.clicked.connect(lambda: self.show_create_new_proj())
         # -Load project
         self.welcome_win.button_load_proj.clicked.connect(lambda: self.show_load_proj())
+        # -Create new project from template
+        self.welcome_win.button_new_proj_from_template.clicked.connect(lambda: self.button_clicked())
 
         #Save theme
         self.theme = self.welcome_win.theme
         print('Selected theme: ', self.theme)
+    
+    def button_clicked(self): 
+        title = 'This is the title!'
+        msg = 'Message goes here!'
+        self.prompt = Dialog_mH(msg, title, parent=self.welcome_win)
     
     def show_create_new_proj(self):
         #Close welcome window
@@ -395,63 +402,50 @@ class Controller:
     #Channels related
     def close_cont(self, ch_name):
         workflow = self.organ.workflow['morphoHeart']
-        print('workflow:',workflow)
         process = ['ImProc',ch_name,'Status']
         check_proc = get_by_path(workflow, process)
         close_done = fcC.checkWfCloseCont(workflow, ch_name)
+        proceed = False
 
-        title = 'AAAA'
-        msg = 'Aja!'
-        self.button_clicked(title, msg, parent = self.main_win)
-        # if all(flag == 'DONE' for flag in close_done):
-        #     ch_userName = self.organ.imChannels[ch_name]['user_chName']
-        #     q = 'You already finished processing the contours of this channel ('+ch_userName+'). Do you want to re-run any of the processes?'
-        #     res = {0: 'no, continue with next step', 1: 'yes, I would like to re-run some process(es)!'}
-        #     proceed_q = ask4input(q, res, bool)
-            
-        #     if proceed_q:
-        #         # Here ask for processes that the user might want to re-run
-        #         q = 'Select the process(es) you want to run:'
-        #         res = {0: 'Mask Stack', 1: 'Close contours Automatically', 2: 'Close contours manually', 3: 'Close Inflow/Outflow'}
-        #         num_proc = ask4inputList(q, res)
-        #         for num in num_proc:
-        #             close_done[num] = 'Re-run'
-        #         proceed = True
-        #         print(close_done)
-        #     else: 
-        #         proceed = False
+        if all(flag == 'DONE' for flag in close_done):
+            ch_userName = self.organ.imChannels[ch_name]['user_chName']
+            title = 'Processes already performed in '+ch_userName
+            msg = 'You already finished processing the contours of this channel ('+ch_userName+'). Press  -OK-  if you want to re-run any of the close contour processes, or  -Cancel-  to continue with the next step.'
+            proceed_q = True if self.prompt_window_ok_cancel(title, msg, parent = self.main_win) == 'OK' else False
+            print(proceed_q)
+            if proceed_q:
+                # Here ask for processes that the user might want to re-run
+                num_proc = None
+                while num_proc == None: 
+                    title = 'Select the process(ess) to re-run'
+                    msg = 'Select the processess to re-run (e.g. to run only  -Close Inflow/Outflow-  type: 3, to run from  -Mask Stack--  to  -Close Inflow/Outflow-  type: 0-3).'
+                    res = {0: 'Mask Stack', 1: 'Close contours Automatically', 2: 'Close contours manually', 3: 'Close Inflow/Outflow'}
+                    num_proc = self.prompt_option_selection(title, msg, res, parent = self.main_win)
+                    print('num_proc:',num_proc)
+                for num in num_proc:
+                    close_done[num] = 'Re-run'
+                    proceed = True
+                    print('close_done:',close_done)
+            else: 
+                proceed = False
                 
-        # elif check_proc == 'Initialised': 
-        #     proceed = True
-        #     print('Processing had been initialised!')
-        # else: 
-        #     close_done = ['NI']*4
-        #     print('\tchannel:',ch_name, '-CloseCont:', close_done)
-        #     proceed = True
+        elif check_proc == 'Initialised': 
+            proceed = True
+            print('Processing had been initialised!')
+        else: 
+            close_done = ['NI']*4
+            print('\tChannel:',ch_name, '-CloseCont:', close_done)
+            proceed = True
             
-        # if proceed: 
-        #     ch_new = fcC.closeContours(organ=self.organ, ch_name=ch_name)
-        #     setattr(self, 'im_'+ch_name, ch_new)
+        if proceed: 
+            ch_new = fcC.closeContours(organ=self.organ, ch_name=ch_name, close_done=close_done)
+        else: 
+            ch_new = fcC.ImChannel(organ=self.organ, ch_name=ch_name)#, new=False)
+        setattr(self, 'im_'+ch_name, ch_new)
+        close_cont_btn = getattr(self.main_win, ch_name+'_closecont')
+        close_cont_btn.setChecked(True)
+        toggled(close_cont_btn)
 
-    def button_clicked(self, title, msg, parent):
-        print("click")
-
-        # dlg = Prompt_ok_cancel(title, msg, parent)
-        # if dlg.exec():
-        #     print("Success!")
-        # else:
-        #     print("Cancel!")
-        
-        items = ['AAA', 'BBB', 'CCC']
-        dlg = Prompt_ok_cancel_comboBox(title, msg, items, parent)
-        if dlg.exec():
-            print("Success!")
-            print(dlg.comboBox.currentText())
-        else:
-            print("Cancel!")
-            print(dlg.comboBox.currentText())
-
-    
     def select_cont(self, ch):
         im_o = getattr(self, 'im_'+ch)
         ch_new = fcC.selectContours(organ=self.organ, im_ch = im_o)
@@ -459,6 +453,44 @@ class Controller:
     
     def run_keeplargest(self):
         fcM.s32Meshes(self.organ, self.main_win.gui_keep_largest, self.main_win.rotateZ_90)
+    
+    #Prompt windows
+    def prompt_window_ok_cancel(self, title, msg, parent):
+        dlg = Prompt_ok_cancel(title, msg, parent)
+        if dlg.exec():
+            print("OK!")
+            return 'OK'
+        else:
+            print("Cancel!")
+            return 'Cancel'
+        
+    def prompt_window_selection(self, title:str, msg:str, items:list, parent):
+        dlg = Prompt_ok_cancel_comboBox(title, msg, items, parent)
+        if dlg.exec():
+            print("OK!")
+            print(dlg.comboBox.currentText())
+            return dlg.comboBox.currentText()
+        else:
+            print("Cancel!")
+            return None
+    
+    def prompt_option_selection(self, title:str, msg:str, res:dict, parent):
+        valid_output = False
+        while not  valid_output:
+            dlg = Prompt_options_input(title, msg, res, parent)
+            if dlg.exec():
+                print("OK!")
+                print(dlg.user_input.text())
+                output = fcB.input_range(dlg.user_input.text())
+                if output == 'error':
+                    dlg.tE_validate.setText('*Please input a valid range.')
+                else: 
+                    valid_output = True
+            else:
+                print("Cancel!")
+                valid_output = True
+                output = None
+        return output
 
 def main():
     app = QtWidgets.QApplication(sys.argv)

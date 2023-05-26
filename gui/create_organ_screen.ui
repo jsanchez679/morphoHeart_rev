@@ -547,7 +547,7 @@ QComboBox QAbstractItemView {
                 </size>
                </property>
                <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
+                <enum>Qt::StrongFocus</enum>
                </property>
                <property name="layoutDirection">
                 <enum>Qt::RightToLeft</enum>
@@ -613,7 +613,7 @@ background-color: rgb(255, 255, 255);</string>
                   </size>
                  </property>
                  <property name="focusPolicy">
-                  <enum>Qt::NoFocus</enum>
+                  <enum>Qt::StrongFocus</enum>
                  </property>
                  <property name="layoutDirection">
                   <enum>Qt::RightToLeft</enum>
@@ -681,7 +681,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                   </size>
                  </property>
                  <property name="focusPolicy">
-                  <enum>Qt::NoFocus</enum>
+                  <enum>Qt::StrongFocus</enum>
                  </property>
                  <property name="layoutDirection">
                   <enum>Qt::RightToLeft</enum>
@@ -749,7 +749,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                   </size>
                  </property>
                  <property name="focusPolicy">
-                  <enum>Qt::NoFocus</enum>
+                  <enum>Qt::StrongFocus</enum>
                  </property>
                  <property name="layoutDirection">
                   <enum>Qt::RightToLeft</enum>
@@ -1039,7 +1039,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
              </size>
             </property>
             <property name="focusPolicy">
-             <enum>Qt::NoFocus</enum>
+             <enum>Qt::StrongFocus</enum>
             </property>
             <property name="styleSheet">
              <string notr="true">QTextEdit {background-color: rgba(0,0,0,0);
