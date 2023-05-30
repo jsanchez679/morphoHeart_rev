@@ -30,8 +30,11 @@ from functools import reduce
 import operator
 
 #%% morphoHeart Imports - ##################################################
-# from ..src.modules.mH_funcBasics import get_by_path
-# from ..src.modules.mH_funcMeshes import * 
+# from .src.modules.mH_funcBasics import get_by_path
+# from .src.modules.mH_funcMeshes import * 
+from ..modules.mH_funcBasics import get_by_path
+from ..modules.mH_funcMeshes import *
+from .config import mH_config
 
 #%% Link to images
 mH_icon = 'images/logos_w_icon_2o5mm.png'#'images/cat-its-mouth-open.jpg'#
@@ -47,14 +50,18 @@ play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-r
 hover_btn = "QPushButton:hover {border-image: url("+play_bw+")}"
 pressed_btn = "QPushButton:pressed {border-image: url("+play_gb+");"
 style_play = play_btn+hover_btn+pressed_btn
- # https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
+
+html_txt = ['<html><head><meta name="qrichtext" content="1" /><style type="text/css"> p, li { white-space: pre-wrap; } </style></head><body style=" font-family:"Calibri Light"; font-size:11pt; font-weight:24; font-style:normal;"> <p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">','</p></body></html>']
+reg_exps = {'num': '[+]?((\d+(\.\d*)?)|(\.\d+))', 'all': '.*'}
+
+# https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
 
 #%% Classes - ########################################################
 class WelcomeScreen(QDialog):
 
     def __init__(self) -> None:
         super().__init__()
-        uic.loadUi('gui/welcome_screen.ui', self)
+        uic.loadUi('src/gui/ui/welcome_screen.ui', self)
         # self.setFixedSize(600,680)
         self.setWindowTitle('Welcome to morphoHeart...')
         self.mH_logo_XL.setPixmap(QPixmap(mH_big))
@@ -67,123 +74,275 @@ class WelcomeScreen(QDialog):
         # self.btn_link2github.setIcon(qta.icon("fa5b.github"))
         self.btn_link2github.clicked.connect(lambda: webbrowser.open('https://github.com/jsanchez679/morphoHeart'))
 
-        self.theme = self.cB_theme.currentText()
-        # https://www.pythontutorial.net/pyqt/qt-style-sheets/
-        # https://doc.qt.io/qtforpython-6/overviews/stylesheet-examples.html
-        # https://doc.qt.io/qt-6/stylesheet-examples.html
-        # https://www.youtube.com/watch?v=ePG_t9bJQ5I
-        #self.cB_theme.currentIndexChanged.connect(lambda: self.theme_changed())
-
         # Sound Buttons
         layout = self.hL_sound_on_off 
         add_sound_bar(self, layout)
         sound_toggled(win=self)
+        # print('gui_sound:',gui_sound)
 
-        self.on_cB_theme_currentIndexChanged(0)
+        # Theme 
+        mH_config.theme = self.cB_theme.currentText()
+        self.on_cB_theme_currentIndexChanged(mH_config.theme)
 
     @pyqtSlot(int)
-    def on_cB_theme_currentIndexChanged(self, index):
+    def on_cB_theme_currentIndexChanged(self, theme):
         #https://www.youtube.com/watch?v=ePG_t9bJQ5I
         #https://raw.githubusercontent.com/NiklasWyld/Wydbid/main/Assets/stylesheet
         #https://github.com/ColinDuquesnoy/QDarkStyleSheet/blob/master/qdarkstyle/dark/darkstyle.qss
         # https://matiascodesal.com/blog/spice-your-qt-python-font-awesome-icons/
         # https://www.geeksforgeeks.org/pyqt5-change-color-of-check-box-indicator/
-        if index == 0: 
-            file = 'gui/themes/Light.qss'
+        # https://www.youtube.com/watch?v=ms2Ey_SzZZc
+                # https://www.pythontutorial.net/pyqt/qt-style-sheets/
+        # https://doc.qt.io/qtforpython-6/overviews/stylesheet-examples.html
+        # https://doc.qt.io/qt-6/stylesheet-examples.html
+        # https://www.youtube.com/watch?v=ePG_t9bJQ5I
+        #self.cB_theme.currentIndexChanged.connect(lambda: self.theme_changed())
+
+        if theme == 'Light' or theme == 0: 
+            file = 'src/gui/themes/Light.qss'
         else: 
-            file = 'gui/themes/Dark.qss'
+            file = 'src/gui/themes/Dark.qss'
         #Open the file
         with open(file, 'r') as f: 
             style_str = f.read()
-            print('aaaa', str(index), style_str)
+            print('Selected theme: ', theme)#, style_str)
         #Set the theme
         self.setStyleSheet(style_str)
+        mH_config.theme = theme
 
-    def theme_changed(self):
-        if self.cB_theme.currentText() == 'Dark': 
-            uic.loadUi('gui/welcome_screen_dark.ui', self)
-        else: 
-            uic.loadUi('gui/welcome_screen.ui', self)
-        self.setFixedSize(600,575)
-        self.setWindowTitle('Welcome to morphoHeart...')
-        self.mH_logo_XL.setPixmap(QPixmap(mH_big))
-        self.setWindowIcon(QIcon(mH_icon))
-        self.theme = self.cB_theme.currentText()
-
-# https://www.pythonguis.com/tutorials/pyqt-dialogs/
-#
-
-class Dialog_mH(QDialog):
+class Prompt_ok_cancel(QDialog):
     def __init__(self, title:str, msg:str, parent=None):
-        super().__init__()
-        uic.loadUi('gui/prompt_options_select.ui', self)
+        super().__init__(parent)
+        uic.loadUi('src/gui/ui/prompt_ok_cancel.ui', self)
         self.setWindowTitle(title)
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
-        self.textEdit.setText(msg)
-        self.parent = parent
-        layout = self.hLayout
-        btn_stylesheet = "QPushButton{border-radius:10px; border-width: 1px;border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb(211, 211, 211); color: rgb(39, 39, 39); font: 11pt \"Calibri Light\"; height:20; padding:0px; width:100;} QPushButton:hover{background-color: #eb6fbd; border-color: #672146;}"
-        
-        btn_yes =  QtWidgets.QPushButton()
-        btn_yes.setStyleSheet(btn_stylesheet)
-        btn_yes_name = 'Yes'
-        btn_yes.setObjectName(btn_yes_name)
-        btn_yes.setText(btn_yes_name)
-        self.btn_yes = btn_yes
-        self.hLayout.addWidget(self.btn_yes)
-        btn_yes.clicked.connect(lambda: self.yes_func())
+        self.textEdit.setHtml(html_txt[0]+msg+html_txt[1])
+        # self.textEdit.setText(msg)
+        self.output = None
 
-        btn_no =  QtWidgets.QPushButton()
-        btn_no.setStyleSheet(btn_stylesheet)
-        btn_no_name = 'No'
-        btn_no.setObjectName(btn_no_name)
-        btn_no.setText(btn_no_name)
-        self.btn_no = btn_no
-        self.hLayout.addWidget(self.btn_no)
-        btn_no.clicked.connect(lambda: self.no_func())
-
+        self.buttonBox.accepted.connect(lambda: self.accepted())
+        self.buttonBox.rejected.connect(lambda: self.rejected())
         self.setModal(True)
         self.show()
-    
-    def yes_func(self):
-        print('Yes!')
-        self.parent.prompt_val.setText('Yes')
+
+    def accepted(self): 
+        print('Entered func!')
+        self.output = True
         self.close()
 
-    def no_func(self):
-        print('No!')
-        self.parent.prompt_val.setText('No')
+    def rejected(self): 
+        print('Rejected!')
+        self.output = False
         self.close()
-    
 
-class PromptWindow(QDialog):
+class Prompt_ok_cancel_radio(QDialog):
+    def __init__(self, title:str, msg:str, items:dict, parent=None):
+        super().__init__(parent)
+        uic.loadUi('src/gui/ui/prompt_ok_cancel_radio.ui', self)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.textEdit.setHtml(html_txt[0]+msg+html_txt[1])
+        self.output = None
+
+        #Set radio buttons
+        nn = 0
+        self.rButtons = []
+        for key in items: 
+            if nn < 2: 
+                rB = getattr(self, 'radioButton'+str(nn))
+                lE = getattr(self, 'lineEdit'+str(nn))
+                hL = getattr(self, 'hL'+str(nn))
+                # sp = getattr(self, 'spacer'+str(nn))
+            else: 
+                hL = QtWidgets.QHBoxLayout()
+                hL.setObjectName("hL"+str(nn))
+                rB = QtWidgets.QRadioButton(parent=self.widget)
+                rB.setMinimumSize(QtCore.QSize(0, 20))
+                rB.setMaximumSize(QtCore.QSize(16777215, 20))
+                rB.setStyleSheet("font: 25 10pt \"Calibri Light\";")
+                rB.setObjectName("radioButton"+str(nn))
+                hL.addWidget(rB)
+                sp = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+                hL.addItem(sp)
+                lE = QtWidgets.QLineEdit(parent=self.widget)
+                lE.setMinimumSize(QtCore.QSize(0, 20))
+                lE.setMaximumSize(QtCore.QSize(16777215, 20))
+                lE.setObjectName("lineEdit"+str(nn))
+                hL.addWidget(lE)
+                self.verticalLayout.addLayout(hL)
+                setattr(self, 'spacer'+str(nn), sp)
+
+            #Assign values
+            rB.setText(items[key]['opt'])
+            if 'lineEdit' in items[key].keys(): 
+                if items[key]['lineEdit']: 
+                    lE.setVisible(True)
+                    reg_ex = QRegularExpression(reg_exps[items[key]['regEx']])
+                    input_validator = QRegularExpressionValidator(reg_ex, lE)
+                    lE.setValidator(input_validator)
+                else: 
+                    lE.setVisible(False)
+            else: 
+                lE.setVisible(False)
+            self.rButtons.append(rB)
+
+            setattr(self, 'hL'+str(nn), hL)
+            setattr(self, 'radioButton'+str(nn), rB)
+            setattr(self, 'lineEdit'+str(nn), lE)
+            nn += 1
+
+        self.buttonBox.clicked.connect(lambda: self.accepted(items))
+        self.buttonBox.rejected.connect(lambda: self.rejected())
+        self.setModal(True)
+        self.show()
+
+    def accepted(self, items):
+        print('Entered func!')
+        for rB in self.rButtons:
+            if rB.isChecked():
+                rB_checked = rB.text()
+                break
+        
+        #Find the opt that was selected
+        for key in items: 
+            if items[key]['opt'] == rB_checked: 
+                keyf = key
+                break
+        
+        #Check the lineEdit if it was true and get value
+        if 'lineEdit' in items[keyf].keys(): 
+            if items[keyf]['lineEdit']: 
+                lineEdit_txt = getattr(self, 'lineEdit'+str(keyf)).text()
+                print(lineEdit_txt, len(lineEdit_txt))
+                if len(lineEdit_txt) == 0: 
+                    self.tE_validate.setText('Please provide an input for the selected option!')
+                    return
+                else: 
+                    self.output = [keyf, rB_checked, lineEdit_txt]
+                    self.close()
+            else: 
+                self.output = [keyf, rB_checked, None]
+                self.close()
+        else: 
+            self.output = [keyf, rB_checked, None]
+            self.close()
+    
+    def rejected(self):
+        print('Rejected!')
+        self.output = None
+        self.close()
+
+class Prompt_ok_cancel_checkbox(QDialog):
+    def __init__(self, title:str, msg:str, items:dict, parent=None):
+        super().__init__(parent)
+        uic.loadUi('src/gui/ui/prompt_ok_cancel_checkbox.ui', self)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.textEdit.setHtml(html_txt[0]+msg+html_txt[1])
+        self.output = None
+
+        #Set radio buttons
+        nn = 0
+        self.cButtons = []
+        for key in items: 
+            if nn < 2: 
+                cB = getattr(self, 'checkBox'+str(nn))
+                lE = getattr(self, 'lineEdit'+str(nn))
+                hL = getattr(self, 'hL'+str(nn))
+                # sp = getattr(self, 'spacer'+str(nn))
+            else: 
+                hL = QtWidgets.QHBoxLayout()
+                hL.setObjectName("hL"+str(nn))
+                cB = QtWidgets.QCheckBox(parent=self.widget)
+                cB.setMinimumSize(QtCore.QSize(0, 20))
+                cB.setMaximumSize(QtCore.QSize(16777215, 20))
+                cB.setStyleSheet("font: 25 10pt \"Calibri Light\";")
+                cB.setObjectName("checkBox"+str(nn))
+                hL.addWidget(cB)
+                sp = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+                hL.addItem(sp)
+                lE = QtWidgets.QLineEdit(parent=self.widget)
+                lE.setMinimumSize(QtCore.QSize(0, 20))
+                lE.setMaximumSize(QtCore.QSize(16777215, 20))
+                lE.setObjectName("lineEdit"+str(nn))
+                hL.addWidget(lE)
+                self.verticalLayout.addLayout(hL)
+                setattr(self, 'spacer'+str(nn), sp)
+
+            #Assign values
+            cB.setText(items[key]['opt'])
+            if 'lineEdit' in items[key].keys(): 
+                if items[key]['lineEdit']: 
+                    lE.setVisible(True)
+                    reg_ex = QRegularExpression(reg_exps[items[key]['regEx']])
+                    input_validator = QRegularExpressionValidator(reg_ex, lE)
+                    lE.setValidator(input_validator)
+                else: 
+                    lE.setVisible(False)
+            else: 
+                lE.setVisible(False)
+            self.cButtons.append(cB)
+
+            setattr(self, 'hL'+str(nn), hL)
+            setattr(self, 'checkBox'+str(nn), cB)
+            setattr(self, 'lineEdit'+str(nn), lE)
+            nn += 1
+
+        self.buttonBox.clicked.connect(lambda: self.accepted(items))
+        self.buttonBox.rejected.connect(lambda: self.rejected())
+        self.setModal(True)
+        self.show()
+
+    def accepted(self, items):
+        checked = {}
+        for cB in self.cButtons:
+            checked[cB.text()] = cB.isChecked()
+        self.output = [checked]
+        self.close()
+
+    def rejected(self):
+        print('Rejected!')
+        self.output = None
+        self.close()
+
+class Prompt_user_input(QDialog):
 
     def __init__(self, msg:str, title:str, info:str, parent=None):
         super().__init__()
-        uic.loadUi('gui/prompt_user_input.ui', self)
+        uic.loadUi('src/gui/ui/prompt_user_input.ui', self)
         self.setFixedSize(400,250)
         self.setWindowTitle(title)
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
-        self.textEdit.setText(msg)
-        
+        self.textEdit.setHtml(html_txt[0]+msg+html_txt[1])
+        self.output = None
+
         if title == 'Custom Orientation':
             self.custom_or = None
             reg_ex = QRegularExpression("[a-z-A-Z_ 0-9,]+")
-            self.button_ok.clicked.connect(lambda: self.validate_custom_or(parent, info))
+            self.buttonBox.clicked.connect(lambda: self.validate_custom_or(parent, info))
 
         elif title == 'Custom Strain' or title == 'Custom Stage' or title == 'Custom Genotype' or title == 'Custom Manipulation': 
             reg_ex = QRegularExpression("[a-z-A-Z_ 0-9(),.:;/+-]+")
-            self.button_ok.clicked.connect(lambda: self.validate_organ_data(parent, info))
+            self.buttonBox.clicked.connect(lambda: self.validate_organ_data(parent, info))
         
         else: 
             reg_ex = QRegularExpression('.*')
+
+        self.buttonBox.rejected.connect(lambda: self.rejected())
 
         input_validator = QRegularExpressionValidator(reg_ex, self.lineEdit)
         self.lineEdit.setValidator(input_validator)
         self.setModal(True)
         self.show()
+
+    def rejected(self):
+        print('Rejected!')
+        self.output = None
+        self.close()
 
     def validate_custom_or(self, parent, info):
         user_input = split_str(self.lineEdit.text())
@@ -197,6 +356,7 @@ class PromptWindow(QDialog):
             user_or = getattr(parent, 'cB_'+info+'_orient')
             user_or.addItem(added_or)
             user_or.setCurrentText(added_or)
+            self.output = added_or
             self.close()
     
     def validate_organ_data(self, parent, name):
@@ -210,129 +370,8 @@ class PromptWindow(QDialog):
             cB_data = getattr(parent, 'cB_'+name)
             cB_data.addItem(user_input)
             cB_data.setCurrentText(user_input)
+            self.output = user_input
             self.close()
-
-        # print('self.custom_',name,':',getattr(self,'custom_'+name))
-        
-class Prompt_ok_cancel(QDialog):
-    def __init__(self, title:str, msg:str, parent=None):
-        super().__init__(parent)
-        uic.loadUi('gui/prompt_ok_cancel.ui', self)
-        self.setWindowTitle(title)
-        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
-        self.setWindowIcon(QIcon(mH_icon))
-        self.textEdit.setText(msg)
-
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-        self.setModal(True)
-        self.show()
-
-class Prompt_ok_cancel_comboBox(QDialog):
-    def __init__(self, title:str, msg:str, items:list, parent=None):
-        super().__init__(parent)
-        uic.loadUi('gui/prompt_ok_cancel_comboBox.ui', self)
-        self.setWindowTitle(title)
-        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
-        self.setWindowIcon(QIcon(mH_icon))
-        self.textEdit.setText(msg)
-        self.comboBox.addItems(items)
-
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-        self.show()
-
-class Prompt_options_input(QDialog):
-    def __init__(self, title:str, msg:str, res:dict, parent=None):
-        super().__init__(parent)
-        uic.loadUi('gui/prompt_options_input.ui', self)
-        self.setWindowTitle(title)
-        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
-        self.setWindowIcon(QIcon(mH_icon))
-        self.textEdit_msg.setText(msg)
-
-        #Set options list 
-        res_txt = ''
-        for num, item in res.items():
-            res_txt += '#'+str(num)+': '+ item+'\n'
-        self.textEdit_options.setText(res_txt)
-        print(res_txt)
-
-        reg_ex = QRegularExpression("(\d+(?:-\d+)?)((?:(?:,)(\d+(?:-\d+)?))*)")
-        input_validator = QRegularExpressionValidator(reg_ex, self.user_input)
-        self.user_input.setValidator(input_validator)
-
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-        self.show()
-
-class Prompt_yes_no(QDialog): 
-    def __init__(self, title:str, msg:str, parent=None):
-        super().__init__(parent)
-        uic.loadUi('gui/prompt_yes_no.ui', self)
-        self.setWindowTitle(title)
-        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
-        self.setWindowIcon(QIcon(mH_icon))
-        self.textEdit.setText(msg)
-        self.msg = QMessageBox(parent)
-        # self.buttonBox = QtWidgets.QDialogButtonBox()
-        # self.buttonBox.setStyleSheet("QDialogButtonBox QPushButton{\n"
-        #                             "color: rgb(39, 39, 39);\n"
-        #                             "font: 11pt \"Calibri Light\";\n"
-        #                             "height:20;\n"
-        #                             "padding:0px;\n"
-        #                             "width:120;\n"
-        #                             "background-color: rgb(211, 211, 211);\n"
-        #                             "border-radius: 10px;\n"
-        #                             "border-width: 1px;\n"
-        #                             "border-style: outset;\n"
-        #                             "border-color: rgb(66, 66, 66);\n"
-        #                             "}\n"
-        #                             "\n"
-        #                             "QDialogButtonBox QPushButton:hover{\n"
-        #                             "background-color: #eb6fbd;\n"
-        #                             "border-color: #672146\n"
-        #                             "}\n"
-        #                             "\n"
-        #                             "")
-        
-        # self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
-        self.msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        # self.buttonBox.QDialogButtonBox(QDialogButtonBox.Yes | QDialogButtonBox.No)
-        # self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Cancel|QtWidgets.QDialogButtonBox.StandardButton.Ok)
-        # self.buttonBox.setCenterButtons(True)
-        # self.buttonBox.setObjectName("buttonBox")
-        self.verticalLayout.addWidget(self.msg)
-        # self.verticalLayout.addWidget(self.buttonBox)
-        self.msg.buttonClicked.connect(self.yes_no_clicked)
-    
-    def yes_no_clicked(self, button_clicked):
-        print(button_clicked.text())
-
-    # def msgbtn(self, i):
-    #     print( "Button pressed is:",i.text() )
-    #     self.output = i.text()
-    #     self.close()
-
-# class MainWindow(QMainWindow):
-#     def __init__(self):
-#         super().__init__()
-
-#         self.setWindowTitle("My App")
-
-#         button = QPushButton("Press me for a dialog!")
-#         button.clicked.connect(self.button_clicked)
-#         self.setCentralWidget(button)
-
-#     def button_clicked(self, s):
-#         print("click", s)
-
-#         dlg = CustomDialog()
-#         if dlg.exec():
-#             print("Success!")
-#         else:
-#             print("Cancel!")
-
 
 class CreateNewProj(QDialog):
 
@@ -340,7 +379,7 @@ class CreateNewProj(QDialog):
         super().__init__()
         self.proj_name = ''
         self.proj_dir_parent = ''
-        uic.loadUi('gui/new_project_screen.ui', self)
+        uic.loadUi('src/gui/ui/new_project_screen.ui', self)
         self.setWindowTitle('Create New Project...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
@@ -637,7 +676,7 @@ class CreateNewProj(QDialog):
         if user_or == 'custom':
             msg = "Give the name of the three different custom orientations for the  '"+ortype.upper()+"'  separated by a comma:"
             title = 'Custom Orientation'
-            self.prompt = PromptWindow(msg = msg, title = title, info = ortype, parent = self)
+            self.prompt = Prompt_user_input(msg = msg, title = title, info = ortype, parent = self)
         else: 
             pass 
 
@@ -1447,7 +1486,7 @@ class SetMeasParam(QDialog):
 
     def __init__(self, mH_settings:dict, parent=None):
         super().__init__(parent)
-        uic.loadUi('gui/set_meas_screen.ui', self)
+        uic.loadUi('src/gui/ui/set_meas_screen.ui', self)
         self.setWindowTitle('Set Parameters to Measure...')
         self.setWindowTitle('Select the parameters to measure from the segmented channels...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
@@ -1839,7 +1878,7 @@ class NewOrgan(QDialog):
 
     def __init__(self, proj, parent=None):
         super().__init__()
-        uic.loadUi('gui/create_organ_screen.ui', self)
+        uic.loadUi('src/gui/ui/create_organ_screen.ui', self)
         self.setWindowTitle('Create New Organ...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
@@ -1962,7 +2001,7 @@ class NewOrgan(QDialog):
 
             msg = "Provide the '"+gui_name.upper()+"' of the organ being created."
             title = 'Custom '+gui_name.title()
-            self.prompt = PromptWindow(msg = msg, title = title, info = name, parent = self)
+            self.prompt = Prompt_user_input(msg = msg, title = title, info = name, parent = self)
         else: 
             pass 
 
@@ -2183,7 +2222,7 @@ class LoadProj(QDialog):
 
     def __init__(self, parent=None):
         super().__init__()
-        uic.loadUi('gui/load_project_screen.ui', self)
+        uic.loadUi('src/gui/ui/load_project_screen.ui', self)
         self.setWindowTitle('Load Existing Project...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
@@ -2376,7 +2415,8 @@ class MainWindow(QMainWindow):
 
     def __init__(self, proj, organ):
         super().__init__()
-        uic.loadUi('gui/main_window_screen.ui', self)
+        uic.loadUi('src/gui/ui/main_window_screen.ui', self)
+        self.setWindowTitle('morphoHeart')
         mH_logoXS = QPixmap('images/logos_1o75mm.png')
         self.mH_logo_XS.setPixmap(mH_logoXS)
         self.setWindowIcon(QIcon(mH_icon))
@@ -2395,7 +2435,11 @@ class MainWindow(QMainWindow):
         #Sounds
         layout = self.hL_sound_on_off 
         add_sound_bar(self, layout)
+        sound_toggled(win=self)
         self.fill_proj_organ_info(self.proj, self.organ)
+
+        #Progress bar
+        self.prog_bar_reset()
 
         #Setting up tabs
         self.init_segment_tab()
@@ -2414,6 +2458,46 @@ class MainWindow(QMainWindow):
                 self.tabWidget.setCurrentIndex(3)
 
         # https://stackoverflow.com/questions/23634241/put-an-image-on-a-qpushbutton
+
+         # Theme 
+        self.theme = self.cB_theme.currentText()
+        self.on_cB_theme_currentIndexChanged(0)
+
+    @pyqtSlot(int)
+    def on_cB_theme_currentIndexChanged(self, index):
+        #https://www.youtube.com/watch?v=ePG_t9bJQ5I
+        #https://raw.githubusercontent.com/NiklasWyld/Wydbid/main/Assets/stylesheet
+        #https://github.com/ColinDuquesnoy/QDarkStyleSheet/blob/master/qdarkstyle/dark/darkstyle.qss
+        # https://matiascodesal.com/blog/spice-your-qt-python-font-awesome-icons/
+        # https://www.geeksforgeeks.org/pyqt5-change-color-of-check-box-indicator/
+        # https://www.youtube.com/watch?v=ms2Ey_SzZZc
+                # https://www.pythontutorial.net/pyqt/qt-style-sheets/
+        # https://doc.qt.io/qtforpython-6/overviews/stylesheet-examples.html
+        # https://doc.qt.io/qt-6/stylesheet-examples.html
+        # https://www.youtube.com/watch?v=ePG_t9bJQ5I
+        #self.cB_theme.currentIndexChanged.connect(lambda: self.theme_changed())
+
+        if index == 0: 
+            file = 'src/gui/themes/Light.qss'
+        else: 
+            file = 'src/gui/themes/Dark.qss'
+        #Open the file
+        with open(file, 'r') as f: 
+            style_str = f.read()
+            print('aaaa', str(index), style_str)
+        #Set the theme
+        self.setStyleSheet(style_str)
+
+    #Progress Bar Related functions
+    def prog_bar_range(self, r1, r2):
+        self.prog_bar.setRange(r1, r2)
+
+    def prog_bar_update(self, value):
+        self.prog_bar.setValue(value)
+ 
+    def prog_bar_reset(self):
+        value = 0
+        self.prog_bar.setValue(value)
 
     def fill_proj_organ_info(self, proj, organ):
         self.lineEdit_proj_name.setText(proj.info['user_projName'])
@@ -3102,7 +3186,7 @@ class MyToggle(QtWidgets.QPushButton):
         super().__init__(parent)
         print('init')
         self.setCheckable(True)
-        self.setMinimumWidth(66)
+        self.setMinimumWidth(70)
         self.setMinimumHeight(22)
         self.setStyleSheet("color: rgb(0,0,0)")
 
@@ -3187,8 +3271,8 @@ def add_sound_bar(win, layout):
     sizePolicy.setVerticalStretch(0)
     sizePolicy.setHeightForWidth(win.sound_type.sizePolicy().hasHeightForWidth())
     win.sound_type.setSizePolicy(sizePolicy)
-    win.sound_type.setMinimumSize(QtCore.QSize(80, 20))
-    win.sound_type.setMaximumSize(QtCore.QSize(80, 20))
+    win.sound_type.setMinimumSize(QtCore.QSize(70, 20))
+    win.sound_type.setMaximumSize(QtCore.QSize(70, 20))
     win.sound_type.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
     win.sound_type.setAutoFillBackground(False)
     win.sound_type.setStyleSheet("border-color: rgb(173, 173, 173); font: 25 10pt 'Calibri Light';")
@@ -3210,13 +3294,14 @@ def sound_toggled(win):
         # print('button is OFF')
         win.sound_type.setEnabled(False)
         win.sound = (False, )
-    print(win.sound)
+    mH_config.gui_sound = win.sound
+    print('changed gui_sound:', win.sound)
 
 def sound_opt(win): 
     win.sound = (True, win.sound_type.currentText())
-    print(win.sound)
+    mH_config.gui_sound = win.sound
+    print('opt gui_sound:', win.sound)
     
-
 #%% GUI Related Functions - ########################################################
 # Button general functions
 def toggled(button_name): 
@@ -3276,8 +3361,94 @@ def palette_rbg(name:str, num:int):
     return rgb
 
 #Others to try and load from Basics
-def get_by_path(root_dict, items):
-    """Access a nested object in root_dict by item sequence.
-    by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
-    """
-    return reduce(operator.getitem, items, root_dict)
+# def get_by_path(root_dict, items):
+#     """Access a nested object in root_dict by item sequence.
+#     by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
+#     """
+#     return reduce(operator.getitem, items, root_dict)
+
+
+others = False 
+if others:
+    #Others 
+    # class Dialog_mH(QDialog):
+    #     def __init__(self, title:str, msg:str, parent=None):
+    #         super().__init__()
+    #         uic.loadUi('gui/prompt_options_select.ui', self)
+    #         self.setWindowTitle(title)
+    #         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+    #         self.setWindowIcon(QIcon(mH_icon))
+    #         self.textEdit.setText(msg)
+    #         self.parent = parent
+    #         layout = self.hLayout
+    #         btn_stylesheet = "QPushButton{height:20; padding:0px; width:100; border-radius:10px; border-width: 1px;border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb(211, 211, 211); color: rgb(39, 39, 39); font: 11pt \"Calibri Light\";} QPushButton:hover{background-color: #eb6fbd; border-color: #672146;}"
+            
+    #         btn_yes =  QtWidgets.QPushButton()
+    #         btn_yes.setStyleSheet(btn_stylesheet)
+    #         btn_yes_name = 'Yes'
+    #         btn_yes.setObjectName(btn_yes_name)
+    #         btn_yes.setText(btn_yes_name)
+    #         self.btn_yes = btn_yes
+    #         self.hLayout.addWidget(self.btn_yes)
+    #         btn_yes.clicked.connect(lambda: self.yes_func())
+
+    #         btn_no =  QtWidgets.QPushButton()
+    #         btn_no.setStyleSheet(btn_stylesheet)
+    #         btn_no_name = 'No'
+    #         btn_no.setObjectName(btn_no_name)
+    #         btn_no.setText(btn_no_name)
+    #         self.btn_no = btn_no
+    #         self.hLayout.addWidget(self.btn_no)
+    #         btn_no.clicked.connect(lambda: self.no_func())
+
+    #         self.setModal(True)
+    #         self.show()
+        
+    #     def yes_func(self):
+    #         print('Yes!')
+    #         self.parent.prompt_val.setText('Yes')
+    #         self.close()
+
+    #     def no_func(self):
+    #         print('No!')
+    #         self.parent.prompt_val.setText('No')
+    #         self.close()
+        
+    # class Prompt_options_input(QDialog):
+    #     def __init__(self, title:str, msg:str, res:dict, parent=None):
+    #         super().__init__(parent)
+    #         uic.loadUi('gui/prompt_options_input.ui', self)
+    #         self.setWindowTitle(title)
+    #         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+    #         self.setWindowIcon(QIcon(mH_icon))
+    #         self.textEdit_msg.setText(msg)
+
+    #         #Set options list 
+    #         res_txt = ''
+    #         for num, item in res.items():
+    #             res_txt += '#'+str(num)+': '+ item+'\n'
+    #         self.textEdit_options.setText(res_txt)
+    #         print(res_txt)
+
+    #         reg_ex = QRegularExpression("(\d+(?:-\d+)?)((?:(?:,)(\d+(?:-\d+)?))*)")
+    #         input_validator = QRegularExpressionValidator(reg_ex, self.user_input)
+    #         self.user_input.setValidator(input_validator)
+
+    #         self.buttonBox.accepted.connect(self.accept)
+    #         self.buttonBox.rejected.connect(self.reject)
+    #         self.show()
+
+    # https://www.pythonguis.com/tutorials/pyqt-dialogs/
+    #
+    #Check: https://programtalk.com/python-examples/PyQt5.QtWidgets.QDialogButtonBox.Yes/
+    #https://www.youtube.com/watch?v=vIqw411xoj0
+    #https://www.youtube.com/watch?v=RI646fqeFDQ
+    #https://www.pythonguis.com/tutorials/pyqt6-creating-dialogs-qt-designer/
+    #https://www.google.com/search?client=firefox-b-d&q=custom+inputdialogs+pyqt6
+    #https://pythonpyqt.com/pyqt-input-dialog/
+    #https://python.hotexamples.com/examples/PyQt5.QtWidgets/QDialogButtonBox/setStandardButtons/python-qdialogbuttonbox-setstandardbuttons-method-examples.html
+    pass
+
+
+#%% Module loaded
+print('morphoHeart! - Loaded gui_classes')

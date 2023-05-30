@@ -15,15 +15,15 @@ import flatdict
 from functools import reduce  
 import operator
 from itertools import count
+import vedo as vedo
 # from typing import Union
 
 path_fcBasics = os.path.abspath(__file__)
 print(path_fcBasics)
 
 #%% morphoHeart Imports 
-# from ...config import dict_gui
 # from .mH_classes import Project, Organ, ImChannel, ImChannelNS, ContStack, Mesh_mH
-import vedo as vedo
+from ..gui.config import mH_config
 
 alert_all=True
 heart_default=False
@@ -45,15 +45,23 @@ def alert(sound:str):
     whistle:
     woohoo:
     '''
+    print('alert: ', mH_config.gui_sound)
     mp3_basic = ['connection','woohoo']
     
-    alert_all = True#dict_gui['allert_all']
-    if alert_all or sound in mp3_basic:
+    if mH_config.gui_sound[0]: 
+        if mH_config.gui_sound[1] == 'Minimal' and sound in mp3_basic:
+            sound_on = True
+        elif mH_config.gui_sound[1] == 'Minimal' and sound not in mp3_basic:
+            sound_on = False
+        else: 
+            sound_on = True
+    else: 
+        sound_on = False
+
+    if sound_on: 
         path_parentSounds = Path(path_fcBasics).parent.parent.parent
-        # print(path_parentSounds)
         sound_mp3= sound +'.mp3'
         path = path_parentSounds / 'sounds' / sound_mp3
-        # print(path,'-', type(path))
         playsound(str(path))
 
 #%% func - ask4input
@@ -429,8 +437,6 @@ def nested_dict(n, type):
     
 # nd = NestedDict(x)
 # nd['key2']
-
-
 
 
 

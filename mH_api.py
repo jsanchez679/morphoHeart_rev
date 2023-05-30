@@ -6,7 +6,6 @@ Version: Dec 01, 2022
 @author: Juliana Sanchez-Posada
 
 '''
-
 #%% Imports - ########################################################
 # import pathlib
 import sys

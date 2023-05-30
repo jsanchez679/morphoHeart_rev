@@ -614,13 +614,13 @@ QPushButton:hover{
        </property>
        <property name="minimumSize">
         <size>
-         <width>80</width>
+         <width>70</width>
          <height>20</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>80</width>
+         <width>70</width>
          <height>20</height>
         </size>
        </property>
@@ -653,8 +653,6 @@ font: 25 10pt &quot;Calibri Light&quot;;</string>
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../images/images.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

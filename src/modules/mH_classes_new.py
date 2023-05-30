@@ -35,11 +35,12 @@ path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
 #from ...config import dict_gui
 from .mH_funcBasics import alert, ask4input, make_Paths, make_tuples, get_by_path, set_by_path
 from .mH_funcMeshes import unit_vector, plot_organCLs, find_angle_btw_pts, classify_segments_from_ext, create_asign_subsg
+from ..gui.config import mH_config
 
-alert_all=True
-heart_default=False
-dict_gui = {'alert_all': alert_all,
-            'heart_default': heart_default}
+# alert_all=True
+# heart_default=False
+# dict_gui = {'alert_all': alert_all,
+#             'heart_default': heart_default}
 
 #%% Set default fonts and sizes for plots
 txt_font = 'Dalim'
@@ -3222,5 +3223,5 @@ def create_submesh(masked_s3, resolution, keep_largest:bool, rotateZ_90:bool):
     
     return mesh
  
-#%%
-print('morphoHeart! - Loaded Module Classes')
+#%% Module loaded
+print('morphoHeart! - Loaded mH_classes')
