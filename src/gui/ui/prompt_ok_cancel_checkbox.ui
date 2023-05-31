@@ -106,6 +106,9 @@ p, li { white-space: pre-wrap; }
          <layout class="QHBoxLayout" name="hL0">
           <item>
            <widget class="QCheckBox" name="checkBox0">
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
             <property name="styleSheet">
              <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
             </property>

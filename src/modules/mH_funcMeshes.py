@@ -57,7 +57,7 @@ class NumpyArrayEncoder(json.JSONEncoder):
 #%% ##### - Other Imports - ##################################################
 # from ...config import dict_gui
 from .mH_funcBasics import ask4input, get_by_path, alert
-# from .mH_classes import ImChannelNS#, Mesh_mH
+# from .mH_classes_new import ImChannelNS#, Mesh_mH
 
 alert_all = True
 heart_default = False

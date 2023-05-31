@@ -14,7 +14,7 @@ from PyQt6.QtCore import pyqtSlot, QDate, Qt, QRegularExpression, QRect, QSize
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
                               QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem, QSpacerItem, QSizePolicy, 
-                              QDialogButtonBox, QMessageBox)
+                              QDialogButtonBox, QMessageBox, QHeaderView)
 from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush
 from qtwidgets import Toggle, AnimatedToggle
 import qtawesome as qta
@@ -33,28 +33,10 @@ import operator
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import get_by_path
+from ..modules.mH_funcContours import checkWfCloseCont
 from ..modules.mH_funcMeshes import *
+from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
-
-#%% Link to images
-mH_icon = 'images/logos_w_icon_2o5mm.png'#'images/cat-its-mouth-open.jpg'#
-mH_big = 'images/logos_7o5mm.png'
-mH_top_corner = 'images/logos_1o75mm.png'
-
-# Play buttons
-play_bw = 'images/logos_play_black_white.png'
-play_gw = 'images/logos_play_green_white.png'
-play_gb = 'images/logos_play_green_black.png'
-
-play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-repeat; width: 65px; height: 56px;}"
-hover_btn = "QPushButton:hover {border-image: url("+play_bw+")}"
-pressed_btn = "QPushButton:pressed {border-image: url("+play_gb+");"
-style_play = play_btn+hover_btn+pressed_btn
-
-html_txt = ['<html><head><meta name="qrichtext" content="1" /><style type="text/css"> p, li { white-space: pre-wrap; } </style></head><body style=" font-family:"Calibri Light"; font-size:11pt; font-weight:24; font-style:normal;"> <p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">','</p></body></html>']
-reg_exps = {'num': '[+]?((\d+(\.\d*)?)|(\.\d+))', 'all': '.*'}
-
-# https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
 
 #%% Classes - ########################################################
 class WelcomeScreen(QDialog):
@@ -86,18 +68,7 @@ class WelcomeScreen(QDialog):
 
     @pyqtSlot(int)
     def on_cB_theme_currentIndexChanged(self, theme):
-        #https://www.youtube.com/watch?v=ePG_t9bJQ5I
-        #https://raw.githubusercontent.com/NiklasWyld/Wydbid/main/Assets/stylesheet
-        #https://github.com/ColinDuquesnoy/QDarkStyleSheet/blob/master/qdarkstyle/dark/darkstyle.qss
-        # https://matiascodesal.com/blog/spice-your-qt-python-font-awesome-icons/
-        # https://www.geeksforgeeks.org/pyqt5-change-color-of-check-box-indicator/
-        # https://www.youtube.com/watch?v=ms2Ey_SzZZc
-                # https://www.pythontutorial.net/pyqt/qt-style-sheets/
-        # https://doc.qt.io/qtforpython-6/overviews/stylesheet-examples.html
-        # https://doc.qt.io/qt-6/stylesheet-examples.html
-        # https://www.youtube.com/watch?v=ePG_t9bJQ5I
-        #self.cB_theme.currentIndexChanged.connect(lambda: self.theme_changed())
-
+        print('mH_config.theme:',mH_config.theme)
         if theme == 'Light' or theme == 0: 
             file = 'src/gui/themes/Light.qss'
         else: 
@@ -105,7 +76,7 @@ class WelcomeScreen(QDialog):
         #Open the file
         with open(file, 'r') as f: 
             style_str = f.read()
-            print('Selected theme: ', theme)#, style_str)
+            print('Selected theme: ', theme)
         #Set the theme
         self.setStyleSheet(style_str)
         mH_config.theme = theme
@@ -117,7 +88,7 @@ class Prompt_ok_cancel(QDialog):
         self.setWindowTitle(title)
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
-        self.textEdit.setHtml(html_txt[0]+msg+html_txt[1])
+        self.textEdit.setHtml(html_txt[0]+html_txt[1]+msg+html_txt[2])
         # self.textEdit.setText(msg)
         self.output = None
 
@@ -143,7 +114,7 @@ class Prompt_ok_cancel_radio(QDialog):
         self.setWindowTitle(title)
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
-        self.textEdit.setHtml(html_txt[0]+msg+html_txt[1])
+        self.textEdit.setHtml(html_txt[0]+html_txt[1]+msg+html_txt[2])
         self.output = None
 
         #Set radio buttons
@@ -241,7 +212,7 @@ class Prompt_ok_cancel_checkbox(QDialog):
         self.setWindowTitle(title)
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
-        self.textEdit.setHtml(html_txt[0]+msg+html_txt[1])
+        self.textEdit.setHtml(html_txt[0]+html_txt[1]+msg+html_txt[2])
         self.output = None
 
         #Set radio buttons
@@ -299,8 +270,13 @@ class Prompt_ok_cancel_checkbox(QDialog):
     def accepted(self, items):
         checked = {}
         for cB in self.cButtons:
-            checked[cB.text()] = cB.isChecked()
-        self.output = [checked]
+            #Find the key that leads to that text
+            for key in items: 
+                if items[key]['opt'] == cB.text(): 
+                    keyf = key
+                    break
+            checked[keyf] = cB.isChecked()
+        self.output = checked
         self.close()
 
     def rejected(self):
@@ -309,15 +285,13 @@ class Prompt_ok_cancel_checkbox(QDialog):
         self.close()
 
 class Prompt_user_input(QDialog):
-
     def __init__(self, msg:str, title:str, info:str, parent=None):
         super().__init__()
         uic.loadUi('src/gui/ui/prompt_user_input.ui', self)
-        self.setFixedSize(400,250)
         self.setWindowTitle(title)
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
-        self.textEdit.setHtml(html_txt[0]+msg+html_txt[1])
+        self.textEdit.setHtml(html_txt[0]+html_txt[1]+msg+html_txt[2])
         self.output = None
 
         if title == 'Custom Orientation':
@@ -372,6 +346,71 @@ class Prompt_user_input(QDialog):
             cB_data.setCurrentText(user_input)
             self.output = user_input
             self.close()
+
+class Propmt_save_all(QDialog): 
+    def __init__(self, msg:list, info:list, parent=None):
+        super().__init__()
+        uic.loadUi('src/gui/ui/prompt_saveall_discard_cancel.ui', self)
+        self.setWindowTitle('Save all?')
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        html_all = html_txt[0]
+        for ms in msg: 
+            html_all = html_all+html_txt[1]+ms+html_txt[2]
+        self.textEdit.setHtml(html_all)
+        self.info = info
+        self.parent = parent
+        self.output = None
+
+        #Add Button Box
+        self.buttonBox = QtWidgets.QDialogButtonBox()
+        self.buttonBox.setStyleSheet("QDialogButtonBox QPushButton{ color: rgb(39, 39, 39); font: 11pt \"Calibri Light\"; height:20;\n"
+                                        "padding:0px; width:90; background-color: rgb(211, 211, 211); border-radius: 10px;\n"
+                                        "border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66);}\n"
+                                    "QDialogButtonBox QPushButton:hover{background-color: #eb6fbd; border-color: #672146}")
+
+        self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.SaveAll|QtWidgets.QDialogButtonBox.StandardButton.Discard|QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+        self.buttonBox.setCenterButtons(True)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout.addWidget(self.buttonBox, 0, QtCore.Qt.AlignmentFlag.AlignRight)
+
+        self.tE_validate = QtWidgets.QLineEdit()
+        self.tE_validate.setMinimumSize(QtCore.QSize(0, 25))
+        self.tE_validate.setMaximumSize(QtCore.QSize(16777215, 25))
+        self.tE_validate.setStyleSheet("font: 25 9pt \"Calibri Light\"; color: rgb(170, 0, 127); background-color: rgb(250, 250, 250);")
+        self.tE_validate.setFrame(False)
+        self.tE_validate.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.tE_validate.setReadOnly(True)
+        self.tE_validate.setObjectName("tE_validate")
+        self.verticalLayout.addWidget(self.tE_validate)
+
+        self.buttonBox.clicked.connect(self.action_button)
+        self.setModal(True)
+        self.show()
+
+    def action_button(self, button): 
+        self.output = button.text()
+        self.close()
+        # if button.text() == 'Save All': 
+        #     for item in self.info: 
+        #         if isinstance(item, Organ): 
+        #             item.save_organ()
+        #             self.tE_validate.setText('Organ file saved correctly!')
+        #         elif isinstance(item, Project):
+        #             item.save_project()
+        #             self.tE_validate.setText('Project file saved correctly!')
+        #     print('All saved!')
+        #     self.close()
+
+        # elif button.text() == 'Discard': 
+        #     print('Save All Discarded')
+        #     self.parent.close()
+        #     self.close()
+        
+        # elif button.text() == 'Cancel': 
+        #     print('Save All Cancelled')
+        #     self.close()
 
 class CreateNewProj(QDialog):
 
@@ -2276,7 +2315,7 @@ class LoadProj(QDialog):
                 wf_flat = self.get_proj_wf(proj)
                 blind = self.cB_blind.isChecked()
                 self.tabW_select_organ.setRowCount(len(proj.organs)+2)
-                keys = {'X':['select'],'Name': ['user_organName'], 'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
+                keys = {'-':['select'],'Name': ['user_organName'], 'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
                         'Genotype':['genotype'], 'Manipulation': ['manipulation']}
                 if blind:
                     keys.pop('Genotype', None); keys.pop('Manipulation', None) 
@@ -2320,10 +2359,11 @@ class LoadProj(QDialog):
                     print('Loading info organ: ', organ)   
                     col = 0        
                     for nn, key in all_labels.items(): 
-                        if len(key) == 1 and nn == 'X': 
+                        if len(key) == 1 and nn == '-': 
                             widget   = QWidget()
                             checkbox = QCheckBox()
                             checkbox.setChecked(False)
+                            checkbox.setLayoutDirection(QtCore.Qt.LayoutDirection.RightToLeft)
                             layoutH = QHBoxLayout(widget)
                             layoutH.addWidget(checkbox)
                             # layoutH.setAlignment(Qt.AlignCenter)
@@ -2336,27 +2376,29 @@ class LoadProj(QDialog):
                             self.tabW_select_organ.setItem(row,col,QtWidgets.QTableWidgetItem(get_by_path(proj.organs[organ],key)))
                         else: 
                             widget   = QWidget()
-                            checkbox = QCheckBox()
-                            checkbox.setChecked(False)
                             layoutH = QHBoxLayout(widget)
-                            layoutH.addWidget(checkbox)
-                            # layoutH.setAlignment(Qt.AlignCenter)
+                            color_status = QtWidgets.QLineEdit()
+                            color_status.setEnabled(True)
+                            color_status.setMinimumSize(QtCore.QSize(15, 15))
+                            color_status.setMaximumSize(QtCore.QSize(15, 15))
+                            color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
+                            layoutH.addWidget(color_status)
                             layoutH.setContentsMargins(0, 0, 0, 0)
-                            value = get_by_path(proj.organs[organ],key)
-                            if value == 'NI':
-                                checkbox.setStyleSheet("QCheckBox::indicator {background-color : rgb(255, 255, 127);}")
-                            elif value == 'Initialised':
-                                checkbox.setStyleSheet("QCheckBox::indicator {background-color : rgb(255, 151, 60);}")
-                            else:# value == 'Done':
-                                checkbox.setStyleSheet("QCheckBox::indicator {background-color :  rgb(0, 255, 0);}")
+                            update_status(proj.organs[organ], key, color_status)
                             self.tabW_select_organ.setCellWidget(row, col, widget)
                         col+=1
                     row +=1
                 # self.tabW_select_organ.setHorizontalHeaderLabels([key for key in keys])
-                self.tabW_select_organ.resizeColumnsToContents()
-                self.tabW_select_organ.resizeRowsToContents()
                 self.tabW_select_organ.verticalHeader().setVisible(False)
                 self.tabW_select_organ.horizontalHeader().setVisible(False)
+
+                headerc = self.tabW_select_organ.horizontalHeader()  
+                for col in range(len(all_labels.keys())):   
+                    headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
+
+                self.tabW_select_organ.resizeColumnsToContents()
+                self.tabW_select_organ.resizeRowsToContents()
+
                 # delegate = AlignDelegate(self.tabW_select_organ)
                 # self.tabW_select_organ.setItemDelegate(delegate)
 
@@ -2420,6 +2462,7 @@ class MainWindow(QMainWindow):
         mH_logoXS = QPixmap('images/logos_1o75mm.png')
         self.mH_logo_XS.setPixmap(mH_logoXS)
         self.setWindowIcon(QIcon(mH_icon))
+        self.setStyleSheet("background-color:  rgb(255, 255, 255);")
 
         self.proj = proj
         self.organ = organ
@@ -2457,36 +2500,24 @@ class MainWindow(QMainWindow):
             else: 
                 self.tabWidget.setCurrentIndex(3)
 
-        # https://stackoverflow.com/questions/23634241/put-an-image-on-a-qpushbutton
-
-         # Theme 
+        # Theme 
         self.theme = self.cB_theme.currentText()
         self.on_cB_theme_currentIndexChanged(0)
 
     @pyqtSlot(int)
-    def on_cB_theme_currentIndexChanged(self, index):
-        #https://www.youtube.com/watch?v=ePG_t9bJQ5I
-        #https://raw.githubusercontent.com/NiklasWyld/Wydbid/main/Assets/stylesheet
-        #https://github.com/ColinDuquesnoy/QDarkStyleSheet/blob/master/qdarkstyle/dark/darkstyle.qss
-        # https://matiascodesal.com/blog/spice-your-qt-python-font-awesome-icons/
-        # https://www.geeksforgeeks.org/pyqt5-change-color-of-check-box-indicator/
-        # https://www.youtube.com/watch?v=ms2Ey_SzZZc
-                # https://www.pythontutorial.net/pyqt/qt-style-sheets/
-        # https://doc.qt.io/qtforpython-6/overviews/stylesheet-examples.html
-        # https://doc.qt.io/qt-6/stylesheet-examples.html
-        # https://www.youtube.com/watch?v=ePG_t9bJQ5I
-        #self.cB_theme.currentIndexChanged.connect(lambda: self.theme_changed())
-
-        if index == 0: 
+    def on_cB_theme_currentIndexChanged(self, theme):
+        print('mH_config.theme:',mH_config.theme)
+        if theme == 'Light' or theme == 0: 
             file = 'src/gui/themes/Light.qss'
         else: 
             file = 'src/gui/themes/Dark.qss'
         #Open the file
         with open(file, 'r') as f: 
             style_str = f.read()
-            print('aaaa', str(index), style_str)
+            print('Selected theme: ', theme)
         #Set the theme
         self.setStyleSheet(style_str)
+        mH_config.theme = theme
 
     #Progress Bar Related functions
     def prog_bar_range(self, r1, r2):
@@ -2499,6 +2530,8 @@ class MainWindow(QMainWindow):
         value = 0
         self.prog_bar.setValue(value)
 
+    # Init functions
+    #- General Init
     def fill_proj_organ_info(self, proj, organ):
         self.lineEdit_proj_name.setText(proj.info['user_projName'])
         organ_data = ['user_organName','strain','stage','genotype','manipulation','im_orientation','user_organNotes']
@@ -2540,28 +2573,23 @@ class MainWindow(QMainWindow):
             self.lineEdit_genotype.clear()
             self.lineEdit_manipulation.clear()
     
+    #- Init tabs
     def init_segment_tab(self): 
         print('Setting up Segmentation Tab')
         self.channels = self.organ.mH_settings['setup']['name_chs']
         channels = [self.channels[ch]+' ('+ch+')' for ch in self.channels if ch != 'chNS']
         num = 0
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
-            label = getattr(self, 'status_'+ch)
-            colour_status = getattr(self, 'fillcolor_'+ch)
             ch_tab = getattr(self, 'tab_chs')
             if ch not in self.channels.keys(): 
-                label.setVisible(False)
-                colour_status.setVisible(False)
                 ch_tab.setTabVisible(num, False)
             else: 
-                root_dict = self.organ.workflow
-                items = ['morphoHeart','ImProc',ch,'Status']
-                self.update_status(root_dict, items, colour_status)
                 tab_num = ch[-1]
                 ch_tab.setTabText(num, 'Ch'+tab_num+': '+self.channels[ch])
             num +=1
 
         self.button_continue.clicked.connect(lambda: self.continue_next_tab())
+        self.init_ch_progress()
 
     def init_pandq_tab(self): 
         #All Group box
@@ -2602,7 +2630,80 @@ class MainWindow(QMainWindow):
 
         # self.organ.save_organ()
 
-    #Initialise all modules of Process and Analyse
+    #- Init Ch Progress Table
+    def init_ch_progress(self): 
+        im_chs = [key for key in self.channels.keys() if key != 'chNS']
+        print(im_chs)
+        workflow = self.organ.workflow['morphoHeart']
+        self.tabW_progress_ch.setRowCount(len(im_chs))
+        big_im_chs = [ch.title() for ch in im_chs]
+        self.tabW_progress_ch.setVerticalHeaderLabels(big_im_chs)
+        self.proc_keys = {'Ch':'gen','A-MaskChannel':'mask', 
+                            'A-Autom':'autom','B-Manual': 'manual', 
+                            'C-CloseInOut': 'trim', 'C-SelectCont': 'select'}
+        # self.tabW_progress_ch.setColumnCount(len(keys))
+
+        cS = []
+        #Adding organs to table
+        row = 0
+        for ch in im_chs:
+            print('Loading info ch: ', ch) 
+            col = 0        
+            for proc in self.proc_keys.keys():
+                #Create Layout
+                widget   = QWidget() 
+                hL = QtWidgets.QHBoxLayout(widget)
+                hL.setObjectName("hL_"+ch)
+                color_status = QtWidgets.QLineEdit()
+                color_status.setEnabled(True)
+                color_status.setMinimumSize(QtCore.QSize(15, 15))
+                color_status.setMaximumSize(QtCore.QSize(15, 15))
+                color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
+                color_status.setObjectName("color_status_"+ch)
+                hL.addWidget(color_status)
+                hL.setContentsMargins(0, 0, 0, 0)
+                self.tabW_progress_ch.setCellWidget(row, col, widget)
+                cS_name = 'cS_'+ch+'_'+self.proc_keys[proc]
+                setattr(self, cS_name, color_status)
+                cS.append(cS_name)
+                col+=1
+            row +=1                
+
+        headerc = self.tabW_progress_ch.horizontalHeader()  
+        for col in range(len(self.proc_keys)):   
+            headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+            # header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+            # header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        
+        headerr = self.tabW_progress_ch.verticalHeader()  
+        for row in range(len(im_chs)):   
+            headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
+            
+        self.tabW_progress_ch.resizeColumnsToContents()
+        self.tabW_progress_ch.resizeRowsToContents()
+        self.segm_status = cS
+        print(cS)
+        self.update_ch_progress()
+
+    def update_ch_progress(self): 
+        workflow = self.organ.workflow['morphoHeart']
+        for cs in self.segm_status: 
+            cS = getattr(self, cs)
+            _, ch, proc = cs.split('_')
+            if 'gen' in cs: 
+                items = ['ImProc',ch,'Status']
+            else: 
+                for key in self.proc_keys:
+                    if self.proc_keys[key] == proc:
+                        keyf = key
+                        break
+                if 'autom' in cs or 'manual' in cs or 'trim' in cs:
+                    items = ['ImProc',ch,'B-CloseCont','Steps', keyf,'Status']
+                elif 'mask' in cs or 'select' in cs:
+                    items = ['ImProc',ch,keyf,'Status']
+            update_status(workflow, items, cS)         
+
+    #>> Initialise all modules of Process and Analyse
     def init_keeplargest(self): 
         #Buttons
         self.fillcolor_ch1_int.clicked.connect(lambda: self.color_picker(name = 'ch1_int'))
@@ -2870,6 +2971,9 @@ class MainWindow(QMainWindow):
                 if 'colors' not in self.organ.mH_settings['setup']['segm'][cutb].keys():
                     colors_initialised = False
                     self.organ.mH_settings['setup']['segm'][cutb]['colors'] = {}
+                else: 
+                    colors_initialised = True
+
                 for segm in segm_setup[cutb]['name_segments'].keys():
                     name_segm.append(segm_setup[cutb]['name_segments'][segm])
                 getattr(self, 'names_segm_'+cutl).setText(', '.join(name_segm))
@@ -2925,6 +3029,8 @@ class MainWindow(QMainWindow):
                 if 'colors' not in self.organ.mH_settings['setup']['sect'][cutb].keys():
                     colors_initialised = False
                     self.organ.mH_settings['setup']['sect'][cutb]['colors'] = {}
+                else: 
+                    colors_initialised = True
                 for sect in sect_setup[cutb]['name_sections'].keys():
                     name_sect.append(sect_setup[cutb]['name_sections'][sect])
                 getattr(self, 'names_sect_'+cutl).setText(', '.join(name_sect))
@@ -3118,16 +3224,6 @@ class MainWindow(QMainWindow):
     
     #Functions for all tabs
     def continue_next_tab(self): #A delete bit
-        #TO DELETEE!!
-        chs = [ch for ch in self.channels if ch != 'chNS']
-        root_dict = self.organ.workflow
-        for chan in chs: 
-            self.organ.workflow['morphoHeart']['ImProc'][chan]['Status'] = 'DONE'
-            items = ['morphoHeart','ImProc',chan,'Status']
-            colour_status = getattr(self, 'fillcolor_'+chan)
-            self.update_status(root_dict, items, colour_status)
-        ####
-
         if self.tabWidget.currentIndex() == 0: 
             #check the status of all channels 
             channels = [ch for ch in self.channels if ch != 'chNS']
@@ -3146,20 +3242,6 @@ class MainWindow(QMainWindow):
 
         else: #self.tabWidget.currentIndex() == 3: 
             print('develop') 
-    
-    def update_status(self, root_dict, items, fillcolor): 
-        wf_status = get_by_path(root_dict, items)
-        print(wf_status)
-        if wf_status == 'NI': 
-            color_txt = "background-color: rgb(255, 255, 127);"
-        elif wf_status == 'Initialised': 
-            color_txt = "background-color: rgb(255, 151, 60);"
-        elif wf_status == 'DONE' or wf_status == 'Done':
-            color_txt = "background-color:  rgb(0, 255, 0);"
-        else: 
-            color_txt = "background-color:  rgb(255, 0, 255);"
-            print('other status unknown')
-        fillcolor.setStyleSheet(color_txt)
 
     def init_morphoCell_tab(self): 
         print('Setting up morphoCell Tab')
@@ -3178,6 +3260,42 @@ class MainWindow(QMainWindow):
     
     def close_morphoHeart_pressed(self):
         print('Close was pressed')
+
+    def closeEvent(self, event):
+        msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
+        self.prompt = Propmt_save_all(msg, info=[self.organ, self.proj], parent=self)
+        self.prompt.exec()
+        print('output:',self.prompt.output, '\n')
+
+        if self.prompt.output == 'Save All': 
+            for item in [self.organ, self.proj]: 
+                if isinstance(item, Organ): 
+                    item.save_organ()
+                    self.tE_validate.setText('Organ file saved correctly!')
+                elif isinstance(item, Project):
+                    item.save_project()
+                    self.tE_validate.setText('Project file saved correctly!')
+            print('All saved!')
+            event.accept()
+
+        elif self.prompt.output == 'Discard': 
+            print('Save All Discarded')
+            event.accept()
+        
+        elif self.prompt.output == 'Cancel': 
+            print('Save All Cancelled')
+            event.ignore()
+
+
+
+
+        # reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the window?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+		# if reply == QMessageBox.Yes:
+		# 	event.accept()
+		# 	print('Window closed')
+		# else:
+		# 	event.ignore()
 
 #%% Other classes GUI related - ########################################################
 class MyToggle(QtWidgets.QPushButton):
@@ -3222,11 +3340,6 @@ class MyToggle(QtWidgets.QPushButton):
         font.setPointSize(10)
         painter.setFont(font)
 
-# class AlignDelegate(QtWidgets.QStyledItemDelegate):
-#     def initStyleOption(self, option, index):
-#         super(AlignDelegate, self).initStyleOption(option, index)
-#         option.displayAlignment = QtCore.Qt.AlignmentFlag.AlignCenter
-
 class MyTreeItem(QtWidgets.QWidget):
     def __init__(self, subproc, parent=None):
         super().__init__(parent)
@@ -3249,14 +3362,6 @@ class MyTreeItem(QtWidgets.QWidget):
         layout.addWidget(self.status)
         layout.addStretch()
         self.setMaximumWidth(200)
-
-        # self.spinBox1 = QtWidgets.QSpinBox()
-        # # make sure the spin-box doesn't get too small
-        # self.spinBox1.setMinimumWidth(80)
-        # layout.addWidget(self.label)
-        # layout.addWidget(self.spinBox1)
-        # # don't allow the spin-box to exapnd too much
-        # layout.addStretch()
 
 #%% SOUNDS - ########################################################
 # Sound functions
@@ -3303,6 +3408,22 @@ def sound_opt(win):
     print('opt gui_sound:', win.sound)
     
 #%% GUI Related Functions - ########################################################
+# Update workflow colors
+def update_status(root_dict, items, fillcolor): 
+    wf_status = get_by_path(root_dict, items)
+    if wf_status == 'NI': 
+        color_txt = "background-color: rgb(255, 255, 127); border-color: rgb(0, 0, 0);"
+    elif wf_status == 'Initialised': 
+        color_txt = "background-color: rgb(255, 151, 60); border-color: rgb(0, 0, 0);"
+    elif wf_status == 'DONE' or wf_status == 'Done':
+        color_txt = "background-color:  rgb(0, 255, 0); border-color: rgb(0, 0, 0);"
+    elif wf_status == 'N/A': 
+        color_txt = "background-color:  rgb(0, 0, 0); border-color: rgb(0, 0, 0);"
+    else: 
+        color_txt = "background-color:  rgb(255, 0, 255); border-color: rgb(0, 0, 0);"
+        print('other status unknown')
+    fillcolor.setStyleSheet(color_txt)
+
 # Button general functions
 def toggled(button_name): 
     style = 'border-radius:10px; border-width: 1px; border-style: outset; color: rgb(71, 71, 71); font: 10pt "Calibri Light";'
@@ -3312,6 +3433,7 @@ def toggled(button_name):
         style_f = 'QPushButton{background-color: rgb(211, 211, 211); border-color: rgb(66, 66, 66);'+style+'}'
     button_name.setStyleSheet(style_f)
 
+#String validation
 def split_str(input_str):
     inv_chars = ['(',')', ':', '-']
     input_str = input_str.split(',')
@@ -3347,7 +3469,6 @@ def validate_txt(input_str):
             error = None
     return error
 
-
 # Color palette as RGB
 def palette_rbg(name:str, num:int):
     rgb = []
@@ -3359,14 +3480,6 @@ def palette_rbg(name:str, num:int):
         rgb.append(tuple(tup))
 
     return rgb
-
-#Others to try and load from Basics
-# def get_by_path(root_dict, items):
-#     """Access a nested object in root_dict by item sequence.
-#     by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
-#     """
-#     return reduce(operator.getitem, items, root_dict)
-
 
 others = False 
 if others:
@@ -3450,5 +3563,32 @@ if others:
     pass
 
 
+def set_txts(): 
+    #% Link to images
+    mH_icon = 'images/logos_w_icon_2o5mm.png'#'images/cat-its-mouth-open.jpg'#
+    mH_big = 'images/logos_7o5mm.png'
+    mH_top_corner = 'images/logos_1o75mm.png'
+
+    # Play buttons
+    play_bw = 'images/logos_play_black_white.png'
+    play_gw = 'images/logos_play_green_white.png'
+    play_gb = 'images/logos_play_green_black.png'
+
+    play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-repeat; width: 65px; height: 56px;} "
+    hover_btn = "QPushButton:hover {border-image: url("+play_bw+")} "
+    pressed_btn = "QPushButton:pressed {border-image: url("+play_gb+")};"
+    style_play = play_btn+hover_btn+pressed_btn
+
+    html_txt = ['<html><head><meta name="qrichtext" content="1" /><style type="text/css"> p, li { white-space: pre-wrap; } </style></head><body style=" font-family:"Calibri Light"; font-size:11pt; font-weight:24; font-style:normal;">',
+                '<p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">',
+                '</p></body></html>']
+    reg_exps = {'num': '[+]?((\d+(\.\d*)?)|(\.\d+))', 'all': '.*'}
+
+    # https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
+    list_all = [mH_icon, mH_big, mH_top_corner, play_bw, play_gw, play_gb, play_btn, hover_btn, pressed_btn, style_play, html_txt, reg_exps]
+    return list_all
+
 #%% Module loaded
 print('morphoHeart! - Loaded gui_classes')
+list_all = set_txts()
+mH_icon, mH_big, mH_top_corner, play_bw, play_gw, play_gb, play_btn, hover_btn, pressed_btn, style_play, html_txt, reg_exps = list_all

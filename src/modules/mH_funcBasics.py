@@ -19,10 +19,10 @@ import vedo as vedo
 # from typing import Union
 
 path_fcBasics = os.path.abspath(__file__)
-print(path_fcBasics)
+# print(path_fcBasics)
 
 #%% morphoHeart Imports 
-# from .mH_classes import Project, Organ, ImChannel, ImChannelNS, ContStack, Mesh_mH
+# from .mH_classes_new import Project, Organ, ImChannel, ImChannelNS, ContStack, Mesh_mH
 from ..gui.config import mH_config
 
 alert_all=True

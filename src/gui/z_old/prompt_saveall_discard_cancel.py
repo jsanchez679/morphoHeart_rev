@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'C:\Users\Noel\Desktop\prompt_ok_cancel_checkbox.ui'
+# Form implementation generated from reading ui file 'C:\Users\Noel\Desktop\prompt_saveall_discard_cancel.ui'
 #
 # Created by: PyQt6 UI code generator 6.4.2
 #
@@ -12,10 +12,10 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(408, 292)
+        Dialog.resize(378, 194)
         Dialog.setStyleSheet("QDialog{background-color: rgb(255, 255, 255);}")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(Dialog)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
@@ -27,8 +27,15 @@ class Ui_Dialog(object):
         self.mH_logo_XS.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.mH_logo_XS.setObjectName("mH_logo_XS")
         self.horizontalLayout.addWidget(self.mH_logo_XS, 0, QtCore.Qt.AlignmentFlag.AlignTop)
-        self.verticalLayout_2.addLayout(self.horizontalLayout)
+        self.verticalLayout.addLayout(self.horizontalLayout)
         self.textEdit = QtWidgets.QTextEdit(parent=Dialog)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.textEdit.sizePolicy().hasHeightForWidth())
+        self.textEdit.setSizePolicy(sizePolicy)
+        self.textEdit.setMinimumSize(QtCore.QSize(360, 80))
+        self.textEdit.setMaximumSize(QtCore.QSize(390, 80))
         self.textEdit.setStyleSheet("QTextEdit {background-color: rgba(0,0,0,0);\n"
 "font: 25 11pt \"Calibri Light\";\n"
 "font-family: \"Calibri Light\";\n"
@@ -36,50 +43,10 @@ class Ui_Dialog(object):
 "\n"
 "                    ")
         self.textEdit.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        self.textEdit.setDocumentTitle("")
         self.textEdit.setReadOnly(True)
         self.textEdit.setObjectName("textEdit")
-        self.verticalLayout_2.addWidget(self.textEdit)
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
-        self.horizontalLayout_3.addItem(spacerItem1)
-        self.widget = QtWidgets.QWidget(parent=Dialog)
-        self.widget.setObjectName("widget")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.widget)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.hL0 = QtWidgets.QHBoxLayout()
-        self.hL0.setObjectName("hL0")
-        self.checkBox0 = QtWidgets.QCheckBox(parent=self.widget)
-        self.checkBox0.setLayoutDirection(QtCore.Qt.LayoutDirection.RightToLeft)
-        self.checkBox0.setStyleSheet("font: 25 10pt \"Calibri Light\";")
-        self.checkBox0.setObjectName("checkBox0")
-        self.hL0.addWidget(self.checkBox0)
-        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
-        self.hL0.addItem(spacerItem2)
-        self.lineEdit0 = QtWidgets.QLineEdit(parent=self.widget)
-        self.lineEdit0.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit0.setMaximumSize(QtCore.QSize(16777215, 20))
-        self.lineEdit0.setObjectName("lineEdit0")
-        self.hL0.addWidget(self.lineEdit0)
-        self.verticalLayout.addLayout(self.hL0)
-        self.hL1 = QtWidgets.QHBoxLayout()
-        self.hL1.setObjectName("hL1")
-        self.checkBox1 = QtWidgets.QCheckBox(parent=self.widget)
-        self.checkBox1.setStyleSheet("font: 25 10pt \"Calibri Light\";")
-        self.checkBox1.setObjectName("checkBox1")
-        self.hL1.addWidget(self.checkBox1)
-        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
-        self.hL1.addItem(spacerItem3)
-        self.lineEdit1 = QtWidgets.QLineEdit(parent=self.widget)
-        self.lineEdit1.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit1.setMaximumSize(QtCore.QSize(16777215, 20))
-        self.lineEdit1.setObjectName("lineEdit1")
-        self.hL1.addWidget(self.lineEdit1)
-        self.verticalLayout.addLayout(self.hL1)
-        self.horizontalLayout_3.addWidget(self.widget)
-        spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
-        self.horizontalLayout_3.addItem(spacerItem4)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
+        self.verticalLayout.addWidget(self.textEdit)
         self.blank = QtWidgets.QLabel(parent=Dialog)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -92,7 +59,7 @@ class Ui_Dialog(object):
         self.blank.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         self.blank.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.blank.setObjectName("blank")
-        self.verticalLayout_2.addWidget(self.blank)
+        self.verticalLayout.addWidget(self.blank)
         self.buttonBox = QtWidgets.QDialogButtonBox(parent=Dialog)
         self.buttonBox.setStyleSheet("QDialogButtonBox QPushButton{\n"
 "color: rgb(39, 39, 39);\n"
@@ -117,19 +84,7 @@ class Ui_Dialog(object):
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Cancel|QtWidgets.QDialogButtonBox.StandardButton.Ok)
         self.buttonBox.setCenterButtons(True)
         self.buttonBox.setObjectName("buttonBox")
-        self.verticalLayout_2.addWidget(self.buttonBox, 0, QtCore.Qt.AlignmentFlag.AlignRight)
-        self.tE_validate = QtWidgets.QLineEdit(parent=Dialog)
-        self.tE_validate.setMinimumSize(QtCore.QSize(0, 25))
-        self.tE_validate.setMaximumSize(QtCore.QSize(16777215, 25))
-        self.tE_validate.setStyleSheet("font: 25 9pt \"Calibri Light\";\n"
-"color: rgb(170, 0, 127);\n"
-"background-color: rgb(250, 250, 250);\n"
-"")
-        self.tE_validate.setFrame(False)
-        self.tE_validate.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.tE_validate.setReadOnly(True)
-        self.tE_validate.setObjectName("tE_validate")
-        self.verticalLayout_2.addWidget(self.tE_validate)
+        self.verticalLayout.addWidget(self.buttonBox, 0, QtCore.Qt.AlignmentFlag.AlignRight)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -143,8 +98,7 @@ class Ui_Dialog(object):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Calibri Light\'; font-size:11pt; font-weight:24; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">XXX</p></body></html>"))
-        self.checkBox0.setText(_translate("Dialog", "CheckBox"))
-        self.checkBox1.setText(_translate("Dialog", "CheckBox"))
+        self.textEdit.setPlaceholderText(_translate("Dialog", "XXX"))
         self.blank.setText(_translate("Dialog", "<html><head/><body><p><br/></p></body></html>"))
 
 

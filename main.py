@@ -20,22 +20,6 @@ from src.modules import mH_funcBasics as fcB
 from src.modules import mH_funcContours as fcC
 from src.modules import mH_funcMeshes as fcM
 
-# Create an installer
-#https://build-system.fman.io/pyqt5-tutorial
-# Style sheets
-#https://doc.qt.io/qt-5/stylesheet.html
-#https://doc.qt.io/qt-6.4/stylesheet-examples.html#customizing-qheaderview
-# Images 
-#https://doc.qt.io/qtdesignstudio/quick-images.html
-
-# QDialog ButtonBox
-#https://www.pythonguis.com/tutorials/pyqt-dialogs/
-
-
-#https://www.color-hex.com/color-palette/96194
-#https://www.color-hex.com/color-palette/96197
-#https://www.color-hex.com/color-palette/1024322
-# https://www.pythonguis.com/tutorials/pyqt6-bitmap-graphics/
 #%% API
 class Controller: 
     def __init__(self):
@@ -87,19 +71,30 @@ class Controller:
         # msg = 'Message goes here!'
         # title = 'Select process(ess) to re-run'
         # msg = 'Select the process(es) you want to run:'
-        # items = {0: {'opt': 'Mask Stack'}, 1: {'opt': 'Close contours Automatically'}, 
-        #             2: {'opt': 'Close contours manually'}, 3: {'opt': 'Close Inflow/Outflow Tract'}}
+        # # items = {0: {'opt': 'Mask Stack'}, 1: {'opt': 'Close Contours Automatically'}, 
+        # #             2: {'opt': 'Close Contours manually'}, 3: {'opt': 'Close Inflow/Outflow Tract'}}
+        # items = {'A-MaskChannel': {'opt': 'Mask Stack'},
+        #         'A-Autom': {'opt': 'Close Contours Automatically'},
+        #         'B-Manual': {'opt': 'Close Contours Manually'},
+        #         'C-CloseInOut': {'opt': 'Close Inflow/Outflow Tract(s)'}}
         # self.prompt = Prompt_ok_cancel_checkbox(title, msg, items, parent=self.welcome_win)
         # self.prompt.exec()
-        # print('output:',self.prompt.output, '\n').
+        # print('output:',self.prompt.output, '\n')
 
         #Sounds
-        print(mH_config.gui_sound)
-        fcB.alert('error')
-        fcB.alert('woohoo')
-        fcB.alert('jump')
-        fcB.alert('connection')
-        
+        # print(mH_config.gui_sound)
+        # fcB.alert('error')
+        # fcB.alert('woohoo')
+        # fcB.alert('jump')
+        # fcB.alert('connection')
+
+        #Save all
+        msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
+        self.prompt = Propmt_save_all(msg, info=[], parent=self.welcome_win)
+        # self.prompt.exec()
+        # print('output:',self.prompt.output, '\n')
+
+
     def show_create_new_proj(self):
         #Close welcome window
         self.sound = self.welcome_win.sound
@@ -202,6 +197,7 @@ class Controller:
             self.load_proj_win.check_unique_organ_selected(self.proj)
             if self.load_proj_win.organ_selected != None:
                 self.organ_to_analyse = self.load_proj_win.organ_selected.replace(' ', '_')
+                print('AAA:',self.organ_to_analyse)
                 self.load_organ(proj = self.proj, organ_to_load = self.organ_to_analyse)
                 self.load_proj_win.close()
             else: 
@@ -428,13 +424,17 @@ class Controller:
 
     #Channels related
     def close_cont(self, ch_name):
+        #Check workflow status
         workflow = self.organ.workflow['morphoHeart']
         process = ['ImProc',ch_name,'Status']
         check_proc = get_by_path(workflow, process)
         close_done = fcC.checkWfCloseCont(workflow, ch_name)
         proceed = False
+        dict_names = {'A-MaskChannel': 'Mask Stack', 'A-Autom': 'Close Contours Automatically', 
+                       'B-Manual': 'Close Contours Manually', 'C-CloseInOut': 'Close Inflow/Outflow Tract(s)'}
 
-        if all(flag == 'DONE' for flag in close_done):
+        if all(close_done[flag] == 'DONE' for flag in close_done):
+            #Ask if the user wants to re-run any of the processes
             ch_userName = self.organ.imChannels[ch_name]['user_chName']
             title = 'Processes already performed in '+ch_userName
             msg = 'You already finished processing the contours of this channel ('+ch_userName+'). Do you want to re-run any of the processes?'
@@ -442,34 +442,37 @@ class Controller:
             self.prompt = Prompt_ok_cancel_radio(title, msg, items, parent=self.main_win)
             self.prompt.exec()
             print('output:',self.prompt.output, '\n')
+
             if self.prompt.output[0] == 1:
                 print('close_done (original):',close_done)
                 self.prompt = None
                 # Here ask for processes that the user might want to re-run
                 title = 'Select process(ess) to re-run'
                 msg = 'Select the process(es) you want to run:'
-                items = {0: {'opt': 'Mask Stack'}, 1: {'opt': 'Close contours Automatically'}, 
-                         2: {'opt': 'Close contours manually'}, 3: {'opt': 'Close Inflow/Outflow Tract'}}
+                #- Get the items 
+                items = {}
+                for nn, key in enumerate(list(close_done.keys())): 
+                    items[key] = {'opt': dict_names[key]}
+                # Prompt
                 self.prompt = Prompt_ok_cancel_checkbox(title, msg, items, parent=self.welcome_win)
                 self.prompt.exec()
-                print('output:',self.prompt.output, '\n')
-                for nn, item in enumerate(self.prompt.output.keys()): 
-                    close_done[nn] = self.prompt.output[item]
-                print('close_done (final):',close_done)
+                for key in close_done.keys():
+                    if self.prompt.output[key]: 
+                        close_done[key] = 'NI'
+                self.prompt = None
                 proceed = True
             else: 
                 proceed = False
-                
         elif check_proc == 'Initialised': 
             proceed = True
             print('Processing had been initialised!')
         else: 
-            close_done = ['NI']*4
+            print('All new')
             print('\tChannel:',ch_name, '-CloseCont:', close_done)
             proceed = True
             
         if proceed: 
-            ch_new = fcC.closeContours(organ=self.organ, ch_name=ch_name, close_done=close_done)
+            ch_new = fcC.closeContours(organ=self.organ, ch_name=ch_name, close_done=close_done, win=self.main_win)
         else: 
             ch_new = fcC.ImChannel(organ=self.organ, ch_name=ch_name)
 
@@ -478,52 +481,39 @@ class Controller:
         close_cont_btn.setChecked(True)
         toggled(close_cont_btn)
 
-    def select_cont(self, ch):
-        im_o = getattr(self, 'im_'+ch)
-        ch_new = fcC.selectContours(organ=self.organ, im_ch = im_o)
-        setattr(self, 'im_'+ch, ch_new)
+    def select_cont(self, ch_name):
+        #Check workflow status
+        workflow = self.organ.workflow['morphoHeart']
+        process = ['ImProc', ch_name,'C-SelectCont','Status']
+        check_proc = get_by_path(workflow, process)
+        proceed = False
+        if check_proc == 'DONE':
+            #Ask if the user wants to re-run selecting contours
+            ch_userName = self.organ.imChannels[ch_name]['user_chName']
+            title = 'Processes already performed in '+ch_userName
+            msg = 'You already finished selecting the contours of this channel ('+ch_userName+'). Do you want to re-select them?'
+            items = {0: 'no, continue with next step', 1: 'yes, I would like to re-select them!'}
+            self.prompt = Prompt_ok_cancel_radio(title, msg, items, parent=self.main_win)
+            self.prompt.exec()
+            if self.prompt.output[0] == 1: 
+                proceed = True
+            else: 
+                proceed = False
+            self.prompt = None
+        else: 
+            proceed = True
+                
+        if proceed: 
+            im_o = getattr(self, 'im_'+ch_name)
+            ch_new = fcC.selectContours(organ=self.organ, im_ch = im_o, win=self.main_win)
+            setattr(self, 'im_'+ch_name, ch_new)
+        else: 
+            layerDict = {}
+            return layerDict
     
     def run_keeplargest(self):
         fcM.s32Meshes(self.organ, self.main_win.gui_keep_largest, self.main_win.rotateZ_90)
     
-    #Prompt windows
-    # def prompt_window_ok_cancel(self, title, msg, parent):
-    #     dlg = Prompt_ok_cancel(title, msg, parent)
-    #     if dlg.exec():
-    #         print("OK!")
-    #         return 'OK'
-    #     else:
-    #         print("Cancel!")
-    #         return 'Cancel'
-        
-    # def prompt_window_selection(self, title:str, msg:str, items:list, parent):
-    #     dlg = Prompt_ok_cancel_comboBox(title, msg, items, parent)
-    #     if dlg.exec():
-    #         print("OK!")
-    #         print(dlg.comboBox.currentText())
-    #         return dlg.comboBox.currentText()
-    #     else:
-    #         print("Cancel!")
-    #         return None
-    
-    # def prompt_option_selection(self, title:str, msg:str, res:dict, parent):
-    #     valid_output = False
-    #     while not  valid_output:
-    #         dlg = Prompt_options_input(title, msg, res, parent)
-    #         if dlg.exec():
-    #             print("OK!")
-    #             print(dlg.user_input.text())
-    #             output = fcB.input_range(dlg.user_input.text())
-    #             if output == 'error':
-    #                 dlg.tE_validate.setText('*Please input a valid range.')
-    #             else: 
-    #                 valid_output = True
-    #         else:
-    #             print("Cancel!")
-    #             valid_output = True
-    #             output = None
-    #     return output
-
 def main():
     app = QtWidgets.QApplication(sys.argv)
     screen = app.primaryScreen()
@@ -575,3 +565,35 @@ if __name__ == '__main__':
 #     w.show()
 
 #     a.exec()
+
+# Create an installer
+#https://build-system.fman.io/pyqt5-tutorial
+# Style sheets
+#https://doc.qt.io/qt-5/stylesheet.html
+#https://doc.qt.io/qt-6.4/stylesheet-examples.html#customizing-qheaderview
+# Images 
+#https://doc.qt.io/qtdesignstudio/quick-images.html
+
+# QDialog ButtonBox
+#https://www.pythonguis.com/tutorials/pyqt-dialogs/
+
+
+#https://www.color-hex.com/color-palette/96194
+#https://www.color-hex.com/color-palette/96197
+#https://www.color-hex.com/color-palette/1024322
+# https://www.pythonguis.com/tutorials/pyqt6-bitmap-graphics/
+
+#Theme 
+#https://www.youtube.com/watch?v=ePG_t9bJQ5I
+#https://raw.githubusercontent.com/NiklasWyld/Wydbid/main/Assets/stylesheet
+#https://github.com/ColinDuquesnoy/QDarkStyleSheet/blob/master/qdarkstyle/dark/darkstyle.qss
+# https://matiascodesal.com/blog/spice-your-qt-python-font-awesome-icons/
+# https://www.geeksforgeeks.org/pyqt5-change-color-of-check-box-indicator/
+# https://www.youtube.com/watch?v=ms2Ey_SzZZc
+        # https://www.pythontutorial.net/pyqt/qt-style-sheets/
+# https://doc.qt.io/qtforpython-6/overviews/stylesheet-examples.html
+# https://doc.qt.io/qt-6/stylesheet-examples.html
+# https://www.youtube.com/watch?v=ePG_t9bJQ5I
+#self.cB_theme.currentIndexChanged.connect(lambda: self.theme_changed())
+
+# https://stackoverflow.com/questions/23634241/put-an-image-on-a-qpushbutton
