@@ -32,8 +32,6 @@ def closeContours(organ, ch_name:str, close_done:dict, win):
         
     # if close_done['C-CloseInOut'] != 'DONE':
     #     im_ch.closeInfOutf()
-    
-    return im_ch
 
 #%% func - checkWfCloseCont
 def checkWfCloseCont(workflow, ch_name):
@@ -56,7 +54,6 @@ def selectContours(organ, im_ch, win):
     im_ch.create_chS3s(layerDict=layerDict)
     win.update_ch_progress() 
 
-    return im_ch
 
 #%% Module loaded
 print('morphoHeart! - Loaded funcContours')

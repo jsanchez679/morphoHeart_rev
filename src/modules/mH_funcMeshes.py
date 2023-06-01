@@ -121,7 +121,7 @@ def clean_intCh(organ, plot=False):
 def s32Meshes(organ, gui_keep_largest:dict, rotateZ_90=True):
     
     # Check workflow status
-    workflow = organ.workflow
+    workflow = organ.workflow['morphoHeart']
     meshes_out = []
     for ch in organ.obj_imChannels.keys(): 
         print('\n---CREATING MESHES ('+ch+')---')

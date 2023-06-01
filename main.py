@@ -472,11 +472,10 @@ class Controller:
             proceed = True
             
         if proceed: 
-            ch_new = fcC.closeContours(organ=self.organ, ch_name=ch_name, close_done=close_done, win=self.main_win)
+            fcC.closeContours(organ=self.organ, ch_name=ch_name, close_done=close_done, win=self.main_win)
         else: 
-            ch_new = fcC.ImChannel(organ=self.organ, ch_name=ch_name)
+            fcC.ImChannel(organ=self.organ, ch_name=ch_name)
 
-        setattr(self, 'im_'+ch_name, ch_new)
         close_cont_btn = getattr(self.main_win, ch_name+'_closecont')
         close_cont_btn.setChecked(True)
         toggled(close_cont_btn)
@@ -504,12 +503,15 @@ class Controller:
             proceed = True
                 
         if proceed: 
-            im_o = getattr(self, 'im_'+ch_name)
-            ch_new = fcC.selectContours(organ=self.organ, im_ch = im_o, win=self.main_win)
-            setattr(self, 'im_'+ch_name, ch_new)
+            im_o = self.organ.obj_imChannels[ch_name]
+            fcC.selectContours(organ=self.organ, im_ch = im_o, win=self.main_win)
         else: 
             layerDict = {}
             return layerDict
+        
+        select_btn = getattr(self.main_win, ch_name+'_selectcont')
+        select_btn.setChecked(True)
+        toggled(select_btn)
     
     def run_keeplargest(self):
         fcM.s32Meshes(self.organ, self.main_win.gui_keep_largest, self.main_win.rotateZ_90)
@@ -532,6 +534,14 @@ if __name__ == '__main__':
 
 #python pyuic6 -x name.ui -o name.py
 #C:\Users\bi1jsa\Desktop\pyqt6>D:\Applications\Miniconda\envs\mHpy39_qt\Scripts\pyuic6.exe -x C:\Users\bi1jsa\Desktop\pyqt6\test.ui -o C:\Users\bi1jsa\Desktop\pyqt6\test.py dragging and dropping all the files to get their path
+
+#we defined
+# the direction of insertion of the IFTs via polar coordinates in a
+# local system of orthogonal axes in which the xy plane is transversal
+# to the embryo, and the z axis is aligned with the embryo AP axis
+# The direction of
+# insertion of the IFTs is then defined by two angles: the θ angle and
+# the φ angle (Fig. 5a).
 
 # import re
 # r = re.compile('[+]?((\d+(\.\d*)?)|(\.\d+))([eE][+-]?\d+)?')

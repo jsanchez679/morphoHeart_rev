@@ -1495,9 +1495,10 @@ class ImChannel(): #channel
     
     def add_contStack(self, contStack):
         # Check first if the contStack has been already added to the channel
-        new = False
         if contStack.cont_type not in self.contStack.keys():
             new = True
+        else: 
+            new = False
             
         if new: 
             contStack_dict = copy.deepcopy(contStack.__dict__)
@@ -1549,144 +1550,113 @@ class ImChannel(): #channel
             print('For some reason self.shape != im_mask.shape!')
 
     def closeContours_auto(self):
-        #Check workflow status
+        # Workflow process
+        workflow = self.parent_organ.workflow['morphoHeart']
+        process = ['ImProc', self.channel_no, 'B-CloseCont','Steps','A-Autom','Status']
+       
+        # Load image
+        im_proc = self.im_proc()
         workflow = self.parent_organ.workflow
-        process = ['ImProc', self.channel_no,'B-CloseCont','Steps','A-Autom','Status']
-        check_proc = get_by_path(workflow, process)
-        if check_proc == 'DONE':
-            q = 'You already closed automatically the contours of this channel ('+ self.user_chName+'). Do you want to re-run it?'
-            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-            proceed = ask4input(q, res, bool)
-        else: 
-            proceed = True
-                
-        if proceed: 
-            # Load image
-            im_proc = self.im_proc()
-            self.save_channel(im_proc=im_proc)
-            workflow = self.parent_organ.workflow
-            
-            #Process
-            print('\n---- Closing Contours Auto! ----')
-            
-            #Update organ workflow
-            self.parent_organ.update_mHworkflow(process, update = 'DONE')
+        
+        #Process
+        print('\n---- Closing Contours Auto! ----')
+        
+        #Update organ workflow
+        self.parent_organ.update_mHworkflow(process, update = 'DONE')
 
-            process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
-            if get_by_path(workflow, process_up) == 'NI':
-                self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
+        process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
+        if get_by_path(workflow, process_up) == 'NI':
+            self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
+        
+        #Update channel process
+        self.process.append('ClosedCont-Auto')
+        
+        #Update organ imChannels
+        self.parent_organ.add_channel(self)
+        # self.parent_organ.save_organ()
+        
+        process_up2 = ['ImProc','Status']
+        if get_by_path(workflow, process_up2) == 'NI':
+            self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
             
-            #Update channel process
-            self.process.append('ClosedCont-Auto')
-            
-            #Update organ imChannels
-            self.parent_organ.add_channel(self)
-            # self.parent_organ.save_organ()
-            
-            process_up2 = ['ImProc','Status']
-            if get_by_path(workflow, process_up2) == 'NI':
-                self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-                
-            #Update
-            # 'B-CloseCont':{'Status': 'NI',
-            #                 'Steps':{'A-Autom': {'Status': 'NI'},
-            #                                     # 'Range': None, 
-            #                                     # 'Range_completed': None}, 
+        #Update
+        # 'B-CloseCont':{'Status': 'NI',
+        #                 'Steps':{'A-Autom': {'Status': 'NI'},
+        #                                     # 'Range': None, 
+        #                                     # 'Range_completed': None}, 
         
     def closeContours_manual(self):
-        #Check workflow status
-        workflow = self.parent_organ.workflow
-        process = ['ImProc', self.channel_no,'B-CloseCont','Steps','B-Manual','Status']
-        check_proc = get_by_path(workflow, process)
-        if check_proc == 'DONE':
-            q = 'You already finished closing manually the contours of this channel ('+ self.user_chName+'). Do you want to re-run this process and close some more?'
-            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-            proceed = ask4input(q, res, bool)
-        else: 
-            proceed = True
+        # Workflow process
+        workflow = self.parent_organ.workflow['morphoHeart']
+        process = ['ImProc', self.channel_no, 'B-CloseCont','Steps','B-Manual','Status']
+
+        # Load image
+        im_proc = self.im_proc()
+        
+        #Process
+        print('\n---- Closing Contours Manually! ----')
+        
                 
-        if proceed: 
-            # Load image
-            im_proc = self.im_proc()
-            self.save_channel(im_proc=im_proc)
-            
-            #Process
-            print('\n---- Closing Contours Manually! ----')
-            
-                    
-            #Update organ workflow
-            self.parent_organ.update_mHworkflow(process, update = 'DONE')
-            
-            process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
-            if get_by_path(workflow, process_up) == 'NI':
-                self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
-            
-            
-            #Update channel process
-            self.process.append('ClosedCont-Manual')
-                    
-            #Update organ imChannels
-            self.parent_organ.add_channel(self)
-            # self.parent_organ.save_organ()
-            
-            process_up2 = ['ImProc','Status']
-            if get_by_path(workflow, process_up2) == 'NI':
-                self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-            
-            #Update
-            # 'B-CloseCont':{'Status': 'NI',
-            #                         'B-Manual': {'Status': 'NI'},
-            #                                     # 'Range': None, 
-            #                                     # 'Range_completed': None}, 
+        #Update organ workflow
+        self.parent_organ.update_mHworkflow(process, update = 'DONE')
+        
+        process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
+        if get_by_path(workflow, process_up) == 'NI':
+            self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
+        
+        
+        #Update channel process
+        self.process.append('ClosedCont-Manual')
+                
+        #Update organ imChannels
+        self.parent_organ.add_channel(self)
+        # self.parent_organ.save_organ()
+        
+        process_up2 = ['ImProc','Status']
+        if get_by_path(workflow, process_up2) == 'NI':
+            self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
+        
+        #Update
+        # 'B-CloseCont':{'Status': 'NI',
+        #                         'B-Manual': {'Status': 'NI'},
+        #                                     # 'Range': None, 
+        #                                     # 'Range_completed': None}, 
             
     def closeInfOutf(self):
-        #Check workflow status
-        workflow = self.parent_organ.workflow
-        process = ['ImProc', self.channel_no,'B-CloseCont','Steps','C-CloseInOut','Status']
-        check_proc = get_by_path(workflow, process)
-        if dict_gui['heart_default']:
-            txt_pr = 'inflow/outflow'
-        else: 
-            txt_pr = 'bottom/top'
-        if check_proc == 'DONE':
-            q = 'You already closed the '+txt_pr+' contours of this channel ('+ self.user_chName+'). Do you want to re-run this process and close some more?'
-            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-            proceed = ask4input(q, res, bool)
-        else: 
-            proceed = True
-                
-        if proceed: 
-            # Load image
-            im_proc = self.im_proc()
-            self.save_channel(im_proc=im_proc)
+        # Workflow process
+        workflow = self.parent_organ.workflow['morphoHeart']
+        process = ['ImProc', self.channel_no, 'B-CloseCont','Steps','C-CloseInOut','Status']
+      
+        # Load image
+        im_proc = self.im_proc()
+        
+        #Process
+        print('\n---- Closing Inf/Ouft! ----')
+        
+        #Update organ workflow
+        self.parent_organ.update_mHworkflow(process, update = 'DONE')
+        
+        process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
+        if get_by_path(workflow, process_up) == 'NI':
+            self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
+        
+        # Update channel process
+        self.process.append('ClosedInfOutf')
+        
+        #Update organ imChannels
+        self.parent_organ.add_channel(self)
+        
+        #TO DO: Update general status of B-CloseCont to Done when confirmed
+        self.parent_organ.check_status(process = 'ImProc')
+        # self.parent_organ.save_organ()
+        
+        process_up2 = ['ImProc','Status']
+        if get_by_path(workflow, process_up2) == 'NI':
+            self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
             
-            #Process
-            print('\n---- Closing Inf/Ouft! ----')
-            
-            #Update organ workflow
-            self.parent_organ.update_mHworkflow(process, update = 'DONE')
-            
-            process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
-            if get_by_path(workflow, process_up) == 'NI':
-                self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
-            
-            # Update channel process
-            self.process.append('ClosedInfOutf')
-            
-            #Update organ imChannels
-            self.parent_organ.add_channel(self)
-            
-            #TO DO: Update general status of B-CloseCont to Done when confirmed
-            self.parent_organ.check_status(process = 'ImProc')
-            # self.parent_organ.save_organ()
-            
-            process_up2 = ['ImProc','Status']
-            if get_by_path(workflow, process_up2) == 'NI':
-                self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-                
-            #Update 
-            # 'B-CloseCont':{'Status': 'NI',
-            #                         'C-CloseInOut': {'Status': 'NI'}}},
+        #Update 
+        # 'B-CloseCont':{'Status': 'NI',
+        #                         'C-CloseInOut': {'Status': 'NI'}}},
 
     def selectContours(self):
         # Workflow process
@@ -1695,7 +1665,6 @@ class ImChannel(): #channel
 
         #Get images
         im_proc = self.im_proc()
-        self.save_channel(im_proc=im_proc)
 
         #Process
         print('\n---- Selecting Contours! ----')
@@ -1725,18 +1694,10 @@ class ImChannel(): #channel
         return layerDict
 
     def create_chS3s (self, layerDict:dict):
-        # #Check workflow status
+        # Workflow process
         workflow = self.parent_organ.workflow['morphoHeart']
-        process = ['ImProc', self.channel_no, 'D-S3Create','Status']
-        # check_proc = get_by_path(workflow, process)
-        # if check_proc == 'DONE':
-        #     q = 'You already created the contour stacks (S3s) of this channel ('+ self.user_chName+'). Do you want to re-create them?'
-        #     res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-        #     proceed = ask4input(q, res, bool)
-        # else: 
-        #     proceed = True
+        process = ['ImProc',self.channel_no,'D-S3Create','Status']
                 
-        # if proceed: 
         dirs_cont = []; shapes_s3 = []
         for cont in ['int', 'ext', 'tiss']:
             s3 = ContStack(im_channel=self, cont_type=cont, layerDict=layerDict)#new=True,
@@ -1752,10 +1713,11 @@ class ImChannel(): #channel
         if all(flag for flag in dirs_cont):
             if shapes_s3.count(shapes_s3[0]) == len(shapes_s3):
                 self.shape_s3 = s3.shape_s3
+                self.parent_organ.update_mHworkflow(process, update = 'DONE')
+                print('> Update:', process, get_by_path(workflow, process))
             else: 
                 print('>> Error: self.shape_s3 = s3.shape')
-            self.parent_organ.update_mHworkflow(process, update = 'DONE')
-
+        
         #Update channel process
         self.process.append('CreateS3')
         
@@ -1766,6 +1728,7 @@ class ImChannel(): #channel
         process_up2 = ['ImProc','Status']
         if get_by_path(workflow, process_up2) == 'NI':
             self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
+        print('> Update:', process_up2, get_by_path(workflow, process_up2))
             
     def load_chS3s (self, cont_types:list):
         for cont in cont_types:
@@ -2143,53 +2106,57 @@ class ImChannelNS(): #channel
         """
         Function to extract the negative space channel
         """        
-        #Check workflow status
-        workflow = self.parent_organ.workflow
+        # Workflow process
+        workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc', self.channel_no,'D-S3Create','Status']
-        check_proc = get_by_path(workflow, process)
-        if check_proc == 'DONE':
-            q = 'You already extracted the '+ self.user_chName+' from the negative space. Do you want to re-run this process?'
-            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-            proceed = ask4input(q, res, bool)
-        else: 
-            proceed = True
+        # #Check workflow status
+        # workflow = self.parent_organ.workflow
+        # process = ['ImProc', self.channel_no,'D-S3Create','Status']
+        # check_proc = get_by_path(workflow, process)
+        # if check_proc == 'DONE':
+        #     q = 'You already extracted the '+ self.user_chName+' from the negative space. Do you want to re-run this process?'
+        #     res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
+        #     proceed = ask4input(q, res, bool)
+        # else: 
+        #     proceed = True
                 
-        if proceed: 
-            print('>> Extracting '+self.user_chName+'!')
-            s3 = self.s3_ext.s3()
-            s3_mask = self.s3_int.s3()
-            
-            s3_bits = np.zeros_like(s3, dtype='uint8')
-            s3_new =  np.zeros_like(s3, dtype='uint8')
-    
-            index = list(s3.shape).index(min(s3.shape))
-            if index == 2:
-                for slc in range(s3.shape[2]):
-                    mask_slc = s3_mask[:,:,slc]
-                    toClean_slc = s3[:,:,slc]
-                    # Keep ch to use as mask as it is
-                    inv_slc = np.copy(mask_slc)
-    
-                    # inverted_mask or mask AND ch1_2clean
-                    toRemove_slc = np.logical_and(toClean_slc, inv_slc)
-                    # Keep only the clean bit
-                    cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
-    
-                    if plot and slc in list(range(0,s3.shape[0],im_every)):
-                        self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted=False)
-    
-                    s3_bits[:,:,slc] = toRemove_slc
-                    s3_new[:,:,slc] = cleaned_slc
-                    
-                s3_new = s3_new.astype('uint8')
-                alert('whistle')   
-                
-            else:
-                print('>> Index different to 2, check!')
-                alert('error_beep')
+        # if proceed: 
+        print('>> Extracting '+self.user_chName+'!')
+        s3 = self.s3_ext.s3()
+        s3_mask = self.s3_int.s3()
+        
+        s3_bits = np.zeros_like(s3, dtype='uint8')
+        s3_new =  np.zeros_like(s3, dtype='uint8')
 
-        workflow['ImProc'][self.channel_no]['Status'] = 'DONE'
-        workflow['ImProc'][self.channel_no]['D-S3Create']['Status'] = 'DONE'
+        index = list(s3.shape).index(min(s3.shape))
+        if index == 2:
+            for slc in range(s3.shape[2]):
+                mask_slc = s3_mask[:,:,slc]
+                toClean_slc = s3[:,:,slc]
+                # Keep ch to use as mask as it is
+                inv_slc = np.copy(mask_slc)
+
+                # inverted_mask or mask AND ch1_2clean
+                toRemove_slc = np.logical_and(toClean_slc, inv_slc)
+                # Keep only the clean bit
+                cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
+
+                if plot and slc in list(range(0,s3.shape[0],im_every)):
+                    self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted=False)
+
+                s3_bits[:,:,slc] = toRemove_slc
+                s3_new[:,:,slc] = cleaned_slc
+                
+            s3_new = s3_new.astype('uint8')
+            alert('whistle')   
+            
+        else:
+            print('>> Index different to 2, check!')
+            alert('error_beep')
+
+        #Update organ workflow
+        self.parent_organ.update_mHworkflow(process, update = 'DONE')
+        print('> Update:', process, get_by_path(workflow, process))
         
         return s3_new
     
@@ -2244,7 +2211,7 @@ class ContStack():
     'morphoHeart Contour Stack Class'
     
     def __init__(self, im_channel:Union[ImChannel,ImChannelNS], 
-                             cont_type:str, layerDict={}):#new=True,
+                             cont_type:str, layerDict={}):
         
         cont_types = ['int', 'ext', 'tiss']
         names = ['imIntFilledCont', 'imExtFilledCont', 'imAllFilledCont']
@@ -2260,7 +2227,6 @@ class ContStack():
         self.s3_dir = parent_organ.dir_res(dir='s3_numpy') / self.s3_file
         
         if self.cont_type not in self.im_channel.contStack.keys():
-        # if new: 
             if im_channel.channel_no == 'chNS':
                 s3 = im_channel.create_s3_tiss(plot=layerDict)
             else: 
@@ -2285,10 +2251,8 @@ class ContStack():
                 slcNum = int(keySlc[3:6])
                 im_FilledCont = layerDict[keySlc][self.cont_type]
                 s3[:,:,slcNum+1] = im_FilledCont
+
         s3 = s3.astype('uint8')
-        parent_organ = self.im_channel.parent_organ
-        parent_organ.workflow['ImProc'][self.im_channel.channel_no]['D-S3Create']['Status'] = 'DONE'
-        
         return s3
     
     def s3(self):
@@ -2312,8 +2276,7 @@ class ContStack():
             print('>> s3 file saved correctly! - ', self.im_channel.channel_no, '-', self.cont_type)
             # print('>> Directory: '+ str(dir2save)+'\n')
             alert('countdown')
-            
-        
+                
     def cutW2Planes(self, pl1, pl2):
         """
         Function used to cut inflow AND outflow tract of the s3 mask (s3_cut) given as input

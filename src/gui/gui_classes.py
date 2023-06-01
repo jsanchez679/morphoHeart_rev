@@ -2272,6 +2272,9 @@ class LoadProj(QDialog):
         #Buttons
         self.button_load_organs.clicked.connect(lambda: self.load_proj_organs(proj = self.proj))
 
+        #Blind analysis
+        self.cB_blind.stateChanged.connect(lambda: self.reload_table())
+
     def fill_proj_info(self, proj):
 
         self.lineEdit_proj_name.setText(proj.info['user_projName'])
@@ -2349,9 +2352,13 @@ class LoadProj(QDialog):
                 for col in range(len(name_keys)+len(mH_keys)+len(mC_keys)):
                     if col in index_big:
                         self.tabW_select_organ.setSpan(0,col,1,len_ind_big[aa])
-                        self.tabW_select_organ.setItem(0,col, QTableWidgetItem(big_labels[aa]))
+                        item = QTableWidgetItem(big_labels[aa])
+                        item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                        self.tabW_select_organ.setItem(0,col, item)
                         aa+= 1
-                    self.tabW_select_organ.setItem(1,col, QTableWidgetItem(list(all_labels.keys())[col]))
+                    itemf = QTableWidgetItem(list(all_labels.keys())[col])
+                    itemf.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                    self.tabW_select_organ.setItem(1,col, itemf)
 
                 #Adding organs to table
                 row = 2
@@ -2364,20 +2371,23 @@ class LoadProj(QDialog):
                             checkbox = QCheckBox()
                             checkbox.setChecked(False)
                             checkbox.setLayoutDirection(QtCore.Qt.LayoutDirection.RightToLeft)
+                            checkbox.setMinimumSize(QtCore.QSize(15, 20))
+                            checkbox.setMaximumSize(QtCore.QSize(15, 20))
                             layoutH = QHBoxLayout(widget)
                             layoutH.addWidget(checkbox)
-                            # layoutH.setAlignment(Qt.AlignCenter)
                             layoutH.setContentsMargins(0, 0, 0, 0)
                             self.tabW_select_organ.setCellWidget(row, 0, widget)
                             cB_name = 'cB_'+proj.organs[organ]['user_organName']
                             setattr(self, cB_name, checkbox)
                             cBs.append(cB_name)
                         elif 'workflow' not in key: 
-                            self.tabW_select_organ.setItem(row,col,QtWidgets.QTableWidgetItem(get_by_path(proj.organs[organ],key)))
+                            item = QTableWidgetItem(get_by_path(proj.organs[organ],key))
+                            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                            self.tabW_select_organ.setItem(row,col, item)
                         else: 
                             widget   = QWidget()
                             layoutH = QHBoxLayout(widget)
-                            color_status = QtWidgets.QLineEdit()
+                            color_status = QLineEdit()
                             color_status.setEnabled(True)
                             color_status.setMinimumSize(QtCore.QSize(15, 15))
                             color_status.setMaximumSize(QtCore.QSize(15, 15))
@@ -2426,6 +2436,12 @@ class LoadProj(QDialog):
             error_txt = '*You need to first load a project to load all the organs comprising it.'
             self.tE_validate.setText(error_txt)
     
+    def reload_table(self): 
+        if self.button_load_organs.isChecked(): 
+            self.load_proj_organs(proj = self.proj)
+        else: 
+            pass
+
     def check_unique_organ_selected(self, proj): 
         print('self.organ_checkboxes:',self.organ_checkboxes)
         if self.organ_checkboxes != None: 
@@ -2468,8 +2484,7 @@ class MainWindow(QMainWindow):
         self.organ = organ
 
         #Menu options
-        self.actionSave_Project.triggered.connect(self.save_project_pressed)
-        self.actionSave_Organ.triggered.connect(self.save_organ_pressed)
+        self.actionSave_Project_and_Organ.triggered.connect(self.save_project_and_organ_pressed)
         self.actionClose.triggered.connect(self.close_morphoHeart_pressed)
 
         #Blind analysis
@@ -3250,16 +3265,16 @@ class MainWindow(QMainWindow):
         print('Setting Plot Tab')
 
     #Menu functions
-    def save_project_pressed(self):
-        print('Save project was pressed')
-        self.proj.save_project()
-
-    def save_organ_pressed(self):
-        print('Save organ was pressed')
+    def save_project_and_organ_pressed(self):
+        print('Save project and organ was pressed')
         self.organ.save_organ()
+        self.tE_validate.setText('Organ '+ self.organ.user_organName +' was saved succesfully!')
+        self.proj.save_project()
+        self.tE_validate.setText('Project '+ self.proj.user_projName +' was saved succesfully!')
     
     def close_morphoHeart_pressed(self):
         print('Close was pressed')
+        self.closeEvent()
 
     def closeEvent(self, event):
         msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
