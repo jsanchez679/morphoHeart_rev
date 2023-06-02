@@ -1613,7 +1613,7 @@ class SetMeasParam(QDialog):
             msg = msg[1:]
         else: 
             self.tE_validate.setStyleSheet(msg_style)
-        self.win_msg(msg)
+        self.tE_validate.setText(msg)
 
     def radio_button(self, opt): 
         if getattr(self, 'rB_'+opt).isChecked(): 
@@ -1975,7 +1975,7 @@ class NewOrgan(QDialog):
             msg = msg[1:]
         else: 
             self.tE_validate.setStyleSheet(msg_style)
-        self.win_msg(msg)
+        self.tE_validate.setText(msg)
 
     def set_project_info(self, proj):
 
@@ -2295,6 +2295,7 @@ class LoadProj(QDialog):
         self.cB_blind.stateChanged.connect(lambda: self.reload_table())
 
     def win_msg(self, msg): 
+        print('C')
         if msg[0] == '*':
             self.tE_validate.setStyleSheet(error_style)
             msg = 'Error: '+msg
@@ -2303,10 +2304,11 @@ class LoadProj(QDialog):
             msg = msg[1:]
         else: 
             self.tE_validate.setStyleSheet(msg_style)
-        self.win_msg(msg)
+        self.tE_validate.setText(msg)
     
     def fill_proj_info(self, proj):
 
+        print('B')
         self.lineEdit_proj_name.setText(proj.info['user_projName'])
         self.textEdit_ref_notes.setText(proj.info['user_projNotes'])
         self.lab_filled_proj_dir.setText(str(proj.dir_proj))
@@ -2585,7 +2587,7 @@ class MainWindow(QMainWindow):
             msg = msg[1:]
         else: 
             self.tE_validate.setStyleSheet(msg_style)
-        self.win_msg(msg)
+        self.tE_validate.setText(msg)
         
     # Init functions
     #- General Init
@@ -2691,6 +2693,18 @@ class MainWindow(QMainWindow):
         
         #Setup workflow
         self.fill_workflow(tree= self.treeWorkflow, value = self.organ.workflow['morphoHeart']['MeshesProc'])
+
+        #To delete!
+        self.pushButton.clicked.connect(lambda: self.update_test())
+
+    Revisar esto!
+    def update_test(self): #To delete!
+        self.organ.mH_settings['setup']['keep_largest'] = {}
+        self.organ.mH_settings['setup']['alpha'] = {}
+        self.organ.mH_settings['setup']['chNS']['keep_largest'] = {}
+        self.organ.mH_settings['setup']['chNS']['alpha'] = {}
+
+        print(self.organ.mH_settings)
 
     #- Init Ch Progress Table
     def init_ch_progress(self): 
@@ -3691,12 +3705,14 @@ def set_txts():
     mH_icon = 'images/logos_w_icon_2o5mm.png'#'images/cat-its-mouth-open.jpg'#
     mH_big = 'images/logos_7o5mm.png'
     mH_top_corner = 'images/logos_1o75mm.png'
+    mH_images = [mH_icon, mH_big, mH_top_corner]
 
     # Play buttons
     play_bw = 'images/logos_play_black_white.png'
     play_gw = 'images/logos_play_green_white.png'
     play_gb = 'images/logos_play_green_black.png'
     play_grw = 'images/logos_play_gray_white.png'
+    play_colors = [play_bw, play_gw, play_gb, play_grw]
 
     play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-repeat; width: 65px; height: 56px;} "
     hover_btn = "QPushButton:hover {border-image: url("+play_bw+")} "
@@ -3712,12 +3728,16 @@ def set_txts():
     error_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250); color: rgb(217, 48, 42);'
     note_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250); color: rgb(0, 161, 118);'
     msg_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250);color: rgb(170, 0, 127);'
+    tE_styles = [error_style, note_style, msg_style]
 
     # https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
-    list_all = [mH_icon, mH_big, mH_top_corner, play_bw, play_gw, play_gb, play_btn, hover_btn, pressed_btn, style_play, html_txt, reg_exps, error_style, note_style, msg_style]
+    list_all = [mH_images, play_colors, style_play, html_txt, reg_exps, tE_styles]
     return list_all
 
 #%% Module loaded
 print('morphoHeart! - Loaded gui_classes')
 list_all = set_txts()
-mH_icon, mH_big, mH_top_corner, play_bw, play_gw, play_gb, play_btn, hover_btn, pressed_btn, style_play, html_txt, reg_exps, error_style, note_style, msg_style = list_all
+mH_images, play_colors, style_play, html_txt, reg_exps, tE_styles = list_all
+mH_icon, mH_big, mH_top_corner = mH_images
+play_bw, play_gw, play_gb, play_btn = play_colors
+error_style, note_style, msg_style = tE_styles

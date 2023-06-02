@@ -354,6 +354,7 @@ class Controller:
             self.proj = mHC.Project(proj_dict, new=False)
             print('Loaded project:',self.proj.__dict__)
             self.load_proj_win.proj = self.proj
+            print('A')
             #Fill window with project info
             self.load_proj_win.fill_proj_info(proj = self.proj)
         else: 
