@@ -392,25 +392,6 @@ class Propmt_save_all(QDialog):
     def action_button(self, button): 
         self.output = button.text()
         self.close()
-        # if button.text() == 'Save All': 
-        #     for item in self.info: 
-        #         if isinstance(item, Organ): 
-        #             item.save_organ()
-        #             self.tE_validate.setText('Organ file saved correctly!')
-        #         elif isinstance(item, Project):
-        #             item.save_project()
-        #             self.tE_validate.setText('Project file saved correctly!')
-        #     print('All saved!')
-        #     self.close()
-
-        # elif button.text() == 'Discard': 
-        #     print('Save All Discarded')
-        #     self.parent.close()
-        #     self.close()
-        
-        # elif button.text() == 'Cancel': 
-        #     print('Save All Cancelled')
-        #     self.close()
 
 class CreateNewProj(QDialog):
 
@@ -450,6 +431,22 @@ class CreateNewProj(QDialog):
         self.cB_proj_as_template.stateChanged.connect(lambda: self.save_as_template())
         self.lineEdit_template_name.setValidator(QRegularExpressionValidator(self.reg_ex, self.lineEdit_template_name))
 
+    def win_msg(self, msg): 
+        if not self.tabWidget.isEnabled(): 
+            tE = self.tE_validate
+        else: 
+            tE = self.tE_validate2
+
+        if msg[0] == '*':
+            tE.setStyleSheet(error_style)
+            msg = 'Error: '+msg
+        elif msg[0] == '!':
+            tE.setStyleSheet(note_style)
+            msg = msg[1:]
+        else: 
+            tE.setStyleSheet(msg_style)
+        tE.setText(msg)
+
     def init_gral_proj_set(self):
         now = QDate.currentDate()
         self.dateEdit.setDate(now)
@@ -461,7 +458,7 @@ class CreateNewProj(QDialog):
         self.lineEdit_proj_name.setValidator(QRegularExpressionValidator(self.reg_ex, self.lineEdit_proj_name))
 
         # Create a new project
-        self.tE_validate.setText("Create a new project by providing a project's name, directory and analysis pipeline. Then press 'Create' to create the new project.")
+        self.win_msg("Create a new project by providing a project's name, directory and analysis pipeline. Then press 'Create' to create the new project.")
 
         #Get project directory
         self.button_select_proj_dir.clicked.connect(lambda: self.get_proj_dir())
@@ -621,11 +618,11 @@ class CreateNewProj(QDialog):
         #Get project name
         if len(self.lineEdit_proj_name.text())<5:
             error_txt = '*Project name needs to have at least five (5) characters'
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             return
         elif validate_txt(self.lineEdit_proj_name.text()) != None:
             error_txt = "Please avoid using invalid characters in the project's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             return
         else: 
             self.proj_name = self.lineEdit_proj_name.text()
@@ -639,7 +636,7 @@ class CreateNewProj(QDialog):
 
         if not(any(checked)):
             error_txt = '*Please select an Analysis Pipeline for the new project'
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             return
         else: 
             valid.append(True)
@@ -647,7 +644,7 @@ class CreateNewProj(QDialog):
         #Get Directory
         if isinstance(self.proj_dir_parent, str): 
             error_txt = '*Please select a project directory where the new project will be saved.'
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             return
         else:  
             if self.proj_dir_parent.is_dir() and len(str(self.proj_dir_parent))>1:
@@ -656,7 +653,7 @@ class CreateNewProj(QDialog):
                 self.button_select_proj_dir.setChecked(False)
                 toggled(self.button_select_proj_dir)
                 error_txt = '*The selected project directory is invalid. Please select another directory.'
-                self.tE_validate.setText(error_txt)
+                self.win_msg(error_txt)
                 return
 
         #Check and if all valid create new project
@@ -664,14 +661,14 @@ class CreateNewProj(QDialog):
             proj_folder = 'R_'+self.proj_name
             self.proj_dir = self.proj_dir_parent / proj_folder
             if self.proj_dir.is_dir():
-                self.tE_validate.setText('*There is already a project named "'+self.proj_name+'" in the selected directory. Please select a different name for the new project.')
+                self.win_msg('*There is already a project named "'+self.proj_name+'" in the selected directory. Please select a different name for the new project.')
                 return 
             else: 
                 self.lab_filled_proj_dir.setText(str(self.proj_dir))
-                self.tE_validate.setText('All good. Continue setting up new project!')   
+                self.win_msg('All good. Continue setting up new project!')   
                 self.create_new_proj()  
         else: 
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             return 
 
     def create_new_proj(self):
@@ -701,7 +698,7 @@ class CreateNewProj(QDialog):
             self.mC_methods = None
     
         #Disable all fields from Gral Project Settings
-        self.tE_validate.setText('New project  "'+self.proj_name+'" has been created! Continue by setting the channel information.')
+        self.win_msg('New project  "'+self.proj_name+'" has been created! Continue by setting the channel information.')
         self.gral_proj_settings.setDisabled(True)
         if self.checked_analysis['morphoHeart']:
             self.tabWidget.setCurrentIndex(0)
@@ -724,7 +721,7 @@ class CreateNewProj(QDialog):
         stack_or = self.cB_stack_orient.currentText()
         if stack_or == '--select--': 
             error_txt = '*Please select axis labels for the stack'
-            self.tE_validate2.setText(error_txt)
+            self.win_msg(error_txt)
             return
         else: 
             valid.append(True)
@@ -732,7 +729,7 @@ class CreateNewProj(QDialog):
         roi_or = self.cB_roi_orient.currentText()
         if roi_or == '--select--': 
             error_txt = '*Please select axis labels for the Organ/ROI'
-            self.tE_validate2.setText(error_txt)
+            self.win_msg(error_txt)
             return
         else: 
             valid.append(True)
@@ -741,7 +738,7 @@ class CreateNewProj(QDialog):
             # print(self.cB_stack_orient.currentText())
             self.mH_settings['orientation'] = {'stack': self.cB_stack_orient.currentText(),
                                                 'roi': self.cB_roi_orient.currentText()}
-            self.tE_validate2.setText('Great! Continue setting up the new project!')
+            self.win_msg('Great! Continue setting up the new project!')
             self.button_set_orient.setChecked(True)
             toggled(self.button_set_orient)
             # print('self.mH_settings (set_orientation_settings):', self.mH_settings)
@@ -855,7 +852,7 @@ class CreateNewProj(QDialog):
         # print('ch_ticked:',ch_ticked)
         if not any(ch_ticked):
             error_txt = '*Please select at least one channel.'
-            self.tE_validate2.setText(error_txt)
+            self.win_msg(error_txt)
             return
         else: 
             valid.append(True)
@@ -869,11 +866,11 @@ class CreateNewProj(QDialog):
                 ch_name = getattr(self, ch+'_username').text()
                 if len(ch_name) < 3:
                     error_txt = '*Active channels must have a name with at least three (3) characters.'
-                    self.tE_validate2.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
                 elif validate_txt(ch_name) != None:
-                    error_txt = "Please avoid using invalid characters in the channel's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
-                    self.tE_validate2.setText(error_txt)
+                    error_txt = "*Please avoid using invalid characters in the channel's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+                    self.win_msg(error_txt)
                     return
                 else: 
                     names.append(ch_name)
@@ -885,7 +882,7 @@ class CreateNewProj(QDialog):
         #Check names are different
         if len(names) > len(set(names)):
             error_txt = '*The names given to the selected channels need to be unique.'
-            self.tE_validate2.setText(error_txt)
+            self.win_msg(error_txt)
             return
         else: 
             valid.append(True)
@@ -900,7 +897,7 @@ class CreateNewProj(QDialog):
         # print(all_colors)
         if not all(all_colors):
             error_txt = '*Make sure you have selected colors for all the active channel contours.'
-            self.tE_validate2.setText(error_txt)
+            self.win_msg(error_txt)
             return
         else: 
             valid.append(True)
@@ -923,14 +920,14 @@ class CreateNewProj(QDialog):
             if sum(ch_ticked) == 1: 
                 if external_count != 1: 
                     error_txt = '*Please define the active channel as external.'
-                    self.tE_validate2.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
                 else: 
                     valid.append(True)
             elif sum(ch_ticked) == 2: 
                 if internal_count != 1 or external_count != 1:
                     error_txt = '*One channel needs to be selected as the internal layer and other as the external.'
-                    self.tE_validate2.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
                 elif internal_count == 1 and external_count == 1:
                     valid.append(True)
@@ -938,7 +935,7 @@ class CreateNewProj(QDialog):
             elif sum(ch_ticked) > 2: 
                 if internal_count != 1 or external_count != 1:
                     error_txt = '*One channel needs to be selected as the internal layer, other as the external and the other(s) as middle/independent.'
-                    self.tE_validate2.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
                 elif internal_count == 1 and external_count == 1:
                     valid.append(True)
@@ -946,25 +943,25 @@ class CreateNewProj(QDialog):
             if sum(ch_ticked) == 1: 
                 if indep_count != 1: 
                     error_txt = '*Please define the active channel as independent layer.'
-                    self.tE_validate2.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
                 else: 
                     valid.append(True)
             elif blank_count != 0: 
                 error_txt = '*Please define the channel organisation for all channels.'
-                self.tE_validate2.setText(error_txt)
+                self.win_msg(error_txt)
                 return
             else: 
                 valid.append(True)
 
         if sum(ch_ticked) == 1 and self.tick_chNS.isChecked() and (self.ck_chs_contained.isChecked() or self.ck_chs_allcontained.isChecked()):
-            error_txt = 'At least an external channel and an internal channel need to be selected to create a tissue from the negative space.'
-            self.tE_validate2.setText(error_txt)
+            error_txt = '*At least an external channel and an internal channel need to be selected to create a tissue from the negative space.'
+            self.win_msg(error_txt)
         else: 
             valid.append(True)
 
         if all(valid):
-            self.tE_validate2.setText('All done!... Press -Set Initial Settings- to continue.')
+            self.win_msg('All done!... Press -Set Initial Settings- to continue.')
             self.set_initial_settings()
         else: 
             return False
@@ -1008,7 +1005,7 @@ class CreateNewProj(QDialog):
         self.ext_chNS.addItems(['----']+self.ch_selected)
         self.int_chNS.addItems(['----']+self.ch_selected)
         
-        self.tE_validate2.setText("Great! Now select the processes you would like to include in the workflow and setup their details.")
+        self.win_msg("Great! Now select the processes you would like to include in the workflow and setup their details.")
 
         return True
     
@@ -1050,18 +1047,18 @@ class CreateNewProj(QDialog):
         # print('names_ch:',names_ch)
         if len(name_chNS)< 3: 
             error_txt = '*Channel from the negative space must have a name with at least three (3) characters.'
-            self.tE_validate2.setText(error_txt)
+            self.win_msg(error_txt)
             return
         elif validate_txt(name_chNS) != None:
-            error_txt = "Please avoid using invalid characters in the chNS's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
-            self.tE_validate2.setText(error_txt)
+            error_txt = "*Please avoid using invalid characters in the chNS's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+            self.win_msg(error_txt)
             return
         else: 
             if name_chNS not in names_ch:
                 valid.append(True)
             else:
-                error_txt = 'The name given to the channel obtained from the negative space needs to be different to that of the other channels.'
-                self.tE_validate2.setText(error_txt)
+                error_txt = '*The name given to the channel obtained from the negative space needs to be different to that of the other channels.'
+                self.win_msg(error_txt)
                 return
             
         #Check colors
@@ -1071,7 +1068,7 @@ class CreateNewProj(QDialog):
         
         if not all(all_colors):
             error_txt = '*Make sure you have selected colors for the channel obtained from the negative space.'
-            self.tE_validate2.setText(error_txt)
+            self.win_msg(error_txt)
             return
         else: 
             valid.append(True)
@@ -1087,13 +1084,13 @@ class CreateNewProj(QDialog):
         if ch_ext != blank and ext_cont != blank and ch_int != blank and int_cont != blank: 
             if ch_ext == ch_int: 
                 error_txt = '*To extract a channel from the negative space, the external and internal channels need to be different. Please check.'
-                self.tE_validate2.setText(error_txt)
+                self.win_msg(error_txt)
                 return
             else: 
                 valid.append(True)
         else: 
             error_txt = '*Please select the internal and external channels and contours that need to be used to extract the channel from the negative space.'
-            self.tE_validate2.setText(error_txt)
+            self.win_msg(error_txt)
             return
         
         #Check operation
@@ -1102,11 +1099,11 @@ class CreateNewProj(QDialog):
             valid.append(True)
         else: 
             error_txt = '*Please select an operation to extract the channel from the negative space.'
-            self.tE_validate2.setText(error_txt)
+            self.win_msg(error_txt)
             return
             
         if all(valid): # and len(valid)== 4 
-            self.tE_validate2.setText('All done setting ChannelNS!...')
+            self.win_msg('All done setting ChannelNS!...')
             self.button_set_chNS.setChecked(True)
             self.set_chNS_settings()
             toggled(self.button_set_chNS)
@@ -1197,12 +1194,12 @@ class CreateNewProj(QDialog):
                 #Check values
                 # print(names_segm, len(names_segm), no_segm)
                 if len(names_segm) != int(no_segm):
-                    error_txt = cut+": The number of segments need to match the number of segment names given."
-                    self.tE_validate2.setText(error_txt)
+                    error_txt = "*"+cut+": The number of segments need to match the number of segment names given."
+                    self.win_msg(error_txt)
                     return
                 elif len(set(names_segm)) != int(no_segm):
                     error_txt = '*'+cut+": Segment names need to be different."
-                    self.tE_validate2.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
                 else: 
                     valid.append(True)
@@ -1214,7 +1211,7 @@ class CreateNewProj(QDialog):
                     valid.append(True)
                 else: 
                     error_txt = '*'+cut+": At least one channel contour needs to be selected for each segment cut."
-                    self.tE_validate2.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
 
                 #Check measurement parameters to measure
@@ -1225,14 +1222,14 @@ class CreateNewProj(QDialog):
                     valid.append(True)
                 else: 
                     error_txt = "*Please select the measurement parameter(s) (e.g. volume and/or surface area) you want to extract from the segments"
-                    self.tE_validate2.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
 
             if len(valid) == 3 and all(valid): 
                 valid_all.append(True)
         
         if all(valid_all): 
-            self.tE_validate2.setText('All good! Segments have been set (1).')
+            self.win_msg('All good! Segments have been set (1).')
             self.set_segm_settings()
         else: 
             print('Aja? - segments')
@@ -1254,12 +1251,12 @@ class CreateNewProj(QDialog):
 
                 #Check values
                 if len(names_sect) != 2:
-                    error_txt = cut+":  Sections cut only produce two objects. Please provide two section names."
-                    self.tE_validate2.setText(error_txt)
+                    error_txt = "*"+cut+":  Sections cut only produce two objects. Please provide two section names."
+                    self.win_msg(error_txt)
                     return
                 elif len(set(names_sect)) != 2:
                     error_txt = '*'+cut+": Section names need to be different."
-                    self.tE_validate2.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
                 else: 
                     valid.append(True)
@@ -1271,7 +1268,7 @@ class CreateNewProj(QDialog):
                     valid.append(True)
                 else: 
                     error_txt = '*'+cut+": At least one channel contour needs to be selected for this section cut."
-                    self.tE_validate2.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
                 
                 #Check measurement parameters to measure
@@ -1281,14 +1278,14 @@ class CreateNewProj(QDialog):
                     valid.append(True)
                 else: 
                     error_txt = "*Please select the measurement parameter(s) (e.g. volume and/or surface area) you want to extract from the sections"
-                    self.tE_validate2.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
                 
             if len(valid) == 3 and all(valid): 
                 valid_all.append(True)
         
         if all(valid_all): 
-            self.tE_validate2.setText('All good! Sections have been set (1).')
+            self.win_msg('All good! Sections have been set (1).')
             self.set_sect_settings()
         else: 
             print('Aja? - sections')
@@ -1370,7 +1367,7 @@ class CreateNewProj(QDialog):
         self.mH_settings['segm'] = segm_settings
         if all(valid_all):
             self.button_set_segm.setChecked(True)
-            self.tE_validate2.setText('All good! Segments have been set.')
+            self.win_msg('All good! Segments have been set.')
         else: 
             self.button_set_segm.setChecked(False)
         toggled(self.button_set_segm)
@@ -1448,7 +1445,7 @@ class CreateNewProj(QDialog):
         # print('self.mH_settings (set_sect_settings):',self.mH_settings)
         if all(valid_all):
             self.button_set_sect.setChecked(True)
-            self.tE_validate2.setText('All good! Sections have been set.')
+            self.win_msg('All good! Sections have been set.')
         else: 
             self.button_set_sect.setChecked(False)
         toggled(self.button_set_sect)
@@ -1459,24 +1456,24 @@ class CreateNewProj(QDialog):
         if self.mH_user_params != None and self.set_meas_param_all.isChecked():
             valid.append(True)
         else: 
-            error_txt = 'You need to set the parameters you want to extract from the segmented tissues before creating the new project.'
-            self.tE_validate2.setText(error_txt)
+            error_txt = '*You need to set the parameters you want to extract from the segmented tissues before creating the new project.'
+            self.win_msg(error_txt)
             return
 
         if self.checked('segm'): 
             if self.button_set_segm.isChecked():
                 valid.append(True)
             else: 
-                error_txt = 'You need to set segments settings before creating the new project.'
-                self.tE_validate2.setText(error_txt)
+                error_txt = '*You need to set segments settings before creating the new project.'
+                self.win_msg(error_txt)
                 return
             
         if self.checked('sect'): 
             if self.button_set_sect.isChecked():
                 valid.append(True)
             else: 
-                error_txt = 'You need to set sections settings before creating the new project.'
-                self.tE_validate2.setText(error_txt)
+                error_txt = '*You need to set sections settings before creating the new project.'
+                self.win_msg(error_txt)
                 return
 
         if all(valid): 
@@ -1492,21 +1489,21 @@ class CreateNewProj(QDialog):
         if self.button_set_orient.isChecked(): 
             valid.append(True)
         else: 
-            error_txt = 'You need to set orientation settings first to set measurement parameters.'
-            self.tE_validate2.setText(error_txt)
+            error_txt = '*You need to set orientation settings first to set measurement parameters.'
+            self.win_msg(error_txt)
             return
         if self.button_set_initial_set.isChecked(): 
             valid.append(True)
         else: 
-            error_txt = 'You need to set initial settings first to set measurement parameters.'
-            self.tE_validate2.setText(error_txt)
+            error_txt = '*You need to set initial settings first to set measurement parameters.'
+            self.win_msg(error_txt)
             return
         if self.checked('chNS'): 
             if self.button_set_chNS.isChecked():
                 valid.append(True)
             else: 
-                error_txt = 'You need to set Channel NS settings first to set measurement parameters.'
-                self.tE_validate2.setText(error_txt)
+                error_txt = '*You need to set Channel NS settings first to set measurement parameters.'
+                self.win_msg(error_txt)
                 return
             
         if all(valid): 
@@ -1606,6 +1603,17 @@ class SetMeasParam(QDialog):
         self.ballooning_to = ['--select--']
         self.set_ballooning_opt()
         self.setModal(True)
+
+    def win_msg(self, msg): 
+        if msg[0] == '*':
+            self.tE_validate.setStyleSheet(error_style)
+            msg = 'Error: '+msg
+        elif msg[0] == '!':
+            self.tE_validate.setStyleSheet(note_style)
+            msg = msg[1:]
+        else: 
+            self.tE_validate.setStyleSheet(msg_style)
+        self.win_msg(msg)
 
     def radio_button(self, opt): 
         if getattr(self, 'rB_'+opt).isChecked(): 
@@ -1723,23 +1731,23 @@ class SetMeasParam(QDialog):
         param_categ = self.lineEdit_param_classes.text()
 
         if len(param_name)<5: 
-            error_txt = "Parameter's name needs have at least five (5) characters."
-            self.tE_validate.setText(error_txt)
+            error_txt = "*Parameter's name needs have at least five (5) characters."
+            self.win_msg(error_txt)
             return
         elif validate_txt(param_name) != None:
-            error_txt = "Please avoid using invalid characters in the parameter's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
-            self.tE_validate.setText(error_txt)
+            error_txt = "*Please avoid using invalid characters in the parameter's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+            self.win_msg(error_txt)
             return
         else: 
             valid.append(True)
         
         if len(param_abbr)<3: 
-            error_txt = "Parameter's abbreviation needs to have between 3 and 12 characters."
-            self.tE_validate.setText(error_txt)
+            error_txt = "*Parameter's abbreviation needs to have between 3 and 12 characters."
+            self.win_msg(error_txt)
             return
         elif validate_txt(param_abbr) != None:
-            error_txt = "Please avoid using invalid characters in the parameter's abbreviation e.g.['(',')', ':', '-', '/', '\', '.', ',']"
-            self.tE_validate.setText(error_txt)
+            error_txt = "*Please avoid using invalid characters in the parameter's abbreviation e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+            self.win_msg(error_txt)
             return
         else: 
             valid.append(True)
@@ -1750,8 +1758,8 @@ class SetMeasParam(QDialog):
                 param_categs = split_str(param_categ)
                 valid.append(True)
             except: 
-                error_txt = "Please check the values introduced in Parameter Classes."
-                self.tE_validate.setText(error_txt)
+                error_txt = "*Please check the values introduced in Parameter Classes."
+                self.win_msg(error_txt)
                 return
         else: 
             param_categs = []
@@ -1763,7 +1771,7 @@ class SetMeasParam(QDialog):
                                         'description': param_desc, 'type': param_type[0], 'categories': param_categs}
             # print(self.params)
             self.set_meas_param_table()
-            self.tE_validate.setText("New parameter '"+param_name+"' has been added! Now select the tissues from which you would like to measure this new parameter.")
+            self.win_msg("New parameter '"+param_name+"' has been added! Now select the tissues from which you would like to measure this new parameter.")
             param_name = self.lineEdit_param_name.clear()
             param_abbr = self.lineEdit_param_abbr.clear()
             param_desc = self.textEdit_param_desc.clear()
@@ -1831,18 +1839,18 @@ class SetMeasParam(QDialog):
         #Now double check them 
         if set(list(cB_checked.keys())) != set(list(names.keys())):
             diff = set(list(cB_checked.keys())) - set(list(names.keys()))
-            error_txt = "You have not selected the centreline to use for "+str(diff)
-            self.tE_validate.setText(error_txt)
+            error_txt = "*You have not selected the centreline to use for "+str(diff)
+            self.win_msg(error_txt)
             return 
         else: 
             for name in names: 
                 if not names[name]['ch']: 
-                    error_txt = "You have not selected the channel centreline to use for "+name
-                    self.tE_validate.setText(error_txt)
+                    error_txt = "*You have not selected the channel centreline to use for "+name
+                    self.win_msg(error_txt)
                     return 
                 elif not names[name]['cont']: 
-                    error_txt = "You have not selected the contour type centreline to use for "+name
-                    self.tE_validate.setText(error_txt)
+                    error_txt = "*You have not selected the contour type centreline to use for "+name
+                    self.win_msg(error_txt)
                     return 
                 else: 
                     valid.append(True)
@@ -1869,7 +1877,7 @@ class SetMeasParam(QDialog):
             valid.append(self.check_meas_param())
 
         if all(valid): 
-            self.tE_validate.setText('All done setting measurement parameters!')
+            self.win_msg('All done setting measurement parameters!')
             self.get_parameters()
             return True
         else: 
@@ -1885,7 +1893,7 @@ class SetMeasParam(QDialog):
         else: 
             print('cancel? or close?')
             error_txt = "Select measurement parameters for the channel-contours."
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             return False
     
     def get_parameters(self): 
@@ -1957,6 +1965,17 @@ class NewOrgan(QDialog):
         self.browse_mask_ch2.clicked.connect(lambda: self.get_file_mask('ch2'))
         self.browse_mask_ch3.clicked.connect(lambda: self.get_file_mask('ch3'))
         self.browse_mask_ch4.clicked.connect(lambda: self.get_file_mask('ch4'))
+
+    def win_msg(self, msg): 
+        if msg[0] == '*':
+            self.tE_validate.setStyleSheet(error_style)
+            msg = 'Error: '+msg
+        elif msg[0] == '!':
+            self.tE_validate.setStyleSheet(note_style)
+            msg = msg[1:]
+        else: 
+            self.tE_validate.setStyleSheet(msg_style)
+        self.win_msg(msg)
 
     def set_project_info(self, proj):
 
@@ -2051,7 +2070,7 @@ class NewOrgan(QDialog):
         organ_dir = Path(proj.dir_proj) / organ_folder 
         if organ_dir.is_dir(): 
             error_txt = '*There is already an organ within this project with the same name. Please give this organ a new name to continue.'
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             return
         else: 
             valid.append(True)
@@ -2059,11 +2078,11 @@ class NewOrgan(QDialog):
         #Get organ name
         if len(self.lineEdit_organ_name.text())<5:
             error_txt = '*Organ name needs to be longer than five (5) characters'
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             return
         elif validate_txt(self.lineEdit_organ_name.text()) != None:
-            error_txt = "Please avoid using invalid characters in the project's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
-            self.tE_validate.setText(error_txt)
+            error_txt = "*Please avoid using invalid characters in the project's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+            self.win_msg(error_txt)
             return
         else: 
             self.organ_name = self.lineEdit_organ_name.text()
@@ -2074,7 +2093,7 @@ class NewOrgan(QDialog):
             cB_data = getattr(self, 'cB_'+name).currentText()
             if cB_data == '--select--':
                 error_txt = "*Please select the organ's "+name.upper()+"."
-                self.tE_validate.setText(error_txt)
+                self.win_msg(error_txt)
                 return
             else: 
                 setattr(self, name, cB_data)
@@ -2083,7 +2102,7 @@ class NewOrgan(QDialog):
         if self.cB_stack_orient.currentText() == 'custom':
             if len(self.cust_angle.text()) == 0: 
                 error_txt = "*Please input custom angle for imaging orientation."
-                self.tE_validate.setText(error_txt)
+                self.win_msg(error_txt)
                 return
             else: 
                 valid.append(True)
@@ -2096,7 +2115,7 @@ class NewOrgan(QDialog):
             scaling = getattr(self, 'scaling_'+axis)
             if scaling == '': 
                 error_txt = "*Please enter the scaling value for "+axis+"."
-                self.tE_validate.setText(error_txt)
+                self.win_msg(error_txt)
                 return
             else: 
                 valid_axis.append(True)
@@ -2106,7 +2125,7 @@ class NewOrgan(QDialog):
             valid.append(True)
         
         if all(valid):
-            self.tE_validate.setText('All good. Continue setting up new organ.') 
+            self.win_msg('All good. Continue setting up new organ.') 
             return True   
         else: 
             return False
@@ -2121,7 +2140,7 @@ class NewOrgan(QDialog):
         # print('resolution: ', self.resolution)
 
     def get_file(self, ch):
-        self.tE_validate.setText('Loading '+ch+'... Wait for the indicator to turn green, then continue.')
+        self.win_msg('Loading '+ch+'... Wait for the indicator to turn green, then continue.')
         btn_file = getattr(self, 'browse_'+ch)
         title = 'Import images for '+ch
         if hasattr(self, 'user_dir'):
@@ -2143,18 +2162,18 @@ class NewOrgan(QDialog):
             self.user_dir = Path(file_name).parent
         else: 
             error_txt = '*Something went wrong importing the images for '+ch+'. Please try again.'
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             return
 
         btn_file.setChecked(True)
         toggled(btn_file)
 
     def get_file_mask(self, ch):
-        self.tE_validate.setText('Loading mask for '+ch+'... Wait for the indicator to turn green, then continue.')
+        self.win_msg('Loading mask for '+ch+'... Wait for the indicator to turn green, then continue.')
         btn_file = getattr(self, 'browse_mask_'+ch)
         if 'image' not in self.img_dirs[ch].keys(): 
             error_txt = '*Please select first the images for '+ch+', then select their corresponding mask.'
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             return
         else: 
             title = 'Import mask images for '+ch
@@ -2170,7 +2189,7 @@ class NewOrgan(QDialog):
                 mask_o = io.imread(str(file_name))
                 if mask_o.shape != self.img_dirs[ch]['image']['shape']:
                     error_txt = '*The mask selected does not match the shape of the selected images (image shape: '+self.img_dirs[ch]['image']['shape']+', mask shape: '+mask_o.shape+'). Check and try again.'
-                    self.tE_validate.setText(error_txt)
+                    self.win_msg(error_txt)
                     return
                 else: 
                     self.img_dirs[ch]['mask'] = {}
@@ -2180,7 +2199,7 @@ class NewOrgan(QDialog):
                     check.setText('Done')
             else: 
                 error_txt = '*Something went wrong importing the mask images for '+ch+'. Please try again.'
-                self.tE_validate.setText(error_txt)
+                self.win_msg(error_txt)
                 return
                 
         btn_file.setChecked(True)
@@ -2202,11 +2221,11 @@ class NewOrgan(QDialog):
         print('Valid checking channel selection: ', valid)
         if not all(valid): 
             error_txt = "*Please load the images (and masks) for all the organ's channels."
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             return
         elif len(set_paths_chs) != len(paths_chs):
             error_txt = "*The image files loaded for each channel needs to be different. Please check and retry."
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             for ch in proj.mH_channels.keys():
                 getattr(self, 'browse_'+ch).setChecked(False)
                 getattr(self, 'lab_filled_dir_'+ch).clear()
@@ -2236,7 +2255,7 @@ class NewOrgan(QDialog):
             return True
         else:
             error_txt = '*The shape of all the selected images do not match. Check and try again.'
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
             for ch in proj.mH_channels: 
                 if ch != 'chNS':
                     bws_ch = getattr(self,'browse_'+ch)
@@ -2275,6 +2294,17 @@ class LoadProj(QDialog):
         #Blind analysis
         self.cB_blind.stateChanged.connect(lambda: self.reload_table())
 
+    def win_msg(self, msg): 
+        if msg[0] == '*':
+            self.tE_validate.setStyleSheet(error_style)
+            msg = 'Error: '+msg
+        elif msg[0] == '!':
+            self.tE_validate.setStyleSheet(note_style)
+            msg = msg[1:]
+        else: 
+            self.tE_validate.setStyleSheet(msg_style)
+        self.win_msg(msg)
+    
     def fill_proj_info(self, proj):
 
         self.lineEdit_proj_name.setText(proj.info['user_projName'])
@@ -2291,7 +2321,7 @@ class LoadProj(QDialog):
         date = proj.info['date_created']
         date_qt = QDate.fromString(date, "yyyy-MM-dd")
         self.dateEdit.setDate(date_qt)
-        self.tE_validate.setText('Project "'+proj.info['user_projName']+'" was successfully loaded!')
+        self.win_msg('Project "'+proj.info['user_projName']+'" was successfully loaded!')
         self.button_browse_proj.setChecked(True)
         toggled(self.button_browse_proj)
     
@@ -2419,8 +2449,8 @@ class LoadProj(QDialog):
                 #         if item != None: 
                 #             item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
             else: 
-                error_txt = "The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
-                self.tE_validate.setText(error_txt)
+                error_txt = "!The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
+                self.win_msg(error_txt)
                 self.button_load_organs.setChecked(True)
                 toggled(self.button_load_organs)
                 self.organ_checkboxes = None
@@ -2434,7 +2464,7 @@ class LoadProj(QDialog):
             self.button_load_organs.setChecked(False)
             toggled(self.button_load_organs)
             error_txt = '*You need to first load a project to load all the organs comprising it.'
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
     
     def reload_table(self): 
         if self.button_load_organs.isChecked(): 
@@ -2455,7 +2485,7 @@ class LoadProj(QDialog):
                 self.organ_selected = None
             elif sum(checked) > 1:
                 error_txt = '*Please select only one organ to analyse.'
-                self.tE_validate.setText(error_txt)
+                self.win_msg(error_txt)
             else: 
                 if len(checked) > 1:
                     index = [i for i, x in enumerate(checked) if x][0]
@@ -2467,7 +2497,7 @@ class LoadProj(QDialog):
             print(self.organ_selected)
         else: 
             error_txt = '*Please select one organ to analyse.'
-            self.tE_validate.setText(error_txt)
+            self.win_msg(error_txt)
 
 class MainWindow(QMainWindow):
 
@@ -2504,7 +2534,7 @@ class MainWindow(QMainWindow):
         self.init_pandq_tab()
         # self.init_morphoCell_tab()
         # self.init_plot_tab()
-        self.tE_validate.setText('Organ "'+organ.info['user_organName']+'" was successfully loaded!')
+        self.win_msg('Organ "'+organ.info['user_organName']+'" was successfully loaded!')
 
         #Activate first tab
         if self.organ.analysis['morphoHeart']:
@@ -2537,6 +2567,7 @@ class MainWindow(QMainWindow):
     #Progress Bar Related functions
     def prog_bar_range(self, r1, r2):
         self.prog_bar.setRange(r1, r2)
+        self.prog_bar_reset()
 
     def prog_bar_update(self, value):
         self.prog_bar.setValue(value)
@@ -2545,6 +2576,17 @@ class MainWindow(QMainWindow):
         value = 0
         self.prog_bar.setValue(value)
 
+    def win_msg(self, msg): 
+        if msg[0] == '*':
+            self.tE_validate.setStyleSheet(error_style)
+            msg = 'Error: '+msg
+        elif msg[0] == '!':
+            self.tE_validate.setStyleSheet(note_style)
+            msg = msg[1:]
+        else: 
+            self.tE_validate.setStyleSheet(msg_style)
+        self.win_msg(msg)
+        
     # Init functions
     #- General Init
     def fill_proj_organ_info(self, proj, organ):
@@ -2609,10 +2651,13 @@ class MainWindow(QMainWindow):
     def init_pandq_tab(self): 
         #All Group box
         self.segmentationAll_play.setStyleSheet(style_play)
+        self.segmentationAll_play.setEnabled(False)
         self.segmentationAll_play.clicked.connect(lambda: self.run_segmentationAll())
         self.centreline_thicknessAll_play.setStyleSheet(style_play)
+        self.centreline_thicknessAll_play.setEnabled(False)
         # self.centreline_thicknessAll_play.clicked.connect(lambda: self.())
         self.segments_sectionsAll_play.setStyleSheet(style_play)
+        self.segments_sectionsAll_play.setEnabled(False)
         # self.segments_sectionsAll_play.clicked.connect(lambda: self.())
 
         self.init_keeplargest()
@@ -2623,18 +2668,22 @@ class MainWindow(QMainWindow):
         else: 
             self.chNS_all_widget.setVisible(False)
             print('Dissapear chNS')
+
         if len(self.organ.mH_settings['measure']['CL']) > 0:
             self.init_centreline()
         else: 
             self.centreline_all_widget.setVisible(False)
+
         if len(self.organ.mH_settings['measure']['th_i2e'])+len(self.organ.mH_settings['measure']['th_e2i'])+len(self.organ.mH_settings['measure']['ball'])>0:
             self.init_thickness_ballooning()
         else: 
             self.thickness_ballooning_all_widget.setVisible(False)
+
         if isinstance(self.organ.mH_settings['setup']['segm'], dict):
             self.init_segments()
         else: 
             self.segments_widget.setVisible(False)
+
         if isinstance(self.organ.mH_settings['setup']['sect'], dict):
             self.init_sections()
         else: 
@@ -2642,8 +2691,6 @@ class MainWindow(QMainWindow):
         
         #Setup workflow
         self.fill_workflow(tree= self.treeWorkflow, value = self.organ.workflow['morphoHeart']['MeshesProc'])
-
-        # self.organ.save_organ()
 
     #- Init Ch Progress Table
     def init_ch_progress(self): 
@@ -2656,7 +2703,6 @@ class MainWindow(QMainWindow):
         self.proc_keys = {'Ch':'gen','A-MaskChannel':'mask', 
                             'A-Autom':'autom','B-Manual': 'manual', 
                             'C-CloseInOut': 'trim', 'C-SelectCont': 'select'}
-        # self.tabW_progress_ch.setColumnCount(len(keys))
 
         cS = []
         #Adding organs to table
@@ -2738,10 +2784,11 @@ class MainWindow(QMainWindow):
         self.keeplargest_open.clicked.connect(lambda: self.open_section(name = 'keeplargest'))
         self.keeplargest_set.clicked.connect(lambda: self.set_keeplargest())
         self.keeplargest_play.setStyleSheet(style_play)
-        # self.keeplargest_play.clicked.connect(lambda: )
+        self.keeplargest_play.setEnabled(False)
         # self.keeplargest_plot.clicked.connect(lambda: )
+        self.keeplargest_plot.setEnabled(False)
         # self.q_keeplargest.clicked.connect(lambda: )
-        # self.keeplargest_plot_ch1.clicked.connect(lambda: )
+        self.keeplargest_plot_ch1.clicked.connect(lambda: plot_keeplargest('ch1') )
         # self.keeplargest_plot_ch2.clicked.connect(lambda: )
         # self.keeplargest_plot_ch3.clicked.connect(lambda: )
         # self.keeplargest_plot_ch4.clicked.connect(lambda: )
@@ -2754,10 +2801,11 @@ class MainWindow(QMainWindow):
         for chk in ['ch1', 'ch2', 'ch3', 'ch4']:
             if chk not in self.channels.keys():
                 getattr(self, 'kl_label_'+chk).setVisible(False)
+                getattr(self, 'kl_'+chk+'_all').setVisible(False)
+                getattr(self, 'keeplargest_plot_'+chk).setVisible(False)
                 for contk in ['int', 'tiss', 'ext']:
                     getattr(self, 'kl_'+chk+'_'+contk).setVisible(False)
                     getattr(self, 'fillcolor_'+chk+'_'+contk).setVisible(False)
-                    getattr(self, 'keeplargest_plot_'+chk).setVisible(False)
             else: 
                 getattr(self, 'kl_label_'+chk).setText(self.channels[chk]+' ('+chk+')')
                 for contk in ['int', 'tiss', 'ext']:
@@ -2765,6 +2813,11 @@ class MainWindow(QMainWindow):
                     color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+color+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
                     color_btn = getattr(self, 'fillcolor_'+chk+'_'+contk)
                     color_btn.setStyleSheet(color_txt)
+
+        self.kl_ch1_all.stateChanged.connect(lambda: self.tick_all('ch1'))
+        self.kl_ch2_all.stateChanged.connect(lambda: self.tick_all('ch2'))
+        self.kl_ch3_all.stateChanged.connect(lambda: self.tick_all('ch3'))
+        self.kl_ch4_all.stateChanged.connect(lambda: self.tick_all('ch4'))
 
     def init_clean_trim(self):
         #Buttons
@@ -2781,8 +2834,10 @@ class MainWindow(QMainWindow):
         
         # self.cleanup_trimming_set.clicked.connect(lambda: )
         self.cleanup_play.setStyleSheet(style_play)
+        self.cleanup_play.setEnabled(False)
         # self.cleanup_play.clicked.connect(lambda: )
         self.trimming_play.setStyleSheet(style_play)
+        self.trimming_play.setEnabled(False)
         # self.trimming_play.clicked.connect(lambda: )
         # self.q_cleanup_trimming.clicked.connect(lambda: )
 
@@ -2817,6 +2872,7 @@ class MainWindow(QMainWindow):
         # self.q_orientation.clicked.connect(lambda: )
         # self.orientation_set.clicked.connect(lambda: )
         self.orientation_play.setStyleSheet(style_play)
+        self.orientation_play.setEnabled(False)
         # self.orientation_play.clicked.connect(lambda: )
 
         self.stack_orient_plot.setEnabled(False)
@@ -2829,6 +2885,7 @@ class MainWindow(QMainWindow):
         self.chNS_plot.setEnabled(False)
         # self.q_chNS
         self.chNS_play.setStyleSheet(style_play)
+        self.chNS_play.setEnabled(False)
         # self.chNS_play
 
         self.fillcolor_chNS_int.clicked.connect(lambda: self.color_picker(name = 'chNS_int'))
@@ -2854,6 +2911,7 @@ class MainWindow(QMainWindow):
         #Buttons
         self.centreline_open.clicked.connect(lambda: self.open_section(name='centreline'))
         self.centreline_play.setStyleSheet(style_play)
+        self.centreline_play.setEnabled(False)
         # self.centreline_play.clicked.connect(lambda: )
         # self.q_centreline
 
@@ -2882,8 +2940,10 @@ class MainWindow(QMainWindow):
         #Buttons
         self.heatmaps_open.clicked.connect(lambda: self.open_section(name='heatmaps'))
         self.heatmaps2D_play.setStyleSheet(style_play)
+        self.heatmaps2D_play.setEnabled(False)
         # self.heatmaps2D_play.clicked.connect(lambda: )
         self.heatmaps3D_play.setStyleSheet(style_play)
+        self.heatmaps3D_play.setEnabled(False)
         # self.heatmaps3D_play.clicked.connect(lambda: )
 
         #Heatmap settings
@@ -2959,8 +3019,10 @@ class MainWindow(QMainWindow):
         #Buttons
         self.segments_open.clicked.connect(lambda: self.open_section(name='segments'))
         self.segments_play.setStyleSheet(style_play)
+        self.segments_play.setEnabled(False)
         # self.segments_play
-        # self.segments_plot
+        # self.segments_plot.
+        self.segments_plot.setEnabled(False)
         # self.q_segments
 
         self.fillcolor_cut1_segm1.clicked.connect(lambda: self.color_picker(name = 'cut1_segm1'))
@@ -3023,8 +3085,10 @@ class MainWindow(QMainWindow):
         #Buttons
         self.sections_open.clicked.connect(lambda: self.open_section(name='sections'))
         self.sections_play.setStyleSheet(style_play)
+        self.sections_play.setEnabled(False)
         # self.sections_play
         # self.sections_plot
+        self.sections_plot.setEnabled(False)
         # self.q_sections
 
         self.fillcolor_cut1_sect1.clicked.connect(lambda: self.color_picker(name = 'cut1_sect1'))
@@ -3084,6 +3148,18 @@ class MainWindow(QMainWindow):
         else:
             wdg.setVisible(True)
             btn.setText('o')
+
+    def tick_all(self, ch): 
+        tick_int = getattr(self, 'kl_'+ch+'_int')
+        tick_ext = getattr(self, 'kl_'+ch+'_ext')
+        tick_tiss = getattr(self, 'kl_'+ch+'_tiss')
+        if getattr(self, 'kl_'+ch+'_all').isChecked(): 
+            setChecked = True
+        else: 
+            setChecked = False
+        
+        for tick in [tick_int, tick_tiss, tick_ext]: 
+            tick.setChecked(setChecked)
 
     def color_picker(self, name): #Add update color in mesh!
         print(name)
@@ -3227,6 +3303,16 @@ class MainWindow(QMainWindow):
         self.keeplargest_set.setChecked(True)
         toggled(self.keeplargest_set)
         print(self.gui_keep_largest)
+        self.keeplargest_play.setEnabled(True)
+
+    def plot_keeplargest(self, ch):
+
+        txt = [(0, self.organ.user_organName)]
+        obj = []
+        for cont in ['ext', 'tiss', 'int']: 
+            obj.append(self.organ.obj_meshes[ch+'_'+cont].mesh)
+    
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
     def run_keeplargest(self):
         pass
@@ -3268,13 +3354,35 @@ class MainWindow(QMainWindow):
     def save_project_and_organ_pressed(self):
         print('Save project and organ was pressed')
         self.organ.save_organ()
-        self.tE_validate.setText('Organ '+ self.organ.user_organName +' was saved succesfully!')
+        self.win_msg('Organ '+ self.organ.user_organName +' was saved succesfully!')
         self.proj.save_project()
-        self.tE_validate.setText('Project '+ self.proj.user_projName +' was saved succesfully!')
+        self.win_msg('Project '+ self.proj.user_projName +' was saved succesfully!')
     
     def close_morphoHeart_pressed(self):
         print('Close was pressed')
-        self.closeEvent()
+        msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
+        self.prompt = Propmt_save_all(msg, info=[self.organ, self.proj], parent=self)
+        self.prompt.exec()
+        print('output:',self.prompt.output, '\n')
+
+        if self.prompt.output == 'Save All': 
+            for item in [self.organ, self.proj]: 
+                if isinstance(item, Organ): 
+                    item.save_organ()
+                    self.win_msg('Organ '+ self.organ.user_organName +' was saved succesfully!')
+                elif isinstance(item, Project):
+                    item.save_project()
+                    self.win_msg('Project '+ self.proj.user_projName +' was saved succesfully!')
+    
+            print('All saved!')
+            self.close()
+
+        elif self.prompt.output == 'Discard': 
+            print('Save All Discarded')
+            self.close()
+        
+        elif self.prompt.output == 'Cancel': 
+            print('Save All Cancelled')
 
     def closeEvent(self, event):
         msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
@@ -3286,10 +3394,10 @@ class MainWindow(QMainWindow):
             for item in [self.organ, self.proj]: 
                 if isinstance(item, Organ): 
                     item.save_organ()
-                    self.tE_validate.setText('Organ file saved correctly!')
+                    self.win_msg('Organ file saved correctly!')
                 elif isinstance(item, Project):
                     item.save_project()
-                    self.tE_validate.setText('Project file saved correctly!')
+                    self.win_msg('Project file saved correctly!')
             print('All saved!')
             event.accept()
 
@@ -3588,22 +3696,28 @@ def set_txts():
     play_bw = 'images/logos_play_black_white.png'
     play_gw = 'images/logos_play_green_white.png'
     play_gb = 'images/logos_play_green_black.png'
+    play_grw = 'images/logos_play_gray_white.png'
 
     play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-repeat; width: 65px; height: 56px;} "
     hover_btn = "QPushButton:hover {border-image: url("+play_bw+")} "
-    pressed_btn = "QPushButton:pressed {border-image: url("+play_gb+")};"
-    style_play = play_btn+hover_btn+pressed_btn
+    pressed_btn = "QPushButton:pressed {border-image: url("+play_gb+")}; "
+    disbled_btn = "QPushButton:disabled {border-image: url("+play_grw+")}; "
+    style_play = play_btn+hover_btn+pressed_btn+disbled_btn
 
     html_txt = ['<html><head><meta name="qrichtext" content="1" /><style type="text/css"> p, li { white-space: pre-wrap; } </style></head><body style=" font-family:"Calibri Light"; font-size:11pt; font-weight:24; font-style:normal;">',
                 '<p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">',
                 '</p></body></html>']
     reg_exps = {'num': '[+]?((\d+(\.\d*)?)|(\.\d+))', 'all': '.*'}
 
+    error_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250); color: rgb(217, 48, 42);'
+    note_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250); color: rgb(0, 161, 118);'
+    msg_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250);color: rgb(170, 0, 127);'
+
     # https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
-    list_all = [mH_icon, mH_big, mH_top_corner, play_bw, play_gw, play_gb, play_btn, hover_btn, pressed_btn, style_play, html_txt, reg_exps]
+    list_all = [mH_icon, mH_big, mH_top_corner, play_bw, play_gw, play_gb, play_btn, hover_btn, pressed_btn, style_play, html_txt, reg_exps, error_style, note_style, msg_style]
     return list_all
 
 #%% Module loaded
 print('morphoHeart! - Loaded gui_classes')
 list_all = set_txts()
-mH_icon, mH_big, mH_top_corner, play_bw, play_gw, play_gb, play_btn, hover_btn, pressed_btn, style_play, html_txt, reg_exps = list_all
+mH_icon, mH_big, mH_top_corner, play_bw, play_gw, play_gb, play_btn, hover_btn, pressed_btn, style_play, html_txt, reg_exps, error_style, note_style, msg_style = list_all

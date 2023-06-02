@@ -19,6 +19,7 @@ from src.modules import mH_classes_new as mHC
 from src.modules import mH_funcBasics as fcB
 from src.modules import mH_funcContours as fcC
 from src.modules import mH_funcMeshes as fcM
+from src import mH_api as mA
 
 #%% API
 class Controller: 
@@ -125,8 +126,8 @@ class Controller:
             self.new_proj_win.set_meas_param_all.setChecked(True)
             toggled(self.new_proj_win.set_meas_param_all)
         else: 
-            error_txt = "Make sure all the 'Set' Buttons are toggled to continue."
-            self.new_proj_win.tE_validate2.setText(error_txt)
+            error_txt = "*Make sure all the 'Set' Buttons are toggle/checked to continue."
+            self.new_proj_win.win_msg(error_txt)
             print('Something is wrong: show_meas_param')
             return
 
@@ -155,7 +156,7 @@ class Controller:
                 self.new_proj_win.close()
             else: 
                 error_txt = "*Please create the New Project first before adding an organ to it."
-                self.new_proj_win.tE_validate2.setText(error_txt)
+                self.new_proj_win.win_msg(error_txt)
                 self.new_proj_win.button_new_proj.setChecked(False)
                 toggled(self.new_proj_win.button_new_proj)
                 return
@@ -189,7 +190,7 @@ class Controller:
                 self.new_organ_win.close()
             else: 
                 error_txt = '*You need to create the organ to continue.'
-                self.new_organ_win.tE_validate.setText(error_txt)
+                self.new_organ_win.win_msg(error_txt)
                 print('Error in new proj window')
                 return
             
@@ -202,11 +203,11 @@ class Controller:
                 self.load_proj_win.close()
             else: 
                 if len(self.proj.organs) == 0: 
-                    error_txt = "The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
-                    self.load_proj_win.tE_validate.setText(error_txt)
+                    error_txt = "!The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
+                    self.load_proj_win.win_msg(error_txt)
                 else: 
                     error_txt = '*Please select one organ to analyse.'
-                    self.load_proj_win.tE_validate.setText(error_txt)
+                    self.load_proj_win.win_msg(error_txt)
                     print('Error in loading window')
                 return
         else: 
@@ -219,6 +220,8 @@ class Controller:
             print('organ:', self.organ.__dict__)
             self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
         self.main_win.show()
+
+        self.main_win.pushButton.clicked.connect(lambda: self.download())
 
         #Segmentation Tab
         # - Buttons inside channels
@@ -291,15 +294,15 @@ class Controller:
             self.new_proj_win.set_meas_param_all.setChecked(True)
             toggled(self.new_proj_win.set_meas_param_all)
             error_txt = "Well done! Continue setting up new project."
-            self.new_proj_win.tE_validate2.setText(error_txt)
+            self.new_proj_win.win_msg(error_txt)
         else: 
-            error_txt = "Please validate selected measurement parameters first."
-            self.meas_param_win.tE_validate.setText(error_txt)
+            error_txt = "*Please validate selected measurement parameters first."
+            self.meas_param_win.win_msg(error_txt)
             return 
         
     def new_proj(self):
         if self.new_proj_win.validate_set_all():
-            self.new_proj_win.tE_validate2.setText("Creating and saving new project...")
+            self.new_proj_win.win_msg("Creating and saving new project...")
             temp_dir = None
             if self.new_proj_win.cB_proj_as_template.isChecked():
                 line_temp = self.new_proj_win.lineEdit_template_name.text()
@@ -308,7 +311,7 @@ class Controller:
                 cwd = Path().absolute()
                 dir_temp = cwd / 'db' / 'templates' / temp_name 
                 if dir_temp.is_file():
-                    self.new_proj_win.tE_validate2.setText('*There is already a template with the selected name. Please give this template a new name.')
+                    self.new_proj_win.win_msg('*There is already a template with the selected name. Please give this template a new name.')
                     return
                 else: 
                     print('New project template: ', dir_temp)
@@ -337,7 +340,7 @@ class Controller:
             self.proj.create_proj_dir()
             self.proj.save_project(temp_dir = temp_dir)
             print('\n>>> New Project: ',self.proj.__dict__)
-            self.new_proj_win.tE_validate2.setText("New project '"+self.new_proj_win.lineEdit_proj_name.text()+"' has been created and saved! Continue creating an organ as part of this project. ")
+            self.new_proj_win.win_msg("New project '"+self.new_proj_win.lineEdit_proj_name.text()+"' has been created and saved! Continue creating an organ as part of this project. ")
     
     def load_proj(self):
         path_folder = QFileDialog.getExistingDirectory(self.load_proj_win, caption="Select the Project's directory")
@@ -356,17 +359,17 @@ class Controller:
         else: 
             self.load_proj_win.button_browse_proj.setChecked(False)
             toggled(self.load_proj_win.button_browse_proj)
-            self.load_proj_win.tE_validate.setText('There is no settings file for a project within the selected directory. Please select a new directory.')
+            self.load_proj_win.win_msg('*There is no settings file for a project within the selected directory. Please select a new directory.')
 
     #Organ related
     def new_organ(self): 
         if self.new_organ_win.validate_organ(self.proj): 
-            self.new_organ_win.tE_validate.setText('Creating and saving new organ...')
+            self.new_organ_win.win_msg('Creating and saving new organ...')
             if self.new_organ_win.check_selection(self.proj):
                 if self.new_organ_win.check_shapes(self.proj): 
                     self.new_organ_win.button_create_new_organ.setChecked(True)
                     toggled(self.new_organ_win.button_create_new_organ)
-                    self.new_organ_win.tE_validate.setText('Creating organ "'+self.new_organ_win.lineEdit_organ_name.text()+'"')
+                    self.new_organ_win.win_msg('Creating organ "'+self.new_organ_win.lineEdit_organ_name.text()+'"')
                     # self.new_organ_win.button_create_new_organ.setDisabled(True)
 
                     name = self.new_organ_win.lineEdit_organ_name.text()
@@ -405,7 +408,7 @@ class Controller:
                     print('\n>>> New Organ: ', self.organ.__dict__)
                     self.proj.add_organ(self.organ)
                     self.organ.save_organ()
-                    self.new_organ_win.tE_validate.setText('New organ "'+name+'" has been created as part of "'+self.proj.user_projName+'" project.')
+                    self.new_organ_win.win_msg('New organ "'+name+'" has been created as part of "'+self.proj.user_projName+'" project.')
                 else: 
                     self.new_organ_win.button_create_new_organ.setChecked(False)
                     toggled(self.new_organ_win.button_create_new_organ)
@@ -424,97 +427,14 @@ class Controller:
 
     #Channels related
     def close_cont(self, ch_name):
-        #Check workflow status
-        workflow = self.organ.workflow['morphoHeart']
-        process = ['ImProc',ch_name,'Status']
-        check_proc = get_by_path(workflow, process)
-        close_done = fcC.checkWfCloseCont(workflow, ch_name)
-        proceed = False
-        dict_names = {'A-MaskChannel': 'Mask Stack', 'A-Autom': 'Close Contours Automatically', 
-                       'B-Manual': 'Close Contours Manually', 'C-CloseInOut': 'Close Inflow/Outflow Tract(s)'}
-
-        if all(close_done[flag] == 'DONE' for flag in close_done):
-            #Ask if the user wants to re-run any of the processes
-            ch_userName = self.organ.imChannels[ch_name]['user_chName']
-            title = 'Processes already performed in '+ch_userName
-            msg = 'You already finished processing the contours of this channel ('+ch_userName+'). Do you want to re-run any of the processes?'
-            items = {0: 'no, continue with next step', 1: 'yes, I would like to re-run a(some) process(es)!'}
-            self.prompt = Prompt_ok_cancel_radio(title, msg, items, parent=self.main_win)
-            self.prompt.exec()
-            print('output:',self.prompt.output, '\n')
-
-            if self.prompt.output[0] == 1:
-                print('close_done (original):',close_done)
-                self.prompt = None
-                # Here ask for processes that the user might want to re-run
-                title = 'Select process(ess) to re-run'
-                msg = 'Select the process(es) you want to run:'
-                #- Get the items 
-                items = {}
-                for nn, key in enumerate(list(close_done.keys())): 
-                    items[key] = {'opt': dict_names[key]}
-                # Prompt
-                self.prompt = Prompt_ok_cancel_checkbox(title, msg, items, parent=self.welcome_win)
-                self.prompt.exec()
-                for key in close_done.keys():
-                    if self.prompt.output[key]: 
-                        close_done[key] = 'NI'
-                self.prompt = None
-                proceed = True
-            else: 
-                proceed = False
-        elif check_proc == 'Initialised': 
-            proceed = True
-            print('Processing had been initialised!')
-        else: 
-            print('All new')
-            print('\tChannel:',ch_name, '-CloseCont:', close_done)
-            proceed = True
-            
-        if proceed: 
-            fcC.closeContours(organ=self.organ, ch_name=ch_name, close_done=close_done, win=self.main_win)
-        else: 
-            fcC.ImChannel(organ=self.organ, ch_name=ch_name)
-
-        close_cont_btn = getattr(self.main_win, ch_name+'_closecont')
-        close_cont_btn.setChecked(True)
-        toggled(close_cont_btn)
+        mA.close_cont(controller=self, ch_name=ch_name)
 
     def select_cont(self, ch_name):
-        #Check workflow status
-        workflow = self.organ.workflow['morphoHeart']
-        process = ['ImProc', ch_name,'C-SelectCont','Status']
-        check_proc = get_by_path(workflow, process)
-        proceed = False
-        if check_proc == 'DONE':
-            #Ask if the user wants to re-run selecting contours
-            ch_userName = self.organ.imChannels[ch_name]['user_chName']
-            title = 'Processes already performed in '+ch_userName
-            msg = 'You already finished selecting the contours of this channel ('+ch_userName+'). Do you want to re-select them?'
-            items = {0: 'no, continue with next step', 1: 'yes, I would like to re-select them!'}
-            self.prompt = Prompt_ok_cancel_radio(title, msg, items, parent=self.main_win)
-            self.prompt.exec()
-            if self.prompt.output[0] == 1: 
-                proceed = True
-            else: 
-                proceed = False
-            self.prompt = None
-        else: 
-            proceed = True
-                
-        if proceed: 
-            im_o = self.organ.obj_imChannels[ch_name]
-            fcC.selectContours(organ=self.organ, im_ch = im_o, win=self.main_win)
-        else: 
-            layerDict = {}
-            return layerDict
-        
-        select_btn = getattr(self.main_win, ch_name+'_selectcont')
-        select_btn.setChecked(True)
-        toggled(select_btn)
-    
+        mA.select_cont(controller=self, ch_name=ch_name)
+
     def run_keeplargest(self):
-        fcM.s32Meshes(self.organ, self.main_win.gui_keep_largest, self.main_win.rotateZ_90)
+        mA.run_keeplargest(controller=self)
+   
     
 def main():
     app = QtWidgets.QApplication(sys.argv)

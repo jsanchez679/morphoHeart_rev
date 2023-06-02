@@ -118,12 +118,12 @@ def clean_intCh(organ, plot=False):
     
 
 #%% func - s32Meshes
-def s32Meshes(organ, gui_keep_largest:dict, rotateZ_90=True):
-    
+def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):
     # Check workflow status
     workflow = organ.workflow['morphoHeart']
     meshes_out = []
     for ch in organ.obj_imChannels.keys(): 
+        win.win_msg('Creating meshes of Channel '+ch[-1]+'!')
         print('\n---CREATING MESHES ('+ch+')---')
         im_ch = organ.obj_imChannels[ch]
         process = ['MeshesProc','A-Create3DMesh', im_ch.channel_no]
@@ -135,16 +135,21 @@ def s32Meshes(organ, gui_keep_largest:dict, rotateZ_90=True):
             
         meshes = im_ch.s32Meshes(cont_types=['int', 'ext', 'tiss'],
                                         keep_largest=gui_keep_largest[im_ch.channel_no],
-                                        rotateZ_90 = True, new_set = new_set)
-        meshes_out.append(meshes)
-      
-    txt = [(0, organ.user_organName)]
-    obj = []
-    for meshes in meshes_out:
-        for mesh in meshes: 
-            obj.append((mesh.mesh))
-            
-    plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+                                        win=win,
+                                        rotateZ_90 = rotateZ_90, new_set = new_set)
+        
+        plot_btn = getattr(win, 'keeplargest_plot_'+ch)
+        plot_btn.setEnabled(True)
+        # meshes_out.append(meshes)
+
+    # txt = [(0, organ.user_organName)]
+    # obj = []
+    # for meshes in meshes_out:
+    #     for mesh in meshes: 
+    #         obj.append((mesh.mesh))
+    
+
+    # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
 
 #%% func - select_meshes2trim
 def select_meshes2trim(organ):

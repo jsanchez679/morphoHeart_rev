@@ -72,7 +72,7 @@ QScrollBar::handle:vertical:hover {
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-452</y>
+        <y>0</y>
         <width>1070</width>
         <height>1248</height>
        </rect>
@@ -10955,7 +10955,7 @@ QPushButton:hover{
   <tabstop>cB_sect_Cut2_chNS_int</tabstop>
  </tabstops>
  <resources>
-  <include location="../images/images.qrc"/>
+  <include location="../../../images/images.qrc"/>
  </resources>
  <connections/>
 </ui>

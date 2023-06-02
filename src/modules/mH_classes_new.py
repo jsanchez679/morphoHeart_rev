@@ -33,6 +33,7 @@ path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
 
 #%% ##### - Other Imports - ##################################################
 #from ...config import dict_gui
+from ..gui.gui_classes import *
 from .mH_funcBasics import alert, ask4input, make_Paths, make_tuples, get_by_path, set_by_path
 from .mH_funcMeshes import unit_vector, plot_organCLs, find_angle_btw_pts, classify_segments_from_ext, create_asign_subsg
 from ..gui.config import mH_config
@@ -1693,12 +1694,15 @@ class ImChannel(): #channel
         layerDict = {}
         return layerDict
 
-    def create_chS3s (self, layerDict:dict):
+    def create_chS3s (self, layerDict:dict, win):
         # Workflow process
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc',self.channel_no,'D-S3Create','Status']
-                
+        
+        win.prog_bar_range(0,3)
+        win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+'.')
         dirs_cont = []; shapes_s3 = []
+        aa = 0
         for cont in ['int', 'ext', 'tiss']:
             s3 = ContStack(im_channel=self, cont_type=cont, layerDict=layerDict)#new=True,
             self.add_contStack(s3)
@@ -1708,6 +1712,8 @@ class ImChannel(): #channel
             process_cont = ['ImProc',self.channel_no,'D-S3Create','Info',cont,'Status']
             self.parent_organ.update_mHworkflow(process_cont, update = 'DONE')
             print('> Update:', process_cont, get_by_path(workflow, process_cont))
+            aa+=1
+            win.prog_bar_update(aa)
         
         #Update organ workflow
         if all(flag for flag in dirs_cont):
@@ -1821,10 +1827,13 @@ class ImChannel(): #channel
             # Update status 
             self.parent_organ.check_status(process = 'ImProc')
         
-    def s32Meshes(self, cont_types:list, keep_largest=False, rotateZ_90=True, new_set=False):
+    def s32Meshes(self, cont_types:list, win, keep_largest=False, rotateZ_90=True, new_set=False):
 
+        win.prog_bar_range(0,3)
         meshes_out = []
+        aa = 0
         for mesh_type in cont_types:
+            win.win_msg('Creating meshes of Channel '+self.channel_no[-1]+'! ('+str(aa)+'/'+str(len(cont_types))+')')
             name = self.channel_no + '_' + mesh_type
             if name not in self.parent_organ.meshes.keys():
                 keep_largest_f = keep_largest[mesh_type]
@@ -1844,6 +1853,8 @@ class ImChannel(): #channel
                     print('>> Recreating mesh with same settings as original')
             mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new_set=new_set)#, new=True)
             meshes_out.append(mesh)
+            aa+=1
+            win.prog_bar_update(aa)
             
         return meshes_out
     
@@ -2485,7 +2496,6 @@ class Mesh_mH():
             self.parent_organ.add_mesh(self)
             self.save_mesh()
 
-    
     def create_mesh(self, keep_largest:bool, rotateZ_90:bool):
         # Extract vertices, faces, normals and values of each mesh
         s3_type = 's3_'+self.mesh_type
@@ -2512,10 +2522,10 @@ class Mesh_mH():
         parent_organ = self.parent_organ
         # mesh_name = parent_organ.user_organName+'_'+self.legend+'.vtk'
         mesh_name = parent_organ.user_organName+'_'+self.name+'.vtk'
-        mesh_dir = parent_organ.info['dirs']['meshes'] / mesh_name
+        mesh_dir = parent_organ.dir_res(dir='meshes')  / mesh_name
         mesh_out = vedo.load(str(mesh_dir))
         mesh_out.legend(self.legend).wireframe()
-        self.dir_out = mesh_dir
+        self.dir_out = mesh_name
         self.mesh = mesh_out
 
     def save_mesh(self, m_type='self', ext='.vtk'):
@@ -2526,7 +2536,7 @@ class Mesh_mH():
             else: #== .vtk
                 mesh_name = parent_organ.user_organName+'_'+self.name+ext
             mesh_dir = parent_organ.dir_res(dir='meshes') / mesh_name
-            self.dir_out = mesh_dir
+            self.dir_out = mesh_name
             mesh_out = self.mesh
             
         elif 'ball' in m_type or 'thck' in m_type: 
@@ -2537,9 +2547,9 @@ class Mesh_mH():
             mesh_dir = parent_organ.dir_res(dir='meshes') / mesh_name
             mesh_out = self.mesh_meas[m_type]
             if self.dirs['mesh'] == None: 
-                self.dirs['mesh'] = {m_type: mesh_dir}
+                self.dirs['mesh'] = {m_type: mesh_name}
             else:
-                self.dirs['mesh'][m_type] = mesh_dir
+                self.dirs['mesh'][m_type] = mesh_name
             
         mesh_out.write(str(mesh_dir))
         print('>> Mesh '+mesh_name+' has been saved!')
