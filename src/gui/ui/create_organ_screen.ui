@@ -3004,6 +3004,11 @@ QPushButton:hover{
  </widget>
  <tabstops>
   <tabstop>lineEdit_organ_name</tabstop>
+  <tabstop>textEdit_ref_notes</tabstop>
+  <tabstop>cust_angle</tabstop>
+  <tabstop>scaling_x</tabstop>
+  <tabstop>scaling_y</tabstop>
+  <tabstop>scaling_z</tabstop>
   <tabstop>browse_ch1</tabstop>
   <tabstop>browse_mask_ch1</tabstop>
   <tabstop>browse_ch2</tabstop>
@@ -3014,11 +3019,6 @@ QPushButton:hover{
   <tabstop>browse_mask_ch4</tabstop>
   <tabstop>button_create_new_organ</tabstop>
   <tabstop>go_to_main_window</tabstop>
-  <tabstop>check_mask_ch1</tabstop>
-  <tabstop>lab_filled_proj_dir</tabstop>
-  <tabstop>check_ch2</tabstop>
-  <tabstop>tabWidget</tabstop>
-  <tabstop>check_mask_ch2</tabstop>
   <tabstop>check_ch1</tabstop>
   <tabstop>check_ch3</tabstop>
   <tabstop>tE_validate</tabstop>
@@ -3031,9 +3031,14 @@ QPushButton:hover{
   <tabstop>lab_filled_organ_dir</tabstop>
   <tabstop>button_go_back</tabstop>
   <tabstop>lab_filled_ref_notes</tabstop>
+  <tabstop>lab_filled_proj_dir</tabstop>
+  <tabstop>check_ch2</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>check_mask_ch2</tabstop>
+  <tabstop>check_mask_ch1</tabstop>
  </tabstops>
  <resources>
-  <include location="../images/images.qrc"/>
+  <include location="../../../images/images.qrc"/>
  </resources>
  <connections/>
  <designerdata>

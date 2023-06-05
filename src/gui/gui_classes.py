@@ -38,6 +38,8 @@ from ..modules.mH_funcMeshes import *
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
 
+#https://wpamelia.com/loading-bar/
+
 #%% Classes - ########################################################
 class WelcomeScreen(QDialog):
 
@@ -658,7 +660,7 @@ class CreateNewProj(QDialog):
 
         #Check and if all valid create new project
         if len(valid)== 3 and all(valid):
-            proj_folder = 'R_'+self.proj_name
+            proj_folder = 'R_'+self.proj_name#.replace(' ','_')
             self.proj_dir = self.proj_dir_parent / proj_folder
             if self.proj_dir.is_dir():
                 self.win_msg('*There is already a project named "'+self.proj_name+'" in the selected directory. Please select a different name for the new project.')
@@ -1129,7 +1131,10 @@ class CreateNewProj(QDialog):
                             'ch_int': (ch_int.lower(), int_cont[0:3]),
                             'operation' : chNS_operation,
                             'user_nsChName': self.chNS_username.text(),
-                            'color_chns': color_chNS}
+                            'color_chns': color_chNS, 
+                            'keep_largest': {},
+                            'alpha': {}}
+        
         self.mH_settings['chNS'] = chNS_settings
         # print(self.mH_settings)
 
@@ -2635,8 +2640,7 @@ class MainWindow(QMainWindow):
     #- Init tabs
     def init_segment_tab(self): 
         print('Setting up Segmentation Tab')
-        self.channels = self.organ.mH_settings['setup']['name_chs']
-        channels = [self.channels[ch]+' ('+ch+')' for ch in self.channels if ch != 'chNS']
+        self.channels = self.organ.mH_settings['setup']['name_chs'] # {'ch1': 'myocardium', 'ch2': 'endocardium', 'chNS': 'cardiac jelly'}
         num = 0
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             ch_tab = getattr(self, 'tab_chs')
@@ -2663,7 +2667,8 @@ class MainWindow(QMainWindow):
         # self.segments_sectionsAll_play.clicked.connect(lambda: self.())
 
         self.init_keeplargest()
-        self.init_clean_trim()
+        self.init_clean()
+        self.init_trim()
         self.init_orientation()
         if self.organ.mH_settings['setup']['chNS']['layer_btw_chs']:
             self.init_chNS()
@@ -2694,22 +2699,9 @@ class MainWindow(QMainWindow):
         #Setup workflow
         self.fill_workflow(tree= self.treeWorkflow, value = self.organ.workflow['morphoHeart']['MeshesProc'])
 
-        #To delete!
-        self.pushButton.clicked.connect(lambda: self.update_test())
-
-    Revisar esto!
-    def update_test(self): #To delete!
-        self.organ.mH_settings['setup']['keep_largest'] = {}
-        self.organ.mH_settings['setup']['alpha'] = {}
-        self.organ.mH_settings['setup']['chNS']['keep_largest'] = {}
-        self.organ.mH_settings['setup']['chNS']['alpha'] = {}
-
-        print(self.organ.mH_settings)
-
     #- Init Ch Progress Table
     def init_ch_progress(self): 
         im_chs = [key for key in self.channels.keys() if key != 'chNS']
-        print(im_chs)
         workflow = self.organ.workflow['morphoHeart']
         self.tabW_progress_ch.setRowCount(len(im_chs))
         big_im_chs = [ch.title() for ch in im_chs]
@@ -2717,7 +2709,6 @@ class MainWindow(QMainWindow):
         self.proc_keys = {'Ch':'gen','A-MaskChannel':'mask', 
                             'A-Autom':'autom','B-Manual': 'manual', 
                             'C-CloseInOut': 'trim', 'C-SelectCont': 'select'}
-
         cS = []
         #Adding organs to table
         row = 0
@@ -2799,13 +2790,13 @@ class MainWindow(QMainWindow):
         self.keeplargest_set.clicked.connect(lambda: self.set_keeplargest())
         self.keeplargest_play.setStyleSheet(style_play)
         self.keeplargest_play.setEnabled(False)
-        # self.keeplargest_plot.clicked.connect(lambda: )
+        self.keeplargest_plot.clicked.connect(lambda: self.plot_meshes('all'))
         self.keeplargest_plot.setEnabled(False)
-        # self.q_keeplargest.clicked.connect(lambda: )
-        self.keeplargest_plot_ch1.clicked.connect(lambda: plot_keeplargest('ch1') )
-        # self.keeplargest_plot_ch2.clicked.connect(lambda: )
-        # self.keeplargest_plot_ch3.clicked.connect(lambda: )
-        # self.keeplargest_plot_ch4.clicked.connect(lambda: )
+        self.q_keeplargest.clicked.connect(lambda: self.help_keeplargest())
+        self.keeplargest_plot_ch1.clicked.connect(lambda: self.plot_keeplargest('ch1') )
+        self.keeplargest_plot_ch2.clicked.connect(lambda: self.plot_keeplargest('ch2') )
+        self.keeplargest_plot_ch3.clicked.connect(lambda: self.plot_keeplargest('ch3') )
+        self.keeplargest_plot_ch4.clicked.connect(lambda: self.plot_keeplargest('ch4') )
 
         self.keeplargest_plot_ch1.setEnabled(False)
         self.keeplargest_plot_ch2.setEnabled(False)
@@ -2828,50 +2819,92 @@ class MainWindow(QMainWindow):
                     color_btn = getattr(self, 'fillcolor_'+chk+'_'+contk)
                     color_btn.setStyleSheet(color_txt)
 
-        self.kl_ch1_all.stateChanged.connect(lambda: self.tick_all('ch1'))
-        self.kl_ch2_all.stateChanged.connect(lambda: self.tick_all('ch2'))
-        self.kl_ch3_all.stateChanged.connect(lambda: self.tick_all('ch3'))
-        self.kl_ch4_all.stateChanged.connect(lambda: self.tick_all('ch4'))
+        self.kl_ch1_all.stateChanged.connect(lambda: self.tick_all('ch1', 'kl'))
+        self.kl_ch2_all.stateChanged.connect(lambda: self.tick_all('ch2', 'kl'))
+        self.kl_ch3_all.stateChanged.connect(lambda: self.tick_all('ch3', 'kl'))
+        self.kl_ch4_all.stateChanged.connect(lambda: self.tick_all('ch4', 'kl'))
 
-    def init_clean_trim(self):
+    def init_clean(self):
         #Buttons
-        self.cleanup_trimming_open.clicked.connect(lambda: self.open_section(name='cleanup_trimming'))
-        # self.cleanup_plot_ch1.clicked.connect(lambda: )
-        # self.cleanup_plot_ch2.clicked.connect(lambda: )
-        # self.cleanup_plot_ch3.clicked.connect(lambda: )
-        # self.cleanup_plot_ch4.clicked.connect(lambda: )
-
+        self.cleanup_open.clicked.connect(lambda: self.open_section(name='cleanup'))
+        self.cleanup_plot_ch1.clicked.connect(lambda: self.plot_clean('ch1'))
+        self.cleanup_plot_ch2.clicked.connect(lambda: self.plot_clean('ch2'))
+        self.cleanup_plot_ch3.clicked.connect(lambda: self.plot_clean('ch3'))
+        self.cleanup_plot_ch4.clicked.connect(lambda: self.plot_clean('ch4'))
         self.cleanup_plot_ch1.setEnabled(False)
         self.cleanup_plot_ch2.setEnabled(False)
         self.cleanup_plot_ch3.setEnabled(False)
         self.cleanup_plot_ch4.setEnabled(False)
         
-        # self.cleanup_trimming_set.clicked.connect(lambda: )
+        self.cleanup_set.clicked.connect(lambda: self.set_clean())
         self.cleanup_play.setStyleSheet(style_play)
         self.cleanup_play.setEnabled(False)
         # self.cleanup_play.clicked.connect(lambda: )
-        self.trimming_play.setStyleSheet(style_play)
-        self.trimming_play.setEnabled(False)
-        # self.trimming_play.clicked.connect(lambda: )
-        # self.q_cleanup_trimming.clicked.connect(lambda: )
+        self.clean_plot.clicked.connect(lambda: self.plot_meshes('all'))
+        self.clean_plot.setEnabled(False)
+        # self.q_cleanup.clicked.connect(lambda: )
 
         #  Segmentation cleanup setup
         for chs in ['ch1', 'ch2', 'ch3', 'ch4']:
             if chs not in self.channels.keys():
                 getattr(self, 'clean_'+chs).setVisible(False)
+                getattr(self, 'clean_'+chs+'_all').setVisible(False)
                 getattr(self, 'clean_withch_'+chs).setVisible(False)
                 getattr(self, 'clean_withcont_'+chs).setVisible(False)
                 getattr(self, 'inverted_'+chs).setVisible(False)
-                getattr(self, 'trim_top_'+chs).setVisible(False)
-                getattr(self, 'trim_bottom_'+chs).setVisible(False)
                 getattr(self, 'cleanup_plot_'+chs).setVisible(False)
                 for cont in ['int', 'tiss', 'ext']:
                     getattr(self, 'clean_'+chs+'_'+cont).setVisible(False)
             else: 
-                # getattr(self, 'clean_'+chs).setText(self.channels[chs]+' ('+chs+')')
                 ch_opt = [cho for cho in self.channels if cho != 'chNS' and cho != chs]
                 getattr(self, 'clean_withch_'+chs).addItems(ch_opt)
                 getattr(self, 'clean_withcont_'+chs).addItems(['int', 'ext'])
+        
+        self.clean_ch1_all.stateChanged.connect(lambda: self.tick_all('ch1', 'clean'))
+        self.clean_ch2_all.stateChanged.connect(lambda: self.tick_all('ch2', 'clean'))
+        self.clean_ch3_all.stateChanged.connect(lambda: self.tick_all('ch3', 'clean'))
+        self.clean_ch4_all.stateChanged.connect(lambda: self.tick_all('ch4', 'clean'))
+    
+    def init_trim(self):
+        #Buttons
+        self.trimming_open.clicked.connect(lambda: self.open_section(name='trimming'))
+        self.trimming_plot_ch1.clicked.connect(lambda: self.plot_trim('ch1'))
+        self.trimming_plot_ch2.clicked.connect(lambda: self.plot_trim('ch2'))
+        self.trimming_plot_ch3.clicked.connect(lambda: self.plot_trim('ch3'))
+        self.trimming_plot_ch4.clicked.connect(lambda: self.plot_trim('ch4'))
+        self.trimming_plot_ch1.setEnabled(False)
+        self.trimming_plot_ch2.setEnabled(False)
+        self.trimming_plot_ch3.setEnabled(False)
+        self.trimming_plot_ch4.setEnabled(False)
+        
+        self.trimming_set.clicked.connect(lambda: self.set_trim())
+        self.trimming_play.setStyleSheet(style_play)
+        self.trimming_play.setEnabled(False)
+        # self.trimming_play.clicked.connect(lambda: )
+        self.trimming_plot.clicked.connect(lambda: self.plot_meshes('all'))
+        self.trimming_plot.setEnabled(False)
+        # self.q_trimming.clicked.connect(lambda: )
+
+        # Segmentation cleanup setup
+        for chs in ['ch1', 'ch2', 'ch3', 'ch4']:
+            if chs not in self.channels.keys():
+                getattr(self, 'trim_'+chs).setVisible(False)
+                getattr(self, 'top_'+chs+'_all').setVisible(False)
+                getattr(self, 'bot_'+chs+'_all').setVisible(False)
+                getattr(self, 'trimming_plot_'+chs).setVisible(False)
+                for cont in ['int', 'tiss', 'ext']:
+                    getattr(self, 'top_'+chs+'_'+cont).setVisible(False)
+                    getattr(self, 'bot_'+chs+'_'+cont).setVisible(False)
+        
+        self.top_ch1_all.stateChanged.connect(lambda: self.tick_all('ch1','top'))
+        self.top_ch2_all.stateChanged.connect(lambda: self.tick_all('ch2','top'))
+        self.top_ch3_all.stateChanged.connect(lambda: self.tick_all('ch3','top'))
+        self.top_ch4_all.stateChanged.connect(lambda: self.tick_all('ch4','top'))
+
+        self.bot_ch1_all.stateChanged.connect(lambda: self.tick_all('ch1', 'bot'))
+        self.bot_ch2_all.stateChanged.connect(lambda: self.tick_all('ch2', 'bot'))
+        self.bot_ch3_all.stateChanged.connect(lambda: self.tick_all('ch3', 'bot'))
+        self.bot_ch4_all.stateChanged.connect(lambda: self.tick_all('ch4', 'bot'))
 
     def init_orientation(self):
         #Buttons
@@ -3150,7 +3183,7 @@ class MainWindow(QMainWindow):
 
         print('Sect: ', self.organ.mH_settings['setup']['sect'])
 
-    #Functions specific to morphoHeart B,C,D sections
+    #Functions specific to gui functionality
     def open_section(self, name): 
         print('Open-close: '+name)
         #Get button
@@ -3163,11 +3196,11 @@ class MainWindow(QMainWindow):
             wdg.setVisible(True)
             btn.setText('o')
 
-    def tick_all(self, ch): 
-        tick_int = getattr(self, 'kl_'+ch+'_int')
-        tick_ext = getattr(self, 'kl_'+ch+'_ext')
-        tick_tiss = getattr(self, 'kl_'+ch+'_tiss')
-        if getattr(self, 'kl_'+ch+'_all').isChecked(): 
+    def tick_all(self, ch, proc): 
+        tick_int = getattr(self, proc+'_'+ch+'_int')
+        tick_ext = getattr(self, proc+'_'+ch+'_ext')
+        tick_tiss = getattr(self, proc+'_'+ch+'_tiss')
+        if getattr(self, proc+'_'+ch+'_all').isChecked(): 
             setChecked = True
         else: 
             setChecked = False
@@ -3303,6 +3336,7 @@ class MainWindow(QMainWindow):
                 child.setText(0, str(value))#unicode(value))
                 item.addChild(child)
             
+    #Set functions 
     def set_keeplargest(self): 
         self.gui_keep_largest = {}
         for ch in self.channels: 
@@ -3319,21 +3353,84 @@ class MainWindow(QMainWindow):
         print(self.gui_keep_largest)
         self.keeplargest_play.setEnabled(True)
 
-    def plot_keeplargest(self, ch):
+    def set_clean(self): 
+        #Check first if any cont selected that the ch and cont are selected
+        im_chs = [ch for ch in self.channels if ch != 'chNS']
+        chs_sel = []
+        for ch in im_chs: 
+            selected = []
+            for cont in ['int', 'tiss', 'ext']: 
+                selected.append(getattr(self, 'clean_'+ch+'_'+cont).isChecked())
+            if any(selected): 
+                chs_sel.append(ch)
+                withch = getattr(self, 'clean_withch_'+ch).currentText()
+                withcont = getattr(self, 'clean_withcont_'+ch).currentText()
+                if withch == '----' or withcont == '----': 
+                    self.win_msg('*Please select the channel and contour to use as mask for '+ch.title())
+                    return
+                else: 
+                    continue
+                
+        self.gui_clean = {}
+        for chc in chs_sel: 
+            self.gui_clean[chc] = {'cont': []}
+            for cont in ['int', 'tiss', 'ext']: 
+                val = getattr(self, 'clean_'+chc+'_'+cont).isChecked()
+                if val: 
+                    self.gui_clean[chc]['cont'].append(cont)
+                self.gui_clean[chc]['with_ch'] = getattr(self, 'clean_withch_'+chc).currentText()
+                self.gui_clean[chc]['with_cont'] = getattr(self, 'clean_withcont_'+chc).currentText()
+                self.gui_clean[chc]['inverted'] = getattr(self, 'inverted_'+chc).isChecked()
 
+        print('self.gui_clean: ', self.gui_clean)
+
+    def set_trim(self): 
+        self.gui_trim = {}
+        im_chs = [ch for ch in self.channels if ch != 'chNS']
+        for side in ['top', 'bot']: 
+            self.gui_trim[side] = {'chs': {}}
+            for cht in im_chs: 
+                self.gui_trim[side]['chs'][cht] = {}
+                for cont in ['int', 'tiss', 'ext']: 
+                    val = getattr(self, side+'_'+cht+'_'+cont).isChecked()
+                    self.gui_trim[side]['chs'][cht][cont] = val
+        
+            obj = getattr(self, side+'_cut_opts').currentText()
+            self.gui_trim[side]['object'] = obj
+
+        print('self.gui_trim: ', self.gui_trim)
+    
+    #Plot functions
+    def plot_meshes(self, ch, chNS=False):
         txt = [(0, self.organ.user_organName)]
         obj = []
-        for cont in ['ext', 'tiss', 'int']: 
-            obj.append(self.organ.obj_meshes[ch+'_'+cont].mesh)
+        if ch != 'all': 
+            for cont in ['ext', 'tiss', 'int']: 
+                obj.append(self.organ.obj_meshes[ch+'_'+cont].mesh)
+        else: 
+            print('self.channels:', self.channels)
+            if not chNS:
+                im_chs = [ch for ch in self.channels if ch != 'chNS']
+            else: 
+                im_chs = self.channels
+            
+            for ch in im_chs: 
+                for cont in ['ext', 'tiss', 'int']: 
+                    obj.append(self.organ.obj_meshes[ch+'_'+cont].mesh)
     
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
-    def run_keeplargest(self):
-        pass
+    #Help functions
+    def help_keeplargest(self): 
+        print('User clicked help keep largest')
 
-    def plotAll_keeplargest(self):
-        pass
-    
+    def help_clean_trim(self): 
+        print('User clicked help clean/trim')
+
+    # def help_keeplargest(self): 
+    #     print('User clicked help keep largest')
+
+
     def run_segmentationAll(self): 
         print('Running segmentation All!')
     

@@ -45,7 +45,7 @@ def alert(sound:str):
     whistle:
     woohoo:
     '''
-    print('alert: ', mH_config.gui_sound)
+    # print('alert: ', mH_config.gui_sound)
     mp3_basic = ['connection','woohoo']
     
     if mH_config.gui_sound[0]: 

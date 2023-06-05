@@ -59,11 +59,11 @@ class NumpyArrayEncoder(json.JSONEncoder):
 from .mH_funcBasics import ask4input, get_by_path, alert
 # from .mH_classes_new import ImChannelNS#, Mesh_mH
 
-alert_all = True
-heart_default = False
-dict_gui = {'alert_all': alert_all,
-            'heart_default': heart_default, 
-            'colorMap': 'turbo'}
+# alert_all = True
+# heart_default = False
+# dict_gui = {'alert_all': alert_all,
+#             'heart_default': heart_default, 
+#             'colorMap': 'turbo'}
             
 #%% - morphoHeart B functions
 #%% func - clean_intCh
@@ -134,26 +134,18 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):
             new_set = False
             
         meshes = im_ch.s32Meshes(cont_types=['int', 'ext', 'tiss'],
-                                        keep_largest=gui_keep_largest[im_ch.channel_no],
-                                        win=win,
-                                        rotateZ_90 = rotateZ_90, new_set = new_set)
+                                    keep_largest=gui_keep_largest[im_ch.channel_no],
+                                    win=win,
+                                    rotateZ_90 = rotateZ_90, new_set = new_set)
         
         plot_btn = getattr(win, 'keeplargest_plot_'+ch)
         plot_btn.setEnabled(True)
-        # meshes_out.append(meshes)
-
-    # txt = [(0, organ.user_organName)]
-    # obj = []
-    # for meshes in meshes_out:
-    #     for mesh in meshes: 
-    #         obj.append((mesh.mesh))
     
-
-    # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+    plot_all = getattr(win, 'keeplargest_plot')
+    plot_all.setEnabled(True)
 
 #%% func - select_meshes2trim
 def select_meshes2trim(organ):
-    
     names_mesh_tiss = [name for name in organ.obj_meshes if 'tiss' in name and 'NS' not in name]
     obj = []
     # meshes = []

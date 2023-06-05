@@ -197,7 +197,7 @@ class Controller:
         elif parent_win == 'load_proj_win':
             self.load_proj_win.check_unique_organ_selected(self.proj)
             if self.load_proj_win.organ_selected != None:
-                self.organ_to_analyse = self.load_proj_win.organ_selected.replace(' ', '_')
+                self.organ_to_analyse = self.load_proj_win.organ_selected#.replace(' ', '_')
                 print('AAA:',self.organ_to_analyse)
                 self.load_organ(proj = self.proj, organ_to_load = self.organ_to_analyse)
                 self.load_proj_win.close()
@@ -344,7 +344,7 @@ class Controller:
     
     def load_proj(self):
         path_folder = QFileDialog.getExistingDirectory(self.load_proj_win, caption="Select the Project's directory")
-        proj_name = str(Path(path_folder).name)[2:]
+        proj_name = str(Path(path_folder).name)[2:] #Removing the R_
         proj_name_us = proj_name.replace(' ', '_')
         json_name = 'mH_'+proj_name_us+'_project.json'
         proj_settings_path = Path(path_folder) / 'settings' / json_name

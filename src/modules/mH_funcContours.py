@@ -19,6 +19,7 @@ def closeContours(organ, ch_name:str, close_done:dict, win):
 
     if close_done['A-MaskChannel'] != 'DONE':
         im_ch = organ.create_ch(ch_name=ch_name)
+        win.win_msg('Masking Channel '+str(ch_name[-1]))
         im_ch.maskIm()
         win.win_msg('Channel '+str(ch_name[-1])+ ' was successfully masked!')
     else: 
@@ -28,16 +29,19 @@ def closeContours(organ, ch_name:str, close_done:dict, win):
     win.update_ch_progress()     
             
     # if close_done['A-Autom'] != 'DONE':
+    #     win.win_msg('Closing Contours of Channel '+str(ch_name[-1])+' Automatically')
     #     im_ch.closeContours_auto()
     #     win.win_msg('Contours of channel '+str(ch_name[-1])+ 'have been automatically closed!')
     # win.update_ch_progress() 
         
     # if close_done['B-Manual'] != 'DONE':
+    #     win.win_msg('Closing Contours of Channel '+str(ch_name[-1])+' Manually')
     #     im_ch.closeContours_manual()
     #     win.win_msg('Contours of channel '+str(ch_name[-1])+ 'have been manually closed!')
     # win.update_ch_progress() 
         
     # if close_done['C-CloseInOut'] != 'DONE':
+    #     win.win_msg('Closing Top and Bottom Contours of Channel '+str(ch_name[-1]))
     #     im_ch.closeInfOutf()
     #     win.win_msg('The top and bottom contours of channel '+str(ch_name[-1])+ 'have been succesfully closed!')
     # win.update_ch_progress() 
