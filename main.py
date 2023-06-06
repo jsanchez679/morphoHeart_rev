@@ -95,7 +95,6 @@ class Controller:
         # self.prompt.exec()
         # print('output:',self.prompt.output, '\n')
 
-
     def show_create_new_proj(self):
         #Close welcome window
         self.sound = self.welcome_win.sound
@@ -199,6 +198,7 @@ class Controller:
             if self.load_proj_win.organ_selected != None:
                 self.organ_to_analyse = self.load_proj_win.organ_selected#.replace(' ', '_')
                 print('AAA:',self.organ_to_analyse)
+                self.load_proj_win.win_msg('Loading organ '+self.organ_to_analyse+'...')
                 self.load_organ(proj = self.proj, organ_to_load = self.organ_to_analyse)
                 self.load_proj_win.close()
             else: 
@@ -216,8 +216,8 @@ class Controller:
 
         #Create Main Project Window and show
         if self.main_win == None:
-            print('proj:', self.proj.__dict__)
-            print('organ:', self.organ.__dict__)
+            print('\nLoaded Project and Organ!\n >> Proj:', self.proj.__dict__)
+            print('>> Organ:', self.organ.__dict__)
             self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
         self.main_win.show()
 
@@ -236,6 +236,10 @@ class Controller:
 
         #Process and Analyse Tab
         self.main_win.keeplargest_play.clicked.connect(lambda: self.run_keeplargest())
+        self.main_win.cleanup_play.clicked.connect(lambda: self.run_cleanup())
+        self.main_win.trimming_play.clicked.connect(lambda: self.run_trimming())
+        self.main_win.orientation_play.clicked.connect(lambda: self.run_axis_orientation())
+        self.main_win.chNS_play.clicked.connect(lambda: self.run_chNS())
 
     #Functions related to API  
     # Project Related  
@@ -282,9 +286,7 @@ class Controller:
                 selected_params[param_name][to_mesh+'_'+to_mesh_type+'_('+from_cl+'_'+from_cl_type+')'] = True
 
             self.new_proj_win.mH_user_params = selected_params
-            print('\n\n\n\n')
-            print('selected_params', selected_params)
-            print('\n\n\n\n')
+            print('Selected_params', selected_params)
 
             #Toogle button and close window
             self.meas_param_win.button_set_params.setChecked(True)
@@ -354,7 +356,6 @@ class Controller:
             self.proj = mHC.Project(proj_dict, new=False)
             print('Loaded project:',self.proj.__dict__)
             self.load_proj_win.proj = self.proj
-            print('A')
             #Fill window with project info
             self.load_proj_win.fill_proj_info(proj = self.proj)
         else: 
@@ -435,6 +436,18 @@ class Controller:
 
     def run_keeplargest(self):
         mA.run_keeplargest(controller=self)
+
+    def run_cleanup(self):
+        mA.run_cleanup(controller=self)
+    
+    def run_trimming(self):
+        mA.run_trimming(controller=self)
+
+    def run_axis_orientation(self):
+        mA.run_axis_orientation(controller=self)
+
+    def run_chNS(self):
+        mA.run_chNS(controller=self)
    
     
 def main():

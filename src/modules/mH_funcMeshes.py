@@ -55,8 +55,10 @@ class NumpyArrayEncoder(json.JSONEncoder):
             return super(NumpyArrayEncoder, self).default(obj)
         
 #%% ##### - Other Imports - ##################################################
-# from ...config import dict_gui
+from ..gui.config import mH_config
 from .mH_funcBasics import ask4input, get_by_path, alert
+from ..gui.gui_classes import Prompt_ok_cancel_radio
+
 # from .mH_classes_new import ImChannelNS#, Mesh_mH
 
 # alert_all = True
@@ -66,65 +68,13 @@ from .mH_funcBasics import ask4input, get_by_path, alert
 #             'colorMap': 'turbo'}
             
 #%% - morphoHeart B functions
-#%% func - clean_intCh
-def clean_intCh(organ, plot=False):
-    # Clean channels
-    ch_ext, ch_int = organ.get_ext_int_chs()
-    
-    #Check workflow status
-    workflow = organ.workflow
-    process = ['ImProc', ch_int.channel_no,'E-CleanCh','Status']
-    check_proc = get_by_path(workflow, process)
-    if check_proc == 'DONE':
-        q = 'You already cleaned the stacks of this channel ('+ ch_int.user_chName+') with the '+ch_ext.user_chName+'. Do you want to clean them again?'
-        res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-        clean_ch = ask4input(q, res, bool)
-    else: 
-        q = 'Do you want to clean the '+ch_int.user_chName+' with the '+ch_ext.user_chName+'?'
-        res = {0: 'no, thanks',1: 'yes, please!'}
-        clean_ch = ask4input(q, res, bool)
-        
-    if clean_ch:
-        ch_int_name = ch_int.channel_no
-        obj1 = [(organ.obj_meshes[ch_int_name+'_int'].mesh.clone()), 
-                (organ.obj_meshes[ch_int_name+'_ext'].mesh.clone()),
-                (organ.obj_meshes[ch_int_name+'_tiss'].mesh.clone())]
-        q = 'Select the mask you would like to use to clean the '+ch_int.user_chName+':'
-        res = {0: 'Just the tissue layer of the '+ch_ext.user_chName,1: '(Recommended) The inverted internal segmentation of the '+ch_ext.user_chName+' (more profound cleaning).'}
-        inverted = ask4input(q, res, bool)
-        if not hasattr(ch_ext, 's3_ext'):
-            s3_mask = ch_ext.load_chS3s(cont_types = ['ext'])
-        if not hasattr(ch_int, 's3_ext'):
-            ch_int.load_chS3s(cont_types = ['tiss','int','ext'])
-        s3_mask = ch_ext.s3_ext
-        ch_int.ch_clean(s3_mask=s3_mask, inverted=inverted, plot=plot, proceed=True)
-       
-        print('\n---RECREATING MESHES CHANNEL 2 WITH CLEANED ENDOCARDIUM---')
-        meshes_out = ch_int.s32Meshes(cont_types=['int', 'ext', 'tiss'], new_set=True)
-        
-        # Plot cleaned ch2
-        obj2 = []
-        for mesh in meshes_out:
-            obj2.append(mesh.mesh)
-        
-        txt = [(0, organ.user_organName + ' - Original'), (3,'Cleaned Meshes')]
-        plot_grid(obj=obj1+obj2, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-  
-    else: 
-        meshes_out = []
-        for mesh in organ.obj_meshes:
-            if ch_int.channel_no in mesh:
-                meshes_out.append(organ.obj_meshes[mesh])
-    
-
 #%% func - s32Meshes
 def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):
-    # Check workflow status
+
     workflow = organ.workflow['morphoHeart']
-    meshes_out = []
     for ch in organ.obj_imChannels.keys(): 
-        win.win_msg('Creating meshes of Channel '+ch[-1]+'!')
-        print('\n---CREATING MESHES ('+ch+')---')
+        win.win_msg('Creating Channel '+ch[-1]+' meshes!')
+        #Check if all the meshes for each channel ha
         im_ch = organ.obj_imChannels[ch]
         process = ['MeshesProc','A-Create3DMesh', im_ch.channel_no]
         mesh_done = [get_by_path(workflow, process+[cont]+['Status']) for cont in ['tiss', 'int', 'ext']]
@@ -138,161 +88,219 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):
                                     win=win,
                                     rotateZ_90 = rotateZ_90, new_set = new_set)
         
+        #Message User
+        win.win_msg(' Channel '+ch[-1]+' meshes were successfully created!')
+
+        #Enable button for plot
         plot_btn = getattr(win, 'keeplargest_plot_'+ch)
         plot_btn.setEnabled(True)
     
+    #Enable button for plot all
     plot_all = getattr(win, 'keeplargest_plot')
     plot_all.setEnabled(True)
 
+#%% func - clean_intCh
+def clean_ch(organ, gui_clean, win, plot=False):
+
+    workflow = organ.workflow['morphoHeart']
+    for ch in gui_clean.keys():
+        win.win_msg('Cleaning Channel '+ch[-1]+' meshes!')
+        #Get channel and contours to clean
+        ch_to_clean = organ.obj_imChannels[ch]
+        ch_to_clean.load_chS3s(cont_types = gui_clean[ch]['cont'])
+
+        #Get channel to use as mask for cleaning
+        with_ch = gui_clean[ch]['with_ch']
+        ch_with = organ.obj_imChannels[with_ch]
+        with_cont = gui_clean[ch]['with_cont']
+        ch_with.load_chS3s(cont_types = [with_cont])
+        s3_mask = getattr(ch_with, 's3_'+with_cont)
+        inverted = gui_clean[ch]['inverted']
+        process = ['ImProc', ch, 'E-CleanCh', 'Status']
+        
+        for cont in gui_clean[ch]['cont']:
+            print('Cleaning '+ch+'-'+cont+' with '+with_ch+'-'+with_cont+' (inverted: '+str(inverted)+').')
+            win.win_msg('Cleaning '+ch+'-'+cont+' with '+with_ch+'-'+with_cont+' (inverted: '+str(inverted)+').')
+            #Get the contour to clean
+            s3 = getattr(ch_to_clean, 's3_'+cont)
+            ch_to_clean.ch_clean(s3_mask=s3_mask, s3=s3, inverted=inverted, plot=plot)
+    
+            #Update workflow 
+            proc_up = ['ImProc',ch,'E-CleanCh','Info',s3.cont_type, 'Status']
+            organ.update_mHworkflow(proc_up, 'DONE')
+            print('> Update:', proc_up, get_by_path(workflow, proc_up))
+                
+        # Update organ workflow
+        organ.update_mHworkflow(process, 'DONE')
+        print('> Update:', process, get_by_path(workflow, process))
+
+        #Message User
+        win.win_msg('Contours of channel '+ch[-1]+' were successfully cleaned!')
+
+        #Enable button for plot
+        plot_btn = getattr(win, 'cleanup_plot_'+ch)
+        plot_btn.setEnabled(True)
+
+    #Enable button for plot all
+    plot_all = getattr(win, 'clean_plot')
+    plot_all.setEnabled(True)
+
 #%% func - select_meshes2trim
-def select_meshes2trim(organ):
-    names_mesh_tiss = [name for name in organ.obj_meshes if 'tiss' in name and 'NS' not in name]
-    obj = []
-    # meshes = []
-    for name in names_mesh_tiss: 
-        obj.append(organ.obj_meshes[name].mesh)
-        # meshes.append(organ.obj_meshes[name])
-    obj_t = tuple(obj)
-    obj.append(obj_t)
+def select_meshes2trim(organ): # to delete
+    pass 
+    # names_mesh_tiss = [name for name in organ.obj_meshes if 'tiss' in name and 'NS' not in name]
+    # obj = []
+    # # meshes = []
+    # for name in names_mesh_tiss: 
+    #     obj.append(organ.obj_meshes[name].mesh)
+    #     # meshes.append(organ.obj_meshes[name])
+    # obj_t = tuple(obj)
+    # obj.append(obj_t)
     
-    # obj = [(msh1_tiss.mesh),(msh2_tiss.mesh),(msh1_tiss.mesh, msh2_tiss.mesh)]
-    text = organ.user_organName+"\n\nTake a closer look at both meshes and decide from which layer to cut\n the inflow and outflow. \nClose the window when done"
-    txt = [(0, text)]
-    plot_grid(obj=obj, txt=txt, axes=5, lg_pos='bottom-right', sc_side=max(organ.get_maj_bounds()))
+    # # obj = [(msh1_tiss.mesh),(msh2_tiss.mesh),(msh1_tiss.mesh, msh2_tiss.mesh)]
+    # text = organ.user_organName+"\n\nTake a closer look at both meshes and decide from which layer to cut\n the inflow and outflow. \nClose the window when done"
+    # txt = [(0, text)]
+    # plot_grid(obj=obj, txt=txt, axes=5, lg_pos='bottom-right', sc_side=max(organ.get_maj_bounds()))
     
-    # return meshes
+    # # return meshes
 
 #%% func - trim_top_bottom_S3s
-def trim_top_bottom_S3s(organ, cuts):
+def trim_top_bottom_S3s(organ, meshes, no_cut, cuts_out, win):
+
+    # filename = organ.user_organName
+    # #Get meshes to cut
+    # meshes = []
+    # no_cut = []
+    # for ch in organ.obj_imChannels.keys():
+    #     for cont in ['tiss', 'ext', 'int']:
+    #         if gui_trim['top']['chs'][ch][cont] or gui_trim['bottom']['chs'][ch][cont]:
+    #             meshes.append(organ.obj_meshes[ch+'_'+cont])
+    #             break
+    #         else: 
+    #             no_cut.append(ch+'_'+cont)
     
-    #Get meshes to cut
-    meshes = []
-    no_cut = []
-    for ch in organ.obj_imChannels.keys():
-            if cuts['top']['chs'][ch] or cuts['bottom']['chs'][ch]:
-                meshes.append(organ.obj_meshes[ch+'_tiss'])
-            else: 
-                no_cut.append(ch)
-    # print(meshes, no_cut)
-    #Check workflow status
-    workflow = organ.workflow
-    check_proc = []
-    mesh_names = []
-    for mesh in meshes: 
-        process = ['ImProc', mesh.channel_no,'E-TrimS3','Status']
-        check_proc.append(get_by_path(workflow, process))
-        mesh_names.append(mesh.channel_no)
-    if all(flag == 'DONE' for flag in check_proc):
-        q = 'You already trimmed the top/bottom of '+ str(mesh_names)+'. Do you want to cut them again?'
-        res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-        proceed = ask4input(q, res, bool)
-    else: 
-        proceed = True
+    # # User user input to select which meshes need to be cut
+    # cuts_names = {'top': {'heart_def': 'outflow tract','other': 'top'},
+    #             'bottom': {'heart_def': 'inflow tract','other': 'bottom'}}
+    # cuts_out = copy.deepcopy(gui_trim)
+    
+    # # cuts_out = {'top': {'chs': {}},
+    # #             'bottom': {'chs': {}}
+    # # cut_top = []; cut_bott = []; cut_chs = {}
+    # # for ch in organ.imChannels.keys():
+    # #     cuts_out['top']['chs'][ch] = gui_trim['top']['chs'][ch]
+    # #     cuts_out['bottom']['chs'][ch] = gui_trim['bottom']['chs'][ch] 
+    # #     cut_chs[ch] = []
         
-    if proceed: 
-        filename = organ.user_organName
-        # User user input to select which meshes need to be cut
-        cuts_names = {'top': {'heart_def': 'outflow tract','other': 'top'},
-                    'bottom': {'heart_def': 'inflow tract','other': 'bottom'}}
-        cuts_out = {'top': {'chs': {}},
-                    'bottom': {'chs': {}}}
-        
-        cut_top = []; cut_bott = []; cut_chs = {}
-        for ch in organ.imChannels.keys():
-            cuts_out['top']['chs'][ch] = cuts['top']['chs'][ch]
-            cuts_out['bottom']['chs'][ch] = cuts['bottom']['chs'][ch] 
-            cut_chs[ch] = []
+    # cut_top = []; cut_bott = []; cut_chs = {}
+    # cuts_flat = flatdict.FlatDict(gui_trim)
+    # print('A:',cuts_flat)
+    # for key in cuts_flat.keys():
+    #     if 'top' in key and 'object' not in key: 
+    #         cut_top.append(cuts_flat[key])
+    #     if 'bot' in key and 'object' not in key: 
+    #         cut_bott.append(cuts_flat[key])
+    #     for ch in organ.imChannels.keys(): 
+    #         if ch in key:
+    #             if ch not in cut_chs.keys(): 
+    #                 cut_chs[ch] = []
+    #             else: 
+    #                 pass
+    #             if cuts_flat[key]:
+    #                 cut_chs[ch].append(key.split(':')[0])
+                                
+    # print('cut_chs:', cut_chs)
+    # print('cut_top:', cut_top)
+    # print('cut_bott:', cut_bott)
             
-        cuts_flat = flatdict.FlatDict(cuts)
-        for key in cuts_flat.keys():
-            if 'top' in key: 
-                cut_top.append(cuts_flat[key])
-            if 'bot' in key: 
-                cut_bott.append(cuts_flat[key])
-            for ch in organ.imChannels.keys(): 
-                if ch in key:
-                    if cuts_flat[key]:
-                        cut_chs[ch].append(key.split(':')[0])
-                                   
-        print('cut_chs:', cut_chs)
-        print('cut_top:', cut_top)
-        print('cut_bott:', cut_bott)
-                
-        if dict_gui['heart_default']: 
-            name_dict =  'heart_def'     
-        else: 
-            name_dict = 'other'
-           
-        #Define plane to cut bottom
-        if any(cut_bott):
-            #Define plane to cut bottom
-            plane_bott, pl_dict_bott = get_plane(filename=filename, 
-                                                txt = 'cut '+cuts_names['bottom'][name_dict],
-                                                meshes = meshes)    
-            cuts_out['bottom']['plane_info_mesh'] = pl_dict_bott
-            # Reorient plane to images (s3)
-            plane_bottIm, pl_dict_bottIm = rotate_plane2im(pl_dict_bott['pl_centre'], 
-                                                              pl_dict_bott['pl_normal'])
-            cuts_out['bottom']['plane_info_image'] = pl_dict_bottIm
+    # if mH_config.heart_default:
+    #     name_dict =  'heart_def'     
+    # else: 
+    #     name_dict = 'other'
+        
+    # #Define plane to cut bottom
+    # if any(cut_bott):
+    #     #Define plane to cut bottom
+    #     plane_bott, pl_dict_bott = get_plane(filename=filename, 
+    #                                         txt = 'cut '+cuts_names['bottom'][name_dict],
+    #                                         meshes = meshes, win=win)    
+    #     cuts_out['bottom']['plane_info_mesh'] = pl_dict_bott
+    #     # Reorient plane to images (s3)
+    #     plane_bottIm, pl_dict_bottIm = rotate_plane2im(pl_dict_bott['pl_centre'], 
+    #                                                         pl_dict_bott['pl_normal'])
+    #     cuts_out['bottom']['plane_info_image'] = pl_dict_bottIm
+        
+    # #Define plane to cut top
+    # if any(cut_top):
+    #     #Define plane to cut top
+    #     plane_top, pl_dict_top = get_plane(filename=filename, 
+    #                                         txt = 'cut '+cuts_names['top'][name_dict],
+    #                                         meshes = meshes, win=win)
+    #     cuts_out['top']['plane_info_mesh'] = pl_dict_top
+    #     # Reorient plane to images (s3)
+    #     plane_topIm, pl_dict_topIm = rotate_plane2im(pl_dict_top['pl_centre'], 
+    #                                                     pl_dict_top['pl_normal'])
+    #     cuts_out['top']['plane_info_image'] = pl_dict_topIm
+        
+    # print('cuts_out:', cuts_out)
+
+    # #Update mH_settings with channels to be cut
+    # update_im = {}; update_mesh = {}
+    # for ch_a in ch_planes: 
+    #     update_im[ch_a] = {'cut_image': None}
+    #     update_mesh[ch_a] = {'cut_mesh': None}
+    # proc_im = ['wf_info','ImProc','E-TrimS3','Planes']
+    # organ.update_settings(proc_im, update_im, 'mH')
+    # proc_meshes = ['wf_info','MeshesProc','B-TrimMesh','Planes']
+    # organ.update_settings(proc_meshes, update_mesh, 'mH')
+    # # print('ch_planes:', ch_planes)
+    
+    #Update workflow for channels that won't be cut
+    for ch_c in no_cut:
+        proc_c = ['ImProc', ch_c, 'E-TrimS3']
+        for cont in ['int','ext','tiss']:
+            organ.update_mHworkflow(proc_c+['Info',cont,'Status'],'DONE-NoCut')
+        organ.update_mHworkflow(proc_c+['Status'],'DONE-NoCut')
+    
+    #Cut channel s3s and recreate meshes
+    for mesh in meshes:
+        ch_name = mesh.imChannel.channel_no
+        im_ch = mesh.imChannel
+        cont_to_cut = []
+        for cont in ['int', 'tiss', 'ext']: 
+            cuts = []
+            for side in ['top', 'bottom']: 
+                if cuts_out[side]['chs'][ch_name][cont]:
+                    cuts.append(side)
+            if len(cuts) > 0: 
+                print('Cutting '+ch_name.title()+' (contour: '+cont+')...')
+                win.msg_win('Cutting '+ch_name.title()+' (contour: '+cont+')...')
+                im_ch.trimS3(cuts=cuts, cont=cont, cuts_out=cuts_out)
+                cont_to_cut.append(cont)
+        if len(cont_to_cut) > 0:
+            im_ch.createNewMeshes(cont_types=cont_to_cut,
+                                    process = 'AfterTrimming', new_set=True)
+    
+    # return cuts_out
+
+    # for ch_b in ch_meshes: 
+    #     print('ch_b:', ch_b)
+    #     im_ch = ch_meshes[ch_b]
+    #     print('cut_chs[ch_b]:',cut_chs[ch_b], '--',cuts_out)
+    #     # im_ch.trimS3(cuts=cut_chs[ch_b], cuts_out=cuts_out)
+    #     print('\n---RECREATING MESHES AFTER TRIMMING ('+ch_b+')---')
+    #     meshes = im_ch.createNewMeshes(cont_types=['int', 'ext', 'tiss'],
+    #                                     process = 'AfterTrimming', new_set=True)
+    #     meshes_out.append(meshes)
+    # organ.mH_settings['cut_ch'] = cut_chs
+    
+    # obj = []
+    # for ch_d in meshes_out:
+    #     for mesh in ch_d: 
+    #         obj.append(mesh.mesh)
             
-        #Define plane to cut top
-        if any(cut_top):
-            #Define plane to cut top
-            plane_top, pl_dict_top = get_plane(filename=filename, 
-                                              txt = 'cut '+cuts_names['top'][name_dict],
-                                              meshes = meshes)
-            cuts_out['top']['plane_info_mesh'] = pl_dict_top
-            # Reorient plane to images (s3)
-            plane_topIm, pl_dict_topIm = rotate_plane2im(pl_dict_top['pl_centre'], 
-                                                            pl_dict_top['pl_normal'])
-            cuts_out['top']['plane_info_image'] = pl_dict_topIm
-            
-        # print('cuts_out:', cuts_out)
-        # Get the channels from the meshes to cut
-        ch_meshes = {}
-        ch_planes = []
-        for mesh in meshes:
-            ch_meshes[mesh.imChannel.channel_no] = mesh.imChannel
-            ch_planes.append(mesh.imChannel.channel_no)
-        
-        #Update mH_settings with channels to be cut
-        update_im = {}; update_mesh = {}
-        for ch_a in ch_planes: 
-            update_im[ch_a] = {'cut_image': None}
-            update_mesh[ch_a] = {'cut_mesh': None}
-        proc_im = ['wf_info','ImProc','E-TrimS3','Planes']
-        organ.update_settings(proc_im, update_im, 'mH')
-        proc_meshes = ['wf_info','MeshesProc','B-TrimMesh','Planes']
-        organ.update_settings(proc_meshes, update_mesh, 'mH')
-        # print('ch_planes:', ch_planes)
-        
-        #update workflow for channels that were not cut
-        for ch_c in no_cut:
-            proc_c = ['ImProc',ch_c,'E-TrimS3']
-            for cont in ['int','ext','tiss']:
-                organ.update_workflow(proc_c+['Info',cont,'Status'],'DONE-NoCut')
-            organ.update_workflow(proc_c+['Status'],'DONE-NoCut')
-        organ.check_status(process='ImProc')
-        
-        #Cut channel s3s and recreate meshes
-        meshes_out = []
-        for ch_b in ch_meshes: 
-            im_ch = ch_meshes[ch_b]
-            # print('cut_chs[ch_b]:',cut_chs[ch_b])
-            im_ch.trimS3(cuts=cut_chs[ch_b], cuts_out=cuts_out)
-            print('\n---RECREATING MESHES AFTER TRIMMING ('+ch_b+')---')
-            meshes = im_ch.createNewMeshes(cont_types=['int', 'ext', 'tiss'],
-                                           process = 'AfterTrimming', new_set=True)
-            meshes_out.append(meshes)
-        organ.mH_settings['cut_ch'] = cut_chs
-        
-        obj = []
-        for ch_d in meshes_out:
-            for mesh in ch_d: 
-                obj.append(mesh.mesh)
-                
-        txt = [(0, organ.user_organName  + ' - Meshes after trimming')]
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+    # txt = [(0, organ.user_organName  + ' - Meshes after trimming')]
+    # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
 
 
 #%% func - extract_chNS
@@ -2365,7 +2373,7 @@ def plot_organCLs(organ, axes=5, plotshow=True):
 
 #%% - Plane handling functions 
 #%% func - get_plane
-def get_plane(filename, txt:str, meshes:list, def_pl = None, 
+def get_plane(filename, txt:str, meshes:list, win, def_pl = None, 
                              option = [True,True,True,True,True,True]):
     '''
     Function that creates a plane defined by the user
@@ -2381,41 +2389,28 @@ def get_plane(filename, txt:str, meshes:list, def_pl = None,
     else: 
         meshes_mesh = [mesh.mesh for mesh in meshes]
         
-    while True:
-        # Create plane
-        if def_pl != None:
-            plane, normal, rotX, rotY, rotZ = get_plane_pos(filename, txt, meshes_mesh, option, def_pl)
-        else:
-            plane, normal, rotX, rotY, rotZ = get_plane_pos(filename, txt, meshes_mesh, option)
-            
-        # Get new normal of rotated plane
-        normal_corrected = new_normal_3DRot(normal, rotX, rotY, rotZ)
-        # Get central point of new plane and create sphere
-        pl_centre = plane.pos()
-        sph_centre = vedo.Sphere(pos=pl_centre,r=2,c='black')
-        # Build new plane to confirm
-        plane_new = vedo.Plane(pos=pl_centre,normal=normal_corrected).color('green').alpha(1).legend('New Plane')
-
-        normal_txt = str([' {:.2f}'.format(i) for i in normal_corrected]).replace("'","")
-        centre_txt = str([' {:.2f}'.format(i) for i in pl_centre]).replace("'","")
-        text = filename+'\n\nUser defined plane to '+ txt +'.\nPlane normal: '+normal_txt+' - Plane centre: '+centre_txt+'.\nClose the window when done.'
-        txt2D = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
-
-        # meshes_mesh = [mesh.mesh for mesh in meshes]
-        # meshes_all = [plane, plane_new, sph_centre] + meshes_mesh
-        # lbox = vedo.LegendBox(meshes_all, font=leg_font, width=leg_width, height=leg_height)
-        vp = vedo.Plotter(N=1, axes=4)
-        vp.add_icon(logo, pos=(0.8,0.05), size=0.25)
-        vp.show(meshes_mesh, plane, plane_new, sph_centre, txt2D, at=0, viewup='y', azimuth=0, elevation=0, interactive=True)
+    # Create plane
+    if def_pl != None:
+        plane, normal, rotX, rotY, rotZ = get_plane_pos(filename, txt, meshes_mesh, option, def_pl)
+    else:
+        plane, normal, rotX, rotY, rotZ = get_plane_pos(filename, txt, meshes_mesh, option)
         
-        q = 'Are you happy with the defined plane to '+txt+'?'
-        res = {0 :'no, I would like to define a new plane.', 1 :'yes, continue!'}
-        happy = ask4input(q, res, bool)
-        if happy:
-            pl_dict = {'pl_normal': normal_corrected,
-                       'pl_centre': pl_centre}
-            # print(pl_dict)
-            break
+    # Get new normal of rotated plane
+    normal_corrected = new_normal_3DRot(normal, rotX, rotY, rotZ)
+    # Get central point of new plane and create sphere
+    pl_centre = plane.pos()
+    sph_centre = vedo.Sphere(pos=pl_centre,r=2,c='black')
+    # Build new plane to confirm
+    plane_new = vedo.Plane(pos=pl_centre,normal=normal_corrected).color('green').alpha(1).legend('New Plane')
+
+    normal_txt = str([' {:.2f}'.format(i) for i in normal_corrected]).replace("'","")
+    centre_txt = str([' {:.2f}'.format(i) for i in pl_centre]).replace("'","")
+    text = filename+'\n\nUser defined plane to '+ txt +'.\nPlane normal: '+normal_txt+' - Plane centre: '+centre_txt+'.\nClose the window when done.'
+    txt2D = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
+
+    vp = vedo.Plotter(N=1, axes=4)
+    vp.add_icon(logo, pos=(0.8,0.05), size=0.25)
+    vp.show(meshes_mesh, plane, plane_new, sph_centre, txt2D, at=0, viewup='y', azimuth=0, elevation=0, interactive=True)
 
     return plane_new, pl_dict
 

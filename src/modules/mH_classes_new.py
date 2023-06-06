@@ -405,7 +405,7 @@ class Project():
                 ch_segm = sorted(list(set([tup for (_,tup,_,_) in segm_list])))
             else: 
                 segm_list = []; cut_segm = []; ch_segm = []
-            print('Segments:', segm_list, cut_segm, ch_segm)
+            # print('Segments:', segm_list, cut_segm, ch_segm)
 
             # Find the meas_param that include the extraction of mH_sections
             if 'Vol(sect)' in mH_param2meas:
@@ -424,7 +424,7 @@ class Project():
                 ch_sect=  sorted(list(set([tup for (_,tup,_,_) in sect_list])))
             else: 
                 sect_list = []; cut_sect = []; ch_sect = []
-            print('Sections:', sect_list, cut_sect, ch_sect)
+            # print('Sections:', sect_list, cut_sect, ch_sect)
 
             # Find the meas_param that include the extraction of ballooning
             item_ballooning = [tuple(item.split('_')) for item in mH_param2meas['ball'].keys()]
@@ -459,21 +459,21 @@ class Project():
                                                         'Info': {'tiss':{'Status': 'NI'}, 
                                                                 'int':{'Status': 'NI'}, 
                                                                 'ext':{'Status': 'NI'}}}}
-                        #Check the external channel
-                        if self.mH_settings['setup']['chs_relation'][ch] == 'external':
-                            dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NI',
-                                                             'Info':{'tiss':{'Status': 'NI'}, 
-                                                                     'int':{'Status': 'NI'},
-                                                                     'ext':{'Status': 'NI'}}}
-                        else: 
-                            dict_ImProc[ch]['E-CleanCh'] = {'Status': 'NI',
-                                                              'Info': {'tiss':{'Status': 'NI'}, 
-                                                                      'int':{'Status': 'NI'}, 
-                                                                      'ext':{'Status': 'NI'}}}
-                            dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NI',
-                                                             'Info':{'tiss':{'Status': 'NI'}, 
-                                                                     'int':{'Status': 'NI'},
-                                                                     'ext':{'Status': 'NI'}}}
+                        # #Check the external channel
+                        # if self.mH_settings['setup']['chs_relation'][ch] == 'external':
+                        #     dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NI',
+                        #                                      'Info':{'tiss':{'Status': 'NI'}, 
+                        #                                              'int':{'Status': 'NI'},
+                        #                                              'ext':{'Status': 'NI'}}}
+                        # else: 
+                        dict_ImProc[ch]['E-CleanCh'] = {'Status': 'NI',
+                                                            'Info': {'tiss':{'Status': 'NI'}, 
+                                                                    'int':{'Status': 'NI'}, 
+                                                                    'ext':{'Status': 'NI'}}}
+                        dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NI',
+                                                            'Info':{'tiss':{'Status': 'NI'}, 
+                                                                    'int':{'Status': 'NI'},
+                                                                    'ext':{'Status': 'NI'}}}
                     else: 
                         dict_ImProc[ch] = {'Status': 'NI',
                                             'D-S3Create':{'Status': 'NI'}} 
@@ -522,9 +522,9 @@ class Project():
                 cont = ball_opts[opt]['to_mesh_type']
                 cl_ch = ball_opts[opt]['from_cl']
                 cl_cont = ball_opts[opt]['from_cl_type']
-                print('\n\n\nBallooning Workflow')
-                print(ch, cont, cl_ch, cl_cont)
-                print(cont+'_('+cl_ch+'_'+cl_cont+')')
+                # print('\n\n\nBallooning Workflow')
+                # print(ch, cont, cl_ch, cl_cont)
+                # print(cont+'_('+cl_ch+'_'+cl_cont+')')
                 if ch in dict_MeshesProc['D-Ballooning'].keys():
                     dict_MeshesProc['D-Ballooning'][ch][cont+'_('+cl_ch+'_'+cl_cont+')'] =  {'Status': 'NI'}
                 else: 
@@ -578,7 +578,7 @@ class Project():
 
             #Add balloning dict 
             dict_meas['ball'] = ball_dict
-            print('dict_meas', dict_meas)
+            # print('dict_meas', dict_meas)
             dict_MeshesProc['F-Measure'] = dict_meas
             dict_MeshesProc['F-Measure']['Status'] = 'NI'
                                                                                        
@@ -637,7 +637,7 @@ class Project():
                 print('>> Error: Project settings file was not saved correctly!\n>> File: '+jsonDict_name)
                 alert('error_beep')
             else: 
-                print('>> Project settings file saved correctly!\n>> File: '+jsonDict_name)
+                print('>> Project settings file saved correctly! - File: '+jsonDict_name)
                 # print('>> File: '+ str(json2save_dir)+'\n')
                 alert('countdown')
 
@@ -728,6 +728,7 @@ class Organ():
         
         self.parent_project = project
         if new:
+            print('\nCreating new organ!')
             user_settings = organ_dict['settings']
             img_dirs = organ_dict['img_dirs']
             self.user_organName = user_settings['user_organName']#.replace(' ', '_')
@@ -755,9 +756,9 @@ class Organ():
             self.workflow = copy.deepcopy(project.workflow)
             self.create_folders()
         else: 
+            print('\nLoading organ!')
             load_dict = organ_dict['load_dict']
             self.load_organ(load_dict=load_dict)
-        print('self.organ:', self.__dict__)
 
     def create_mHName(self): #
         now_str = datetime.now().strftime('%Y%m%d%H%M')
@@ -1083,7 +1084,7 @@ class Organ():
         image = ImChannel(organ=self, ch_name=ch_name)#,new=True
         return image
 
-    def save_organ(self):
+    def save_organ(self):#
         all_info = {}
         all_info['Organ'] = self.info
         all_info['img_dirs'] = self.img_dirs
@@ -1126,7 +1127,7 @@ class Organ():
             print('>> Error: Organ settings file was not saved correctly!\n>> File: '+jsonDict_name)
             alert('error_beep')
         else: 
-            print('\n>> Organ settings file saved correctly! - '+jsonDict_name)
+            print('\n>> Organ settings file saved correctly! - File: '+jsonDict_name)
             alert('countdown')
             
     def check_status(self, process:str):
@@ -1173,11 +1174,11 @@ class Organ():
             if all(flag == 'DONE' for flag in proc_done):
                 self.update_mHworkflow([process,'Status'], 'DONE')
 
-    def update_mHworkflow(self, process, update):
+    def update_mHworkflow(self, process, update):#
         workflow = self.workflow['morphoHeart']
         set_by_path(workflow, process, update)
         
-    def update_settings(self, process, update, mH='mH'):
+    def update_settings(self, process, update, mH='mH'):#
         if mH =='mH':
             settings = self.mH_settings
         else:  #=='mC'
@@ -1759,95 +1760,88 @@ class ImChannel(): #channel
         self.parent_organ.add_channel(self)
         # self.parent_organ.save_organ()
 
-    def trimS3(self, cuts, cuts_out): 
-        #Check workflow status
+    def trimS3(self, cuts, cont, cuts_out): 
+        
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc', self.channel_no, 'E-TrimS3','Status']
-        check_proc = get_by_path(workflow, process)
-        if check_proc == 'DONE':
-            q = 'You already trimmed this channel ('+ self.user_chName+'). Do you want to re-run it?'
-            res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-            proceed = ask4input(q, res, bool)
-        else: 
-            proceed = True
+
+        #Load s3s
+        self.load_chS3s(cont_types=[cont])
+        s3 = getattr(self, 's3_'+cont)
+
+        #Process
+        print('\n---- Trimming S3s! ----')                             
+        if len(cuts) == 1:
+            pl = cuts_out[cuts[0]]['plane_info_image']
+            # plm = cuts_out[cuts[0]]['plane_info_mesh']
+            # for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
+            s3.cutW1Plane(pl, cuts[0])
+           
+            #Update organ workflow
+            process_cont = ['ImProc', self.channel_no ,'E-TrimS3','Info',s3.cont_type,'Status']
+            self.parent_organ.update_mHworkflow(process_cont, update = 'DONE')
+            print('> Update:', process_cont, get_by_path(workflow, process_cont))
                 
-        if proceed: 
-            #Load s3s
-            self.load_chS3s(cont_types=['int', 'ext', 'tiss'])
+            # #Update mH_settings
+            # # Image
+            # proc_im = ['wf_info', 'ImProc', 'E-TrimS3','Planes', self.channel_no, 'cut_image']
+            # update_im = {cuts[0]:pl}
+            # self.parent_organ.update_settings(proc_im, update = update_im, mH='mH')
+            # # Mesh
+            # proc_mesh = ['wf_info', 'MeshesProc', 'B-TrimMesh','Planes', self.channel_no, 'cut_mesh']
+            # update_mesh = {cuts[0]:plm}
+            # self.parent_organ.update_settings(proc_mesh, update = update_mesh, mH='mH')
             
-            #Process
-            print('\n---- Trimming S3s! ----')                             
-            if len(cuts) == 1:
-                pl = cuts_out[cuts[0]]['plane_info_image']
-                plm = cuts_out[cuts[0]]['plane_info_mesh']
-                for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
-                    s3.cutW1Plane(pl, cuts[0])
-                    #Update organ workflow
-                    process_cont = ['ImProc',self.channel_no,'E-TrimS3','Info',s3.cont_type,'Status']
-                    self.parent_organ.update_mHworkflow(process_cont, update = 'DONE')
-                    print('> Update:', process_cont, get_by_path(workflow, process_cont))
-                    
-                #Update mH_settings
-                # Image
-                proc_im = ['wf_info', 'ImProc', 'E-TrimS3','Planes', self.channel_no, 'cut_image']
-                update_im = {cuts[0]:pl}
-                self.parent_organ.update_settings(proc_im, update = update_im, mH='mH')
-                # Mesh
-                proc_mesh = ['wf_info', 'MeshesProc', 'B-TrimMesh','Planes', self.channel_no, 'cut_mesh']
-                update_mesh = {cuts[0]:plm}
-                self.parent_organ.update_settings(proc_mesh, update = update_mesh, mH='mH')
+        if len(cuts) == 2:
+            # for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
+            pl1 = cuts_out['bottom']['plane_info_image']
+            # pl1m = cuts_out['bottom']['plane_info_mesh']
+            pl2 = cuts_out['top']['plane_info_image']
+            # pl2m = cuts_out['top']['plane_info_mesh']
+            s3.cutW2Planes(pl1, pl2)
+            #Update organ workflow
+            process_cont = ['ImProc',self.channel_no,'E-TrimS3','Info',s3.cont_type,'Status']
+            self.parent_organ.update_mHworkflow(process_cont, update = 'DONE')
+            print('> Update:', process_cont, get_by_path(workflow, process_cont))
+        
+            # #Update mH_settings   
+            # # Image
+            # proc_im = ['wf_info', 'ImProc', 'E-TrimS3','Planes', self.channel_no, 'cut_image']
+            # update_im =  {'bottom': pl1, 'top': pl2}
+            # self.parent_organ.update_settings(proc_im, update = update_im, mH = 'mH')
+            # # Mesh
+            # proc_mesh = ['wf_info', 'MeshesProc', 'B-TrimMesh','Planes', self.channel_no, 'cut_mesh']
+            # update_mesh = {'bottom': pl1m, 'top': pl2m}
+            # self.parent_organ.update_settings(proc_mesh, update = update_mesh, mH = 'mH')
+
+        #Update organ workflow 
+        self.parent_organ.update_mHworkflow(process, update = 'DONE')
+        print('> Update:', process, get_by_path(workflow, process))
                 
-            if len(cuts) == 2:
-                for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
-                    pl1 = cuts_out['bottom']['plane_info_image']
-                    pl1m = cuts_out['bottom']['plane_info_mesh']
-                    pl2 = cuts_out['top']['plane_info_image']
-                    pl2m = cuts_out['top']['plane_info_mesh']
-                    s3.cutW2Planes(pl1, pl2)
-                    #Update organ workflow
-                    process_cont = ['ImProc',self.channel_no,'E-TrimS3','Info',s3.cont_type,'Status']
-                    self.parent_organ.update_mHworkflow(process_cont, update = 'DONE')
-                    print('> Update:', process_cont, get_by_path(workflow, process_cont))
+        #Update channel process
+        self.process.append('TrimS3')
+        
+        #Update organ imChannels
+        self.parent_organ.add_channel(self)
+        
+        process_up2 = ['ImProc','Status']
+        if get_by_path(workflow, process_up2) == 'NI':
+            self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
+            print('> Update:', process_up2, get_by_path(workflow, process_up2))
                 
-                #Update mH_settings   
-                # Image
-                proc_im = ['wf_info', 'ImProc', 'E-TrimS3','Planes', self.channel_no, 'cut_image']
-                update_im =  {'bottom': pl1, 'top': pl2}
-                self.parent_organ.update_settings(proc_im, update = update_im, mH = 'mH')
-                # Mesh
-                proc_mesh = ['wf_info', 'MeshesProc', 'B-TrimMesh','Planes', self.channel_no, 'cut_mesh']
-                update_mesh = {'bottom': pl1m, 'top': pl2m}
-                self.parent_organ.update_settings(proc_mesh, update = update_mesh, mH = 'mH')
-  
-              
-            #Update organ workflow 
-            self.parent_organ.update_mHworkflow(process, update = 'DONE')
-            print('> Update:', process, get_by_path(workflow, process))
-                    
-            
-            #Update channel process
-            self.process.append('TrimS3')
-            
-            #Update organ imChannels
-            self.parent_organ.add_channel(self)
-            
-            process_up2 = ['ImProc','Status']
-            if get_by_path(workflow, process_up2) == 'NI':
-                self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-                print('> Update:', process_up2, get_by_path(workflow, process_up2))
-                    
-            
-            # Save organ
-            # self.parent_organ.save_organ()
-            # Update status 
-            self.parent_organ.check_status(process = 'ImProc')
+        # Save organ
+        # self.parent_organ.save_organ()
+        # Update status 
+        self.parent_organ.check_status(process = 'ImProc')
         
     def s32Meshes(self, cont_types:list, win, keep_largest=False, rotateZ_90=True, new_set=False):
 
+        workflow = self.parent_organ.workflow['morphoHeart']
         win.prog_bar_range(0,3)
         aa = 0
         for mesh_type in cont_types:
             win.win_msg('Creating meshes of Channel '+self.channel_no[-1]+'! ('+str(aa+1)+'/'+str(len(cont_types))+')')
+            process = ['MeshesProc','A-Create3DMesh', self.channel_no, mesh_type]
             name = self.channel_no + '_' + mesh_type
             if name not in self.parent_organ.meshes.keys():
                 keep_largest_f = keep_largest[mesh_type]
@@ -1866,6 +1860,10 @@ class ImChannel(): #channel
                     keep_largest_f = keep_largest
                     print('>> Recreating mesh with same settings as original')
             mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new_set=new_set)#, new=True)
+            
+            # Update organ workflow
+            self.parent_organ.update_mHworkflow(process, 'DONE')
+            print('> Update:', process, get_by_path(workflow, process))
             aa+=1
             win.prog_bar_update(aa)
     
@@ -1874,8 +1872,8 @@ class ImChannel(): #channel
         workflow = self.parent_organ.workflow['morphoHeart']
         ch_no = self.channel_no
         if process == 'AfterTrimming':
-            meshes_out = self.s32Meshes(cont_types, new_set=True)
-            for mesh_type in ['int', 'ext', 'tiss']:
+            meshes_out = self.s32Meshes(cont_types, new_set=new_set)
+            for mesh_type in cont_types:
                 proc = ['MeshesProc', 'B-TrimMesh', ch_no, mesh_type,'Status']
                 self.parent_organ.update_mHworkflow(proc, 'DONE')
                 print('> Update:', proc, get_by_path(workflow, proc))
@@ -1906,89 +1904,55 @@ class ImChannel(): #channel
             alert('countdown')
             self.dir_stckproc = im_dir
     
-    def ch_clean (self, s3_mask, inverted=True, plot=False, im_every=25, proceed=None): 
+    def ch_clean (self, s3_mask, s3, inverted, plot=False, im_every=25): #
         """
-        Function to clean channel using the other as a mask
+        Function to clean channel contour using other channel as a mask
         """
-        
-        if proceed: #== None: 
-            workflow = self.parent_organ.workflow['morphoHeart']
-            s3s = [self.s3_int, self.s3_ext, self.s3_tiss]
-            process = ['ImProc',self.channel_no,'E-CleanCh', 'Status']
-            check_proc = get_by_path(workflow, process)
-            if check_proc == 'DONE':
-                q = 'You already cleanes the '+ self.user_chName+' with the '+s3_mask.im_channel.user_chName+'. Do you want to re-run this process?'
-                res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-                proceed2 = ask4input(q, res, bool)
-            else: 
-                proceed2 = True
-            
-        if proceed2: 
-            for s3 in s3s:
-                print('>> Cleaning '+self.user_chName+' ('+ self.channel_no + '-' + s3.cont_type +')')
-                    
-                # What happens if the s3() are None? 
-                s3_s = s3.s3()
-                if not isinstance(s3_s, np.ndarray): 
-                    print('>> Error: Not isinstance(s3_s, np.array)')
-                    alert('clown')
-                    continue
-                s3_mask_s = s3_mask.s3()
-                if not isinstance(s3_mask_s, np.ndarray): 
-                    print('>> Error: not isinstance(s3_mask_s, np.array)')
-                    alert('clown')
-                    continue
-                s3_bits = np.zeros_like(s3_s, dtype='uint8')
-                s3_new =  np.zeros_like(s3_s, dtype='uint8')
-        
-                index = list(s3.shape_s3).index(min(s3.shape_s3))
-                if index == 2:
-                    for slc in range(s3.shape_s3[2]):
-                        mask_slc = s3_mask_s[:,:,slc]
-                        toClean_slc = s3_s[:,:,slc]
-        
-                        if inverted:
-                            # Invert ch to use as mask 
-                            inv_slc = np.where((mask_slc==0)|(mask_slc==1), mask_slc^1, mask_slc)
-                        else: 
-                            # Keep ch to use as mask as it is
-                            inv_slc = np.copy(mask_slc)
-        
-                        # inverted_mask or mask AND ch1_2clean
-                        toRemove_slc = np.logical_and(toClean_slc, inv_slc)
-                        # Keep only the clean bit
-                        cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
-        
-                        if plot and slc in list(range(0,s3.shape_s3[0],im_every)):
-                            self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted)
-        
-                        s3_bits[:,:,slc] = toRemove_slc
-                        s3_new[:,:,slc] = cleaned_slc
-                        
-                    s3_new = s3_new.astype('uint8')
-                    s3.s3_save(s3_new)
-                    alert('whistle')   
-                    
-                else:
-                    print('>> Index different to 2, check!')
-                    alert('error_beep')
+        # What happens if the s3() are None? 
+        s3_s = s3.s3()
+        if not isinstance(s3_s, np.ndarray): 
+            print('>> Error: Not isinstance(s3_s, np.array)')
+            alert('clown')
+            return
+        s3_mask_s = s3_mask.s3()
+        if not isinstance(s3_mask_s, np.ndarray): 
+            print('>> Error: not isinstance(s3_mask_s, np.array)')
+            alert('clown')
+            return
+        s3_bits = np.zeros_like(s3_s, dtype='uint8')
+        s3_new =  np.zeros_like(s3_s, dtype='uint8')
+
+        index = list(s3.shape_s3).index(min(s3.shape_s3))
+        if index == 2:
+            for slc in range(s3.shape_s3[2]):
+                mask_slc = s3_mask_s[:,:,slc]
+                toClean_slc = s3_s[:,:,slc]
+
+                if inverted:
+                    # Invert ch to use as mask 
+                    inv_slc = np.where((mask_slc==0)|(mask_slc==1), mask_slc^1, mask_slc)
+                else: 
+                    # Keep ch to use as mask as it is
+                    inv_slc = np.copy(mask_slc)
+
+                # inverted_mask or mask AND ch1_2clean
+                toRemove_slc = np.logical_and(toClean_slc, inv_slc)
+                # Keep only the clean bit
+                cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
+
+                if plot and slc in list(range(0,s3.shape_s3[0],im_every)):
+                    self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted)
+
+                s3_bits[:,:,slc] = toRemove_slc
+                s3_new[:,:,slc] = cleaned_slc
                 
-                #Update workflow 
-                proc_up = ['ImProc',self.channel_no,'E-CleanCh','Info',s3.cont_type, 'Status']
-                self.parent_organ.update_mHworkflow(proc_up, 'DONE')
-                print('> Update:', proc_up, get_by_path(workflow, proc_up))
-                
-                
-            
-            # Update organ workflow
-            self.parent_organ.update_mHworkflow(process, 'DONE')
-            # Update mH_settings
-            proc_set = ['wf_info','ImProc','E-CleanCh','Settings']
-            self.parent_organ.update_settings(proc_set+['ch'], self.user_chName, 'mH')
-            self.parent_organ.update_settings(proc_set+['s3_mask'], s3_mask.cont_name, 'mH')
-            self.parent_organ.update_settings(proc_set+['inverted'],inverted, 'mH')
-                
-                  
+            s3_new = s3_new.astype('uint8')
+            s3.s3_save(s3_new)
+            alert('whistle')   
+        else:
+            print('>> Index different to 2, check!')
+            alert('error_beep')
+                             
     def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted):
         """
         Function to plot mask, original image and result
@@ -2499,7 +2463,6 @@ class Mesh_mH():
         self.parent_organ.check_status(process = 'MeshesProc')
         self.mesh_meas = {}
 
-
     def reload_mesh(self, keep_largest, rotateZ_90, new_set):
 
         if self.channel_no != 'chNS': 
@@ -2915,7 +2878,6 @@ class Mesh_mH():
         
         return cut_masked_rot
         
-
     def create_segment(self, name, color):
         
         segm_info = self.parent_organ.mH_settings['general_info']['segments']['name_segments']

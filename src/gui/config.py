@@ -11,6 +11,7 @@ class mH_Config():
     def __init__(self):
         self.gui_sound = (True, 'All')
         self.theme = 'Light'
+        self.heart_default = False
 
 mH_config = mH_Config()
 

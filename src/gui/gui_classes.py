@@ -34,7 +34,7 @@ import operator
 # from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import get_by_path
 from ..modules.mH_funcContours import checkWfCloseCont
-from ..modules.mH_funcMeshes import *
+from ..modules.mH_funcMeshes import plot_grid
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
 
@@ -1489,7 +1489,7 @@ class CreateNewProj(QDialog):
 
     # -- Functions Set Measurement Parameters
     def check_to_set_params(self): 
-        print('self.mH_settings (check_to_set_params):',self.mH_settings)
+        # print('self.mH_settings (check_to_set_params):',self.mH_settings)
         valid = []
         if self.button_set_orient.isChecked(): 
             valid.append(True)
@@ -1681,7 +1681,7 @@ class SetMeasParam(QDialog):
                 dict_meas[btn_name] = getattr(self, btn_name).isChecked()
 
         setattr(self, 'dict_meas', dict_meas)
-        print('self.dict_meas:',self.dict_meas)
+        # print('self.dict_meas:',self.dict_meas)
 
     def set_meas_param_table(self): 
         #Set Measurement Parameters
@@ -1689,7 +1689,7 @@ class SetMeasParam(QDialog):
             getattr(self, 'lab_param'+str(key)).setEnabled(True)
             getattr(self, 'lab_param'+str(key)).setText(self.params[key]['l'])
         
-        print(len(self.params),'---', self.params)
+        # print(len(self.params),'---', self.params)
         for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']: 
             if ch in self.ch_all: 
                 getattr(self, 'label_'+ch).setText(self.ch_all[ch])
@@ -2223,7 +2223,7 @@ class NewOrgan(QDialog):
                 pass
         valid = [val.is_file() for val in paths]
         set_paths_chs = set(paths_chs)
-        print('Valid checking channel selection: ', valid)
+        # print('Valid checking channel selection: ', valid)
         if not all(valid): 
             error_txt = "*Please load the images (and masks) for all the organ's channels."
             self.win_msg(error_txt)
@@ -2256,7 +2256,7 @@ class NewOrgan(QDialog):
                 if 'shape' in key: 
                     flat_im_dirs.pop(key, None)
             self.img_dirs = flat_im_dirs.as_dict()
-            print('cleaned img_dirs:', self.img_dirs)
+            print('img_dirs:', self.img_dirs)
             return True
         else:
             error_txt = '*The shape of all the selected images do not match. Check and try again.'
@@ -2300,7 +2300,6 @@ class LoadProj(QDialog):
         self.cB_blind.stateChanged.connect(lambda: self.reload_table())
 
     def win_msg(self, msg): 
-        print('C')
         if msg[0] == '*':
             self.tE_validate.setStyleSheet(error_style)
             msg = 'Error: '+msg
@@ -2313,7 +2312,6 @@ class LoadProj(QDialog):
     
     def fill_proj_info(self, proj):
 
-        print('B')
         self.lineEdit_proj_name.setText(proj.info['user_projName'])
         self.textEdit_ref_notes.setText(proj.info['user_projNotes'])
         self.lab_filled_proj_dir.setText(str(proj.dir_proj))
@@ -2366,7 +2364,7 @@ class LoadProj(QDialog):
                 for wf_key in wf_flat.keys():
                     nn,proc,sp,_ = wf_key.split(':')
                     keys_wf[sp] = ['workflow']+wf_key.split(':')
-                print(keys_wf) 
+                # print(keys_wf) 
                 
                 # Workflow
                 # - Get morphoHeart Labels
@@ -2400,7 +2398,7 @@ class LoadProj(QDialog):
                 #Adding organs to table
                 row = 2
                 for organ in proj.organs:
-                    print('Loading info organ: ', organ)   
+                    # print('Loading info organ: ', organ)   
                     col = 0        
                     for nn, key in all_labels.items(): 
                         if len(key) == 1 and nn == '-': 
@@ -2463,7 +2461,7 @@ class LoadProj(QDialog):
                 self.organ_checkboxes = None
                 return
 
-            print(cBs)
+            # print(cBs)
             self.organ_checkboxes = cBs
             self.button_load_organs.setChecked(True)
             toggled(self.button_load_organs)
@@ -2713,7 +2711,6 @@ class MainWindow(QMainWindow):
         #Adding organs to table
         row = 0
         for ch in im_chs:
-            print('Loading info ch: ', ch) 
             col = 0        
             for proc in self.proc_keys.keys():
                 #Create Layout
@@ -2748,7 +2745,6 @@ class MainWindow(QMainWindow):
         self.tabW_progress_ch.resizeColumnsToContents()
         self.tabW_progress_ch.resizeRowsToContents()
         self.segm_status = cS
-        print(cS)
         self.update_ch_progress()
 
     def update_ch_progress(self): 
@@ -2792,11 +2788,11 @@ class MainWindow(QMainWindow):
         self.keeplargest_play.setEnabled(False)
         self.keeplargest_plot.clicked.connect(lambda: self.plot_meshes('all'))
         self.keeplargest_plot.setEnabled(False)
-        self.q_keeplargest.clicked.connect(lambda: self.help_keeplargest())
-        self.keeplargest_plot_ch1.clicked.connect(lambda: self.plot_keeplargest('ch1') )
-        self.keeplargest_plot_ch2.clicked.connect(lambda: self.plot_keeplargest('ch2') )
-        self.keeplargest_plot_ch3.clicked.connect(lambda: self.plot_keeplargest('ch3') )
-        self.keeplargest_plot_ch4.clicked.connect(lambda: self.plot_keeplargest('ch4') )
+        self.q_keeplargest.clicked.connect(lambda: self.help('keeplargest'))
+        self.keeplargest_plot_ch1.clicked.connect(lambda: self.plot_meshes('ch1') )
+        self.keeplargest_plot_ch2.clicked.connect(lambda: self.plot_meshes('ch2') )
+        self.keeplargest_plot_ch3.clicked.connect(lambda: self.plot_meshes('ch3') )
+        self.keeplargest_plot_ch4.clicked.connect(lambda: self.plot_meshes('ch4') )
 
         self.keeplargest_plot_ch1.setEnabled(False)
         self.keeplargest_plot_ch2.setEnabled(False)
@@ -2827,10 +2823,10 @@ class MainWindow(QMainWindow):
     def init_clean(self):
         #Buttons
         self.cleanup_open.clicked.connect(lambda: self.open_section(name='cleanup'))
-        self.cleanup_plot_ch1.clicked.connect(lambda: self.plot_clean('ch1'))
-        self.cleanup_plot_ch2.clicked.connect(lambda: self.plot_clean('ch2'))
-        self.cleanup_plot_ch3.clicked.connect(lambda: self.plot_clean('ch3'))
-        self.cleanup_plot_ch4.clicked.connect(lambda: self.plot_clean('ch4'))
+        self.cleanup_plot_ch1.clicked.connect(lambda: self.plot_meshes('ch1'))
+        self.cleanup_plot_ch2.clicked.connect(lambda: self.plot_meshes('ch2'))
+        self.cleanup_plot_ch3.clicked.connect(lambda: self.plot_meshes('ch3'))
+        self.cleanup_plot_ch4.clicked.connect(lambda: self.plot_meshes('ch4'))
         self.cleanup_plot_ch1.setEnabled(False)
         self.cleanup_plot_ch2.setEnabled(False)
         self.cleanup_plot_ch3.setEnabled(False)
@@ -2839,10 +2835,9 @@ class MainWindow(QMainWindow):
         self.cleanup_set.clicked.connect(lambda: self.set_clean())
         self.cleanup_play.setStyleSheet(style_play)
         self.cleanup_play.setEnabled(False)
-        # self.cleanup_play.clicked.connect(lambda: )
         self.clean_plot.clicked.connect(lambda: self.plot_meshes('all'))
         self.clean_plot.setEnabled(False)
-        # self.q_cleanup.clicked.connect(lambda: )
+        self.q_cleanup.clicked.connect(lambda: self.help('cleanup'))
 
         #  Segmentation cleanup setup
         for chs in ['ch1', 'ch2', 'ch3', 'ch4']:
@@ -2963,12 +2958,12 @@ class MainWindow(QMainWindow):
         # self.q_centreline
 
         cl_to_extract = self.organ.mH_settings['measure']['CL']
-        print(cl_to_extract, len(cl_to_extract))
+        # print(cl_to_extract, len(cl_to_extract))
         cl_keys = list(cl_to_extract.keys())
         for nn in range(1,7,1):
             if nn <= len(cl_to_extract):
                 ch, cont = cl_keys[nn-1].split('_')[0:-1]
-                print(ch, cont)
+                # print(ch, cont)
                 namef = self.channels[ch]+' ('+ch+') - '+cont
                 # namef = '_'.join(name)
                 getattr(self, 'cL_name'+str(nn)).setText(namef)
@@ -3001,7 +2996,7 @@ class MainWindow(QMainWindow):
         max_val = [20, 20, 60]
 
         for aa, ll, nn, minn, maxx in zip(count(), lists, names, min_val, max_val): 
-            print(aa, ll, nn, minn, maxx)
+            # print(aa, ll, nn, minn, maxx)
             variable = ll[1]
             sp_dict = get_by_path(self.organ.mH_settings, ll)
             for item in sp_dict: 
@@ -3109,7 +3104,6 @@ class MainWindow(QMainWindow):
                     else: 
                         if not colors_initialised: 
                             color = palette[5*(int(optcut)-1)+(nn-1)]
-                            print(color)
                             self.organ.mH_settings['setup']['segm'][cutb]['colors']['segm'+str(nn)] = color
                         else: 
                             color = self.organ.mH_settings['setup']['segm'][cutb]['colors']['segm'+str(nn)]
@@ -3126,7 +3120,7 @@ class MainWindow(QMainWindow):
                     getattr(self, 'label_'+cutl+'_segm'+str(nn)).setVisible(False)
                     getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn)).setVisible(False)
 
-        print('Segm: ', self.organ.mH_settings['setup']['segm'])
+        print('Setup segments: ', self.organ.mH_settings['setup']['segm'])
 
     def init_sections(self):
         #Buttons
@@ -3164,7 +3158,6 @@ class MainWindow(QMainWindow):
                 for nn in range(1,3,1):
                     if not colors_initialised: 
                         color = palette[2*(int(optcut)-1)+(nn-1)]
-                        print(color)
                         self.organ.mH_settings['setup']['sect'][cutb]['colors']['sect'+str(nn)] = color
                     else: 
                         color = self.organ.mH_settings['setup']['sect'][cutb]['colors']['sect'+str(nn)]
@@ -3181,7 +3174,7 @@ class MainWindow(QMainWindow):
                     getattr(self, 'label_'+cutl+'_sect'+str(nn)).setVisible(False)
                     getattr(self, 'fillcolor_'+cutl+'_'+'sect'+str(nn)).setVisible(False)
 
-        print('Sect: ', self.organ.mH_settings['setup']['sect'])
+        print('Setup Sections: ', self.organ.mH_settings['setup']['sect'])
 
     #Functions specific to gui functionality
     def open_section(self, name): 
@@ -3209,7 +3202,7 @@ class MainWindow(QMainWindow):
             tick.setChecked(setChecked)
 
     def color_picker(self, name): #Add update color in mesh!
-        print(name)
+
         color = QColorDialog.getColor()
         if color.isValid():
             # print('The selected color is: ', color.name())
@@ -3218,10 +3211,10 @@ class MainWindow(QMainWindow):
             fill.setStyleSheet(color_txt)
             chk, contk = name.split('_')
             if chk != 'chNS' and contk in ['int', 'ext', 'tiss']: 
-                print('not chNS')
+                # print('not chNS')
                 self.organ.mH_settings['setup']['color_chs'][chk][contk] = color.name()
             elif chk == 'chNS': 
-                print('chNS')
+                # print('chNS')
                 self.organ.mH_settings['setup'][chk]['color_chns'][contk] = color.name()
             else: 
                 if 'segm' in contk: 
@@ -3250,12 +3243,12 @@ class MainWindow(QMainWindow):
         root_item.setExpanded(True)
         self.topLevelItem = QTreeWidgetItem()
         for method in self.proj.mH_methods:
-            print(method)
+            # print(method)
             method_item = QTreeWidgetItem(tree)
             method_item.setText(0,method)
             #set child 
             keys_method = self.organ.workflow['morphoHeart']['MeshesProc'][method].keys()
-            print(keys_method)
+            # print(keys_method)
             for subproc in keys_method:
                 if subproc != 'Status':
                     child = QtWidgets.QTreeWidgetItem(tree)
@@ -3350,7 +3343,7 @@ class MainWindow(QMainWindow):
         self.rotateZ_90 = True
         self.keeplargest_set.setChecked(True)
         toggled(self.keeplargest_set)
-        print(self.gui_keep_largest)
+        print('self.gui_keep_largest:',self.gui_keep_largest)
         self.keeplargest_play.setEnabled(True)
 
     def set_clean(self): 
@@ -3382,23 +3375,29 @@ class MainWindow(QMainWindow):
                 self.gui_clean[chc]['with_cont'] = getattr(self, 'clean_withcont_'+chc).currentText()
                 self.gui_clean[chc]['inverted'] = getattr(self, 'inverted_'+chc).isChecked()
 
+        self.cleanup_set.setChecked(True)
+        toggled(self.cleanup_set)
         print('self.gui_clean: ', self.gui_clean)
+        self.cleanup_play.setEnabled(True)
 
     def set_trim(self): 
         self.gui_trim = {}
         im_chs = [ch for ch in self.channels if ch != 'chNS']
-        for side in ['top', 'bot']: 
+        for side in ['top', 'bottom']: 
             self.gui_trim[side] = {'chs': {}}
             for cht in im_chs: 
                 self.gui_trim[side]['chs'][cht] = {}
                 for cont in ['int', 'tiss', 'ext']: 
-                    val = getattr(self, side+'_'+cht+'_'+cont).isChecked()
+                    val = getattr(self, side[0:3]+'_'+cht+'_'+cont).isChecked()
                     self.gui_trim[side]['chs'][cht][cont] = val
         
-            obj = getattr(self, side+'_cut_opts').currentText()
+            obj = getattr(self, side[0:3]+'_cut_opts').currentText()
             self.gui_trim[side]['object'] = obj
 
+        self.trimming_set.setChecked(True)
+        toggled(self.trimming_set)
         print('self.gui_trim: ', self.gui_trim)
+        self.trimming_play.setEnabled(True)
     
     #Plot functions
     def plot_meshes(self, ch, chNS=False):
@@ -3421,11 +3420,8 @@ class MainWindow(QMainWindow):
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
     #Help functions
-    def help_keeplargest(self): 
-        print('User clicked help keep largest')
-
-    def help_clean_trim(self): 
-        print('User clicked help clean/trim')
+    def help(self, process): 
+        print('User clicked help '+process)
 
     # def help_keeplargest(self): 
     #     print('User clicked help keep largest')
@@ -3536,7 +3532,6 @@ class MyToggle(QtWidgets.QPushButton):
     #https://stackoverflow.com/questions/56806987/switch-button-in-pyqt
     def __init__(self, parent = None):
         super().__init__(parent)
-        print('init')
         self.setCheckable(True)
         self.setMinimumWidth(70)
         self.setMinimumHeight(22)
