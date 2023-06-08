@@ -727,6 +727,7 @@ class Organ():
     def __init__(self, project:Project, organ_dict:dict, new:bool):# 
         
         self.parent_project = project
+        self.on_hold = False
         if new:
             print('\nCreating new organ!')
             user_settings = organ_dict['settings']
@@ -775,6 +776,10 @@ class Organ():
         self.img_dirs = load_dict['img_dirs']
         self.folder = load_dict['folder']
         self.analysis = load_dict['analysis']
+        if 'on_hold' in load_dict.keys():
+            self.on_hold = load_dict['on_hold']
+        else: 
+            self.on_hold = False
         
         if self.analysis['morphoHeart']:
             tuple_keys = [['mH_settings','setup','chNS','ch_ext'], 
@@ -836,7 +841,7 @@ class Organ():
                 im_ch = ImChannelNS(organ=self, ch_name=imCh)#, new=False)
                 self.obj_imChannelNS[imCh] = im_ch
         
-    def load_objMeshes(self):
+    def load_objMeshes(self):#
         self.obj_meshes = {}
         if len(self.meshes) > 0: 
             for mesh in self.meshes:
@@ -848,9 +853,9 @@ class Organ():
                 mesh_type = self.meshes[mesh]['mesh_type']
                 keep_largest = self.meshes[mesh]['keep_largest']
                 rotateZ_90 = self.meshes[mesh]['rotateZ_90'] 
+                mesh_prop = {'keep_largest': keep_largest, 'rotateZ_90': rotateZ_90}
                 msh = Mesh_mH(imChannel = imCh, mesh_type = mesh_type, 
-                              keep_largest = keep_largest, rotateZ_90 = rotateZ_90)#,
-                              # new = False)
+                              mesh_prop = mesh_prop)
                 self.obj_meshes[mesh] = msh
           
     def check_channels(self, project:Project):#to delete
@@ -923,7 +928,7 @@ class Organ():
                 print("The specified directory doesn't exist: (dir_res: "+ str(dir_res)+", dir: "+dir)
                 return None
 
-    def add_channel(self, imChannel):
+    def add_channel(self, imChannel):#
         # Check first if the channel has been already added to the organ
         new = False
         if imChannel.channel_no not in self.imChannels.keys():
@@ -984,7 +989,7 @@ class Organ():
            
         self.obj_imChannelNS[imChannelNS.channel_no] = imChannelNS
 
-    def add_mesh(self, mesh): # mesh: Mesh_mH
+    def add_mesh(self, mesh):#
     
         new = False
         if mesh.name not in self.meshes.keys():
@@ -1007,6 +1012,8 @@ class Organ():
             if hasattr(mesh,'dir_out'):
                 self.meshes[mesh.name]['dir_out'] = mesh.dir_out
             self.obj_meshes[mesh.name] = mesh
+            if hasattr(mesh, 'dirs'):
+                self.meshes[mesh.name]['dirs'] = mesh.dirs
         else: #Just updating things that could change
             self.meshes[mesh.name]['color'] = mesh.color
             self.meshes[mesh.name]['alpha'] = mesh.alpha
@@ -1079,7 +1086,7 @@ class Organ():
                 self.objects['Spheres'][proc][class_name] = {'center': obj.center, 
                                                                    'color': obj.color()}
                 
-    def create_ch(self, ch_name:str):
+    def create_ch(self, ch_name:str):#
         print('---- Creating channel ('+ch_name+')! ----')
         image = ImChannel(organ=self, ch_name=ch_name)#,new=True
         return image
@@ -1090,6 +1097,7 @@ class Organ():
         all_info['img_dirs'] = self.img_dirs
         all_info['folder'] = self.folder
         all_info['analysis'] = self.analysis
+        all_info['on_hold'] = self.on_hold
         
         organ_name = self.user_organName#.replace(' ', '_')
         jsonDict_name = 'mH_'+organ_name+'_organ.json'
@@ -1177,13 +1185,41 @@ class Organ():
     def update_mHworkflow(self, process, update):#
         workflow = self.workflow['morphoHeart']
         set_by_path(workflow, process, update)
-        
-    def update_settings(self, process, update, mH='mH'):#
+        print('> Update:', process, get_by_path(workflow, process))       
+
+    def update_settings(self, process, update, mH='mH', add=None):#
         if mH =='mH':
             settings = self.mH_settings
         else:  #=='mC'
             settings = self.mC_settings
-        set_by_path(settings, process, update)
+        
+        if process == ['wf_info'] and add != None: 
+            if len(settings[process[0]])>0: 
+                set_keys = list(settings[process[0]].keys())
+                if add not in set_keys: 
+                    settings_proc = {}
+                    for key in set_keys: 
+                        settings_proc[key] = settings[process[0]][key]
+                    settings_proc[add] = {}
+                    settingsf = copy.deepcopy(settings)
+                    settingsf[process[0]] = settings_proc
+                else: 
+                    settingsf = settings
+            else: 
+                settings_proc = {}
+                settings_proc[add] = {}
+                settingsf = copy.deepcopy(settings)
+                settingsf[process[0]] = settings_proc
+            process = process+[add]
+        else: 
+            settingsf = settings
+
+        if mH =='mH':
+            self.mH_settings = settingsf
+        else:  #=='mC'
+            self.mC_settings = settingsf
+
+        set_by_path(settingsf, process, update)
     
     def get_ext_int_chs(self): 
         chs = list(self.imChannels.keys())
@@ -1204,93 +1240,68 @@ class Organ():
         else:
             return False  
     
-    def get_stack_orientation(self, views, 
-                              colors=[[255,215,0,200],[0,0,205,200],[255,0,0,200]],):
-        #Check if the orientation has alredy been stablished
-        # if 'orientation' in self.mH_settings.keys(): 
-        if 'stack' in self.mH_settings['orientation'].keys():
-            q = 'You already selected the stack orientation of this organ. Do you want to re-assign it?'
-            res = {0: 'no, continue with next step', 1: 'yes, re-assign it!'}
-            proceed = ask4input(q, res, bool)
-        else: 
-            proceed = True
-        # else: 
-        #     proceed = True
-                
-        if proceed: 
-            im_orient = self.info['im_orientation']
-            rotateY = False
-            if im_orient == 'custom': 
-                cust_angle = self.info['custom_angle']
-                rotateY = True
-            
-            ext_ch, _ = self.get_ext_int_chs()
-            mesh_ext = self.obj_meshes[ext_ch.channel_no+'_tiss']
-            
-            pos = mesh_ext.mesh.center_of_mass()
-            side = max(self.get_maj_bounds())
-            color_o = [152,251,152,255]
-            orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
-            orient_cube.linewidth(1).force_opaque()
-            
-            if rotateY: 
-                orient_cube.rotate_y(cust_angle)
-            
-            orient_cube.pos(pos)
-            orient_cube_clear = orient_cube.clone().alpha(0.5)
-            txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select planar views in STACK...', c=txt_color, font=txt_font, s=txt_size)
-            
-            mks = []; sym = ['o']*len(views)
-            for n, view, col in zip(count(), views, colors):
-                mks.append(vedo.Marker('*').c(col[0:-1]).legend(view))
-            lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
-                                width=leg_width/1.5, height=leg_height/1.5)
-            
-            path_logo = path_mHImages / 'logo-07.jpg'
-            logo = vedo.Picture(str(path_logo))
-            
-            vpt = MyFaceSelectingPlotter(N=2, axes=1,colors=colors, color_o=color_o, 
-                                         views=views)
-            vpt.add_icon(logo, pos=(0.1,1), size=0.25)
-            vpt.add_callback("key press", vpt.on_key_press)
-            vpt.add_callback("mouse click", vpt.select_cube_face)
-            vpt.show(mesh_ext.mesh, orient_cube_clear,txt0, at=0)
-            vpt.show(orient_cube, lb, vpt.msg, vpt.msg_face, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)
-               
-            print('vpt.planar_views:',vpt.planar_views)
-            print('vpt.selected_faces:',vpt.selected_faces)
-            
-            stack_dict = {'planar_views': vpt.planar_views}
-            proc = ['orientation', 'stack']
-            self.update_settings(proc, update = stack_dict, mH = 'mH')
-            
-    def get_ROI_orientation(self, views, colors, plane:str, ref_vect='Y+'):
-        #Check if the orientation has alredy been stablished
-        if 'orientation' in self.mH_settings.keys(): 
-            if 'ROI' in self.mH_settings['orientation'].keys():
-                q = 'You already selected the ROI (organ) orientation for this organ. Do you want to re-assign it?'
-                res = {0: 'no, continue with next step', 1: 'yes, re-assign it!'}
-                proceed = ask4input(q, res, bool)
-            else: 
-                proceed = True
-        else: 
-            proceed = True
-                
-        if proceed: 
-            q = 'How do you want to define the Organ (ROI) orientation?:'
-            res = {0: 'I want to use the centreline (project linLine, measure angle and define ROI orientation', 
-                   1: 'I want to use the same images orientation defined',
-                   2: 'Other...'}
-            opt = ask4input(q, res, int)
-            
-            if opt == 0: 
-                self.orient_by_cl(views, colors, plane, ref_vect)
-            elif opt == 1: 
-                print('Opt1: Code under development!')
-            elif opt == 2: 
-                print('Opt2: Code under development!')
+    def get_stack_orientation(self, views, colors):
+       
+        im_orient = self.info['im_orientation']
+        print(im_orient)
+        rotateY = False
+        if im_orient == 'custom': 
+            cust_angle = self.info['custom_angle']
+            rotateY = True
         
-    def orient_by_cl(self, views, colors, plane:str, ref_vect='Y+'):
+        ext_ch, _ = self.get_ext_int_chs()
+        mesh_ext = self.obj_meshes[ext_ch.channel_no+'_tiss']
+        
+        pos = mesh_ext.mesh.center_of_mass()
+        side = max(self.get_maj_bounds())
+        color_o = [152,251,152,255]
+        orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
+        orient_cube.linewidth(1).force_opaque()
+        
+        if rotateY: 
+            orient_cube.rotate_y(cust_angle)
+        
+        orient_cube.pos(pos)
+        orient_cube_clear = orient_cube.clone().alpha(0.5)
+        txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select planar views in STACK...', c=txt_color, font=txt_font, s=txt_size)
+        
+        mks = []; sym = ['o']*len(views)
+        for n, view, col in zip(count(), views, colors):
+            mks.append(vedo.Marker('*').c(col[0:-1]).legend(view))
+        lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
+                            width=leg_width/1.5, height=leg_height/1.5)
+        
+        path_logo = path_mHImages / 'logo-07.jpg'
+        logo = vedo.Picture(str(path_logo))
+        
+        vpt = MyFaceSelectingPlotter(N=2, axes=1,colors=colors, color_o=color_o, 
+                                        views=views)
+        vpt.add_icon(logo, pos=(0.1,1), size=0.25)
+        vpt.add_callback("key press", vpt.on_key_press)
+        vpt.add_callback("mouse click", vpt.select_cube_face)
+        vpt.show(mesh_ext.mesh, orient_cube_clear,txt0, at=0)
+        vpt.show(orient_cube, lb, vpt.msg, vpt.msg_face, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)
+            
+        print('vpt.planar_views:',vpt.planar_views)
+        print('vpt.selected_faces:',vpt.selected_faces)
+        
+        return vpt.planar_views
+            
+    def get_ROI_orientation(self, gui_orientation, colors):
+
+        views = self.mH_settings['setup']['orientation']['roi'].split(', ')
+        if gui_orientation['roi']['rotate']: 
+            if gui_orientation['roi']['method'] == 'Centreline': 
+                centreline = gui_orientation['roi']['centreline']
+                plane = gui_orientation['roi']['plane_orient']
+                ref_vect = gui_orientation['roi']['vector_orient']
+                self.orient_by_cl(views, centreline, plane, ref_vect, colors)
+            elif gui_orientation['roi']['method'] == 'Manual': 
+                print('Opt1: Code under development!')
+        else: 
+            print('Opt2: Code under development!')
+
+    def orient_by_cl(self, views, centreline:str, plane:str, ref_vect:str, colors):
         
         # Select the mesh to use to measure organ orientation
         dict_cl = plot_organCLs(self)
@@ -1538,12 +1549,10 @@ class ImChannel(): #channel
             
             #Update organ workflow
             self.parent_organ.update_mHworkflow(process, update = 'DONE')
-            print('> Update:', process, get_by_path(workflow, process))
             
             process_up = ['ImProc', self.channel_no,'Status']
             if get_by_path(workflow, process_up) == 'NI':
                 self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
-            print('> Update:', process_up, get_by_path(workflow, process_up))
 
             #Update channel process
             self.process.append('Masked')
@@ -1556,7 +1565,6 @@ class ImChannel(): #channel
             process_up2 = ['ImProc','Status']
             if get_by_path(workflow, process_up2) == 'NI':
                 self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-            print('> Update:', process_up2, get_by_path(workflow, process_up2))
             
         else: 
             print('For some reason self.shape != im_mask.shape!')
@@ -1615,7 +1623,7 @@ class ImChannel(): #channel
         if get_by_path(workflow, process_up) == 'NI':
             self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
         
-        
+
         #Update channel process
         self.process.append('ClosedCont-Manual')
                 
@@ -1682,7 +1690,6 @@ class ImChannel(): #channel
         
         #Update organ workflow
         self.parent_organ.update_mHworkflow(process, update = 'DONE')
-        print('> Update:', process, get_by_path(workflow, process))
 
         #Update channel process
         self.process.append('SelectCont')
@@ -1694,7 +1701,6 @@ class ImChannel(): #channel
         process_up2 = ['ImProc','Status']
         if get_by_path(workflow, process_up2) == 'NI':
             self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-        print('> Update:', process_up2, get_by_path(workflow, process_up2))
             
         #Update
         # 'C-SelectCont':{'Status': 'NI'},
@@ -1721,7 +1727,6 @@ class ImChannel(): #channel
             #Update organ workflow
             process_cont = ['ImProc',self.channel_no,'D-S3Create','Info',cont,'Status']
             self.parent_organ.update_mHworkflow(process_cont, update = 'DONE')
-            print('> Update:', process_cont, get_by_path(workflow, process_cont))
             aa+=1
             win.prog_bar_update(aa)
         
@@ -1730,7 +1735,6 @@ class ImChannel(): #channel
             if shapes_s3.count(shapes_s3[0]) == len(shapes_s3):
                 self.shape_s3 = s3.shape_s3
                 self.parent_organ.update_mHworkflow(process, update = 'DONE')
-                print('> Update:', process, get_by_path(workflow, process))
             else: 
                 print('>> Error: self.shape_s3 = s3.shape')
         
@@ -1744,7 +1748,6 @@ class ImChannel(): #channel
         process_up2 = ['ImProc','Status']
         if get_by_path(workflow, process_up2) == 'NI':
             self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-        print('> Update:', process_up2, get_by_path(workflow, process_up2))
             
     def load_chS3s (self, cont_types:list):
         for cont in cont_types:
@@ -1773,122 +1776,50 @@ class ImChannel(): #channel
         print('\n---- Trimming S3s! ----')                             
         if len(cuts) == 1:
             pl = cuts_out[cuts[0]]['plane_info_image']
-            # plm = cuts_out[cuts[0]]['plane_info_mesh']
-            # for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
             s3.cutW1Plane(pl, cuts[0])
            
-            #Update organ workflow
-            process_cont = ['ImProc', self.channel_no ,'E-TrimS3','Info',s3.cont_type,'Status']
-            self.parent_organ.update_mHworkflow(process_cont, update = 'DONE')
-            print('> Update:', process_cont, get_by_path(workflow, process_cont))
-                
-            # #Update mH_settings
-            # # Image
-            # proc_im = ['wf_info', 'ImProc', 'E-TrimS3','Planes', self.channel_no, 'cut_image']
-            # update_im = {cuts[0]:pl}
-            # self.parent_organ.update_settings(proc_im, update = update_im, mH='mH')
-            # # Mesh
-            # proc_mesh = ['wf_info', 'MeshesProc', 'B-TrimMesh','Planes', self.channel_no, 'cut_mesh']
-            # update_mesh = {cuts[0]:plm}
-            # self.parent_organ.update_settings(proc_mesh, update = update_mesh, mH='mH')
-            
         if len(cuts) == 2:
-            # for s3 in [self.s3_int, self.s3_ext, self.s3_tiss]:
             pl1 = cuts_out['bottom']['plane_info_image']
-            # pl1m = cuts_out['bottom']['plane_info_mesh']
             pl2 = cuts_out['top']['plane_info_image']
-            # pl2m = cuts_out['top']['plane_info_mesh']
             s3.cutW2Planes(pl1, pl2)
-            #Update organ workflow
-            process_cont = ['ImProc',self.channel_no,'E-TrimS3','Info',s3.cont_type,'Status']
-            self.parent_organ.update_mHworkflow(process_cont, update = 'DONE')
-            print('> Update:', process_cont, get_by_path(workflow, process_cont))
-        
-            # #Update mH_settings   
-            # # Image
-            # proc_im = ['wf_info', 'ImProc', 'E-TrimS3','Planes', self.channel_no, 'cut_image']
-            # update_im =  {'bottom': pl1, 'top': pl2}
-            # self.parent_organ.update_settings(proc_im, update = update_im, mH = 'mH')
-            # # Mesh
-            # proc_mesh = ['wf_info', 'MeshesProc', 'B-TrimMesh','Planes', self.channel_no, 'cut_mesh']
-            # update_mesh = {'bottom': pl1m, 'top': pl2m}
-            # self.parent_organ.update_settings(proc_mesh, update = update_mesh, mH = 'mH')
 
-        #Update organ workflow 
-        self.parent_organ.update_mHworkflow(process, update = 'DONE')
-        print('> Update:', process, get_by_path(workflow, process))
-                
         #Update channel process
         self.process.append('TrimS3')
         
         #Update organ imChannels
         self.parent_organ.add_channel(self)
         
-        process_up2 = ['ImProc','Status']
-        if get_by_path(workflow, process_up2) == 'NI':
-            self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-            print('> Update:', process_up2, get_by_path(workflow, process_up2))
-                
-        # Save organ
-        # self.parent_organ.save_organ()
-        # Update status 
-        self.parent_organ.check_status(process = 'ImProc')
-        
-    def s32Meshes(self, cont_types:list, win, keep_largest=False, rotateZ_90=True, new_set=False):
+    def s32Meshes(self, cont_type:str, keep_largest=None, rotateZ_90=None, new_set=False):
 
-        workflow = self.parent_organ.workflow['morphoHeart']
-        win.prog_bar_range(0,3)
-        aa = 0
-        for mesh_type in cont_types:
-            win.win_msg('Creating meshes of Channel '+self.channel_no[-1]+'! ('+str(aa+1)+'/'+str(len(cont_types))+')')
-            process = ['MeshesProc','A-Create3DMesh', self.channel_no, mesh_type]
-            name = self.channel_no + '_' + mesh_type
-            if name not in self.parent_organ.meshes.keys():
-                keep_largest_f = keep_largest[mesh_type]
-                print('>> New Mesh!')
-            else: 
-                if new_set: 
-                    print('>> New_set = True')
-                    try: 
-                        keep_largest_f = keep_largest[mesh_type]
-                        print('>> New keep_largest')
-                    except:
-                        print('>> Old keep_largest')
-                        keep_largest_f = self.parent_organ.mH_settings['setup']['keep_largest'][self.channel_no][mesh_type]
-                    print('recreating mesh with new settings -keep largest')
-                else: 
-                    keep_largest_f = keep_largest
-                    print('>> Recreating mesh with same settings as original')
-            mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new_set=new_set)#, new=True)
-            
-            # Update organ workflow
-            self.parent_organ.update_mHworkflow(process, 'DONE')
-            print('> Update:', process, get_by_path(workflow, process))
-            aa+=1
-            win.prog_bar_update(aa)
+        mesh_prop = {'keep_largest': keep_largest, 'rotateZ_90': rotateZ_90}
+        mesh = Mesh_mH(imChannel = self, mesh_type = cont_type, 
+                       mesh_prop = mesh_prop, new_set = new_set)
+        print('!>> ',mesh.__dict__)
     
-    def createNewMeshes(self, cont_types:list, process:str, new_set = False):
+    def createNewMeshes(self, cont_types:list, process:str, new_set = False): #to delete
+        print('TO delete!')
+        pass
+
+        # workflow = self.parent_organ.workflow['morphoHeart']
+        # ch_no = self.channel_no
+        # if process == 'AfterTrimming':
+        #     meshes_out = self.s32Meshes(cont_types, new_set=new_set)
+        #     for mesh_type in cont_types:
+        #         proc = ['MeshesProc', 'B-TrimMesh', ch_no, mesh_type,'Status']
+        #         self.parent_organ.update_mHworkflow(proc, 'DONE')
+        #         print('> Update:', proc, get_by_path(workflow, proc))
+                
+        #     process_up = ['MeshesProc','B-TrimMesh','Status']
+        #     if get_by_path(self.parent_organ.workflow['morphoHeart'], process_up) == 'NI':
+        #         self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
+        #         print('> Update:', process_up, get_by_path(workflow, process_up))
+                
+        #     self.parent_organ.check_status(process = 'MeshesProc')
+                
+        # # Save organ
+        # # self.parent_organ.save_organ()   
         
-        workflow = self.parent_organ.workflow['morphoHeart']
-        ch_no = self.channel_no
-        if process == 'AfterTrimming':
-            meshes_out = self.s32Meshes(cont_types, new_set=new_set)
-            for mesh_type in cont_types:
-                proc = ['MeshesProc', 'B-TrimMesh', ch_no, mesh_type,'Status']
-                self.parent_organ.update_mHworkflow(proc, 'DONE')
-                print('> Update:', proc, get_by_path(workflow, proc))
-                
-            process_up = ['MeshesProc','B-TrimMesh','Status']
-            if get_by_path(self.parent_organ.workflow['morphoHeart'], process_up) == 'NI':
-                self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
-                print('> Update:', process_up, get_by_path(workflow, process_up))
-                
-            self.parent_organ.check_status(process = 'MeshesProc')
-                
-        # Save organ
-        # self.parent_organ.save_organ()   
-        
-        return meshes_out
+        # return meshes_out
 
     def save_channel(self, im_proc):
         organ_name = self.parent_organ.user_organName
@@ -1950,7 +1881,7 @@ class ImChannel(): #channel
             s3.s3_save(s3_new)
             alert('whistle')   
         else:
-            print('>> Index different to 2, check!')
+            print('>> (ch_clean) Index different to 2, check!')
             alert('error_beep')
                              
     def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted):
@@ -2148,7 +2079,6 @@ class ImChannelNS(): #channel
 
         #Update organ workflow
         self.parent_organ.update_mHworkflow(process, update = 'DONE')
-        print('> Update:', process, get_by_path(workflow, process))
         
         return s3_new
     
@@ -2174,30 +2104,35 @@ class ImChannelNS(): #channel
         plt.show()
         
     # func - s32Meshes
-    def s32Meshes(self, cont_types:list, keep_largest=False, rotateZ_90=True, new_set=False):
-        meshes_out = []
-        for mesh_type in cont_types:
-            name = self.channel_no + '_' + mesh_type
-            if name not in self.parent_organ.meshes.keys():
-                keep_largest_f = keep_largest[mesh_type]
-                print('>> New mesh NS!')
-            else: 
-                if new_set: 
-                    print('>> New_set = True')
-                    try: 
-                        keep_largest_f = keep_largest[mesh_type]
-                        print('>> New keep_largest')
-                    except: 
-                        print('>> Old keep_largest')
-                        keep_largest_f = self.parent_organ.mH_settings['setup'][self.channel_no]['keep_largest'][mesh_type]
-                    print('>> Recreating mesh with new settings -keep largest')
-                else: 
-                    keep_largest_f = keep_largest
-                    print('>> Recreating mesh with same settings as original')
-            mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new_set=new_set)#, new=True)
-            meshes_out.append(mesh)
+    def s32Meshes(self, cont_type:str, keep_largest=None, rotateZ_90=None, new_set=False):
+
+        mesh_prop = {'keep_largest': keep_largest, 'rotateZ_90': rotateZ_90}
+        mesh = Mesh_mH(imChannel = self, mesh_type = cont_type, 
+                       mesh_prop = mesh_prop, new_set = new_set)
+        
+        # meshes_out = []
+        # for mesh_type in cont_types:
+        #     name = self.channel_no + '_' + mesh_type
+        #     if name not in self.parent_organ.meshes.keys():
+        #         keep_largest_f = keep_largest[mesh_type]
+        #         print('>> New mesh NS!')
+        #     else: 
+        #         if new_set: 
+        #             print('>> New_set = True')
+        #             try: 
+        #                 keep_largest_f = keep_largest[mesh_type]
+        #                 print('>> New keep_largest')
+        #             except: 
+        #                 print('>> Old keep_largest')
+        #                 keep_largest_f = self.parent_organ.mH_settings['setup'][self.channel_no]['keep_largest'][mesh_type]
+        #             print('>> Recreating mesh with new settings -keep largest')
+        #         else: 
+        #             keep_largest_f = keep_largest
+        #             print('>> Recreating mesh with same settings as original')
+        #     mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new_set=new_set)#, new=True)
+        #     meshes_out.append(mesh)
             
-        return meshes_out
+        # return meshes_out
         
 class ContStack(): 
     'morphoHeart Contour Stack Class'
@@ -2395,8 +2330,8 @@ class ContStack():
 class Mesh_mH():
     'morphoHeart Mesh Class'
     
-    def __init__(self, imChannel:ImChannel, mesh_type:str, 
-                 keep_largest:bool, rotateZ_90=True, new_set=False):#, new=True):
+    def __init__(self, imChannel:ImChannel, mesh_type:str, mesh_prop:dict, 
+                 new_set=False):#, new=True):
         
         self.parent_organ = imChannel.parent_organ
         self.imChannel = imChannel
@@ -2406,29 +2341,27 @@ class Mesh_mH():
         self.legend = self.user_meshName+'_'+self.mesh_type
         self.name = self.channel_no +'_'+self.mesh_type
         self.resolution = imChannel.get_resolution()
-        
+
         if self.name not in self.parent_organ.meshes.keys():
             print('>> New mesh - ', self.name)
             new = True
-            self.new_mesh(keep_largest, rotateZ_90)
+            self.new_mesh(mesh_prop)
         else: 
             print('>> Reload mesh - ', self.name)
             new = False
-            self.reload_mesh(keep_largest, rotateZ_90, new_set)
+            self.reload_mesh(mesh_prop, new_set)
             
         self.mesh.color(self.color)
         self.mesh.alpha(self.alpha)
         if new or new_set: 
-            self.parent_organ.add_mesh(self)
             self.save_mesh()
 
-    def new_mesh(self, keep_largest, rotateZ_90):
+    def new_mesh(self, mesh_prop):#
 
-        wf = ['MeshesProc','A-Create3DMesh', self.channel_no, self.mesh_type] 
-        self.keep_largest = keep_largest
-        self.rotateZ_90 = rotateZ_90
+        self.keep_largest = mesh_prop['keep_largest']
+        self.rotateZ_90 = mesh_prop['rotateZ_90']
         
-        self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
+        self.create_mesh(keep_largest = self.keep_largest, rotateZ_90 = self.rotateZ_90)
         if self.channel_no != 'chNS': 
             self.color = self.parent_organ.mH_settings['setup']['color_chs'][self.channel_no][self.mesh_type]
         else: 
@@ -2440,30 +2373,11 @@ class Mesh_mH():
         self.parent_organ.update_settings(['setup','keep_largest']+set_proc, self.keep_largest, 'mH')
         self.parent_organ.update_settings(['setup','alpha']+set_proc, self.alpha, 'mH')
         
-        # Update workflow
-        workflow = self.parent_organ.workflow['morphoHeart']
-        if 'NS' not in self.channel_no:
-            self.parent_organ.update_mHworkflow(wf+['Status'], update = 'DONE')
-            # print('> Update:', wf+['Status'], get_by_path(workflow, wf+['Status']))
-        else: 
-            self.parent_organ.update_mHworkflow(wf[0:3]+['Status'], update = 'DONE')
-            # print('> Update:', wf[0:3]+['Status'], get_by_path(workflow, wfwf[0:3]+['Status']))
-        
-        process_up = ['MeshesProc','A-Create3DMesh','Status']
-        if get_by_path(self.parent_organ.workflow['morphoHeart'], process_up) == 'NI':
-            self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
-            print('> Update:', process_up, get_by_path(workflow, process_up))
-        
-        process_up2 = ['MeshesProc','Status']
-        if get_by_path(self.parent_organ.workflow['morphoHeart'], process_up2) == 'NI':
-            self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-            print('> Update:', process_up2, get_by_path(workflow, process_up2))
-            
         self.dirs = {'mesh': None, 'arrays': None}
         self.parent_organ.check_status(process = 'MeshesProc')
         self.mesh_meas = {}
 
-    def reload_mesh(self, keep_largest, rotateZ_90, new_set):
+    def reload_mesh(self, mesh_prop, new_set):#
 
         if self.channel_no != 'chNS': 
             self.color = self.parent_organ.mH_settings['setup']['color_chs'][self.channel_no][self.mesh_type]
@@ -2473,7 +2387,18 @@ class Mesh_mH():
             self.alpha = self.parent_organ.mH_settings['setup'][self.channel_no]['alpha'][self.mesh_type]
 
         self.s3_dir = self.imChannel.contStack[self.mesh_type]['s3_dir']
+
         if new_set: 
+            if mesh_prop['keep_largest'] != None: 
+                keep_largest = mesh_prop['keep_largest']
+            else: 
+                keep_largest = self.parent_organ.mH_settings['setup']['keep_largest'][self.channel_no][self.mesh_type]
+
+            if mesh_prop['rotateZ_90'] != None: 
+                rotateZ_90 = mesh_prop['rotateZ_90']
+            else:
+                rotateZ_90 = self.parent_organ.mH_settings['setup']['rotateZ_90']
+
             self.keep_largest = keep_largest
             self.rotateZ_90 = rotateZ_90
             print('>> Re-creating mesh -', self.name)

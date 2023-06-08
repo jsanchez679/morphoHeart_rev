@@ -18,6 +18,8 @@ from .modules.mH_classes_new import *
 from .gui.config import mH_config
 from .gui.gui_classes import *
 
+#Here, check if process was already run,  
+# update settings (wf_info) and create prompts and toggle buttons
 
 def close_cont(controller, ch_name):
     #Check workflow status
@@ -118,10 +120,10 @@ def run_keeplargest(controller):
     fcM.s32Meshes(organ = controller.organ, gui_keep_largest=controller.main_win.gui_keep_largest, 
                   win = controller.main_win, rotateZ_90=controller.main_win.rotateZ_90)
     
-    # Update mH_settings
-    proc_set = ['wf_info']
-    update = {'keeplargest': controller.main_win.gui_keep_largest }
-    controller.organ.update_settings(proc_set, update, 'mH')
+
+    #Enable button for plot all
+    plot_all = getattr(controller.main_win, 'keeplargest_plot')
+    plot_all.setEnabled(True)
 
     #Toggle button
     select_btn = getattr(controller.main_win, 'keeplargest_play')
@@ -148,10 +150,9 @@ def run_cleanup(controller):
                  gui_clean = controller.main_win.gui_clean, 
                  win=controller.main_win, plot=False)
 
-    # Update mH_settings
-    proc_set = ['wf_info']
-    update = {'cleanup': controller.main_win.gui_clean}
-    controller.organ.update_settings(proc_set, update, 'mH')
+    #Enable button for plot all
+    plot_all = getattr(controller.main_win, 'clean_plot')
+    plot_all.setEnabled(True)
 
     #Toggle button
     select_btn = getattr(controller.main_win, 'cleanup_play')
@@ -197,28 +198,15 @@ def run_trimming(controller):
     fcM.trim_top_bottom_S3s(organ = controller.organ, meshes = meshes, 
                             no_cut = no_cut, cuts_out = cuts_out,
                             win = controller.main_win)
+    
+    #Enable button for plot all
+    plot_all = getattr(controller.main_win, 'trimming_plot')
+    plot_all.setEnabled(True)
 
-    # #Update mH_settings with channels to be cut
-    # update_im = {}; update_mesh = {}
-    # for ch_a in ch_planes: 
-    #     update_im[ch_a] = {'cut_image': None}
-    #     update_mesh[ch_a] = {'cut_mesh': None}
-    # proc_im = ['wf_info','ImProc','E-TrimS3','Planes']
-    # organ.update_settings(proc_im, update_im, 'mH')
-    # proc_meshes = ['wf_info','MeshesProc','B-TrimMesh','Planes']
-    # organ.update_settings(proc_meshes, update_mesh, 'mH')
-    # # print('ch_planes:', ch_planes)
-
-    # Update mH_settings
-    # proc_set = ['wf_info']
-    # update = {'trimming': controller.main_win.trimming}
-    # controller.organ.update_settings(proc_set, update, 'mH')
-
-    # #Toggle button
-    # select_btn = getattr(controller.main_win, 'trimming_play')
-    # select_btn.setChecked(True)
-    # toggled(select_btn)
-    # pass
+    #Toggle button
+    select_btn = getattr(controller.main_win, 'trimming_play')
+    select_btn.setChecked(True)
+    toggled(select_btn)
 
 def get_trimming_planes(organ, gui_trim, win): 
     filename = organ.user_organName
@@ -237,7 +225,7 @@ def get_trimming_planes(organ, gui_trim, win):
                 'bottom': {'heart_def': 'inflow tract','other': 'bottom'}}
     cuts_out = copy.deepcopy(gui_trim)
 
-    cut_top = []; cut_bott = []; cut_chs = {}
+    cut_top = []; cut_bott = []; #cut_chs = {}
     cuts_flat = flatdict.FlatDict(gui_trim)
     print('A:',cuts_flat)
     for key in cuts_flat.keys():
@@ -245,16 +233,16 @@ def get_trimming_planes(organ, gui_trim, win):
             cut_top.append(cuts_flat[key])
         if 'bot' in key and 'object' not in key: 
             cut_bott.append(cuts_flat[key])
-        for ch in organ.imChannels.keys(): 
-            if ch in key:
-                if ch not in cut_chs.keys(): 
-                    cut_chs[ch] = []
-                else: 
-                    pass
-                if cuts_flat[key]:
-                    cut_chs[ch].append(key.split(':')[0])
+        # for ch in organ.imChannels.keys(): 
+        #     if ch in key:
+        #         if ch not in cut_chs.keys(): 
+        #             cut_chs[ch] = []
+        #         else: 
+        #             pass
+        #         if cuts_flat[key]:
+        #             cut_chs[ch].append(key.split(':')[0])
                                 
-    print('cut_chs:', cut_chs)
+    # print('cut_chs:', cut_chs)
     print('cut_top:', cut_top)
     print('cut_bott:', cut_bott)
             
@@ -274,10 +262,10 @@ def get_trimming_planes(organ, gui_trim, win):
             title = 'Happy with the defined plane?' 
             msg = 'Are you happy with the defined plane to cut '+cuts_names['bottom'][name_dict]+'?'
             items = {0: {'opt':'no, I would like to define a new plane.'}, 1: {'opt':'yes, continue!'}}
-            controller.prompt = Prompt_ok_cancel_radio(title, msg, items, parent=win)
-            controller.prompt.exec()
-            print('output:', controller.prompt.output, '\n')  
-            if controller.prompt.output[0] == 1: 
+            prompt = Prompt_ok_cancel_radio(title, msg, items, parent=win)
+            prompt.exec()
+            print('output:', prompt.output, '\n')  
+            if prompt.output[0] == 1: 
                 happy = True
 
         cuts_out['bottom']['plane_info_mesh'] = pl_dict_bott
@@ -298,10 +286,10 @@ def get_trimming_planes(organ, gui_trim, win):
             title = 'Happy with the defined plane?' 
             msg = 'Are you happy with the defined plane to cut '+cuts_names['top'][name_dict]+'?'
             items = {0: {'opt':'no, I would like to define a new plane.'}, 1: {'opt':'yes, continue!'}}
-            controller.prompt = Prompt_ok_cancel_radio(title, msg, items, parent=win)
-            controller.prompt.exec()
-            print('output:', controller.prompt.output, '\n')  
-            if controller.prompt.output[0] == 1: 
+            prompt = Prompt_ok_cancel_radio(title, msg, items, parent=win)
+            prompt.exec()
+            print('output:', prompt.output, '\n')  
+            if prompt.output[0] == 1: 
                 happy = True
         
         cuts_out['top']['plane_info_mesh'] = pl_dict_top
@@ -314,18 +302,36 @@ def get_trimming_planes(organ, gui_trim, win):
     return meshes, no_cut, cuts_out
 
 def run_axis_orientation(controller):
+    # #Check if the orientation has alredy been stablished
+    #     if 'orientation' in self.mH_settings.keys(): 
+    #         if 'ROI' in self.mH_settings['orientation'].keys():
+    #             q = 'You already selected the ROI (organ) orientation for this organ. Do you want to re-assign it?'
+    #             res = {0: 'no, continue with next step', 1: 'yes, re-assign it!'}
+    #             proceed = ask4input(q, res, bool)
+    #         else: 
+    #             proceed = True
+    #     else: 
+    #         proceed = True
+                
     workflow = controller.organ.workflow
 
-    # Update mH_settings
-    proc_set = ['wf_info']
-    update = {'axis_orientation': controller.main_win.trimming}
-    controller.organ.update_settings(proc_set, update, 'mH')
+    fcM.get_stack_orientation(organ = controller.organ,  
+                              gui_orientation = controller.main_win.gui_orientation, 
+                              win = controller.main_win)
+    
+    on_hold = fcM.get_roi_orientation(organ = controller.organ,
+                                        gui_orientation = controller.main_win.gui_orientation,  
+                                        win = controller.main_win)
 
     #Toggle button
     select_btn = getattr(controller.main_win, 'orientation_play')
-    select_btn.setChecked(True)
+    if not on_hold:
+        controller.organ.on_hold = on_hold
+        select_btn.setChecked(True)
+    else: 
+        controller.organ.on_hold = on_hold
+        select_btn.setChecked(False)
     toggled(select_btn)
-    pass
 
 def run_chNS(controller):
     workflow = controller.organ.workflow

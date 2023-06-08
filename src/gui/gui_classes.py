@@ -2863,10 +2863,10 @@ class MainWindow(QMainWindow):
     def init_trim(self):
         #Buttons
         self.trimming_open.clicked.connect(lambda: self.open_section(name='trimming'))
-        self.trimming_plot_ch1.clicked.connect(lambda: self.plot_trim('ch1'))
-        self.trimming_plot_ch2.clicked.connect(lambda: self.plot_trim('ch2'))
-        self.trimming_plot_ch3.clicked.connect(lambda: self.plot_trim('ch3'))
-        self.trimming_plot_ch4.clicked.connect(lambda: self.plot_trim('ch4'))
+        self.trimming_plot_ch1.clicked.connect(lambda: self.plot_meshes('ch1'))
+        self.trimming_plot_ch2.clicked.connect(lambda: self.plot_meshes('ch2'))
+        self.trimming_plot_ch3.clicked.connect(lambda: self.plot_meshes('ch3'))
+        self.trimming_plot_ch4.clicked.connect(lambda: self.plot_meshes('ch4'))
         self.trimming_plot_ch1.setEnabled(False)
         self.trimming_plot_ch2.setEnabled(False)
         self.trimming_plot_ch3.setEnabled(False)
@@ -2875,10 +2875,9 @@ class MainWindow(QMainWindow):
         self.trimming_set.clicked.connect(lambda: self.set_trim())
         self.trimming_play.setStyleSheet(style_play)
         self.trimming_play.setEnabled(False)
-        # self.trimming_play.clicked.connect(lambda: )
         self.trimming_plot.clicked.connect(lambda: self.plot_meshes('all'))
         self.trimming_plot.setEnabled(False)
-        # self.q_trimming.clicked.connect(lambda: )
+        self.q_trimming.clicked.connect(lambda: self.help('trimming'))
 
         # Segmentation cleanup setup
         for chs in ['ch1', 'ch2', 'ch3', 'ch4']:
@@ -2911,14 +2910,19 @@ class MainWindow(QMainWindow):
         # self.stack_orient_plot.clicked.connect(lambda: )
         # self.roi_orient_plot.clicked.connect(lambda: )
 
-        # self.q_orientation.clicked.connect(lambda: )
-        # self.orientation_set.clicked.connect(lambda: )
+        self.q_orientation.clicked.connect(lambda: self.help('orientation'))
+        self.orientation_set.clicked.connect(lambda: self.set_orientation())
         self.orientation_play.setStyleSheet(style_play)
         self.orientation_play.setEnabled(False)
-        # self.orientation_play.clicked.connect(lambda: )
 
         self.stack_orient_plot.setEnabled(False)
         self.roi_orient_plot.setEnabled(False)
+
+        self.roi_rotate.stateChanged.connect(lambda: self.check_roi_rotate())
+        self.radio_manual.toggled.connect(lambda: self.rotate_method(mtype = 'manual'))
+        self.radio_centreline.toggled.connect(lambda: self.rotate_method(mtype = 'centreline'))
+
+        self.rotate_method(mtype = 'none')
         
     def init_chNS(self):
         #Buttons
@@ -3176,6 +3180,9 @@ class MainWindow(QMainWindow):
 
         print('Setup Sections: ', self.organ.mH_settings['setup']['sect'])
 
+    def update_status(self, root_dict, items, fillcolor):
+        update_status(root_dict, items, fillcolor)
+        
     #Functions specific to gui functionality
     def open_section(self, name): 
         print('Open-close: '+name)
@@ -3336,7 +3343,6 @@ class MainWindow(QMainWindow):
             if ch != 'chNS':
                 self.gui_keep_largest[ch] = {}
                 for cont in ['int', 'tiss', 'ext']:
-                    print(ch, cont, 'kl_'+ch+'_'+cont)
                     cB = getattr(self, 'kl_'+ch+'_'+cont)
                     self.gui_keep_largest[ch][cont] = cB.isChecked() 
 
@@ -3399,6 +3405,78 @@ class MainWindow(QMainWindow):
         print('self.gui_trim: ', self.gui_trim)
         self.trimming_play.setEnabled(True)
     
+    def check_roi_rotate(self):
+
+        if self.roi_rotate.isChecked():
+            self.radio_manual.setEnabled(True)
+            self.radio_centreline.setEnabled(True)
+            self.rotate_method(mtype ='centreline')
+        else: 
+            self.radio_manual.setEnabled(False)
+            self.radio_centreline.setEnabled(False)
+            self.rotate_method(mtype ='none')
+
+    def rotate_method(self, mtype:str):
+        print('Checked:', mtype)
+
+        if self.radio_manual.isChecked(): 
+            self.rotate_angles.setEnabled(True)
+            self.centreline_orientation.setEnabled(False)
+            self.lab_plane.setEnabled(False)
+            self.plane_orient.setEnabled(False)
+            self.lab_vector.setEnabled(False)
+            self.vector_orient.setEnabled(False)
+        elif self.radio_centreline.isChecked(): 
+            self.rotate_angles.setEnabled(False)
+            self.centreline_orientation.setEnabled(True)
+            self.lab_plane.setEnabled(True)
+            self.plane_orient.setEnabled(True)
+            self.lab_vector.setEnabled(True)
+            self.vector_orient.setEnabled(True)
+        else: 
+            self.rotate_angles.setEnabled(False)
+            self.centreline_orientation.setEnabled(False)
+            self.lab_plane.setEnabled(False)
+            self.plane_orient.setEnabled(False)
+            self.lab_vector.setEnabled(False)
+            self.vector_orient.setEnabled(False)
+    
+    def set_orientation(self): 
+
+        #Stack
+        self.gui_orientation = {}
+        self.gui_orientation['stack'] = {'axis': self.organ.mH_settings['setup']['orientation']['stack']}
+
+        #ROI
+        roi_rotate = self.roi_rotate.isChecked()
+        self.gui_orientation['roi'] = {'axis': self.organ.mH_settings['setup']['orientation']['roi'],
+                                        'rotate': roi_rotate}
+        if roi_rotate: 
+            for rB in ['radio_manual', 'radio_centreline']:
+                btn = getattr(self, rB)
+                if btn.isChecked():
+                    rB_checked = rB
+                    break
+            
+            if rB_checked == 'radio_manual': 
+                self.gui_orientation['roi'] = {'axis': self.organ.mH_settings['setup']['orientation']['stack'], 
+                                                'method': 'Manual'}
+            else: 
+                plane_orient = self.plane_orient.currentText()
+                vector_orient = self.vector_orient.currentText()
+                centreline = self.centreline_orientation.currentText()
+                self.gui_orientation['roi']['method'] = 'Centreline'
+                self.gui_orientation['roi']['centreline'] = centreline
+                self.gui_orientation['roi']['plane_orient'] = plane_orient
+                self.gui_orientation['roi']['vector_orient'] = vector_orient
+        else: 
+            pass
+            
+        self.orientation_set.setChecked(True)
+        toggled(self.orientation_set)
+        print('self.gui_orientation: ', self.gui_orientation)
+        self.orientation_play.setEnabled(True)
+
     #Plot functions
     def plot_meshes(self, ch, chNS=False):
         txt = [(0, self.organ.user_organName)]
@@ -3461,9 +3539,9 @@ class MainWindow(QMainWindow):
     def save_project_and_organ_pressed(self):
         print('Save project and organ was pressed')
         self.organ.save_organ()
-        self.win_msg('Organ '+ self.organ.user_organName +' was saved succesfully!')
+        self.win_msg('Organ  -'+ self.organ.user_organName +'-  was saved succesfully!')
         self.proj.save_project()
-        self.win_msg('Project '+ self.proj.user_projName +' was saved succesfully!')
+        self.win_msg('Project  -'+ self.proj.user_projName +'-  was saved succesfully!')
     
     def close_morphoHeart_pressed(self):
         print('Close was pressed')

@@ -120,7 +120,7 @@ p, li { white-space: pre-wrap; }
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+             <string notr="true">font: 25 11pt &quot;Calibri Light&quot;;</string>
             </property>
             <property name="text">
              <string>RadioButton</string>
@@ -157,6 +157,9 @@ p, li { white-space: pre-wrap; }
               <height>20</height>
              </size>
             </property>
+            <property name="styleSheet">
+             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+            </property>
            </widget>
           </item>
          </layout>
@@ -178,7 +181,7 @@ p, li { white-space: pre-wrap; }
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+             <string notr="true">font: 25 11pt &quot;Calibri Light&quot;;</string>
             </property>
             <property name="text">
              <string>RadioButton</string>
@@ -211,6 +214,9 @@ p, li { white-space: pre-wrap; }
               <width>16777215</width>
               <height>20</height>
              </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
             </property>
            </widget>
           </item>

@@ -276,12 +276,12 @@ def get_by_path(root_dict, items):
     return reduce(operator.getitem, items, root_dict)
 
 #%% func - set_by_path
-def set_by_path(root_dict, items, value):
+def set_by_path(root_dict, items, value, add=False):
     """Set a value in a nested object in root_dict by item sequence.
     by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
-    """
+    """    
     get_by_path(root_dict, items[:-1])[items[-1]] = value
-    
+
 #%% func - del_by_path
 def del_by_path(root_dict, items):
     """Delete a key-value in a nested object in root_dict by item sequence.
