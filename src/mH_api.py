@@ -118,9 +118,8 @@ def select_cont(controller, ch_name):
 def run_keeplargest(controller):
     workflow = controller.organ.workflow
     fcM.s32Meshes(organ = controller.organ, gui_keep_largest=controller.main_win.gui_keep_largest, 
-                  win = controller.main_win, rotateZ_90=controller.main_win.rotateZ_90)
+                  win = controller.main_win, rotateZ_90=controller.organ.mH_settings['setup']['rotateZ_90'])
     
-
     #Enable button for plot all
     plot_all = getattr(controller.main_win, 'keeplargest_plot')
     plot_all.setEnabled(True)
@@ -312,8 +311,10 @@ def run_axis_orientation(controller):
     #             proceed = True
     #     else: 
     #         proceed = True
+    #CHECK HERE WHICH ONE HAS BEEN RUN AND IF STACK WAS RUN, 
+    # PROGRAM SO THAT THE STACK DATA DOESN'T GET REMOVED 
                 
-    workflow = controller.organ.workflow
+    workflow = controller.organ.workflow['morphoHeart']
 
     fcM.get_stack_orientation(organ = controller.organ,  
                               gui_orientation = controller.main_win.gui_orientation, 
@@ -323,7 +324,12 @@ def run_axis_orientation(controller):
                                         gui_orientation = controller.main_win.gui_orientation,  
                                         win = controller.main_win)
 
+    #Update Status in GUI
+    process = ['MeshesProc', 'A-Create3DMesh', 'Set_Orientation', 'Status']
+    controller.main_win.update_status(workflow, process, controller.main_win.orient_status)
+
     #Toggle button
+    print('organ.on_hold:', on_hold)
     select_btn = getattr(controller.main_win, 'orientation_play')
     if not on_hold:
         controller.organ.on_hold = on_hold
@@ -334,11 +340,33 @@ def run_axis_orientation(controller):
     toggled(select_btn)
 
 def run_chNS(controller):
-    workflow = controller.organ.workflow
+    workflow = controller.organ.workflow['morphoHeart']
+      # #Check workflow status
+        # workflow = self.parent_organ.workflow
+        # process = ['ImProc', self.channel_no,'D-S3Create','Status']
+        # check_proc = get_by_path(workflow, process)
+        # if check_proc == 'DONE':
+        #     q = 'You already extracted the '+ self.user_chName+' from the negative space. Do you want to re-run this process?'
+        #     res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
+        #     proceed = ask4input(q, res, bool)
+        # else: 
+        #     proceed = True
+            
+        # if proceed: 
 
+    fcM.extract_chNS(organ = controller.organ, 
+                     rotateZ_90 = controller.organ.mH_settings['setup']['rotateZ_90'],
+                     win = controller.main_win, 
+                     plot = False)
 
     #Toggle button
     select_btn = getattr(controller.main_win, 'chNS_play')
     select_btn.setChecked(True)
     toggled(select_btn)
+
+def run_centreline_clean(controller):
+
+    workflow = controller.organ.workflow['morphoHeart']
+    tol = controller.main_win.tolerance
+    fcM.proc_meshes4cl(controller.organ, tol=tol, plot=plot)
     pass

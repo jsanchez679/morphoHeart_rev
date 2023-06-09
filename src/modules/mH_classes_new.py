@@ -1240,10 +1240,10 @@ class Organ():
         else:
             return False  
     
-    def get_stack_orientation(self, views, colors):
+    def get_orientation(self, views, colors, mtype:str):#
        
         im_orient = self.info['im_orientation']
-        print(im_orient)
+        print('self.info[im_orientation]',im_orient)
         rotateY = False
         if im_orient == 'custom': 
             cust_angle = self.info['custom_angle']
@@ -1263,7 +1263,7 @@ class Organ():
         
         orient_cube.pos(pos)
         orient_cube_clear = orient_cube.clone().alpha(0.5)
-        txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select planar views in STACK...', c=txt_color, font=txt_font, s=txt_size)
+        txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select planar views in '+mtype+'...', c=txt_color, font=txt_font, s=txt_size)
         
         mks = []; sym = ['o']*len(views)
         for n, view, col in zip(count(), views, colors):
@@ -1292,26 +1292,22 @@ class Organ():
         views = self.mH_settings['setup']['orientation']['roi'].split(', ')
         if gui_orientation['roi']['rotate']: 
             if gui_orientation['roi']['method'] == 'Centreline': 
-                centreline = gui_orientation['roi']['centreline']
+                centreline = gui_orientation['roi']['centreline'].split('(')[1].split(')')[0]
                 plane = gui_orientation['roi']['plane_orient']
                 ref_vect = gui_orientation['roi']['vector_orient']
-                self.orient_by_cl(views, centreline, plane, ref_vect, colors)
+                planar_views, settings = self.orient_by_cl(views, centreline, plane, ref_vect, colors)
             elif gui_orientation['roi']['method'] == 'Manual': 
-                print('Opt1: Code under development!')
-        else: 
-            print('Opt2: Code under development!')
+                planar_views = self.orient_manual(views, colors)
+                settings = None
+        else: #No rotation
+            planar_views = self.get_orientation(views, colors, mtype='ROI')
+            settings = None
+
+        return planar_views, settings
 
     def orient_by_cl(self, views, centreline:str, plane:str, ref_vect:str, colors):
         
-        # Select the mesh to use to measure organ orientation
-        dict_cl = plot_organCLs(self)
-        q = 'Select the centreline you want to use to measure organ orientation:'
-        extend_dir = ask4input(q, dict_cl, int)
-        
-        ch_cont_cl = dict_cl[extend_dir].split(' (')[1].split('-')
-        ch = ch_cont_cl[0]
-        cont = ch_cont_cl[1]
-        
+        ch, cont = centreline.split('_')
         cl_mesh = self.obj_meshes[ch+'_'+cont]
         linLine = cl_mesh.get_linLine()
         pts = linLine.points()
@@ -1368,20 +1364,17 @@ class Organ():
         print('vpt.planar_views:',vpt.planar_views)
         print('vpt.selected_faces:',vpt.selected_faces)
         
-        roi_dict = {'planar_views': vpt.planar_views, 
-                    'proj_plane': plane, 
+        settings = {'proj_plane': plane, 
                     'ref_vect': ref_vect,
                     'ref_vectF': ref_vectF,
                     'orient_vect': pts,
                     'angle_deg': angle}
         
-        proc = ['orientation', 'ROI']
-        self.update_settings(proc, update = roi_dict, mH = 'mH')
-        
-        # if 'orientation' not in list(self.mH_settings.keys()): 
-        #     self.mH_settings['orientation'] = {'ROI': roi_dict}
-        # else: 
-        #     self.mH_settings['orientation']['ROI'] = roi_dict
+        return  vpt.planar_views, settings
+
+    def orient_manual(self, views, colors): # to develop!
+        print('orient_manual: Code under development!')
+        return None
 
     def get_maj_bounds(self):
         x_b = 0; y_b = 0; z_b = 0
@@ -1720,6 +1713,7 @@ class ImChannel(): #channel
         dirs_cont = []; shapes_s3 = []
         aa = 0
         for cont in ['int', 'ext', 'tiss']:
+            win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+' ('+str(aa+1)+'/3).')
             s3 = ContStack(im_channel=self, cont_type=cont, layerDict=layerDict)#new=True,
             self.add_contStack(s3)
             dirs_cont.append(s3.s3_dir.is_file())
@@ -1917,8 +1911,9 @@ class ImChannelNS(): #channel
         self.parent_organ = organ
         self.parent_organ_name = organ.user_organName
         self.channel_no = ch_name
-        self.user_chName = organ.mH_settings['setup'][ch_name]['user_chName']
+        self.user_chName = organ.mH_settings['setup'][ch_name]['user_nsChName']
         self.ch_relation = 'negative-space'
+
         if self.channel_no not in organ.imChannelNS.keys():
             print('>> New ChannelNS')
             self.new_ImChannelNS()
@@ -1933,9 +1928,6 @@ class ImChannelNS(): #channel
         self.resolution = organ.info['resolution']
         self.process = ['Init']
         self.contStack = {}
-
-        organ.mH_settings['setup'][ch_name]['keep_largest'] = {}
-        organ.mH_settings['setup'][ch_name]['alpha'] = {}
         
         # external contour
         ext_s3_name = organ.mH_settings['setup'][ch_name]['ch_ext'][0]
@@ -1943,9 +1935,12 @@ class ImChannelNS(): #channel
         # internal contour
         int_s3_name = organ.mH_settings['setup'][ch_name]['ch_int'][0]
         int_s3_type = organ.mH_settings['setup'][ch_name]['ch_int'][1]
+
+        organ.mH_settings['setup'][ch_name]['keep_largest'] = {}
+        organ.mH_settings['setup'][ch_name]['alpha'] = {}
         
         self.setup_NS = {'ext':{'name': ext_s3_name, 'type': ext_s3_type}, 
-                      'int':{'name': int_s3_name, 'type': int_s3_type}}
+                            'int':{'name': int_s3_name, 'type': int_s3_type}}
         
         organ.add_channelNS(imChannelNS=self)
         organ.check_status(process='ImProc')
@@ -1965,8 +1960,10 @@ class ImChannelNS(): #channel
         self.contStack = contStack_dict
         self.setup_NS = organ.imChannelNS[ch_name]['setup_NS']
         
-    def create_chNSS3s(self, plot=False):
+    def create_chNSS3s(self, win, plot=False):
+
         organ = self.parent_organ
+        win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+' (0/3).')
         ext_s3_name = self.setup_NS['ext']['name']
         ext_s3_type = self.setup_NS['ext']['type']
         ext_s3 = ContStack(im_channel=organ.obj_imChannels[ext_s3_name], 
@@ -1974,6 +1971,7 @@ class ImChannelNS(): #channel
         self.s3_ext = ext_s3
         self.add_contStack(ext_s3, cont_type = 'ext')
         
+        win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+' (1/3).')
         int_s3_name = self.setup_NS['int']['name']
         int_s3_type = self.setup_NS['int']['type']
         int_s3 = ContStack(im_channel=organ.obj_imChannels[int_s3_name], 
@@ -1981,11 +1979,14 @@ class ImChannelNS(): #channel
         self.s3_int = int_s3
         self.add_contStack(int_s3, cont_type = 'int')
         
+        win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+' (2/3).')
+        layerDict = organ.mH_settings['setup']['chNS']
+        layerDict['plot'] = plot
         tiss_s3 = ContStack(im_channel = self, cont_type = 'tiss',
-                            layerDict=plot)#,  new = True)
+                            layerDict=layerDict)#,  new = True)
         self.s3_tiss = tiss_s3
         self.add_contStack(tiss_s3, cont_type = 'tiss')
-        
+
     def load_chS3s (self, cont_types:list):
         for cont in cont_types:
             # print(cont)
@@ -2025,26 +2026,17 @@ class ImChannelNS(): #channel
         else: # just update process 
             self.contStack[cont_type]['process'] = contStack.process
 
-    def create_s3_tiss (self, plot=False, im_every=25): 
+    def create_s3_tiss (self, layerDict, plot=False, im_every=25): 
         """
         Function to extract the negative space channel
         """        
         # Workflow process
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc', self.channel_no,'D-S3Create','Status']
-        # #Check workflow status
-        # workflow = self.parent_organ.workflow
-        # process = ['ImProc', self.channel_no,'D-S3Create','Status']
-        # check_proc = get_by_path(workflow, process)
-        # if check_proc == 'DONE':
-        #     q = 'You already extracted the '+ self.user_chName+' from the negative space. Do you want to re-run this process?'
-        #     res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-        #     proceed = ask4input(q, res, bool)
-        # else: 
-        #     proceed = True
-                
-        # if proceed: 
+      
         print('>> Extracting '+self.user_chName+'!')
+        operation = layerDict['operation']
+
         s3 = self.s3_ext.s3()
         s3_mask = self.s3_int.s3()
         
@@ -2058,11 +2050,14 @@ class ImChannelNS(): #channel
                 toClean_slc = s3[:,:,slc]
                 # Keep ch to use as mask as it is
                 inv_slc = np.copy(mask_slc)
-
-                # inverted_mask or mask AND ch1_2clean
-                toRemove_slc = np.logical_and(toClean_slc, inv_slc)
-                # Keep only the clean bit
-                cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
+                if operation == 'XOR': 
+                    # inverted_mask or mask AND ch1_2clean
+                    toRemove_slc = np.logical_and(toClean_slc, inv_slc)
+                    # Keep only the clean bit
+                    cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
+                else: 
+                    #Program this!
+                    pass
 
                 if plot and slc in list(range(0,s3.shape[0],im_every)):
                     self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted=False)
@@ -2156,7 +2151,8 @@ class ContStack():
         if self.cont_type not in self.im_channel.contStack.keys():
             if im_channel.channel_no == 'chNS':
                 # TO DO! Add information about the masking process as attributes here!
-                s3 = im_channel.create_s3_tiss(plot=layerDict)
+                plot = layerDict['plot']
+                s3 = im_channel.create_s3_tiss(layerDict=layerDict, plot=plot)
                 parent_organ.mH_settings['setup'][im_channel.channel_no]['keep_largest'][self.cont_type] = {}
                 parent_organ.mH_settings['setup'][im_channel.channel_no]['alpha'][self.cont_type] = {}
             else: 
@@ -2365,14 +2361,18 @@ class Mesh_mH():
         if self.channel_no != 'chNS': 
             self.color = self.parent_organ.mH_settings['setup']['color_chs'][self.channel_no][self.mesh_type]
         else: 
-            self.color = self.parent_organ.mH_settings['setup'][self.channel_no]['color_chs'][self.mesh_type]
+            self.color = self.parent_organ.mH_settings['setup'][self.channel_no]['color_chns'][self.mesh_type]
         self.alpha = 0.05
         
         #Update settings
-        set_proc = [self.channel_no, self.mesh_type]
-        self.parent_organ.update_settings(['setup','keep_largest']+set_proc, self.keep_largest, 'mH')
-        self.parent_organ.update_settings(['setup','alpha']+set_proc, self.alpha, 'mH')
-        
+        if self.channel_no != 'chNS': 
+            set_proc = [self.channel_no, self.mesh_type]
+            self.parent_organ.update_settings(['setup','keep_largest']+set_proc, self.keep_largest, 'mH')
+            self.parent_organ.update_settings(['setup','alpha']+set_proc, self.alpha, 'mH')
+        else: 
+            self.parent_organ.update_settings(['setup',self.channel_no,'keep_largest',self.mesh_type], self.keep_largest, 'mH')
+            self.parent_organ.update_settings(['setup',self.channel_no,'alpha',self.mesh_type], self.alpha, 'mH')
+
         self.dirs = {'mesh': None, 'arrays': None}
         self.parent_organ.check_status(process = 'MeshesProc')
         self.mesh_meas = {}
@@ -2383,7 +2383,7 @@ class Mesh_mH():
             self.color = self.parent_organ.mH_settings['setup']['color_chs'][self.channel_no][self.mesh_type]
             self.alpha = self.parent_organ.mH_settings['setup']['alpha'][self.channel_no][self.mesh_type]
         else:
-            self.color = self.parent_organ.mH_settings['setup'][self.channel_no]['color_chs'][self.mesh_type]
+            self.color = self.parent_organ.mH_settings['setup'][self.channel_no]['color_chns'][self.mesh_type]
             self.alpha = self.parent_organ.mH_settings['setup'][self.channel_no]['alpha'][self.mesh_type]
 
         self.s3_dir = self.imChannel.contStack[self.mesh_type]['s3_dir']
@@ -2404,7 +2404,10 @@ class Mesh_mH():
             print('>> Re-creating mesh -', self.name)
             self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
         else: 
-            self.keep_largest = self.parent_organ.mH_settings['setup']['keep_largest'][self.channel_no][self.mesh_type]
+            if self.channel_no != 'chNS':
+                self.keep_largest = self.parent_organ.mH_settings['setup']['keep_largest'][self.channel_no][self.mesh_type]
+            else: 
+                self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no]['keep_largest'][self.mesh_type]
             self.rotateZ_90 = self.parent_organ.mH_settings['setup']['rotateZ_90']
             print('>> Loading mesh-', self.name)
             self.load_mesh()
@@ -2981,7 +2984,7 @@ class MyFaceSelectingPlotter(vedo.Plotter):
     def get_msg(self):
         if self.active_n < len(self.views)-1:
             msg1 = 'Instructions: Select (click) the cube face that represents the '+self.current_view().upper()+' face'
-            msg2 = '\n press -c- and then click to continue.'
+            msg2 = '\n press -c- and then rotate the cube to continue.'
             self.msg.text(msg1+msg2)
         else:
             if self.check_full():
@@ -2989,7 +2992,7 @@ class MyFaceSelectingPlotter(vedo.Plotter):
                 self.msg.text(msg_close)
             else: 
                 msg1 = 'Instructions: Select (click) the cube face that represents the '+self.current_view().upper()+' face'
-                msg2 = '\n press -c- and then click to continue.'
+                msg2 = '\n  press -c- and then rotate the cube to continue.'
                 self.msg.text(msg1+msg2)
     
     def check_full(self):

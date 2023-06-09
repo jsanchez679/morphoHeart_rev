@@ -2859,6 +2859,8 @@ class MainWindow(QMainWindow):
         self.clean_ch2_all.stateChanged.connect(lambda: self.tick_all('ch2', 'clean'))
         self.clean_ch3_all.stateChanged.connect(lambda: self.tick_all('ch3', 'clean'))
         self.clean_ch4_all.stateChanged.connect(lambda: self.tick_all('ch4', 'clean'))
+
+        self.clean_plot2d.stateChanged.connect(lambda: self.n_slices('clean'))
     
     def init_trim(self):
         #Buttons
@@ -2922,17 +2924,24 @@ class MainWindow(QMainWindow):
         self.radio_manual.toggled.connect(lambda: self.rotate_method(mtype = 'manual'))
         self.radio_centreline.toggled.connect(lambda: self.rotate_method(mtype = 'centreline'))
 
+        items_cl = self.organ.mH_settings['measure']['CL'].keys()
+        items_cB = []
+        for item in items_cl:
+            ch, cont, segm = item.split('_')
+            name = self.organ.mH_settings['setup']['name_chs'][ch] + ' ('+ch+'_'+cont+')'
+            items_cB.append(name)
+        self.centreline_orientation.addItems(items_cB)
         self.rotate_method(mtype = 'none')
         
     def init_chNS(self):
         #Buttons
         self.chNS_open.clicked.connect(lambda: self.open_section(name='chNS'))
-        # self.chNS_plot
+        self.chNS_plot.clicked.connect(lambda: self.plot_meshes('chNS'))
         self.chNS_plot.setEnabled(False)
-        # self.q_chNS
         self.chNS_play.setStyleSheet(style_play)
         self.chNS_play.setEnabled(False)
-        # self.chNS_play
+        self.q_chNS.clicked.connect(lambda: self.help('chNS'))
+        self.chNS_set.clicked.connect(lambda: self.set_chNS())
 
         self.fillcolor_chNS_int.clicked.connect(lambda: self.color_picker(name = 'chNS_int'))
         self.fillcolor_chNS_tiss.clicked.connect(lambda: self.color_picker(name = 'chNS_tiss'))
@@ -2953,13 +2962,18 @@ class MainWindow(QMainWindow):
             color_btn = getattr(self, 'fillcolor_chNS_'+contk)
             color_btn.setStyleSheet(color_txt)
 
+        self.chNS_plot2d.stateChanged.connect(lambda: self.n_slices('chNS'))
+
     def init_centreline(self):
         #Buttons
         self.centreline_open.clicked.connect(lambda: self.open_section(name='centreline'))
         self.centreline_play.setStyleSheet(style_play)
         self.centreline_play.setEnabled(False)
-        # self.centreline_play.clicked.connect(lambda: )
-        # self.q_centreline
+        self.centreline_clean_play.setStyleSheet(style_play)
+        self.centreline_clean_play.setEnabled(False)
+        self.centreline_ML_play.setStyleSheet(style_play)
+        self.centreline_ML_play.setEnabled(False)
+        self.q_centreline.clicked.connect(lambda: self.help('centreline'))
 
         cl_to_extract = self.organ.mH_settings['measure']['CL']
         # print(cl_to_extract, len(cl_to_extract))
@@ -3027,6 +3041,7 @@ class MainWindow(QMainWindow):
             cm.addItems(cmaps)
             d3d2 = getattr(self,'d3d2_'+str(num))
             hm_plot = getattr(self, 'hm_plot'+str(num))
+            hm_plot2 = getattr(self, 'hm_plot'+str(num)+'_2D')
             hm_eg = getattr(self, 'cm_eg'+str(num))
             if num < len(hm_items): 
                 label.setText(heatmap_dict[hm_items[num]]['name'])
@@ -3035,6 +3050,7 @@ class MainWindow(QMainWindow):
                 d3d2.setChecked(True)
                 hm_eg.setEnabled(True)
                 hm_plot.setEnabled(False)
+                hm_plot2.setEnabled(False)
             else: 
                 label.setVisible(False)
                 mina.setVisible(False)
@@ -3043,6 +3059,7 @@ class MainWindow(QMainWindow):
                 d3d2.setVisible(False)
                 hm_eg.setVisible(False)
                 hm_plot.setVisible(False)
+                hm_plot2.setVisible(False)
 
         #Set all colormaps eg
         self.colormap1.currentIndexChanged.connect(lambda: self.set_colormap('1'))
@@ -3060,6 +3077,14 @@ class MainWindow(QMainWindow):
 
         for num in range(1,13,1): 
             self.set_colormap(str(num))
+
+        cl_keys = list(self.organ.mH_settings['measure']['CL'].keys())
+        cl_names = []
+        for key in cl_keys: 
+            ch, cont, _ = key.split('_')
+            namef = self.channels[ch]+' ('+ch+') - '+cont
+            cl_names.append(namef)
+        self.hm_centreline.addItems(cl_names)
 
     def init_segments(self):
         #Buttons
@@ -3336,6 +3361,16 @@ class MainWindow(QMainWindow):
                 child.setText(0, str(value))#unicode(value))
                 item.addChild(child)
             
+    def n_slices(self, process):
+        cB = getattr(self, process+'_plot2d')
+        if cB.isChecked():
+            state = True
+        else: 
+            state = False
+        getattr(self, process+'_lab1').setEnabled(state)
+        getattr(self, process+'_n_slices').setEnabled(state)
+        getattr(self, process+'_lab2').setEnabled(state)
+
     #Set functions 
     def set_keeplargest(self): 
         self.gui_keep_largest = {}
@@ -3381,6 +3416,12 @@ class MainWindow(QMainWindow):
                 self.gui_clean[chc]['with_cont'] = getattr(self, 'clean_withcont_'+chc).currentText()
                 self.gui_clean[chc]['inverted'] = getattr(self, 'inverted_'+chc).isChecked()
 
+        if self.clean_plot2d.isChecked():
+            self.gui_clean['plot2d'] =  True
+            self.gui_clean['n_slices'] = self.clean_n_slices.value()
+        else: 
+            self.gui_clean['plot2d'] = False
+
         self.cleanup_set.setChecked(True)
         toggled(self.cleanup_set)
         print('self.gui_clean: ', self.gui_clean)
@@ -3405,6 +3446,19 @@ class MainWindow(QMainWindow):
         print('self.gui_trim: ', self.gui_trim)
         self.trimming_play.setEnabled(True)
     
+    def set_chNS(self):
+        self.gui_chNS = {}
+        if self.chNS_plot2d.isChecked():
+            self.gui_chNS = {'plot2d': True, 
+                             'n_slices': self.chNS_n_slices.value()}
+        else: 
+            self.gui_chNS['plot2d'] = False
+
+        self.chNS_set.setChecked(True)
+        toggled(self.chNS_set)
+        print('self.gui_chNS: ', self.gui_chNS)
+        self.chNS_play.setEnabled(True)
+
     def check_roi_rotate(self):
 
         if self.roi_rotate.isChecked():
@@ -3457,10 +3511,8 @@ class MainWindow(QMainWindow):
                 if btn.isChecked():
                     rB_checked = rB
                     break
-            
             if rB_checked == 'radio_manual': 
-                self.gui_orientation['roi'] = {'axis': self.organ.mH_settings['setup']['orientation']['stack'], 
-                                                'method': 'Manual'}
+                self.gui_orientation['roi']['method'] = 'Manual'
             else: 
                 plane_orient = self.plane_orient.currentText()
                 vector_orient = self.vector_orient.currentText()
@@ -3476,6 +3528,8 @@ class MainWindow(QMainWindow):
         toggled(self.orientation_set)
         print('self.gui_orientation: ', self.gui_orientation)
         self.orientation_play.setEnabled(True)
+
+
 
     #Plot functions
     def plot_meshes(self, ch, chNS=False):

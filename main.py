@@ -241,6 +241,15 @@ class Controller:
         self.main_win.orientation_play.clicked.connect(lambda: self.run_axis_orientation())
         self.main_win.chNS_play.clicked.connect(lambda: self.run_chNS())
 
+        self.main_win.centreline_clean_play.clicked.connect(lambda: self.run_centreline_clean())
+        # self.main_win.centreline_ML_play.clicked.connect(lambda: self.run_centreline_ML())
+        # self.main_win.centreline_play.clicked.connect(lambda: self.run_centreline())
+        # self.main_win.heatmaps3D_play.clicked.connect(lambda: self.run_heatmaps3D())
+        # self.main_win.heatmaps2D_play.clicked.connect(lambda: self.run_heatmaps2D())
+
+        # self.main_win.segments_play.clicked.connect(lambda: self.run_segments())
+        # self.main_win.sections_play.clicked.connect(lambda: self.run_sections())
+
     #Functions related to API  
     # Project Related  
     def set_proj_meas_param(self):
@@ -448,6 +457,27 @@ class Controller:
 
     def run_chNS(self):
         mA.run_chNS(controller=self)
+
+    def run_centreline_clean(self):
+        mA.run_centreline_clean(controller=self)
+
+    # def run_centreline_ML(self):
+    #     mA.run_centreline_ML(controller=self)
+
+    # def run_centreline(self):
+    #     mA.run_centreline(controller=self)
+
+    # def run_heatmaps3D(self):
+    #     mA.run_heatmaps3D(controller=self)
+
+    # def run_heatmaps2D(self):
+    #     mA.run_heatmaps2D(controller=self)
+
+    # def run_segments(self):
+    #     mA.run_segments(controller=self)
+
+    # def run_sections(self):
+    #     mA.run_sections(controller=self)
    
     
 def main():

@@ -4,6 +4,10 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from colorspacious import cspace_converter
 
+x = np.linspace(0.0, 1.0, 100)
+gradient = np.linspace(0, 1, 256)
+gradient = np.vstack((gradient, gradient))
+
 def plot_color_gradients2(name):
     fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(4, 2))
     print(axs)
@@ -33,9 +37,38 @@ def plot_color_gradients2(name):
     plt.savefig(name+'.png', dpi=300, format='png', bbox_inches='tight', pad_inches=0.01)
     plt.show()
 
+def plot_color_gradients(name):
+    fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(3, 2))
+    print(axs)
+    fig.subplots_adjust(#top=0.95, bottom=0.01, left=0.2, right=0.99,
+                        wspace=0.05)
+    # fig.suptitle(cmap_category + ' colormaps', fontsize=14, y=1.0, x=0.6)
+
+    print(name)
+    # Get RGB values for colormap.
+    rgb = mpl.colormaps[name](x)[np.newaxis, :, :3]
+
+    # Get colormap in CAM02-UCS colorspace. We want the lightness.
+    lab = cspace_converter("sRGB1", "CAM02-UCS")(rgb)
+    L = lab[0, :, 0]
+    L = np.float32(np.vstack((L, L, L)))
+
+    axs.imshow(gradient, aspect='auto', cmap=mpl.colormaps[name])
+    axs.set_axis_off()
+
+    # pos = list(axs[0].get_position().bounds)
+    # x_text = pos[0] - 0.01
+    # y_text = pos[1] + pos[3]/2.
+    # fig.text(x_text, y_text, name, va='center', ha='right', fontsize=10)
+
+    plt.savefig(name+'.svg', dpi=300, format='svg', bbox_inches='tight', pad_inches=0.01)
+    plt.savefig(name+'.png', dpi=300, format='png', bbox_inches='tight', pad_inches=0.01)
+    plt.show()
+
+
 cmap_list = ['turbo','viridis', 'jet', 'magma', 'inferno', 'plasma']
 for name in cmap_list: 
-    plot_color_gradients2(name)
+    plot_color_gradients(name)
 
 
 # cmaps = {}

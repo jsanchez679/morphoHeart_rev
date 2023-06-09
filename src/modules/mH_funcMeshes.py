@@ -57,6 +57,7 @@ class NumpyArrayEncoder(json.JSONEncoder):
 #%% ##### - Other Imports - ##################################################
 from ..gui.config import mH_config
 from .mH_funcBasics import ask4input, get_by_path, alert
+
 # from ..gui.gui_classes import Prompt_ok_cancel_radio
 
 # from .mH_classes_new import ImChannelNS#, Mesh_mH
@@ -131,7 +132,8 @@ def clean_ch(organ, gui_clean, win, plot=False):
 
     workflow = organ.workflow['morphoHeart']
     
-    for ch in gui_clean.keys():
+    keys = [key for key in gui_clean.keys() if 'ch' in key]
+    for ch in keys:
         win.win_msg('Cleaning Channel '+ch[-1]+' meshes!')
         #Get channel and contours to clean
         ch_to_clean = organ.obj_imChannels[ch]
@@ -188,7 +190,6 @@ def clean_ch(organ, gui_clean, win, plot=False):
     print('organ.mH_settings:', organ.mH_settings)
     print('organ.workflow:', workflow)
    
-
 #%% func - trim_top_bottom_S3s
 def trim_top_bottom_S3s(organ, meshes, no_cut, cuts_out, win):
     
@@ -263,7 +264,7 @@ def get_stack_orientation(organ, gui_orientation, win):
     workflow = organ.workflow['morphoHeart']
     colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
     views = organ.mH_settings['setup']['orientation']['stack'].split(', ')
-    planar_views = organ.get_stack_orientation(views, colors)
+    planar_views = organ.get_orientation(views, colors, mtype='STACK')
 
     #Update organ workflow
     process = ['MeshesProc', 'A-Create3DMesh', 'Set_Orientation']
@@ -284,20 +285,33 @@ def get_stack_orientation(organ, gui_orientation, win):
     plot_btn = getattr(win, 'stack_orient_plot')
     plot_btn.setEnabled(True)
 
+    print('\nEND Stack Orientation')
+    print('organ.mH_settings:', organ.mH_settings)
+    print('organ.workflow:', workflow)
+
 def get_roi_orientation(organ, gui_orientation:dict, win):
 
     workflow = organ.workflow['morphoHeart']
     on_hold = False
     colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
+    planar_views = None; settings = None
     if gui_orientation['roi']['rotate']: 
         if gui_orientation['roi']['method'] == 'Centreline': 
-            #check if centrelines have been obtained
-            organ.get_ROI_orientation(gui_orientation, colors)
-            on_hold = True
-        else: 
-            organ.get_ROI_orientation(gui_orientation, colors)
+            centreline = gui_orientation['roi']['centreline']
+            #Check if centrelines have been obtained
+            if workflow['MeshesProc']['C-Centreline']['Status'] == 'DONE': 
+                win.win_msg("Setting Organ/ROI Orientation with "+centreline+"'s centreline...")
+                planar_views, settings = organ.get_ROI_orientation(gui_orientation, colors)
+                print('Method: Centreline -', planar_views, settings)
+            else: 
+                on_hold = True
+                win.win_msg('!Organ/ROI Orientation will be set once the centreline of the '+centreline+' has been obtained.')
+        else: #Manual
+            planar_views, settings = organ.get_ROI_orientation(gui_orientation, colors)
+            print('Method: Manual -', planar_views)
     else: 
-        organ.get_ROI_orientation(gui_orientation, colors)
+        planar_views, settings = organ.get_ROI_orientation(gui_orientation, colors)
+        print('Method: No rotation -', planar_views)
 
     if not on_hold: 
         #Update organ workflow
@@ -310,38 +324,66 @@ def get_roi_orientation(organ, gui_orientation:dict, win):
             organ.update_mHworkflow(process+['Status'],'DONE')
 
         # Update mH_settings
-        stack_dict = {'planar_views': 'planar_views'}
-        proc = ['setup','orientation','roi']
-        organ.update_settings(proc, update = stack_dict, mH = 'mH')
+        gui_orientation['roi']['planar_views'] = planar_views
+        if settings != None: 
+            gui_orientation['roi']['settings'] = settings
+        
+        if 'orientation' in organ.mH_settings['wf_info'].keys():
+            proc_set = ['wf_info', 'orientation', 'roi']
+            update = gui_orientation['roi']
+        else: 
+            proc_set = ['wf_info']
+            update = gui_orientation
+    else: 
+        proc_set = ['wf_info']
+        update = gui_orientation
+    organ.update_settings(proc_set, update, 'mH', add='orientation')
+
+    print('\nEND ROI Orientation')
+    print('organ.mH_settings:', organ.mH_settings)
+    print('organ.workflow:', workflow)
 
     return on_hold
 
 #%% func - extract_chNS
-def extract_chNS(organ, plot):
-    from .mH_classes import ImChannelNS
-    if 'chNS' in organ.mH_settings['general_info'].keys():
-        im_ns = ImChannelNS(organ=organ, ch_name='chNS')
-        im_ns.create_chNSS3s(plot=plot)
-        
-        gui_keep_largest = {'int': True, 'ext': True, 'tiss': False}
-        [mshNS_int, mshNS_ext, mshNS_tiss] = im_ns.s32Meshes(cont_types=['int', 'ext', 'tiss'],
-                                                             keep_largest=gui_keep_largest,
-                                                             rotateZ_90 = True, new_set = True)
-       
-        txt = [(0, organ.user_organName  + ' - Extracted ' + im_ns.user_chName)]
-        obj = [(mshNS_ext.mesh),(mshNS_int.mesh),(mshNS_tiss.mesh)]
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-        
-        txt = [(0, organ.user_organName  + ' - Final reconstructed meshes')]
-        obj = [organ.obj_meshes[key].mesh for key in organ.obj_meshes.keys() if 'tiss' in key]
-        obj.append(tuple(obj))
-        # obj = [(msh1_tiss.mesh),(msh2_tiss.mesh),(mshNS_tiss.mesh),(msh1_tiss.mesh, msh2_tiss.mesh, mshNS_tiss.mesh)]
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-    
-    else: 
-        print('>> No layer between segments is being created as it was not setup by user!')
-        alert('error_beep')
+def extract_chNS(organ, rotateZ_90, win, plot):
+    from .mH_classes_new import ImChannelNS
 
+    workflow = organ.workflow['morphoHeart']
+    im_ns = ImChannelNS(organ=organ, ch_name='chNS')
+    im_ns.create_chNSS3s(win, plot=plot)
+    proc_im = ['ImProc',im_ns.channel_no,'D-S3Create','Status']
+    proc_mesh = ['MeshesProc','A-Create3DMesh', im_ns.channel_no,'Status']
+
+    gui_keep_largest = {'int': True, 'ext': True, 'tiss': False}
+    win.prog_bar_range(0,3)
+    aa = 0
+    for cont in ['int', 'tiss', 'ext']: 
+        win.win_msg('Creating meshes of Channel NS! ('+str(aa+1)+'/3)')
+        im_ns.s32Meshes(cont_type=cont, 
+                        keep_largest=gui_keep_largest[cont],
+                        rotateZ_90 = rotateZ_90,
+                        new_set=True)
+        aa+=1
+        win.prog_bar_update(aa)
+
+    #Message User
+    win.win_msg(' ChannelNS meshes were successfully created!')
+
+    # Update organ workflow
+    organ.update_mHworkflow(proc_im, 'DONE')
+    organ.update_mHworkflow(proc_mesh, 'DONE')
+
+    #Enable button for plot
+    plot_btn = getattr(win, 'chNS_plot')
+    plot_btn.setEnabled(True)
+
+    #Update Status in GUI
+    win.update_status(workflow, proc_mesh, win.chNS_status)
+
+    print('\nEND chNS')
+    print('organ.mH_settings:', organ.mH_settings)
+    print('organ.workflow:', workflow)
     
 #%% func - proc_meshes4cl
 def proc_meshes4cl(organ, tol, plot=True, printshow=True):
@@ -2364,6 +2406,12 @@ def plot_meas_meshes(organ, meas:list, color_map = 'turbo', alpha=1):
         
 #%% ƒunc - plot_organCLs
 def plot_organCLs(organ, axes=5, plotshow=True):
+
+    # # Select the mesh to use to measure organ orientation
+    # dict_cl = plot_organCLs(self)
+    # q = 'Select the centreline you want to use to measure organ orientation:'
+    # extend_dir = ask4input(q, dict_cl, int)
+
     organ_info = organ.mH_settings['setup']
     dict_cl = {}; obj = []; txt = []; n = 0
     for item in organ.mH_settings['measure']['CL']: 
@@ -2386,7 +2434,7 @@ def plot_organCLs(organ, axes=5, plotshow=True):
 #%% - Plane handling functions 
 #%% func - get_plane
 def get_plane(filename, txt:str, meshes:list, win, def_pl = None, 
-                             option = [True,True,True,True,True,True]):
+                             option = [True,True,True,True,True,True]):#
     '''
     Function that creates a plane defined by the user
 
