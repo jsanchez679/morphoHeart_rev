@@ -109,6 +109,39 @@ class Prompt_ok_cancel(QDialog):
         self.output = False
         self.close()
 
+class Prompt_ok_cancel_Big(QDialog):
+    def __init__(self, title:str, msg:list, parent=None):
+        super().__init__(parent)
+        uic.loadUi('src/gui/ui/prompt_ok_cancel_big.ui', self)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        for nn in range(0,7,1): 
+            text = getattr(self, 'textEdit'+str(nn+1))
+            if nn == 0:
+                text.setHtml(html_txt[0]+html_txt[1]+msg[nn]+html_txt[2])
+            elif nn < len(msg): 
+                text.setText(msg[nn])
+            else: 
+                text.setText('')
+
+        self.output = None
+
+        self.buttonBox.accepted.connect(lambda: self.accepted())
+        self.buttonBox.rejected.connect(lambda: self.rejected())
+        self.setModal(True)
+        self.show()
+
+    def accepted(self): 
+        print('Entered func!')
+        self.output = True
+        self.close()
+
+    def rejected(self): 
+        print('Rejected!')
+        self.output = False
+        self.close()
+
 class Prompt_ok_cancel_radio(QDialog):
     def __init__(self, title:str, msg:str, items:dict, parent=None):
         super().__init__(parent)
@@ -1533,6 +1566,7 @@ class SetMeasParam(QDialog):
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
         self.mH_settings = mH_settings
+        self.parent = parent
 
         self.params = {0: {'s': 'SA', 'l':'Surface Area'},
                         1: {'s': 'Vol', 'l':'Volume'},
@@ -1608,6 +1642,13 @@ class SetMeasParam(QDialog):
         self.ballooning_to = ['--select--']
         self.set_ballooning_opt()
         self.setModal(True)
+
+        #Heatmap 3d to 2d
+        poss_chs = [ch for ch in self.ch_all.keys() if ch != 'chNS']
+        hm_ch = getattr(self, 'hm_cB_ch')
+        hm_ch.addItems(['--select--']+poss_chs)
+
+        self.cB_hm3d2d.clicked.connect(lambda: self.heatmap3d2d())
 
     def win_msg(self, msg): 
         if msg[0] == '*':
@@ -1816,6 +1857,18 @@ class SetMeasParam(QDialog):
             cB_but.addItems(self.ballooning_to)
             cB_but.setCurrentText('--select--')
                 
+    def heatmap3d2d(self): 
+        if self.cB_hm3d2d.isChecked():
+            value = True
+        else: 
+            value = False
+
+        self.hm_text.setEnabled(value)
+        self.hm_lab_ch.setEnabled(value)
+        self.hm_lab_cont.setEnabled(value)
+        self.hm_cB_ch.setEnabled(value)
+        self.hm_cB_cont.setEnabled(value)
+
     def validate_params(self): 
         valid = []
         #First validate the ballooning options
@@ -1873,6 +1926,30 @@ class SetMeasParam(QDialog):
                 else: 
                     cB_cl.setChecked(True)
         
+        #Validate centreline to do hm 3D to 2D
+        if self.cB_hm3d2d.isChecked():
+            hm_ch = getattr(self, 'hm_cB_ch').currentText()
+            hm_cont = getattr(self, 'hm_cB_cont').currentText()
+            if hm_ch == '--select--':
+                error_txt = "*You have not selected the channel centreline to use to unloop and unfold the 3D heatmaps into 2D"
+                self.win_msg(error_txt)
+                return 
+            elif hm_cont == '--select--':
+                error_txt = "*You have not selected the contour type centreline to use to unloop and unfold the 3D heatmaps into 2D"
+                self.win_msg(error_txt)
+                return
+            else: 
+                 #Check the selected centreline
+                cB_hm = getattr(self, 'cB_'+hm_ch+'_'+hm_cont[0:3]+'_param2')
+                if cB_hm.isChecked():
+                    pass
+                else: 
+                    cB_hm.setChecked(True)
+                valid.append(True)
+        else: 
+            valid.append(True)
+        
+        #Check all checkboxes
         self.check_checkBoxes()
         bool_cB = [val for (_,val) in self.dict_meas.items()]
         if any(bool_cB): 
@@ -1889,14 +1966,15 @@ class SetMeasParam(QDialog):
             return False
         
     def check_meas_param(self): #to finish!
+        title = 'No measurement parameter selected!'
         msg = "You have not selected any measurement parameters to obtain from the segmented channels. If you want to go back and select some measurement parameters, press 'Cancel', else if you are happy with this decision press 'OK'."
-        title = 'No Measurement Parameters Selected'
-        self.prompt_ok = Prompt_ok_cancel(msg = msg, title = title,  parent=self)
+        self.prompt = Prompt_ok_cancel(title, msg, parent=self.parent)
+        self.prompt.exec()
+        print('output:',self.prompt.output, '\n')
 
-        if self.prompt_ok.user_input == 'OK': 
+        if self.prompt.output == True: 
             return True
         else: 
-            print('cancel? or close?')
             error_txt = "Select measurement parameters for the channel-contours."
             self.win_msg(error_txt)
             return False
@@ -1918,12 +1996,19 @@ class SetMeasParam(QDialog):
                                     'to_mesh_type': cont_to, 
                                     'from_cl': cl_ch,
                                     'from_cl_type': cl_cont[0:3]}
+
+        hm3d2d = {}
+        if self.cB_hm3d2d.isChecked():
+            hm3d2d['ch'] = getattr(self, 'hm_cB_ch').currentText()
+            hm3d2d['cont'] = getattr(self, 'hm_cB_cont').currentText()
+
                 
         centreline = {'looped_length': getattr(self, 'cB_cl_LoopLen').isChecked(),
                         'linear_length': getattr(self, 'cB_cl_LinLen').isChecked()}
         
         self.final_params = {'ballooning': ballooning, 
-                             'centreline': centreline}
+                             'centreline': centreline, 
+                             'hm3d2d': hm3d2d}
         # print('self.final_params:',self.final_params)
 
 class NewOrgan(QDialog):
@@ -2554,6 +2639,34 @@ class MainWindow(QMainWindow):
         self.theme = self.cB_theme.currentText()
         self.on_cB_theme_currentIndexChanged(0)
 
+        self.pushButton.clicked.connect(lambda: self.update_proj_organ())
+
+    def update_proj_organ(self):
+        # self.proj.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
+        # self.organ.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
+        # print(self.proj.mH_settings['measure'])
+        # print(self.organ.mH_settings['measure'])
+
+        # workflow_proj = self.proj.workflow['morphoHeart']['MeshesProc']['C-Centreline']
+        # workflow_organ = self.organ.workflow['morphoHeart']['MeshesProc']['C-Centreline']
+        # item_centreline = [tuple(item.split('_')) for item in self.organ.mH_settings['measure']['CL'].keys()]
+        # for workflow in [workflow_proj, workflow_organ]:
+        #     for item in item_centreline:
+        #         ch, cont, _ = item
+        #         print(ch,cont)
+        #         if ch not in workflow['SimplifyMesh'].keys(): 
+        #             workflow['SimplifyMesh'][ch] = {}
+        #             workflow['vmtk_CL'][ch] = {}
+        #             workflow['buildCL'][ch] = {}
+        #         workflow['SimplifyMesh'][ch][cont] = {'Status': 'NI'}
+        #         workflow['vmtk_CL'][ch][cont] = {'Status': 'NI'}
+        #         workflow['buildCL'][ch][cont] = {'Status': 'NI'}
+        
+        # print(self.proj.workflow['morphoHeart'])
+        # print(self.organ.workflow['morphoHeart'])
+
+        self.organ.obj_temp = {}
+
     @pyqtSlot(int)
     def on_cB_theme_currentIndexChanged(self, theme):
         print('mH_config.theme:',mH_config.theme)
@@ -2970,9 +3083,11 @@ class MainWindow(QMainWindow):
         self.centreline_play.setStyleSheet(style_play)
         self.centreline_play.setEnabled(False)
         self.centreline_clean_play.setStyleSheet(style_play)
-        self.centreline_clean_play.setEnabled(False)
+        self.centreline_clean_play.setEnabled(True)
         self.centreline_ML_play.setStyleSheet(style_play)
-        self.centreline_ML_play.setEnabled(False)
+        self.centreline_ML_play.setEnabled(True)
+        self.centreline_vmtk_play.setStyleSheet(style_play)
+        self.centreline_vmtk_play.setEnabled(True)
         self.q_centreline.clicked.connect(lambda: self.help('centreline'))
 
         cl_to_extract = self.organ.mH_settings['measure']['CL']
@@ -2990,11 +3105,26 @@ class MainWindow(QMainWindow):
                 getattr(self, 'label_cl'+str(nn)).setVisible(False)
                 getattr(self, 'cL_name'+str(nn)).setVisible(False)
                 getattr(self, 'clClean_status'+str(nn)).setVisible(False)
+                getattr(self, 'cl_clean_plot'+str(nn)).setVisible(False)
                 getattr(self, 'meshLab_status'+str(nn)).setVisible(False)
                 getattr(self, 'vmtk_status'+str(nn)).setVisible(False)
                 getattr(self, 'opt_cl_status'+str(nn)).setVisible(False)
                 getattr(self, 'opt_cl'+str(nn)).setVisible(False)
                 getattr(self, 'cl_plot'+str(nn)).setVisible(False)
+
+        self.cl_clean_plot1.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'SimplifyMesh', btn = 'cl_clean_plot1'))
+        self.cl_clean_plot2.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'SimplifyMesh', btn = 'cl_clean_plot2'))
+        self.cl_clean_plot3.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'SimplifyMesh', btn = 'cl_clean_plot3'))
+        self.cl_clean_plot4.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'SimplifyMesh', btn = 'cl_clean_plot4'))
+        self.cl_clean_plot5.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'SimplifyMesh', btn = 'cl_clean_plot5'))
+        self.cl_clean_plot6.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'SimplifyMesh', btn = 'cl_clean_plot6'))
+
+        self.cl_plot1.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot1'))
+        self.cl_plot2.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot2'))
+        self.cl_plot3.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot3'))
+        self.cl_plot4.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot4'))
+        self.cl_plot5.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot5'))
+        self.cl_plot6.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot6'))
 
     def init_thickness_ballooning(self):
         #Buttons
@@ -3009,7 +3139,7 @@ class MainWindow(QMainWindow):
         #Heatmap settings
         heatmap_dict = {}
         lists = [['measure','th_i2e'], ['measure','th_e2i'], ['measure','ball']]
-        names = ['Th(int>ext)', 'Th(ext>int)', 'Ball']
+        names = ['Thickness (int>ext)', 'Thickness (ext>int)', 'Ballooning']
         min_val = [0,0,0]
         max_val = [20, 20, 60]
 
@@ -3018,15 +3148,15 @@ class MainWindow(QMainWindow):
             variable = ll[1]
             sp_dict = get_by_path(self.organ.mH_settings, ll)
             for item in sp_dict: 
-                if nn != 'Ball':
+                if nn != 'Ballooning':
                     chh, conth, _ = item.split('_')
-                    heatmap_dict[variable+'['+chh+'-'+conth+']'] = {'name': nn+'['+chh+'-'+conth+']',
+                    heatmap_dict[variable+'['+chh+'-'+conth+']'] = {'name': nn+' ['+chh+'-'+conth+']',
                                                                 'min_val': minn, 
                                                                 'max_val': maxx}
                 else: 
                     namef = item.replace('_(', '(CL:')
                     namef = namef.replace('_', '-')
-                    heatmap_dict[variable+'['+namef+']'] = {'name': nn+'['+namef+']',
+                    heatmap_dict[variable+'['+namef+']'] = {'name': nn+' ['+namef+']',
                                                                 'min_val': minn, 
                                                                 'max_val': maxx}
             
@@ -3078,13 +3208,19 @@ class MainWindow(QMainWindow):
         for num in range(1,13,1): 
             self.set_colormap(str(num))
 
-        cl_keys = list(self.organ.mH_settings['measure']['CL'].keys())
-        cl_names = []
-        for key in cl_keys: 
-            ch, cont, _ = key.split('_')
-            namef = self.channels[ch]+' ('+ch+') - '+cont
-            cl_names.append(namef)
-        self.hm_centreline.addItems(cl_names)
+        #Set heatmap centreline
+        if 'hm3Dto2D' in  self.organ.mH_settings['measure'].keys():
+            hm_ch_cont = list(self.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
+            ch, cont = hm_ch_cont.split('_')
+            self.hm_centreline.setText(self.channels[ch]+' ('+ch+'-'+cont+')') 
+        else: 
+            self.lab_hm3d2d.setEnabled(False)
+            self.hm_centreline.setEnabled(False)
+            self.lab_hm2d.setEnabled(False)
+            self.heatmaps2D_play.setEnabled(False)
+
+            for num in range(1,13,1): 
+                getattr(self, 'hm_plot'+num+'_2D').setEnabled(False)
 
     def init_segments(self):
         #Buttons
@@ -3529,8 +3665,6 @@ class MainWindow(QMainWindow):
         print('self.gui_orientation: ', self.gui_orientation)
         self.orientation_play.setEnabled(True)
 
-
-
     #Plot functions
     def plot_meshes(self, ch, chNS=False):
         txt = [(0, self.organ.user_organName)]
@@ -3549,6 +3683,29 @@ class MainWindow(QMainWindow):
                 for cont in ['ext', 'tiss', 'int']: 
                     obj.append(self.organ.obj_meshes[ch+'_'+cont].mesh)
     
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
+
+    def plot_tempObj(self, proc, sub, btn):
+        txt = [(0, self.organ.user_organName)]
+        obj = []
+        if proc == 'CL': 
+            #Get button number
+            btn_num = int(btn[-1])-1
+            #Get centreline for that position
+            cl_to_extract = list(self.organ.mH_settings['measure']['CL'].keys())
+            cl_name = cl_to_extract[btn_num]
+            ch, cont, _ = cl_name.split('_')
+
+            m4clf = self.organ.obj_temp['centreline'][sub][ch+'_'+cont]
+            item = []
+            for key in m4clf: 
+                if isinstance(m4clf[key], dict):
+                    for kk in m4clf[key].keys():
+                        item.append(m4clf[key][kk])
+                else: 
+                    item.append(m4clf[key])
+            obj.append(tuple(item))
+
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
     #Help functions

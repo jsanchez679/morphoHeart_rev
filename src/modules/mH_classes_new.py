@@ -230,6 +230,7 @@ class Project():
             self.mH_sections = None
             self.mH_methods = None
 
+        print('mH_params: ',mH_params)
         self.clean_False(user_param = mH_params)
         self.set_mH_methods()
 
@@ -383,7 +384,7 @@ class Project():
             dict_MeshesProc = dict()
     
             # Find the meas_param that include the extraction of a centreline
-            item_centreline = [tuple(item.split(':')) for item in mH_param2meas['CL'].keys()]
+            item_centreline = [tuple(item.split('_')) for item in mH_param2meas['CL'].keys()]
             # Find the meas_param that include the extraction of mH_segments
             if 'Vol(segm)' in mH_param2meas:
                 segm_vol = [item for item in mH_param2meas['Vol(segm)'].keys()]
@@ -493,9 +494,10 @@ class Project():
                                     dict_MeshesProc[process]['SimplifyMesh'] = {'Status':'NI'}
                                     dict_MeshesProc[process]['vmtk_CL'] = {'Status':'NI'}
                                     dict_MeshesProc[process]['buildCL'] = {'Status':'NI'}
-                                    
+                                    print('AAAAA')
+                                    print('item_centreline:', item_centreline)
                                 if (ch, cont, 'whole') in item_centreline:
-                                    # print(ch,cont)
+                                    print(ch,cont)
                                     if ch not in dict_MeshesProc[process]['SimplifyMesh'].keys(): 
                                         dict_MeshesProc[process]['SimplifyMesh'][ch] = {}
                                         dict_MeshesProc[process]['vmtk_CL'][ch] = {}

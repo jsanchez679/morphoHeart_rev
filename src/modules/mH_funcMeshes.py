@@ -386,250 +386,214 @@ def extract_chNS(organ, rotateZ_90, win, plot):
     print('organ.workflow:', workflow)
     
 #%% func - proc_meshes4cl
-def proc_meshes4cl(organ, tol, plot=True, printshow=True):
+def proc_meshes4cl(organ, win, tol):
     """
     Funtion that cuts the inflow and outflow tract of meshes from which 
     the centreline will be obtained.
 
     """
-    #Check first if extracting centrelines is a process involved in this organ/project
-    if organ.check_method(method = 'C-Centreline'): 
-    # if 'C-Centreline' in organ.parent_project.mH_methods: 
-        #Check workflow status
-        workflow = organ.workflow
-        process = ['MeshesProc','C-Centreline','SimplifyMesh','Status']
-        check_proc = get_by_path(workflow, process)
+    workflow = organ.workflow['morphoHeart']
+    # Set cut names 
+    cuts_names = {'top': {'heart_def': 'outflow tract','other': 'top'},
+                'bottom': {'heart_def': 'inflow tract','other': 'bottom'}}
+    
+    if mH_config.heart_default: 
+        name_dict =  'heart_def'     
+    else: 
+        name_dict = 'other'
         
-        #Check meshes to process in MeshLab have been saved
-        path2files = organ.mH_settings['wf_info']['MeshesProc']['C-Centreline']
-        files_exist = []
-        for ch_s in path2files.keys():
-            if 'ch' in ch_s:
-                for cont_s in path2files[ch_s].keys():
-                    dir2check = path2files[ch_s][cont_s]['dir_meshLabMesh']
-                    if dir2check != None: 
-                        files_exist.append(dir2check.is_file())
-                    else: 
-                        files_exist.append(dir2check)
-                    print (ch_s, cont_s)
-        
-        if check_proc == 'DONE' and all(flag for flag in files_exist):
-            q = 'You already cleaned and cut the meshes to extract the centreline. Do you want to clean and cut them again?'
-            res = {0: 'no, continue with next step', 1: 'yes, re-run these two processes!'}
-            cut_meshes4cl = ask4input(q, res, bool)
-        else: 
-            cut_meshes4cl = True
-            
-        if cut_meshes4cl: 
-            # Set cut names 
-            cuts_names = {'top': {'heart_def': 'outflow tract','other': 'top'},
-                        'bottom': {'heart_def': 'inflow tract','other': 'bottom'}}
-            
-            if dict_gui['heart_default']: 
-                name_dict =  'heart_def'     
-            else: 
-                name_dict = 'other'
-                
-            # Assign colors to top and bottom splines and spheres
-            color_cuts = {'bottom': 'salmon','top':'mediumseagreen' }
-            
-            # Get organ settings
-            filename = organ.user_organName
-            ch_ext, _ = organ.get_ext_int_chs()
-            ext = 'stl'; directory = organ.info['dirs']['centreline']
-            
-            # Get the meshes from which the centreline needs to be extracted
-            cl_names = [item for item in organ.parent_project.mH_param2meas if 'centreline' in item]
-            cl_names = sorted(cl_names, key=lambda x: (x[0], x[1]))
-            # Create lists with mesh_mH, channel number and mesh names
-            mH_mesh4cl = []; chs4cl = []
-            for n, name in enumerate(cl_names): 
-                mH_mesh = organ.obj_meshes[name[0]+'_'+name[1]]
-                mH_mesh4cl.append(mH_mesh)
-                chs4cl.append(organ.obj_meshes[name[0]+'_'+name[1]].channel_no)
-            
-            # Get dictionary with initialised planes to cut top/bottom
-            top_done = False; bot_done = False
-            planes_info = {'top':None, 'bottom':None}
-            for ch in organ.mH_settings['wf_info']['MeshesProc']['B-TrimMesh']['Planes'].keys():
-                # print(ch)
-                dict2check = organ.mH_settings['wf_info']['MeshesProc']['B-TrimMesh']['Planes'][ch]['cut_mesh']
-                if 'top' in dict2check and not top_done:
-                    print('in top:', ch)
-                    planes_info['top'] = dict2check['top']
-                    top_done = True
-                if 'bottom' in dict2check and not bot_done:
-                    print('in bot:', ch)
-                    planes_info['bottom'] = dict2check['bottom']
-                    bot_done = True
-            print('planes_info:', planes_info)
-            
-            # cuts = ['bottom', 'top']; cut_direction = [True, False]
-            ksplines = []; spheres = []; m4clf=[]
-            plane_cuts = {'bottom': {'dir': True, 'plane': None, 'pl_dict': None}, 
-                          'top': {'dir': False,'plane': None, 'pl_dict': None}}
-            
-            for n, mH_msh in enumerate(mH_mesh4cl):
-                for nn, pl_cut in zip(count(), plane_cuts.keys()):
-                    print('n:', n, 'nn:', nn, 'pl_cut:', pl_cut)
-                    if nn == 0:
-                        print('>> Smoothing mesh')
-                        sm_msh = mH_msh.mesh4CL()
-                    # Get planes for first mesh
-                    if n == 0: 
-                        if planes_info[pl_cut] == None:
-                            #Planes have not been initialised
-                            print('-Planes have not been initialised for ', pl_cut)
-                            plane, pl_dict = get_plane(filename=filename, 
-                                                        txt = 'cut '+cuts_names[pl_cut][name_dict],
-                                                        meshes = [sm_msh]) 
-                        else:
-                            print('-Planes have been initialised for ', pl_cut)
-                            # Planes have been initialised
-                            plane, pl_dict = get_plane(filename=filename, 
-                                                        txt = 'cut '+cuts_names[pl_cut][name_dict],
-                                                        meshes = [sm_msh], def_pl = planes_info[pl_cut]) 
-                        
-                        plane_cuts[pl_cut]['plane'] = plane
-                        plane_cuts[pl_cut]['pl_dict'] = pl_dict
-                        #Update mH_settings
-                        proc_wf = ['wf_info','MeshesProc', 'C-Centreline', 'Planes', pl_cut]
-                        organ.update_settings(process = proc_wf, update = pl_dict, mH='mH')
-                
-                    print('> Cutting mesh: ', mH_msh.legend, '-', pl_cut)
-                    pts2cut, _ = get_pts_at_plane(points = sm_msh.points(), 
-                                                    pl_normal = plane_cuts[pl_cut]['pl_dict']['pl_normal'],
-                                                    pl_centre = plane_cuts[pl_cut]['pl_dict']['pl_centre'], tol=tol)
-                    ordpts, angle = order_pts(points = pts2cut)
-                    # Create spline around cut
-                    kspl = vedo.KSpline(ordpts, continuity=0, tension=0, bias=0, closed=True)
-                    kspl.color(color_cuts[pl_cut]).legend('cut4CL_'+pl_cut).lw(2)
-                    organ.add_object(kspl, proc='cut4cl', class_name=[pl_cut,mH_msh.name], name='KSpline')
-                    ksplines.append(kspl)
-                    
-                    # Get centroid of kspline to add to the centreline
-                    kspl_bounds = kspl.bounds()
-                    pt_centroid = np.mean(np.asarray(kspl_bounds).reshape((3, 2)),axis=1)
-                    sph_centroid = vedo.Sphere(pos=pt_centroid, r=2).legend('cut4CL_'+pl_cut).color(color_cuts[pl_cut])
-                    organ.add_object(sph_centroid, proc='cut4cl', class_name=[pl_cut,mH_msh.name], name='Sphere')
-                    spheres.append(sph_centroid)
-                    
-                    # Cutmesh using created plane
-                    msh_new = sm_msh.clone().cut_with_mesh(plane_cuts[pl_cut]['plane'], invert=plane_cuts[pl_cut]['dir'])
-                    msh_new = msh_new.extract_largest_region()
-                    msh_new.alpha(0.05).wireframe(True).legend(mH_msh.legend)
-                    
-                    if plot: 
-                        txt = [(0, organ.user_organName  + ' - Resulting mesh after cutting')]
-                        obj = [(msh_new, kspl, sph_centroid)]
-                        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-                    
-                    sm_msh = msh_new.clone()
-                    
-                m4clf.append(sm_msh)
-                
-                print('> Saving cut meshes')
-                mesh_title = filename+"_"+mH_msh.name+"_cut4cl."+ext
-                mesh_titleML = filename+"_"+mH_msh.name+"_cut4clML."+ext
-                mesh_dir = directory / mesh_title
-                mesh_dirML = directory / mesh_titleML
-                msh_new.write(str(mesh_dir))
-                
-                # Update mH_settings
-                ch_cont = mH_msh.name
-                ch = ch_cont.split('_')[0]
-                cont = ch_cont.split('_')[1]
-                
-                proc_set = ['wf_info', 'MeshesProc', 'C-Centreline', ch, cont]
-                organ.update_settings(process = proc_set+['dir_cleanMesh'], update = mesh_dir, mH='mH')
-                organ.update_settings(process = proc_set+['dir_meshLabMesh'], update = mesh_dirML, mH='mH')
-                
-                # Update organ workflow
-                proc_wft = ['MeshesProc', 'C-Centreline', 'SimplifyMesh', ch, cont, 'Status']
-                organ.update_workflow(process = proc_wft, update = 'DONE')
-                                   
-            if plot: 
-                txt = [(0, organ.user_organName  + ' - Resulting meshes after cutting')]
-                obj = [(mesh) for mesh in m4clf]
-                plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-                
-            organ.update_workflow(process = process, update = 'DONE')
-            organ.update_workflow(process =  ['MeshesProc','C-Centreline','Status'], update = 'Initialised')
-            organ.save_organ()
-        
-        if printshow:
-            print("\nYou are done in morphoHeart for a little while... \nTo get the centreline of each of the selected meshes follow the next steps:")
-            print("> 1. Open the stl file(s) in Meshlab")
-            print("> 2. Run Filters > Remeshing, Simplification.. > Screened Poisson Surf Reco (check Pre-clean)")
-            print("> 3. Cut inflow and outflow tract as close as the cuts from the original mesh you opened in \n\t Meshlab and export the resulting surface adding 'ML' at the end of the filename\n\t (e.g _cut4clML.stl) in the same folder")
-            print("> 4. Come back and continue processing!...")
-            
-        alert('countdown')
+    # Assign colors to top and bottom splines and spheres
+    color_cuts = {'bottom': 'salmon','top':'mediumseagreen' }
+    
+    # Get organ settings
+    filename = organ.user_organName
+    ext = 'stl'; directory = organ.dir_res(dir ='centreline')
+    print(directory)
 
+    # Get the meshes from which the centreline needs to be extracted
+    cl_names = list(organ.mH_settings['measure']['CL'].keys())
+    # Create lists with mesh_mH, channel number and mesh names
+    mH_mesh4cl = []; chs4cl = []
+    for n, name in enumerate(cl_names): 
+        ch, cont, _ = name.split('_')
+        mH_mesh = organ.obj_meshes[ch+'_'+cont]
+        mH_mesh4cl.append(mH_mesh)
+        chs4cl.append(organ.obj_meshes[ch+'_'+cont].channel_no)
+    
+    # Get dictionary with initialised planes to cut top/bottom
+    planes_info = {'top':None, 'bottom':None}
+    trimming_info = organ.mH_settings['wf_info']['trimming']
+    for side in ['bottom', 'top']: 
+        print('in ',side)
+        planes_info[side] = trimming_info[side]['plane_info_mesh']
+    print('planes_info:', planes_info)
+    
+    # cuts = ['bottom', 'top']; cut_direction = [True, False]
+    ksplines = []; spheres = []; m4clf={}
+    plane_cuts = {'bottom': {'dir': True, 'plane': None, 'pl_dict': None}, 
+                    'top': {'dir': False,'plane': None, 'pl_dict': None}}
+    ch_cuts = {}
+    proc_all = ['MeshesProc','C-Centreline','SimplifyMesh', 'Status']
+    for n, mH_msh in enumerate(mH_mesh4cl):
+        kspl_ch = {}
+        sp_ch = {}
+        mesh_ch = mH_msh.channel_no
+        mesh_cont = mH_msh.mesh_type
+        proc_mesh = ['MeshesProc','C-Centreline','SimplifyMesh', mesh_ch, mesh_cont, 'Status']
+        for nn, pl_cut in zip(count(), plane_cuts.keys()):
+            print('n:', n, 'nn:', nn, 'pl_cut:', pl_cut, 'direction:', plane_cuts[pl_cut]['dir'])
+            if nn == 0:
+                print('>> Smoothing mesh')
+                sm_msh = mH_msh.mesh4CL()
+            # Get planes for first mesh
+            if n == 0: 
+                if planes_info[pl_cut] == None:
+                    #Planes have not been initialised
+                    print('-Planes have not been initialised for ', pl_cut)
+                    plane, pl_dict = get_plane(filename=filename, 
+                                                txt = 'cut '+cuts_names[pl_cut][name_dict],
+                                                meshes = [sm_msh]) 
+                else:
+                    print('-Planes have been initialised for ', pl_cut)
+                    # Planes have been initialised
+                    plane, pl_dict = get_plane(filename=filename, 
+                                                txt = 'cut '+cuts_names[pl_cut][name_dict],
+                                                meshes = [sm_msh], def_pl = planes_info[pl_cut]) 
+                
+                plane_cuts[pl_cut]['plane'] = plane
+                plane_cuts[pl_cut]['pl_dict'] = pl_dict
+        
+            print('> Cutting mesh: ', mH_msh.legend, '-', pl_cut)
+            pts2cut, _ = get_pts_at_plane(points = sm_msh.points(), 
+                                            pl_normal = plane_cuts[pl_cut]['pl_dict']['pl_normal'],
+                                            pl_centre = plane_cuts[pl_cut]['pl_dict']['pl_centre'], tol=tol)
+            ordpts, _ = order_pts(points = pts2cut)
+
+            # Create spline around cut
+            kspl = vedo.KSpline(ordpts, continuity=0, tension=0, bias=0, closed=True)
+            kspl.color(color_cuts[pl_cut]).legend('cut4CL_'+pl_cut).lw(2)
+            organ.add_object(kspl, proc='cut4cl', class_name=[pl_cut,mH_msh.name], name='KSpline')
+            ksplines.append(kspl)
+            
+            # Get centroid of kspline to add to the centreline
+            kspl_bounds = kspl.bounds()
+            pt_centroid = np.mean(np.asarray(kspl_bounds).reshape((3, 2)),axis=1)
+            sph_centroid = vedo.Sphere(pos=pt_centroid, r=2).legend('cut4CL_'+pl_cut).color(color_cuts[pl_cut])
+            organ.add_object(sph_centroid, proc='cut4cl', class_name=[pl_cut,mH_msh.name], name='Sphere')
+            spheres.append(sph_centroid)
+            
+            # Cutmesh using created plane
+            msh_new = sm_msh.clone().cut_with_mesh(plane_cuts[pl_cut]['plane'], invert=plane_cuts[pl_cut]['dir'])
+            msh_new = msh_new.extract_largest_region()
+            msh_new.alpha(0.05).wireframe(True).legend(mH_msh.legend)
+            
+            # if plot: 
+            #     txt = [(0, organ.user_organName  + ' - Resulting mesh after cutting')]
+            #     obj = [(msh_new, kspl, sph_centroid)]
+            #     plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+            
+            kspl_ch[pl_cut] = kspl
+            sp_ch[pl_cut] = sph_centroid
+            sm_msh = msh_new.clone()
+
+        m4clf[mesh_ch+'_'+mesh_cont] = {'mesh': sm_msh, 
+                                        'kspl' : kspl_ch,
+                                        'centroid': sp_ch}
+        
+        print('> Saving cut meshes')
+        mesh_title = filename+"_"+mH_msh.name+"_cut4cl."+ext
+        mesh_titleML = filename+"_"+mH_msh.name+"_cut4clML."+ext
+        mesh_dir = directory / mesh_title
+        msh_new.write(str(mesh_dir))
+
+        if mesh_ch not in ch_cuts.keys():
+            ch_cuts[mesh_ch] = {mesh_cont: {'dir_cleanMesh': mesh_title, 
+                                       'dir_meshLabMesh': mesh_titleML}}
+        else: 
+            ch_cuts[mesh_ch][mesh_cont] = {'dir_cleanMesh': mesh_title, 
+                                       'dir_meshLabMesh': mesh_titleML}
+
+        # Update organ workflow
+        organ.update_mHworkflow(proc_mesh, 'DONE')
+
+        #Find the position of the cl_list where the smoothed mesh has been obtained
+        index_cl = cl_names.index(mesh_ch+'_'+mesh_cont+'_whole')+1
+
+        #Enable button for plot
+        plot_btn = getattr(win, 'cl_clean_plot'+str(index_cl))
+        plot_btn.setEnabled(True)
+
+        #Update Status in GUI
+        status_sq = getattr(win, 'clClean_status'+str(index_cl))
+        win.update_status(workflow, proc_mesh, status_sq)
+
+    # Update organ workflow
+    organ.update_mHworkflow(proc_all, 'DONE')
+    organ.update_mHworkflow(process =  ['MeshesProc','C-Centreline','Status'], update = 'Initialised')
+
+    #Remove plane key from plane cuts to add to mH_settings['wf_info']
+    for side in ['bottom', 'top']: 
+        plane_cuts[side].pop('plane', None)
+
+    #Update mH_settings
+    centreline_settings = {'SimplifyMesh': {'plane_cuts': plane_cuts, 'tol': tol},
+                            'vmtk_CL': {},
+                            'buildCL': {}, 
+                            'dirs' : ch_cuts}
+    proc_set = ['wf_info']
+    update = centreline_settings
+    organ.update_settings(proc_set, update, 'mH', add='centreline')
+
+    organ.obj_temp = {}
+    organ.obj_temp['centreline'] = {'SimplifyMesh': m4clf}
+    print('obj_temp: ', organ.__dict__)
+
+    # if plot: 
+    #     txt = [(0, organ.user_organName  + ' - Resulting meshes after cutting')]
+    #     obj = [(mesh) for mesh in m4clf]
+    #     plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
+    
+    print('\nEND Simplifying Mesh')
+    print('organ.mH_settings:', organ.mH_settings)
+    print('organ.workflow:', workflow)
+    
 #%% func - extract_cl
 def extract_cl(organ, voronoi=False):
     
-    #Check first if extracting centrelines is a process involved in this organ/project
-    if organ.check_method(method = 'C-Centreline'): 
-    # if 'C-Centreline' in organ.parent_project.mH_methods: 
-        #Check workflow status
-        workflow = organ.workflow
-        process = ['MeshesProc','C-Centreline','vmtk_CL','Status']
-        check_proc = get_by_path(workflow, process)
-        if check_proc == 'DONE': 
-            q = 'You already extracted the centreline of the selected meshes. Do you want to extract the centreline again?'
-            res = {0: 'no, continue with next step', 1: 'yes, re-run this process!'}
-            extractCL = ask4input(q, res, bool)
-        else: 
-            extractCL = True
-            
-        if extractCL: 
-            cl_names = [item for item in organ.parent_project.mH_param2meas if 'centreline' in item]
-            
-            for name in cl_names: 
-                ch = name[0]; cont = name[1]
-                #Get the vmtk txt
-                vmtktxt, dir_npcl = code_vmtk(organ, ch, cont, voronoi)
-                
-                myArguments = vmtktxt
-                myPype = pypes.PypeRun(myArguments)
-                
-                for m in range(len(myPype.ScriptObjectList)):
-                    if isinstance(myPype.ScriptObjectList[m], vmtk.vmtkcenterlines.vmtkCenterlines):
-                        centerlineReader = myPype.ScriptObjectList[m]
-                clNumpyAdaptor = vmtkscripts.vmtkCenterlinesToNumpy()
-                clNumpyAdaptor.Centerlines = centerlineReader.Centerlines # Surface # cl
-                clNumpyAdaptor.Execute()
-                numpyCenterlines = clNumpyAdaptor.ArrayDict
+    cl_names = list(organ.mH_settings['measure']['CL'].keys())
+
+    for name in cl_names: 
+        ch, cont, _ = name.split('_')
+        #Get the vmtk txt
+        vmtktxt, dir_npcl = code_vmtk(organ, ch, cont, voronoi)
         
-                # Copy dictionary into new dictionary to save
-                centrelines_dict = dict()
-                centrelines_dict['Points'] =  numpyCenterlines['Points']
+        myArguments = vmtktxt
+        myPype = pypes.PypeRun(myArguments)
         
-                cellData = centrelines_dict['CellData'] = dict()
-                cellData['CellPointIds'] = numpyCenterlines['CellData']['CellPointIds']
-                pointData = centrelines_dict['PointData'] = dict()
-                pointData['EdgeArray'] = numpyCenterlines['PointData']['EdgeArray']
-                pointData['EdgePCoordArray'] = numpyCenterlines['PointData']['EdgePCoordArray']
-                pointData['MaximumInscribedSphereRadius'] = numpyCenterlines['PointData']['MaximumInscribedSphereRadius']
-        
-                with open(dir_npcl, "w") as write_file:
-                    json.dump(centrelines_dict, write_file, cls=NumpyArrayEncoder)
-                    print('>> Dictionary saved correctly!\n> File: '+ dir_npcl.name);
-                    alert('countdown')
-                    
-                proc_set = ['wf_info', 'MeshesProc', 'C-Centreline', ch, cont]
-                organ.update_settings(process = proc_set+['vmtktxt'], update = vmtktxt, mH='mH')
+        for m in range(len(myPype.ScriptObjectList)):
+            if isinstance(myPype.ScriptObjectList[m], vmtk.vmtkcenterlines.vmtkCenterlines):
+                centerlineReader = myPype.ScriptObjectList[m]
+        clNumpyAdaptor = vmtkscripts.vmtkCenterlinesToNumpy()
+        clNumpyAdaptor.Centerlines = centerlineReader.Centerlines # Surface # cl
+        clNumpyAdaptor.Execute()
+        numpyCenterlines = clNumpyAdaptor.ArrayDict
+
+        # Copy dictionary into new dictionary to save
+        centrelines_dict = dict()
+        centrelines_dict['Points'] =  numpyCenterlines['Points']
+
+        cellData = centrelines_dict['CellData'] = dict()
+        cellData['CellPointIds'] = numpyCenterlines['CellData']['CellPointIds']
+        pointData = centrelines_dict['PointData'] = dict()
+        pointData['EdgeArray'] = numpyCenterlines['PointData']['EdgeArray']
+        pointData['EdgePCoordArray'] = numpyCenterlines['PointData']['EdgePCoordArray']
+        pointData['MaximumInscribedSphereRadius'] = numpyCenterlines['PointData']['MaximumInscribedSphereRadius']
+
+        with open(dir_npcl, "w") as write_file:
+            json.dump(centrelines_dict, write_file, cls=NumpyArrayEncoder)
+            print('>> Dictionary saved correctly!\n> File: '+ dir_npcl.name);
+            alert('countdown')
             
-                # Update organ workflow
-                proc_wft = ['MeshesProc', 'C-Centreline', 'vmtk_CL', ch, cont, 'Status']
-                organ.update_workflow(process = proc_wft, update = 'DONE')
-                
-            # Update organ workflow
-            organ.update_workflow(process = process, update = 'DONE')
-            organ.check_status(process='MeshesProc')
-            organ.save_organ()
-                 
         # --------
         # ArrayDict
         #     ['Points']                   <-- required, is Nx3 array of N vertexes and x, y, z locations
@@ -651,8 +615,9 @@ def code_vmtk(organ, ch, cont, voronoi=False):
 
     """
 
-    dir_cl = organ.info['dirs']['centreline']
-    dir_meshML = organ.mH_settings['wf_info']['MeshesProc']['C-Centreline'][ch][cont]['dir_meshLabMesh']
+    dir_cl = organ.dir_res(dir ='centreline')
+    dir_meshML = dir_cl / organ.mH_settings['wf_info']['centreline']['dirs'][ch][cont]['dir_meshLabMesh']
+    # organ.mH_settings['wf_info']['MeshesProc']['C-Centreline'][ch][cont]['dir_meshLabMesh']
     dir_npcl = dir_meshML.name.replace('_cut4clML.stl', '_npcl.json')
     dir_npcl = dir_cl / dir_npcl
     
@@ -2433,7 +2398,7 @@ def plot_organCLs(organ, axes=5, plotshow=True):
 
 #%% - Plane handling functions 
 #%% func - get_plane
-def get_plane(filename, txt:str, meshes:list, win, def_pl = None, 
+def get_plane(filename, txt:str, meshes:list, def_pl = None, 
                              option = [True,True,True,True,True,True]):#
     '''
     Function that creates a plane defined by the user

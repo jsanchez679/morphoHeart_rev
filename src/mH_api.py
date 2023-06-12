@@ -232,14 +232,6 @@ def get_trimming_planes(organ, gui_trim, win):
             cut_top.append(cuts_flat[key])
         if 'bot' in key and 'object' not in key: 
             cut_bott.append(cuts_flat[key])
-        # for ch in organ.imChannels.keys(): 
-        #     if ch in key:
-        #         if ch not in cut_chs.keys(): 
-        #             cut_chs[ch] = []
-        #         else: 
-        #             pass
-        #         if cuts_flat[key]:
-        #             cut_chs[ch].append(key.split(':')[0])
                                 
     # print('cut_chs:', cut_chs)
     print('cut_top:', cut_top)
@@ -257,7 +249,7 @@ def get_trimming_planes(organ, gui_trim, win):
         while not happy: 
             plane_bott, pl_dict_bott = fcM.get_plane(filename=filename, 
                                                 txt = 'cut '+cuts_names['bottom'][name_dict],
-                                                meshes = meshes, win=win)  
+                                                meshes = meshes)#, win=win)  
             title = 'Happy with the defined plane?' 
             msg = 'Are you happy with the defined plane to cut '+cuts_names['bottom'][name_dict]+'?'
             items = {0: {'opt':'no, I would like to define a new plane.'}, 1: {'opt':'yes, continue!'}}
@@ -280,7 +272,7 @@ def get_trimming_planes(organ, gui_trim, win):
         while not happy: 
             plane_top, pl_dict_top = fcM.get_plane(filename=filename, 
                                                 txt = 'cut '+cuts_names['top'][name_dict],
-                                                meshes = meshes, win=win)
+                                                meshes = meshes)#, win=win)
 
             title = 'Happy with the defined plane?' 
             msg = 'Are you happy with the defined plane to cut '+cuts_names['top'][name_dict]+'?'
@@ -366,7 +358,116 @@ def run_chNS(controller):
 
 def run_centreline_clean(controller):
 
+#   #Check first if extracting centrelines is a process involved in this organ/project
+#     if organ.check_method(method = 'C-Centreline'): 
+#     # if 'C-Centreline' in organ.parent_project.mH_methods: 
+#         #Check workflow status
+#         workflow = organ.workflow
+#         process = ['MeshesProc','C-Centreline','SimplifyMesh','Status']
+#         check_proc = get_by_path(workflow, process)
+        
+#         #Check meshes to process in MeshLab have been saved
+#         path2files = organ.mH_settings['wf_info']['MeshesProc']['C-Centreline']
+#         files_exist = []
+#         for ch_s in path2files.keys():
+#             if 'ch' in ch_s:
+#                 for cont_s in path2files[ch_s].keys():
+#                     dir2check = path2files[ch_s][cont_s]['dir_meshLabMesh']
+#                     if dir2check != None: 
+#                         files_exist.append(dir2check.is_file())
+#                     else: 
+#                         files_exist.append(dir2check)
+#                     print (ch_s, cont_s)
+        
+#         if check_proc == 'DONE' and all(flag for flag in files_exist):
+#             q = 'You already cleaned and cut the meshes to extract the centreline. Do you want to clean and cut them again?'
+#             res = {0: 'no, continue with next step', 1: 'yes, re-run these two processes!'}
+#             cut_meshes4cl = ask4input(q, res, bool)
+#         else: 
+#             cut_meshes4cl = True
+            
     workflow = controller.organ.workflow['morphoHeart']
-    tol = controller.main_win.tolerance
-    fcM.proc_meshes4cl(controller.organ, tol=tol, plot=plot)
-    pass
+    tol = controller.main_win.tolerance.value()
+    fcM.proc_meshes4cl(controller.organ, 
+                       win=controller.main_win, 
+                       tol=tol)
+    
+    # Prompt with instructions
+    title = 'Instructions for cleaning up meshes with MeshLab!'
+    msg = []
+    msg.append('You are done in morphoHeart for a little while. To get the centreline of each of the selected meshes follow the next steps:')
+    msg.append("   > 1. Open the .stl file(s) in Meshlab")
+    msg.append("   > 2. Run Filters > Remeshing, Simplification.. > Screened Poisson Surf Reco (check Pre-clean)")
+    msg.append("   > 3. Cut inflow and outflow tract as close as the cuts from the original mesh you opened in Meshlab.") 
+    msg.append("   > 4. Export the resulting surface adding 'ML' at the end of the filename (e.g _cut4clML.stl) in the same folder")
+    msg.append("   > 5. Come back, press OK and continue processing!...")
+    prompt = Prompt_ok_cancel_Big(title, msg, parent=controller.main_win)
+    prompt.exec()
+    print('output:',prompt.output, '\n')
+
+    #Enable button for ML
+    plot_btn = getattr(controller.main_win, 'centreline_ML_play')
+    plot_btn.setEnabled(True)
+
+    #Toggle button
+    select_btn = getattr(controller.main_win, 'centreline_clean_play')
+    select_btn.setChecked(True)
+    toggled(select_btn)
+
+def run_centreline_ML(controller): 
+    workflow = controller.organ.workflow['morphoHeart']
+    proc_simp = ['MeshesProc', 'C-Centreline', 'SimplifyMesh', 'Status']
+    print(workflow)
+    if get_by_path(workflow, proc_simp) == 'DONE':
+        #Check all the MeshLab meshes have been created
+        cl_names = list(controller.organ.mH_settings['measure']['CL'].keys())
+        all_saved = []
+        for nn, cl in enumerate(cl_names): 
+            ch, cont, _ = cl.split('_')
+            proc_mesh = ['MeshesProc','C-Centreline','SimplifyMesh', ch, cont, 'Status']
+            #Get name and path
+            directory = controller.organ.dir_res(dir ='centreline')
+            name_ML = controller.organ.mH_settings['wf_info']['centreline']['dirs'][ch][cont]['dir_meshLabMesh']
+            mesh_dir = directory / name_ML
+            if mesh_dir.is_file():
+                all_saved.append(True)
+                # Update organ workflow
+                controller.organ.update_mHworkflow(proc_mesh, 'DONE')
+                status_sq = getattr(controller.main_win, 'meshLab_status'+str(nn+1))
+                controller.main_win.update_status(workflow, proc_mesh, status_sq)
+            else:
+                error = '*'+name_ML+' has not been created! Clean this mesh in MeshLab to proceed.'
+                controller.main_win.win_msg(error)
+
+
+def run_centreline_vmtk(controller): 
+    workflow = controller.organ.workflow['morphoHeart']
+
+    # #Check first if extracting centrelines is a process involved in this organ/project
+    # if organ.check_method(method = 'C-Centreline'): 
+    # # if 'C-Centreline' in organ.parent_project.mH_methods: 
+    #     #Check workflow status
+    #     workflow = organ.workflow
+    #     process = ['MeshesProc','C-Centreline','vmtk_CL','Status']
+    #     check_proc = get_by_path(workflow, process)
+    #     if check_proc == 'DONE': 
+    #         q = 'You already extracted the centreline of the selected meshes. Do you want to extract the centreline again?'
+    #         res = {0: 'no, continue with next step', 1: 'yes, re-run this process!'}
+    #         extractCL = ask4input(q, res, bool)
+    #     else: 
+    #         extractCL = True
+            
+    #     if extractCL: 
+
+    fcM.extract_cl(organ=controller.organ)
+    #  proc_set = ['wf_info', 'MeshesProc', 'C-Centreline', ch, cont]
+    #     organ.update_settings(process = proc_set+['vmtktxt'], update = vmtktxt, mH='mH')
+    
+    #     # Update organ workflow
+    #     proc_wft = ['MeshesProc', 'C-Centreline', 'vmtk_CL', ch, cont, 'Status']
+    #     organ.update_workflow(process = proc_wft, update = 'DONE')
+        
+    # # Update organ workflow
+    # organ.update_workflow(process = process, update = 'DONE')
+    # organ.check_status(process='MeshesProc')
+    # organ.save_organ()

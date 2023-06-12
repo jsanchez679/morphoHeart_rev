@@ -221,8 +221,6 @@ class Controller:
             self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
         self.main_win.show()
 
-        self.main_win.pushButton.clicked.connect(lambda: self.download())
-
         #Segmentation Tab
         # - Buttons inside channels
         self.main_win.ch1_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch1'))
@@ -242,7 +240,8 @@ class Controller:
         self.main_win.chNS_play.clicked.connect(lambda: self.run_chNS())
 
         self.main_win.centreline_clean_play.clicked.connect(lambda: self.run_centreline_clean())
-        # self.main_win.centreline_ML_play.clicked.connect(lambda: self.run_centreline_ML())
+        self.main_win.centreline_ML_play.clicked.connect(lambda: self.run_centreline_ML())
+        self.main_win.centreline_vmtk_play.clicked.connect(lambda: self.run_centreline_vmtk())
         # self.main_win.centreline_play.clicked.connect(lambda: self.run_centreline())
         # self.main_win.heatmaps3D_play.clicked.connect(lambda: self.run_heatmaps3D())
         # self.main_win.heatmaps2D_play.clicked.connect(lambda: self.run_heatmaps2D())
@@ -253,7 +252,7 @@ class Controller:
     #Functions related to API  
     # Project Related  
     def set_proj_meas_param(self):
-        if self.meas_param_win.validate_params(): 
+        if self.meas_param_win.validate_params() == True: 
             self.mH_params = self.meas_param_win.params
             self.ch_all = self.meas_param_win.ch_all
             self.mH_params[2]['measure'] = self.meas_param_win.final_params['centreline']
@@ -294,6 +293,16 @@ class Controller:
                 from_cl_type = self.mH_params[5]['measure'][opt]['from_cl_type']
                 selected_params[param_name][to_mesh+'_'+to_mesh_type+'_('+from_cl+'_'+from_cl_type+')'] = True
 
+            #Add heatmaps 3d to 2d
+            selected_params['hm3Dto2D'] = {}
+            if self.meas_param_win.cB_hm3d2d.isChecked():
+                hm_ch = self.meas_param_win.hm_cB_ch.currentText()
+                hm_cont = self.meas_param_win.hm_cB_cont.currentText()[0:3]
+                name = hm_ch+'_'+hm_cont
+                selected_params['hm3Dto2D'][name] = True
+            else: 
+                selected_params['hm3Dto2D']['ch_cont'] = False
+
             self.new_proj_win.mH_user_params = selected_params
             print('Selected_params', selected_params)
 
@@ -307,8 +316,8 @@ class Controller:
             error_txt = "Well done! Continue setting up new project."
             self.new_proj_win.win_msg(error_txt)
         else: 
-            error_txt = "*Please validate selected measurement parameters first."
-            self.meas_param_win.win_msg(error_txt)
+            # error_txt = "*Please validate selected measurement parameters first."
+            # self.meas_param_win.win_msg(error_txt)
             return 
         
     def new_proj(self):
@@ -461,8 +470,11 @@ class Controller:
     def run_centreline_clean(self):
         mA.run_centreline_clean(controller=self)
 
-    # def run_centreline_ML(self):
-    #     mA.run_centreline_ML(controller=self)
+    def run_centreline_ML(self):
+        mA.run_centreline_ML(controller=self)
+
+    def run_centreline_vmtk(self): 
+        mA.run_centreline_vmtk(controller=self)
 
     # def run_centreline(self):
     #     mA.run_centreline(controller=self)
