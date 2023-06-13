@@ -1684,7 +1684,7 @@ border-color: #672146
          <widget class="QScrollArea" name="scrollArea_2">
           <property name="minimumSize">
            <size>
-            <width>610</width>
+            <width>620</width>
             <height>0</height>
            </size>
           </property>
@@ -1713,6 +1713,9 @@ QScrollBar::handle:vertical:hover {
 }
 </string>
           </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
@@ -1720,9 +1723,9 @@ QScrollBar::handle:vertical:hover {
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-76</y>
+             <y>-1848</y>
              <width>607</width>
-             <height>2502</height>
+             <height>2555</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -2414,6 +2417,9 @@ background-color: rgb(255, 255, 255);</string>
                         <width>18</width>
                         <height>18</height>
                        </size>
+                      </property>
+                      <property name="statusTip">
+                       <string>Plot resulting Ch1 meshes</string>
                       </property>
                       <property name="autoFillBackground">
                        <bool>false</bool>
@@ -13385,6 +13391,308 @@ border-style: outset;
                          </property>
                         </widget>
                        </item>
+                       <item row="7" column="5" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="centreline_select">
+                         <property name="minimumSize">
+                          <size>
+                           <width>25</width>
+                           <height>25</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>25</width>
+                           <height>25</height>
+                          </size>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{border-radius:12px;
+background-color: rgb(255, 255, 255);
+border-color: rgb(66, 66, 66);
+border-width: 1px;
+border-style: outset;
+}
+
+</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                     <item>
+                      <layout class="QHBoxLayout" name="horizontalLayout_6">
+                       <item>
+                        <spacer name="horizontalSpacer_13">
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>40</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                        </spacer>
+                       </item>
+                       <item>
+                        <widget class="QLabel" name="lab_proj_name_17">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>60</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>tolerance:</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QDoubleSpinBox" name="tolerance">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="decimals">
+                          <number>1</number>
+                         </property>
+                         <property name="value">
+                          <double>2.000000000000000</double>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="q_tolerance">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>?</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <spacer name="horizontalSpacer_8">
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>40</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                        </spacer>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="cB_voronoi">
+                         <property name="enabled">
+                          <bool>true</bool>
+                         </property>
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>110</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>65</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="layoutDirection">
+                          <enum>Qt::LeftToRight</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Voronoi plot?</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <property name="checked">
+                          <bool>false</bool>
+                         </property>
+                         <property name="tristate">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <spacer name="horizontalSpacer_12">
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>40</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                        </spacer>
+                       </item>
+                       <item>
+                        <widget class="QLabel" name="lab_proj_name_18">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>105</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>60</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>centreline nPoints:</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QSpinBox" name="nPoints">
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>19</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="maximum">
+                          <number>500</number>
+                         </property>
+                         <property name="singleStep">
+                          <number>10</number>
+                         </property>
+                         <property name="value">
+                          <number>300</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="q_nPoints">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>?</string>
+                         </property>
+                        </widget>
+                       </item>
                       </layout>
                      </item>
                     </layout>
@@ -13463,155 +13771,6 @@ border-color: #672146
                        <bool>true</bool>
                       </property>
                      </widget>
-                    </item>
-                    <item>
-                     <layout class="QHBoxLayout" name="horizontalLayout_6">
-                      <item>
-                       <widget class="QLabel" name="lab_proj_name_17">
-                        <property name="sizePolicy">
-                         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                          <horstretch>0</horstretch>
-                          <verstretch>0</verstretch>
-                         </sizepolicy>
-                        </property>
-                        <property name="minimumSize">
-                         <size>
-                          <width>50</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>60</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                        </property>
-                        <property name="text">
-                         <string>tolerance:</string>
-                        </property>
-                        <property name="alignment">
-                         <set>Qt::AlignCenter</set>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QDoubleSpinBox" name="tolerance">
-                        <property name="minimumSize">
-                         <size>
-                          <width>50</width>
-                          <height>19</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>50</width>
-                          <height>19</height>
-                         </size>
-                        </property>
-                        <property name="alignment">
-                         <set>Qt::AlignCenter</set>
-                        </property>
-                        <property name="decimals">
-                         <number>1</number>
-                        </property>
-                        <property name="value">
-                         <double>2.000000000000000</double>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="q_tolerance">
-                        <property name="minimumSize">
-                         <size>
-                          <width>18</width>
-                          <height>18</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>18</width>
-                          <height>18</height>
-                         </size>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                        </property>
-                        <property name="text">
-                         <string>?</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <spacer name="horizontalSpacer_8">
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>40</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item>
-                       <widget class="QCheckBox" name="chNS_plot2d_2">
-                        <property name="enabled">
-                         <bool>true</bool>
-                        </property>
-                        <property name="sizePolicy">
-                         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                          <horstretch>0</horstretch>
-                          <verstretch>0</verstretch>
-                         </sizepolicy>
-                        </property>
-                        <property name="minimumSize">
-                         <size>
-                          <width>110</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="maximumSize">
-                         <size>
-                          <width>65</width>
-                          <height>20</height>
-                         </size>
-                        </property>
-                        <property name="layoutDirection">
-                         <enum>Qt::LeftToRight</enum>
-                        </property>
-                        <property name="styleSheet">
-                         <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                        </property>
-                        <property name="text">
-                         <string>Voronoi plot?</string>
-                        </property>
-                        <property name="checkable">
-                         <bool>true</bool>
-                        </property>
-                        <property name="checked">
-                         <bool>false</bool>
-                        </property>
-                        <property name="tristate">
-                         <bool>false</bool>
-                        </property>
-                       </widget>
-                      </item>
-                     </layout>
                     </item>
                     <item>
                      <spacer name="horizontalSpacer_18">
@@ -13901,7 +14060,7 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -13977,7 +14136,7 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -14010,13 +14169,13 @@ background-color:rgb(203, 203, 203);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -14134,28 +14293,6 @@ background-color: rgb(211, 211, 211);
                          </property>
                         </widget>
                        </item>
-                       <item row="9" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm9">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="11" column="6" alignment="Qt::AlignHCenter">
                         <widget class="QPushButton" name="hm_plot11_2D">
                          <property name="enabled">
@@ -14201,28 +14338,6 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="checkable">
                           <bool>true</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="11" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm11">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
                          </property>
                         </widget>
                        </item>
@@ -14284,7 +14399,7 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -14299,50 +14414,6 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="text">
                           <string>Name</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="10" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm10">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="5" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm5">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
                          </property>
                         </widget>
                        </item>
@@ -14386,28 +14457,6 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="tristate">
                           <bool>false</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="8" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm8">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
                          </property>
                         </widget>
                        </item>
@@ -14456,72 +14505,6 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="checkable">
                           <bool>true</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="6" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm6">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm1">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="3" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm3">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
                          </property>
                         </widget>
                        </item>
@@ -14636,13 +14619,13 @@ background-color:rgb(203, 203, 203);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -14716,50 +14699,6 @@ background-color: rgb(211, 211, 211);
                           </widget>
                          </item>
                         </layout>
-                       </item>
-                       <item row="4" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm4">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="3" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm3">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
                        </item>
                        <item row="7" column="5" alignment="Qt::AlignHCenter">
                         <widget class="QPushButton" name="hm_plot7">
@@ -14953,7 +14892,7 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -14971,28 +14910,6 @@ background-color:rgb(203, 203, 203);
                          </property>
                         </widget>
                        </item>
-                       <item row="7" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm7">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="12" column="0">
                         <widget class="QLabel" name="label_hm12">
                          <property name="sizePolicy">
@@ -15003,7 +14920,7 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -15127,13 +15044,13 @@ background-color:rgb(203, 203, 203);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -15207,28 +15124,6 @@ background-color: rgb(211, 211, 211);
                           </widget>
                          </item>
                         </layout>
-                       </item>
-                       <item row="12" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm12">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
                        </item>
                        <item row="8" column="5" alignment="Qt::AlignHCenter">
                         <widget class="QPushButton" name="hm_plot8">
@@ -15326,28 +15221,6 @@ background-color:rgb(203, 203, 203);
                          </property>
                         </widget>
                        </item>
-                       <item row="11" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm11">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="9" column="5" alignment="Qt::AlignHCenter">
                         <widget class="QPushButton" name="hm_plot9">
                          <property name="enabled">
@@ -15396,50 +15269,6 @@ background-color:rgb(203, 203, 203);
                          </property>
                         </widget>
                        </item>
-                       <item row="9" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm9">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="4" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm4">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="0" column="3">
                         <layout class="QHBoxLayout" name="horizontalLayout_74">
                          <item>
@@ -15452,13 +15281,13 @@ background-color:rgb(203, 203, 203);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>20</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>20</height>
                             </size>
                            </property>
@@ -15544,7 +15373,7 @@ background-color: rgb(255, 255, 255);</string>
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -15577,13 +15406,13 @@ background-color: rgb(255, 255, 255);</string>
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -15673,13 +15502,13 @@ background-color: rgb(211, 211, 211);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -15754,90 +15583,6 @@ background-color: rgb(211, 211, 211);
                          </item>
                         </layout>
                        </item>
-                       <item row="0" column="1">
-                        <widget class="QLabel" name="lab_proj_name_13">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>60</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string>min</string>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="2" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm2">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="0" column="2">
-                        <widget class="QLabel" name="lab_proj_name_14">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>60</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string>max</string>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="2" column="0">
                         <widget class="QLabel" name="label_hm2">
                          <property name="sizePolicy">
@@ -15848,7 +15593,7 @@ background-color: rgb(211, 211, 211);
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -15957,28 +15702,6 @@ background-color:rgb(203, 203, 203);
                          </property>
                         </widget>
                        </item>
-                       <item row="6" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm6">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="0" column="4">
                         <widget class="QLabel" name="lab_proj_name_12">
                          <property name="sizePolicy">
@@ -16025,13 +15748,13 @@ background-color:rgb(203, 203, 203);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -16106,28 +15829,6 @@ background-color: rgb(211, 211, 211);
                          </item>
                         </layout>
                        </item>
-                       <item row="2" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm2">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="8" column="4" alignment="Qt::AlignHCenter">
                         <widget class="QCheckBox" name="d3d2_8">
                          <property name="enabled">
@@ -16186,13 +15887,13 @@ background-color: rgb(211, 211, 211);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -16476,50 +16177,6 @@ background-color:rgb(203, 203, 203);
                          </property>
                         </widget>
                        </item>
-                       <item row="1" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm1">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="10" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm10">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="10" column="3">
                         <layout class="QHBoxLayout" name="horizontalLayout_71">
                          <item>
@@ -16535,13 +16192,13 @@ background-color:rgb(203, 203, 203);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -16894,28 +16551,6 @@ background-color:rgb(203, 203, 203);
                          </property>
                         </widget>
                        </item>
-                       <item row="8" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm8">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="6" column="0">
                         <widget class="QLabel" name="label_hm6">
                          <property name="sizePolicy">
@@ -16926,7 +16561,7 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -16997,7 +16632,7 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -17030,13 +16665,13 @@ background-color:rgb(203, 203, 203);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -17169,7 +16804,7 @@ background-color:rgb(203, 203, 203);
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -17298,13 +16933,13 @@ background-color:rgb(203, 203, 203);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -17389,7 +17024,7 @@ background-color: rgb(211, 211, 211);
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -17422,13 +17057,13 @@ background-color: rgb(211, 211, 211);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -17503,28 +17138,6 @@ background-color: rgb(211, 211, 211);
                          </item>
                         </layout>
                        </item>
-                       <item row="12" column="1">
-                        <widget class="QDoubleSpinBox" name="min_hm12">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="7" column="0">
                         <widget class="QLabel" name="label_hm7">
                          <property name="sizePolicy">
@@ -17535,7 +17148,7 @@ background-color: rgb(211, 211, 211);
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>180</width>
+                           <width>170</width>
                            <height>19</height>
                           </size>
                          </property>
@@ -17601,50 +17214,6 @@ background-color:rgb(203, 203, 203);
                          </property>
                         </widget>
                        </item>
-                       <item row="7" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm7">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="5" column="2">
-                        <widget class="QDoubleSpinBox" name="max_hm5">
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>19</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="decimals">
-                          <number>1</number>
-                         </property>
-                        </widget>
-                       </item>
                        <item row="3" column="3">
                         <layout class="QHBoxLayout" name="horizontalLayout_64">
                          <item>
@@ -17660,13 +17229,13 @@ background-color:rgb(203, 203, 203);
                            </property>
                            <property name="minimumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>80</width>
+                             <width>60</width>
                              <height>19</height>
                             </size>
                            </property>
@@ -17741,7 +17310,1227 @@ background-color: rgb(211, 211, 211);
                          </item>
                         </layout>
                        </item>
+                       <item row="0" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_113">
+                         <item>
+                          <widget class="QLabel" name="lab_proj_name_19">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>22</width>
+                             <height>20</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>20</width>
+                             <height>20</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string>def*</string>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="lab_proj_name_13">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>20</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>60</width>
+                             <height>20</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string>min</string>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="lab_proj_name_14">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>20</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>60</width>
+                             <height>20</height>
+                            </size>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string>max</string>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="1" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_83">
+                         <item>
+                          <widget class="QCheckBox" name="def1">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm1">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm1">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="2" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_114">
+                         <item>
+                          <widget class="QCheckBox" name="def2">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm2">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm2">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="3" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_115">
+                         <item>
+                          <widget class="QCheckBox" name="def3">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm3">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm3">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="4" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_116">
+                         <item>
+                          <widget class="QCheckBox" name="def4">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm4">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm4">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="5" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_117">
+                         <item>
+                          <widget class="QCheckBox" name="def5">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm5">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm5">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="6" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_118">
+                         <item>
+                          <widget class="QCheckBox" name="def6">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm6">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm6">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="7" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_119">
+                         <item>
+                          <widget class="QCheckBox" name="def7">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm7">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm7">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="8" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_120">
+                         <item>
+                          <widget class="QCheckBox" name="def8">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm8">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm8">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="9" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_121">
+                         <item>
+                          <widget class="QCheckBox" name="def9">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm9">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm9">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="10" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_122">
+                         <item>
+                          <widget class="QCheckBox" name="def10">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm10">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm10">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="11" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_123">
+                         <item>
+                          <widget class="QCheckBox" name="def11">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm11">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm11">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="12" column="1">
+                        <layout class="QHBoxLayout" name="horizontalLayout_124">
+                         <item>
+                          <widget class="QCheckBox" name="def12">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="minimumSize">
+                            <size>
+                             <width>15</width>
+                             <height>18</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>15</width>
+                             <height>16777215</height>
+                            </size>
+                           </property>
+                           <property name="layoutDirection">
+                            <enum>Qt::LeftToRight</enum>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                           </property>
+                           <property name="text">
+                            <string/>
+                           </property>
+                           <property name="checkable">
+                            <bool>true</bool>
+                           </property>
+                           <property name="checked">
+                            <bool>false</bool>
+                           </property>
+                           <property name="tristate">
+                            <bool>false</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="min_hm12">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="max_hm12">
+                           <property name="minimumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="maximumSize">
+                            <size>
+                             <width>50</width>
+                             <height>19</height>
+                            </size>
+                           </property>
+                           <property name="alignment">
+                            <set>Qt::AlignCenter</set>
+                           </property>
+                           <property name="decimals">
+                            <number>1</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
                       </layout>
+                     </item>
+                     <item alignment="Qt::AlignRight">
+                      <widget class="QLabel" name="label_hm1_11">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="minimumSize">
+                        <size>
+                         <width>380</width>
+                         <height>19</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>19</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                       </property>
+                       <property name="text">
+                        <string>*set heatmap range according to each tissue min and max values</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                      </widget>
                      </item>
                     </layout>
                    </widget>
@@ -17782,10 +18571,49 @@ border-color: #672146
                      </widget>
                     </item>
                     <item>
+                     <widget class="QPushButton" name="thickness_set">
+                      <property name="minimumSize">
+                       <size>
+                        <width>60</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>60</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                      <property name="autoFillBackground">
+                       <bool>false</bool>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+                      </property>
+                      <property name="text">
+                       <string>Set</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
                      <widget class="QLabel" name="lab_hm3d2d">
                       <property name="minimumSize">
                        <size>
-                        <width>135</width>
+                        <width>110</width>
                         <height>20</height>
                        </size>
                       </property>
@@ -17800,7 +18628,7 @@ border-color: #672146
 background-color: rgb(255, 255, 255);</string>
                       </property>
                       <property name="text">
-                       <string>3D&gt;2D using centreline:</string>
+                       <string>Centreline (3D&gt;2D):</string>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignCenter</set>
@@ -17811,7 +18639,7 @@ background-color: rgb(255, 255, 255);</string>
                      <widget class="QLabel" name="hm_centreline">
                       <property name="minimumSize">
                        <size>
-                        <width>150</width>
+                        <width>120</width>
                         <height>20</height>
                        </size>
                       </property>
@@ -22874,7 +23702,7 @@ background-color: rgb(250, 250, 250);</string>
     <string>Save Project and Organ</string>
    </property>
    <property name="statusTip">
-    <string>Save project in project's directory</string>
+    <string>Save project and organ in their respective directories</string>
    </property>
    <property name="font">
     <font>

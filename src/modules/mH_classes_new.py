@@ -750,6 +750,7 @@ class Organ():
                 self.submeshes = {}
                 self.obj_meshes = {}
                 self.objects = {'KSplines': {}, 'Spheres': {}}
+                self.obj_temp = {}
                 if 'C-Centreline' in self.parent_project.mH_methods:
                     self.objects['KSplines']['cut4cl'] = {'bottom': {}, 'top':{}}
                     self.objects['Spheres']['cut4cl'] = {'bottom': {}, 'top':{}}
@@ -768,7 +769,7 @@ class Organ():
         self.mH_organName = 'mH_Organ-'+now_str
 
     def load_organ(self, load_dict:dict):#
-        print('load_dict:', load_dict)
+        # print('load_dict:', load_dict)
         load_dict = make_Paths(load_dict)
 
         self.info = load_dict['Organ']
@@ -795,7 +796,7 @@ class Organ():
             for cont in load_dict['imChannels'][ch]['contStack'].keys():
                 tuple_keys.append(['imChannels', ch, 'contStack',cont,'shape_s3'])
         
-        print('tuple_keys:',tuple_keys)
+        # print('tuple_keys:',tuple_keys)
         load_dict = make_tuples(load_dict, tuple_keys)
         
         # Workflow
@@ -824,6 +825,10 @@ class Organ():
                 self.submeshes = submeshes_dict_new
             else: 
                 self.submeshes = {}
+            #obj_temp
+            if 'obj_temp' in load_dict.keys():
+                self.obj_temp = load_dict['obj_temp']
+                self.load_objTemp()
             
         if self.analysis['morphoCell']:
             # mC_Settings
@@ -859,48 +864,35 @@ class Organ():
                 msh = Mesh_mH(imChannel = imCh, mesh_type = mesh_type, 
                               mesh_prop = mesh_prop)
                 self.obj_meshes[mesh] = msh
-          
-    def check_channels(self, project:Project):#to delete
-        print('AAAA check')
-        # img_dirs = self.img_dirs
-        # chs = [x for x in project.mH_channels if x != 'chNS']    
-        # array_sizes = {}
-        # sizes = []
-        # for ch in chs:
-        #     try:
-        #         images_o = io.imread(str(img_dirs[ch]['dir_cho']))
-        #         array_sizes[ch]= {'cho': images_o.shape}
-        #         sizes.append(images_o.shape)
-        #     except: 
-        #         print('>> Error: Something went wrong opening the file -',ch)
-        #         alert('error_beep')
-            
-        #     if img_dirs[ch]['mask_ch']:
-        #         try:
-        #             images_mk = io.imread(str(img_dirs[ch]['dir_mk']))
-        #             array_sizes[ch]['mask']= images_mk.shape
-        #             sizes.append(images_mk.shape)
-        #         except: 
-        #             print('>> Error: Something went wrong opening the mask -',ch)
-        #             alert('error_beep')
-            
-        # unique_size = list(set(sizes))
-        # if len(unique_size) != 1: 
-        #     counter = collections.defaultdict(int)
-        #     for elem in unique_size:
-        #         counter[elem] += 1
-        #     print('>> Error: Dimensions of imported images do not match! Please check! \n Imported Data: ')
-        #     pprint.pprint(array_sizes)
-        #     alert('error_beep')
-        
-        # else:      
-        #     for ch in chs:
-        #         for param in ['dir_cho','mask_ch','dir_mk']:
-        #             self.mH_settings['general_info'][ch][param] = img_dirs[ch][param]
-        #     # print('>> Files have been checked! \n>> Images shape:')
-        #     # pprint.pprint(array_sizes)
 
-        # self.create_folders()
+    def load_objTemp(self): 
+        flat_obj_temp = flatdict.FlatDict(self.obj_temp)
+        for key in flat_obj_temp:
+            sp_key = key.split(':')
+            if 'centreline' == sp_key[0]:
+                if 'SimplifyMesh' == sp_key[1]:
+                    ch, cont = sp_key[2].split('_')
+                    if 'mesh' in sp_key[-2:]: 
+                        directory = self.dir_res(dir ='centreline')
+                        mesh_dir = directory / self.mH_settings['wf_info']['centreline']['dirs'][ch][cont]['dir_cleanMesh']
+                        mesh_out = vedo.load(str(mesh_dir))
+                        mesh_out.color(self.mH_settings['setup']['color_chs'][ch][cont])
+                        flat_obj_temp[key] = mesh_out
+                    elif 'kspl' in sp_key[-2:]:
+                        points = self.objects['KSplines']['cut4cl'][sp_key[-1]][sp_key[2]]['points']
+                        color = self.objects['KSplines']['cut4cl'][sp_key[-1]][sp_key[2]]['color']
+                        kspl = vedo.KSpline(points, continuity=0, tension=0, bias=0, closed=True)
+                        kspl.color(color)
+                        flat_obj_temp[key] = kspl
+                    elif 'centroid' in sp_key[-2:]:
+                        center = self.objects['Spheres']['cut4cl'][sp_key[-1]][sp_key[2]]['center']
+                        color = self.objects['Spheres']['cut4cl'][sp_key[-1]][sp_key[2]]['color']
+                        sph_centroid = vedo.Sphere(pos=center, r=2).legend('cut4CL_'+sp_key[-1])
+                        sph_centroid.color(color)
+                        flat_obj_temp[key] = sph_centroid
+        obj_temp = flat_obj_temp.as_dict()
+        self.obj_temp = obj_temp
+        print('Loaded obj_temp:',self.obj_temp)
 
     def create_folders(self):#
         dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'centreline', 'settings']
@@ -1094,6 +1086,8 @@ class Organ():
         return image
 
     def save_organ(self):#
+        print('Saving organ')
+        print('self.obj_temp:', self.obj_temp)
         all_info = {}
         all_info['Organ'] = self.info
         all_info['img_dirs'] = self.img_dirs
@@ -1120,6 +1114,13 @@ class Organ():
             all_info['meshes'] = self.meshes
             all_info['submeshes'] = self.submeshes
             all_info['objects'] = self.objects
+
+            #Flatten obj_temp
+            flat_obj_temp = flatdict.FlatDict(self.obj_temp)
+            for key in flat_obj_temp: 
+                flat_obj_temp[key] = None
+            obj_temp = flat_obj_temp.as_dict()
+            all_info['obj_temp'] = obj_temp
             
         if self.analysis['morphoCell']:
             all_info['mC_settings'] = self.mC_settings

@@ -292,7 +292,7 @@ def get_trimming_planes(organ, gui_trim, win):
     print('cuts_out:', cuts_out)
     return meshes, no_cut, cuts_out
 
-def run_axis_orientation(controller):
+def run_axis_orientation(controller, only_roi=False):
     # #Check if the orientation has alredy been stablished
     #     if 'orientation' in self.mH_settings.keys(): 
     #         if 'ROI' in self.mH_settings['orientation'].keys():
@@ -305,15 +305,21 @@ def run_axis_orientation(controller):
     #         proceed = True
     #CHECK HERE WHICH ONE HAS BEEN RUN AND IF STACK WAS RUN, 
     # PROGRAM SO THAT THE STACK DATA DOESN'T GET REMOVED 
-                
     workflow = controller.organ.workflow['morphoHeart']
-
-    fcM.get_stack_orientation(organ = controller.organ,  
-                              gui_orientation = controller.main_win.gui_orientation, 
-                              win = controller.main_win)
+    if not only_roi: 
+        fcM.get_stack_orientation(organ = controller.organ,  
+                                gui_orientation = controller.main_win.gui_orientation, 
+                                win = controller.main_win)
     
+    try: 
+        print('tryA')
+        gui_orientation = controller.main_win.gui_orientation
+    except: 
+        print('exceptA')
+        gui_orientation = controller.organ.mH_settings['wf_info']['orientation']
+
     on_hold = fcM.get_roi_orientation(organ = controller.organ,
-                                        gui_orientation = controller.main_win.gui_orientation,  
+                                        gui_orientation = gui_orientation,  
                                         win = controller.main_win)
 
     #Update Status in GUI
@@ -387,23 +393,14 @@ def run_centreline_clean(controller):
 #             cut_meshes4cl = True
             
     workflow = controller.organ.workflow['morphoHeart']
-    tol = controller.main_win.tolerance.value()
-    fcM.proc_meshes4cl(controller.organ, 
-                       win=controller.main_win, 
-                       tol=tol)
-    
-    # Prompt with instructions
-    title = 'Instructions for cleaning up meshes with MeshLab!'
-    msg = []
-    msg.append('You are done in morphoHeart for a little while. To get the centreline of each of the selected meshes follow the next steps:')
-    msg.append("   > 1. Open the .stl file(s) in Meshlab")
-    msg.append("   > 2. Run Filters > Remeshing, Simplification.. > Screened Poisson Surf Reco (check Pre-clean)")
-    msg.append("   > 3. Cut inflow and outflow tract as close as the cuts from the original mesh you opened in Meshlab.") 
-    msg.append("   > 4. Export the resulting surface adding 'ML' at the end of the filename (e.g _cut4clML.stl) in the same folder")
-    msg.append("   > 5. Come back, press OK and continue processing!...")
-    prompt = Prompt_ok_cancel_Big(title, msg, parent=controller.main_win)
-    prompt.exec()
-    print('output:',prompt.output, '\n')
+
+    m4clf = fcM.proc_meshes4cl(controller.organ, 
+                                win=controller.main_win) 
+                                                    
+    if not hasattr(controller.organ, 'obj_temp'):
+        controller.organ.obj_temp = {}
+    controller.organ.obj_temp['centreline'] = {'SimplifyMesh': m4clf}
+    print('obj_temp: ', controller.organ.obj_temp)
 
     #Enable button for ML
     plot_btn = getattr(controller.main_win, 'centreline_ML_play')
@@ -414,10 +411,11 @@ def run_centreline_clean(controller):
     select_btn.setChecked(True)
     toggled(select_btn)
 
+    prompt_meshLab(controller)
+
 def run_centreline_ML(controller): 
     workflow = controller.organ.workflow['morphoHeart']
     proc_simp = ['MeshesProc', 'C-Centreline', 'SimplifyMesh', 'Status']
-    print(workflow)
     if get_by_path(workflow, proc_simp) == 'DONE':
         #Check all the MeshLab meshes have been created
         cl_names = list(controller.organ.mH_settings['measure']['CL'].keys())
@@ -431,18 +429,31 @@ def run_centreline_ML(controller):
             mesh_dir = directory / name_ML
             if mesh_dir.is_file():
                 all_saved.append(True)
+
                 # Update organ workflow
                 controller.organ.update_mHworkflow(proc_mesh, 'DONE')
                 status_sq = getattr(controller.main_win, 'meshLab_status'+str(nn+1))
                 controller.main_win.update_status(workflow, proc_mesh, status_sq)
+
+                #Enable button for vmtk
+                plot_btn = getattr(controller.main_win, 'centreline_vmtk_play')
+                plot_btn.setEnabled(True)
+
+                #Toggle button
+                select_btn = getattr(controller.main_win, 'centreline_ML_play')
+                select_btn.setChecked(True)
+                toggled(select_btn)
+
             else:
                 error = '*'+name_ML+' has not been created! Clean this mesh in MeshLab to proceed.'
                 controller.main_win.win_msg(error)
-
+                msg_add = [name_ML+' was not found in the centreline folder. Make sure you have named your cleaned meshes correctly after running','the processing in Meshlab and press -Enter- when ready.']
+                prompt_meshLab(controller, msg_add=msg_add)
+                return
 
 def run_centreline_vmtk(controller): 
     workflow = controller.organ.workflow['morphoHeart']
-
+    # Please input list of inlet profile ids: Please input list of outlet profile ids (leave empty for all available profiles):
     # #Check first if extracting centrelines is a process involved in this organ/project
     # if organ.check_method(method = 'C-Centreline'): 
     # # if 'C-Centreline' in organ.parent_project.mH_methods: 
@@ -459,15 +470,203 @@ def run_centreline_vmtk(controller):
             
     #     if extractCL: 
 
-    fcM.extract_cl(organ=controller.organ)
-    #  proc_set = ['wf_info', 'MeshesProc', 'C-Centreline', ch, cont]
-    #     organ.update_settings(process = proc_set+['vmtktxt'], update = vmtktxt, mH='mH')
+    #   while not dir_meshML.is_file():
+    #     q = 'No meshes are recognised in the path: \n'+ str(dir_meshML) +'.\nMake sure you have named your cleaned meshes correctly after running the processing in Meshlab and press -Enter- when ready.'
+    #     res = {0:'Please remind me what I need to do', 1:'I have done it now, please continue'}
+    #     print_ins = ask4input(q, res, int)
+    #     if print_ins == 0:
+    #         print("\nTo get the centreline of each of the selected meshes follow the next steps:")
+    #         print("> 1. Open the stl file(s) in Meshlab")
+    #         print("> 2. Run Filters > Remeshing, Simplification.. > Screened Poisson Surf Reco (check Pre-clean)")
+    #         print("> 3. Cut inflow and outflow tract as close as the cuts from the original mesh you opened in \n\t Meshlab and export the resulting surface adding 'ML' at the end of the filename\n\t (e.g _cut4clML.stl) in the same folder")
+    #         print("> 4. Come back and continue processing!...")
+    try: 
+        print('try')
+        voronoi = controller.main_win.gui_centreline['vmtk_CL']['voronoi']
+    except:
+        print('except') 
+        voronoi = controller.organ.mH_settings['wf_info']['centreline']['vmtk_CL']['voronoi']
+    fcM.extract_cl(organ=controller.organ, 
+                   win=controller.main_win, 
+                   voronoi=voronoi)
     
-    #     # Update organ workflow
-    #     proc_wft = ['MeshesProc', 'C-Centreline', 'vmtk_CL', ch, cont, 'Status']
-    #     organ.update_workflow(process = proc_wft, update = 'DONE')
+    #Enable button for select
+    plot_btn = getattr(controller.main_win, 'centreline_select')
+    plot_btn.setEnabled(True)
+
+    #Toggle button
+    select_btn = getattr(controller.main_win, 'centreline_vmtk_play')
+    select_btn.setChecked(True)
+    toggled(select_btn)
+
+def run_centreline_select(controller):
+    
+    # #Check first if extracting centrelines is a process involved in this organ/project
+    # if organ.check_method(method = 'C-Centreline'): 
+    # # if 'C-Centreline' in organ.parent_project.mH_methods: 
+    #     #Check workflow status
+    #     workflow = organ.workflow
+    #     process = ['MeshesProc','C-Centreline','buildCL','Status']
+    #     check_proc = get_by_path(workflow, process)
+    #     if check_proc == 'DONE': 
+    #         q = 'You already extracted the centreline of the selected meshes. Do you want to extract the centreline again?'
+    #         res = {0: 'no, continue with next step', 1: 'yes, re-run this process!'}
+    #         buildCL = ask4input(q, res, bool)
+    #     else: 
+    #         buildCL = True
+    
+    # if buildCL: 
+    try: 
+        print('try')
+        nPoints = controller.main_win.gui_centreline['buildCL']['nPoints']
+    except: 
+        print('except')
+        nPoints = controller.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
+
+    workflow = controller.organ.workflow['morphoHeart']
+    process = ['MeshesProc','C-Centreline','buildCL','Status']
+    cl_names = list(controller.organ.mH_settings['measure']['CL'].keys())
+    nn = 0
+    for name in cl_names: 
+        ch, cont, _ = name.split('_')
+        proc_wft = ['MeshesProc', 'C-Centreline', 'buildCL', ch, cont, 'Status']
+        dict_clOpt = fcM.create_CLs(organ=controller.organ, 
+                                    name=name,
+                                    nPoints = nPoints)
         
-    # # Update organ workflow
-    # organ.update_workflow(process = process, update = 'DONE')
-    # organ.check_status(process='MeshesProc')
-    # organ.save_organ()
+        title = 'Select best centreline for tissue-contour' 
+        msg = 'Select the preferred centreline for processing this tissue-contour ('+ch+'-'+cont+')'
+        items = {1: {'opt': 'Option 1'}, 2: {'opt': 'Option 2'}, 3: {'opt': 'Option 3'}, 
+                      4: {'opt': 'Option 4'}, 5:{'opt': 'Option 5'}, 6:{'opt': 'Option 6'}}
+        prompt = Prompt_ok_cancel_radio(title, msg, items, parent=controller.main_win)
+        prompt.exec()
+        print('output:', prompt.output, '\n')  
+        opt_selected = prompt.output[0]
+        cl_selected = items[opt_selected]['opt']
+        proc_set = ['wf_info','centreline','buildCL','connect_cl',ch+'_'+cont]
+        update = cl_selected +'-'+dict_clOpt[items[opt_selected]['opt']]['description']
+        controller.organ.update_settings(process = proc_set, update = update, mH='mH')
+
+        #Add text to Opt Centreline
+        opt_txt = getattr(controller.main_win, 'opt_cl'+str(nn+1))
+        opt_txt.setText(prompt.output[1])
+        
+        #Add centreline to organ
+        cl_final = dict_clOpt[cl_selected]['kspl']
+        controller.organ.add_object(cl_final, proc='Centreline', class_name=ch+'_'+cont, name='KSpline')
+        controller.organ.obj_meshes[ch+'_'+cont].set_centreline()
+        
+        # Update organ workflow
+        controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+        status_sq = getattr(controller.main_win, 'opt_cl_status'+str(nn+1))
+        controller.main_win.update_status(workflow, proc_wft, status_sq)
+
+        #Enable button for plot cl
+        plot_btn = getattr(controller.main_win, 'cl_plot'+str(nn+1))
+        plot_btn.setEnabled(True)
+        nn+=1
+    
+    # Update organ workflow
+    controller.organ.update_mHworkflow(process = process, update = 'DONE')
+    controller.organ.update_mHworkflow(process = ['MeshesProc','C-Centreline','Status'], update = 'DONE')
+    controller.organ.check_status(process='MeshesProc')
+
+    #Toggle button
+    select_btn = getattr(controller.main_win, 'centreline_select')
+    select_btn.setChecked(True)
+    toggled(select_btn)
+
+    #Check if user selected measuring centreline length
+    cl_measurements = controller.organ.mH_settings['setup']['params']['2']['measure']
+    cl_measure = [cl_measurements[key] for key in cl_measurements.keys()]
+    if any(cl_measure): 
+        fcM.measure_centreline(organ=controller.organ, nPoints=nPoints)
+
+    #If orientation is on_hold
+    if controller.organ.on_hold: 
+        run_axis_orientation(controller=controller, only_roi=True)
+    
+def prompt_meshLab(controller, msg_add=None):
+
+    # Prompt with instructions
+    title = 'Instructions for cleaning up meshes with MeshLab!'
+    msg = []
+    if msg_add != None: 
+        msg = msg+msg_add
+    else: 
+        msg.append('You are done in morphoHeart for a little while. To get the centreline of each of the selected meshes follow the next steps:')
+    msg.append("   > 1. Open the .stl file(s) in Meshlab")
+    msg.append("   > 2. Run Filters > Remeshing, Simplification.. > Screened Poisson Surf Reco (check Pre-clean)")
+    msg.append("   > 3. Cut inflow and outflow tract as close as the cuts from the original mesh you opened in Meshlab.") 
+    msg.append("   > 4. Export the resulting surface adding 'ML' at the end of the filename (e.g _cut4clML.stl) in the same folder")
+    msg.append("   > 5. Come back, press OK and continue processing!...")
+    prompt = Prompt_ok_cancel_Big(title, msg, parent=controller.main_win)
+    prompt.exec()
+    print('output:',prompt.output, '\n')
+
+def run_heatmaps3D(controller):
+
+    workflow = controller.organ.workflow['morphoHeart']
+    thck_values = {'i2e': {'short': 'th_i2e',
+                            'method': 'D-Thickness_int>ext', 
+                            'param': 'thickness int>ext', 
+                            'n_type': 'int>ext'},
+                   'e2i': {'short': 'th_e2i', 
+                            'method': 'D-Thickness_ext>int', 
+                            'param': 'thickness ext>int',
+                            'n_type': 'ext>int'}}
+    
+    nn = 0
+    for item in controller.main_win.heatmap_dict:
+        if nn == 0:#deletee!
+            short, ch_info = item.split('[') #short = th_i2e, th_e2i, ball
+            ch_info = ch_info[:-1]
+            if 'th' in short: 
+                _, th_val = short.split('_')
+                ch, cont = ch_info.split('-')
+                method = thck_values[th_val]['method']
+                print('>> Extracting '+thck_values[th_val]['param']+' for '+ch+'-'+cont)
+                setup = controller.main_win.gui_thickness_ballooning[short+'['+ch+'-'+cont+']']
+                fcM.get_thickness(organ = controller.organ, name = (ch, cont), 
+                                    thck_dict = thck_values[th_val], 
+                                    setup = setup)
+
+            else: #'ball' in short
+                print('>> Extracting ballooning for '+item)
+                pass
+
+            #Enable button for plot cl
+            plot_btn = getattr(controller.main_win, 'hm_plot'+str(nn+1))
+            plot_btn.setEnabled(True)
+            nn+=1
+
+            print('wf:', controller.organ.workflow)
+            print('set:', controller.organ.mH_settings)
+            
+            
+        # controller.organ.update_workflow(process = process, update = 'DONE')
+
+    #Check first if extracting centrelines is a process involved in this organ/project
+    # if organ.check_method(method = 'D-Ballooning'): 
+    # # if 'D-Ballooning' in organ.parent_project.mH_methods: 
+    #     #Check workflow status
+    #     workflow = organ.workflow
+    #     process = ['MeshesProc','D-Ballooning','Status']
+    #     check_proc = get_by_path(workflow, process)
+    #     if check_proc == 'DONE': 
+    #         q = 'You already extracted the ballooning parameters of the selected meshes. Do you want to extract them again?'
+    #         res = {0: 'no, continue with next step', 1: 'yes, re-run this process!'}
+    #         balloon = ask4input(q, res, bool)
+    #     else: 
+    #         balloon = True
+    # else:
+    #     balloon = False
+    #     return None
+    
+    # if balloon: 
+    
+
+    # print(thck_names)
+    
+
+   

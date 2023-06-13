@@ -167,7 +167,7 @@ class Prompt_ok_cancel_radio(QDialog):
                 rB = QtWidgets.QRadioButton(parent=self.widget)
                 rB.setMinimumSize(QtCore.QSize(0, 20))
                 rB.setMaximumSize(QtCore.QSize(16777215, 20))
-                rB.setStyleSheet("font: 25 10pt \"Calibri Light\";")
+                rB.setStyleSheet("font: 25 11pt \"Calibri Light\";")
                 rB.setObjectName("radioButton"+str(nn))
                 hL.addWidget(rB)
                 sp = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
@@ -265,7 +265,7 @@ class Prompt_ok_cancel_checkbox(QDialog):
                 cB = QtWidgets.QCheckBox(parent=self.widget)
                 cB.setMinimumSize(QtCore.QSize(0, 20))
                 cB.setMaximumSize(QtCore.QSize(16777215, 20))
-                cB.setStyleSheet("font: 25 10pt \"Calibri Light\";")
+                cB.setStyleSheet("font: 25 11pt \"Calibri Light\";")
                 cB.setObjectName("checkBox"+str(nn))
                 hL.addWidget(cB)
                 sp = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
@@ -2442,14 +2442,12 @@ class LoadProj(QDialog):
                         'Genotype':['genotype'], 'Manipulation': ['manipulation']}
                 if blind:
                     keys.pop('Genotype', None); keys.pop('Manipulation', None) 
-                print(keys) 
                 name_keys = list(range(len(keys)))
 
                 keys_wf = {}
                 for wf_key in wf_flat.keys():
                     nn,proc,sp,_ = wf_key.split(':')
                     keys_wf[sp] = ['workflow']+wf_key.split(':')
-                # print(keys_wf) 
                 
                 # Workflow
                 # - Get morphoHeart Labels
@@ -2483,7 +2481,6 @@ class LoadProj(QDialog):
                 #Adding organs to table
                 row = 2
                 for organ in proj.organs:
-                    # print('Loading info organ: ', organ)   
                     col = 0        
                     for nn, key in all_labels.items(): 
                         if len(key) == 1 and nn == '-': 
@@ -2546,7 +2543,6 @@ class LoadProj(QDialog):
                 self.organ_checkboxes = None
                 return
 
-            # print(cBs)
             self.organ_checkboxes = cBs
             self.button_load_organs.setChecked(True)
             toggled(self.button_load_organs)
@@ -2567,7 +2563,6 @@ class LoadProj(QDialog):
         if self.organ_checkboxes != None: 
             checked = []
             for organ_cB in self.organ_checkboxes:
-                print(organ_cB)
                 cb = getattr(self, organ_cB).isChecked()
                 checked.append(cb)
             
@@ -2664,8 +2659,7 @@ class MainWindow(QMainWindow):
         
         # print(self.proj.workflow['morphoHeart'])
         # print(self.organ.workflow['morphoHeart'])
-
-        self.organ.obj_temp = {}
+        pass
 
     @pyqtSlot(int)
     def on_cB_theme_currentIndexChanged(self, theme):
@@ -3083,12 +3077,15 @@ class MainWindow(QMainWindow):
         self.centreline_play.setStyleSheet(style_play)
         self.centreline_play.setEnabled(False)
         self.centreline_clean_play.setStyleSheet(style_play)
-        self.centreline_clean_play.setEnabled(True)
+        self.centreline_clean_play.setEnabled(False)
         self.centreline_ML_play.setStyleSheet(style_play)
-        self.centreline_ML_play.setEnabled(True)
+        self.centreline_ML_play.setEnabled(False)
         self.centreline_vmtk_play.setStyleSheet(style_play)
-        self.centreline_vmtk_play.setEnabled(True)
+        self.centreline_vmtk_play.setEnabled(False)
+        self.centreline_select.setStyleSheet(style_play)
+        self.centreline_select.setEnabled(True)#False)
         self.q_centreline.clicked.connect(lambda: self.help('centreline'))
+        self.centreline_set.clicked.connect(lambda: self.set_centreline())
 
         cl_to_extract = self.organ.mH_settings['measure']['CL']
         # print(cl_to_extract, len(cl_to_extract))
@@ -3119,69 +3116,99 @@ class MainWindow(QMainWindow):
         self.cl_clean_plot5.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'SimplifyMesh', btn = 'cl_clean_plot5'))
         self.cl_clean_plot6.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'SimplifyMesh', btn = 'cl_clean_plot6'))
 
-        self.cl_plot1.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot1'))
-        self.cl_plot2.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot2'))
-        self.cl_plot3.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot3'))
-        self.cl_plot4.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot4'))
-        self.cl_plot5.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot5'))
-        self.cl_plot6.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', btn = 'cl_plot6'))
+        self.cl_plot1.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'Final', btn = 'cl_plot1'))
+        self.cl_plot2.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'Final', btn = 'cl_plot2'))
+        self.cl_plot3.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'Final', btn = 'cl_plot3'))
+        self.cl_plot4.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'Final', btn = 'cl_plot4'))
+        self.cl_plot5.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'Final', btn = 'cl_plot5'))
+        self.cl_plot6.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'Final', btn = 'cl_plot6'))
 
     def init_thickness_ballooning(self):
         #Buttons
         self.heatmaps_open.clicked.connect(lambda: self.open_section(name='heatmaps'))
         self.heatmaps2D_play.setStyleSheet(style_play)
         self.heatmaps2D_play.setEnabled(False)
-        # self.heatmaps2D_play.clicked.connect(lambda: )
         self.heatmaps3D_play.setStyleSheet(style_play)
         self.heatmaps3D_play.setEnabled(False)
-        # self.heatmaps3D_play.clicked.connect(lambda: )
+        self.thickness_set.clicked.connect(lambda: self.set_thickness())
+
+        #Plot buttons
+        self.hm_plot1.clicked.connect(lambda: self.plot_heatmap3d(btn='1'))
+        self.hm_plot2.clicked.connect(lambda: self.plot_heatmap3d(btn='2'))
+        self.hm_plot3.clicked.connect(lambda: self.plot_heatmap3d(btn='3'))
+        self.hm_plot4.clicked.connect(lambda: self.plot_heatmap3d(btn='4'))
+        self.hm_plot5.clicked.connect(lambda: self.plot_heatmap3d(btn='5'))
+        self.hm_plot6.clicked.connect(lambda: self.plot_heatmap3d(btn='6'))
+        self.hm_plot7.clicked.connect(lambda: self.plot_heatmap3d(btn='7'))
+        self.hm_plot8.clicked.connect(lambda: self.plot_heatmap3d(btn='8'))
+        self.hm_plot9.clicked.connect(lambda: self.plot_heatmap3d(btn='9'))
+        self.hm_plot10.clicked.connect(lambda: self.plot_heatmap3d(btn='10'))
+        self.hm_plot11.clicked.connect(lambda: self.plot_heatmap3d(btn='11'))
+        self.hm_plot12.clicked.connect(lambda: self.plot_heatmap3d(btn='12'))
+
+        #Default values
+        self.def1.stateChanged.connect(lambda: self.default_range('1'))
+        self.def2.stateChanged.connect(lambda: self.default_range('2'))
+        self.def3.stateChanged.connect(lambda: self.default_range('3'))
+        self.def4.stateChanged.connect(lambda: self.default_range('4'))
+        self.def5.stateChanged.connect(lambda: self.default_range('5'))
+        self.def6.stateChanged.connect(lambda: self.default_range('6'))
+        self.def7.stateChanged.connect(lambda: self.default_range('7'))
+        self.def8.stateChanged.connect(lambda: self.default_range('8'))
+        self.def9.stateChanged.connect(lambda: self.default_range('9'))
+        self.def10.stateChanged.connect(lambda: self.default_range('10'))
+        self.def11.stateChanged.connect(lambda: self.default_range('11'))
+        self.def12.stateChanged.connect(lambda: self.default_range('12'))
 
         #Heatmap settings
-        heatmap_dict = {}
-        lists = [['measure','th_i2e'], ['measure','th_e2i'], ['measure','ball']]
-        names = ['Thickness (int>ext)', 'Thickness (ext>int)', 'Ballooning']
-        min_val = [0,0,0]
-        max_val = [20, 20, 60]
+        self.heatmap_dict = {}
+        setup = {'th_i2e': {'proc': ['measure','th_i2e'], 'name': 'Thickness (int>ext)', 'min_val': 0, 'max_val': 20}, 
+                 'th_e2i': {'proc': ['measure','th_e2i'], 'name': 'Thickness (ext>int)', 'min_val': 0, 'max_val': 20},
+                 'ball': {'proc': ['measure','ball'], 'name': 'Ballooning', 'min_val': 0, 'max_val': 60}}
 
-        for aa, ll, nn, minn, maxx in zip(count(), lists, names, min_val, max_val): 
-            # print(aa, ll, nn, minn, maxx)
-            variable = ll[1]
-            sp_dict = get_by_path(self.organ.mH_settings, ll)
-            for item in sp_dict: 
-                if nn != 'Ballooning':
+        for proc in setup: 
+            print(proc)
+            name = setup[proc]['name']
+            minn = setup[proc]['min_val']
+            maxx = setup[proc]['max_val']
+            for item in self.organ.mH_settings['measure'][proc]:
+                if proc != 'ball': 
                     chh, conth, _ = item.split('_')
-                    heatmap_dict[variable+'['+chh+'-'+conth+']'] = {'name': nn+' ['+chh+'-'+conth+']',
-                                                                'min_val': minn, 
-                                                                'max_val': maxx}
+                    self.heatmap_dict[proc+'['+chh+'-'+conth+']'] = {'name': name+' ['+chh+'-'+conth+']',
+                                                                        'min_val': minn, 
+                                                                        'max_val': maxx}
                 else: 
                     namef = item.replace('_(', '(CL:')
                     namef = namef.replace('_', '-')
-                    heatmap_dict[variable+'['+namef+']'] = {'name': nn+' ['+namef+']',
+                    self.heatmap_dict[proc+'['+namef+']'] = {'name': name+' ['+namef+']',
                                                                 'min_val': minn, 
                                                                 'max_val': maxx}
-            
+                    
+        print('heatmap_dict:', self.heatmap_dict)
+
         cmaps = ['turbo','viridis', 'jet', 'magma', 'inferno', 'plasma']
-        hm_items = list(heatmap_dict.keys())
-        for num in range(1,13,1):
-            label = getattr(self,'label_hm'+str(num))
-            mina = getattr(self,'min_hm'+str(num))
-            maxa = getattr(self,'max_hm'+str(num))
-            cm = getattr(self,'colormap'+str(num))
+        hm_items = list(self.heatmap_dict.keys())
+        for num in range(0,12,1):
+            label = getattr(self,'label_hm'+str(num+1))
+            default = getattr(self, 'def'+str(num+1))
+            mina = getattr(self,'min_hm'+str(num+1))
+            maxa = getattr(self,'max_hm'+str(num+1))
+            cm = getattr(self,'colormap'+str(num+1))
             cm.clear()
             cm.addItems(cmaps)
-            d3d2 = getattr(self,'d3d2_'+str(num))
-            hm_plot = getattr(self, 'hm_plot'+str(num))
-            hm_plot2 = getattr(self, 'hm_plot'+str(num)+'_2D')
-            hm_eg = getattr(self, 'cm_eg'+str(num))
+            d3d2 = getattr(self,'d3d2_'+str(num+1))
+            hm_plot = getattr(self, 'hm_plot'+str(num+1))
+            hm_plot2 = getattr(self, 'hm_plot'+str(num+1)+'_2D')
+            hm_eg = getattr(self, 'cm_eg'+str(num+1))
             if num < len(hm_items): 
-                label.setText(heatmap_dict[hm_items[num]]['name'])
-                mina.setValue(heatmap_dict[hm_items[num]]['min_val'])
-                maxa.setValue(heatmap_dict[hm_items[num]]['max_val'])
-                d3d2.setChecked(True)
+                label.setText(self.heatmap_dict[hm_items[num]]['name'])
+                mina.setValue(self.heatmap_dict[hm_items[num]]['min_val'])
+                maxa.setValue(self.heatmap_dict[hm_items[num]]['max_val'])
                 hm_eg.setEnabled(True)
                 hm_plot.setEnabled(False)
                 hm_plot2.setEnabled(False)
             else: 
+                default.setVisible(False)
                 label.setVisible(False)
                 mina.setVisible(False)
                 maxa.setVisible(False)
@@ -3507,6 +3534,16 @@ class MainWindow(QMainWindow):
         getattr(self, process+'_n_slices').setEnabled(state)
         getattr(self, process+'_lab2').setEnabled(state)
 
+    def default_range(self, btn_num):
+        btn = getattr(self, 'def'+btn_num)
+        if btn.isChecked(): 
+            bol_val = False
+        else: 
+            bol_val = True
+
+        getattr(self, 'min_hm'+btn_num).setEnabled(bol_val)
+        getattr(self, 'max_hm'+btn_num).setEnabled(bol_val)
+
     #Set functions 
     def set_keeplargest(self): 
         self.gui_keep_largest = {}
@@ -3581,19 +3618,6 @@ class MainWindow(QMainWindow):
         toggled(self.trimming_set)
         print('self.gui_trim: ', self.gui_trim)
         self.trimming_play.setEnabled(True)
-    
-    def set_chNS(self):
-        self.gui_chNS = {}
-        if self.chNS_plot2d.isChecked():
-            self.gui_chNS = {'plot2d': True, 
-                             'n_slices': self.chNS_n_slices.value()}
-        else: 
-            self.gui_chNS['plot2d'] = False
-
-        self.chNS_set.setChecked(True)
-        toggled(self.chNS_set)
-        print('self.gui_chNS: ', self.gui_chNS)
-        self.chNS_play.setEnabled(True)
 
     def check_roi_rotate(self):
 
@@ -3665,6 +3689,65 @@ class MainWindow(QMainWindow):
         print('self.gui_orientation: ', self.gui_orientation)
         self.orientation_play.setEnabled(True)
 
+    def set_chNS(self):
+        self.gui_chNS = {}
+        if self.chNS_plot2d.isChecked():
+            self.gui_chNS = {'plot2d': True, 
+                             'n_slices': self.chNS_n_slices.value()}
+        else: 
+            self.gui_chNS['plot2d'] = False
+
+        self.chNS_set.setChecked(True)
+        toggled(self.chNS_set)
+        print('self.gui_chNS: ', self.gui_chNS)
+        self.chNS_play.setEnabled(True)   
+
+    def set_centreline(self):
+
+        cl_names = list(self.organ.mH_settings['measure']['CL'].keys())
+        connect_cl = {}
+        for name in cl_names: 
+            namef = name.split('_whole')[0]
+            connect_cl[namef] = None
+
+        tol = self.tolerance.value()
+        voronoi = self.cB_voronoi.isChecked()
+        nPoints = self.nPoints.value()
+        self.gui_centreline =  {'SimplifyMesh': {'plane_cuts': None, 'tol': tol},
+                                'vmtk_CL': {'voronoi': voronoi},
+                                'buildCL': {'nPoints': nPoints, 'connect_cl': connect_cl}, 
+                                'dirs' : None}
+        
+        self.centreline_set.setChecked(True)
+        toggled(self.centreline_set)
+        print('self.gui_centreline: ', self.gui_centreline)
+        self.centreline_clean_play.setEnabled(True)   
+
+    def set_thickness(self): 
+        self.gui_thickness_ballooning = {}
+        nn = 1
+        for item in self.heatmap_dict:
+            default = getattr(self, 'def'+str(nn)).isChecked()
+            if default: 
+                min_val = None
+                max_val = None
+            else: 
+                min_val = getattr(self, 'min_hm'+str(nn)).value()
+                max_val = getattr(self, 'max_hm'+str(nn)).value()
+            colormap = getattr(self, 'colormap'+str(nn)).currentText()
+            d3d2 = getattr(self, 'd3d2_'+str(nn)).isChecked()
+            self.gui_thickness_ballooning[item] = {'default': default, 
+                                                   'min_val': min_val, 
+                                                   'max_val': max_val, 
+                                                   'colormap': colormap, 
+                                                   'd3d2': d3d2}
+            nn+=1
+            
+        self.thickness_set.setChecked(True)
+        toggled(self.thickness_set)
+        print('self.gui_thickness_ballooning: ', self.gui_thickness_ballooning)
+        self.heatmaps3D_play.setEnabled(True) 
+    
     #Plot functions
     def plot_meshes(self, ch, chNS=False):
         txt = [(0, self.organ.user_organName)]
@@ -3696,17 +3779,56 @@ class MainWindow(QMainWindow):
             cl_name = cl_to_extract[btn_num]
             ch, cont, _ = cl_name.split('_')
 
-            m4clf = self.organ.obj_temp['centreline'][sub][ch+'_'+cont]
-            item = []
-            for key in m4clf: 
-                if isinstance(m4clf[key], dict):
-                    for kk in m4clf[key].keys():
-                        item.append(m4clf[key][kk])
-                else: 
-                    item.append(m4clf[key])
-            obj.append(tuple(item))
+            if sub == 'SimplifyMesh': 
+                m4clf = self.organ.obj_temp['centreline'][sub][ch+'_'+cont]
+                item = []
+                for key in m4clf: 
+                    if isinstance(m4clf[key], dict):
+                        for kk in m4clf[key].keys():
+                            item.append(m4clf[key][kk])
+                    else: 
+                        item.append(m4clf[key])
+                obj.append(tuple(item))
+            else: 
+                nPoints = self.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
+                mesh = self.organ.obj_meshes[ch+'_'+cont].mesh
+                cl_final = self.organ.obj_meshes[ch+'_'+cont].get_centreline(nPoints=nPoints)
+                obj = [(mesh, cl_final)]
 
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
+
+    def plot_heatmap3d(self, btn):
+        txt = [(0, self.organ.user_organName)]
+        #Get button number
+        btn_num = int(btn[-1])-1
+        hm_all = list(self.heatmap_dict.keys())
+        hm_name = hm_all[btn_num]
+        short, ch_info = hm_name.split('[')
+        ch, cont = ch_info.split('-')
+        if 'th' in short: 
+            _, th_val = short.split('_')
+            if th_val == 'i2e': #int>ext': 
+                mesh_to = self.organ.obj_meshes[ch+'_ext'].mesh
+                mesh_from = self.organ.obj_meshes[ch+'_int'].mesh
+                mtype = 'thck(intTOext)'
+            else:# n_type == 'ext>int': 
+                mesh_to = self.organ.obj_meshes[ch+'_int'].mesh
+                mesh_from = self.organ.obj_meshes[ch+'_ext'].mesh
+                mtype = 'thck(extTOint)'
+            mesh_tiss = self.organ.obj_meshes[ch+'_tiss'].mesh
+            mesh_thck = self.organ.obj_meshes[ch+'_tiss'].mesh_meas[mtype]
+
+            # mesh_toB.cmap(color_map)
+            # mesh_toB.add_scalarbar(title=title, pos=(0.8, 0.05))
+            # if range == (None, None): 
+            #     mesh_toB.mapper().SetScalarRange(vmin,vmax)
+            # else: 
+            #     mesh_toB.mapper().SetScalarRange(range[0],range[1])
+
+            obj = [(mesh_from, mesh_to), (mesh_tiss), (mesh_thck)]
+
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
+
 
     #Help functions
     def help(self, process): 

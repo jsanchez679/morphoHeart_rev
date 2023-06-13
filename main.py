@@ -197,7 +197,6 @@ class Controller:
             self.load_proj_win.check_unique_organ_selected(self.proj)
             if self.load_proj_win.organ_selected != None:
                 self.organ_to_analyse = self.load_proj_win.organ_selected#.replace(' ', '_')
-                print('AAA:',self.organ_to_analyse)
                 self.load_proj_win.win_msg('Loading organ '+self.organ_to_analyse+'...')
                 self.load_organ(proj = self.proj, organ_to_load = self.organ_to_analyse)
                 self.load_proj_win.close()
@@ -216,8 +215,8 @@ class Controller:
 
         #Create Main Project Window and show
         if self.main_win == None:
-            print('\nLoaded Project and Organ!\n >> Proj:', self.proj.__dict__)
-            print('>> Organ:', self.organ.__dict__)
+            print('\nLoaded Project and Organ!\n >> Proj:', self.proj.__dict__.keys())
+            print('>> Organ:', self.organ.__dict__.keys())
             self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
         self.main_win.show()
 
@@ -242,8 +241,9 @@ class Controller:
         self.main_win.centreline_clean_play.clicked.connect(lambda: self.run_centreline_clean())
         self.main_win.centreline_ML_play.clicked.connect(lambda: self.run_centreline_ML())
         self.main_win.centreline_vmtk_play.clicked.connect(lambda: self.run_centreline_vmtk())
+        self.main_win.centreline_select.clicked.connect(lambda: self.run_centreline_select())
         # self.main_win.centreline_play.clicked.connect(lambda: self.run_centreline())
-        # self.main_win.heatmaps3D_play.clicked.connect(lambda: self.run_heatmaps3D())
+        self.main_win.heatmaps3D_play.clicked.connect(lambda: self.run_heatmaps3D())
         # self.main_win.heatmaps2D_play.clicked.connect(lambda: self.run_heatmaps2D())
 
         # self.main_win.segments_play.clicked.connect(lambda: self.run_segments())
@@ -359,7 +359,7 @@ class Controller:
             self.proj.set_workflow()
             self.proj.create_proj_dir()
             self.proj.save_project(temp_dir = temp_dir)
-            print('\n>>> New Project: ',self.proj.__dict__)
+            print('\n>>> New Project: ',self.proj.__dict__.keys())
             self.new_proj_win.win_msg("New project '"+self.new_proj_win.lineEdit_proj_name.text()+"' has been created and saved! Continue creating an organ as part of this project. ")
     
     def load_proj(self):
@@ -372,7 +372,7 @@ class Controller:
             proj_dict = {'name': proj_name, 
                          'dir': path_folder}
             self.proj = mHC.Project(proj_dict, new=False)
-            print('Loaded project:',self.proj.__dict__)
+            print('Loaded project:',self.proj.__dict__.keys())
             self.load_proj_win.proj = self.proj
             #Fill window with project info
             self.load_proj_win.fill_proj_info(proj = self.proj)
@@ -425,7 +425,7 @@ class Controller:
 
                     self.organ = mHC.Organ(project=self.proj, organ_dict=organ_dict, new = True)
                     self.new_organ_win.lab_filled_organ_dir.setText(str(self.organ.dir_res()))
-                    print('\n>>> New Organ: ', self.organ.__dict__)
+                    print('\n>>> New Organ: ', self.organ.__dict__.keys())
                     self.proj.add_organ(self.organ)
                     self.organ.save_organ()
                     self.new_organ_win.win_msg('New organ "'+name+'" has been created as part of "'+self.proj.user_projName+'" project.')
@@ -444,6 +444,11 @@ class Controller:
     
     def load_organ(self, proj, organ_to_load):
         self.organ = proj.load_organ(organ_to_load = organ_to_load)
+        print('-------------Loaded Organ:-------------')
+        print('organ.workflow: ', self.organ.workflow)
+        print('self.organ.obj_temp: ',self.organ.obj_temp)
+        print('self.organ.mH_settings[wf_info]: ',self.organ.mH_settings['wf_info'])
+
 
     #Channels related
     def close_cont(self, ch_name):
@@ -475,12 +480,15 @@ class Controller:
 
     def run_centreline_vmtk(self): 
         mA.run_centreline_vmtk(controller=self)
+    
+    def run_centreline_select(self): 
+        mA.run_centreline_select(controller=self)
 
     # def run_centreline(self):
     #     mA.run_centreline(controller=self)
 
-    # def run_heatmaps3D(self):
-    #     mA.run_heatmaps3D(controller=self)
+    def run_heatmaps3D(self):
+        mA.run_heatmaps3D(controller=self)
 
     # def run_heatmaps2D(self):
     #     mA.run_heatmaps2D(controller=self)
