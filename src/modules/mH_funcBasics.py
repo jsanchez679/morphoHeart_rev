@@ -16,6 +16,7 @@ from functools import reduce
 import operator
 from itertools import count
 import vedo as vedo
+import copy
 # from typing import Union
 
 path_fcBasics = os.path.abspath(__file__)
@@ -267,6 +268,25 @@ def compare_nested_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
         return '\tNo differences!'
     else: 
         return res
+    
+def update_gui_set(loaded:dict, current:dict): 
+    flat_loaded = flatdict.FlatDict(loaded)
+    flat_current = flatdict.FlatDict(current)
+    for key in flat_current.keys():
+        print('\n\n ------------ Validating Keys ------------ ')
+        try: 
+            if type(flat_current[key]) == type(flat_loaded[key]) and flat_current[key] != flat_loaded[key]:
+                print('Key changed:', key, '- from loaded:', flat_loaded[key], '- to current:', flat_current[key])
+                flat_loaded[key] = flat_current[key]
+            elif type(flat_current[key]) == type(flat_loaded[key]) and flat_current[key] == flat_loaded[key]: 
+                pass
+            else: 
+                print('-> Different types - key', key, ' - loaded:', flat_loaded[key], '- current:', flat_current[key])
+        except: 
+            print('-Unable to update key: ',key)
+            print('-> Values - loaded:', flat_loaded[key], '- current:', flat_current[key])
+
+    return flat_loaded.as_dict()
         
 #%% func - get_by_path
 def get_by_path(root_dict, items):
@@ -292,7 +312,7 @@ def del_by_path(root_dict, items):
 #%% func - make_Paths
 def make_Paths(load_dict):
     
-    flat_dict = flatdict.FlatDict(load_dict)
+    flat_dict = flatdict.FlatDict(copy.deepcopy(load_dict))
     # Make all paths into Path
     dir_keys = [key.split(':') for key in flat_dict.keys() if 'dir' in key]
     # print(dir_keys)
@@ -309,7 +329,7 @@ def make_Paths(load_dict):
             
 #%% func - make_tuples
 def make_tuples(load_dict, tuple_keys): 
-    flat_dict = flatdict.FlatDict(load_dict)
+    flat_dict = flatdict.FlatDict(copy.deepcopy(load_dict))
     #Make all keys from input list into tuples
     separator = ':'
     for tup in tuple_keys:

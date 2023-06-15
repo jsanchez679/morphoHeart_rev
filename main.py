@@ -345,7 +345,8 @@ class Controller:
                         'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText(),
                         'date' : str(self.new_proj_win.dateEdit.date().toPyDate()),
                         'analysis' : self.new_proj_win.checked_analysis, 
-                        'dir_proj' : self.new_proj_win.proj_dir}
+                        'dir_proj' : self.new_proj_win.proj_dir, 
+                        'heart_default': self.new_proj_win.heart_analysis.isChecked()}
             
             self.proj = mHC.Project(proj_dict, new=True)
 
@@ -446,9 +447,11 @@ class Controller:
         self.organ = proj.load_organ(organ_to_load = organ_to_load)
         print('-------------Loaded Organ:-------------')
         print('organ.workflow: ', self.organ.workflow)
+        if not hasattr(self.organ, 'obj_temp'):
+            self.organ.obj_temp = {}
         print('self.organ.obj_temp: ',self.organ.obj_temp)
+        print('self.organ.mH_settings: ',self.organ.mH_settings)
         print('self.organ.mH_settings[wf_info]: ',self.organ.mH_settings['wf_info'])
-
 
     #Channels related
     def close_cont(self, ch_name):

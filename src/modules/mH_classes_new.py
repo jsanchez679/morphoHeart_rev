@@ -102,7 +102,9 @@ class Project():
                             'user_projName': self.user_projName,
                             'user_projNotes': proj_dict['notes'], 
                             'date_created' : proj_dict['date'],
-                            'dirs': {}}
+                            'dirs': {}, 
+                            'heart_default': proj_dict['heart_default']}
+            
             self.analysis = proj_dict['analysis']
             self.dir_proj = Path(proj_dict['dir_proj'])
             self.organs = {}
@@ -113,7 +115,11 @@ class Project():
                                     'manipulation': [],
                                     'im_orientation': ['ventral', 'lateral-left', 'lateral-right', 'dorsal'], 
                                     'im_res_units': ['um', 'mm', 'cm', 'm']}
-                
+            try:
+                if proj_dict['heart_default']: 
+                    mH_config.heart_default = True
+            except: 
+                pass
         else: 
             load_dict = {'name': proj_dict['name'], 'dir': proj_dict['dir']}
             self.load_project(load_dict=load_dict)
@@ -828,7 +834,7 @@ class Organ():
             #obj_temp
             if 'obj_temp' in load_dict.keys():
                 self.obj_temp = load_dict['obj_temp']
-                self.load_objTemp()
+                print('organ.obj_temp:', self.obj_temp)
             
         if self.analysis['morphoCell']:
             # mC_Settings
@@ -864,35 +870,6 @@ class Organ():
                 msh = Mesh_mH(imChannel = imCh, mesh_type = mesh_type, 
                               mesh_prop = mesh_prop)
                 self.obj_meshes[mesh] = msh
-
-    def load_objTemp(self): 
-        flat_obj_temp = flatdict.FlatDict(self.obj_temp)
-        for key in flat_obj_temp:
-            sp_key = key.split(':')
-            if 'centreline' == sp_key[0]:
-                if 'SimplifyMesh' == sp_key[1]:
-                    ch, cont = sp_key[2].split('_')
-                    if 'mesh' in sp_key[-2:]: 
-                        directory = self.dir_res(dir ='centreline')
-                        mesh_dir = directory / self.mH_settings['wf_info']['centreline']['dirs'][ch][cont]['dir_cleanMesh']
-                        mesh_out = vedo.load(str(mesh_dir))
-                        mesh_out.color(self.mH_settings['setup']['color_chs'][ch][cont])
-                        flat_obj_temp[key] = mesh_out
-                    elif 'kspl' in sp_key[-2:]:
-                        points = self.objects['KSplines']['cut4cl'][sp_key[-1]][sp_key[2]]['points']
-                        color = self.objects['KSplines']['cut4cl'][sp_key[-1]][sp_key[2]]['color']
-                        kspl = vedo.KSpline(points, continuity=0, tension=0, bias=0, closed=True)
-                        kspl.color(color)
-                        flat_obj_temp[key] = kspl
-                    elif 'centroid' in sp_key[-2:]:
-                        center = self.objects['Spheres']['cut4cl'][sp_key[-1]][sp_key[2]]['center']
-                        color = self.objects['Spheres']['cut4cl'][sp_key[-1]][sp_key[2]]['color']
-                        sph_centroid = vedo.Sphere(pos=center, r=2).legend('cut4CL_'+sp_key[-1])
-                        sph_centroid.color(color)
-                        flat_obj_temp[key] = sph_centroid
-        obj_temp = flat_obj_temp.as_dict()
-        self.obj_temp = obj_temp
-        print('Loaded obj_temp:',self.obj_temp)
 
     def create_folders(self):#
         dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'centreline', 'settings']
@@ -1079,7 +1056,34 @@ class Organ():
             else: 
                 self.objects['Spheres'][proc][class_name] = {'center': obj.center, 
                                                                    'color': obj.color()}
-                
+
+    def load_objTemp(self, proc, key, ch_cont, obj_temp): 
+
+        if proc == 'centreline':
+            if 'SimplifyMesh' == key:
+                ch, cont = ch_cont.split('_')
+                #Mesh
+                directory = self.dir_res(dir ='centreline')
+                mesh_dir = directory / self.mH_settings['wf_info']['centreline']['dirs'][ch][cont]['dir_cleanMesh']
+                mesh_out = vedo.load(str(mesh_dir))
+                mesh_out.color(self.mH_settings['setup']['color_chs'][ch][cont])
+                obj_temp[proc][key][ch_cont]['mesh'] = mesh_out
+                for side in ['bottom', 'top']: 
+                    #Kspl
+                    points = self.objects['KSplines']['cut4cl'][side][ch_cont]['points']
+                    color = self.objects['KSplines']['cut4cl'][side][ch_cont]['color']
+                    kspl = vedo.KSpline(points, continuity=0, tension=0, bias=0, closed=True)
+                    kspl.color(color)
+                    obj_temp[proc][key][ch_cont]['kspl'][side] = kspl
+                     #Centroid
+                    center = self.objects['Spheres']['cut4cl'][side][ch_cont]['center']
+                    color = self.objects['Spheres']['cut4cl'][side][ch_cont]['color']
+                    sph_centroid = vedo.Sphere(pos=center, r=2).legend('cut4CL_'+side)
+                    sph_centroid.color(color)
+                    obj_temp[proc][key][ch_cont]['centroid'][side] = sph_centroid
+              
+        return obj_temp
+
     def create_ch(self, ch_name:str):#
         print('---- Creating channel ('+ch_name+')! ----')
         image = ImChannel(organ=self, ch_name=ch_name)#,new=True
@@ -1130,6 +1134,8 @@ class Organ():
         self.dir_info = Path('settings') / jsonDict_name
         all_info['dir_info'] = self.dir_info
         all_info['mH_organName'] = self.mH_organName
+
+        print('\n\n\nall_info[mH_settings]', all_info['mH_settings'])
 
         with open(str(json2save_dir), "w") as write_file:
             json.dump(all_info, write_file, cls=NumpyArrayEncoder)
@@ -1832,10 +1838,11 @@ class ImChannel(): #channel
             alert('countdown')
             self.dir_stckproc = im_dir
     
-    def ch_clean (self, s3_mask, s3, inverted, plot=False, im_every=25): #
+    def ch_clean (self, s3_mask, s3, inverted, plot_settings): #
         """
         Function to clean channel contour using other channel as a mask
         """
+        plot, im_every = plot_settings
         # What happens if the s3() are None? 
         s3_s = s3.s3()
         if not isinstance(s3_s, np.ndarray): 
@@ -1869,7 +1876,8 @@ class ImChannel(): #channel
                 cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
 
                 if plot and slc in list(range(0,s3.shape_s3[0],im_every)):
-                    self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted)
+                    print('Plotting! slc:', slc)
+                    # self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted)
 
                 s3_bits[:,:,slc] = toRemove_slc
                 s3_new[:,:,slc] = cleaned_slc
@@ -1963,7 +1971,7 @@ class ImChannelNS(): #channel
         self.contStack = contStack_dict
         self.setup_NS = organ.imChannelNS[ch_name]['setup_NS']
         
-    def create_chNSS3s(self, win, plot=False):
+    def create_chNSS3s(self, win, plot_settings=(False, )):
 
         organ = self.parent_organ
         win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+' (0/3).')
@@ -1984,7 +1992,7 @@ class ImChannelNS(): #channel
         
         win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+' (2/3).')
         layerDict = organ.mH_settings['setup']['chNS']
-        layerDict['plot'] = plot
+        layerDict['plot_settings'] = plot_settings
         tiss_s3 = ContStack(im_channel = self, cont_type = 'tiss',
                             layerDict=layerDict)#,  new = True)
         self.s3_tiss = tiss_s3
@@ -2029,7 +2037,7 @@ class ImChannelNS(): #channel
         else: # just update process 
             self.contStack[cont_type]['process'] = contStack.process
 
-    def create_s3_tiss (self, layerDict, plot=False, im_every=25): 
+    def create_s3_tiss (self, layerDict, plot_settings): 
         """
         Function to extract the negative space channel
         """        
@@ -2037,6 +2045,7 @@ class ImChannelNS(): #channel
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc', self.channel_no,'D-S3Create','Status']
       
+        plot, im_every = plot_settings
         print('>> Extracting '+self.user_chName+'!')
         operation = layerDict['operation']
 
@@ -2063,7 +2072,8 @@ class ImChannelNS(): #channel
                     pass
 
                 if plot and slc in list(range(0,s3.shape[0],im_every)):
-                    self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted=False)
+                    print('Plotting! slc: ', slc)
+                    # self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted=False)
 
                 s3_bits[:,:,slc] = toRemove_slc
                 s3_new[:,:,slc] = cleaned_slc
@@ -2154,8 +2164,8 @@ class ContStack():
         if self.cont_type not in self.im_channel.contStack.keys():
             if im_channel.channel_no == 'chNS':
                 # TO DO! Add information about the masking process as attributes here!
-                plot = layerDict['plot']
-                s3 = im_channel.create_s3_tiss(layerDict=layerDict, plot=plot)
+                plot_settings = layerDict['plot_settings']
+                s3 = im_channel.create_s3_tiss(layerDict=layerDict, plot_settings=plot_settings)
                 parent_organ.mH_settings['setup'][im_channel.channel_no]['keep_largest'][self.cont_type] = {}
                 parent_organ.mH_settings['setup'][im_channel.channel_no]['alpha'][self.cont_type] = {}
             else: 
@@ -2423,12 +2433,11 @@ class Mesh_mH():
             for n, meas_mesh in enumerate(self.dirs['mesh'].keys()):
                 if n == 0:
                     self.mesh_meas = {}
-                if 'ball' in meas_mesh:
                     n_type = meas_mesh.split('(')[1][:-1]
+                if 'ball' in meas_mesh:
                     m_ball = self.balloon_mesh(n_type = n_type)
                     self.mesh_meas[meas_mesh] = m_ball
                 elif 'thck' in meas_mesh: 
-                    n_type = meas_mesh.split('(')[1][:-1]
                     m_thck = self.thickness_mesh(n_type = n_type)
                     self.mesh_meas[meas_mesh] = m_thck
         else: 
@@ -2478,6 +2487,7 @@ class Mesh_mH():
             mesh_out = self.mesh
             
         elif 'ball' in m_type or 'thck' in m_type: 
+            print('Saving thickness mesh: ', m_type, '('+self.name+')')
             if ext != '.vtk':
                 mesh_name = parent_organ.user_organName+'_'+self.legend+'_CM'+m_type+ext
             else: #== .vtk
@@ -2502,9 +2512,9 @@ class Mesh_mH():
         np2save_dir = self.parent_organ.dir_res(dir='csv_all') / title
         np.save(np2save_dir, array)
         if self.dirs['arrays'] == None: 
-            self.dirs['arrays'] = {m_type: np2save_dir}
+            self.dirs['arrays'] = {m_type: title}
         else:
-            self.dirs['arrays'][m_type] = np2save_dir
+            self.dirs['arrays'][m_type] = title
             
         np2save_dirf = Path(str(np2save_dir)+'.npy')
         if not np2save_dirf.is_file():
@@ -2597,20 +2607,29 @@ class Mesh_mH():
             return self.mesh
     
     def thickness_mesh(self, n_type, color_map = 'turbo', alpha=1):
+        print('n_type: ', n_type)
+        #n_type = thck(intTOext) 
         try: 
             mesh_out = self.mesh_meas['thck('+n_type+')']
             print('>> Extracting mesh from mesh_meas attribute')
             return mesh_out.alpha(alpha)
         except: 
-            dir_mesh = self.dirs['mesh']['thck('+n_type+')']
-            dir_npy = Path(str(self.dirs['arrays']['thck('+n_type+')'])+'.npy')
-            # print(dir_mesh, dir_npy)
+            mesh_name = self.dirs['mesh']['thck('+n_type+')']
+            dir_mesh = self.parent_organ.dir_res(dir='meshes') / mesh_name
+            title = str(self.dirs['arrays']['thck('+n_type+')'])+'.npy'
+            dir_npy = self.parent_organ.dir_res(dir='csv_all') / title
+            print('dir_mesh:', dir_mesh, '\n','-dir_npy:', dir_npy)
             if dir_mesh.is_file() and dir_npy.is_file():
                 name = 'Thickness'
-                # title = self.legend+'\n'+name+' [um]\n('+n_type+')'
                 title = self.legend+'\n'+name+' [um]\n('+n_type.replace('TO','>')+')'
+                print('fix this!!! ')
+                if n_type == 'intTOext': 
+                    short = 'th_i2e['+self.name.replace('_', '-')+']'
+                else:
+                    short = 'th_e2i['+self.name.replace('_', '-')+']'
+                setup = self.parent_organ.mH_settings['wf_info']['heatmaps'][short]
                 mesh_out = self.load_meas_mesh(dir_mesh, dir_npy, title, 
-                                               color_map=color_map, alpha=alpha)
+                                               setup=setup, alpha=alpha)
                 return mesh_out.alpha(alpha)
             else: 
                 print('>> Error: Unable to load mesh', self.name,'-',n_type)
@@ -2618,38 +2637,52 @@ class Mesh_mH():
                 return None
         
     def balloon_mesh(self, n_type, color_map = 'turbo', alpha=1):
+        #n_type = 'ballCL('+from_cl+'_'+from_cl_type+')'
+    
+        print('Mesh:', self.name, '-n_type: ', n_type)
+        print(self.mesh_meas.keys())
         try: 
             mesh_out = self.mesh_meas['ballCL('+n_type+')']
             print('>> Extracting mesh from mesh_meas attribute')
             return mesh_out.alpha(alpha)
         except: 
-            dir_mesh = self.dirs['mesh']['ballCL('+n_type+')']
-            dir_npy = Path(str(self.dirs['arrays']['ballCL('+n_type+')'])+'.npy')
-            # print(dir_mesh, dir_npy)
+            mesh_name = self.dirs['mesh']['ballCL('+n_type+')']
+            dir_mesh = self.parent_organ.dir_res(dir='meshes') / mesh_name
+            title = str(self.dirs['arrays']['ballCL('+n_type+')'])+'.npy'
+            dir_npy = self.parent_organ.dir_res(dir='csv_all') / title
+            print('dir_mesh:', dir_mesh, '\n','-dir_npy:', dir_npy)
             if dir_mesh.is_file() and dir_npy.is_file():
                 name = 'Ballooning'
-                # title = self.legend+'\n'+name+' [um]\n('+n_type+')'
                 title = self.legend+'\n'+name+' [um]\n('+n_type+')'
+                cl_info = n_type.replace('_', '-')#split('(')[1].split(')')[0]
+                short = 'ball['+self.name.replace('_', '-')+'(CL.'+cl_info+')]'
+                #'ball[ch1-int(CL:ch1-int)]'
+                setup = self.parent_organ.mH_settings['wf_info']['heatmaps'][short]
                 mesh_out = self.load_meas_mesh(dir_mesh, dir_npy, title, 
-                                               color_map=color_map, alpha=alpha)
+                                               setup=setup, alpha=alpha)
                 return mesh_out.alpha(alpha)
             else: 
                 print('>> Error: Unable to load mesh', self.name,'-',n_type)
                 alert('error_beep')
                 return None
         
-    def load_meas_mesh(self, dir_mesh, dir_npy, title, color_map, alpha):
+    def load_meas_mesh(self, dir_mesh, dir_npy, title, setup, alpha):
         title_print = title.replace('\n', ' ')
         print('>> Loading mesh '+title_print)
         mesh_out = vedo.load(str(dir_mesh))
         npy_colour = np.load(dir_npy)
+        color_map = setup['colormap']
         
         # Assign colour
         mesh_out.pointdata['Distance'] = npy_colour
-        vmin, vmax = np.min(npy_colour),np.max(npy_colour)
+        if setup['default']: 
+            vmin, vmax = np.min(npy_colour),np.max(npy_colour)
+        else: 
+            vmin = setup['min_val']
+            vmax = setup['max_val']
         mesh_out.cmap(color_map)
         mesh_out.alpha(alpha)
-        mesh_out.add_scalarbar(title=title, pos=(0.8, 0.05))
+        mesh_out.add_scalarbar(title=title, pos=(0.7, 0.05))
         mesh_out.mapper().SetScalarRange(vmin,vmax)
         mesh_out.legend(title)
         

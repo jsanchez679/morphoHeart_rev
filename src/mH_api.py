@@ -120,6 +120,9 @@ def run_keeplargest(controller):
     fcM.s32Meshes(organ = controller.organ, gui_keep_largest=controller.main_win.gui_keep_largest, 
                   win = controller.main_win, rotateZ_90=controller.organ.mH_settings['setup']['rotateZ_90'])
     
+    #Update Status in GUI
+    controller.main_win.update_status(None, 'DONE', win.keeplargest_status, override = True)
+
     #Enable button for plot all
     plot_all = getattr(controller.main_win, 'keeplargest_plot')
     plot_all.setEnabled(True)
@@ -128,6 +131,10 @@ def run_keeplargest(controller):
     select_btn = getattr(controller.main_win, 'keeplargest_play')
     select_btn.setChecked(True)
     toggled(select_btn)
+
+    print('\nEND Keeplargest')
+    print('organ.mH_settings:', organ.mH_settings)
+    print('organ.workflow:', workflow)
 
 def run_cleanup(controller):
     workflow = controller.organ.workflow
@@ -144,10 +151,14 @@ def run_cleanup(controller):
     #         proceed2 = True
         
     # if proceed2: 
+    if controller.main_win.gui_clean['plot2d']:
+        plot_settings = (True, controller.main_win.gui_clean['n_slices'])
+    else: 
+        plot_settings = (False, ) 
 
     fcM.clean_ch(organ = controller.organ, 
                  gui_clean = controller.main_win.gui_clean, 
-                 win=controller.main_win, plot=False)
+                 win=controller.main_win, plot_settings=plot_settings)
 
     #Enable button for plot all
     plot_all = getattr(controller.main_win, 'clean_plot')
@@ -351,11 +362,15 @@ def run_chNS(controller):
         #     proceed = True
             
         # if proceed: 
+    if controller.main_win.gui_chNS['plot2d']:
+        plot_settings = (True, controller.main_win.gui_chNS['n_slices'])
+    else: 
+        plot_settings = (False, ) 
 
     fcM.extract_chNS(organ = controller.organ, 
                      rotateZ_90 = controller.organ.mH_settings['setup']['rotateZ_90'],
                      win = controller.main_win, 
-                     plot = False)
+                     plot_settings = plot_settings)
 
     #Toggle button
     select_btn = getattr(controller.main_win, 'chNS_play')
@@ -411,6 +426,10 @@ def run_centreline_clean(controller):
     select_btn.setChecked(True)
     toggled(select_btn)
 
+    #Update Status in GUI
+    process = process =  ['MeshesProc','C-Centreline','Status']
+    controller.main_win.update_status(workflow, process, controller.main_win.centreline_status)
+
     prompt_meshLab(controller)
 
 def run_centreline_ML(controller): 
@@ -422,7 +441,6 @@ def run_centreline_ML(controller):
         all_saved = []
         for nn, cl in enumerate(cl_names): 
             ch, cont, _ = cl.split('_')
-            proc_mesh = ['MeshesProc','C-Centreline','SimplifyMesh', ch, cont, 'Status']
             #Get name and path
             directory = controller.organ.dir_res(dir ='centreline')
             name_ML = controller.organ.mH_settings['wf_info']['centreline']['dirs'][ch][cont]['dir_meshLabMesh']
@@ -431,9 +449,8 @@ def run_centreline_ML(controller):
                 all_saved.append(True)
 
                 # Update organ workflow
-                controller.organ.update_mHworkflow(proc_mesh, 'DONE')
                 status_sq = getattr(controller.main_win, 'meshLab_status'+str(nn+1))
-                controller.main_win.update_status(workflow, proc_mesh, status_sq)
+                controller.main_win.update_status(None, 'DONE', status_sq, override=True)
 
                 #Enable button for vmtk
                 plot_btn = getattr(controller.main_win, 'centreline_vmtk_play')
@@ -445,9 +462,10 @@ def run_centreline_ML(controller):
                 toggled(select_btn)
 
             else:
-                error = '*'+name_ML+' has not been created! Clean this mesh in MeshLab to proceed.'
+                error = '*'+str(name_ML)+' has not been created! Clean this mesh in MeshLab to proceed.'
                 controller.main_win.win_msg(error)
-                msg_add = [name_ML+' was not found in the centreline folder. Make sure you have named your cleaned meshes correctly after running','the processing in Meshlab and press -Enter- when ready.']
+                msg_add = [str(name_ML)+' was not found in the centreline folder. Make sure you have named your cleaned meshes correctly after running the processing in Meshlab and press  -Enter-  when ready.', 
+                            'To clean up the meshes with MeshLab follow the next steps:']
                 prompt_meshLab(controller, msg_add=msg_add)
                 return
 
@@ -571,6 +589,10 @@ def run_centreline_select(controller):
     controller.organ.update_mHworkflow(process = ['MeshesProc','C-Centreline','Status'], update = 'DONE')
     controller.organ.check_status(process='MeshesProc')
 
+    #Update Status in GUI
+    controller.main_win.update_status(workflow, ['MeshesProc','C-Centreline','Status'], 
+                                      controller.main_win.centreline_status)
+
     #Toggle button
     select_btn = getattr(controller.main_win, 'centreline_select')
     select_btn.setChecked(True)
@@ -616,34 +638,100 @@ def run_heatmaps3D(controller):
                             'param': 'thickness ext>int',
                             'n_type': 'ext>int'}}
     
+    controller.main_win.prog_bar_range(0,len(controller.main_win.heatmap_dict))
     nn = 0
     for item in controller.main_win.heatmap_dict:
-        if nn == 0:#deletee!
-            short, ch_info = item.split('[') #short = th_i2e, th_e2i, ball
-            ch_info = ch_info[:-1]
+        short, ch_info = item.split('[') #short = th_i2e, th_e2i, ball
+        ch_info = ch_info[:-1]
+        if nn == 5:
             if 'th' in short: 
                 _, th_val = short.split('_')
                 ch, cont = ch_info.split('-')
                 method = thck_values[th_val]['method']
-                print('>> Extracting '+thck_values[th_val]['param']+' for '+ch+'-'+cont)
-                setup = controller.main_win.gui_thickness_ballooning[short+'['+ch+'-'+cont+']']
+                mesh_tiss = controller.organ.obj_meshes[ch+'_tiss'].legend
+                print('\n>> Extracting thickness information for '+mesh_tiss+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
+                controller.main_win.win_msg('Extracting thickness information for '+mesh_tiss+'... NOTE: it takes about 5min to process each mesh... just be patient :)')
+                setup = controller.main_win.gui_thickness_ballooning[item]
                 fcM.get_thickness(organ = controller.organ, name = (ch, cont), 
                                     thck_dict = thck_values[th_val], 
                                     setup = setup)
 
-            else: #'ball' in short
-                print('>> Extracting ballooning for '+item)
+            else: # if 'ball' in short
+                ch_cont, cl_info = ch_info.split('(')
+                ch, cont = ch_cont.split('-')
+
+                cl_info = cl_info[:-1].split('.')[1]
+                cl_ch, cl_cont = cl_info.split('-')
+                mesh2ball = controller.organ.obj_meshes[ch+'_'+cont].legend
+                print('\n>> Extracting ballooning information for '+mesh2ball+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
+                controller.main_win.win_msg('Extracting ballooning information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
+                setup = controller.main_win.gui_thickness_ballooning[item]
+
+                fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
+                                    name_cl = (cl_ch, cl_cont), setup = setup)
+    
+        #Enable button for plot cl
+        plot_btn = getattr(controller.main_win, 'hm_plot'+str(nn+1))
+        plot_btn.setEnabled(True)
+        nn+=1
+        controller.main_win.prog_bar_update(nn)
+
+    # Update organ workflow
+    all_all_done = []
+    processes = ['D-Thickness_int>ext', 'D-Thickness_ext>int', 'D-Ballooning']
+    for proc in processes:
+        all_done = []
+        if len(workflow['MeshesProc'][proc].keys())>0: 
+            for ch in workflow['MeshesProc'][proc].keys():
+                if ch != 'Status':
+                    for cont in workflow['MeshesProc'][proc][ch].keys():
+                        print(proc, ch, cont, workflow['MeshesProc'][proc][ch][cont]['Status'])
+                        all_done.append(workflow['MeshesProc'][proc][ch][cont]['Status'])
+
+            if all(flag == 'DONE' for flag in all_done): 
+                proc_wft = ['MeshesProc', proc, 'Status']
+                controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+                all_all_done.append('DONE')
+            elif any(flag == 'DONE' for flag in all_done):
+                proc_wft = ['MeshesProc', proc, 'Status']
+                controller.organ.update_mHworkflow(process = proc_wft, update = 'Initialised')
+                all_all_done.append('Initialised')
+            else: 
                 pass
+        else: 
+            all_all_done.append(True)
 
-            #Enable button for plot cl
-            plot_btn = getattr(controller.main_win, 'hm_plot'+str(nn+1))
-            plot_btn.setEnabled(True)
-            nn+=1
+    # Update mH_settings
+    proc_set = ['wf_info']
+    update = controller.main_win.gui_thickness_ballooning
+    controller.organ.update_settings(proc_set, update, 'mH', add='heatmaps')
 
-            print('wf:', controller.organ.workflow)
-            print('set:', controller.organ.mH_settings)
+    #Update Status in GUI
+    if all(flag == 'DONE' for flag in all_all_done): 
+        process = ['MeshesProc', processes[0], 'Status']
+        toggle = True
+    elif any(flag == 'DONE' for flag in all_all_done):
+        for proc in processes: 
+            test_proc = ['MeshesProc', proc, 'Status']
+            if get_by_path(workflow, test_proc) == 'Initialised' or get_by_path(workflow, test_proc) == 'NI': 
+                process = test_proc
+                break
+        toggle = False
+    else: 
+        process = ['MeshesProc', processes[0], 'Status']
+        toggle = False
+    controller.main_win.update_status(workflow, process, controller.main_win.heatmaps_status)
             
-            
+    #Toggle button
+    if toggle: 
+        select_btn = getattr(controller.main_win, 'heatmaps3D_play')
+        select_btn.setChecked(True)
+        toggled(select_btn)
+
+    print('\nEND Heatmaps')
+    print('organ.mH_settings:', controller.organ.mH_settings)
+    print('organ.workflow:', workflow)
+    
         # controller.organ.update_workflow(process = process, update = 'DONE')
 
     #Check first if extracting centrelines is a process involved in this organ/project

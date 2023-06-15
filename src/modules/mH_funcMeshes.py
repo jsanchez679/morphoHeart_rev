@@ -105,20 +105,8 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):
     # Update organ workflow
     organ.update_mHworkflow(proc_ms_all, 'Initialised')
 
-    # Update mH_settings
-    proc_set = ['wf_info']
-    update = gui_keep_largest
-    organ.update_settings(proc_set, update, 'mH', add='keep_largest')
-
-    #Update Status in GUI
-    win.update_status(workflow, proc_im_all, win.keeplargest_status)
-
-    print('\nEND Keeplargest')
-    print('organ.mH_settings:', organ.mH_settings)
-    print('organ.workflow:', workflow)
-
 #%% func - clean_ch
-def clean_ch(organ, gui_clean, win, plot=False):
+def clean_ch(organ, gui_clean, win, plot_settings=(False, )):
 
     workflow = organ.workflow['morphoHeart']
     
@@ -145,7 +133,7 @@ def clean_ch(organ, gui_clean, win, plot=False):
             win.win_msg('Cleaning '+ch+'-'+cont+' with '+with_ch+'-'+with_cont+' (inverted: '+str(inverted)+').')
             #Get the contour to clean
             s3 = getattr(ch_to_clean, 's3_'+cont)
-            ch_to_clean.ch_clean(s3_mask=s3_mask, s3=s3, inverted=inverted, plot=plot)
+            ch_to_clean.ch_clean(s3_mask=s3_mask, s3=s3, inverted=inverted, plot_settings=plot_settings)
 
             #Update workflow 
             proc_up = ['ImProc',ch,'E-CleanCh','Info',s3.cont_type, 'Status']
@@ -167,11 +155,6 @@ def clean_ch(organ, gui_clean, win, plot=False):
         #Enable button for plot
         plot_btn = getattr(win, 'cleanup_plot_'+ch)
         plot_btn.setEnabled(True)
-    
-    # Update mH_settings
-    proc_set = ['wf_info']
-    update = gui_clean
-    organ.update_settings(proc_set, update, 'mH', add='cleanup')
 
     #Update Status in GUI
     win.update_status(workflow, process, win.cleanup_status)
@@ -336,12 +319,12 @@ def get_roi_orientation(organ, gui_orientation:dict, win):
     return on_hold
 
 #%% func - extract_chNS
-def extract_chNS(organ, rotateZ_90, win, plot):#
+def extract_chNS(organ, rotateZ_90, win, plot_settings):#
     from .mH_classes_new import ImChannelNS
 
     workflow = organ.workflow['morphoHeart']
     im_ns = ImChannelNS(organ=organ, ch_name='chNS')
-    im_ns.create_chNSS3s(win, plot=plot)
+    im_ns.create_chNSS3s(win, plot_settings=plot_settings)
     proc_im = ['ImProc',im_ns.channel_no,'D-S3Create','Status']
     proc_mesh = ['MeshesProc','A-Create3DMesh', im_ns.channel_no,'Status']
 
@@ -356,6 +339,7 @@ def extract_chNS(organ, rotateZ_90, win, plot):#
                         new_set=True)
         aa+=1
         win.prog_bar_update(aa)
+
 
     #Message User
     win.win_msg(' ChannelNS meshes were successfully created!')
@@ -521,13 +505,13 @@ def proc_meshes4cl(organ, win):#
     for side in ['bottom', 'top']: 
         plane_cuts[side].pop('plane', None)
 
+    #Update mH_settings
     win.gui_centreline['SimplifyMesh']['plane_cuts'] = plane_cuts
     win.gui_centreline['dirs'] = ch_cuts
-
-    #Update mH_settings
     proc_set = ['wf_info']
     update =  win.gui_centreline
     organ.update_settings(proc_set, update, 'mH', add='centreline')
+    print('FFF:',organ.mH_settings['wf_info']['centreline'])
     
     print('\nEND Simplifying Mesh')
     print('organ.mH_settings:', organ.mH_settings)
@@ -659,10 +643,8 @@ def create_CLs(organ, name, nPoints = 300):#
     Function that creates the centrelines using the points given as input in the dict_cl
 
     """
-    
     cl_colors = {'Op1':'navy','Op2':'blueviolet','Op3':'deeppink',
                     'Op4': 'orangered','Op5':'slategray', 'Op6':'maroon'}
-    
     
     ch, cont, _ = name.split('_')
     cl_data = load_vmtkCL(organ, ch, cont)
@@ -768,7 +750,6 @@ def create_CLs(organ, name, nPoints = 300):#
 
     return dict_clOpt      
 
-
 #%% func - extend_CL
 def extend_CL(pts_int_o, pts_withOutf, num, nPoints, plane_info):
     
@@ -806,71 +787,42 @@ def extend_CL(pts_int_o, pts_withOutf, num, nPoints, plane_info):
     return pts_int_opt, pt2add, sph_m10
 
 #%% func - extract_ballooning
-def extract_ballooning(organ, color_map, plot=False):
-
-    # #Check first if extracting centrelines is a process involved in this organ/project
-    # if organ.check_method(method = 'D-Ballooning'): 
-    # # if 'D-Ballooning' in organ.parent_project.mH_methods: 
-    #     #Check workflow status
-    #     workflow = organ.workflow
-    #     process = ['MeshesProc','D-Ballooning','Status']
-    #     check_proc = get_by_path(workflow, process)
-    #     if check_proc == 'DONE': 
-    #         q = 'You already extracted the ballooning parameters of the selected meshes. Do you want to extract them again?'
-    #         res = {0: 'no, continue with next step', 1: 'yes, re-run this process!'}
-    #         balloon = ask4input(q, res, bool)
-    #     else: 
-    #         balloon = True
-    # else:
-    #     balloon = False
-    #     return None
+def extract_ballooning(organ, name, name_cl, setup):
+   
+    ch, cont = name
+    mesh2ball = organ.obj_meshes[ch+'_'+cont]
+    from_cl, from_cl_type = name_cl
+    cl4ball = organ.obj_meshes[from_cl+'_'+from_cl_type].get_centreline()
+    sph4ball = sphs_in_spline(kspl=cl4ball,every=0.6)
+    sph4ball.legend('sphs_ball').alpha(0.1)
     
-    # if balloon: 
-        # proc_done = []
-        # ball_names = [item for item in organ.parent_project.mH_param2meas if 'ballooning' in item]
-        # for name in ball_names: 
-        ch = name[0]; cont = name[1]
-        mesh2ball = organ.obj_meshes[ch+'_'+cont]
-        print('\n>> Extracting ballooning information for '+mesh2ball.legend+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
-        from_cl = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['from_cl']
-        from_cl_type = organ.mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont]['from_cl_type']
-        cl4ball = organ.obj_meshes[from_cl+'_'+from_cl_type].get_centreline()
-        sph4ball = sphs_in_spline(kspl=cl4ball,every=0.6)
-        sph4ball.legend('sphs_ball').alpha(0.1)
-        
-        mesh_ball, distance, min_max = get_distance_to(mesh_to=mesh2ball, 
-                                                    mesh_from = sph4ball, 
-                                                    from_name='CL('+from_cl+'_'+from_cl_type+')', 
-                                                    color_map=color_map)
-        mesh_ball.alpha(1)
-        #Add min-max values to mH_settings
-        proc_range = ['measure', ch, cont,'whole','ballooning', 'range']
-        upd_range = {'min_val': min_max[0], 'max_val': min_max[1]}
-        organ.update_settings(proc_range, update = upd_range, mH = 'mH')
-        
-        #Add mesh_ball to the mesh_meas attribute
-        m_type = 'ballCL('+from_cl+'_'+from_cl_type+')'
-        
-        mesh2ball.mesh_meas[m_type] = mesh_ball
-        mesh2ball.save_mesh(m_type=m_type)
-        mesh2ball.save_array(array=distance, m_type=m_type)
-        
-        if plot: 
-            obj = [(mesh2ball.mesh, cl4ball, sph4ball), (mesh_ball, cl4ball, sph4ball)]
-            txt = [(0, organ.user_organName +' - Ballooning Setup')]
-            plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-        
-        proc_wft = ['MeshesProc','D-Ballooning',ch, cont, 'Status']
-        organ.update_workflow(process = proc_wft, update = 'DONE')
-        proc_done.append('DONE')
-        
-    #     if len(proc_done) == len(ball_names):
-    #         organ.update_workflow(process = process, update = 'DONE')
-    
-    # else:
-    #     return None
+    mesh_ball, distance, min_max = get_distance_to(mesh_to = mesh2ball, 
+                                                   mesh_from = sph4ball, 
+                                                   from_name ='CL('+from_cl+'_'+from_cl_type+')',
+                                                   range = (setup['min_val'], setup['max_val']),
+                                                   color_map = setup['colormap'])
+    mesh_ball.alpha(1)
+    #Add min-max values to mH_settings
+    proc_range = ['measure', 'ball', ch+'_'+cont+'_('+from_cl+'_'+from_cl_type+')']
+    upd_range = {'range_o':{'min_val': min_max[0], 'max_val': min_max[1]}, 
+                 'range_user': {'min_val': setup['min_val'], 'max_val': setup['max_val']}, 
+                 'colormap': setup['colormap']}
+    organ.update_settings(proc_range, update = upd_range, mH = 'mH')
 
- 
+    #Add mesh_ball to the mesh_meas attribute
+    m_type = 'ballCL('+from_cl+'_'+from_cl_type+')'
+    
+    if not hasattr(mesh2ball, 'mesh_meas'):
+        mesh2ball.mesh_meas = {}
+    mesh2ball.mesh_meas[m_type] = mesh_ball
+    mesh2ball.save_mesh(m_type=m_type)
+    mesh2ball.save_array(array=distance, m_type=m_type)
+    
+    # Update organ workflow
+    cont_proc = cont+'_('+from_cl+'_'+from_cl_type+')'
+    proc_wft = ['MeshesProc','D-Ballooning',ch, cont_proc, 'Status']
+    organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+
 #%% func - get_thickness
 def get_thickness(organ, name, thck_dict, setup):
     
@@ -883,28 +835,30 @@ def get_thickness(organ, name, thck_dict, setup):
         mesh_to = organ.obj_meshes[ch+'_int']
         mesh_from = organ.obj_meshes[ch+'_ext'].mesh
 
-    print('\n>> Extracting thickness information for '+mesh_tiss.legend+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
-    
-    mesh_thck, distance, min_max = get_distance_to(mesh_to=mesh_to, mesh_from=mesh_from, 
-                                                from_name=thck_dict['n_type'],  
-                                                range = (setup['min_val'], setup['max_val']),
-                                                color_map=setup['colormap'])
+    mesh_thck, distance, min_max = get_distance_to(mesh_to = mesh_to, 
+                                                   mesh_from = mesh_from, 
+                                                   from_name = thck_dict['n_type'],  
+                                                   range = (setup['min_val'], setup['max_val']),
+                                                   color_map = setup['colormap'])
     mesh_thck.alpha(1)
     # Add mesh_ball to the mesh_meas attribute
     n_type_new = thck_dict['n_type'] .replace('>','TO')
-    m_type = 'thck('+n_type_new+')'
-    proc_range = ['measure', ch+'_tiss_whole']
+    proc_range = ['measure', thck_dict['short'], ch+'_tiss_whole']
     upd_range = {'range_o':{'min_val': min_max[0], 'max_val': min_max[1]}, 
-                 'range_user': {'min_val': setup['min_val'], 'max_val': setup['max_val']}}
+                 'range_user': {'min_val': setup['min_val'], 'max_val': setup['max_val']},
+                 'colormap': setup['colormap']}
     organ.update_settings(proc_range, update = upd_range, mH = 'mH')
-    print('BBB:', organ.mH_settings)
     
-    if not hasattr(mesh_from, 'mesh_meas'):
+    #Add mesh_thck to the mesh_meas attribute
+    m_type = 'thck('+n_type_new+')' #thck(intTOext)
+
+    if not hasattr(mesh_tiss, 'mesh_meas'):
         mesh_tiss.mesh_meas = {}
     mesh_tiss.mesh_meas[m_type] = mesh_thck
     mesh_tiss.save_mesh(m_type=m_type)
     mesh_tiss.save_array(array=distance, m_type=m_type)
     
+    # Update organ workflow
     proc_wft = ['MeshesProc', thck_dict['method'], ch, cont, 'Status']
     organ.update_mHworkflow(process = proc_wft, update = 'DONE')
 

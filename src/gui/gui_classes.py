@@ -14,7 +14,7 @@ from PyQt6.QtCore import pyqtSlot, QDate, Qt, QRegularExpression, QRect, QSize
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
                               QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem, QSpacerItem, QSizePolicy, 
-                              QDialogButtonBox, QMessageBox, QHeaderView)
+                              QDialogButtonBox, QMessageBox, QHeaderView, QStyle)
 from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush
 from qtwidgets import Toggle, AnimatedToggle
 import qtawesome as qta
@@ -32,7 +32,7 @@ import operator
 #%% morphoHeart Imports - ##################################################
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
-from ..modules.mH_funcBasics import get_by_path
+from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set
 from ..modules.mH_funcContours import checkWfCloseCont
 from ..modules.mH_funcMeshes import plot_grid
 from ..modules.mH_classes_new import Project, Organ
@@ -2637,29 +2637,29 @@ class MainWindow(QMainWindow):
         self.pushButton.clicked.connect(lambda: self.update_proj_organ())
 
     def update_proj_organ(self):
-        # self.proj.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
-        # self.organ.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
-        # print(self.proj.mH_settings['measure'])
-        # print(self.organ.mH_settings['measure'])
+        self.proj.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
+        self.organ.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
+        print(self.proj.mH_settings['measure'])
+        print(self.organ.mH_settings['measure'])
 
-        # workflow_proj = self.proj.workflow['morphoHeart']['MeshesProc']['C-Centreline']
-        # workflow_organ = self.organ.workflow['morphoHeart']['MeshesProc']['C-Centreline']
-        # item_centreline = [tuple(item.split('_')) for item in self.organ.mH_settings['measure']['CL'].keys()]
-        # for workflow in [workflow_proj, workflow_organ]:
-        #     for item in item_centreline:
-        #         ch, cont, _ = item
-        #         print(ch,cont)
-        #         if ch not in workflow['SimplifyMesh'].keys(): 
-        #             workflow['SimplifyMesh'][ch] = {}
-        #             workflow['vmtk_CL'][ch] = {}
-        #             workflow['buildCL'][ch] = {}
-        #         workflow['SimplifyMesh'][ch][cont] = {'Status': 'NI'}
-        #         workflow['vmtk_CL'][ch][cont] = {'Status': 'NI'}
-        #         workflow['buildCL'][ch][cont] = {'Status': 'NI'}
+        workflow_proj = self.proj.workflow['morphoHeart']['MeshesProc']['C-Centreline']
+        workflow_organ = self.organ.workflow['morphoHeart']['MeshesProc']['C-Centreline']
+        item_centreline = [tuple(item.split('_')) for item in self.organ.mH_settings['measure']['CL'].keys()]
+        for workflow in [workflow_proj, workflow_organ]:
+            for item in item_centreline:
+                ch, cont, _ = item
+                print(ch,cont)
+                if ch not in workflow['SimplifyMesh'].keys(): 
+                    workflow['SimplifyMesh'][ch] = {}
+                    workflow['vmtk_CL'][ch] = {}
+                    workflow['buildCL'][ch] = {}
+                workflow['SimplifyMesh'][ch][cont] = {'Status': 'NI'}
+                workflow['vmtk_CL'][ch][cont] = {'Status': 'NI'}
+                workflow['buildCL'][ch][cont] = {'Status': 'NI'}
         
-        # print(self.proj.workflow['morphoHeart'])
-        # print(self.organ.workflow['morphoHeart'])
-        pass
+        print(self.proj.workflow['morphoHeart'])
+        print(self.organ.workflow['morphoHeart'])
+        # pass
 
     @pyqtSlot(int)
     def on_cB_theme_currentIndexChanged(self, theme):
@@ -2762,6 +2762,7 @@ class MainWindow(QMainWindow):
     def init_pandq_tab(self): 
         #All Group box
         self.segmentationAll_play.setStyleSheet(style_play)
+        # setup_play_btn(btn = self.segmentationAll_play, win = self)
         self.segmentationAll_play.setEnabled(False)
         self.segmentationAll_play.clicked.connect(lambda: self.run_segmentationAll())
         self.centreline_thicknessAll_play.setStyleSheet(style_play)
@@ -2800,6 +2801,8 @@ class MainWindow(QMainWindow):
             self.init_sections()
         else: 
             self.sections_widget.setVisible(False)
+
+        self.init_user_param()
         
         #Setup workflow
         self.fill_workflow(tree= self.treeWorkflow, value = self.organ.workflow['morphoHeart']['MeshesProc'])
@@ -2927,6 +2930,9 @@ class MainWindow(QMainWindow):
         self.kl_ch3_all.stateChanged.connect(lambda: self.tick_all('ch3', 'kl'))
         self.kl_ch4_all.stateChanged.connect(lambda: self.tick_all('ch4', 'kl'))
 
+        #Initialise with user settings, if they exist!
+        self.user_keeplargest()
+
     def init_clean(self):
         #Buttons
         self.cleanup_open.clicked.connect(lambda: self.open_section(name='cleanup'))
@@ -2968,6 +2974,9 @@ class MainWindow(QMainWindow):
         self.clean_ch4_all.stateChanged.connect(lambda: self.tick_all('ch4', 'clean'))
 
         self.clean_plot2d.stateChanged.connect(lambda: self.n_slices('clean'))
+
+        #Initialise with user settings, if they exist!
+        self.user_clean()
     
     def init_trim(self):
         #Buttons
@@ -3008,6 +3017,9 @@ class MainWindow(QMainWindow):
         self.bot_ch2_all.stateChanged.connect(lambda: self.tick_all('ch2', 'bot'))
         self.bot_ch3_all.stateChanged.connect(lambda: self.tick_all('ch3', 'bot'))
         self.bot_ch4_all.stateChanged.connect(lambda: self.tick_all('ch4', 'bot'))
+        
+        #Initialise with user settings, if they exist!
+        self.user_trimming()
 
     def init_orientation(self):
         #Buttons
@@ -3039,6 +3051,9 @@ class MainWindow(QMainWindow):
             items_cB.append(name)
         self.centreline_orientation.addItems(items_cB)
         self.rotate_method(mtype = 'none')
+
+        #Initialise with user settings, if they exist!
+        self.user_orientation()
         
     def init_chNS(self):
         #Buttons
@@ -3070,6 +3085,9 @@ class MainWindow(QMainWindow):
             color_btn.setStyleSheet(color_txt)
 
         self.chNS_plot2d.stateChanged.connect(lambda: self.n_slices('chNS'))
+
+        #Initialise with user settings, if they exist!
+        self.user_chNS()
 
     def init_centreline(self):
         #Buttons
@@ -3123,6 +3141,9 @@ class MainWindow(QMainWindow):
         self.cl_plot5.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'Final', btn = 'cl_plot5'))
         self.cl_plot6.clicked.connect(lambda: self.plot_tempObj(proc = 'CL', sub = 'Final', btn = 'cl_plot6'))
 
+        #Initialise with user settings, if they exist!
+        self.user_centreline()
+
     def init_thickness_ballooning(self):
         #Buttons
         self.heatmaps_open.clicked.connect(lambda: self.open_section(name='heatmaps'))
@@ -3160,6 +3181,9 @@ class MainWindow(QMainWindow):
         self.def11.stateChanged.connect(lambda: self.default_range('11'))
         self.def12.stateChanged.connect(lambda: self.default_range('12'))
 
+        self.all_def.stateChanged.connect(lambda: self.check_all(mtype = 'def'))
+        self.all_d3d2.stateChanged.connect(lambda: self.check_all(mtype = 'd3d2'))
+
         #Heatmap settings
         self.heatmap_dict = {}
         setup = {'th_i2e': {'proc': ['measure','th_i2e'], 'name': 'Thickness (int>ext)', 'min_val': 0, 'max_val': 20}, 
@@ -3167,7 +3191,6 @@ class MainWindow(QMainWindow):
                  'ball': {'proc': ['measure','ball'], 'name': 'Ballooning', 'min_val': 0, 'max_val': 60}}
 
         for proc in setup: 
-            print(proc)
             name = setup[proc]['name']
             minn = setup[proc]['min_val']
             maxx = setup[proc]['max_val']
@@ -3178,7 +3201,7 @@ class MainWindow(QMainWindow):
                                                                         'min_val': minn, 
                                                                         'max_val': maxx}
                 else: 
-                    namef = item.replace('_(', '(CL:')
+                    namef = item.replace('_(', '(CL.')
                     namef = namef.replace('_', '-')
                     self.heatmap_dict[proc+'['+namef+']'] = {'name': name+' ['+namef+']',
                                                                 'min_val': minn, 
@@ -3247,7 +3270,10 @@ class MainWindow(QMainWindow):
             self.heatmaps2D_play.setEnabled(False)
 
             for num in range(1,13,1): 
-                getattr(self, 'hm_plot'+num+'_2D').setEnabled(False)
+                getattr(self, 'hm_plot'+str(num)+'_2D').setEnabled(False)
+
+        #Initialise with user settings, if they exist!
+        self.user_heatmaps()
 
     def init_segments(self):
         #Buttons
@@ -3368,8 +3394,375 @@ class MainWindow(QMainWindow):
 
         print('Setup Sections: ', self.organ.mH_settings['setup']['sect'])
 
-    def update_status(self, root_dict, items, fillcolor):
-        update_status(root_dict, items, fillcolor)
+    def init_user_param(self): 
+        user_params = self.organ.mH_settings['setup']['params']
+        measure = self.organ.mH_settings['measure']
+        widgets_params = {'continuous': {'enable': False, 'n_params': 0}, 
+                          'descriptive': {'enable': False,'n_params': 0},  
+                          'categorical': {'enable': False,'n_params': 0}}
+        for key in user_params: 
+            if int(key)>5: 
+                ptype = user_params[key]['type']
+                if ptype == 'categorical':
+                    if not widgets_params[ptype]['enable']:
+                        widgets_params[ptype]['enable'] = True
+                    label = user_params[key]['l']
+                    short = user_params[key]['s']
+                    categories = user_params[key]['categories']
+                    nn = 1
+                    for item in measure[short].keys(): 
+                        getattr(self, 'lab_categorical'+str(nn)).setText(label)
+                        getattr(self, 'lab_categorical'+str(nn)).setEnabled(True)
+                        getattr(self, 'tiss_cont_categorical'+str(nn)).setText(item)
+                        getattr(self, 'tiss_cont_categorical'+str(nn)).setEnabled(True)
+                        getattr(self, 'value_categorical'+str(nn)).addItems(categories)
+                        getattr(self, 'value_categorical'+str(nn)).setEnabled(True)
+                        nn+=1
+                    for nn in range(nn,7,1):
+                        getattr(self, 'lab_categorical'+str(nn)).setVisible(False)
+                        getattr(self, 'tiss_cont_categorical'+str(nn)).setVisible(False)
+                        getattr(self, 'value_categorical'+str(nn)).setVisible(False)
+                elif ptype == 'continuous' or ptype == 'descriptive': 
+                    if not widgets_params[ptype]['enable']:
+                        widgets_params[ptype]['enable'] = True
+                    label = user_params[key]['l']
+                    short = user_params[key]['s']
+                    mm = 1
+                    for item in measure[short].keys(): 
+                        getattr(self, 'lab_'+ptype+str(nn)).setText(label)
+                        getattr(self, 'lab_'+ptype+str(nn)).setEnabled(True)
+                        getattr(self, 'tiss_cont_'+ptype+str(nn)).setText(item)
+                        getattr(self, 'tiss_cont_'+ptype+str(nn)).setEnabled(True)
+                        getattr(self, 'value_'+ptype+str(nn)).setEnabled(True)
+                        nn+=1
+                    for nn in range(mm,7,1):
+                        getattr(self, 'lab_'+ptype+str(nn)).setVisible(False)
+                        getattr(self, 'tiss_cont_'+ptype+str(nn)).setVisible(False)
+                        getattr(self, 'value_'+ptype+str(nn)).setVisible(False)
+                else: #ptype == '
+                    print('other?')
+        
+        for mtype in widgets_params: 
+            if widgets_params[mtype]['enable']: 
+                getattr(self, mtype).setEnabled(True)
+            else: 
+                getattr(self, mtype).setVisible(False)
+
+    def update_status(self, root_dict, items, fillcolor, override=False):
+        update_status(root_dict, items, fillcolor, override)
+        
+    #Functions to fill sections according to user's selections
+    def user_keeplargest(self): 
+        wf_info = self.organ.mH_settings['wf_info']
+        workflow = self.organ.workflow['morphoHeart']['MeshesProc']['A-Create3DMesh']
+        if 'keep_largest' in wf_info.keys():
+            done_all = []
+            for ch in wf_info['keep_largest']: 
+                done = []
+                for cont in ['int', 'tiss', 'ext']:
+                    cB = getattr(self, 'kl_'+ch+'_'+cont)
+                    cB.setChecked(wf_info['keep_largest'][ch][cont])
+                    done.append(workflow[ch][cont]['Status'])
+                if all(flag == 'DONE' for flag in done):
+                    plot_btn = getattr(self, 'keeplargest_plot_'+ch)
+                    plot_btn.setEnabled(True)
+                    done_all.append(True)
+                else: 
+                    done_all.append(False)
+
+            if all(done_all): 
+                #Toggle Button
+                self.keeplargest_set.setChecked(True)
+                toggled(self.keeplargest_set)
+                #Enable other buttons
+                self.keeplargest_plot.setEnabled(True)
+                #Update Status in GUI
+                self.update_status(None, 'DONE', self.keeplargest_status, override=True)
+            elif any(done_all):
+                #Update Status in GUI
+                self.update_status(None, 'Initialised', self.keeplargest_status, override=True)
+            else: 
+                pass
+            
+            #Run Set Function 
+            self.set_keeplargest()
+        else: 
+            pass
+        
+    def user_clean(self): 
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'cleanup' in wf_info.keys():
+            done_all = []
+            for ch in wf_info['cleanup']:
+                if 'ch' in ch:
+                    done = []
+                    workflow_ch = self.organ.workflow['morphoHeart']['ImProc'][ch]['E-CleanCh']
+                    for cont in wf_info['cleanup'][ch]['cont']:
+                        cB = getattr(self, 'clean_'+ch+'_'+cont)
+                        cB.setChecked(True)
+                        done.append(workflow_ch['Info'][cont]['Status'])
+                    with_ch = getattr(self, 'clean_withch_'+ch)
+                    with_ch.setCurrentText(wf_info['cleanup'][ch]['with_ch'])
+                    with_cont = getattr(self, 'clean_withcont_'+ch)
+                    with_cont.setCurrentText(wf_info['cleanup'][ch]['with_cont'])
+                    inv = getattr(self, 'inverted_'+ch)
+                    inv.setChecked(wf_info['cleanup'][ch]['inverted'])
+                    
+                    if all(flag == 'DONE' for flag in done):
+                        plot_btn = getattr(self, 'cleanup_plot_'+ch)
+                        plot_btn.setEnabled(True)
+                        done_all.append(True)
+                    else: 
+                        done_all.append(False)
+        
+            if wf_info['cleanup']['plot2d']: 
+                self.clean_plot2d.setChecked(True)
+                self.clean_n_slices.setValue(wf_info['cleanup']['n_slices'])
+
+            if all(done_all):
+                #Toggle Button
+                self.cleanup_set.setChecked(True)
+                toggled(self.cleanup_set)
+                #Enable other buttons
+                self.clean_plot.setEnabled(True)
+                #Update Status in GUI
+                self.update_status(None, 'DONE', self.cleanup_status, override=True)
+            elif any(done_all):
+                #Update Status in GUI
+                self.update_status(None, 'Initialised', self.cleanup_status, override=True)
+            
+            #Run Set Function 
+            self.set_clean() 
+        else: 
+            pass
+
+    def user_trimming(self): 
+        wf_info = self.organ.mH_settings['wf_info']
+        workflow = self.organ.workflow['morphoHeart']['MeshesProc']['B-TrimMesh']
+        if 'trimming' in wf_info.keys():
+            done_all = []
+            for ch in wf_info['trimming']['top']['chs']:
+                done_ch = []
+                for side in ['top', 'bottom']: 
+                    done_cont = [] 
+                    for cont in ['int', 'tiss', 'ext']:
+                        cB = getattr(self, side[0:3]+'_'+ch+'_'+cont)
+                        cB.setChecked(wf_info['trimming'][side]['chs'][ch][cont])
+                        done_cont.append(workflow[ch][cont]['Status'])
+                    if all(flag == 'DONE' for flag in done_cont): 
+                        done_ch.append(True)
+                    else: 
+                        done_ch.append(False)
+                    getattr(self, side[0:3]+'_cut_opts').setCurrentText(wf_info['trimming'][side]['object'])
+                
+                if all(done_ch): 
+                    plot_btn = getattr(self, 'trimming_plot_'+ch)
+                    plot_btn.setEnabled(True)
+                    done_all.append(True)
+                else: 
+                    done_all.append(False)
+            
+            if all(done_all):
+                #Toggle Button
+                self.trimming_set.setChecked(True)
+                toggled(self.trimming_set)
+                #Update Status in GUI
+                self.update_status(None, 'DONE', self.trimming_status, override=True)
+            elif any(done_all):
+                #Update Status in GUI
+                self.update_status(None, 'Initialised', self.trimming_status, override=True)
+            else: 
+                pass
+        
+            #Run Set Function 
+            self.set_trim(init = True)
+        else: 
+            pass
+            
+    def user_orientation(self): 
+        wf_info = self.organ.mH_settings['wf_info']
+        workflow = self.organ.workflow['morphoHeart']['MeshesProc']['A-Create3DMesh']['Set_Orientation']
+        if 'orientation' in wf_info.keys():
+            #Organ/ROI
+            rotate = getattr(self, 'roi_rotate')
+            rotate.setChecked(wf_info['orientation']['roi']['rotate'])
+            if rotate.isChecked(): 
+                method = wf_info['orientation']['roi']['method']
+                if method == 'Centreline':
+                    self.radio_centreline.setChecked(True)
+                    self.centreline_orientation.setCurrentText(wf_info['orientation']['roi']['centreline'])
+                    self.plane_orient.setCurrentText(wf_info['orientation']['roi']['plane_orient'])
+                    self.vector_orient.setCurrentText(wf_info['orientation']['roi']['vector_orient']) 
+                else: 
+                    self.radio_manual.setChecked(True)
+                    self.rotate_angles.setText(wf_info['orientation']['roi']['angles'])
+
+            for item in ['Stack', 'ROI']:
+                if workflow[item] == 'DONE':
+                    getattr(self, item.lower()+'_orient_plot').setEnabled(True)
+            
+            #Update Status in GUI
+            if workflow['Status'] == 'Initialised' or 'DONE': 
+                #Toggle Button
+                self.orientation_set.setChecked(True)
+                toggled(self.orientation_set)
+
+            #Update Status in GUI
+            self.update_status(workflow, ['Status'], self.orient_status)
+
+            #Run Set Function 
+            self.set_orientation(init=True)
+        else: 
+            pass
+    
+    def user_chNS(self):
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'chNS' in wf_info.keys():
+            if wf_info['chNS']['plot2d']: 
+                self.chNS_plot2d.setChecked(True)
+                self.chNS_n_slices.setValue(wf_info['chNS']['n_slices'])
+
+            workflow = self.organ.workflow['morphoHeart']['ImProc']['chNS']['D-S3Create']['Status']
+            if workflow == 'DONE': 
+                plot_btn = getattr(self, 'chNS_plot')
+                plot_btn.setEnabled(True)
+                #Toggle Button
+                self.chNS_set.setChecked(True)
+                toggled(self.chNS_set)
+                #Update Status in GUI
+                self.update_status(None, 'DONE', self.chNS_status, override=True)
+
+            #Run Set Function 
+            self.set_chNS()
+        else: 
+            pass
+
+    def user_centreline(self): 
+
+        wf = self.organ.workflow['morphoHeart']['MeshesProc']['C-Centreline']
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'centreline' in wf_info.keys():
+            self.tolerance.setValue(wf_info['centreline']['SimplifyMesh']['tol'])
+            self.cB_voronoi.setChecked(wf_info['centreline']['vmtk_CL']['voronoi'])
+            self.nPoints.setValue(wf_info['centreline']['buildCL']['nPoints'])
+            #Enable set button 
+            plot_btn = getattr(self, 'centreline_set')
+            plot_btn.setEnabled(True)
+            #Enable button for clean
+            plot_btn = getattr(self, 'centreline_clean_play')
+            plot_btn.setEnabled(True)
+
+            cl_to_extract = self.organ.mH_settings['measure']['CL']
+            cl_keys = list(cl_to_extract.keys())
+            directory = self.organ.dir_res(dir ='centreline')
+            for nn in range(len(cl_keys)):
+                ch, cont = cl_keys[nn].split('_')[0:-1]
+                if wf['SimplifyMesh'][ch][cont]['Status'] == 'DONE':
+                    #Update Status in GUI
+                    status_sq = getattr(self, 'clClean_status'+str(nn+1))
+                    self.update_status(wf, ['SimplifyMesh',ch,cont,'Status'], status_sq)
+                    #Enable button for plot
+                    plot_btn = getattr(self, 'cl_clean_plot'+str(nn+1))
+                    plot_btn.setEnabled(True)
+                    #Enable button for ML
+                    plot_btn = getattr(self, 'centreline_ML_play')
+                    plot_btn.setEnabled(True)
+
+                if self.organ.mH_settings['wf_info']['centreline']['dirs'] != None: 
+                    if ch in self.organ.mH_settings['wf_info']['centreline']['dirs'].keys():
+                        if cont in self.organ.mH_settings['wf_info']['centreline']['dirs'][ch].keys():
+                            name_ML = self.organ.mH_settings['wf_info']['centreline']['dirs'][ch][cont]['dir_meshLabMesh']
+                            mesh_dir = directory / name_ML
+                            if mesh_dir.is_file():
+                                #Update Status in GUI
+                                status_sq = getattr(self, 'meshLab_status'+str(nn+1))
+                                self.update_status(None, 'DONE', status_sq, override=True)
+                                #Enable button for vmtk
+                                plot_btn = getattr(self, 'centreline_vmtk_play')
+                                plot_btn.setEnabled(True)
+
+                if wf['vmtk_CL'][ch][cont]['Status'] == 'DONE': 
+                    #Update Status in GUI
+                    status_sq = getattr(self, 'vmtk_status'+str(nn+1))
+                    self.update_status(wf, ['vmtk_CL',ch,cont,'Status'], status_sq)
+                    #Enable button for select
+                    plot_btn = getattr(self, 'centreline_select')
+                    plot_btn.setEnabled(True)
+                
+                if wf['buildCL'][ch][cont]['Status'] == 'DONE': 
+                    #Update Status in GUI
+                    status_sq = getattr(self, 'opt_cl_status'+str(nn+1))
+                    self.update_status(wf, ['buildCL',ch,cont,'Status'], status_sq)
+                    #Enable button for plot
+                    plot_btn = getattr(self, 'cl_plot'+str(nn+1))
+                    plot_btn.setEnabled(True)
+
+                    value = wf_info['centreline']['buildCL']['connect_cl'][ch+'_'+cont]
+                    valuef = value.split('-')[0]
+                    getattr(self, 'opt_cl'+str(nn+1)).setText(valuef)
+            
+            #Update Status in GUI
+            self.update_status(wf, ['Status'], self.centreline_status)
+
+            #Run Set Function 
+            self.set_centreline(init=True)
+        else: 
+            pass
+
+    def user_heatmaps(self): 
+        wf = self.organ.workflow['morphoHeart']['MeshesProc']
+        wf_info = self.organ.mH_settings['wf_info']
+        at_least_one = False
+        if 'heatmaps' in wf_info.keys():
+            print('wf_info[heatmaps]:', wf_info['heatmaps'])
+            hm_items = list(self.heatmap_dict.keys())
+            print('hm_items:', hm_items)
+            nn = 1
+            for item in hm_items: 
+                getattr(self, 'def'+str(nn)).setChecked(wf_info['heatmaps'][item]['default'])
+                getattr(self, 'min_hm'+str(nn)).setValue(wf_info['heatmaps'][item]['min_val'])
+                getattr(self, 'max_hm'+str(nn)).setValue(wf_info['heatmaps'][item]['max_val'])
+                getattr(self, 'colormap'+str(nn)).setCurrentText(wf_info['heatmaps'][item]['colormap'])
+                getattr(self, 'd3d2_'+str(nn)).setChecked(wf_info['heatmaps'][item]['d3d2'])
+
+                if 'th' in item: #'th_i2e[ch1-tiss]'
+                    if 'i2e' in item: 
+                        process = 'D-Thickness_int>ext'
+                    else: 
+                        process = 'D-Thickness_ext>int'
+                    ch_cont = item[0:-1].split('[')[1]
+                    ch, cont = ch_cont.split('-')
+                    proc = [process, ch, cont, 'Status']
+                else: #'ball[ch1-int(CL:ch1-int)]'
+                    process = 'D-Ballooning'
+                    ch_cl_info = item[0:-2].split('[')[1]
+                    ch_info, cl_info = ch_cl_info.split('(CL.')
+                    ch, cont = ch_info.split('-')
+                    proc = [process, ch, cont+'_('+cl_info.replace('-','_')+')', 'Status']
+                    
+                print('proc:', proc)
+                if get_by_path(wf, proc) == 'DONE':
+                    getattr(self, 'hm_plot'+str(nn)).setEnabled(True)
+                    at_least_one = True
+                    # getattr(self, 'hm_plot'+str(nn)+'_2D')
+                nn+=1
+
+            done_all = []
+            for proc_n in ['D-Thickness_int>ext','D-Thickness_ext>int','D-Ballooning']:
+                done_all.append(get_by_path(wf, [proc_n, 'Status']) == 'DONE')
+
+            #Update Status in GUI
+            if all(done_all): 
+                self.update_status(None, 'DONE', self.heatmaps_status, override=True)
+            elif any(done_all) or at_least_one: 
+                self.update_status(None, 'Initialised', self.heatmaps_status, override=True)
+            else: 
+                pass
+                    
+            #Run Set Function 
+            self.set_thickness(init=True)
+        else: 
+            pass
         
     #Functions specific to gui functionality
     def open_section(self, name): 
@@ -3544,15 +3937,38 @@ class MainWindow(QMainWindow):
         getattr(self, 'min_hm'+btn_num).setEnabled(bol_val)
         getattr(self, 'max_hm'+btn_num).setEnabled(bol_val)
 
+    def check_all(self, mtype):
+        check_btn = getattr(self, 'all_'+mtype)
+        if check_btn.isChecked(): 
+            value = True
+        else:
+            value = False
+        
+        if mtype == 'def': 
+            cB_name = 'def'
+        elif mtype == 'd3d2':
+            cB_name = 'd3d2_'
+        else: 
+            print('other name?')
+
+        for num in range(1,13,1): 
+            getattr(self, cB_name+str(num)).setChecked(value)
+  
     #Set functions 
     def set_keeplargest(self): 
-        self.gui_keep_largest = {}
-        for ch in self.channels: 
-            if ch != 'chNS':
-                self.gui_keep_largest[ch] = {}
-                for cont in ['int', 'tiss', 'ext']:
-                    cB = getattr(self, 'kl_'+ch+'_'+cont)
-                    self.gui_keep_largest[ch][cont] = cB.isChecked() 
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_keep_largest = self.gui_keep_largest_n()
+        if 'keep_largest' not in wf_info.keys():
+            self.gui_keep_largest = current_gui_keep_largest
+        else: 
+            gui_keep_largest_loaded = self.organ.mH_settings['wf_info']['keep_largest']
+            if len(compare_dicts(gui_keep_largest_loaded, current_gui_keep_largest, 'loaded', 'current'))!= 0: 
+                self.gui_keep_largest = update_gui_set(loaded = gui_keep_largest_loaded, 
+                                                       current = current_gui_keep_largest)
+                self.win_msg("Remember to re-run  -Keep Largest-  section to make sure changes are made and saved!")
+                self.update_status(None, 're-run', self.keeplargest_status, override=True)
+            else: 
+                self.gui_keep_largest = gui_keep_largest_loaded
 
         self.rotateZ_90 = True
         self.keeplargest_set.setChecked(True)
@@ -3560,7 +3976,49 @@ class MainWindow(QMainWindow):
         print('self.gui_keep_largest:',self.gui_keep_largest)
         self.keeplargest_play.setEnabled(True)
 
+        # Update mH_settings
+        proc_set = ['wf_info']
+        update = self.gui_keep_largest
+        self.organ.update_settings(proc_set, update, 'mH', add='keep_largest')
+
+    def gui_keep_largest_n(self):
+        gui_keep_largest = {}
+        for ch in self.channels: 
+            if ch != 'chNS':
+                gui_keep_largest[ch] = {}
+                for cont in ['int', 'tiss', 'ext']:
+                    cB = getattr(self, 'kl_'+ch+'_'+cont)
+                    gui_keep_largest[ch][cont] = cB.isChecked() 
+        self.rotateZ_90 = True
+
+        return gui_keep_largest
+
     def set_clean(self): 
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_clean = self.gui_clean_n()
+        if 'cleanup' not in wf_info.keys():
+            self.gui_clean = current_gui_clean
+        else: 
+            gui_clean_loaded = self.organ.mH_settings['wf_info']['cleanup']
+            if len(compare_dicts(gui_clean_loaded, current_gui_clean, 'loaded', 'current'))!= 0: 
+                self.gui_clean = update_gui_set(loaded = gui_clean_loaded, 
+                                                current = current_gui_clean)
+                self.win_msg("Remember to re-run  -Segmentation Clean-Up-  section to make sure changes are made and saved!")
+                self.update_status(None, 're-run', self.cleanup_status, override=True)
+            else: 
+                self.gui_clean = gui_clean_loaded
+
+        self.cleanup_set.setChecked(True)
+        toggled(self.cleanup_set)
+        print('self.gui_clean: ', self.gui_clean)
+        self.cleanup_play.setEnabled(True)
+
+        # Update mH_settings
+        proc_set = ['wf_info']
+        update = self.gui_clean
+        self.organ.update_settings(proc_set, update, 'mH', add='cleanup')
+
+    def gui_clean_n(self):
         #Check first if any cont selected that the ch and cont are selected
         im_chs = [ch for ch in self.channels if ch != 'chNS']
         chs_sel = []
@@ -3578,46 +4036,66 @@ class MainWindow(QMainWindow):
                 else: 
                     continue
                 
-        self.gui_clean = {}
+        gui_clean = {}
         for chc in chs_sel: 
-            self.gui_clean[chc] = {'cont': []}
+            gui_clean[chc] = {'cont': []}
             for cont in ['int', 'tiss', 'ext']: 
                 val = getattr(self, 'clean_'+chc+'_'+cont).isChecked()
                 if val: 
-                    self.gui_clean[chc]['cont'].append(cont)
-                self.gui_clean[chc]['with_ch'] = getattr(self, 'clean_withch_'+chc).currentText()
-                self.gui_clean[chc]['with_cont'] = getattr(self, 'clean_withcont_'+chc).currentText()
-                self.gui_clean[chc]['inverted'] = getattr(self, 'inverted_'+chc).isChecked()
+                    gui_clean[chc]['cont'].append(cont)
+                gui_clean[chc]['with_ch'] = getattr(self, 'clean_withch_'+chc).currentText()
+                gui_clean[chc]['with_cont'] = getattr(self, 'clean_withcont_'+chc).currentText()
+                gui_clean[chc]['inverted'] = getattr(self, 'inverted_'+chc).isChecked()
 
         if self.clean_plot2d.isChecked():
-            self.gui_clean['plot2d'] =  True
-            self.gui_clean['n_slices'] = self.clean_n_slices.value()
+            gui_clean['plot2d'] =  True
+            gui_clean['n_slices'] = self.clean_n_slices.value()
         else: 
-            self.gui_clean['plot2d'] = False
-
-        self.cleanup_set.setChecked(True)
-        toggled(self.cleanup_set)
-        print('self.gui_clean: ', self.gui_clean)
-        self.cleanup_play.setEnabled(True)
-
-    def set_trim(self): 
-        self.gui_trim = {}
-        im_chs = [ch for ch in self.channels if ch != 'chNS']
-        for side in ['top', 'bottom']: 
-            self.gui_trim[side] = {'chs': {}}
-            for cht in im_chs: 
-                self.gui_trim[side]['chs'][cht] = {}
-                for cont in ['int', 'tiss', 'ext']: 
-                    val = getattr(self, side[0:3]+'_'+cht+'_'+cont).isChecked()
-                    self.gui_trim[side]['chs'][cht][cont] = val
+            gui_clean['plot2d'] = False
         
-            obj = getattr(self, side[0:3]+'_cut_opts').currentText()
-            self.gui_trim[side]['object'] = obj
+        return gui_clean
+
+    def set_trim(self, init=False): 
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_trim = self.gui_trim_n()
+        if 'trimming' not in wf_info.keys():
+            self.gui_trim = current_gui_trim
+        else: 
+            gui_trim_loaded = self.organ.mH_settings['wf_info']['trimming']
+            print('DictComp:', compare_dicts(gui_trim_loaded, current_gui_trim, 'loaded', 'current'))
+            if len(compare_dicts(gui_trim_loaded, current_gui_trim, 'loaded', 'current'))!= 0 and not init: 
+                self.gui_trim = update_gui_set(loaded = gui_trim_loaded, 
+                                                    current = current_gui_trim)
+                self.win_msg("Remember to re-run  -Meshes Trimming-  section to make sure changes are made and saved!")
+                self.update_status(None, 're-run', self.trimming_status, override=True)
+            else: 
+                self.gui_trim = gui_trim_loaded
 
         self.trimming_set.setChecked(True)
         toggled(self.trimming_set)
         print('self.gui_trim: ', self.gui_trim)
         self.trimming_play.setEnabled(True)
+
+         # Update mH_settings
+        proc_set = ['wf_info']
+        update = self.gui_trim
+        self.organ.update_settings(proc_set, update, 'mH', add='trimming')
+    
+    def gui_trim_n(self):
+        gui_trim = {}
+        im_chs = [ch for ch in self.channels if ch != 'chNS']
+        for side in ['top', 'bottom']: 
+            gui_trim[side] = {'chs': {}}
+            for cht in im_chs: 
+                gui_trim[side]['chs'][cht] = {}
+                for cont in ['int', 'tiss', 'ext']: 
+                    val = getattr(self, side[0:3]+'_'+cht+'_'+cont).isChecked()
+                    gui_trim[side]['chs'][cht][cont] = val
+        
+            obj = getattr(self, side[0:3]+'_cut_opts').currentText()
+            gui_trim[side]['object'] = obj
+        
+        return gui_trim
 
     def check_roi_rotate(self):
 
@@ -3631,8 +4109,7 @@ class MainWindow(QMainWindow):
             self.rotate_method(mtype ='none')
 
     def rotate_method(self, mtype:str):
-        print('Checked:', mtype)
-
+        # print('Checked:', mtype)
         if self.radio_manual.isChecked(): 
             self.rotate_angles.setEnabled(True)
             self.centreline_orientation.setEnabled(False)
@@ -3655,15 +4132,39 @@ class MainWindow(QMainWindow):
             self.lab_vector.setEnabled(False)
             self.vector_orient.setEnabled(False)
     
-    def set_orientation(self): 
+    def set_orientation(self, init=False): 
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_orientation = self.gui_orientation_n()
+        if 'orientation' not in wf_info.keys():
+            self.gui_orientation = current_gui_orientation
+        else: 
+            gui_orientation_loaded = self.organ.mH_settings['wf_info']['orientation']
+            if len(compare_dicts(gui_orientation_loaded, current_gui_orientation, 'loaded', 'current'))!= 0 and not init: 
+                self.gui_orientation = update_gui_set(loaded = gui_orientation_loaded, 
+                                                       current = current_gui_orientation)
+                self.win_msg("Remember to re-run  -Organ/ROI Axis Labels-  section to make sure changes are made and saved!")
+                self.update_status(None, 're-run', self.orient_status, override=True)
+            else: 
+                self.gui_orientation = gui_orientation_loaded
 
+        self.orientation_set.setChecked(True)
+        toggled(self.orientation_set)
+        print('self.gui_orientation: ', self.gui_orientation)
+        self.orientation_play.setEnabled(True)
+
+        # Update mH_settings
+        proc_set = ['wf_info']
+        update = self.gui_orientation
+        self.organ.update_settings(proc_set, update, 'mH', add='orientation')
+
+    def gui_orientation_n(self): 
         #Stack
-        self.gui_orientation = {}
-        self.gui_orientation['stack'] = {'axis': self.organ.mH_settings['setup']['orientation']['stack']}
+        gui_orientation = {}
+        gui_orientation['stack'] = {'axis': self.organ.mH_settings['setup']['orientation']['stack']}
 
         #ROI
         roi_rotate = self.roi_rotate.isChecked()
-        self.gui_orientation['roi'] = {'axis': self.organ.mH_settings['setup']['orientation']['roi'],
+        gui_orientation['roi'] = {'axis': self.organ.mH_settings['setup']['orientation']['roi'],
                                         'rotate': roi_rotate}
         if roi_rotate: 
             for rB in ['radio_manual', 'radio_centreline']:
@@ -3672,38 +4173,82 @@ class MainWindow(QMainWindow):
                     rB_checked = rB
                     break
             if rB_checked == 'radio_manual': 
-                self.gui_orientation['roi']['method'] = 'Manual'
+                gui_orientation['roi']['method'] = 'Manual'
             else: 
                 plane_orient = self.plane_orient.currentText()
                 vector_orient = self.vector_orient.currentText()
                 centreline = self.centreline_orientation.currentText()
-                self.gui_orientation['roi']['method'] = 'Centreline'
-                self.gui_orientation['roi']['centreline'] = centreline
-                self.gui_orientation['roi']['plane_orient'] = plane_orient
-                self.gui_orientation['roi']['vector_orient'] = vector_orient
+                gui_orientation['roi']['method'] = 'Centreline'
+                gui_orientation['roi']['centreline'] = centreline
+                gui_orientation['roi']['plane_orient'] = plane_orient
+                gui_orientation['roi']['vector_orient'] = vector_orient
         else: 
             pass
-            
-        self.orientation_set.setChecked(True)
-        toggled(self.orientation_set)
-        print('self.gui_orientation: ', self.gui_orientation)
-        self.orientation_play.setEnabled(True)
+
+        return gui_orientation
 
     def set_chNS(self):
-        self.gui_chNS = {}
-        if self.chNS_plot2d.isChecked():
-            self.gui_chNS = {'plot2d': True, 
-                             'n_slices': self.chNS_n_slices.value()}
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_chNS = self.gui_chNS_n()
+        if 'chNS' not in wf_info.keys():
+            self.gui_chNS = current_gui_chNS
         else: 
-            self.gui_chNS['plot2d'] = False
+            gui_chNS_loaded = self.organ.mH_settings['wf_info']['chNS']
+            if len(compare_dicts(gui_chNS_loaded, current_gui_chNS, 'loaded', 'current'))!= 0: 
+                self.gui_chNS = update_gui_set(loaded = gui_chNS_loaded, 
+                                                       current = current_gui_chNS)
+                self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
+                self.update_status(None, 're-run', self.chNS_status, override=True)
+            else: 
+                self.gui_chNS = gui_chNS_loaded
 
         self.chNS_set.setChecked(True)
         toggled(self.chNS_set)
         print('self.gui_chNS: ', self.gui_chNS)
         self.chNS_play.setEnabled(True)   
 
-    def set_centreline(self):
+        # Update mH_settings
+        proc_set = ['wf_info']
+        update = self.gui_chNS
+        self.organ.update_settings(proc_set, update, 'mH', add='chNS')
+    
+    def gui_chNS_n(self): 
+        gui_chNS = {}
+        if self.chNS_plot2d.isChecked():
+            gui_chNS = {'plot2d': True, 
+                            'n_slices': self.chNS_n_slices.value()}
+        else: 
+            gui_chNS['plot2d'] = False
 
+        return gui_chNS
+
+    def set_centreline(self, init=False):
+
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_centreline = self.gui_centreline_n()
+        if 'centreline' not in wf_info.keys():
+            self.gui_centreline = current_gui_centreline
+        else: 
+            gui_centreline_loaded = self.organ.mH_settings['wf_info']['centreline']
+            if len(compare_dicts(gui_centreline_loaded, current_gui_centreline, 'loaded', 'current'))!= 0 and not init: 
+                self.gui_centreline = update_gui_set(loaded = gui_centreline_loaded, 
+                                                       current = current_gui_centreline)
+                self.win_msg("Remember to re-run  -Keep Largest-  section to make sure changes are made and saved!")
+                self.update_status(None, 're-run', self.centreline_status, override=True)
+            else: 
+                self.gui_centreline = gui_centreline_loaded
+        
+        self.centreline_set.setChecked(True)
+        toggled(self.centreline_set)
+        print('self.gui_centreline: ', self.gui_centreline)
+        self.centreline_clean_play.setEnabled(True) 
+
+        #Update mH_settings
+        proc_set = ['wf_info']
+        update =  self.gui_centreline
+        self.organ.update_settings(proc_set, update, 'mH', add='centreline')  
+
+    def gui_centreline_n(self):
         cl_names = list(self.organ.mH_settings['measure']['CL'].keys())
         connect_cl = {}
         for name in cl_names: 
@@ -3713,18 +4258,40 @@ class MainWindow(QMainWindow):
         tol = self.tolerance.value()
         voronoi = self.cB_voronoi.isChecked()
         nPoints = self.nPoints.value()
-        self.gui_centreline =  {'SimplifyMesh': {'plane_cuts': None, 'tol': tol},
+        gui_centreline =  {'SimplifyMesh': {'plane_cuts': None, 'tol': tol},
                                 'vmtk_CL': {'voronoi': voronoi},
                                 'buildCL': {'nPoints': nPoints, 'connect_cl': connect_cl}, 
                                 'dirs' : None}
-        
-        self.centreline_set.setChecked(True)
-        toggled(self.centreline_set)
-        print('self.gui_centreline: ', self.gui_centreline)
-        self.centreline_clean_play.setEnabled(True)   
+        return gui_centreline
 
-    def set_thickness(self): 
-        self.gui_thickness_ballooning = {}
+    def set_thickness(self, init=False): 
+
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_thickness_ballooning = self.gui_thickness_ballooning_n()
+        if 'heatmaps' not in wf_info.keys():
+            self.gui_thickness_ballooning = current_gui_thickness_ballooning
+        else: 
+            gui_thickness_ballooning_loaded = self.organ.mH_settings['wf_info']['heatmaps']
+            if len(compare_dicts(gui_thickness_ballooning_loaded, current_gui_thickness_ballooning, 'loaded', 'current'))!= 0 and not init: 
+                self.gui_thickness_ballooning = update_gui_set(loaded = gui_thickness_ballooning_loaded, 
+                                                       current = current_gui_thickness_ballooning)
+                self.win_msg("Remember to re-run  -Thickness / Ballooning Measurements-  section to make sure changes are made and saved!")
+                self.update_status(None, 're-run', self.heatmaps_status, override=True)
+            else: 
+                self.gui_thickness_ballooning = gui_thickness_ballooning_loaded
+            
+        self.thickness_set.setChecked(True)
+        toggled(self.thickness_set)
+        print('self.gui_thickness_ballooning: ', self.gui_thickness_ballooning)
+        self.heatmaps3D_play.setEnabled(True) 
+
+        # Update mH_settings
+        proc_set = ['wf_info']
+        update = self.gui_thickness_ballooning
+        self.organ.update_settings(proc_set, update, 'mH', add='heatmaps')
+
+    def gui_thickness_ballooning_n(self):
+        gui_thickness_ballooning = {}
         nn = 1
         for item in self.heatmap_dict:
             default = getattr(self, 'def'+str(nn)).isChecked()
@@ -3736,18 +4303,15 @@ class MainWindow(QMainWindow):
                 max_val = getattr(self, 'max_hm'+str(nn)).value()
             colormap = getattr(self, 'colormap'+str(nn)).currentText()
             d3d2 = getattr(self, 'd3d2_'+str(nn)).isChecked()
-            self.gui_thickness_ballooning[item] = {'default': default, 
+            gui_thickness_ballooning[item] = {'default': default, 
                                                    'min_val': min_val, 
                                                    'max_val': max_val, 
                                                    'colormap': colormap, 
                                                    'd3d2': d3d2}
             nn+=1
-            
-        self.thickness_set.setChecked(True)
-        toggled(self.thickness_set)
-        print('self.gui_thickness_ballooning: ', self.gui_thickness_ballooning)
-        self.heatmaps3D_play.setEnabled(True) 
-    
+
+        return gui_thickness_ballooning
+        
     #Plot functions
     def plot_meshes(self, ch, chNS=False):
         txt = [(0, self.organ.user_organName)]
@@ -3778,9 +4342,18 @@ class MainWindow(QMainWindow):
             cl_to_extract = list(self.organ.mH_settings['measure']['CL'].keys())
             cl_name = cl_to_extract[btn_num]
             ch, cont, _ = cl_name.split('_')
+            mesh = self.organ.obj_meshes[ch+'_'+cont]
 
             if sub == 'SimplifyMesh': 
-                m4clf = self.organ.obj_temp['centreline'][sub][ch+'_'+cont]
+                # First see if obj_temp is loaded with the info needed
+                if self.organ.obj_temp['centreline'][sub][ch+'_'+cont]['mesh'] != None: 
+                    m4clf = self.organ.obj_temp['centreline'][sub][ch+'_'+cont]
+                else: 
+                    # Load objects
+                    obj_temp = self.organ.load_objTemp(proc = 'centreline', key = 'SimplifyMesh', 
+                                                    ch_cont = ch+'_'+cont, obj_temp = self.organ.obj_temp)
+                    m4clf = obj_temp['centreline'][sub][ch+'_'+cont]
+            
                 item = []
                 for key in m4clf: 
                     if isinstance(m4clf[key], dict):
@@ -3798,37 +4371,77 @@ class MainWindow(QMainWindow):
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
     def plot_heatmap3d(self, btn):
+        from ..modules.mH_funcMeshes import sphs_in_spline
+
         txt = [(0, self.organ.user_organName)]
         #Get button number
         btn_num = int(btn[-1])-1
         hm_all = list(self.heatmap_dict.keys())
         hm_name = hm_all[btn_num]
         short, ch_info = hm_name.split('[')
+        print('AAA', ch_info)
         ch, cont = ch_info.split('-')
         if 'th' in short: 
             _, th_val = short.split('_')
             if th_val == 'i2e': #int>ext': 
-                mesh_to = self.organ.obj_meshes[ch+'_ext'].mesh
+                mesh_to = self.organ.obj_meshes[ch+'_ext']
                 mesh_from = self.organ.obj_meshes[ch+'_int'].mesh
                 mtype = 'thck(intTOext)'
+                short = 'th_i2e'
+                from_name = 'int>ext'
             else:# n_type == 'ext>int': 
-                mesh_to = self.organ.obj_meshes[ch+'_int'].mesh
+                mesh_to = self.organ.obj_meshes[ch+'_int']
                 mesh_from = self.organ.obj_meshes[ch+'_ext'].mesh
                 mtype = 'thck(extTOint)'
+                short = 'th_e2i'
+                from_name = 'ext>int'
             mesh_tiss = self.organ.obj_meshes[ch+'_tiss'].mesh
             mesh_thck = self.organ.obj_meshes[ch+'_tiss'].mesh_meas[mtype]
 
-            # mesh_toB.cmap(color_map)
-            # mesh_toB.add_scalarbar(title=title, pos=(0.8, 0.05))
-            # if range == (None, None): 
-            #     mesh_toB.mapper().SetScalarRange(vmin,vmax)
-            # else: 
-            #     mesh_toB.mapper().SetScalarRange(range[0],range[1])
+            print('mesh_to.legend:', mesh_to.legend)
+            title = mesh_to.legend+'\nThickness [um]\n('+from_name+')'
+            mesh_thck = self.set_scalebar(mesh=mesh_thck, name = hm_name, proc = short, title = title)
 
-            obj = [(mesh_from, mesh_to), (mesh_tiss), (mesh_thck)]
+            txt = [(0, self.organ.user_organName +' - Thickness Measurement Setup')]
+            obj = [(mesh_from, mesh_to.mesh), (mesh_tiss), (mesh_thck)]
+
+        else: #'ball' in short
+            ch_cont, cl_info = hm_name.split('(')
+            ch, cont = ch_cont.split('-')
+            cl_info = cl_info[:-1].split('.')[1]
+            from_cl, from_cl_type = cl_info.split('-')
+            short = 'ball'
+            
+            #Get meshes
+            mesh2ball = self.organ.obj_meshes[ch+'_'+cont].mesh
+            cl4ball = self.organ.obj_meshes[from_cl+'_'+from_cl_type].get_centreline()
+            sph4ball = sphs_in_spline(kspl=cl4ball,every=0.6)
+            sph4ball.legend('sphs_ball').alpha(0.1)
+            m_type = 'ballCL('+from_cl+'_'+from_cl_type+')'
+            mesh_ball = mesh2ball.mesh_meas[m_type]
+
+            title = mesh2ball.legend+'\nBallooning [um]\nCL('+from_cl+'_'+from_cl_type+')',
+            mesh_ball = self.set_scalebar(mesh=mesh_ball, name = hm_name, proc = short, title = title)
+
+            txt = [(0, self.organ.user_organName +' - Ballooning Measurement Setup')]
+            obj = [(mesh2ball, cl4ball, sph4ball), (mesh_ball, cl4ball, sph4ball)]
 
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
+    def set_scalebar(self, mesh, name, proc, title):
+        if self.gui_thickness_ballooning[name]['default']: 
+            min_val = self.organ.mH_settings['measure'][proc]['range_o']['min_val']
+            max_val = self.organ.mH_settings['measure'][proc]['range_o']['max_val']
+        else: 
+            min_val = self.gui_thickness_ballooning[name]['min_val']
+            max_val = self.gui_thickness_ballooning[name]['max_val']
+        color_map = self.gui_thickness_ballooning[name]['colormap']
+
+        mesh.cmap(color_map)
+        mesh.add_scalarbar(title=title, pos=(0.7, 0.05))
+        mesh.mapper().SetScalarRange(min_val,max_val)
+
+        return mesh
 
     #Help functions
     def help(self, process): 
@@ -4049,19 +4662,26 @@ def sound_opt(win):
     
 #%% GUI Related Functions - ########################################################
 # Update workflow colors
-def update_status(root_dict, items, fillcolor): 
-    wf_status = get_by_path(root_dict, items)
-    if wf_status == 'NI': 
-        color_txt = "background-color: rgb(255, 255, 127); border-color: rgb(0, 0, 0);"
-    elif wf_status == 'Initialised': 
-        color_txt = "background-color: rgb(255, 151, 60); border-color: rgb(0, 0, 0);"
-    elif wf_status == 'DONE' or wf_status == 'Done':
-        color_txt = "background-color:  rgb(0, 255, 0); border-color: rgb(0, 0, 0);"
-    elif wf_status == 'N/A': 
-        color_txt = "background-color:  rgb(0, 0, 0); border-color: rgb(0, 0, 0);"
+def update_status(root_dict, items, fillcolor, override=False): 
+    if not override: 
+        wf_status = get_by_path(root_dict, items)
     else: 
-        color_txt = "background-color:  rgb(255, 0, 255); border-color: rgb(0, 0, 0);"
+        wf_status = items
+
+    if wf_status == 'NI': 
+        color_txt = "background-color: rgb(255, 255, 127); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
+    elif wf_status == 'Initialised': 
+        color_txt = "background-color: rgb(255, 151, 60); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
+    elif wf_status == 'DONE' or wf_status == 'Done':
+        color_txt = "background-color:  rgb(0, 255, 0); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
+    elif wf_status == 'N/A': 
+        color_txt = "background-color:  rgb(0, 0, 0); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
+    elif wf_status == 're-run': 
+        color_txt = "background-color:  rgb(35, 207, 255); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
+    else: 
+        color_txt = "background-color:  rgb(255, 0, 255); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
         print('other status unknown')
+
     fillcolor.setStyleSheet(color_txt)
 
 # Button general functions
@@ -4072,6 +4692,16 @@ def toggled(button_name):
     else: 
         style_f = 'QPushButton{background-color: rgb(211, 211, 211); border-color: rgb(66, 66, 66);'+style+'}'
     button_name.setStyleSheet(style_f)
+
+def setup_play_btn(btn, win): 
+    pixmapi = getattr(QStyle.StandardPixmap, 'SP_MediaPlay')
+    icon = win.style().standardIcon(pixmapi)
+    btn.setIcon(icon)
+    st1 = 'QPushButton{border-radius:12px; border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color:  rgb(0, 199, 0);}'
+    st2 = ' QPushButton:hover{background-color: rgb(0, 227, 0); border-color: rgb(115, 115, 115)}'
+    st3 = ' QPushButton:checked{background-color: rgb(0, 85, 0); border-color: rgb(115, 115, 115)}'
+    btn.setStyleSheet(st1+st2+st3)
+    
 
 #String validation
 def split_str(input_str):
