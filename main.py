@@ -374,6 +374,7 @@ class Controller:
                          'dir': path_folder}
             self.proj = mHC.Project(proj_dict, new=False)
             print('Loaded project:',self.proj.__dict__.keys())
+            print('Project[organs]:',self.proj.organs)
             self.load_proj_win.proj = self.proj
             #Fill window with project info
             self.load_proj_win.fill_proj_info(proj = self.proj)

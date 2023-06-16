@@ -47,7 +47,7 @@ def alert(sound:str):
     woohoo:
     '''
     # print('alert: ', mH_config.gui_sound)
-    mp3_basic = ['connection','woohoo']
+    mp3_basic = ['connection','woohoo', 'error_beep', 'error']
     
     if mH_config.gui_sound[0]: 
         if mH_config.gui_sound[1] == 'Minimal' and sound in mp3_basic:

@@ -117,23 +117,33 @@ def select_cont(controller, ch_name):
 
 def run_keeplargest(controller):
     workflow = controller.organ.workflow
-    fcM.s32Meshes(organ = controller.organ, gui_keep_largest=controller.main_win.gui_keep_largest, 
-                  win = controller.main_win, rotateZ_90=controller.organ.mH_settings['setup']['rotateZ_90'])
+    #Check channels have already been created: 
+
+    if len(controller.organ.obj_imChannels.keys()) == controller.organ.mH_settings['setup']['no_chs']:
+        fcM.s32Meshes(organ = controller.organ, gui_keep_largest=controller.main_win.gui_keep_largest, 
+                    win = controller.main_win, rotateZ_90=controller.organ.mH_settings['setup']['rotateZ_90'])
+
+        #Update Status in GUI
+        controller.main_win.update_status(None, 'DONE', controller.main_win.keeplargest_status, override = True)
+
+        #Enable button for plot all
+        plot_all = getattr(controller.main_win, 'keeplargest_plot')
+        plot_all.setEnabled(True)
+
+        #Toggle button
+        select_btn = getattr(controller.main_win, 'keeplargest_play')
+        select_btn.setChecked(True)
+        toggled(select_btn)
     
-    #Update Status in GUI
-    controller.main_win.update_status(None, 'DONE', win.keeplargest_status, override = True)
-
-    #Enable button for plot all
-    plot_all = getattr(controller.main_win, 'keeplargest_plot')
-    plot_all.setEnabled(True)
-
-    #Toggle button
-    select_btn = getattr(controller.main_win, 'keeplargest_play')
-    select_btn.setChecked(True)
-    toggled(select_btn)
+    else: 
+        title = 'Channels not closed / Contours not selected!'
+        msg = 'You are not done closing/selecting the contours of the input channels! \nPlease go back to  -mH: Segment Channels-  Tab and continue processing the channels before turning into this tab'
+        prompt = Prompt_ok_cancel(title, msg, parent=controller.welcome_win)
+        prompt.exec()
+        print('output:', prompt.output)
 
     print('\nEND Keeplargest')
-    print('organ.mH_settings:', organ.mH_settings)
+    print('organ.mH_settings:', controller.organ.mH_settings)
     print('organ.workflow:', workflow)
 
 def run_cleanup(controller):
@@ -154,7 +164,7 @@ def run_cleanup(controller):
     if controller.main_win.gui_clean['plot2d']:
         plot_settings = (True, controller.main_win.gui_clean['n_slices'])
     else: 
-        plot_settings = (False, ) 
+        plot_settings = (False, None) 
 
     fcM.clean_ch(organ = controller.organ, 
                  gui_clean = controller.main_win.gui_clean, 
@@ -365,7 +375,7 @@ def run_chNS(controller):
     if controller.main_win.gui_chNS['plot2d']:
         plot_settings = (True, controller.main_win.gui_chNS['n_slices'])
     else: 
-        plot_settings = (False, ) 
+        plot_settings = (False, None) 
 
     fcM.extract_chNS(organ = controller.organ, 
                      rotateZ_90 = controller.organ.mH_settings['setup']['rotateZ_90'],
@@ -643,33 +653,32 @@ def run_heatmaps3D(controller):
     for item in controller.main_win.heatmap_dict:
         short, ch_info = item.split('[') #short = th_i2e, th_e2i, ball
         ch_info = ch_info[:-1]
-        if nn == 5:
-            if 'th' in short: 
-                _, th_val = short.split('_')
-                ch, cont = ch_info.split('-')
-                method = thck_values[th_val]['method']
-                mesh_tiss = controller.organ.obj_meshes[ch+'_tiss'].legend
-                print('\n>> Extracting thickness information for '+mesh_tiss+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
-                controller.main_win.win_msg('Extracting thickness information for '+mesh_tiss+'... NOTE: it takes about 5min to process each mesh... just be patient :)')
-                setup = controller.main_win.gui_thickness_ballooning[item]
-                fcM.get_thickness(organ = controller.organ, name = (ch, cont), 
-                                    thck_dict = thck_values[th_val], 
-                                    setup = setup)
+        if 'th' in short: 
+            _, th_val = short.split('_')
+            ch, cont = ch_info.split('-')
+            method = thck_values[th_val]['method']
+            mesh_tiss = controller.organ.obj_meshes[ch+'_tiss'].legend
+            print('\n>> Extracting thickness information for '+mesh_tiss+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
+            controller.main_win.win_msg('Extracting thickness information for '+mesh_tiss+'... NOTE: it takes about 5min to process each mesh... just be patient :)')
+            setup = controller.main_win.gui_thickness_ballooning[item]
+            fcM.get_thickness(organ = controller.organ, name = (ch, cont), 
+                                thck_dict = thck_values[th_val], 
+                                setup = setup)
 
-            else: # if 'ball' in short
-                ch_cont, cl_info = ch_info.split('(')
-                ch, cont = ch_cont.split('-')
+        else: # if 'ball' in short
+            ch_cont, cl_info = ch_info.split('(')
+            ch, cont = ch_cont.split('-')
 
-                cl_info = cl_info[:-1].split('.')[1]
-                cl_ch, cl_cont = cl_info.split('-')
-                mesh2ball = controller.organ.obj_meshes[ch+'_'+cont].legend
-                print('\n>> Extracting ballooning information for '+mesh2ball+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
-                controller.main_win.win_msg('Extracting ballooning information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
-                setup = controller.main_win.gui_thickness_ballooning[item]
+            cl_info = cl_info[:-1].split('.')[1]
+            cl_ch, cl_cont = cl_info.split('-')
+            mesh2ball = controller.organ.obj_meshes[ch+'_'+cont].legend
+            print('\n>> Extracting ballooning information for '+mesh2ball+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
+            controller.main_win.win_msg('Extracting ballooning information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
+            setup = controller.main_win.gui_thickness_ballooning[item]
 
-                fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
-                                    name_cl = (cl_ch, cl_cont), setup = setup)
-    
+            fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
+                                name_cl = (cl_ch, cl_cont), setup = setup)
+
         #Enable button for plot cl
         plot_btn = getattr(controller.main_win, 'hm_plot'+str(nn+1))
         plot_btn.setEnabled(True)

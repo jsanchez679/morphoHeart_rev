@@ -64,6 +64,8 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):
 
     workflow = organ.workflow['morphoHeart']
     proc_ms_all = ['MeshesProc','A-Create3DMesh', 'Status']
+    run = False
+    
     for ch in organ.obj_imChannels.keys(): 
         win.win_msg('Creating Channel '+ch[-1]+' meshes!')
         #Check if all the meshes for each channel have been created and set new_set accordingly
@@ -82,31 +84,44 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):
             win.win_msg('Creating meshes of Channel '+im_ch.channel_no[-1]+'! ('+str(aa+1)+'/3)')
             proc_cont_im = ['ImProc',im_ch.channel_no,'D-S3Create','Info', cont, 'Status']
             proc_cont_ms = ['MeshesProc','A-Create3DMesh', im_ch.channel_no, cont, 'Status']
-            im_ch.s32Meshes(cont_type=cont,
-                            keep_largest=gui_keep_largest[im_ch.channel_no][cont],
-                            rotateZ_90 = rotateZ_90, new_set = new_set)
+            try: 
+                im_ch.s32Meshes(cont_type=cont,
+                                keep_largest=gui_keep_largest[im_ch.channel_no][cont],
+                                rotateZ_90 = rotateZ_90, new_set = new_set)
+                # Update organ workflow
+                organ.update_mHworkflow(proc_cont_im, 'DONE')
+                organ.update_mHworkflow(proc_cont_ms, 'DONE')
+                aa+=1
+                win.prog_bar_update(aa)
+                run = True
+            except RuntimeError:
+                win.win_msg('*Remember to update the meshes within the s3_numpy folder to the ones in which contours have been selected!')
+                alert('error_beep')
+                return
             
-            # Update organ workflow
-            organ.update_mHworkflow(proc_cont_im, 'DONE')
-            organ.update_mHworkflow(proc_cont_ms, 'DONE')
-            aa+=1
-            win.prog_bar_update(aa)
-        
-        #Update organ workflow
-        organ.update_mHworkflow(proc_im_all, 'DONE')      
+        if run: 
+            #Update organ workflow
+            organ.update_mHworkflow(proc_im_all, 'DONE')      
 
-        #Message User
-        win.win_msg(' Channel '+ch[-1]+' meshes were successfully created!')
+            #Message User
+            win.win_msg(' Channel '+ch[-1]+' meshes were successfully created!')
 
-        #Enable button for plot
-        plot_btn = getattr(win, 'keeplargest_plot_'+ch)
-        plot_btn.setEnabled(True)
+            #Enable button for plot
+            plot_btn = getattr(win, 'keeplargest_plot_'+ch)
+            plot_btn.setEnabled(True)
+        else: 
+            win.win_msg('*fcM.s32Meshes!')
+            alert('error_beep')
 
-    # Update organ workflow
-    organ.update_mHworkflow(proc_ms_all, 'Initialised')
+    if run: 
+        # Update organ workflow
+        organ.update_mHworkflow(proc_ms_all, 'Initialised')
+    else: 
+        win.win_msg('*fcM.s32Meshes!')
+        alert('error_beep')
 
 #%% func - clean_ch
-def clean_ch(organ, gui_clean, win, plot_settings=(False, )):
+def clean_ch(organ, gui_clean, win, plot_settings=(False,None)):
 
     workflow = organ.workflow['morphoHeart']
     
@@ -268,7 +283,7 @@ def get_roi_orientation(organ, gui_orientation:dict, win):
     on_hold = False
     colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
     planar_views = None; settings = None
-    if gui_orientation['roi']['rotate']: 
+    if gui_orientation['roi']['reorient']: 
         if gui_orientation['roi']['method'] == 'Centreline': 
             centreline = gui_orientation['roi']['centreline']
             #Check if centrelines have been obtained

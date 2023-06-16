@@ -659,38 +659,48 @@ class Project():
                 print('>> Project template file saved correctly!\n>> Path: '+str(temp_dir))
     
     def add_organ(self, organ):#
-        dict_organ = copy.deepcopy(organ.info)
-        dict_organ.pop('project', None)
-        dict_organ['dir_res'] = organ.dir_res()
-        #Get current workflow
-        wf_so_far = self.get_current_wf()
-        dict_organ['workflow'] = wf_so_far
-        #Add organ to project's organs
         organ_name = organ.user_organName
-        self.organs[organ_name] = dict_organ
-        #Add current organ data to gui data
-        strain_it = self.gui_custom_data['strain']
-        strain_it.append(organ.info['strain'])
-        self.gui_custom_data['strain'] = list(set(strain_it))
-        stage_it = self.gui_custom_data['stage']
-        stage_it.append(organ.info['stage'])
-        self.gui_custom_data['stage'] = list(set(stage_it))
-        genot_it = self.gui_custom_data['genotype']
-        genot_it.append(organ.info['genotype'])
-        self.gui_custom_data['genotype'] =list(set(genot_it))
-        manip_it = self.gui_custom_data['manipulation']
-        manip_it.append(organ.info['manipulation'])
-        self.gui_custom_data['manipulation'] = list(set(manip_it))
-        imOr_it = self.gui_custom_data['im_orientation']
-        imOr_it.append(organ.info['im_orientation'])
-        self.gui_custom_data['im_orientation'] = list(set(imOr_it))
-        units_it = self.gui_custom_data['im_res_units']
-        units_it.append(organ.info['im_res_units'][0])
-        self.gui_custom_data['im_res_units'] = list(set(units_it))
-        self.save_project()
+        if organ_name not in self.organs.keys(): 
+            #New Organ!
+            dict_organ = copy.deepcopy(organ.info)
+            dict_organ.pop('project', None)
+            dict_organ['dir_res'] = organ.dir_res()
+            #Get current workflow
+            wf_so_far = self.get_current_wf(organ)
+            dict_organ['workflow'] = wf_so_far
+            print('wf_so_far:', wf_so_far)
+            #Add organ to project's organs
+            self.organs[organ_name] = dict_organ
+            #Add current organ data to gui data
+            strain_it = self.gui_custom_data['strain']
+            strain_it.append(organ.info['strain'])
+            self.gui_custom_data['strain'] = list(set(strain_it))
+            stage_it = self.gui_custom_data['stage']
+            stage_it.append(organ.info['stage'])
+            self.gui_custom_data['stage'] = list(set(stage_it))
+            genot_it = self.gui_custom_data['genotype']
+            genot_it.append(organ.info['genotype'])
+            self.gui_custom_data['genotype'] =list(set(genot_it))
+            manip_it = self.gui_custom_data['manipulation']
+            manip_it.append(organ.info['manipulation'])
+            self.gui_custom_data['manipulation'] = list(set(manip_it))
+            imOr_it = self.gui_custom_data['im_orientation']
+            imOr_it.append(organ.info['im_orientation'])
+            self.gui_custom_data['im_orientation'] = list(set(imOr_it))
+            units_it = self.gui_custom_data['im_res_units']
+            units_it.append(organ.info['im_res_units'][0])
+            self.gui_custom_data['im_res_units'] = list(set(units_it))
+            self.save_project()
+        else: 
+            #Update organ info
+            #Get current workflow
+            wf_so_far = self.get_current_wf(organ)
+            print('wf_so_far:', wf_so_far)
+            self.organs[organ_name]['workflow'] = wf_so_far
+        
 
-    def get_current_wf(self): #
-        flat_wf = flatdict.FlatDict(copy.deepcopy(self.workflow))
+    def get_current_wf(self, organ): #
+        flat_wf = flatdict.FlatDict(copy.deepcopy(organ.workflow))
         keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))==4 and 'Status' in key]
         for key in flat_wf.keys(): 
             if key not in keep_keys: 
@@ -1838,11 +1848,11 @@ class ImChannel(): #channel
             alert('countdown')
             self.dir_stckproc = im_dir
     
-    def ch_clean (self, s3_mask, s3, inverted, plot_settings): #
+    def ch_clean (self, s3_mask, s3, inverted, plot_settings):#
         """
         Function to clean channel contour using other channel as a mask
         """
-        plot, im_every = plot_settings
+        plot, im_every = plot_settings 
         # What happens if the s3() are None? 
         s3_s = s3.s3()
         if not isinstance(s3_s, np.ndarray): 
@@ -1971,7 +1981,7 @@ class ImChannelNS(): #channel
         self.contStack = contStack_dict
         self.setup_NS = organ.imChannelNS[ch_name]['setup_NS']
         
-    def create_chNSS3s(self, win, plot_settings=(False, )):
+    def create_chNSS3s(self, win, plot_settings=(False, None)):
 
         organ = self.parent_organ
         win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+' (0/3).')
@@ -2045,7 +2055,7 @@ class ImChannelNS(): #channel
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc', self.channel_no,'D-S3Create','Status']
       
-        plot, im_every = plot_settings
+        plot, im_every = plot_settings 
         print('>> Extracting '+self.user_chName+'!')
         operation = layerDict['operation']
 
@@ -2115,8 +2125,10 @@ class ImChannelNS(): #channel
     def s32Meshes(self, cont_type:str, keep_largest=None, rotateZ_90=None, new_set=False):
 
         mesh_prop = {'keep_largest': keep_largest, 'rotateZ_90': rotateZ_90}
+
         mesh = Mesh_mH(imChannel = self, mesh_type = cont_type, 
-                       mesh_prop = mesh_prop, new_set = new_set)
+                        mesh_prop = mesh_prop, new_set = new_set)
+
         
         # meshes_out = []
         # for mesh_type in cont_types:

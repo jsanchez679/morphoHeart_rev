@@ -32,7 +32,7 @@ import operator
 #%% morphoHeart Imports - ##################################################
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
-from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set
+from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set, alert
 from ..modules.mH_funcContours import checkWfCloseCont
 from ..modules.mH_funcMeshes import plot_grid
 from ..modules.mH_classes_new import Project, Organ
@@ -475,6 +475,7 @@ class CreateNewProj(QDialog):
         if msg[0] == '*':
             tE.setStyleSheet(error_style)
             msg = 'Error: '+msg
+            alert('error_beep')
         elif msg[0] == '!':
             tE.setStyleSheet(note_style)
             msg = msg[1:]
@@ -1654,6 +1655,7 @@ class SetMeasParam(QDialog):
         if msg[0] == '*':
             self.tE_validate.setStyleSheet(error_style)
             msg = 'Error: '+msg
+            alert('error_beep')
         elif msg[0] == '!':
             self.tE_validate.setStyleSheet(note_style)
             msg = msg[1:]
@@ -2060,6 +2062,7 @@ class NewOrgan(QDialog):
         if msg[0] == '*':
             self.tE_validate.setStyleSheet(error_style)
             msg = 'Error: '+msg
+            alert('error_beep')
         elif msg[0] == '!':
             self.tE_validate.setStyleSheet(note_style)
             msg = msg[1:]
@@ -2388,6 +2391,7 @@ class LoadProj(QDialog):
         if msg[0] == '*':
             self.tE_validate.setStyleSheet(error_style)
             msg = 'Error: '+msg
+            alert('error_beep')
         elif msg[0] == '!':
             self.tE_validate.setStyleSheet(note_style)
             msg = msg[1:]
@@ -2692,6 +2696,7 @@ class MainWindow(QMainWindow):
         if msg[0] == '*':
             self.tE_validate.setStyleSheet(error_style)
             msg = 'Error: '+msg
+            alert('error_beep')
         elif msg[0] == '!':
             self.tE_validate.setStyleSheet(note_style)
             msg = msg[1:]
@@ -3039,9 +3044,9 @@ class MainWindow(QMainWindow):
         self.stack_orient_plot.setEnabled(False)
         self.roi_orient_plot.setEnabled(False)
 
-        self.roi_rotate.stateChanged.connect(lambda: self.check_roi_rotate())
-        self.radio_manual.toggled.connect(lambda: self.rotate_method(mtype = 'manual'))
-        self.radio_centreline.toggled.connect(lambda: self.rotate_method(mtype = 'centreline'))
+        self.roi_reorient.stateChanged.connect(lambda: self.check_roi_reorient())
+        self.radio_manual.toggled.connect(lambda: self.reorient_method(mtype = 'manual'))
+        self.radio_centreline.toggled.connect(lambda: self.reorient_method(mtype = 'centreline'))
 
         items_cl = self.organ.mH_settings['measure']['CL'].keys()
         items_cB = []
@@ -3050,7 +3055,7 @@ class MainWindow(QMainWindow):
             name = self.organ.mH_settings['setup']['name_chs'][ch] + ' ('+ch+'_'+cont+')'
             items_cB.append(name)
         self.centreline_orientation.addItems(items_cB)
-        self.rotate_method(mtype = 'none')
+        self.reorient_method(mtype = 'none')
 
         #Initialise with user settings, if they exist!
         self.user_orientation()
@@ -3223,6 +3228,7 @@ class MainWindow(QMainWindow):
             hm_plot = getattr(self, 'hm_plot'+str(num+1))
             hm_plot2 = getattr(self, 'hm_plot'+str(num+1)+'_2D')
             hm_eg = getattr(self, 'cm_eg'+str(num+1))
+            play = getattr(self, 'hm_play'+str(num+1))
             if num < len(hm_items): 
                 label.setText(self.heatmap_dict[hm_items[num]]['name'])
                 mina.setValue(self.heatmap_dict[hm_items[num]]['min_val'])
@@ -3230,6 +3236,7 @@ class MainWindow(QMainWindow):
                 hm_eg.setEnabled(True)
                 hm_plot.setEnabled(False)
                 hm_plot2.setEnabled(False)
+                play.setEnabled(True) #???
             else: 
                 default.setVisible(False)
                 label.setVisible(False)
@@ -3240,6 +3247,7 @@ class MainWindow(QMainWindow):
                 hm_eg.setVisible(False)
                 hm_plot.setVisible(False)
                 hm_plot2.setVisible(False)
+                play.setVisible(False)
 
         #Set all colormaps eg
         self.colormap1.currentIndexChanged.connect(lambda: self.set_colormap('1'))
@@ -3328,12 +3336,12 @@ class MainWindow(QMainWindow):
                         color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb"+str(color)+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
                         color_btn = getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn))
                         color_btn.setStyleSheet(color_txt)
-                getattr(self, 'segm_'+cutl+'_plot').setEnabled(False)
+                #getattr(self, 'segm_'+cutl+'_plot').setEnabled(False)
             else: 
                 getattr(self, 'label_segm_'+cutl).setVisible(False)
                 getattr(self, 'names_segm_'+cutl).setVisible(False)
                 getattr(self, 'obj_segm_'+cutl).setVisible(False)
-                getattr(self, 'segm_'+cutl+'_plot').setVisible(False)
+                # getattr(self, 'segm_'+cutl+'_plot').setVisible(False)
                 for nn in range(1,6,1):
                     getattr(self, 'label_'+cutl+'_segm'+str(nn)).setVisible(False)
                     getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn)).setVisible(False)
@@ -3382,12 +3390,12 @@ class MainWindow(QMainWindow):
                     color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb"+str(color)+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
                     color_btn = getattr(self, 'fillcolor_'+cutl+'_'+'sect'+str(nn))
                     color_btn.setStyleSheet(color_txt)
-                getattr(self, 'sect_'+cutl+'_plot').setEnabled(False)
+                #getattr(self, 'sect_'+cutl+'_plot').setEnabled(False)
             else: 
                 getattr(self, 'label_sect_'+cutl).setVisible(False)
                 getattr(self, 'names_sect_'+cutl).setVisible(False)
                 getattr(self, 'obj_sect_'+cutl).setVisible(False)
-                getattr(self, 'sect_'+cutl+'_plot').setVisible(False)
+                # getattr(self, 'sect_'+cutl+'_plot').setVisible(False)
                 for nn in range(1,6,1):
                     getattr(self, 'label_'+cutl+'_sect'+str(nn)).setVisible(False)
                     getattr(self, 'fillcolor_'+cutl+'_'+'sect'+str(nn)).setVisible(False)
@@ -3418,10 +3426,10 @@ class MainWindow(QMainWindow):
                         getattr(self, 'value_categorical'+str(nn)).addItems(categories)
                         getattr(self, 'value_categorical'+str(nn)).setEnabled(True)
                         nn+=1
-                    for nn in range(nn,7,1):
-                        getattr(self, 'lab_categorical'+str(nn)).setVisible(False)
-                        getattr(self, 'tiss_cont_categorical'+str(nn)).setVisible(False)
-                        getattr(self, 'value_categorical'+str(nn)).setVisible(False)
+                    for aa in range(nn,7,1):
+                        getattr(self, 'lab_categorical'+str(aa)).setVisible(False)
+                        getattr(self, 'tiss_cont_categorical'+str(aa)).setVisible(False)
+                        getattr(self, 'value_categorical'+str(aa)).setVisible(False)
                 elif ptype == 'continuous' or ptype == 'descriptive': 
                     if not widgets_params[ptype]['enable']:
                         widgets_params[ptype]['enable'] = True
@@ -3429,16 +3437,16 @@ class MainWindow(QMainWindow):
                     short = user_params[key]['s']
                     mm = 1
                     for item in measure[short].keys(): 
-                        getattr(self, 'lab_'+ptype+str(nn)).setText(label)
-                        getattr(self, 'lab_'+ptype+str(nn)).setEnabled(True)
-                        getattr(self, 'tiss_cont_'+ptype+str(nn)).setText(item)
-                        getattr(self, 'tiss_cont_'+ptype+str(nn)).setEnabled(True)
-                        getattr(self, 'value_'+ptype+str(nn)).setEnabled(True)
-                        nn+=1
-                    for nn in range(mm,7,1):
-                        getattr(self, 'lab_'+ptype+str(nn)).setVisible(False)
-                        getattr(self, 'tiss_cont_'+ptype+str(nn)).setVisible(False)
-                        getattr(self, 'value_'+ptype+str(nn)).setVisible(False)
+                        getattr(self, 'lab_'+ptype+str(mm)).setText(label)
+                        getattr(self, 'lab_'+ptype+str(mm)).setEnabled(True)
+                        getattr(self, 'tiss_cont_'+ptype+str(mm)).setText(item)
+                        getattr(self, 'tiss_cont_'+ptype+str(mm)).setEnabled(True)
+                        getattr(self, 'value_'+ptype+str(mm)).setEnabled(True)
+                        mm+=1
+                    for bb in range(mm,7,1):
+                        getattr(self, 'lab_'+ptype+str(bb)).setVisible(False)
+                        getattr(self, 'tiss_cont_'+ptype+str(bb)).setVisible(False)
+                        getattr(self, 'value_'+ptype+str(bb)).setVisible(False)
                 else: #ptype == '
                     print('other?')
         
@@ -3584,9 +3592,9 @@ class MainWindow(QMainWindow):
         workflow = self.organ.workflow['morphoHeart']['MeshesProc']['A-Create3DMesh']['Set_Orientation']
         if 'orientation' in wf_info.keys():
             #Organ/ROI
-            rotate = getattr(self, 'roi_rotate')
-            rotate.setChecked(wf_info['orientation']['roi']['rotate'])
-            if rotate.isChecked(): 
+            reorient = getattr(self, 'roi_reorient')
+            reorient.setChecked(wf_info['orientation']['roi']['reorient'])
+            if reorient.isChecked(): 
                 method = wf_info['orientation']['roi']['method']
                 if method == 'Centreline':
                     self.radio_centreline.setChecked(True)
@@ -3595,7 +3603,7 @@ class MainWindow(QMainWindow):
                     self.vector_orient.setCurrentText(wf_info['orientation']['roi']['vector_orient']) 
                 else: 
                     self.radio_manual.setChecked(True)
-                    self.rotate_angles.setText(wf_info['orientation']['roi']['angles'])
+                    self.reorient_angles.setText(wf_info['orientation']['roi']['angles'])
 
             for item in ['Stack', 'ROI']:
                 if workflow[item] == 'DONE':
@@ -3801,9 +3809,11 @@ class MainWindow(QMainWindow):
             if chk != 'chNS' and contk in ['int', 'ext', 'tiss']: 
                 # print('not chNS')
                 self.organ.mH_settings['setup']['color_chs'][chk][contk] = color.name()
+                self.organ.obj_meshes[chk+'_'+contk].set_color(color.name())
             elif chk == 'chNS': 
                 # print('chNS')
                 self.organ.mH_settings['setup'][chk]['color_chns'][contk] = color.name()
+                self.organ.obj_meshes[chk+'_'+contk].set_color(color.name())
             else: 
                 if 'segm' in contk: 
                     stype = 'segm'
@@ -3970,7 +3980,6 @@ class MainWindow(QMainWindow):
             else: 
                 self.gui_keep_largest = gui_keep_largest_loaded
 
-        self.rotateZ_90 = True
         self.keeplargest_set.setChecked(True)
         toggled(self.keeplargest_set)
         print('self.gui_keep_largest:',self.gui_keep_largest)
@@ -4097,35 +4106,35 @@ class MainWindow(QMainWindow):
         
         return gui_trim
 
-    def check_roi_rotate(self):
+    def check_roi_reorient(self):
 
-        if self.roi_rotate.isChecked():
+        if self.roi_reorient.isChecked():
             self.radio_manual.setEnabled(True)
             self.radio_centreline.setEnabled(True)
-            self.rotate_method(mtype ='centreline')
+            self.reorient_method(mtype ='centreline')
         else: 
             self.radio_manual.setEnabled(False)
             self.radio_centreline.setEnabled(False)
-            self.rotate_method(mtype ='none')
+            self.reorient_method(mtype ='none')
 
-    def rotate_method(self, mtype:str):
+    def reorient_method(self, mtype:str):
         # print('Checked:', mtype)
         if self.radio_manual.isChecked(): 
-            self.rotate_angles.setEnabled(True)
+            self.reorient_angles.setEnabled(True)
             self.centreline_orientation.setEnabled(False)
             self.lab_plane.setEnabled(False)
             self.plane_orient.setEnabled(False)
             self.lab_vector.setEnabled(False)
             self.vector_orient.setEnabled(False)
         elif self.radio_centreline.isChecked(): 
-            self.rotate_angles.setEnabled(False)
+            self.reorient_angles.setEnabled(False)
             self.centreline_orientation.setEnabled(True)
             self.lab_plane.setEnabled(True)
             self.plane_orient.setEnabled(True)
             self.lab_vector.setEnabled(True)
             self.vector_orient.setEnabled(True)
         else: 
-            self.rotate_angles.setEnabled(False)
+            self.reorient_angles.setEnabled(False)
             self.centreline_orientation.setEnabled(False)
             self.lab_plane.setEnabled(False)
             self.plane_orient.setEnabled(False)
@@ -4135,27 +4144,30 @@ class MainWindow(QMainWindow):
     def set_orientation(self, init=False): 
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_orientation = self.gui_orientation_n()
-        if 'orientation' not in wf_info.keys():
-            self.gui_orientation = current_gui_orientation
-        else: 
-            gui_orientation_loaded = self.organ.mH_settings['wf_info']['orientation']
-            if len(compare_dicts(gui_orientation_loaded, current_gui_orientation, 'loaded', 'current'))!= 0 and not init: 
-                self.gui_orientation = update_gui_set(loaded = gui_orientation_loaded, 
-                                                       current = current_gui_orientation)
-                self.win_msg("Remember to re-run  -Organ/ROI Axis Labels-  section to make sure changes are made and saved!")
-                self.update_status(None, 're-run', self.orient_status, override=True)
+        if current_gui_orientation != None: 
+            if 'orientation' not in wf_info.keys():
+                self.gui_orientation = current_gui_orientation
             else: 
-                self.gui_orientation = gui_orientation_loaded
+                gui_orientation_loaded = self.organ.mH_settings['wf_info']['orientation']
+                if len(compare_dicts(gui_orientation_loaded, current_gui_orientation, 'loaded', 'current'))!= 0 and not init: 
+                    self.gui_orientation = update_gui_set(loaded = gui_orientation_loaded, 
+                                                        current = current_gui_orientation)
+                    self.win_msg("Remember to re-run  -Organ/ROI Axis Labels-  section to make sure changes are made and saved!")
+                    self.update_status(None, 're-run', self.orient_status, override=True)
+                else: 
+                    self.gui_orientation = gui_orientation_loaded
 
-        self.orientation_set.setChecked(True)
-        toggled(self.orientation_set)
-        print('self.gui_orientation: ', self.gui_orientation)
-        self.orientation_play.setEnabled(True)
+            self.orientation_set.setChecked(True)
+            toggled(self.orientation_set)
+            print('self.gui_orientation: ', self.gui_orientation)
+            self.orientation_play.setEnabled(True)
 
-        # Update mH_settings
-        proc_set = ['wf_info']
-        update = self.gui_orientation
-        self.organ.update_settings(proc_set, update, 'mH', add='orientation')
+            # Update mH_settings
+            proc_set = ['wf_info']
+            update = self.gui_orientation
+            self.organ.update_settings(proc_set, update, 'mH', add='orientation')
+        else:
+            return
 
     def gui_orientation_n(self): 
         #Stack
@@ -4163,25 +4175,34 @@ class MainWindow(QMainWindow):
         gui_orientation['stack'] = {'axis': self.organ.mH_settings['setup']['orientation']['stack']}
 
         #ROI
-        roi_rotate = self.roi_rotate.isChecked()
+        roi_reorient = self.roi_reorient.isChecked()
         gui_orientation['roi'] = {'axis': self.organ.mH_settings['setup']['orientation']['roi'],
-                                        'rotate': roi_rotate}
-        if roi_rotate: 
+                                        'reorient': roi_reorient}
+        if roi_reorient: 
             for rB in ['radio_manual', 'radio_centreline']:
-                btn = getattr(self, rB)
-                if btn.isChecked():
+                if getattr(self, rB).isChecked():
                     rB_checked = rB
                     break
+                else: 
+                    rB_checked = None
+
             if rB_checked == 'radio_manual': 
                 gui_orientation['roi']['method'] = 'Manual'
-            else: 
-                plane_orient = self.plane_orient.currentText()
-                vector_orient = self.vector_orient.currentText()
+            elif rB_checked == 'radio_centreline': 
                 centreline = self.centreline_orientation.currentText()
-                gui_orientation['roi']['method'] = 'Centreline'
-                gui_orientation['roi']['centreline'] = centreline
-                gui_orientation['roi']['plane_orient'] = plane_orient
-                gui_orientation['roi']['vector_orient'] = vector_orient
+                if centreline != '----': 
+                    plane_orient = self.plane_orient.currentText()
+                    vector_orient = self.vector_orient.currentText()
+                    gui_orientation['roi']['method'] = 'Centreline'
+                    gui_orientation['roi']['centreline'] = centreline
+                    gui_orientation['roi']['plane_orient'] = plane_orient
+                    gui_orientation['roi']['vector_orient'] = vector_orient
+                else: 
+                    self.win_msg('*Select the centreline you want to use to reorient the organ!')
+                    return None
+            else: 
+                self.win_msg('*Please select the method you want to use to reorient the organ!')
+                return None
         else: 
             pass
 
@@ -4274,7 +4295,7 @@ class MainWindow(QMainWindow):
             gui_thickness_ballooning_loaded = self.organ.mH_settings['wf_info']['heatmaps']
             if len(compare_dicts(gui_thickness_ballooning_loaded, current_gui_thickness_ballooning, 'loaded', 'current'))!= 0 and not init: 
                 self.gui_thickness_ballooning = update_gui_set(loaded = gui_thickness_ballooning_loaded, 
-                                                       current = current_gui_thickness_ballooning)
+                                                                current = current_gui_thickness_ballooning)
                 self.win_msg("Remember to re-run  -Thickness / Ballooning Measurements-  section to make sure changes are made and saved!")
                 self.update_status(None, 're-run', self.heatmaps_status, override=True)
             else: 
@@ -4314,6 +4335,9 @@ class MainWindow(QMainWindow):
         
     #Plot functions
     def plot_meshes(self, ch, chNS=False):
+        self.win_msg('Plotting meshes ('+ch+')')
+        print('Plotting meshes ('+ch+')')
+
         txt = [(0, self.organ.user_organName)]
         obj = []
         if ch != 'all': 
@@ -4333,6 +4357,8 @@ class MainWindow(QMainWindow):
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
     def plot_tempObj(self, proc, sub, btn):
+        self.win_msg('Plotting meshes ('+proc+'-'+sub+')')
+        print('Plotting tempObj ('+proc+'-'+sub+')')
         txt = [(0, self.organ.user_organName)]
         obj = []
         if proc == 'CL': 
@@ -4379,9 +4405,11 @@ class MainWindow(QMainWindow):
         hm_all = list(self.heatmap_dict.keys())
         hm_name = hm_all[btn_num]
         short, ch_info = hm_name.split('[')
-        print('AAA', ch_info)
-        ch, cont = ch_info.split('-')
+        self.win_msg('Plotting heatmaps3D ('+hm_name+')')
+        print('Plotting heatmaps3D ('+hm_name+')')
+
         if 'th' in short: 
+            ch, cont = ch_info.split('-')
             _, th_val = short.split('_')
             if th_val == 'i2e': #int>ext': 
                 mesh_to = self.organ.obj_meshes[ch+'_ext']
@@ -4406,25 +4434,24 @@ class MainWindow(QMainWindow):
             obj = [(mesh_from, mesh_to.mesh), (mesh_tiss), (mesh_thck)]
 
         else: #'ball' in short
-            ch_cont, cl_info = hm_name.split('(')
+            ch_cont, cl_info = ch_info.split('(CL.')
             ch, cont = ch_cont.split('-')
-            cl_info = cl_info[:-1].split('.')[1]
-            from_cl, from_cl_type = cl_info.split('-')
-            short = 'ball'
+            from_cl, from_cl_type = cl_info[:-2].split('-')
+            # short = 'ball'
             
             #Get meshes
-            mesh2ball = self.organ.obj_meshes[ch+'_'+cont].mesh
+            mesh2ball = self.organ.obj_meshes[ch+'_'+cont]
             cl4ball = self.organ.obj_meshes[from_cl+'_'+from_cl_type].get_centreline()
             sph4ball = sphs_in_spline(kspl=cl4ball,every=0.6)
             sph4ball.legend('sphs_ball').alpha(0.1)
             m_type = 'ballCL('+from_cl+'_'+from_cl_type+')'
             mesh_ball = mesh2ball.mesh_meas[m_type]
 
-            title = mesh2ball.legend+'\nBallooning [um]\nCL('+from_cl+'_'+from_cl_type+')',
+            title = mesh2ball.legend+'\nBallooning [um]\nCL('+from_cl+'_'+from_cl_type+')'
             mesh_ball = self.set_scalebar(mesh=mesh_ball, name = hm_name, proc = short, title = title)
 
             txt = [(0, self.organ.user_organName +' - Ballooning Measurement Setup')]
-            obj = [(mesh2ball, cl4ball, sph4ball), (mesh_ball, cl4ball, sph4ball)]
+            obj = [(mesh2ball.mesh, cl4ball, sph4ball), (mesh_ball, cl4ball, sph4ball)]
 
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
@@ -4446,10 +4473,6 @@ class MainWindow(QMainWindow):
     #Help functions
     def help(self, process): 
         print('User clicked help '+process)
-
-    # def help_keeplargest(self): 
-    #     print('User clicked help keep largest')
-
 
     def run_segmentationAll(self): 
         print('Running segmentation All!')
@@ -4486,6 +4509,7 @@ class MainWindow(QMainWindow):
         print('Save project and organ was pressed')
         self.organ.save_organ()
         self.win_msg('Organ  -'+ self.organ.user_organName +'-  was saved succesfully!')
+        self.proj.add_organ(self.organ)
         self.proj.save_project()
         self.win_msg('Project  -'+ self.proj.user_projName +'-  was saved succesfully!')
     
@@ -4831,7 +4855,6 @@ if others:
     #https://pythonpyqt.com/pyqt-input-dialog/
     #https://python.hotexamples.com/examples/PyQt5.QtWidgets/QDialogButtonBox/setStandardButtons/python-qdialogbuttonbox-setstandardbuttons-method-examples.html
     pass
-
 
 def set_txts(): 
     #% Link to images
