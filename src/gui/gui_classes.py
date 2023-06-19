@@ -3049,12 +3049,12 @@ class MainWindow(QMainWindow):
         self.radio_centreline.toggled.connect(lambda: self.reorient_method(mtype = 'centreline'))
 
         items_cl = self.organ.mH_settings['measure']['CL'].keys()
-        items_cB = []
+        self.items_centreline = []
         for item in items_cl:
             ch, cont, segm = item.split('_')
             name = self.organ.mH_settings['setup']['name_chs'][ch] + ' ('+ch+'_'+cont+')'
-            items_cB.append(name)
-        self.centreline_orientation.addItems(items_cB)
+            self.items_centreline.append(name)
+        self.centreline_orientation.addItems(self.items_centreline)
         self.reorient_method(mtype = 'none')
 
         #Initialise with user settings, if they exist!
@@ -3157,6 +3157,7 @@ class MainWindow(QMainWindow):
         self.heatmaps3D_play.setStyleSheet(style_play)
         self.heatmaps3D_play.setEnabled(False)
         self.thickness_set.clicked.connect(lambda: self.set_thickness())
+        self.q_heatmaps.clicked.connect(lambda: self.help('heatmaps'))
 
         #Plot buttons
         self.hm_plot1.clicked.connect(lambda: self.plot_heatmap3d(btn='1'))
@@ -3291,8 +3292,10 @@ class MainWindow(QMainWindow):
         # self.segments_play
         # self.segments_plot.
         self.segments_plot.setEnabled(False)
-        # self.q_segments
+        self.q_segments.clicked.connect(lambda: self.help('segments'))
+        self.segments_set.clicked.connect(lambda: self.set_segments())
 
+        #Fill color
         self.fillcolor_cut1_segm1.clicked.connect(lambda: self.color_picker(name = 'cut1_segm1'))
         self.fillcolor_cut1_segm2.clicked.connect(lambda: self.color_picker(name = 'cut1_segm2'))
         self.fillcolor_cut1_segm3.clicked.connect(lambda: self.color_picker(name = 'cut1_segm3'))
@@ -3307,6 +3310,7 @@ class MainWindow(QMainWindow):
         segm_setup = self.organ.mH_settings['setup']['segm']
         no_cuts = [key for key in segm_setup.keys() if 'Cut' in key]
         palette =  palette_rbg("husl", 10)
+        self.segm_btns = {}
         
         for optcut in ['1','2']:
             name_segm = []
@@ -3333,10 +3337,30 @@ class MainWindow(QMainWindow):
                             self.organ.mH_settings['setup']['segm'][cutb]['colors']['segm'+str(nn)] = color
                         else: 
                             color = self.organ.mH_settings['setup']['segm'][cutb]['colors']['segm'+str(nn)]
-                        color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb"+str(color)+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
+                        color_txt = "QPushButton{border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb"+str(tuple(color))+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
+                        print('AAA:',color_txt)
                         color_btn = getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn))
                         color_btn.setStyleSheet(color_txt)
-                #getattr(self, 'segm_'+cutl+'_plot').setEnabled(False)
+                nn = 1
+                for ch in self.organ.mH_settings['setup']['segm'][cutb]['ch_segments']: 
+                    for cont in self.organ.mH_settings['setup']['segm'][cutb]['ch_segments'][ch]:
+                        getattr(self, cutl+'_chcont_segm'+str(nn)).setText(str(nn)+'. '+ch+'_'+cont)
+                        getattr(self, cutl+'_play_segm'+str(nn)).setEnabled(False)
+                        getattr(self, cutl+'_plot_segm'+str(nn)).setEnabled(False)
+                        self.segm_btns[str(nn)+'-'+ch+'_'+cont] = {'play': getattr(self, cutl+'_play_segm'+str(nn)),
+                                                       'plot': getattr(self, cutl+'_plot_segm'+str(nn))}
+                        nn+=1
+                #Make invisible the rest of the items
+                for el in range(nn,13,1):
+                    getattr(self, cutl+'_chcont_segm'+str(el)).setVisible(False)
+                    getattr(self, cutl+'_play_segm'+str(el)).setVisible(False)
+                    getattr(self, cutl+'_plot_segm'+str(el)).setVisible(False)
+                    if el != nn: 
+                        try: 
+                            getattr(self, 'hs_'+cutl+'_segm'+str(el)).setVisible(False)
+                        except:
+                            pass
+
             else: 
                 getattr(self, 'label_segm_'+cutl).setVisible(False)
                 getattr(self, 'names_segm_'+cutl).setVisible(False)
@@ -3345,8 +3369,20 @@ class MainWindow(QMainWindow):
                 for nn in range(1,6,1):
                     getattr(self, 'label_'+cutl+'_segm'+str(nn)).setVisible(False)
                     getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn)).setVisible(False)
+                for el in range(1,13,1):
+                    getattr(self, cutl+'_chcont_segm'+str(el)).setVisible(False)
+                    getattr(self, cutl+'_play_segm'+str(el)).setVisible(False)
+                    getattr(self, cutl+'_plot_segm'+str(el)).setVisible(False)
+                    try: 
+                        getattr(self, 'hs_'+cutl+'_segm'+str(el)).setVisible(False)
+                    except:
+                        pass
 
         print('Setup segments: ', self.organ.mH_settings['setup']['segm'])
+        print('segm_btns:', self.segm_btns)
+
+        self.segm_use_centreline.stateChanged.connect(lambda: self.segm_centreline())
+        self.segm_centreline2use.addItems(self.items_centreline)
 
     def init_sections(self):
         #Buttons
@@ -3356,7 +3392,8 @@ class MainWindow(QMainWindow):
         # self.sections_play
         # self.sections_plot
         self.sections_plot.setEnabled(False)
-        # self.q_sections
+        self.q_sections.clicked.connect(lambda: self.help('sections'))
+        self.sections_set.clicked.connect(lambda: self.set_sections())
 
         self.fillcolor_cut1_sect1.clicked.connect(lambda: self.color_picker(name = 'cut1_sect1'))
         self.fillcolor_cut1_sect2.clicked.connect(lambda: self.color_picker(name = 'cut1_sect2'))
@@ -3366,6 +3403,7 @@ class MainWindow(QMainWindow):
         sect_setup = self.organ.mH_settings['setup']['sect']
         no_cuts = [key for key in sect_setup.keys() if 'Cut' in key]
         palette =  palette_rbg("Set2", 4)
+        self.sect_btns = {}
         
         for optcut in ['1','2']:
             name_sect = []
@@ -3377,6 +3415,7 @@ class MainWindow(QMainWindow):
                     self.organ.mH_settings['setup']['sect'][cutb]['colors'] = {}
                 else: 
                     colors_initialised = True
+
                 for sect in sect_setup[cutb]['name_sections'].keys():
                     name_sect.append(sect_setup[cutb]['name_sections'][sect])
                 getattr(self, 'names_sect_'+cutl).setText(', '.join(name_sect))
@@ -3387,10 +3426,29 @@ class MainWindow(QMainWindow):
                         self.organ.mH_settings['setup']['sect'][cutb]['colors']['sect'+str(nn)] = color
                     else: 
                         color = self.organ.mH_settings['setup']['sect'][cutb]['colors']['sect'+str(nn)]
-                    color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb"+str(color)+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
+                    color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb"+str(tuple(color))+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
                     color_btn = getattr(self, 'fillcolor_'+cutl+'_'+'sect'+str(nn))
                     color_btn.setStyleSheet(color_txt)
-                #getattr(self, 'sect_'+cutl+'_plot').setEnabled(False)
+                nn = 1
+                for ch in self.organ.mH_settings['setup']['sect'][cutb]['ch_sections']: 
+                    for cont in self.organ.mH_settings['setup']['sect'][cutb]['ch_sections'][ch]:
+                        getattr(self, cutl+'_chcont_sect'+str(nn)).setText(str(nn)+'. '+ch+'_'+cont)
+                        getattr(self, cutl+'_play_sect'+str(nn)).setEnabled(False)
+                        getattr(self, cutl+'_plot_sect'+str(nn)).setEnabled(False)
+                        self.sect_btns[str(nn)+'-'+ch+'_'+cont] = {'play': getattr(self, cutl+'_play_sect'+str(nn)),
+                                                       'plot': getattr(self, cutl+'_plot_sect'+str(nn))}
+                        nn+=1
+                #Make invisible the rest of the items
+                for el in range(nn,13,1):
+                    getattr(self, cutl+'_chcont_sect'+str(el)).setVisible(False)
+                    getattr(self, cutl+'_play_sect'+str(el)).setVisible(False)
+                    getattr(self, cutl+'_plot_sect'+str(el)).setVisible(False)
+                    if el != nn: 
+                        try: 
+                            getattr(self, 'hs_'+cutl+'_sect'+str(el)).setVisible(False)
+                        except:
+                            pass
+
             else: 
                 getattr(self, 'label_sect_'+cutl).setVisible(False)
                 getattr(self, 'names_sect_'+cutl).setVisible(False)
@@ -3399,8 +3457,18 @@ class MainWindow(QMainWindow):
                 for nn in range(1,6,1):
                     getattr(self, 'label_'+cutl+'_sect'+str(nn)).setVisible(False)
                     getattr(self, 'fillcolor_'+cutl+'_'+'sect'+str(nn)).setVisible(False)
+                for el in range(1,13,1):
+                    getattr(self, cutl+'_chcont_sect'+str(el)).setVisible(False)
+                    getattr(self, cutl+'_play_sect'+str(el)).setVisible(False)
+                    getattr(self, cutl+'_plot_sect'+str(el)).setVisible(False)
+                    try: 
+                        getattr(self, 'hs_'+cutl+'_sect'+str(el)).setVisible(False)
+                    except:
+                        pass
 
         print('Setup Sections: ', self.organ.mH_settings['setup']['sect'])
+        print('sect_btns:', self.sect_btns)
+        self.sect_centreline.addItems(self.items_centreline)
 
     def init_user_param(self): 
         user_params = self.organ.mH_settings['setup']['params']
@@ -3593,7 +3661,10 @@ class MainWindow(QMainWindow):
         if 'orientation' in wf_info.keys():
             #Organ/ROI
             reorient = getattr(self, 'roi_reorient')
-            reorient.setChecked(wf_info['orientation']['roi']['reorient'])
+            try: 
+                reorient.setChecked(wf_info['orientation']['roi']['reorient'])
+            except: 
+                reorient.setChecked(wf_info['orientation']['roi']['rotate'])
             if reorient.isChecked(): 
                 method = wf_info['orientation']['roi']['method']
                 if method == 'Centreline':
@@ -3964,6 +4035,12 @@ class MainWindow(QMainWindow):
         for num in range(1,13,1): 
             getattr(self, cB_name+str(num)).setChecked(value)
   
+    def segm_centreline(self): 
+        if self.segm_use_centreline.isChecked():
+            self.segm_centreline2use.setEnabled(True)
+        else: 
+            self.segm_centreline2use.setEnabled(False)
+
     #Set functions 
     def set_keeplargest(self): 
         wf_info = self.organ.mH_settings['wf_info']
@@ -4333,6 +4410,111 @@ class MainWindow(QMainWindow):
 
         return gui_thickness_ballooning
         
+    def set_segments(self):
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_segm = self.gui_segments_n()
+        if current_gui_segm != None: 
+            if 'segments' not in wf_info.keys():
+                self.gui_segm = current_gui_segm
+            else: 
+                gui_segm_loaded = self.organ.mH_settings['wf_info']['segments']
+                if len(compare_dicts(gui_segm_loaded, current_gui_segm, 'loaded', 'current'))!= 0: 
+                    self.gui_segm = update_gui_set(loaded = gui_segm_loaded, 
+                                                        current = current_gui_segm)
+                    # self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
+                    self.update_status(None, 're-run', self.segments_status, override=True)
+                else: 
+                    self.gui_segm = gui_segm_loaded
+
+            self.segments_set.setChecked(True)
+            toggled(self.segments_set)
+            print('self.gui_segm: ', self.gui_segm)
+            self.segments_play.setEnabled(True)   
+
+            # Update mH_settings
+            proc_set = ['wf_info']
+            update = self.gui_segm
+            self.organ.update_settings(proc_set, update, 'mH', add='segments')
+
+        else: 
+            return
+
+    def gui_segments_n(self): 
+        
+        # segm_set = self.organ.mH_settings['setup']['segm']
+        # gui_segm = {}
+        # segments = {}
+        # #Set the way in which each mesh is going to be cut
+        # if controller.organ.mH_settings['setup']['all_contained'] or controller.organ.mH_settings['setup']['one_contained']: 
+        #     ext_ch, int_ch = self.organ.get_ext_int_chs()
+        #     ext_ch_name = ext_ch.channel_no
+        #     nn = 1
+        #     for ch in segm_set['ch_segments']: 
+        #         relation = self.organ.mH_settings['setup']['chs_relation'][ch]
+        #         for cont in segm_set[ch]: 
+        #             if 
+        #             ch == ext_ch_name: 
+        #                 cut = 'external'
+        #             else: 
+
+        #             segments[str(nn)+'-'+ch+'_'+cont] = {}
+
+        # else: 
+
+        
+        
+        use_cl = getattr(self, 'segm_use_centreline').isChecked()
+        if use_cl: 
+            cl2use = getattr(self, 'segm_centreline2use').currentText()
+            if cl2use != '----':
+                gui_segm = {'use_centreline': use_cl, 
+                            'centreline': cl2use}
+            else: 
+                self.win_msg('*Please select the centreline you want to use to aid tissue division into segments!')
+                return None
+        else: 
+            gui_segm = {'use_centreline': use_cl}
+
+        return gui_segm
+
+    def set_sections(self): 
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_sect = self.gui_sections_n()
+        if current_gui_sect != None: 
+            if 'sections' not in wf_info.keys():
+                self.gui_sect = current_gui_sect
+            else: 
+                gui_sect_loaded = self.organ.mH_settings['wf_info']['sections']
+                if len(compare_dicts(gui_sect_loaded, current_gui_sect, 'loaded', 'current'))!= 0: 
+                    self.gui_sect = update_gui_set(loaded = gui_sect_loaded, 
+                                                        current = current_gui_sect)
+                    # self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
+                    self.update_status(None, 're-run', self.sections_status, override=True)
+                else: 
+                    self.gui_sect = gui_sect_loaded
+
+            self.sections_set.setChecked(True)
+            toggled(self.sections_set)
+            print('self.gui_sect: ', self.gui_sect)
+            self.sections_play.setEnabled(True)   
+
+            # Update mH_settings
+            proc_set = ['wf_info']
+            update = self.gui_sect
+            self.organ.update_settings(proc_set, update, 'mH', add='sections')
+        else: 
+            return 
+
+    def gui_sections_n(self):
+        cl2use = getattr(self, 'sect_centreline').currentText()
+        if cl2use != '----': 
+            gui_sect = {'centreline': cl2use}
+            return gui_sect
+        else: 
+            self.win_msg('*Please select the centreline you want to use to divide the tissue into regions!')
+            return None
+
+
     #Plot functions
     def plot_meshes(self, ch, chNS=False):
         self.win_msg('Plotting meshes ('+ch+')')

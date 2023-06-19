@@ -636,7 +636,7 @@ def prompt_meshLab(controller, msg_add=None):
     prompt.exec()
     print('output:',prompt.output, '\n')
 
-def run_heatmaps3D(controller):
+def run_heatmaps3D(controller, btn):
 
     workflow = controller.organ.workflow['morphoHeart']
     thck_values = {'i2e': {'short': 'th_i2e',
@@ -648,9 +648,14 @@ def run_heatmaps3D(controller):
                             'param': 'thickness ext>int',
                             'n_type': 'ext>int'}}
     
-    controller.main_win.prog_bar_range(0,len(controller.main_win.heatmap_dict))
+    if btn != None: 
+        items = [list(controller.main_win.heatmap_dict.keys())[btn-1]]
+        controller.main_win.prog_bar_range(0,1)
+    else: 
+        controller.main_win.prog_bar_range(0,len(controller.main_win.heatmap_dict))
+        items = controller.main_win.heatmap_dict
     nn = 0
-    for item in controller.main_win.heatmap_dict:
+    for item in items:
         short, ch_info = item.split('[') #short = th_i2e, th_e2i, ball
         ch_info = ch_info[:-1]
         if 'th' in short: 
@@ -680,7 +685,10 @@ def run_heatmaps3D(controller):
                                 name_cl = (cl_ch, cl_cont), setup = setup)
 
         #Enable button for plot cl
-        plot_btn = getattr(controller.main_win, 'hm_plot'+str(nn+1))
+        if btn != None:
+            plot_btn = getattr(controller.main_win, 'hm_plot'+str(btn))
+        else: 
+            plot_btn = getattr(controller.main_win, 'hm_plot'+str(nn+1))
         plot_btn.setEnabled(True)
         nn+=1
         controller.main_win.prog_bar_update(nn)
@@ -765,5 +773,48 @@ def run_heatmaps3D(controller):
 
     # print(thck_names)
     
+def run_segments(controller, btn): 
 
-   
+    # if organ.check_method(method = 'E-Segments'): 
+    #     name_segments = organ.mH_settings['general_info']['segments']['name_segments']
+    #     user_names = '('+', '.join([name_segments[val] for val in name_segments])+')'
+      
+    #     if 'segm_cuts' in organ.mH_settings.keys():
+    #         if 'Disc No.0' in organ.mH_settings['segm_cuts']: 
+    #             q = 'You already created the disc(s) to cut tissues into segments '+user_names+'. Do you want to repeat this process?'
+    #             res = {0: 'no, continue with next step', 1: 'yes, I want to repeat it!'}
+    #             proceed = ask4input(q, res, bool)
+    #         else: 
+    #             proceed = True
+    #     else: 
+    #         proceed = True
+            
+    #     if proceed: 
+    segm_list = list(controller.main_win.segm_btns.keys())
+    if btn != None: 
+        segm_set = [segm_list[btn]]
+    else: 
+        segm_set = segm_list
+
+    #Setup everything to cut
+    if controller.main_win.gui_segm['use_centreline']: 
+        cl_name = controller.main_win.gui_segm['centreline'].split('(')[1][:-1]
+        #Get centreline
+        cl = controller.organ.obj_meshes[cl_name].get_centreline()
+        spheres_spl = fcM.sphs_in_spline(kspl = cl, colour = True)
+    
+    if controller.organ.mH_settings['setup']['all_contained'] or controller.organ.mH_settings['setup']['one_contained']:
+        ext_ch, _ = controller.organ.get_ext_int_chs()
+        if (ext_ch.channel_no, 'tiss', 'segm1', 'volume') in segm_names:
+            mesh_ext = organ.obj_meshes[ext_ch.channel_no+'_tiss']
+
+    for item in segm_set: 
+        
+
+        
+
+
+
+    fcM.get_segm_discs(organ = controller.organ, )
+    fcM.create_disc_mask(controller.organ, h_min = 0.1125)
+    m_subg, segms = fcM.get_segments(controller.organ)

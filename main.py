@@ -243,10 +243,24 @@ class Controller:
         self.main_win.centreline_vmtk_play.clicked.connect(lambda: self.run_centreline_vmtk())
         self.main_win.centreline_select.clicked.connect(lambda: self.run_centreline_select())
         # self.main_win.centreline_play.clicked.connect(lambda: self.run_centreline())
+
         self.main_win.heatmaps3D_play.clicked.connect(lambda: self.run_heatmaps3D())
+        #Indiv Plot buttons
+        self.main_win.hm_play1.clicked.connect(lambda: self.run_heatmaps3D(btn=1))
+        self.main_win.hm_play2.clicked.connect(lambda: self.run_heatmaps3D(btn=2))
+        self.main_win.hm_play3.clicked.connect(lambda: self.run_heatmaps3D(btn=3))
+        self.main_win.hm_play4.clicked.connect(lambda: self.run_heatmaps3D(btn=4))
+        self.main_win.hm_play5.clicked.connect(lambda: self.run_heatmaps3D(btn=5))
+        self.main_win.hm_play6.clicked.connect(lambda: self.run_heatmaps3D(btn=6))
+        self.main_win.hm_play7.clicked.connect(lambda: self.run_heatmaps3D(btn=7))
+        self.main_win.hm_play8.clicked.connect(lambda: self.run_heatmaps3D(btn=8))
+        self.main_win.hm_play9.clicked.connect(lambda: self.run_heatmaps3D(btn=9))
+        self.main_win.hm_play10.clicked.connect(lambda: self.run_heatmaps3D(btn=10))
+        self.main_win.hm_play11.clicked.connect(lambda: self.run_heatmaps3D(btn=11))
+        self.main_win.hm_play12.clicked.connect(lambda: self.run_heatmaps3D(btn=12))
         # self.main_win.heatmaps2D_play.clicked.connect(lambda: self.run_heatmaps2D())
 
-        # self.main_win.segments_play.clicked.connect(lambda: self.run_segments())
+        self.main_win.segments_play.clicked.connect(lambda: self.run_segments())
         # self.main_win.sections_play.clicked.connect(lambda: self.run_sections())
 
     #Functions related to API  
@@ -491,18 +505,17 @@ class Controller:
     # def run_centreline(self):
     #     mA.run_centreline(controller=self)
 
-    def run_heatmaps3D(self):
-        mA.run_heatmaps3D(controller=self)
+    def run_heatmaps3D(self, btn=None):
+        mA.run_heatmaps3D(controller=self, btn = btn)
 
     # def run_heatmaps2D(self):
     #     mA.run_heatmaps2D(controller=self)
 
-    # def run_segments(self):
-    #     mA.run_segments(controller=self)
+    def run_segments(self, btn=None):
+        mA.run_segments(controller=self, btn = btn)
 
     # def run_sections(self):
     #     mA.run_sections(controller=self)
-   
     
 def main():
     app = QtWidgets.QApplication(sys.argv)
