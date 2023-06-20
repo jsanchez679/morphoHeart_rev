@@ -113,6 +113,9 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
      <property name="frame">
       <bool>true</bool>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
      <property name="placeholderText">
       <string/>
      </property>

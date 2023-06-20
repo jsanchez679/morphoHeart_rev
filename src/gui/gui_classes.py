@@ -28,6 +28,7 @@ import copy
 import seaborn as sns
 from functools import reduce  
 import operator
+from typing import Union
 
 #%% morphoHeart Imports - ##################################################
 # from .src.modules.mH_funcBasics import get_by_path
@@ -185,7 +186,10 @@ class Prompt_ok_cancel_radio(QDialog):
             if 'lineEdit' in items[key].keys(): 
                 if items[key]['lineEdit']: 
                     lE.setVisible(True)
-                    reg_ex = QRegularExpression(reg_exps[items[key]['regEx']])
+                    if items[key]['regEx'] == 'int3d': 
+                        reg_ex = QRegularExpression("\d{1,3}")
+                    else:
+                        reg_ex = QRegularExpression('.*')
                     input_validator = QRegularExpressionValidator(reg_ex, lE)
                     lE.setValidator(input_validator)
                 else: 
@@ -320,7 +324,7 @@ class Prompt_ok_cancel_checkbox(QDialog):
         self.close()
 
 class Prompt_user_input(QDialog):
-    def __init__(self, msg:str, title:str, info:str, parent=None):
+    def __init__(self, msg:str, title:str, info:Union[str, tuple], parent=None):
         super().__init__()
         uic.loadUi('src/gui/ui/prompt_user_input.ui', self)
         self.setWindowTitle(title)
@@ -337,7 +341,11 @@ class Prompt_user_input(QDialog):
         elif title == 'Custom Strain' or title == 'Custom Stage' or title == 'Custom Genotype' or title == 'Custom Manipulation': 
             reg_ex = QRegularExpression("[a-z-A-Z_ 0-9(),.:;/+-]+")
             self.buttonBox.clicked.connect(lambda: self.validate_organ_data(parent, info))
-        
+
+        elif title == 'Centreline point number to initialise Disc':
+            reg_ex = QRegularExpression("\d{1,3}")
+            self.buttonBox.clicked.connect(lambda: self.validate_number(parent, info))
+
         else: 
             reg_ex = QRegularExpression('.*')
 
@@ -370,7 +378,7 @@ class Prompt_user_input(QDialog):
     
     def validate_organ_data(self, parent, name):
         user_input = self.lineEdit.text()
-        if len(user_input) <= 1: 
+        if len(user_input) <= 0: 
             error_txt = "*The organ's "+name+" needs to have at least two (2) characters."
             self.tE_validate.setText(error_txt)
             return
@@ -380,6 +388,20 @@ class Prompt_user_input(QDialog):
             cB_data.addItem(user_input)
             cB_data.setCurrentText(user_input)
             self.output = user_input
+            self.close()
+    
+    def validate_number(self, parent, info): 
+        user_input = self.lineEdit.text()
+        if len(user_input) == 0: 
+            error_txt = "*Please provide a valid number."
+            self.tE_validate.setText(error_txt)
+            return
+        elif int(user_input) < info[0] or int(user_input) > info[1]: 
+            error_txt = "*Please provide a valid number between "+str(info)+"."
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            self.output = int(user_input)
             self.close()
 
 class Propmt_save_all(QDialog): 
@@ -3341,13 +3363,17 @@ class MainWindow(QMainWindow):
                         print('AAA:',color_txt)
                         color_btn = getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn))
                         color_btn.setStyleSheet(color_txt)
+
+                #Add ch-cont combinations to list of cuts to make
+                ch_keys = sorted(list(self.organ.mH_settings['setup']['segm'][cutb]['ch_segments'].keys()))
                 nn = 1
-                for ch in self.organ.mH_settings['setup']['segm'][cutb]['ch_segments']: 
-                    for cont in self.organ.mH_settings['setup']['segm'][cutb]['ch_segments'][ch]:
+                for ch in ch_keys: 
+                    cont_keys = sorted(self.organ.mH_settings['setup']['segm'][cutb]['ch_segments'][ch])
+                    for cont in cont_keys:
                         getattr(self, cutl+'_chcont_segm'+str(nn)).setText(str(nn)+'. '+ch+'_'+cont)
                         getattr(self, cutl+'_play_segm'+str(nn)).setEnabled(False)
                         getattr(self, cutl+'_plot_segm'+str(nn)).setEnabled(False)
-                        self.segm_btns[str(nn)+'-'+ch+'_'+cont] = {'play': getattr(self, cutl+'_play_segm'+str(nn)),
+                        self.segm_btns[cutb+':'+ch+'_'+cont] = {'play': getattr(self, cutl+'_play_segm'+str(nn)),
                                                        'plot': getattr(self, cutl+'_plot_segm'+str(nn))}
                         nn+=1
                 #Make invisible the rest of the items
@@ -3429,13 +3455,17 @@ class MainWindow(QMainWindow):
                     color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb"+str(tuple(color))+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
                     color_btn = getattr(self, 'fillcolor_'+cutl+'_'+'sect'+str(nn))
                     color_btn.setStyleSheet(color_txt)
+                    
+                #Add ch-cont combinations to list of cuts to make
+                ch_keys = sorted(list(self.organ.mH_settings['setup']['sect'][cutb]['ch_sections'].keys()))
                 nn = 1
-                for ch in self.organ.mH_settings['setup']['sect'][cutb]['ch_sections']: 
-                    for cont in self.organ.mH_settings['setup']['sect'][cutb]['ch_sections'][ch]:
+                for ch in ch_keys: 
+                    cont_keys = sorted(self.organ.mH_settings['setup']['sect'][cutb]['ch_sections'][ch])
+                    for cont in cont_keys:
                         getattr(self, cutl+'_chcont_sect'+str(nn)).setText(str(nn)+'. '+ch+'_'+cont)
                         getattr(self, cutl+'_play_sect'+str(nn)).setEnabled(False)
                         getattr(self, cutl+'_plot_sect'+str(nn)).setEnabled(False)
-                        self.sect_btns[str(nn)+'-'+ch+'_'+cont] = {'play': getattr(self, cutl+'_play_sect'+str(nn)),
+                        self.sect_btns[cutb+':'+ch+'_'+cont] = {'play': getattr(self, cutl+'_play_sect'+str(nn)),
                                                        'plot': getattr(self, cutl+'_plot_sect'+str(nn))}
                         nn+=1
                 #Make invisible the rest of the items
@@ -4440,29 +4470,8 @@ class MainWindow(QMainWindow):
             return
 
     def gui_segments_n(self): 
-        
-        # segm_set = self.organ.mH_settings['setup']['segm']
-        # gui_segm = {}
-        # segments = {}
-        # #Set the way in which each mesh is going to be cut
-        # if controller.organ.mH_settings['setup']['all_contained'] or controller.organ.mH_settings['setup']['one_contained']: 
-        #     ext_ch, int_ch = self.organ.get_ext_int_chs()
-        #     ext_ch_name = ext_ch.channel_no
-        #     nn = 1
-        #     for ch in segm_set['ch_segments']: 
-        #         relation = self.organ.mH_settings['setup']['chs_relation'][ch]
-        #         for cont in segm_set[ch]: 
-        #             if 
-        #             ch == ext_ch_name: 
-        #                 cut = 'external'
-        #             else: 
 
-        #             segments[str(nn)+'-'+ch+'_'+cont] = {}
-
-        # else: 
-
-        
-        
+        gui_segm = {}
         use_cl = getattr(self, 'segm_use_centreline').isChecked()
         if use_cl: 
             cl2use = getattr(self, 'segm_centreline2use').currentText()
@@ -4474,6 +4483,59 @@ class MainWindow(QMainWindow):
                 return None
         else: 
             gui_segm = {'use_centreline': use_cl}
+
+
+        segm_set = self.organ.mH_settings['setup']['segm']
+        segments = {}
+        #Set the way in which each mesh is going to be cut
+        if self.organ.mH_settings['setup']['all_contained'] or self.organ.mH_settings['setup']['one_contained']: 
+            ext_ch, int_ch = self.organ.get_ext_int_chs()
+            ext_ch_name = ext_ch.channel_no
+            nn = 1
+            for cut in [key for key in segm_set.keys() if 'Cut' in key]:
+                segments[cut] = {'ch_info': {}}
+                for ch in segm_set[cut]['ch_segments']: 
+                    segments[cut]['ch_info'][ch] = {}
+                    if ch != 'chNS': 
+                        relation = self.organ.mH_settings['setup']['chs_relation'][ch]
+                    else: 
+                        relation = 'chNS'
+
+                    if relation == 'external': 
+                        for cont in segm_set[cut]['ch_segments'][ch]: 
+                            if cont == 'ext': 
+                                txt = 'ext-ext'
+                                btn = self.segm_btns[cut+':'+ch+'_'+cont]['play']
+                                btn.setEnabled(True)
+                            else: 
+                                txt = 'cut_with_ext-ext'
+                            segments[cut]['ch_info'][ch][cont] = txt
+                    elif relation == 'internal' or relation == 'middle' or relation == 'chNS': 
+                        for cont in segm_set[cut]['ch_segments'][ch]: 
+                            txt = 'cut_with_other_ext-ext'
+                            segments[cut]['ch_info'][ch][cont] = txt
+                    else: # relation == 'independent'
+                        for cont in segm_set[cut]['ch_segments'][ch]: 
+                            if cont == 'ext':
+                                txt = 'indep-ext'
+                                btn = self.segm_btns[cut+':'+ch+'_'+cont]['play']
+                                btn.setEnabled(True)
+                            else: 
+                                txt = 'cut_with_ext-indep'
+                            segments[cut]['ch_info'][ch][cont] = txt
+        else: 
+            for cut in [key for key in segm_set.keys() if 'Cut' in key]:
+                segments[cut] = {'ch_info': {}}
+                for ch in segm_set[cut]['ch_segments']: 
+                    segments[cut]['ch_info'][ch] = {}
+                    relation = self.organ.mH_settings['setup']['chs_relation'][ch]
+                    for cont in segm_set[cut]['ch_segments'][ch]: 
+                        if cont == 'ext':
+                            txt = 'indep-ext'
+                        else: 
+                            txt = 'cut_with_ext-indep'
+                        segments[cut]['ch_info'][ch][cont] = txt
+        gui_segm['setup'] = segments
 
         return gui_segm
 

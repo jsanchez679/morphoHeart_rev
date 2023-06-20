@@ -90,10 +90,28 @@ class Controller:
         # fcB.alert('connection')
 
         #Save all
-        msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
-        self.prompt = Propmt_save_all(msg, info=[], parent=self.welcome_win)
+        # msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
+        # self.prompt = Propmt_save_all(msg, info=[], parent=self.welcome_win)
         # self.prompt.exec()
         # print('output:',self.prompt.output, '\n')
+
+        #User input
+        # msg = 'Enter the centreline point number you want to use to initialise the disc to divide the tissue into segments '#+user_names+':'
+        # title = 'Centreline point number to initialise disc'
+        # prompt = Prompt_user_input(msg = msg, title = title, info = (0,300), parent = self.welcome_win)
+        # prompt.exec()
+        # print('prompt.output:', prompt.output)
+
+        disc_radius = 60; n =1; user_names = 'A/V'
+        items = {0: {'opt': 'no, I would like to define a new position for the disc'}, 
+                1: {'opt': 'yes, but I would like to redefine the disc radius', 'lineEdit': True, 'regEx': "int3d"}, 
+                2: {'opt': 'yes, I am happy with both, disc position and radius'}}
+        title = 'Happy with the defined Disc '+str(n)+'?'
+        msg = 'Are you happy with the position of the disc [radius: '+str(disc_radius)+'um] to cut tissue into segments  '+user_names+'?'
+        prompt = Prompt_ok_cancel_radio(title, msg, items, parent = self.welcome_win)
+        prompt.exec()
+        print(prompt.output)
+
 
     def show_create_new_proj(self):
         #Close welcome window
@@ -218,7 +236,10 @@ class Controller:
             print('\nLoaded Project and Organ!\n >> Proj:', self.proj.__dict__.keys())
             print('>> Organ:', self.organ.__dict__.keys())
             self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
+            self.init_main_win()
         self.main_win.show()
+
+    def init_main_win(self): 
 
         #Segmentation Tab
         # - Buttons inside channels
@@ -244,8 +265,9 @@ class Controller:
         self.main_win.centreline_select.clicked.connect(lambda: self.run_centreline_select())
         # self.main_win.centreline_play.clicked.connect(lambda: self.run_centreline())
 
+        #HEATMAPS
         self.main_win.heatmaps3D_play.clicked.connect(lambda: self.run_heatmaps3D())
-        #Indiv Plot buttons
+        #Heatmap Indiv Play buttons
         self.main_win.hm_play1.clicked.connect(lambda: self.run_heatmaps3D(btn=1))
         self.main_win.hm_play2.clicked.connect(lambda: self.run_heatmaps3D(btn=2))
         self.main_win.hm_play3.clicked.connect(lambda: self.run_heatmaps3D(btn=3))
@@ -260,8 +282,63 @@ class Controller:
         self.main_win.hm_play12.clicked.connect(lambda: self.run_heatmaps3D(btn=12))
         # self.main_win.heatmaps2D_play.clicked.connect(lambda: self.run_heatmaps2D())
 
+        # SEGMENTS
         self.main_win.segments_play.clicked.connect(lambda: self.run_segments())
+        #Segments Indiv Play buttons
+        #Cut 1
+        self.main_win.cut1_play_segm1.clicked.connect(lambda: self.run_segments(btn='Cut1_1'))
+        self.main_win.cut1_play_segm2.clicked.connect(lambda: self.run_segments(btn='Cut1_2'))
+        self.main_win.cut1_play_segm3.clicked.connect(lambda: self.run_segments(btn='Cut1_3'))
+        self.main_win.cut1_play_segm4.clicked.connect(lambda: self.run_segments(btn='Cut1_4'))
+        self.main_win.cut1_play_segm5.clicked.connect(lambda: self.run_segments(btn='Cut1_5'))
+        self.main_win.cut1_play_segm6.clicked.connect(lambda: self.run_segments(btn='Cut1_6'))
+        self.main_win.cut1_play_segm7.clicked.connect(lambda: self.run_segments(btn='Cut1_7'))
+        self.main_win.cut1_play_segm8.clicked.connect(lambda: self.run_segments(btn='Cut1_8'))
+        self.main_win.cut1_play_segm9.clicked.connect(lambda: self.run_segments(btn='Cut1_9'))
+        self.main_win.cut1_play_segm10.clicked.connect(lambda: self.run_segments(btn='Cut1_10'))
+        self.main_win.cut1_play_segm11.clicked.connect(lambda: self.run_segments(btn='Cut1_11'))
+        self.main_win.cut1_play_segm12.clicked.connect(lambda: self.run_segments(btn='Cut1_12'))
+        #Cut 2
+        self.main_win.cut2_play_segm1.clicked.connect(lambda: self.run_segments(btn='Cut2_1'))
+        self.main_win.cut2_play_segm2.clicked.connect(lambda: self.run_segments(btn='Cut2_2'))
+        self.main_win.cut2_play_segm3.clicked.connect(lambda: self.run_segments(btn='Cut2_3'))
+        self.main_win.cut2_play_segm4.clicked.connect(lambda: self.run_segments(btn='Cut2_4'))
+        self.main_win.cut2_play_segm5.clicked.connect(lambda: self.run_segments(btn='Cut2_5'))
+        self.main_win.cut2_play_segm6.clicked.connect(lambda: self.run_segments(btn='Cut2_6'))
+        self.main_win.cut2_play_segm7.clicked.connect(lambda: self.run_segments(btn='Cut2_7'))
+        self.main_win.cut2_play_segm8.clicked.connect(lambda: self.run_segments(btn='Cut2_8'))
+        self.main_win.cut2_play_segm9.clicked.connect(lambda: self.run_segments(btn='Cut2_9'))
+        self.main_win.cut2_play_segm10.clicked.connect(lambda: self.run_segments(btn='Cut2_10'))
+        self.main_win.cut2_play_segm11.clicked.connect(lambda: self.run_segments(btn='Cut2_11'))
+        self.main_win.cut2_play_segm12.clicked.connect(lambda: self.run_segments(btn='Cut2_12'))
+
         # self.main_win.sections_play.clicked.connect(lambda: self.run_sections())
+        #Cut 1
+        self.main_win.cut1_play_sect1.clicked.connect(lambda: self.run_sections(btn='Cut1_1'))
+        self.main_win.cut1_play_sect2.clicked.connect(lambda: self.run_sections(btn='Cut1_2'))
+        self.main_win.cut1_play_sect3.clicked.connect(lambda: self.run_sections(btn='Cut1_3'))
+        self.main_win.cut1_play_sect4.clicked.connect(lambda: self.run_sections(btn='Cut1_4'))
+        self.main_win.cut1_play_sect5.clicked.connect(lambda: self.run_sections(btn='Cut1_5'))
+        self.main_win.cut1_play_sect6.clicked.connect(lambda: self.run_sections(btn='Cut1_6'))
+        self.main_win.cut1_play_sect7.clicked.connect(lambda: self.run_sections(btn='Cut1_7'))
+        self.main_win.cut1_play_sect8.clicked.connect(lambda: self.run_sections(btn='Cut1_8'))
+        self.main_win.cut1_play_sect9.clicked.connect(lambda: self.run_sections(btn='Cut1_9'))
+        self.main_win.cut1_play_sect10.clicked.connect(lambda: self.run_sections(btn='Cut1_10'))
+        self.main_win.cut1_play_sect11.clicked.connect(lambda: self.run_sections(btn='Cut1_11'))
+        self.main_win.cut1_play_sect12.clicked.connect(lambda: self.run_sections(btn='Cut1_12'))
+        #Cut 2
+        self.main_win.cut2_play_sect1.clicked.connect(lambda: self.run_sections(btn='Cut2_1'))
+        self.main_win.cut2_play_sect2.clicked.connect(lambda: self.run_sections(btn='Cut2_2'))
+        self.main_win.cut2_play_sect3.clicked.connect(lambda: self.run_sections(btn='Cut2_3'))
+        self.main_win.cut2_play_sect4.clicked.connect(lambda: self.run_sections(btn='Cut2_4'))
+        self.main_win.cut2_play_sect5.clicked.connect(lambda: self.run_sections(btn='Cut2_5'))
+        self.main_win.cut2_play_sect6.clicked.connect(lambda: self.run_sections(btn='Cut2_6'))
+        self.main_win.cut2_play_sect7.clicked.connect(lambda: self.run_sections(btn='Cut2_7'))
+        self.main_win.cut2_play_sect8.clicked.connect(lambda: self.run_sections(btn='Cut2_8'))
+        self.main_win.cut2_play_sect9.clicked.connect(lambda: self.run_sections(btn='Cut2_9'))
+        self.main_win.cut2_play_sect10.clicked.connect(lambda: self.run_sections(btn='Cut2_10'))
+        self.main_win.cut2_play_sect11.clicked.connect(lambda: self.run_sections(btn='Cut2_11'))
+        self.main_win.cut2_play_sect12.clicked.connect(lambda: self.run_sections(btn='Cut2_12'))
 
     #Functions related to API  
     # Project Related  
@@ -512,10 +589,10 @@ class Controller:
     #     mA.run_heatmaps2D(controller=self)
 
     def run_segments(self, btn=None):
-        mA.run_segments(controller=self, btn = btn)
+        mA.run_segments(controller=self, btn=btn)
 
-    # def run_sections(self):
-    #     mA.run_sections(controller=self)
+    def run_sections(self, btn=None):
+        mA.run_sections(controller=self, btn=btn)
     
 def main():
     app = QtWidgets.QApplication(sys.argv)

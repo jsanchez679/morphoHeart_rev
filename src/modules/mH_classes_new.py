@@ -218,6 +218,29 @@ class Project():
                 for key in mH_settings['segm']: 
                     if 'Cut' in key:
                         self.mH_segments[key]= mH_settings['segm'][key]['name_segments']
+                        #Add external segments to be cut
+                        if mH_settings['all_contained'] or mH_settings['one_contained']: 
+                            #Get external tissue
+                            for ch in mH_settings['chs_relation']: 
+                                if mH_settings['chs_relation'][ch] == 'external': 
+                                    ext_ch = ch
+                                    break
+                            #Add external tissue to list of tissues to cut
+                            if ext_ch not in self.mH_settings['setup']['segm'][key]['ch_segments'].keys(): 
+                                if 'ext' not in self.mH_settings['setup']['segm'][key]['ch_segments'][ext_ch]: 
+                                    self.mH_settings['setup']['segm'][key]['ch_segments'][ext_ch] = ['ext']
+                            else: 
+                                if 'ext' not in self.mH_settings['setup']['segm'][key]['ch_segments'][ext_ch]: 
+                                    self.mH_settings['setup']['segm'][key]['ch_segments'][ext_ch].append('ext')
+
+                        #Add external tissue to of the independent channel to cut
+                        for cho in mH_settings['chs_all']: 
+                            if cho != 'chNS' and cho in self.mH_settings['setup']['segm'][key]['ch_segments'].keys():  
+                                if mH_settings['chs_relation'][cho] == 'independent': 
+                                    if 'ext' not in self.mH_settings['setup']['segm'][key]['ch_segments'][cho]: 
+                                        self.mH_settings['setup']['segm'][key]['ch_segments'][cho].append('ext')
+                                else: 
+                                    pass
             else: 
                  self.mH_segments = False
 
@@ -237,6 +260,7 @@ class Project():
             self.mH_methods = None
 
         print('mH_params: ',mH_params)
+        print('self.mH_settings[setup][segm]: ', self.mH_settings['setup']['segm'])
         self.clean_False(user_param = mH_params)
         self.set_mH_methods()
 
@@ -2820,10 +2844,10 @@ class Mesh_mH():
         
         return submesh
         
-    def mask_segments(self):
+    def mask_segments(self, cut, palette):
           
         # Get segments info
-        no_discs = self.parent_organ.mH_settings['general_info']['segments']['no_cuts_4segments']
+        no_discs = self.parent_organ.mH_settings['setup']['segm'][cut]['no_cuts_4segments']
 
         # Mask im_channel
         im_ch = self.imChannel
@@ -2833,20 +2857,20 @@ class Mesh_mH():
         masked_s3 = s3.copy()
         
         for nn in range(no_discs):
-            name_s3 = self.parent_organ.user_organName + '_mask_DiscNo'+str(nn)+'.npy'
+            name_s3 = self.parent_organ.user_organName + '_mask_'+cut+'_DiscNo'+str(nn)+'.npy'
             s3_dir = self.parent_organ.dir_res(dir='s3_numpy') / name_s3
             s3_mask = np.load(str(s3_dir))
             s3_mask = s3_mask.astype('bool')
             masked_s3 = mask_disc(self.parent_organ.info['shape_s3'], masked_s3, s3_mask)
         
         rotateZ_90=self.rotateZ_90
-        # print('rotateZ_90:', rotateZ_90)
-        masked_mesh = create_submesh(masked_s3, self.resolution, keep_largest=False, rotateZ_90=self.rotateZ_90)
+        keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][im_ch.channel_no][self.mesh_type]
+        masked_mesh = create_submesh(masked_s3, self.resolution, keep_largest=keep_largest, rotateZ_90=self.rotateZ_90)
         cut_masked = masked_mesh.split(maxdepth=100)
         print('> Meshes making up tissue: ', len(cut_masked))
         alert('frog')
        
-        palette = sns.color_palette("Set2", len(cut_masked))
+        # palette = sns.color_palette("Set2", len(cut_masked))
         cut_masked_rot = []
         if rotateZ_90:
             for n, mesh, color in zip(count(), cut_masked, palette):
@@ -2854,17 +2878,17 @@ class Mesh_mH():
         
         return cut_masked_rot
         
-    def create_segment(self, name, color):
+    def create_segment(self, name, cut, color):
         
-        segm_info = self.parent_organ.mH_settings['general_info']['segments']['name_segments']
+        segm_info = self.parent_organ.mH_settings['setup']['segm'][cut]
+        print('segm_info: ', segm_info)
         alpha = self.alpha
 
         submesh = SubMesh(parent_mesh = self, sub_mesh_type='Segment', 
-                          name = name, user_name = segm_info[name], 
+                          name = name, cut = cut, user_name = segm_info['name_segments'][name], 
                           color=color, alpha = alpha)
         
-        segments_info = self.parent_organ.mH_settings['general_info']['segments']
-        submesh.sub_user_name = segments_info['name_segments'][submesh.sub_name]
+        submesh.sub_user_name = segm_info['name_segments'][submesh.sub_name]
         
         self.parent_organ.add_submesh(submesh)
             
@@ -2873,11 +2897,11 @@ class Mesh_mH():
 class SubMesh():
     
     def __init__(self, parent_mesh: Mesh_mH, sub_mesh_type:str, name: str,
-                 user_name='', color='gold', alpha=0.05):
+                 cut, user_name='', color='gold', alpha=0.05):
         
         self.parent_mesh = parent_mesh
         self.sub_name = name # ch_cont_segm/sect
-        self.sub_name_all = parent_mesh.name + '_' + name
+        self.sub_name_all = parent_mesh.name+'_'+cut+'_'+name
         self.sub_mesh_type = sub_mesh_type # Section, Segment
         self.keep_largest = False#keep_largest
         
@@ -3142,7 +3166,7 @@ def draw_line (clicks, myIm, color_draw):
 def mask_disc(shape_s3, s3, s3_cyl):
     
     #Load stack shape
-    zdim, xdim, ydim = shape_s3
+    zdim, _, _ = shape_s3
     s3_mask = copy.deepcopy(s3)
     
     for slc in range(zdim):
