@@ -1807,9 +1807,6 @@ QScrollBar::handle:vertical:hover {
 }
 </string>
           </property>
-          <property name="verticalScrollBarPolicy">
-           <enum>Qt::ScrollBarAlwaysOn</enum>
-          </property>
           <property name="horizontalScrollBarPolicy">
            <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
@@ -1820,9 +1817,9 @@ QScrollBar::handle:vertical:hover {
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-2383</y>
+             <y>-2003</y>
              <width>672</width>
-             <height>3110</height>
+             <height>3093</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -6461,25 +6458,6 @@ border-color: #672146
                    </layout>
                   </item>
                  </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="spacer_9">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>5</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>5</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
                 </widget>
                </item>
                <item>
@@ -21098,13 +21076,13 @@ background-color:rgb(203, 203, 203);
                          <property name="minimumSize">
                           <size>
                            <width>100</width>
-                           <height>20</height>
+                           <height>0</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
                            <width>100</width>
-                           <height>40</height>
+                           <height>16777215</height>
                           </size>
                          </property>
                          <property name="styleSheet">
@@ -23009,37 +22987,31 @@ background-color:rgb(203, 203, 203);
                         </widget>
                        </item>
                        <item row="2" column="0">
-                        <widget class="Line" name="segm_line1">
+                        <widget class="Line" name="line_2">
                          <property name="orientation">
                           <enum>Qt::Horizontal</enum>
                          </property>
                         </widget>
                        </item>
                        <item row="2" column="2">
-                        <widget class="Line" name="segm_line3">
+                        <widget class="Line" name="line_3">
                          <property name="orientation">
                           <enum>Qt::Horizontal</enum>
                          </property>
                         </widget>
                        </item>
-                       <item row="3" column="1" alignment="Qt::AlignVCenter">
+                       <item row="3" column="1">
                         <widget class="QTextEdit" name="names_segm_cut2">
                          <property name="minimumSize">
                           <size>
                            <width>100</width>
-                           <height>20</height>
+                           <height>0</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
                            <width>100</width>
-                           <height>40</height>
-                          </size>
-                         </property>
-                         <property name="sizeIncrement">
-                          <size>
-                           <width>0</width>
-                           <height>40</height>
+                           <height>16777215</height>
                           </size>
                          </property>
                          <property name="styleSheet">
@@ -23084,7 +23056,7 @@ background-color: rgb(255, 255, 255);</string>
                         </widget>
                        </item>
                        <item row="2" column="1">
-                        <widget class="Line" name="segm_line2">
+                        <widget class="Line" name="line">
                          <property name="orientation">
                           <enum>Qt::Horizontal</enum>
                          </property>
@@ -23122,7 +23094,7 @@ background-color: rgb(255, 255, 255);</string>
                         </widget>
                        </item>
                        <item row="2" column="3">
-                        <widget class="Line" name="segm_line4">
+                        <widget class="Line" name="line_4">
                          <property name="orientation">
                           <enum>Qt::Horizontal</enum>
                          </property>
@@ -24703,7 +24675,7 @@ background-color: rgb(255, 255, 255);</string>
                         </widget>
                        </item>
                        <item row="2" column="0">
-                        <widget class="Line" name="sect_line1">
+                        <widget class="Line" name="line_9">
                          <property name="orientation">
                           <enum>Qt::Horizontal</enum>
                          </property>
@@ -25679,7 +25651,7 @@ background-color:rgb(203, 203, 203);
                         </widget>
                        </item>
                        <item row="2" column="1">
-                        <widget class="Line" name="sect_line2">
+                        <widget class="Line" name="line_10">
                          <property name="orientation">
                           <enum>Qt::Horizontal</enum>
                          </property>
@@ -26529,14 +26501,14 @@ background-color:rgb(203, 203, 203);
                         </layout>
                        </item>
                        <item row="2" column="2">
-                        <widget class="Line" name="sect_line3">
+                        <widget class="Line" name="line_11">
                          <property name="orientation">
                           <enum>Qt::Horizontal</enum>
                          </property>
                         </widget>
                        </item>
                        <item row="2" column="3">
-                        <widget class="Line" name="sect_line4">
+                        <widget class="Line" name="line_12">
                          <property name="orientation">
                           <enum>Qt::Horizontal</enum>
                          </property>
@@ -26547,13 +26519,13 @@ background-color:rgb(203, 203, 203);
                          <property name="minimumSize">
                           <size>
                            <width>100</width>
-                           <height>20</height>
+                           <height>0</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
                            <width>100</width>
-                           <height>40</height>
+                           <height>16777215</height>
                           </size>
                          </property>
                          <property name="styleSheet">
@@ -26607,13 +26579,13 @@ p, li { white-space: pre-wrap; }
                          <property name="minimumSize">
                           <size>
                            <width>100</width>
-                           <height>20</height>
+                           <height>0</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
                            <width>100</width>
-                           <height>40</height>
+                           <height>16777215</height>
                           </size>
                          </property>
                          <property name="styleSheet">
@@ -28642,19 +28614,6 @@ border-color: #672146
                </item>
               </layout>
              </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_10">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
             </item>
            </layout>
           </widget>

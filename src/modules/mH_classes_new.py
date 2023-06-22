@@ -35,7 +35,8 @@ path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
 #from ...config import dict_gui
 from ..gui.gui_classes import *
 from .mH_funcBasics import alert, ask4input, make_Paths, make_tuples, get_by_path, set_by_path
-from .mH_funcMeshes import unit_vector, plot_organCLs, find_angle_btw_pts, classify_segments_from_ext, create_asign_subsg
+from .mH_funcMeshes import (unit_vector, plot_organCLs, find_angle_btw_pts, 
+                            classify_segments_from_ext, create_subsg, plot_grid)
 from ..gui.config import mH_config
 
 # alert_all=True
@@ -1115,6 +1116,14 @@ class Organ():
                     sph_centroid = vedo.Sphere(pos=center, r=2).legend('cut4CL_'+side)
                     sph_centroid.color(color)
                     obj_temp[proc][key][ch_cont]['centroid'][side] = sph_centroid
+        elif proc == 'segments': 
+            #key = cut, ch_cont = submesh.sub_name_all
+            cut, ch, cont, segm = ch_cont.split('_')
+            directory = self.dir_res(dir = 'meshes')
+            mesh_dir = directory / self.mH_settings['wf_info']['segments']['setup'][key]['dirs'][ch][cont][segm]
+            mesh_out = vedo.load(str(mesh_dir))
+            mesh_out.color(self.mH_settings['setup']['segm'][cut]['colors'][segm])
+            obj_temp[proc][key][ch_cont] = mesh_out
               
         return obj_temp
 
@@ -1212,7 +1221,7 @@ class Organ():
                 
         if process == 'MeshesProc':
             proc_done = []
-            flat_dict = flatdict.FlatDict(wf[process])
+            flat_dict = flatdict.FlatDict(copy.deepcopy(wf[process]))
             for key_f in [proc for proc in wf[process].keys() if proc != 'Status']:
                 proc_done.append(wf[process][key_f]['Status'])
                 if key_f != 'E-Segments':
@@ -1277,6 +1286,38 @@ class Organ():
                     
         return ch_ext, ch_int
     
+    def get_ext_subsgm(self, cut): 
+        ext_subsgm = {}
+        for name in self.mH_settings['wf_info']['segments']['setup'][cut]['names'].items():
+            ext_subsgm[name[0]] = name[1]
+        self.ext_subsgm = ext_subsgm
+
+        return self.ext_subsgm
+    
+    def dict_segments(self, cut, palette, other=True):
+    
+        segments_info = self.mH_settings['setup']['segm'][cut]
+        # no_segm = segments_info['no_segments']
+        #https://seaborn.pydata.org/tutorial/color_palettes.html
+        # palette_all = sns.color_palette("cool_r", no_segm*4)
+        # palette = random.sample(palette_all, no_segm)
+        
+        if other: 
+            dict_segm = {'other': {'user_name': 'other',
+                                'meshes_number': []}}
+        else:
+            dict_segm = {}
+        
+        colors = {'other': [128,128,128]}
+        for n, segm in enumerate(segments_info['name_segments']): 
+            dict_segm[segm] = {}
+            dict_segm[segm]['user_name'] = segments_info['name_segments'][segm]
+            dict_segm[segm]['meshes_number'] = []
+
+            colors[segm] = palette[n]
+        
+        return dict_segm, colors
+
     def check_method(self, method:str):
         if method in self.parent_project.mH_methods:
             return True
@@ -2848,6 +2889,7 @@ class Mesh_mH():
           
         # Get segments info
         no_discs = self.parent_organ.mH_settings['setup']['segm'][cut]['no_cuts_4segments']
+        no_segm =  self.parent_organ.mH_settings['setup']['segm'][cut]['no_segments']
 
         # Mask im_channel
         im_ch = self.imChannel
@@ -2864,32 +2906,40 @@ class Mesh_mH():
             masked_s3 = mask_disc(self.parent_organ.info['shape_s3'], masked_s3, s3_mask)
         
         rotateZ_90=self.rotateZ_90
-        keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][im_ch.channel_no][self.mesh_type]
+        if 'NS' not in im_ch.channel_no: 
+            keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][im_ch.channel_no][self.mesh_type]
+            max_depth = 200
+        else:
+            keep_largest = False
+            max_depth = 1000
+        
         masked_mesh = create_submesh(masked_s3, self.resolution, keep_largest=keep_largest, rotateZ_90=self.rotateZ_90)
-        cut_masked = masked_mesh.split(maxdepth=100)
+        cut_masked = masked_mesh.split(maxdepth=max_depth)
         print('> Meshes making up tissue: ', len(cut_masked))
         alert('frog')
-       
-        # palette = sns.color_palette("Set2", len(cut_masked))
-        cut_masked_rot = []
-        if rotateZ_90:
+        if len(cut_masked) < no_segm: 
+            obj = cut_masked
+            plot_grid(obj=obj, txt=[], axes=5, sc_side=max(self.parent_organ.get_maj_bounds()))
+            cut_masked_rot = cut_masked
+        else: 
+            cut_masked_rot = []
             for n, mesh, color in zip(count(), cut_masked, palette):
-                cut_masked_rot.append(mesh.rotate_z(-90).alpha(0.1).color(color).legend('No.'+str(n)))
-        
+                if rotateZ_90:
+                    cut_masked_rot.append(mesh.rotate_z(-90).alpha(0.1).color(color).legend('No.'+str(n)))
+                else:
+                    cut_masked_rot.append(mesh.alpha(0.1).color(color).legend('No.'+str(n)))
+
         return cut_masked_rot
         
     def create_segment(self, name, cut, color):
         
         segm_info = self.parent_organ.mH_settings['setup']['segm'][cut]
-        print('segm_info: ', segm_info)
+        # print('segm_info: ', segm_info)
         alpha = self.alpha
-
         submesh = SubMesh(parent_mesh = self, sub_mesh_type='Segment', 
                           name = name, cut = cut, user_name = segm_info['name_segments'][name], 
                           color=color, alpha = alpha)
-        
         submesh.sub_user_name = segm_info['name_segments'][submesh.sub_name]
-        
         self.parent_organ.add_submesh(submesh)
             
         return submesh
@@ -2901,7 +2951,7 @@ class SubMesh():
         
         self.parent_mesh = parent_mesh
         self.sub_name = name # ch_cont_segm/sect
-        self.sub_name_all = parent_mesh.name+'_'+cut+'_'+name
+        self.sub_name_all = cut+'_'+parent_mesh.name+'_'+name
         self.sub_mesh_type = sub_mesh_type # Section, Segment
         self.keep_largest = False#keep_largest
         
@@ -2961,47 +3011,45 @@ class SubMesh():
 
     def get_segm_mesh(self):
         
+        print('>>>> get_segm_mesh: ',self.sub_name_all)
         parent_organ = self.parent_mesh.parent_organ
-        dict_ext_segm = parent_organ.mH_settings['general_info']['segments']['ext_segm']
-        organ_ext_meshes = [dict_ext_segm[key]['name'] for key in dict_ext_segm.keys()]
-        if self.sub_name_all in organ_ext_meshes: 
-            mesh_name = parent_organ.user_organName+'_'+self.sub_name_all+'.vtk'
-            mesh_dir = parent_organ.dir_res(dir='meshes') / mesh_name
-            if mesh_dir.is_file():
-                # print('> '+self.sub_name_all+' is an external segment mesh!')
-                segm_mesh = vedo.load(str(mesh_dir))
-                segm_mesh.legend(self.sub_legend).wireframe()
-                segm_mesh.color(self.color).alpha(self.alpha)
-                self.mesh = segm_mesh
+        cut, ch, cont, segm = self.sub_name_all.split('_')
+        print('--------------AAAA')
+        print(parent_organ.mH_settings['wf_info']['segments']['setup'][cut]['names'], self.sub_name_all)
+        names = [key for (_, key) in parent_organ.mH_settings['wf_info']['segments']['setup'][cut]['names'].items()]
+        if self.sub_name_all in names:
+            try: 
+                segm_mesh = parent_organ.obj_temp['segments'][cut][self.sub_name_all]
+                print('try')
+            except: 
+                _ = parent_organ.load_objTemp(proc = 'segments', key=cut, 
+                                                ch_cont = self.sub_name_all, obj_temp=parent_organ.obj_temp)
+                segm_mesh = parent_organ.obj_temp['segments'][cut][self.sub_name_all]
+                print('except')
         else: 
-            mesh = self.parent_mesh
-            cut_masked = mesh.mask_segments()
-        
-            #Get the name of the ext_ext mesh and load it
-            name_ext_mesh = parent_organ.mH_settings['general_info']['segments']['ext_ext']
-            # print('name_ext_mesh:', name_ext_mesh)
-            mesh_ext = parent_organ.obj_meshes[name_ext_mesh]
-            
-            # Get the name of the corresponding ext_ext_segm
-            # name_ext_mesh_segm = parent_organ.mH_settings['general_info']['segments']['ext_segm'][self.sub_name]
-            # Create the submesh
-            ext_sub = mesh_ext.create_segment(name = self.sub_name, color = '')
-            
-            #Recreating dict_segm
-            # segments_info = parent_organ.mH_settings['general_info']['segments']
-            sp_dict_segm = {'user_name': self.sub_user_name,#segments_info['name_segments'][self.sub_name],
-                            'color': self.color, 
-                            'meshes_number': []}
-            # print('sp_dict_segm - get_segm_mesh', sp_dict_segm)
-            
-            # Classify resulting segments using ext_ext submesh
+            print('else')
+            return
+            #Get mesh to cut and palette
+            mesh2cut = self.parent_mesh
+            color = parent_organ.mH_settings['setup']['segm'][cut]['colors'][segm]
+            colors_all = parent_organ.mH_settings['setup']['segm'][cut]['colors']
+            palette = [colors_all[key] for key in colors_all.keys()]
+            #Get external mesh
+            ext_subsgm = parent_organ.get_ext_subsgm(cut)
+            #Mask the s3_stack to create segments
+            cut_masked = mesh2cut.mask_segments(cut = cut, palette = palette)
+            #Create a dictionary containing the information of the classified segments 
+            dict_segm, _ = parent_organ.dict_segments(cut, palette, other=False)
+
+            #Create submeshes for the input mesh and external mesh
             sp_dict_segm = classify_segments_from_ext(meshes = cut_masked, 
-                                                   dict_segm = sp_dict_segm,
-                                                   ext_sub = ext_sub)
-            # Assign meshes to submesh
-            _, segm_mesh = create_asign_subsg(parent_organ, mesh, 
-                                                    cut_masked, self.sub_name, 
-                                                    sp_dict_segm, self.color)
+                                                        dict_segm = dict_segm[segm],
+                                                        ext_sub = ext_subsgm[segm])
+            print('dict_segm after classif: ', sp_dict_segm)
+            _, segm_mesh = create_subsg(parent_organ, mesh2cut, cut, cut_masked, 
+                                                        segm, sp_dict_segm, color)
+            
+        segm_mesh.legend(self.sub_legend).wireframe().alpha(self.alpha)
             
         return segm_mesh
     

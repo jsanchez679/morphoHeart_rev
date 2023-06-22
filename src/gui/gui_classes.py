@@ -29,6 +29,7 @@ import seaborn as sns
 from functools import reduce  
 import operator
 from typing import Union
+import vedo 
 
 #%% morphoHeart Imports - ##################################################
 # from .src.modules.mH_funcBasics import get_by_path
@@ -3347,7 +3348,9 @@ class MainWindow(QMainWindow):
 
                 for segm in segm_setup[cutb]['name_segments'].keys():
                     name_segm.append(segm_setup[cutb]['name_segments'][segm])
-                getattr(self, 'names_segm_'+cutl).setText(', '.join(name_segm))
+                segm_names = ', '.join(name_segm)
+                html_txt_segm = html_txt[0].replace('font-size:11pt', 'font-size:10pt')+html_txt[1]+segm_names+html_txt[2]
+                getattr(self, 'names_segm_'+cutl).setHtml(html_txt_segm)# Text(', '.join(name_segm))
                 getattr(self, 'obj_segm_'+cutl).setText(segm_setup[cutb]['obj_segm'])
                 for nn in range(1,6,1):
                     if nn > len(name_segm):
@@ -3373,19 +3376,18 @@ class MainWindow(QMainWindow):
                         getattr(self, cutl+'_chcont_segm'+str(nn)).setText(str(nn)+'. '+ch+'_'+cont)
                         getattr(self, cutl+'_play_segm'+str(nn)).setEnabled(False)
                         getattr(self, cutl+'_plot_segm'+str(nn)).setEnabled(False)
-                        self.segm_btns[cutb+':'+ch+'_'+cont] = {'play': getattr(self, cutl+'_play_segm'+str(nn)),
-                                                       'plot': getattr(self, cutl+'_plot_segm'+str(nn))}
+                        self.segm_btns[cutb+':'+ch+'_'+cont] = {'num': str(nn), 
+                                                                'play': getattr(self, cutl+'_play_segm'+str(nn)),
+                                                                'plot': getattr(self, cutl+'_plot_segm'+str(nn))}
                         nn+=1
                 #Make invisible the rest of the items
                 for el in range(nn,13,1):
-                    getattr(self, cutl+'_chcont_segm'+str(el)).setVisible(False)
+                    if el == nn and el%2 == 0: 
+                        getattr(self, cutl+'_chcont_segm'+str(el)).setText('')
+                    else: 
+                        getattr(self, cutl+'_chcont_segm'+str(el)).setVisible(False)
                     getattr(self, cutl+'_play_segm'+str(el)).setVisible(False)
                     getattr(self, cutl+'_plot_segm'+str(el)).setVisible(False)
-                    if el != nn: 
-                        try: 
-                            getattr(self, 'hs_'+cutl+'_segm'+str(el)).setVisible(False)
-                        except:
-                            pass
 
             else: 
                 getattr(self, 'label_segm_'+cutl).setVisible(False)
@@ -3399,16 +3401,49 @@ class MainWindow(QMainWindow):
                     getattr(self, cutl+'_chcont_segm'+str(el)).setVisible(False)
                     getattr(self, cutl+'_play_segm'+str(el)).setVisible(False)
                     getattr(self, cutl+'_plot_segm'+str(el)).setVisible(False)
-                    try: 
-                        getattr(self, 'hs_'+cutl+'_segm'+str(el)).setVisible(False)
-                    except:
-                        pass
+        
+        if len(no_cuts) == 1: 
+            for aa in range(1,5,1): 
+                getattr(self, 'segm_line'+str(aa)).setVisible(False)
+            getattr(self, 'radius_segm_cut2').setVisible(False)
+            getattr(self, 'radius_val_cut2').setVisible(False)
+            getattr(self, 'radius_segm_unit2').setVisible(False)
 
         print('Setup segments: ', self.organ.mH_settings['setup']['segm'])
         print('segm_btns:', self.segm_btns)
 
         self.segm_use_centreline.stateChanged.connect(lambda: self.segm_centreline())
         self.segm_centreline2use.addItems(self.items_centreline)
+
+        #Plot buttons
+        self.cut1_plot_segm1.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm1'))
+        self.cut1_plot_segm2.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm2'))
+        self.cut1_plot_segm3.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm3'))
+        self.cut1_plot_segm4.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm4'))
+        self.cut1_plot_segm5.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm5'))
+        self.cut1_plot_segm6.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm6'))
+        self.cut1_plot_segm7.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm7'))
+        self.cut1_plot_segm8.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm8'))
+        self.cut1_plot_segm9.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm9'))
+        self.cut1_plot_segm10.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm10'))
+        self.cut1_plot_segm11.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm11'))
+        self.cut1_plot_segm12.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_segm12'))
+
+        self.cut2_plot_segm1.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm1'))
+        self.cut2_plot_segm2.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm2'))
+        self.cut2_plot_segm3.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm3'))
+        self.cut2_plot_segm4.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm4'))
+        self.cut2_plot_segm5.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm5'))
+        self.cut2_plot_segm6.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm6'))
+        self.cut2_plot_segm7.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm7'))
+        self.cut2_plot_segm8.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm8'))
+        self.cut2_plot_segm9.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm9'))
+        self.cut2_plot_segm10.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm10'))
+        self.cut2_plot_segm11.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm11'))
+        self.cut2_plot_segm12.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm12'))
+
+        #Initialise with user settings, if they exist!
+        self.user_segments()
 
     def init_sections(self):
         #Buttons
@@ -3444,7 +3479,9 @@ class MainWindow(QMainWindow):
 
                 for sect in sect_setup[cutb]['name_sections'].keys():
                     name_sect.append(sect_setup[cutb]['name_sections'][sect])
-                getattr(self, 'names_sect_'+cutl).setText(', '.join(name_sect))
+                sect_names = ', '.join(name_sect)
+                html_txt_segm = html_txt[0].replace('font-size:11pt', 'font-size:10pt')+html_txt[1]+sect_names+html_txt[2]
+                getattr(self, 'names_sect_'+cutl).setHtml(html_txt_segm)# Text(', '.join(name_segm))
                 getattr(self, 'obj_sect_'+cutl).setText(sect_setup[cutb]['obj_sect'])
                 for nn in range(1,3,1):
                     if not colors_initialised: 
@@ -3470,14 +3507,12 @@ class MainWindow(QMainWindow):
                         nn+=1
                 #Make invisible the rest of the items
                 for el in range(nn,13,1):
-                    getattr(self, cutl+'_chcont_sect'+str(el)).setVisible(False)
+                    if el == nn and el%2 == 0: 
+                        getattr(self, cutl+'_chcont_sect'+str(el)).setText('')
+                    else: 
+                        getattr(self, cutl+'_chcont_sect'+str(el)).setVisible(False)
                     getattr(self, cutl+'_play_sect'+str(el)).setVisible(False)
                     getattr(self, cutl+'_plot_sect'+str(el)).setVisible(False)
-                    if el != nn: 
-                        try: 
-                            getattr(self, 'hs_'+cutl+'_sect'+str(el)).setVisible(False)
-                        except:
-                            pass
 
             else: 
                 getattr(self, 'label_sect_'+cutl).setVisible(False)
@@ -3491,14 +3526,17 @@ class MainWindow(QMainWindow):
                     getattr(self, cutl+'_chcont_sect'+str(el)).setVisible(False)
                     getattr(self, cutl+'_play_sect'+str(el)).setVisible(False)
                     getattr(self, cutl+'_plot_sect'+str(el)).setVisible(False)
-                    try: 
-                        getattr(self, 'hs_'+cutl+'_sect'+str(el)).setVisible(False)
-                    except:
-                        pass
+
+        if len(no_cuts) == 1: 
+            for aa in range(1,5,1): 
+                getattr(self, 'sect_line'+str(aa)).setVisible(False)
 
         print('Setup Sections: ', self.organ.mH_settings['setup']['sect'])
         print('sect_btns:', self.sect_btns)
         self.sect_centreline.addItems(self.items_centreline)
+
+        #Initialise with user settings, if they exist!
+        # self.user_sections()
 
     def init_user_param(self): 
         user_params = self.organ.mH_settings['setup']['params']
@@ -3872,7 +3910,55 @@ class MainWindow(QMainWindow):
             self.set_thickness(init=True)
         else: 
             pass
+
+    def user_segments(self):
+
+        wf = self.organ.workflow['morphoHeart']['MeshesProc']['E-Segments']
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'heatmaps' in wf_info.keys():
+            print('wf_info[segments]:', wf_info['segments'])
+            if wf_info['segments']['use_centreline']: 
+                getattr(self, 'segm_use_centreline').setChecked(True)
+                getattr(self, 'segm_centreline2use').setCurrentText(wf_info['segments']['centreline'])
+                getattr(self, 'segm_centreline2use').setEnabled(True)
+            else: 
+                getattr(self, 'segm_use_centreline').setChecked(False)
+
+            segm_setup = self.organ.mH_settings['setup']['segm']
+            no_cuts = [key for key in segm_setup.keys() if 'Cut' in key]
         
+            for optcut in ['1','2']:
+                cutb = 'Cut'+optcut
+                if cutb in no_cuts: 
+                    getattr(self, 'radius_val_cut'+optcut).setVisible(True)
+                    getattr(self, 'radius_val_cut'+optcut).setValue(wf_info['segments']['radius'][cutb])
+                    getattr(self, 'radius_segm_cut'+optcut).setVisible(True)
+                    getattr(self, 'radius_segm_unit'+optcut).setVisible(True)
+                else: 
+                    getattr(self, 'radius_val_cut'+optcut).setVisible(False)
+                    getattr(self, 'radius_segm_cut'+optcut).setVisible(False)
+                    getattr(self, 'radius_segm_unit'+optcut).setVisible(False)
+
+            #Enable buttons if cuts have been made
+            for name in self.segm_btns.keys():
+                cut, ch_cont = name.split(':')
+                ch, cont = ch_cont.split('_')
+                num = self.segm_btns[name]['num']
+                if get_by_path(wf, [cut, ch, cont, 'Status']) == 'DONE':
+                    btn_play = self.segm_btns[name]['play'].setChecked(True)
+                    btn_plot = self.segm_btns[name]['plot'].setEnabled(True)
+                if wf_info['segments']['setup'][cut]['ch_info'][ch][cont] == 'ext-ext': 
+                    print('load the meshes?')
+
+            #Update Status in GUI
+            self.update_status(wf, ['Status'], self.segments_status)
+
+            #Run Set Function 
+            self.set_segments(init=True)
+        
+        else: 
+            pass
+  
     #Functions specific to gui functionality
     def open_section(self, name): 
         print('Open-close: '+name)
@@ -3915,12 +4001,12 @@ class MainWindow(QMainWindow):
                 # print('chNS')
                 self.organ.mH_settings['setup'][chk]['color_chns'][contk] = color.name()
                 self.organ.obj_meshes[chk+'_'+contk].set_color(color.name())
-            else: 
+            else: # 'cut1_sect1' or 'cut1_segm1'
                 if 'segm' in contk: 
                     stype = 'segm'
                 else: 
-                    stype - 'sect'
-                self.organ.mH_settings['setup'][stype]['Cut'+chk[-1]]['colors'][contk] = color.name()
+                    stype = 'sect'
+                self.organ.mH_settings['setup'][stype][chk.title()]['colors'][contk] = color.name()
             
     def set_colormap(self, name):
         value = getattr(self, 'colormap'+name).currentText()
@@ -4440,7 +4526,7 @@ class MainWindow(QMainWindow):
 
         return gui_thickness_ballooning
         
-    def set_segments(self):
+    def set_segments(self, init=False):
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_segm = self.gui_segments_n()
         if current_gui_segm != None: 
@@ -4448,7 +4534,7 @@ class MainWindow(QMainWindow):
                 self.gui_segm = current_gui_segm
             else: 
                 gui_segm_loaded = self.organ.mH_settings['wf_info']['segments']
-                if len(compare_dicts(gui_segm_loaded, current_gui_segm, 'loaded', 'current'))!= 0: 
+                if len(compare_dicts(gui_segm_loaded, current_gui_segm, 'loaded', 'current'))!= 0 and not init: 
                     self.gui_segm = update_gui_set(loaded = gui_segm_loaded, 
                                                         current = current_gui_segm)
                     # self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
@@ -4471,31 +4557,43 @@ class MainWindow(QMainWindow):
 
     def gui_segments_n(self): 
 
-        gui_segm = {}
+        segm_setup = self.organ.mH_settings['setup']['segm']
+        no_cuts = [key for key in segm_setup.keys() if 'Cut' in key]
+        
+        gui_segm = {'radius' : {}}
+        for optcut in ['1','2']:
+            name_segm = []
+            cutb = 'Cut'+optcut
+            if cutb in no_cuts: 
+                radius = getattr(self, 'radius_val_cut'+optcut).value()
+                gui_segm['radius'][cutb] = radius
+
         use_cl = getattr(self, 'segm_use_centreline').isChecked()
         if use_cl: 
             cl2use = getattr(self, 'segm_centreline2use').currentText()
             if cl2use != '----':
-                gui_segm = {'use_centreline': use_cl, 
-                            'centreline': cl2use}
+                gui_segm['use_centreline'] = use_cl
+                gui_segm['centreline'] = cl2use
             else: 
                 self.win_msg('*Please select the centreline you want to use to aid tissue division into segments!')
                 return None
         else: 
-            gui_segm = {'use_centreline': use_cl}
-
+            gui_segm['use_centreline'] = use_cl
 
         segm_set = self.organ.mH_settings['setup']['segm']
-        segments = {}
+        segments = {}; measure = {}
         #Set the way in which each mesh is going to be cut
         if self.organ.mH_settings['setup']['all_contained'] or self.organ.mH_settings['setup']['one_contained']: 
             ext_ch, int_ch = self.organ.get_ext_int_chs()
             ext_ch_name = ext_ch.channel_no
             nn = 1
             for cut in [key for key in segm_set.keys() if 'Cut' in key]:
-                segments[cut] = {'ch_info': {}}
+                segments[cut] = {'ch_info': {}, 'measure': {}, 'dirs': {}}
                 for ch in segm_set[cut]['ch_segments']: 
                     segments[cut]['ch_info'][ch] = {}
+                    segments[cut]['measure'][ch] = {}
+                    segments[cut]['dirs'][ch] = {}
+                    segments[cut]['names'] ={}
                     if ch != 'chNS': 
                         relation = self.organ.mH_settings['setup']['chs_relation'][ch]
                     else: 
@@ -4510,10 +4608,14 @@ class MainWindow(QMainWindow):
                             else: 
                                 txt = 'cut_with_ext-ext'
                             segments[cut]['ch_info'][ch][cont] = txt
+                            segments[cut]['measure'][ch][cont] = {}
+                            segments[cut]['dirs'][ch][cont] = {}
                     elif relation == 'internal' or relation == 'middle' or relation == 'chNS': 
                         for cont in segm_set[cut]['ch_segments'][ch]: 
                             txt = 'cut_with_other_ext-ext'
                             segments[cut]['ch_info'][ch][cont] = txt
+                            segments[cut]['measure'][ch][cont] = {}
+                            segments[cut]['dirs'][ch][cont] = {}
                     else: # relation == 'independent'
                         for cont in segm_set[cut]['ch_segments'][ch]: 
                             if cont == 'ext':
@@ -4523,11 +4625,15 @@ class MainWindow(QMainWindow):
                             else: 
                                 txt = 'cut_with_ext-indep'
                             segments[cut]['ch_info'][ch][cont] = txt
+                            segments[cut]['measure'][ch][cont] = {}
+                            segments[cut]['dirs'][ch][cont] = {}
         else: 
             for cut in [key for key in segm_set.keys() if 'Cut' in key]:
                 segments[cut] = {'ch_info': {}}
                 for ch in segm_set[cut]['ch_segments']: 
                     segments[cut]['ch_info'][ch] = {}
+                    segments[cut]['measure'][ch] = {}
+                    segments[cut]['dirs'][ch] = {}
                     relation = self.organ.mH_settings['setup']['chs_relation'][ch]
                     for cont in segm_set[cut]['ch_segments'][ch]: 
                         if cont == 'ext':
@@ -4535,11 +4641,13 @@ class MainWindow(QMainWindow):
                         else: 
                             txt = 'cut_with_ext-indep'
                         segments[cut]['ch_info'][ch][cont] = txt
+                        segments[cut]['measure'][ch][cont] = {}
+                        segments[cut]['dirs'][ch][cont] = {}
         gui_segm['setup'] = segments
 
         return gui_segm
 
-    def set_sections(self): 
+    def set_sections(self, init=False): 
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_sect = self.gui_sections_n()
         if current_gui_sect != None: 
@@ -4547,7 +4655,7 @@ class MainWindow(QMainWindow):
                 self.gui_sect = current_gui_sect
             else: 
                 gui_sect_loaded = self.organ.mH_settings['wf_info']['sections']
-                if len(compare_dicts(gui_sect_loaded, current_gui_sect, 'loaded', 'current'))!= 0: 
+                if len(compare_dicts(gui_sect_loaded, current_gui_sect, 'loaded', 'current'))!= 0 and not init: 
                     self.gui_sect = update_gui_set(loaded = gui_sect_loaded, 
                                                         current = current_gui_sect)
                     # self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
@@ -4575,7 +4683,6 @@ class MainWindow(QMainWindow):
         else: 
             self.win_msg('*Please select the centreline you want to use to divide the tissue into regions!')
             return None
-
 
     #Plot functions
     def plot_meshes(self, ch, chNS=False):
@@ -4713,6 +4820,53 @@ class MainWindow(QMainWindow):
         mesh.mapper().SetScalarRange(min_val,max_val)
 
         return mesh
+
+    def plot_segm_sect(self, btn):
+        #btn = cut1_segm1
+
+        #Get button number
+        cut, segm = btn.split('_')
+        num = segm.split('segm')[1]
+
+        if 'segm' in segm: 
+            txt = [(0, self.organ.user_organName + ' - Segment division')]
+            list_btns = self.segm_btns
+            colors = self.organ.mH_settings['setup']['segm'][cut.title()]['colors']
+            name = 'segments'
+        else: #sect
+            txt = [(0, self.organ.user_organName - 'Region division')]
+            list_btns = self.sect_btns
+            colors = self.organ.mH_settings['setup']['sect'][cut.title()]['colors']
+            name = 'sections'
+
+        key_list = list(list_btns.keys())
+        for key in key_list: 
+            cut_key = key.split(':')[0]
+            num_key = list_btns[key]['num']
+            if cut_key == cut.title() and int(num_key) == int(num): 
+                key2cut = key
+                break
+
+        self.win_msg('Plotting '+name+' ('+key2cut+')')
+        print('Plotting '+name+' ('+key2cut+')')
+    
+        obj_meshes = []
+        try: 
+            meshes = list_btns[key2cut]['meshes']
+        except: 
+            print('load meshes here!')
+
+        for mesh in meshes: 
+            if isinstance(mesh, vedo.Mesh):
+                color = colors[mesh]
+                mesh = meshes[mesh]
+                mesh.color(color)
+                obj_meshes.append(mesh)
+            else: 
+                pass
+
+        obj = [tuple(obj_meshes)]
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
     #Help functions
     def help(self, process): 

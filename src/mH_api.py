@@ -790,10 +790,17 @@ def run_segments(controller, btn):
     #         proceed = True
             
     #     if proceed: 
+    workflow = controller.organ.workflow['morphoHeart']
     segm_list = list(controller.main_win.segm_btns.keys())
     if btn != None: 
         cut, num = btn.split('_')
-        segm_set = [segm_list[int(num)-1]]
+        for key in segm_list: 
+            cut_key = key.split(':')[0]
+            num_key = controller.main_win.segm_btns[key]['num']
+            if cut_key == cut and int(num_key) == int(num): 
+                segm2cut = key
+                break
+        segm_set = [segm2cut] #[segm_list[int(num)-1]]
     else: 
         segm_set = segm_list
     print('segm_set:',segm_set)
@@ -811,7 +818,6 @@ def run_segments(controller, btn):
     else: 
         cl_spheres = None
 
-    
     for segm in segm_set: 
         #Find cut
         cut, ch_cont = segm.split(':')
@@ -819,30 +825,91 @@ def run_segments(controller, btn):
         #Extract info for cut
         colors_all = controller.organ.mH_settings['setup']['segm'][cut]['colors']
         palette = [colors_all[key] for key in colors_all.keys()]
-        print('palette:', palette)
         segm_names = controller.organ.mH_settings['setup']['segm'][cut]['name_segments']
-        user_names = '('+', '.join([segm_names[val] for val in segm_names])+')'
+        
         #Find method to cut
         method = controller.organ.mH_settings['wf_info']['segments']['setup'][cut]['ch_info'][ch][cont]
         print('method: ', method)
+        mesh2cut = controller.organ.obj_meshes[ch+'_'+cont]
+
+        #Get usernames string
+        user_names = '('+', '.join([segm_names[val] for val in segm_names])+')'
+        print('\n- Dividing '+mesh2cut.legend+' into segments '+user_names)
+        controller.main_win.win_msg('Dividing '+mesh2cut.legend+' into segments '+user_names)
+
+        #Create organ.obj_temp['segments']
+        if not hasattr(controller.organ, 'obj_temp'):
+            controller.organ.obj_temp = {}
+        if 'segments' not in controller.organ.obj_temp.keys(): 
+            controller.organ.obj_temp['segments'] = {}
+        if cut not in controller.organ.obj_temp['segments'].keys(): 
+            controller.organ.obj_temp['segments'][cut] = {}
+
         if method == 'ext-ext': 
-            # get_segm_discs(controller.organ, 
-            #                 cut = cut, ch=ch, cont=cont, 
-            #                 cl_spheres=cl_spheres, win=controller.main_win)
-            # fcM.create_disc_mask(controller.organ, cut = cut, h_min = 0.1125)
-            mesh2cut = controller.organ.obj_meshes[ch+'_'+cont]
-            ext_subsgm, ext_meshes = fcM.segm_ext_ext(controller.organ, mesh2cut, cut, segm_names, palette)
-            meshes_segm = [tuple(ext_meshes)]
+            get_segm_discs(controller.organ, 
+                            cut = cut, ch=ch, cont=cont, 
+                            cl_spheres=cl_spheres, win=controller.main_win)
+            fcM.create_disc_mask(controller.organ, cut = cut, h_min = 0.1125)
+            ext_subsgm, meshes_segm = fcM.segm_ext_ext(controller.organ, mesh2cut, cut, 
+                                                      segm_names, palette, win=controller.main_win)
+            #Add submeshes of ext_ext as attribute to organ
+            controller.organ.ext_subsgm = ext_subsgm
 
-            obj = meshes_segm
-            txt = [(0, controller.organ.user_organName)]
-            plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
-            # m_subg, segms = fcM.get_segments(controller.organ)
+            #Activate Plot Buttons
+            btn = controller.main_win.segm_btns[segm]['plot']
+            btn.setEnabled(True)
+            print('wf:', controller.organ.workflow['morphoHeart']['MeshesProc'])
 
-            #     if organ.check_method(method = 'E-Segments'): 
-            # name_segments = organ.mH_settings['general_info']['segments']['name_segments']
-            # user_names = '('+', '.join([name_segments[val] for val in name_segments])+')'
-            # no_cuts = organ.mH_settings['general_info']['segments']['no_cuts_4segments']
+            for sgmt in segm_list:
+                if sgmt != segm: 
+                    play_btn = controller.main_win.segm_btns[sgmt]['play']
+                    play_btn.setEnabled(True)
+            
+        elif method == 'cut_with_ext-ext' or method == 'cut_with_other_ext-ext':
+            try: 
+                ext_subsgm = controller.organ.ext_subsgm
+            except: 
+                #Loading external subsegments 
+                ext_subsgm = controller.organ.get_ext_subsgm(cut)
+            print('ext_subsgm: ',ext_subsgm)
+                # ext_subsgm = {}
+                # for name in controller.organ.mH_settings['wf_info']['segments']['setup'][cut]['names'].items():
+                #     ext_subsgm[name[0]] = name[1]
+                # controller.organ.ext_subsgm = ext_subsgm
+
+            meshes_segm = fcM.get_segments(controller.organ, mesh2cut, cut, 
+                                            segm_names, palette, ext_subsgm,  win=controller.main_win)
+            
+            #Activate Plot Buttons
+            btn = controller.main_win.segm_btns[segm]['plot']
+            btn.setEnabled(True)
+            print('wf:', controller.organ.workflow['morphoHeart']['MeshesProc'])
+
+        else: 
+            print('No functions for this method:', method)
+            meshes_segm = None
+
+        controller.main_win.segm_btns[segm]['meshes'] = meshes_segm
+        print('meshes_segm: ',meshes_segm)
+        print(controller.main_win.segm_btns[segm])
+
+    # Update organ workflow and GUI Status
+    flat_semg_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Segments']))
+    all_done = []
+    for key in flat_semg_wf.keys(): 
+        key_split = key.split(':')
+        if len(key_split) > 1: 
+            all_done.append(flat_semg_wf[key])
+
+    proc_wft = ['MeshesProc', 'E-Segments', 'Status']
+    if all(flag == 'DONE' for flag in all_done): 
+        controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+    elif any(flag == 'DONE' for flag in all_done): 
+        controller.organ.update_mHworkflow(process = proc_wft, update = 'Initialised')
+    else: 
+        pass
+    controller.main_win.update_status(workflow, proc_wft, controller.main_win.segments_status)
+
         
             # #Check if there ir already a created mask
             # mask_file_bool = []
@@ -883,20 +950,9 @@ def run_segments(controller, btn):
     # else:
     #     proceed = False
     #     return None
-    
-    # proceed = True
-    # if proceed: 
 
-            
 
         
-    # fcM.get_segm_discs(organ = controller.organ, )
-    # fcM.create_disc_mask(controller.organ, h_min = 0.1125)
-    # m_subg, segms = fcM.get_segments(controller.organ)
-
-    # for item in segm_set: 
-        
-
         
 def get_segm_discs(organ, cut, ch, cont, cl_spheres, win): 
 
@@ -962,8 +1018,9 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
                 pl_centre = mesh2cut.mesh.center_of_mass()
                 pl_normal = [1,0,0]
             
-            radius = 60; height = 2*0.225; disc_color = 'purple'; disc_res = 300
+            height = 2*0.225; disc_color = 'purple'; disc_res = 300
             # Modify (rotate and move cylinder/disc)
+            radius = organ.mH_settings['wf_info']['segments']['radius'][cut]
             cyl_test, sph_test, rotX, rotY, rotZ = fcM.modify_disc(filename = organ.user_organName,
                                                                 txt = 'cut tissues into segments '+user_names, 
                                                                 mesh = mesh2cut.mesh,

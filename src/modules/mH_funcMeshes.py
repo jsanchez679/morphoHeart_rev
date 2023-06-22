@@ -1467,7 +1467,6 @@ def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
 
     return spheres_spline
 
-
 #%% func - create_disc_mask
 def create_disc_mask(organ, cut, h_min = 0.1125): 
     
@@ -1549,182 +1548,76 @@ def create_disc_mask(organ, cut, h_min = 0.1125):
             print('>> s3 mask of '+disc+' saved correctly!')
             alert('countdown')
 
-#%% func - get_segments
-def get_segments(organ, plotshow): 
-
-    segm_names = [item for item in organ.parent_project.mH_param2meas if 'segm1' in item and 'volume' in item]
-    sorted_segm = sorted(segm_names, key=lambda x: (x[0], x[1]))
-    # Get external channel 
-    ext_ch, _ = organ.get_ext_int_chs()
-    ext_ch_no = ext_ch.channel_no
-    
-    #Get palette to color all segments distinctively
-    palette =  sns.color_palette("husl", len(segm_names)*2)
-    #First divide external-external channel into segments
-    ch = ext_ch_no; cont = 'ext'#name[1]
-    ext_subsgm, ext_meshes = segm_ext_ext(organ, ch, cont, user_names, palette[0:len(name_segments)])
-    
-    meshes_segm = [tuple(ext_meshes)]
-    final_subsgm = [ext_subsgm[key] for key in ext_subsgm.keys()]
-    
-    if ch+'_'+cont+'_'+'segm1' in organ.submeshes.keys():
-        sorted_segm.remove((ch, cont, 'segm1', 'volume'))
-        aa = len(name_segments)
-        
-    for name in sorted_segm: 
-        ch = name[0]; cont = name[1]
-        mesh = organ.obj_meshes[ch+'_'+cont]
-        print('\n- Dividing '+mesh.legend+' into segments '+user_names)
-        cut_masked = mesh.mask_segments()
-        dict_segm = dict_segments(organ, other=False)
-
-        m_subs = []; f_subs = []
-        for n, segm, color in zip(count(), name_segments, palette[aa:aa+len(name_segments)]):
-            sp_dict_segm = {}
-            sp_dict_segm = classify_segments_from_ext(meshes = cut_masked, 
-                                                        dict_segm = dict_segm[segm],
-                                                        ext_sub = ext_subsgm[segm])
-            # print(sp_dict_segm)
-            subsgm, final_segm_mesh = create_asign_subsg(organ, mesh, cut_masked, 
-                                                                    segm, sp_dict_segm, color)
-            m_subs.append(final_segm_mesh)
-            f_subs.append(subsgm)
-            
-        obj = [(mesh.mesh),tuple(m_subs)]
-        txt = [(0, organ.user_organName +' - '+mesh.legend)]
-        plot_grid(obj=obj, txt=txt, axes=1, sc_side=max(organ.get_maj_bounds()))
-        
-        meshes_segm.append(tuple(m_subs))
-        final_subsgm = final_subsgm + f_subs
-        aa +=2
-    
-    if plotshow: 
-        obj = meshes_segm
-        txt = [(0, organ.user_organName)]
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-    
-    return meshes_segm, final_subsgm
 
 #%% func - segm_ext_ext
-def segm_ext_ext(organ, mesh, cut, segm_names, palette):
+def segm_ext_ext(organ, mesh, cut, segm_names, palette, win):
 
-    user_names = '('+', '.join([segm_names[val] for val in segm_names])+')'
-    print('\n- Dividing '+mesh.legend+' into segments '+user_names)
+    #Mask the s3_stack to create segments
     cut_masked = mesh.mask_segments(cut = cut, palette = palette)
-
-    #Test if this info already exists?
-    dict_segm, colors = dict_segments(organ, cut, palette)
-    dict_segm = classify_segments(meshes=cut_masked, palette=palette, 
-                                  dict_segm=dict_segm, colors=colors)
+    #Create a dictionary containing the information of the classified segments 
+    dict_segm, colors = organ.dict_segments(cut, palette)
+    #Ask user to classify the segments using the interactive plot
+    dict_segm = classify_segments(meshes=cut_masked, dict_segm=dict_segm, 
+                                  colors_dict=colors)
     print('dict_segm after classification:', dict_segm)
 
-    meshes_segm = []; final_subsgm = {}
-    ACAAAAAA
-    # organ.update_settings(['setup','segm','ext_ext'], mesh.name, 'mH')
-    # proc = ['general_info','segments','ext_segm']
-    # organ.update_settings(proc, {}, 'mH')
-    
+    meshes_segm = {}; final_subsgm = {}; ext_subsgm_names = {}
+    #Create submeshes for the input mesh
     for n, segm, color in zip(count(), segm_names, palette):
-        print('\t- Cutting segment No.',n, segm, color)
+        print('\t- Creating segment No.',n, ' for ', cut, '.', segm, color)
         sp_dict_segm = dict_segm[segm]
-        print('sp_dict_segm', sp_dict_segm)
-        subsgm, final_segm_mesh = create_asign_subsg(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color)
-        # organ.update_settings(proc+[segm], {}, 'mH')
-        # organ.update_settings(proc+[segm,'name'], subsgm.sub_name_all, 'mH')
-        # save_submesh(organ, subsgm, final_segm_mesh)
-        meshes_segm.append(final_segm_mesh)
+
+        subsgm, final_segm_mesh = create_subsg(organ, mesh, cut, cut_masked,
+                                                segm, sp_dict_segm, color)
+        save_submesh(organ, subsgm, final_segm_mesh, win)
         final_subsgm[segm]=subsgm
-    
-    return final_subsgm, tuple(meshes_segm)
+        meshes_segm[segm] = final_segm_mesh
+        ext_subsgm_names[segm] = subsgm.sub_name_all
+        organ.obj_temp['segments'][cut][subsgm.sub_name_all] = final_segm_mesh 
 
-#%% func - save_submesh
-def save_submesh(organ, submesh, mesh, ext='.vtk'):
-    
-    mesh_name = organ.user_organName+'_'+submesh.sub_name_all+ext
-    mesh_dir = organ.dir_res(dir ='meshes') / mesh_name
-    mesh.write(str(mesh_dir))
-    
-    organ.mH_settings['general_info']['segments']['ext_segm'][submesh.sub_name]['mesh_dir'] = mesh_dir
-    print('>> Mesh '+mesh_name+' has been saved!')
-    alert('countdown')        
-    
-#%% func - create_assign_subsg
-def create_asign_subsg(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):
-    
-    subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
-    final_segm_mesh, subsgm = assign_meshes2segm(organ, mesh, cut_masked, 
-                                                 subsgm, sp_dict_segm, color)
-    
-    return subsgm, final_segm_mesh
-    
-#%% func - assign_meshes2segm
-def assign_meshes2segm(organ, mesh, cut_masked, subsgm, sp_dict_segm, color): 
-    
-    print('\t- Assigning meshes into segments for '+mesh.legend+' ('+subsgm.sub_legend+')')
-    # print(subsgm.sub_name, subsgm.sub_legend)
-    list_meshes = sp_dict_segm['meshes_number']
-    
-    sp_dict_segm['meshes_info'] = {}
-    
-    #Find meshes and add them to the mesh
-    mesh_segm = []; 
-    for cut_mesh in cut_masked:
-        if cut_mesh.info['legend'] in list_meshes: 
-            # print(cut_mesh.info)
-            mesh_segm.append(cut_mesh)
-            # com = cut_mesh.center_of_mass()
-            # vol = cut_mesh.volume()
-            # area = cut_mesh.area()
-            # sp_dict_segm['meshes_info'][cut_mesh.info['legend']] = {'COM': com,
-            #                                                            'volume': vol, 
-            #                                                            'area': area}
-    final_segm_mesh = vedo.merge(mesh_segm)
-    final_segm_mesh.color(color).alpha(0.1).legend(subsgm.sub_legend)
-    subsgm.dict_segm = sp_dict_segm
-    subsgm.color = color
-    organ.add_submesh(subsgm)
+    print('obj_temp: ', organ.obj_temp)
+    #Add ext_subsm names to load them in the future
+    proc_set = ['wf_info', 'segments', 'setup', cut, 'names']
+    organ.update_settings(proc_set, ext_subsgm_names, 'mH')
+    print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
+    print('organ.submeshes:', organ.submeshes)
 
-    return final_segm_mesh, subsgm
-    
-#%% func - dict_segments
-def dict_segments(organ, cut, palette, other=True):
-    
-    segments_info = organ.mH_settings['setup']['segm'][cut]
-    # no_segm = segments_info['no_segments']
-    #https://seaborn.pydata.org/tutorial/color_palettes.html
-    # palette_all = sns.color_palette("cool_r", no_segm*4)
-    # palette = random.sample(palette_all, no_segm)
-    
-    if other: 
-        dict_segm = {'other': {'user_name': 'other',
-                            #    'color': np.array([128,128,128]),
-                               'meshes_number': []}}
-    else:
-        dict_segm = {}
-    
-    colors = {'other': [128,128,128]}
-    for n, segm in enumerate(segments_info['name_segments']): 
-        dict_segm[segm] = {}
-        dict_segm[segm]['user_name'] = segments_info['name_segments'][segm]
-        dict_segm[segm]['meshes_number'] = []
+    return final_subsgm, meshes_segm
 
-        colors[segm] = palette[n]
-    
-    return dict_segm, colors
-    
+def get_segments(organ, mesh, cut, segm_names, palette, ext_subsgm, win): 
+        
+    #Mask the s3_stack to create segments
+    cut_masked = mesh.mask_segments(cut = cut, palette = palette)
+    #Create a dictionary containing the information of the classified segments 
+    dict_segm, _ = organ.dict_segments(cut, palette, other=False)
+
+    #Create submeshes for the input mesh and external mesh
+    meshes_segm = {}
+    for n, segm, color in zip(count(), segm_names, palette):
+        sp_dict_segm = classify_segments_from_ext(meshes = cut_masked, 
+                                                    dict_segm = dict_segm[segm],
+                                                    ext_sub = ext_subsgm[segm])
+        print('dict_segm after classif: ', sp_dict_segm)
+        subsgm, final_segm_mesh = create_subsg(organ, mesh, cut, cut_masked, 
+                                                    segm, sp_dict_segm, color)
+        meshes_segm[segm] = final_segm_mesh
+        print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
+
+    print('organ.submeshes:', organ.submeshes)
+
+    return meshes_segm
+
 #%% func - classify_segments
 #Working clicking 
-def classify_segments(meshes, palette, dict_segm, colors):
+def classify_segments(meshes, dict_segm, colors_dict):
     
     flat_segm = flatdict.FlatDict(dict_segm)
-    colors = [colors[key] for key in colors]
+    colors = [colors_dict[key] for key in colors_dict]
     mesh_classif = [flat_segm[key] for key in flat_segm if 'meshes_number' in key]
     names = [flat_segm[key] for key in flat_segm if 'user_name' in key]
-    # print(mesh_classif)
     
     #https://seaborn.pydata.org/tutorial/color_palettes.html
-    # palette = sns.color_palette("Set2", len(meshes))
-    # palette = [np.random.choice(range(255),size=3) for num in range(len(meshes))]
+    palette = sns.color_palette("Set2", len(meshes))
     for n, mesh in enumerate(meshes):
         mesh.color(palette[n])
     
@@ -1733,15 +1626,12 @@ def classify_segments(meshes, palette, dict_segm, colors):
             return
         mesh_no = evt.actor.info['legend']
         mesh_color = evt.actor.color()*255
-        # vedo.printc("You clicked: "+mesh_no)
-        # print(mesh_classif)
         is_in_list = np.any(np.all(mesh_color == colors, axis=1))
         if is_in_list:
             bool_list = np.all(mesh_color == colors, axis=1)
             ind = np.where(bool_list == True)[0][0]
             ind_plus1 = ind+1
             new_ind = (ind_plus1)%len(colors)
-            # print('ind:',ind, '-new_ind:', new_ind)
             new_color = colors[new_ind]
             evt.actor.color(new_color)
             mesh_classif[ind].remove(mesh_no)
@@ -1754,14 +1644,14 @@ def classify_segments(meshes, palette, dict_segm, colors):
         
     mks = []; sym = ['o']*len(dict_segm)
     for segm in dict_segm:
-        mks.append(vedo.Marker('*').c(dict_segm[segm]['color']).legend(dict_segm[segm]['user_name']))
+        mks.append(vedo.Marker('*').c(colors_dict[segm]).legend(dict_segm[segm]['user_name']))
         
     # Load logo
     path_logo = path_mHImages / 'logo-07.jpg'
     logo = vedo.Picture(str(path_logo))
     
     txA = 'Instructions: Click each segment mesh until it is coloured according to the segment it belongs to.'
-    txB = '\n[Note: Colours will rotate between segments as you click]'
+    txB = '\n[Note: Colours will loop as you click]'
     txt0 = vedo.Text2D(txA+txB, c=txt_color, font=txt_font, s=txt_size)
     lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
                         width=leg_width/1.5, height=leg_height/1.5)
@@ -1778,22 +1668,108 @@ def classify_segments(meshes, palette, dict_segm, colors):
 def classify_segments_from_ext(meshes, dict_segm, ext_sub):
     
     ext_sub_mesh = ext_sub.get_segm_mesh()
-    
-    # name = ext_sub.parent_mesh.parent_organ.user_organName
-    # obj = [ext_sub_mesh]
-    # txt = [(0, name +' - '+ext_sub.sub_legend)]
-    # plot_grid(obj=obj, txt=txt, axes=1, sc_side=max(ext_sub.parent_mesh.parent_organ.get_maj_bounds()))
-    
+    # print(ext_sub_mesh)
     list_meshes = []
     for mesh in meshes: 
-        com = mesh.center_of_mass()
-        if ext_sub_mesh.is_inside(com):
-            # print('-'+mesh.info['legend']+' is inside '+ext_sub.sub_name_all)
-            list_meshes.append(mesh.info['legend'])
+        if isinstance(mesh, vedo.Mesh):
+            com = mesh.center_of_mass()
+            if ext_sub_mesh.is_inside(com):
+                list_meshes.append(mesh.info['legend'])
     dict_segm['meshes_number'] = list_meshes
             
     return dict_segm
     
+#%% func - save_submesh
+def save_submesh(organ, submesh, mesh, win, ext='.vtk'):
+    
+    mesh_name = organ.user_organName+'_'+submesh.sub_name_all+ext
+    mesh_dir = organ.dir_res(dir ='meshes') / mesh_name
+    mesh.write(str(mesh_dir))
+    
+    cut, ch, cont, segm = submesh.sub_name_all.split('_')
+    proc_set = ['wf_info', 'segments', 'setup', cut, 'dirs', ch, cont]
+    organ.update_settings(proc_set+[segm], mesh_name, 'mH')
+    print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
+    print('>> Mesh '+mesh_name+' has been saved!')
+    win.win_msg('Mesh '+mesh_name+' has been saved!')
+    alert('countdown')        
+    
+#%% func - create_assign_subsg
+def create_subsg(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):#
+    
+    subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
+    cut, ch, cont, segm = subsgm.sub_name_all.split('_')
+
+    #Assign meshes and measure them
+    list_meshes = sp_dict_segm['meshes_number']
+    #Get segm measurements
+    measurements = organ.mH_settings['setup']['segm']['measure']
+    #Find meshes and add them to the mesh
+    mesh_segm = []; 
+    print('len(cut_masked) -'+subsgm.sub_name_all+': ', len(cut_masked))
+    for cut_mesh in cut_masked:
+        if isinstance(cut_mesh, vedo.Mesh):
+            if cut_mesh.info['legend'] in list_meshes: 
+                mesh_segm.append(cut_mesh)
+                data = {}
+                com = cut_mesh.center_of_mass()
+                data['COM'] = com
+                if measurements['Vol']: 
+                    vol = cut_mesh.volume()
+                    organ.mH_settings['measure']['Vol(segm)'][subsgm.sub_name_all] = vol
+                    data['Vol'] = vol
+                if measurements['SA']: 
+                    area = cut_mesh.area()
+                    organ.mH_settings['measure']['SA(segm)'][subsgm.sub_name_all] = area
+                    data['SA'] = area
+                if measurements['Ellip']: 
+                    #Do the ellipsoid!
+                    pass
+                cut, ch, cont, segm = subsgm.sub_name_all.split('_')
+                proc_set = ['wf_info', 'segments', 'setup', cut, 'measure', ch, cont, segm]
+                organ.update_settings(proc_set, data, 'mH')
+
+    if len(mesh_segm) == 0: 
+        print('Something went wrong and no meshes were recognised as part of this segment: ', subsgm.sub_name_all)
+        final_segm_mesh = []
+    else: 
+        final_segm_mesh = vedo.merge(mesh_segm)
+        final_segm_mesh.color(color).alpha(0.1).legend(subsgm.sub_legend)
+        subsgm.color = color
+        organ.add_submesh(subsgm)
+    
+    # Update organ workflow
+    proc_wft = ['MeshesProc', 'E-Segments', cut, ch, cont, 'Status']
+    organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+
+    return subsgm, final_segm_mesh
+    
+#%% func - dict_segments
+# def dict_segments(organ, cut, palette, other=True):
+    
+#     segments_info = organ.mH_settings['setup']['segm'][cut]
+#     # no_segm = segments_info['no_segments']
+#     #https://seaborn.pydata.org/tutorial/color_palettes.html
+#     # palette_all = sns.color_palette("cool_r", no_segm*4)
+#     # palette = random.sample(palette_all, no_segm)
+    
+#     if other: 
+#         dict_segm = {'other': {'user_name': 'other',
+#                                'meshes_number': []}}
+#     else:
+#         dict_segm = {}
+    
+#     colors = {'other': [128,128,128]}
+#     for n, segm in enumerate(segments_info['name_segments']): 
+#         dict_segm[segm] = {}
+#         dict_segm[segm]['user_name'] = segments_info['name_segments'][segm]
+#         dict_segm[segm]['meshes_number'] = []
+
+#         colors[segm] = palette[n]
+    
+#     return dict_segm, colors
+    
+
 #%% - Measuring function
 #%% func - measure_centreline
 def measure_centreline(organ, nPoints):
@@ -2213,7 +2189,7 @@ def get_plane_pos(filename, txt, meshes, option,
 #%% func - modify_disc
 def modify_disc(filename, txt, mesh, option,  
                     def_pl= {'pl_normal': (0,1,0), 'pl_centre': []}, 
-                    radius=60, height = 0.45, 
+                    radius = 60, height = 0.45, 
                     color = 'purple', res = 300, zoom = 0.5):
     """
     Function that shows a plot so that the user can define a cylinder (disc)

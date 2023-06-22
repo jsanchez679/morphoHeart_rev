@@ -205,7 +205,7 @@ def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=
     Returns:
 
     """
-    from .mH_classes import Project, Organ, ImChannel, ImChannelNS, ContStack, Mesh_mH
+    from .mH_classes_new import Project, Organ, ImChannel, ImChannelNS, ContStack, Mesh_mH
     
     err = ''
     key_err = ''
@@ -284,7 +284,10 @@ def update_gui_set(loaded:dict, current:dict):
                 print('-> Different types - key', key, ' - loaded:', flat_loaded[key], '- current:', flat_current[key])
         except: 
             print('-Unable to update key: ',key)
-            print('-> Values - loaded:', flat_loaded[key], '- current:', flat_current[key])
+            try: 
+                print('-> Values - loaded:', flat_loaded[key], '- current:', flat_current[key])
+            except: 
+                print('-> Values - loaded:', key, '- current:', key)
 
     return flat_loaded.as_dict()
         
