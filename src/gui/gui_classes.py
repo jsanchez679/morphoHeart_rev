@@ -4833,18 +4833,20 @@ class MainWindow(QMainWindow):
             list_btns = self.segm_btns
             colors = self.organ.mH_settings['setup']['segm'][cut.title()]['colors']
             name = 'segments'
+            short = 'segm'
         else: #sect
             txt = [(0, self.organ.user_organName - 'Region division')]
             list_btns = self.sect_btns
             colors = self.organ.mH_settings['setup']['sect'][cut.title()]['colors']
             name = 'sections'
+            short = 'sect'
 
         key_list = list(list_btns.keys())
         for key in key_list: 
             cut_key = key.split(':')[0]
             num_key = list_btns[key]['num']
             if cut_key == cut.title() and int(num_key) == int(num): 
-                key2cut = key
+                key2cut = key # Cut1:ch1_ext
                 break
 
         self.win_msg('Plotting '+name+' ('+key2cut+')')
@@ -4854,7 +4856,17 @@ class MainWindow(QMainWindow):
         try: 
             meshes = list_btns[key2cut]['meshes']
         except: 
-            print('load meshes here!')
+            #Get submesh from organ
+            cut, segm_info = key2cut.split(':')
+            ch, cont = segm_info.split('_')
+            # Do a for to load all the segments of that mesh
+            meshes = []
+            for 
+            num = list_btns[key2cut]['num']
+            #Cut1_ch1_ext_segm1
+            submesh = self.organ.submeshes[cut.title()+'_'+ch+'_'+cont+'_'+short+num]
+            if 'segm' in segm: 
+                submesh.get_segm_mesh()
 
         for mesh in meshes: 
             if isinstance(mesh, vedo.Mesh):

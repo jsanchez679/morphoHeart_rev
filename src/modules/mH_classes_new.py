@@ -866,6 +866,8 @@ class Organ():
                 self.submeshes = submeshes_dict_new
             else: 
                 self.submeshes = {}
+            print('\n\n\n\n')
+            print('>>>> Loaded submeshes: ', self.submeshes)
             #obj_temp
             if 'obj_temp' in load_dict.keys():
                 self.obj_temp = load_dict['obj_temp']
@@ -3028,26 +3030,31 @@ class SubMesh():
                 print('except')
         else: 
             print('else')
-            return
-            #Get mesh to cut and palette
-            mesh2cut = self.parent_mesh
-            color = parent_organ.mH_settings['setup']['segm'][cut]['colors'][segm]
-            colors_all = parent_organ.mH_settings['setup']['segm'][cut]['colors']
-            palette = [colors_all[key] for key in colors_all.keys()]
-            #Get external mesh
-            ext_subsgm = parent_organ.get_ext_subsgm(cut)
-            #Mask the s3_stack to create segments
-            cut_masked = mesh2cut.mask_segments(cut = cut, palette = palette)
-            #Create a dictionary containing the information of the classified segments 
-            dict_segm, _ = parent_organ.dict_segments(cut, palette, other=False)
+            cut, ch, cont, segm = self.sub_name_all.split('_')
+            directory = self.parent_mesh.parent_organ.dir_res(dir = 'meshes')
+            mesh_dir = directory / self.parent_mesh.parent_organ.mH_settings['wf_info']['segments']['setup'][cut]['dirs'][ch][cont][segm]
+            segm_mesh = vedo.load(str(mesh_dir))
+            segm_mesh.color(self.parent_mesh.parent_organ.mH_settings['setup']['segm'][cut]['colors'][segm])
+            
+            # #Get mesh to cut and palette
+            # mesh2cut = self.parent_mesh
+            # color = parent_organ.mH_settings['setup']['segm'][cut]['colors'][segm]
+            # colors_all = parent_organ.mH_settings['setup']['segm'][cut]['colors']
+            # palette = [colors_all[key] for key in colors_all.keys()]
+            # #Get external mesh
+            # ext_subsgm = parent_organ.get_ext_subsgm(cut)
+            # #Mask the s3_stack to create segments
+            # cut_masked = mesh2cut.mask_segments(cut = cut, palette = palette)
+            # #Create a dictionary containing the information of the classified segments 
+            # dict_segm, _ = parent_organ.dict_segments(cut, palette, other=False)
 
-            #Create submeshes for the input mesh and external mesh
-            sp_dict_segm = classify_segments_from_ext(meshes = cut_masked, 
-                                                        dict_segm = dict_segm[segm],
-                                                        ext_sub = ext_subsgm[segm])
-            print('dict_segm after classif: ', sp_dict_segm)
-            _, segm_mesh = create_subsg(parent_organ, mesh2cut, cut, cut_masked, 
-                                                        segm, sp_dict_segm, color)
+            # #Create submeshes for the input mesh and external mesh
+            # sp_dict_segm = classify_segments_from_ext(meshes = cut_masked, 
+            #                                             dict_segm = dict_segm[segm],
+            #                                             ext_sub = ext_subsgm[segm])
+            # print('dict_segm after classif: ', sp_dict_segm)
+            # _, segm_mesh = create_subsg(parent_organ, mesh2cut, cut, cut_masked, 
+            #                                             segm, sp_dict_segm, color)
             
         segm_mesh.legend(self.sub_legend).wireframe().alpha(self.alpha)
             

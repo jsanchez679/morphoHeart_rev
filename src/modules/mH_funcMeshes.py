@@ -1600,9 +1600,10 @@ def get_segments(organ, mesh, cut, segm_names, palette, ext_subsgm, win):
         print('dict_segm after classif: ', sp_dict_segm)
         subsgm, final_segm_mesh = create_subsg(organ, mesh, cut, cut_masked, 
                                                     segm, sp_dict_segm, color)
+        save_submesh(organ, subsgm, final_segm_mesh, win)
         meshes_segm[segm] = final_segm_mesh
-        print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
-
+        
+    print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
     print('organ.submeshes:', organ.submeshes)
 
     return meshes_segm
