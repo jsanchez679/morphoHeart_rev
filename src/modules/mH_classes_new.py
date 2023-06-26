@@ -864,6 +864,7 @@ class Organ():
                 list_colors = [key.split(':') for key in flat_subm_dict if 'color' in key]
                 submeshes_dict_new = make_tuples(submeshes_dict, list_colors)
                 self.submeshes = submeshes_dict_new
+                self.load_objSubmeshes(submeshes_dict)
             else: 
                 self.submeshes = {}
             print('\n\n\n\n')
@@ -907,7 +908,23 @@ class Organ():
                 msh = Mesh_mH(imChannel = imCh, mesh_type = mesh_type, 
                               mesh_prop = mesh_prop)
                 self.obj_meshes[mesh] = msh
-
+    
+    def load_objSubmeshes(self, submeshes_dict): 
+        flat_subm_dict = flatdict.FlatDict(submeshes_dict)
+        list_colors = [key.split(':') for key in flat_subm_dict if 'color' in key]
+        submeshes_dict_new = make_tuples(submeshes_dict, list_colors)
+        self.obj_subm = {}
+        for subm in submeshes_dict.keys():
+            cut, ch, cont, sub = subm.split('_')
+            if 'segm' in sub: 
+                #Get mesh to create submesh
+                mesh = self.obj_meshes[ch+'_'+cont]
+                color = submeshes_dict[subm]['color']
+                submesh = mesh.create_segment(name = sub, cut = cut, color =color)
+                self.obj_subm[subm] = submesh
+            else: #'sect' in sub: 
+                print('write this section bit!')
+        
     def create_folders(self):#
         dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'centreline', 'settings']
         organ_folder = self.user_organName
@@ -1056,13 +1073,16 @@ class Organ():
             self.submeshes[submesh.sub_name_all]['parent_mesh']['legend'] = submesh.parent_mesh.legend
             self.submeshes[submesh.sub_name_all]['parent_mesh']['name'] = submesh.parent_mesh.name
             self.submeshes[submesh.sub_name_all]['parent_mesh']['imChannel'] = submesh.parent_mesh.imChannel.channel_no
-
+            #Add to obj_submesh
+            self.obj_subm[submesh.sub_name_all] = submesh
         else: #Just updating things that could change
             self.submeshes[submesh.sub_name_all]['color'] = submesh.color
             self.submeshes[submesh.sub_name_all]['alpha'] = submesh.alpha
             self.submeshes[submesh.sub_name_all]['keep_largest'] = submesh.keep_largest
             print('>> SubMesh data updated!')
-            
+            #Add to obj_submesh
+            self.obj_subm[submesh.sub_name_all] = submesh
+
         if submesh.sub_mesh_type == 'Section':
             self.submeshes[submesh.sub_name_all]['s3_invert'] = submesh.s3_invert
             self.submeshes[submesh.sub_name_all]['s3_mask_dir'] = submesh.s3_mask_dir
@@ -2910,7 +2930,7 @@ class Mesh_mH():
         rotateZ_90=self.rotateZ_90
         if 'NS' not in im_ch.channel_no: 
             keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][im_ch.channel_no][self.mesh_type]
-            max_depth = 200
+            max_depth = 1000
         else:
             keep_largest = False
             max_depth = 1000
@@ -3014,48 +3034,12 @@ class SubMesh():
     def get_segm_mesh(self):
         
         print('>>>> get_segm_mesh: ',self.sub_name_all)
-        parent_organ = self.parent_mesh.parent_organ
         cut, ch, cont, segm = self.sub_name_all.split('_')
-        print('--------------AAAA')
-        print(parent_organ.mH_settings['wf_info']['segments']['setup'][cut]['names'], self.sub_name_all)
-        names = [key for (_, key) in parent_organ.mH_settings['wf_info']['segments']['setup'][cut]['names'].items()]
-        if self.sub_name_all in names:
-            try: 
-                segm_mesh = parent_organ.obj_temp['segments'][cut][self.sub_name_all]
-                print('try')
-            except: 
-                _ = parent_organ.load_objTemp(proc = 'segments', key=cut, 
-                                                ch_cont = self.sub_name_all, obj_temp=parent_organ.obj_temp)
-                segm_mesh = parent_organ.obj_temp['segments'][cut][self.sub_name_all]
-                print('except')
-        else: 
-            print('else')
-            cut, ch, cont, segm = self.sub_name_all.split('_')
-            directory = self.parent_mesh.parent_organ.dir_res(dir = 'meshes')
-            mesh_dir = directory / self.parent_mesh.parent_organ.mH_settings['wf_info']['segments']['setup'][cut]['dirs'][ch][cont][segm]
-            segm_mesh = vedo.load(str(mesh_dir))
-            segm_mesh.color(self.parent_mesh.parent_organ.mH_settings['setup']['segm'][cut]['colors'][segm])
-            
-            # #Get mesh to cut and palette
-            # mesh2cut = self.parent_mesh
-            # color = parent_organ.mH_settings['setup']['segm'][cut]['colors'][segm]
-            # colors_all = parent_organ.mH_settings['setup']['segm'][cut]['colors']
-            # palette = [colors_all[key] for key in colors_all.keys()]
-            # #Get external mesh
-            # ext_subsgm = parent_organ.get_ext_subsgm(cut)
-            # #Mask the s3_stack to create segments
-            # cut_masked = mesh2cut.mask_segments(cut = cut, palette = palette)
-            # #Create a dictionary containing the information of the classified segments 
-            # dict_segm, _ = parent_organ.dict_segments(cut, palette, other=False)
-
-            # #Create submeshes for the input mesh and external mesh
-            # sp_dict_segm = classify_segments_from_ext(meshes = cut_masked, 
-            #                                             dict_segm = dict_segm[segm],
-            #                                             ext_sub = ext_subsgm[segm])
-            # print('dict_segm after classif: ', sp_dict_segm)
-            # _, segm_mesh = create_subsg(parent_organ, mesh2cut, cut, cut_masked, 
-            #                                             segm, sp_dict_segm, color)
-            
+        directory = self.parent_mesh.parent_organ.dir_res(dir = 'meshes')
+        mesh_dir = directory / self.parent_mesh.parent_organ.mH_settings['wf_info']['segments']['setup'][cut]['dirs'][ch][cont][segm]
+        segm_mesh = vedo.load(str(mesh_dir))
+        print('segm_mesh:', type(segm_mesh))
+        segm_mesh.color(self.parent_mesh.parent_organ.mH_settings['setup']['segm'][cut]['colors'][segm])
         segm_mesh.legend(self.sub_legend).wireframe().alpha(self.alpha)
             
         return segm_mesh

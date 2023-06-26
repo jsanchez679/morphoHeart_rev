@@ -831,6 +831,7 @@ def run_segments(controller, btn):
         method = controller.organ.mH_settings['wf_info']['segments']['setup'][cut]['ch_info'][ch][cont]
         print('method: ', method)
         mesh2cut = controller.organ.obj_meshes[ch+'_'+cont]
+        print('mesh2cut_name:', mesh2cut.name)
 
         #Get usernames string
         user_names = '('+', '.join([segm_names[val] for val in segm_names])+')'

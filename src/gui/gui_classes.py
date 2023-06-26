@@ -3915,7 +3915,7 @@ class MainWindow(QMainWindow):
 
         wf = self.organ.workflow['morphoHeart']['MeshesProc']['E-Segments']
         wf_info = self.organ.mH_settings['wf_info']
-        if 'heatmaps' in wf_info.keys():
+        if 'segments' in wf_info.keys():
             print('wf_info[segments]:', wf_info['segments'])
             if wf_info['segments']['use_centreline']: 
                 getattr(self, 'segm_use_centreline').setChecked(True)
@@ -3947,8 +3947,13 @@ class MainWindow(QMainWindow):
                 if get_by_path(wf, [cut, ch, cont, 'Status']) == 'DONE':
                     btn_play = self.segm_btns[name]['play'].setChecked(True)
                     btn_plot = self.segm_btns[name]['plot'].setEnabled(True)
-                if wf_info['segments']['setup'][cut]['ch_info'][ch][cont] == 'ext-ext': 
-                    print('load the meshes?')
+                if wf_info['segments']['setup'][cut]['ch_info'][ch][cont] == 'ext-ext':
+                    #If ext-ext cut has been made then enable other buttons 
+                    if get_by_path(wf, [cut, ch, cont, 'Status']) == 'DONE':
+                        for sgmt in self.segm_btns.keys():
+                            if sgmt != name: 
+                                play_btn = self.segm_btns[sgmt]['play']
+                                play_btn.setEnabled(True)
 
             #Update Status in GUI
             self.update_status(wf, ['Status'], self.segments_status)
@@ -3961,7 +3966,6 @@ class MainWindow(QMainWindow):
   
     #Functions specific to gui functionality
     def open_section(self, name): 
-        print('Open-close: '+name)
         #Get button
         btn = getattr(self, name+'_open')
         wdg = getattr(self, name+'_widget')
@@ -4853,23 +4857,27 @@ class MainWindow(QMainWindow):
         print('Plotting '+name+' ('+key2cut+')')
     
         obj_meshes = []
+        print('list_btns: ', list_btns)
         try: 
+            #get submesh from list buttons if it was saved in there...
             meshes = list_btns[key2cut]['meshes']
         except: 
             #Get submesh from organ
             cut, segm_info = key2cut.split(':')
-            ch, cont = segm_info.split('_')
+            ch, cont = segm_info.split('_') #Cut1_ch1_ext_segm1
             # Do a for to load all the segments of that mesh
-            meshes = []
-            for 
-            num = list_btns[key2cut]['num']
-            #Cut1_ch1_ext_segm1
-            submesh = self.organ.submeshes[cut.title()+'_'+ch+'_'+cont+'_'+short+num]
-            if 'segm' in segm: 
-                submesh.get_segm_mesh()
+            meshes = {}
+            print(cut, ch, cont)
+            for segm in self.organ.mH_settings['setup'][short][cut]['name_'+name].keys():
+                submesh_name = cut.title()+'_'+ch+'_'+cont+'_'+segm
+                submesh = self.organ.obj_subm[submesh_name]
+                if 'segm' in segm: 
+                    meshes[segm] = submesh.get_segm_mesh()
+                else: #'sect' in segm
+                    print('do this part of the code!')
 
-        for mesh in meshes: 
-            if isinstance(mesh, vedo.Mesh):
+        for mesh in meshes.keys(): 
+            if isinstance(meshes[mesh], vedo.Mesh):
                 color = colors[mesh]
                 mesh = meshes[mesh]
                 mesh.color(color)
