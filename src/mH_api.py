@@ -873,10 +873,6 @@ def run_segments(controller, btn):
                 #Loading external subsegments 
                 ext_subsgm = controller.organ.get_ext_subsgm(cut)
             print('ext_subsgm: ',ext_subsgm)
-                # ext_subsgm = {}
-                # for name in controller.organ.mH_settings['wf_info']['segments']['setup'][cut]['names'].items():
-                #     ext_subsgm[name[0]] = name[1]
-                # controller.organ.ext_subsgm = ext_subsgm
 
             meshes_segm = fcM.get_segments(controller.organ, mesh2cut, cut, 
                                             segm_names, palette, ext_subsgm,  win=controller.main_win)
@@ -952,9 +948,6 @@ def run_segments(controller, btn):
     #     proceed = False
     #     return None
 
-
-        
-        
 def get_segm_discs(organ, cut, ch, cont, cl_spheres, win): 
 
     if cl_spheres != None: 
@@ -1108,4 +1101,11 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
         print('wf_info:', organ.mH_settings['wf_info']['segments']['setup'])
 
 def run_sections(controller, btn): 
-    pass
+    
+    nRes = 601; nPoints = 300; clRib_type = 'ext2sides'
+    fcMeshes.get_organ_ribbon(organ, nRes, nPoints, clRib_type)
+    # organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
+    fcMeshes.get_sect_mask(organ, plotshow=True)
+
+    # Cut organ into sections
+    subms = fcMeshes.get_sections(organ, plotshow=True)

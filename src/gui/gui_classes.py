@@ -52,6 +52,9 @@ class WelcomeScreen(QDialog):
         self.setWindowTitle('Welcome to morphoHeart...')
         self.mH_logo_XL.setPixmap(QPixmap(mH_big))
         self.setWindowIcon(QIcon(mH_icon))
+        self.label_version.setText('v'+mH_config.version)
+        self.label_version.setStyleSheet('color: rgb(116, 116, 116); font: bold 15pt "Calibri Light";')
+        
 
         # self.btn_link2paper
         # self.btn_link2paper.clicked.connect(lambda: self.get_file())#webbrowser.open('https://github.com/jsanchez679/morphoHeart'))
@@ -845,10 +848,11 @@ class CreateNewProj(QDialog):
             btn_ext.setEnabled(False)
             ck_mask.setEnabled(False)
             cB_dist.setEnabled(False)
-            color_txt = "background-color: rgb(255, 255, 255); color: rgb(255, 255, 255); font: 25 2pt 'Calibri Light'"
+            # color_txt = "background-color: rgb(255, 255, 255); color: rgb(255, 255, 255); font: 25 2pt 'Calibri Light'"
             for cont in ['int', 'tiss', 'ext']:
                 fill = getattr(self, 'fillcolor_'+name+'_'+cont)
-                fill.setStyleSheet(color_txt)
+                color_btn(btn = fill, color = 'rgb(255, 255, 255)')
+                # fill.setStyleSheet(color_txt)
                 fill.setText('rgb(255, 255, 255)')
 
     def color_picker(self, name):
@@ -856,7 +860,8 @@ class CreateNewProj(QDialog):
         if color.isValid():
             # print('The selected color is: ', color.name())
             fill = getattr(self, 'fillcolor_'+name)
-            fill.setStyleSheet("background-color: "+color.name()+"; color: "+color.name()+"; font: 25 2pt 'Calibri Light'")#+"; border: 1px solid "+color.name())
+            color_btn(btn = fill, color = color.name())
+            # fill.setStyleSheet("background-color: "+color.name()+"; color: "+color.name()+"; font: 25 2pt 'Calibri Light'")#+"; border: 1px solid "+color.name())
             fill.setText(color.name())
             # print('Color:', fill.text())
             
@@ -875,7 +880,8 @@ class CreateNewProj(QDialog):
                     for cont in df_colors[ch]:
                         color = df_colors[ch][cont]
                         fill = getattr(self, 'fillcolor_'+ch+'_'+cont)
-                        fill.setStyleSheet("background-color: "+color+"; color: "+color+"; font: 25 2pt 'Calibri Light'")#+"; border: 1px solid "+color.name())
+                        color_btn(btn = fill, color = color)
+                        # fill.setStyleSheet("background-color: "+color+"; color: "+color+"; font: 25 2pt 'Calibri Light'")#+"; border: 1px solid "+color.name())
                         fill.setText(color)
 
     def checked(self, stype):
@@ -2621,7 +2627,9 @@ class MainWindow(QMainWindow):
         self.mH_logo_XS.setPixmap(mH_logoXS)
         self.setWindowIcon(QIcon(mH_icon))
         self.setStyleSheet("background-color:  rgb(255, 255, 255);")
-
+        self.label_version.setText('v'+mH_config.version+'  ')
+        self.label_version.setStyleSheet('color: rgb(116, 116, 116); font: bold 9pt "Calibri Light";')
+        
         self.proj = proj
         self.organ = organ
 
@@ -2949,9 +2957,11 @@ class MainWindow(QMainWindow):
                 getattr(self, 'kl_label_'+chk).setText(self.channels[chk]+' ('+chk+')')
                 for contk in ['int', 'tiss', 'ext']:
                     color = self.organ.mH_settings['setup']['color_chs'][chk][contk]
-                    color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+color+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
-                    color_btn = getattr(self, 'fillcolor_'+chk+'_'+contk)
-                    color_btn.setStyleSheet(color_txt)
+                    print(chk, contk, '- color:', color)
+                    # color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+color+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
+                    btn_color = getattr(self, 'fillcolor_'+chk+'_'+contk)
+                    color_btn(btn = btn_color, color = color)
+                    # color_btn.setStyleSheet(color_txt)
 
         self.kl_ch1_all.stateChanged.connect(lambda: self.tick_all('ch1', 'kl'))
         self.kl_ch2_all.stateChanged.connect(lambda: self.tick_all('ch2', 'kl'))
@@ -3108,9 +3118,10 @@ class MainWindow(QMainWindow):
 
         for contk in ['int', 'tiss', 'ext']:
             color = self.organ.mH_settings['setup']['chNS']['color_chns'][contk]
-            color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+color+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
-            color_btn = getattr(self, 'fillcolor_chNS_'+contk)
-            color_btn.setStyleSheet(color_txt)
+            # color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+color+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
+            btn_color = getattr(self, 'fillcolor_chNS_'+contk)
+            color_btn(btn = btn_color, color = color)
+            # color_btn.setStyleSheet(color_txt)
 
         self.chNS_plot2d.stateChanged.connect(lambda: self.n_slices('chNS'))
 
@@ -3350,7 +3361,7 @@ class MainWindow(QMainWindow):
                     name_segm.append(segm_setup[cutb]['name_segments'][segm])
                 segm_names = ', '.join(name_segm)
                 html_txt_segm = html_txt[0].replace('font-size:11pt', 'font-size:10pt')+html_txt[1]+segm_names+html_txt[2]
-                getattr(self, 'names_segm_'+cutl).setHtml(html_txt_segm)# Text(', '.join(name_segm))
+                getattr(self, 'names_segm_'+cutl).setHtml(html_txt_segm)
                 getattr(self, 'obj_segm_'+cutl).setText(segm_setup[cutb]['obj_segm'])
                 for nn in range(1,6,1):
                     if nn > len(name_segm):
@@ -3362,10 +3373,9 @@ class MainWindow(QMainWindow):
                             self.organ.mH_settings['setup']['segm'][cutb]['colors']['segm'+str(nn)] = color
                         else: 
                             color = self.organ.mH_settings['setup']['segm'][cutb]['colors']['segm'+str(nn)]
-                        color_txt = "QPushButton{border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb"+str(tuple(color))+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
-                        print('AAA:',color_txt)
-                        color_btn = getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn))
-                        color_btn.setStyleSheet(color_txt)
+                            print(cutb, str(nn), '- color:', color)
+                        btn_color = getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn))
+                        color_btn(btn = btn_color, color = color)
 
                 #Add ch-cont combinations to list of cuts to make
                 ch_keys = sorted(list(self.organ.mH_settings['setup']['segm'][cutb]['ch_segments'].keys()))
@@ -3382,10 +3392,7 @@ class MainWindow(QMainWindow):
                         nn+=1
                 #Make invisible the rest of the items
                 for el in range(nn,13,1):
-                    if el == nn and el%2 == 0: 
-                        getattr(self, cutl+'_chcont_segm'+str(el)).setText('')
-                    else: 
-                        getattr(self, cutl+'_chcont_segm'+str(el)).setVisible(False)
+                    getattr(self, cutl+'_chcont_segm'+str(el)).setVisible(False)
                     getattr(self, cutl+'_play_segm'+str(el)).setVisible(False)
                     getattr(self, cutl+'_plot_segm'+str(el)).setVisible(False)
 
@@ -3482,16 +3489,15 @@ class MainWindow(QMainWindow):
                 sect_names = ', '.join(name_sect)
                 html_txt_segm = html_txt[0].replace('font-size:11pt', 'font-size:10pt')+html_txt[1]+sect_names+html_txt[2]
                 getattr(self, 'names_sect_'+cutl).setHtml(html_txt_segm)# Text(', '.join(name_segm))
-                getattr(self, 'obj_sect_'+cutl).setText(sect_setup[cutb]['obj_sect'])
+                getattr(self, 'sect_cl_'+cutl).addItems(self.items_centreline)
                 for nn in range(1,3,1):
                     if not colors_initialised: 
                         color = palette[2*(int(optcut)-1)+(nn-1)]
                         self.organ.mH_settings['setup']['sect'][cutb]['colors']['sect'+str(nn)] = color
                     else: 
                         color = self.organ.mH_settings['setup']['sect'][cutb]['colors']['sect'+str(nn)]
-                    color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb"+str(tuple(color))+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
-                    color_btn = getattr(self, 'fillcolor_'+cutl+'_'+'sect'+str(nn))
-                    color_btn.setStyleSheet(color_txt)
+                    btn_color = getattr(self, 'fillcolor_'+cutl+'_'+'sect'+str(nn))
+                    color_btn(btn = btn_color, color = color)
                     
                 #Add ch-cont combinations to list of cuts to make
                 ch_keys = sorted(list(self.organ.mH_settings['setup']['sect'][cutb]['ch_sections'].keys()))
@@ -3507,10 +3513,7 @@ class MainWindow(QMainWindow):
                         nn+=1
                 #Make invisible the rest of the items
                 for el in range(nn,13,1):
-                    if el == nn and el%2 == 0: 
-                        getattr(self, cutl+'_chcont_sect'+str(el)).setText('')
-                    else: 
-                        getattr(self, cutl+'_chcont_sect'+str(el)).setVisible(False)
+                    getattr(self, cutl+'_chcont_sect'+str(el)).setVisible(False)
                     getattr(self, cutl+'_play_sect'+str(el)).setVisible(False)
                     getattr(self, cutl+'_plot_sect'+str(el)).setVisible(False)
 
@@ -3518,8 +3521,21 @@ class MainWindow(QMainWindow):
                 getattr(self, 'label_sect_'+cutl).setVisible(False)
                 getattr(self, 'names_sect_'+cutl).setVisible(False)
                 getattr(self, 'obj_sect_'+cutl).setVisible(False)
-                # getattr(self, 'sect_'+cutl+'_plot').setVisible(False)
-                for nn in range(1,6,1):
+                getattr(self, 'sect_cl_'+cutl).setVisible(False)
+                getattr(self, 'blank1_'+cutl).setVisible(False)
+                getattr(self, 'lab_nPoints_'+cutl).setVisible(False)
+                getattr(self, 'sect_nPoints_'+cutl).setVisible(False)
+                getattr(self, 'blank2_'+cutl).setVisible(False)
+                getattr(self, 'lab_nRes_'+cutl).setVisible(False)
+                getattr(self, 'sect_nRes_'+cutl).setVisible(False)    
+                getattr(self, 'lab_cl_ext_'+cutl).setVisible(False)
+                getattr(self, 'lab_axis_'+cutl).setVisible(False)
+                getattr(self, 'radio_organ_'+cutl).setVisible(False)
+                getattr(self, 'radio_stack_'+cutl).setVisible(False)
+                getattr(self, 'lab_dir_'+cutl).setVisible(False)
+                getattr(self, 'sect_dir_'+cutl).setVisible(False)
+                getattr(self, 'lab_colors_'+cutl).setVisible(False)
+                for nn in range(1,3,1):
                     getattr(self, 'label_'+cutl+'_sect'+str(nn)).setVisible(False)
                     getattr(self, 'fillcolor_'+cutl+'_'+'sect'+str(nn)).setVisible(False)
                 for el in range(1,13,1):
@@ -3531,12 +3547,14 @@ class MainWindow(QMainWindow):
             for aa in range(1,5,1): 
                 getattr(self, 'sect_line'+str(aa)).setVisible(False)
 
+        self.radio_organ_cut1.setChecked(True)
+        self.radio_organ_cut2.setChecked(True)
+
         print('Setup Sections: ', self.organ.mH_settings['setup']['sect'])
         print('sect_btns:', self.sect_btns)
-        self.sect_centreline.addItems(self.items_centreline)
 
         #Initialise with user settings, if they exist!
-        # self.user_sections()
+        self.user_sections()
 
     def init_user_param(self): 
         user_params = self.organ.mH_settings['setup']['params']
@@ -3963,6 +3981,16 @@ class MainWindow(QMainWindow):
         
         else: 
             pass
+    
+    def user_sections(self):
+        wf = self.organ.workflow['morphoHeart']['MeshesProc']['E-Sections']
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'sections' in wf_info.keys():
+            print('wf_info[sections]:', wf_info['sections'])
+
+        
+        #Run Set Function 
+        self.set_sections(init=True)
   
     #Functions specific to gui functionality
     def open_section(self, name): 
@@ -3992,10 +4020,9 @@ class MainWindow(QMainWindow):
 
         color = QColorDialog.getColor()
         if color.isValid():
-            # print('The selected color is: ', color.name())
+            print('The selected color is: ', color.name())
             fill = getattr(self, 'fillcolor_'+name)
-            color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+color.name()+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
-            fill.setStyleSheet(color_txt)
+            color_btn(btn = fill, color = color.name())
             chk, contk = name.split('_')
             if chk != 'chNS' and contk in ['int', 'ext', 'tiss']: 
                 # print('not chNS')
@@ -4566,7 +4593,6 @@ class MainWindow(QMainWindow):
         
         gui_segm = {'radius' : {}}
         for optcut in ['1','2']:
-            name_segm = []
             cutb = 'Cut'+optcut
             if cutb in no_cuts: 
                 radius = getattr(self, 'radius_val_cut'+optcut).value()
@@ -4676,17 +4702,41 @@ class MainWindow(QMainWindow):
             proc_set = ['wf_info']
             update = self.gui_sect
             self.organ.update_settings(proc_set, update, 'mH', add='sections')
+
         else: 
             return 
 
     def gui_sections_n(self):
-        cl2use = getattr(self, 'sect_centreline').currentText()
-        if cl2use != '----': 
-            gui_sect = {'centreline': cl2use}
-            return gui_sect
-        else: 
-            self.win_msg('*Please select the centreline you want to use to divide the tissue into regions!')
-            return None
+
+        sect_setup = self.organ.mH_settings['setup']['sect']
+        no_cuts = [key for key in sect_setup.keys() if 'Cut' in key]
+        
+        gui_sect= {}
+        for optcut in ['1','2']:
+            cutb = 'Cut'+optcut
+            if cutb in no_cuts: 
+                gui_sect[cutb] = {}
+                centreline = getattr(self, 'sect_cl_cut'+optcut).currentText()
+                if centreline != '----':
+                    gui_sect[cutb]['centreline'] = centreline
+                    gui_sect[cutb]['nPoints'] = getattr(self, 'sect_nPoints_cut'+optcut).value()
+                    gui_sect[cutb]['nRes'] = getattr(self, 'sect_nRes_cut'+optcut).value()
+                    for reg in ['organ', 'stack']: 
+                        if getattr(self, 'radio_'+reg+'_cut'+optcut).isChecked(): 
+                            selected = reg
+                            break
+                    gui_sect[cutb]['axis_lab'] = selected.title()
+                    direction = getattr(self, 'sect_dir_cut'+optcut).currentText()
+                    # if direction != '----': 
+                    gui_sect[cutb]['direction'] = direction
+                    # else: 
+                    #     self.win_msg('*Please select the direction in which you want the selected centreline to be expanded for  -'+cutb+'-  to cut tissue into regions!')
+                    #     return None
+                else: 
+                    self.win_msg('*Please select the centreline you want to use to perform  -'+cutb+'-  and cut tissue into regions!')
+                    return None
+            
+        return gui_sect
 
     #Plot functions
     def plot_meshes(self, ch, chNS=False):
@@ -5111,20 +5161,26 @@ def update_status(root_dict, items, fillcolor, override=False):
         wf_status = items
 
     if wf_status == 'NI': 
-        color_txt = "background-color: rgb(255, 255, 127); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
+        color = 'rgb(255, 255, 127)'
+        # color_txt = "background-color: rgb(255, 255, 127); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
     elif wf_status == 'Initialised': 
-        color_txt = "background-color: rgb(255, 151, 60); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
+        color = 'rgb(255, 151, 60)'
+        # color_txt = "background-color: rgb(255, 151, 60); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
     elif wf_status == 'DONE' or wf_status == 'Done':
-        color_txt = "background-color:  rgb(0, 255, 0); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
+        color = 'rgb(0, 255, 0)'
+        # color_txt = "background-color:  rgb(0, 255, 0); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
     elif wf_status == 'N/A': 
-        color_txt = "background-color:  rgb(0, 0, 0); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
+        color = 'rgb(0, 0, 0)'
+        # color_txt = "background-color:  rgb(0, 0, 0); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
     elif wf_status == 're-run': 
-        color_txt = "background-color:  rgb(35, 207, 255); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
+        color = 'rgb(35, 207, 255)'
+        # color_txt = "background-color:  rgb(35, 207, 255); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
     else: 
-        color_txt = "background-color:  rgb(255, 0, 255); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
+        color = 'rgb(255, 0, 255)'
+        # color_txt = "background-color:  rgb(255, 0, 255); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
         print('other status unknown')
-
-    fillcolor.setStyleSheet(color_txt)
+    color_btn(btn = fillcolor, color = color)
+    # fillcolor.setStyleSheet(color_txt)
 
 # Button general functions
 def toggled(button_name): 
@@ -5144,6 +5200,24 @@ def setup_play_btn(btn, win):
     st3 = ' QPushButton:checked{background-color: rgb(0, 85, 0); border-color: rgb(115, 115, 115)}'
     btn.setStyleSheet(st1+st2+st3)
     
+def color_btn(btn, color, small=True): 
+
+    # print('color:',color, type(color))
+    if isinstance(color, list): 
+        color = 'rgb'+str(tuple(color))
+    else: 
+        pass
+    if small: 
+        pt = "25 2pt 'Calibri Light'"
+    else: 
+        pt = "25 10pt 'Calibri Light'"
+
+    if isinstance(btn, QPushButton):#QLineEdit):
+        color_txt = "QPushButton{border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+str(color)+"; font: "+pt+"} QPushButton:hover{border-color: rgb(255, 255, 255)}"
+    else: 
+        color_txt = "background-color: "+color+"; border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset; font: "+pt+"; color: "+color+";"
+
+    btn.setStyleSheet(color_txt)
 
 #String validation
 def split_str(input_str):

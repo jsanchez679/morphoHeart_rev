@@ -1309,9 +1309,11 @@ class Organ():
         return ch_ext, ch_int
     
     def get_ext_subsgm(self, cut): 
+        print('get_ext_subsgm: ',self.mH_settings['wf_info']['segments']['setup'][cut]['names'])
+        print(self.submeshes, self.obj_subm)
         ext_subsgm = {}
         for name in self.mH_settings['wf_info']['segments']['setup'][cut]['names'].items():
-            ext_subsgm[name[0]] = name[1]
+            ext_subsgm[name[0]] = self.obj_subm[name[1]]
         self.ext_subsgm = ext_subsgm
 
         return self.ext_subsgm
@@ -1974,7 +1976,7 @@ class ImChannel(): #channel
 
                 if plot and slc in list(range(0,s3.shape_s3[0],im_every)):
                     print('Plotting! slc:', slc)
-                    # self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted)
+                    # self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc)
 
                 s3_bits[:,:,slc] = toRemove_slc
                 s3_new[:,:,slc] = cleaned_slc
@@ -2170,7 +2172,7 @@ class ImChannelNS(): #channel
 
                 if plot and slc in list(range(0,s3.shape[0],im_every)):
                     print('Plotting! slc: ', slc)
-                    # self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted=False)
+                    # self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc)
 
                 s3_bits[:,:,slc] = toRemove_slc
                 s3_new[:,:,slc] = cleaned_slc
@@ -2187,7 +2189,7 @@ class ImChannelNS(): #channel
         
         return s3_new
     
-    def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc, inverted):
+    def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc):
         """
         Function to plot mask, original image and result
         """
@@ -2915,25 +2917,29 @@ class Mesh_mH():
 
         # Mask im_channel
         im_ch = self.imChannel
+        print('self.mesh_type: ',self.mesh_type)
         im_ch.load_chS3s([self.mesh_type])
         cont_tiss = getattr(im_ch, 's3_'+self.mesh_type)
         s3 = cont_tiss.s3()
         masked_s3 = s3.copy()
         
         for nn in range(no_discs):
-            name_s3 = self.parent_organ.user_organName + '_mask_'+cut+'_DiscNo'+str(nn)+'.npy'
+            print('nn: ', nn)
+            name_s3 = self.parent_organ.user_organName+'_mask_'+cut+'_DiscNo'+str(nn)+'.npy'
             s3_dir = self.parent_organ.dir_res(dir='s3_numpy') / name_s3
             s3_mask = np.load(str(s3_dir))
             s3_mask = s3_mask.astype('bool')
-            masked_s3 = mask_disc(self.parent_organ.info['shape_s3'], masked_s3, s3_mask)
-        
+            directory = self.parent_organ.dir_res('imgs_videos')
+            name = self.imChannel.channel_no+'_'+self.mesh_type
+            masked_s3 = mask_disc(self.parent_organ.info['shape_s3'], masked_s3, s3_mask, directory, name)
+
         rotateZ_90=self.rotateZ_90
+        keep_largest = False
         if 'NS' not in im_ch.channel_no: 
-            keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][im_ch.channel_no][self.mesh_type]
             max_depth = 1000
-        else:
-            keep_largest = False
-            max_depth = 1000
+        else: 
+            max_depth = 2000
+        print('max_depth: ', max_depth)
         
         masked_mesh = create_submesh(masked_s3, self.resolution, keep_largest=keep_largest, rotateZ_90=self.rotateZ_90)
         cut_masked = masked_mesh.split(maxdepth=max_depth)
@@ -3202,7 +3208,7 @@ def draw_line (clicks, myIm, color_draw):
 
 #%% - Masking
 #%% func - mask_disc
-def mask_disc(shape_s3, s3, s3_cyl):
+def mask_disc(shape_s3, s3, s3_cyl, directory, name):
     
     #Load stack shape
     zdim, _, _ = shape_s3
@@ -3221,16 +3227,44 @@ def mask_disc(shape_s3, s3, s3_cyl):
         myIm = draw_line(clicks_random, im, '0')
         s3_mask[:,:,slc] = myIm
 
+        if slc%20 == 0: 
+            print('slc: ', str(slc))
+            slc_plot(slc, im_cyl, im, myIm, directory, name)
+
     return s3_mask
+
+def slc_plot (slc, im_cyl, im, myIm, directory, name):
+        """
+        Function to plot mask, original image and result
+        """
+        
+        txt = ['Cyl','Im_o','Im_f']
+       
+        #Plot
+        fig, ax = plt.subplots(1, 3, figsize = (7.5,2.5))
+        fig.suptitle("Slice:"+str(slc), y=1.05, weight="semibold")
+        ax[0].imshow(im_cyl)
+        ax[1].imshow(im)
+        ax[2].imshow(myIm)
+        for num in range(0,3,1):
+            ax[num].set_title(txt[num])
+            ax[num].set_xticks([])
+            ax[num].set_yticks([])
+
+        slc_name = name +'_'+str(slc)
+        namef = directory / slc_name
+        plt.savefig(namef)
+        # plt.show()
 
 #%% - Mesh functions
 #%% func - create_mesh
 def create_submesh(masked_s3, resolution, keep_largest:bool, rotateZ_90:bool):
     
     verts, faces, _, _ = measure.marching_cubes(masked_s3, spacing=resolution, method='lewiner')
-   
+    print('aaaa')
     # Create meshes
     mesh = vedo.Mesh([verts, faces])
+    print('bbbb')
     if keep_largest:
         mesh = mesh.extract_largest_region()
     if rotateZ_90:

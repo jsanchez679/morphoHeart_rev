@@ -1566,7 +1566,8 @@ def segm_ext_ext(organ, mesh, cut, segm_names, palette, win):
     for n, segm, color in zip(count(), segm_names, palette):
         print('\t- Creating segment No.',n, ' for ', cut, '.', segm, color)
         sp_dict_segm = dict_segm[segm]
-
+        # subsgm: instance of class Submesh
+        # final_segm_mesh: instance of mesh (vedo)
         subsgm, final_segm_mesh = create_subsg(organ, mesh, cut, cut_masked,
                                                 segm, sp_dict_segm, color)
         save_submesh(organ, subsgm, final_segm_mesh, win)
@@ -1582,6 +1583,8 @@ def segm_ext_ext(organ, mesh, cut, segm_names, palette, win):
     print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
     print('organ.submeshes:', organ.submeshes)
 
+    #final_subsgm:dict of class submesh 
+    #meshes_segm: dict of final meshes
     return final_subsgm, meshes_segm
 
 def get_segments(organ, mesh, cut, segm_names, palette, ext_subsgm, win): 
@@ -1669,7 +1672,7 @@ def classify_segments(meshes, dict_segm, colors_dict):
 def classify_segments_from_ext(meshes, dict_segm, ext_sub):
     
     ext_sub_mesh = ext_sub.get_segm_mesh()
-    # print(ext_sub_mesh)
+    # print('classify_segments_from_ext-ext_sub_mesh:',ext_sub_mesh)
     list_meshes = []
     for mesh in meshes: 
         if isinstance(mesh, vedo.Mesh):
@@ -1743,6 +1746,8 @@ def create_subsg(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):#
     proc_wft = ['MeshesProc', 'E-Segments', cut, ch, cont, 'Status']
     organ.update_mHworkflow(process = proc_wft, update = 'DONE')
 
+    # subsgm: instance of class submesh
+    # final_segm_mesh: instance of mesh (vedo)
     return subsgm, final_segm_mesh
     
 #%% func - dict_segments
