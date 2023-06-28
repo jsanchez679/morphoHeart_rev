@@ -28,9 +28,6 @@ import random
 from skimage.draw import line_aa
 import seaborn as sns
 
-path_fcMeshes = os.path.abspath(__file__)
-path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
-
 #%% ##### - Other Imports - ##################################################
 #from ...config import dict_gui
 from ..gui.gui_classes import *
@@ -39,10 +36,7 @@ from .mH_funcMeshes import (unit_vector, plot_organCLs, find_angle_btw_pts,
                             classify_segments_from_ext, create_subsg, plot_grid)
 from ..gui.config import mH_config
 
-# alert_all=True
-# heart_default=False
-# dict_gui = {'alert_all': alert_all,
-#             'heart_default': heart_default}
+path_mHImages = mH_config.path_mHImages
 
 #%% Set default fonts and sizes for plots
 txt_font = 'Dalim'
@@ -70,9 +64,14 @@ class NumpyArrayEncoder(json.JSONEncoder):
             return float(obj)
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
+        elif isinstance(obj, np.float32):
+            return obj.tolist()
+        elif isinstance(obj, np.float64):
+            return obj.tolist()
         elif isinstance(obj, pathlib.WindowsPath):
             return str(obj)
         else:
+            print('type object: ', type(obj))
             return super(NumpyArrayEncoder, self).default(obj)
 
 class Project(): 
@@ -878,6 +877,79 @@ class Organ():
             # mC_Settings
             self.mC_settings = load_dict['mC_settings']
         
+        if 'orientation' in self.mH_settings['wf_info'].keys():
+            self.load_orient_cubes()
+        
+    def load_orient_cubes(self):
+        #Stack
+        stack_dict = self.mH_settings['wf_info']['orientation']['stack']
+        if 'planar_views' in stack_dict.keys() and 'stack_cube' in stack_dict.keys():
+            #Create cube
+            pos = stack_dict['stack_cube']['pos']
+            side = stack_dict['stack_cube']['side']
+            color = stack_dict['stack_cube']['color']
+            rotateY = stack_dict['stack_cube']['rotateY']
+            orient_cube = vedo.Cube(pos=pos, side=side, c=color)
+            orient_cube.linewidth(1).force_opaque()
+            if rotateY: 
+                cust_angle = stack_dict['stack_cube']['rotateY']
+                orient_cube.rotate_y(cust_angle)
+            orient_cube.pos(pos)
+            orient_cube_clear = orient_cube.clone().alpha(0.5)
+
+            orient_cubef = self.colour_cube(orient_cube = orient_cube, 
+                                            axis_dict = stack_dict)
+            self.stack_cube = {'cube': orient_cubef, 
+                               'clear': orient_cube_clear}
+
+        #ROI
+        roi_dict = self.mH_settings['wf_info']['orientation']['roi']
+        if 'planar_views' in roi_dict.keys() and 'roi_cube' in roi_dict.keys():
+            #Create cube
+            pos_r = roi_dict['roi_cube']['pos']
+            side_r = roi_dict['roi_cube']['side']
+            color_r = roi_dict['roi_cube']['color']
+            rot_x = roi_dict['roi_cube']['rotate_x']
+            rot_y = roi_dict['roi_cube']['rotate_y']
+            rot_z = roi_dict['roi_cube']['rotate_z']
+
+            orient_cube_r = vedo.Cube(pos=pos_r, side=side_r, c=color_r)
+            orient_cube_r.linewidth(1).force_opaque()
+
+            orient_cube_r.rotate_x(rot_x)
+            orient_cube_r.rotate_y(rot_y)
+            orient_cube_r.rotate_z(rot_z)
+            orient_cube_r.pos(pos_r)
+            orient_cube_clear_r = orient_cube_r.clone().alpha(0.5)
+
+            orient_cube_rf = self.colour_cube(orient_cube = orient_cube_r, 
+                                                axis_dict = roi_dict)
+            self.roi_cube = {'cube': orient_cube_rf, 
+                               'clear': orient_cube_clear_r}
+            
+    def colour_cube(self, orient_cube, axis_dict): 
+        normal_dict = {}
+        for pt in orient_cube.cell_centers(): 
+            idcell = orient_cube.closest_point(pt, return_cell_id=True)
+            cells = orient_cube.cells()[idcell]
+            points = [orient_cube.points()[cell] for cell in cells]
+            plane_fit = vedo.fit_plane(points, signed=True)
+            normal_dict[idcell] = plane_fit.normal
+
+        for view in axis_dict['planar_views'].keys(): 
+            color = axis_dict['planar_views'][view]['color']
+            idcell_o = axis_dict['planar_views'][view]['idcell']
+            pl_normal = axis_dict['planar_views'][view]['pl_normal']
+
+            if np.array_equal(normal_dict[int(idcell_o)], pl_normal):
+                print('aja:',idcell_o)
+                orient_cube.cellcolors[int(idcell_o)] = color
+            else: 
+                print("idcells don't match!")
+                alert('bubble')
+        
+        return orient_cube
+        
     def load_objImChannels(self):
         self.obj_imChannels = {}
         if len(self.imChannels) > 0:
@@ -1195,13 +1267,27 @@ class Organ():
             all_info['mC_settings'] = self.mC_settings
         
         all_info['workflow'] = self.workflow
+
+        # #Save cube info
+        # orient_cubes = {}
+        # for or_cube in ['stack', 'organ']:
+        #     if hasattr(self, or_cube+'_cube'):
+        #         dict_val = {} 
+        #         dict_cube = getattr(self, or_cube+'_cube')
+        #         for key in dict_cube: 
+        #             if key != 'cube': 
+        #                 dict_val[key] = dict_cube[key]
+        #         orient_cubes[or_cube+'_cube'] = dict_val
+
+        # print('orient_cubes:', orient_cubes)
+        # all_info['orientation_cubes'] = orient_cubes
     
         self.dir_info = Path('settings') / jsonDict_name
         all_info['dir_info'] = self.dir_info
         all_info['mH_organName'] = self.mH_organName
 
         print('\n\n\nall_info[mH_settings]', all_info['mH_settings'])
-
+        print('\n\n\n', all_info)
         with open(str(json2save_dir), "w") as write_file:
             json.dump(all_info, write_file, cls=NumpyArrayEncoder)
 
@@ -1361,13 +1447,20 @@ class Organ():
         mesh_ext = self.obj_meshes[ext_ch.channel_no+'_tiss']
         
         pos = mesh_ext.mesh.center_of_mass()
+        print('pos:', pos, type(pos))
         side = max(self.get_maj_bounds())
         color_o = [152,251,152,255]
         orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
         orient_cube.linewidth(1).force_opaque()
+
+        stack_cube = {'pos': pos, 
+                        'side': side, 
+                        'color': color_o[:-1], 
+                        'rotateY': rotateY}
         
         if rotateY: 
             orient_cube.rotate_y(cust_angle)
+            stack_cube['custom_angle'] = cust_angle
         
         orient_cube.pos(pos)
         orient_cube_clear = orient_cube.clone().alpha(0.5)
@@ -1392,13 +1485,15 @@ class Organ():
             
         print('vpt.planar_views:',vpt.planar_views)
         print('vpt.selected_faces:',vpt.selected_faces)
-        
-        return vpt.planar_views
+        self.stack_cube = {'cube': orient_cube,
+                           'clear': orient_cube_clear}
+
+        return vpt.planar_views, stack_cube
             
     def get_ROI_orientation(self, gui_orientation, colors):
 
         views = self.mH_settings['setup']['orientation']['roi'].split(', ')
-        if gui_orientation['roi']['rotate']: 
+        if gui_orientation['roi']['reorient']: 
             if gui_orientation['roi']['method'] == 'Centreline': 
                 centreline = gui_orientation['roi']['centreline'].split('(')[1].split(')')[0]
                 plane = gui_orientation['roi']['plane_orient']
@@ -1439,13 +1534,20 @@ class Organ():
         orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
         orient_cube.linewidth(1).force_opaque()
         
+        roi_cube = {'pos': pos, 
+                    'side': side, 
+                    'color': color_o[:-1]}
+        
         if angle != 0: 
             if coord == 0: 
                 orient_cube.rotate_x(angle)
+                roi_cube['rotate_x'] = angle
             elif coord == 1: 
                 orient_cube.rotate_y(angle)
+                roi_cube['rotate_y'] = angle
             elif coord == 2: 
                 orient_cube.rotate_z(angle)
+                roi_cube['rotate_z'] = angle
         
         orient_cube.pos(pos)
         orient_cube_clear = orient_cube.clone().alpha(0.5)
@@ -1478,7 +1580,10 @@ class Organ():
                     'orient_vect': pts,
                     'angle_deg': angle}
         
-        return  vpt.planar_views, settings
+        self.roi_cube = {'cube': orient_cube,
+                           'clear': orient_cube_clear}
+        
+        return  vpt.planar_views, settings, roi_cube
 
     def orient_manual(self, views, colors): # to develop!
         print('orient_manual: Code under development!')
@@ -3170,6 +3275,7 @@ class MyFaceSelectingPlotter(vedo.Plotter):
                 cells = orient_cube.cells()[idcell]
                 points = [orient_cube.points()[cell] for cell in cells]
                 plane_fit = vedo.fit_plane(points, signed=True)
+                print(plane_fit.normal, type(plane_fit.normal))
                 self.planar_views[planar_view]['pl_normal'] = plane_fit.normal
         else: 
             vedo.printc('You are done, now close the window!', c='orange', invert=True)

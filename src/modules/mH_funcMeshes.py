@@ -9,7 +9,7 @@ Version: Dec 01, 2022
 import os
 from datetime import datetime
 from pathlib import Path, WindowsPath, PurePath
-import vedo as vedo
+import vedo
 import numpy as np
 import math
 # from textwrap import wrap
@@ -26,17 +26,21 @@ from skimage import measure
 import seaborn as sns
 import random
 
-path_fcMeshes = os.path.abspath(__file__)
-path_mHImages = Path(path_fcMeshes).parent.parent.parent / 'images'
+#%% ##### - Other Imports - ##################################################
+from ..gui.config import mH_config
+from .mH_funcBasics import ask4input, get_by_path, alert
+
+# path_fcMeshes = os.path.abspath(__file__)
+path_mHImages = mH_config.path_mHImages
 
 #%% Set default fonts and sizes for plots
-txt_font = 'Dalim'
-leg_font = 'LogoType' # 'Quikhand' 'LogoType'  'Dalim'
-leg_width = 0.18
-leg_height = 0.2
-txt_size = 0.8
-txt_color = '#696969'
-txt_slider_size = 0.8
+txt_font = mH_config.txt_font
+leg_font = mH_config.leg_font
+leg_width = mH_config.leg_width
+leg_height = mH_config.leg_height
+txt_size = mH_config.txt_size
+txt_color = mH_config.txt_color
+txt_slider_size = mH_config.txt_slider_size
 
 #%%
 # Definition of class to save dictionary
@@ -53,10 +57,6 @@ class NumpyArrayEncoder(json.JSONEncoder):
         else:
             return super(NumpyArrayEncoder, self).default(obj)
         
-#%% ##### - Other Imports - ##################################################
-from ..gui.config import mH_config
-from .mH_funcBasics import ask4input, get_by_path, alert
-            
 #%% - morphoHeart B functions
 #%% func - s32Meshes
 def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):#
@@ -251,7 +251,7 @@ def get_stack_orientation(organ, gui_orientation, win):#
     workflow = organ.workflow['morphoHeart']
     colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
     views = organ.mH_settings['setup']['orientation']['stack'].split(', ')
-    planar_views = organ.get_orientation(views, colors, mtype='STACK')
+    planar_views, stack_cube = organ.get_orientation(views, colors, mtype='STACK')
 
     #Update organ workflow
     process = ['MeshesProc', 'A-Create3DMesh', 'Set_Orientation']
@@ -262,8 +262,10 @@ def get_stack_orientation(organ, gui_orientation, win):#
     elif roi_status == 'DONE':
         organ.update_mHworkflow(process+['Status'],'DONE')
 
+    print('planar_views: ',planar_views)
     # Update mH_settings
     gui_orientation['stack']['planar_views'] = planar_views
+    gui_orientation['stack']['stack_cube'] = stack_cube
     proc_set = ['wf_info']
     update = gui_orientation
     organ.update_settings(proc_set, update, 'mH', add='orientation')
@@ -281,23 +283,23 @@ def get_roi_orientation(organ, gui_orientation:dict, win):#
     workflow = organ.workflow['morphoHeart']
     on_hold = False
     colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
-    planar_views = None; settings = None
+    planar_views = None; settings = None; roi_cube = None
     if gui_orientation['roi']['reorient']: 
         if gui_orientation['roi']['method'] == 'Centreline': 
             centreline = gui_orientation['roi']['centreline']
             #Check if centrelines have been obtained
             if workflow['MeshesProc']['C-Centreline']['Status'] == 'DONE': 
                 win.win_msg("Setting Organ/ROI Orientation with "+centreline+"'s centreline...")
-                planar_views, settings = organ.get_ROI_orientation(gui_orientation, colors)
+                planar_views, settings, roi_cube = organ.get_ROI_orientation(gui_orientation, colors)
                 print('Method: Centreline -', planar_views, settings)
             else: 
                 on_hold = True
                 win.win_msg('!Organ/ROI Orientation will be set once the centreline of the '+centreline+' has been obtained.')
         else: #Manual
-            planar_views, settings = organ.get_ROI_orientation(gui_orientation, colors)
+            planar_views, settings, roi_cube = organ.get_ROI_orientation(gui_orientation, colors)
             print('Method: Manual -', planar_views)
     else: 
-        planar_views, settings = organ.get_ROI_orientation(gui_orientation, colors)
+        planar_views, settings, roi_cube = organ.get_ROI_orientation(gui_orientation, colors)
         print('Method: No rotation -', planar_views)
 
     if not on_hold: 
@@ -312,6 +314,7 @@ def get_roi_orientation(organ, gui_orientation:dict, win):#
 
         # Update mH_settings
         gui_orientation['roi']['planar_views'] = planar_views
+        gui_orientation['roi']['roi_cube'] = roi_cube
         if settings != None: 
             gui_orientation['roi']['settings'] = settings
         

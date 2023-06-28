@@ -40,6 +40,17 @@ from ..modules.mH_funcMeshes import plot_grid
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
 
+path_mHImages = mH_config.path_mHImages
+
+#%% Set default fonts and sizes for plots
+txt_font = mH_config.txt_font
+leg_font = mH_config.leg_font
+leg_width = mH_config.leg_width
+leg_height = mH_config.leg_height
+txt_size = mH_config.txt_size
+txt_color = mH_config.txt_color
+txt_slider_size = mH_config.txt_slider_size
+
 #https://wpamelia.com/loading-bar/
 
 #%% Classes - ########################################################
@@ -2672,25 +2683,25 @@ class MainWindow(QMainWindow):
         self.pushButton.clicked.connect(lambda: self.update_proj_organ())
 
     def update_proj_organ(self):
-        # self.proj.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
-        # self.organ.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
-        # print(self.proj.mH_settings['measure'])
-        # print(self.organ.mH_settings['measure'])
+        self.proj.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
+        self.organ.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
+        print(self.proj.mH_settings['measure'])
+        print(self.organ.mH_settings['measure'])
 
-        # workflow_proj = self.proj.workflow['morphoHeart']['MeshesProc']['C-Centreline']
-        # workflow_organ = self.organ.workflow['morphoHeart']['MeshesProc']['C-Centreline']
-        # item_centreline = [tuple(item.split('_')) for item in self.organ.mH_settings['measure']['CL'].keys()]
-        # for workflow in [workflow_proj, workflow_organ]:
-        #     for item in item_centreline:
-        #         ch, cont, _ = item
-        #         print(ch,cont)
-        #         if ch not in workflow['SimplifyMesh'].keys(): 
-        #             workflow['SimplifyMesh'][ch] = {}
-        #             workflow['vmtk_CL'][ch] = {}
-        #             workflow['buildCL'][ch] = {}
-        #         workflow['SimplifyMesh'][ch][cont] = {'Status': 'NI'}
-        #         workflow['vmtk_CL'][ch][cont] = {'Status': 'NI'}
-        #         workflow['buildCL'][ch][cont] = {'Status': 'NI'}
+        workflow_proj = self.proj.workflow['morphoHeart']['MeshesProc']['C-Centreline']
+        workflow_organ = self.organ.workflow['morphoHeart']['MeshesProc']['C-Centreline']
+        item_centreline = [tuple(item.split('_')) for item in self.organ.mH_settings['measure']['CL'].keys()]
+        for workflow in [workflow_proj, workflow_organ]:
+            for item in item_centreline:
+                ch, cont, _ = item
+                print(ch,cont)
+                if ch not in workflow['SimplifyMesh'].keys(): 
+                    workflow['SimplifyMesh'][ch] = {}
+                    workflow['vmtk_CL'][ch] = {}
+                    workflow['buildCL'][ch] = {}
+                workflow['SimplifyMesh'][ch][cont] = {'Status': 'NI'}
+                workflow['vmtk_CL'][ch][cont] = {'Status': 'NI'}
+                workflow['buildCL'][ch][cont] = {'Status': 'NI'}
         
         print(self.proj.workflow['morphoHeart'])
         print(self.organ.workflow['morphoHeart'])
@@ -3068,7 +3079,7 @@ class MainWindow(QMainWindow):
         self.stack_orientation.setText(orient_stack)
         orient_roi = self.organ.mH_settings['setup']['orientation']['roi']
         self.roi_orientation.setText(orient_roi)
-        # self.stack_orient_plot.clicked.connect(lambda: )
+        self.stack_orient_plot.clicked.connect(lambda: self.plot_orient(name = 'stack'))
         # self.roi_orient_plot.clicked.connect(lambda: )
 
         self.q_orientation.clicked.connect(lambda: self.help('orientation'))
@@ -3468,7 +3479,10 @@ class MainWindow(QMainWindow):
         self.fillcolor_cut1_sect1.clicked.connect(lambda: self.color_picker(name = 'cut1_sect1'))
         self.fillcolor_cut1_sect2.clicked.connect(lambda: self.color_picker(name = 'cut1_sect2'))
         self.fillcolor_cut2_sect1.clicked.connect(lambda: self.color_picker(name = 'cut2_sect1'))
-        self.fillcolor_cut2_sect2.clicked.connect(lambda: self.color_picker(name = 'cut2_sect2'))                                         
+        self.fillcolor_cut2_sect2.clicked.connect(lambda: self.color_picker(name = 'cut2_sect2'))    
+
+        self.dir_sect_cut1.clicked.connect(lambda: self.select_ext_plane(name = 'cut1'))            
+        self.dir_sect_cut2.clicked.connect(lambda: self.select_ext_plane(name = 'cut2'))                                  
 
         sect_setup = self.organ.mH_settings['setup']['sect']
         no_cuts = [key for key in sect_setup.keys() if 'Cut' in key]
@@ -4190,6 +4204,39 @@ class MainWindow(QMainWindow):
             self.segm_centreline2use.setEnabled(True)
         else: 
             self.segm_centreline2use.setEnabled(False)
+
+    def select_ext_plane(self, cut): 
+
+        #Get Mesh
+        mesh_name = [key for key in self.sect_btns.keys() if cut.title() in key][0]
+        ch, cont = mesh_name.split(':')[1].split('_')
+        mesh = self.organ.obj_meshes[ch+'_'+cont]
+
+        #Get Centreline
+        cl_name = self.gui_sections[cut]['centreline'].split('(')[1][:-1]
+        nPoints = self.gui_sections[cut]['nPoints']
+        mesh_cl = self.organ.obj_meshes[cl_name].get_centreline(nPoints = nPoints)
+        axis = self.gui_sections[cut]['axis_lab']
+
+        im_orient = self.organ.info['im_orientation']
+        print('self.info[im_orientation]',im_orient)
+        rotateY = False
+        if im_orient == 'custom': 
+            cust_angle = self.info['custom_angle']
+            rotateY = True
+
+        pos = mesh.center_of_mass()
+        side = max(self.organ.get_maj_bounds())
+        color_o = [152,251,152,255]
+        orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
+        orient_cube.linewidth(1).force_opaque()
+
+        if rotateY: 
+            orient_cube.rotate_y(cust_angle)
+
+
+        
+
 
     #Set functions 
     def set_keeplargest(self): 
@@ -4941,6 +4988,34 @@ class MainWindow(QMainWindow):
         obj = [tuple(obj_meshes)]
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
+    def plot_orient(self, name): 
+
+        ext_ch, _ = self.organ.get_ext_int_chs()
+        mesh_ext = self.organ.obj_meshes[ext_ch.channel_no+'_tiss']
+        cubes = getattr(self.organ, name+'_cube')
+        orient_cube = cubes['cube']
+        orient_cube_clear = cubes['clear']
+
+        views = self.organ.mH_settings['setup']['orientation'][name].split(', ')
+        colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
+
+        txt0 = vedo.Text2D(self.organ.user_organName+' - Reference cube and mesh to visualise planar views in '+name.title()+'...', c=txt_color, font=txt_font, s=txt_size)
+        txt1 = vedo.Text2D('- Reference cube with coloured faces that represent planar views in '+name.title()+'...', c=txt_color, font=txt_font, s=txt_size)
+        
+        mks = []; sym = ['o']*len(views)
+        for n, view, col in zip(count(), views, colors):
+            mks.append(vedo.Marker('*').c(col[0:-1]).legend(view))
+        lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
+                            width=leg_width/1.5, height=leg_height/1.5)
+        
+        path_logo = path_mHImages / 'logo-07.jpg'
+        logo = vedo.Picture(str(path_logo))
+
+        vp = vedo.Plotter(N=2, axes=1)
+        vp.add_icon(logo, pos=(0.1,1), size=0.25)
+        vp.show(mesh_ext.mesh, orient_cube_clear,txt0, at=0)
+        vp.show(orient_cube, lb, txt1, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)
+
     #Help functions
     def help(self, process): 
         print('User clicked help '+process)
@@ -5270,6 +5345,40 @@ def palette_rbg(name:str, num:int):
 
     return rgb
 
+def set_txts(): 
+    #% Link to images
+    mH_icon = 'images/logos_w_icon_2o5mm.png'#'images/cat-its-mouth-open.jpg'#
+    mH_big = 'images/logos_7o5mm.png'
+    mH_top_corner = 'images/logos_1o75mm.png'
+    mH_images = [mH_icon, mH_big, mH_top_corner]
+
+    # Play buttons
+    play_bw = 'images/logos_play_black_white.png'
+    play_gw = 'images/logos_play_green_white.png'
+    play_gb = 'images/logos_play_green_black.png'
+    play_grw = 'images/logos_play_gray_white.png'
+    play_colors = [play_bw, play_gw, play_gb, play_grw]
+
+    play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-repeat; width: 65px; height: 56px;} "
+    hover_btn = "QPushButton:hover {border-image: url("+play_bw+")} "
+    pressed_btn = "QPushButton:pressed {border-image: url("+play_gb+")}; "
+    disbled_btn = "QPushButton:disabled {border-image: url("+play_grw+")}; "
+    style_play = play_btn+hover_btn+pressed_btn+disbled_btn
+
+    html_txt = ['<html><head><meta name="qrichtext" content="1" /><style type="text/css"> p, li { white-space: pre-wrap; } </style></head><body style=" font-family:"Calibri Light"; font-size:11pt; font-weight:24; font-style:normal;">',
+                '<p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">',
+                '</p></body></html>']
+    reg_exps = {'num': '[+]?((\d+(\.\d*)?)|(\.\d+))', 'all': '.*'}
+
+    error_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250); color: rgb(217, 48, 42);'
+    note_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250); color: rgb(0, 161, 118);'
+    msg_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250);color: rgb(170, 0, 127);'
+    tE_styles = [error_style, note_style, msg_style]
+
+    # https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
+    list_all = [mH_images, play_colors, style_play, html_txt, reg_exps, tE_styles]
+    return list_all
+
 others = False 
 if others:
     #Others 
@@ -5350,40 +5459,6 @@ if others:
     #https://pythonpyqt.com/pyqt-input-dialog/
     #https://python.hotexamples.com/examples/PyQt5.QtWidgets/QDialogButtonBox/setStandardButtons/python-qdialogbuttonbox-setstandardbuttons-method-examples.html
     pass
-
-def set_txts(): 
-    #% Link to images
-    mH_icon = 'images/logos_w_icon_2o5mm.png'#'images/cat-its-mouth-open.jpg'#
-    mH_big = 'images/logos_7o5mm.png'
-    mH_top_corner = 'images/logos_1o75mm.png'
-    mH_images = [mH_icon, mH_big, mH_top_corner]
-
-    # Play buttons
-    play_bw = 'images/logos_play_black_white.png'
-    play_gw = 'images/logos_play_green_white.png'
-    play_gb = 'images/logos_play_green_black.png'
-    play_grw = 'images/logos_play_gray_white.png'
-    play_colors = [play_bw, play_gw, play_gb, play_grw]
-
-    play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-repeat; width: 65px; height: 56px;} "
-    hover_btn = "QPushButton:hover {border-image: url("+play_bw+")} "
-    pressed_btn = "QPushButton:pressed {border-image: url("+play_gb+")}; "
-    disbled_btn = "QPushButton:disabled {border-image: url("+play_grw+")}; "
-    style_play = play_btn+hover_btn+pressed_btn+disbled_btn
-
-    html_txt = ['<html><head><meta name="qrichtext" content="1" /><style type="text/css"> p, li { white-space: pre-wrap; } </style></head><body style=" font-family:"Calibri Light"; font-size:11pt; font-weight:24; font-style:normal;">',
-                '<p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">',
-                '</p></body></html>']
-    reg_exps = {'num': '[+]?((\d+(\.\d*)?)|(\.\d+))', 'all': '.*'}
-
-    error_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250); color: rgb(217, 48, 42);'
-    note_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250); color: rgb(0, 161, 118);'
-    msg_style = 'font: 25 9pt "Calibri Light"; background-color: rgb(250, 250, 250);color: rgb(170, 0, 127);'
-    tE_styles = [error_style, note_style, msg_style]
-
-    # https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
-    list_all = [mH_images, play_colors, style_play, html_txt, reg_exps, tE_styles]
-    return list_all
 
 #%% Module loaded
 print('morphoHeart! - Loaded gui_classes')
