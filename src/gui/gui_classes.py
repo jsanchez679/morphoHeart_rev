@@ -2672,28 +2672,30 @@ class MainWindow(QMainWindow):
         self.pushButton.clicked.connect(lambda: self.update_proj_organ())
 
     def update_proj_organ(self):
-        self.proj.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
-        self.organ.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
-        print(self.proj.mH_settings['measure'])
-        print(self.organ.mH_settings['measure'])
+        # self.proj.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
+        # self.organ.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
+        # print(self.proj.mH_settings['measure'])
+        # print(self.organ.mH_settings['measure'])
 
-        workflow_proj = self.proj.workflow['morphoHeart']['MeshesProc']['C-Centreline']
-        workflow_organ = self.organ.workflow['morphoHeart']['MeshesProc']['C-Centreline']
-        item_centreline = [tuple(item.split('_')) for item in self.organ.mH_settings['measure']['CL'].keys()]
-        for workflow in [workflow_proj, workflow_organ]:
-            for item in item_centreline:
-                ch, cont, _ = item
-                print(ch,cont)
-                if ch not in workflow['SimplifyMesh'].keys(): 
-                    workflow['SimplifyMesh'][ch] = {}
-                    workflow['vmtk_CL'][ch] = {}
-                    workflow['buildCL'][ch] = {}
-                workflow['SimplifyMesh'][ch][cont] = {'Status': 'NI'}
-                workflow['vmtk_CL'][ch][cont] = {'Status': 'NI'}
-                workflow['buildCL'][ch][cont] = {'Status': 'NI'}
+        # workflow_proj = self.proj.workflow['morphoHeart']['MeshesProc']['C-Centreline']
+        # workflow_organ = self.organ.workflow['morphoHeart']['MeshesProc']['C-Centreline']
+        # item_centreline = [tuple(item.split('_')) for item in self.organ.mH_settings['measure']['CL'].keys()]
+        # for workflow in [workflow_proj, workflow_organ]:
+        #     for item in item_centreline:
+        #         ch, cont, _ = item
+        #         print(ch,cont)
+        #         if ch not in workflow['SimplifyMesh'].keys(): 
+        #             workflow['SimplifyMesh'][ch] = {}
+        #             workflow['vmtk_CL'][ch] = {}
+        #             workflow['buildCL'][ch] = {}
+        #         workflow['SimplifyMesh'][ch][cont] = {'Status': 'NI'}
+        #         workflow['vmtk_CL'][ch][cont] = {'Status': 'NI'}
+        #         workflow['buildCL'][ch][cont] = {'Status': 'NI'}
         
         print(self.proj.workflow['morphoHeart'])
         print(self.organ.workflow['morphoHeart'])
+
+        
         # pass
 
     @pyqtSlot(int)
@@ -3508,8 +3510,9 @@ class MainWindow(QMainWindow):
                         getattr(self, cutl+'_chcont_sect'+str(nn)).setText(str(nn)+'. '+ch+'_'+cont)
                         getattr(self, cutl+'_play_sect'+str(nn)).setEnabled(False)
                         getattr(self, cutl+'_plot_sect'+str(nn)).setEnabled(False)
-                        self.sect_btns[cutb+':'+ch+'_'+cont] = {'play': getattr(self, cutl+'_play_sect'+str(nn)),
-                                                       'plot': getattr(self, cutl+'_plot_sect'+str(nn))}
+                        self.sect_btns[cutb+':'+ch+'_'+cont] = {'num': str(nn), 
+                                                                'play': getattr(self, cutl+'_play_sect'+str(nn)),
+                                                                'plot': getattr(self, cutl+'_plot_sect'+str(nn))}
                         nn+=1
                 #Make invisible the rest of the items
                 for el in range(nn,13,1):

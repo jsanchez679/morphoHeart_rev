@@ -1101,11 +1101,47 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
         print('wf_info:', organ.mH_settings['wf_info']['segments']['setup'])
 
 def run_sections(controller, btn): 
-    
-    nRes = 601; nPoints = 300; clRib_type = 'ext2sides'
-    fcMeshes.get_organ_ribbon(organ, nRes, nPoints, clRib_type)
-    # organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
-    fcMeshes.get_sect_mask(organ, plotshow=True)
 
-    # Cut organ into sections
-    subms = fcMeshes.get_sections(organ, plotshow=True)
+    workflow = controller.organ.workflow['morphoHeart']
+    sect_list = list(controller.main_win.sect_btns.keys())
+    if btn != None: 
+        cut, num = btn.split('_')
+        for key in sect_list: 
+            cut_key = key.split(':')[0]
+            num_key = controller.main_win.sect_btns[key]['num']
+            if cut_key == cut and int(num_key) == int(num): 
+                sect2cut = key
+                break
+        sect_set = [sect2cut] 
+    else: 
+        sect_set = sect_list
+    print('sect_set:',sect_set)
+
+    #Setup everything to cut
+    clRib_type = 'ext2sides'
+
+    for sect in sect_set: 
+        #Find cut
+        cut, ch_cont = sect.split(':')
+        ch, cont = ch_cont.split('_')
+        #Extract info for cut
+        colors_all = controller.organ.mH_settings['setup']['sect'][cut]['colors']
+        palette = [colors_all[key] for key in colors_all.keys()]
+        sect_names = controller.organ.mH_settings['setup']['sect'][cut]['name_sections']
+        
+        #Find centreline and method to cut
+        cl_name = controller.main_win.gui_sections[cut]['centreline'].split('(')[1][:-1]
+        nPoints = controller.main_win.gui_sections[cut]['nPoints']
+        mesh_cl = controller.organ.obj_meshes[cl_name].get_centreline(nPoints = nPoints)
+        nRes = controller.main_win.gui_sections[cut]['nRes']
+        method = controller.organ.mH_settings['wf_info']['segments']['setup'][cut]['ch_info'][ch][cont]
+        print('method: ', method)
+        mesh2cut = controller.organ.obj_meshes[ch+'_'+cont]
+        print('mesh2cut_name:', mesh2cut.name)
+
+        fcM.get_organ_ribbon(controller.organ, nRes, nPoints, clRib_type)
+        # organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
+        fcM.get_sect_mask(controller.organ, plotshow=True)
+
+        # Cut organ into sections
+        subms = fcM.get_sections(controller.organ, plotshow=True)
