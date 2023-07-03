@@ -22,7 +22,7 @@ from typing import Union
 from time import perf_counter
 import vedo as vedo
 from vedo import write
-from scipy.interpolate import splprep, splev, interpn
+from scipy.interpolate import interpn#, splprep, splev
 from itertools import count
 import random
 from skimage.draw import line_aa
@@ -901,6 +901,7 @@ class Organ():
                                             axis_dict = stack_dict)
             self.stack_cube = {'cube': orient_cubef, 
                                'clear': orient_cube_clear}
+            print('self.stack_cube:', self.stack_cube)
 
         #ROI
         roi_dict = self.mH_settings['wf_info']['orientation']['roi']
@@ -909,16 +910,20 @@ class Organ():
             pos_r = roi_dict['roi_cube']['pos']
             side_r = roi_dict['roi_cube']['side']
             color_r = roi_dict['roi_cube']['color']
-            rot_x = roi_dict['roi_cube']['rotate_x']
-            rot_y = roi_dict['roi_cube']['rotate_y']
-            rot_z = roi_dict['roi_cube']['rotate_z']
 
             orient_cube_r = vedo.Cube(pos=pos_r, side=side_r, c=color_r)
             orient_cube_r.linewidth(1).force_opaque()
 
-            orient_cube_r.rotate_x(rot_x)
-            orient_cube_r.rotate_y(rot_y)
-            orient_cube_r.rotate_z(rot_z)
+            if 'rotate_x' in roi_dict['roi_cube'].keys():
+                rot_x = roi_dict['roi_cube']['rotate_x']
+                orient_cube_r.rotate_x(rot_x)
+            if 'rotate_y' in roi_dict['roi_cube'].keys():
+                rot_y = roi_dict['roi_cube']['rotate_y']
+                orient_cube_r.rotate_y(rot_y)
+            if 'rotate_z' in roi_dict['roi_cube'].keys():
+                rot_z = roi_dict['roi_cube']['rotate_z']
+                orient_cube_r.rotate_z(rot_z)
+
             orient_cube_r.pos(pos_r)
             orient_cube_clear_r = orient_cube_r.clone().alpha(0.5)
 
@@ -926,6 +931,7 @@ class Organ():
                                                 axis_dict = roi_dict)
             self.roi_cube = {'cube': orient_cube_rf, 
                                'clear': orient_cube_clear_r}
+            print('self.roi_cube:', self.roi_cube)
             
     def colour_cube(self, orient_cube, axis_dict): 
         normal_dict = {}
@@ -1498,15 +1504,13 @@ class Organ():
                 centreline = gui_orientation['roi']['centreline'].split('(')[1].split(')')[0]
                 plane = gui_orientation['roi']['plane_orient']
                 ref_vect = gui_orientation['roi']['vector_orient']
-                planar_views, settings = self.orient_by_cl(views, centreline, plane, ref_vect, colors)
+                planar_views, settings, roi_cube = self.orient_by_cl(views, centreline, plane, ref_vect, colors)
             elif gui_orientation['roi']['method'] == 'Manual': 
-                planar_views = self.orient_manual(views, colors)
-                settings = None
+                planar_views, settings, roi_cube = self.orient_manual(views, colors)
         else: #No rotation
-            planar_views = self.get_orientation(views, colors, mtype='ROI')
-            settings = None
+            planar_views, settings, roi_cube = self.get_orientation(views, colors, mtype='ROI')
 
-        return planar_views, settings
+        return planar_views, settings, roi_cube
 
     def orient_by_cl(self, views, centreline:str, plane:str, ref_vect:str, colors):
         
@@ -3062,6 +3066,7 @@ class Mesh_mH():
                 else:
                     cut_masked_rot.append(mesh.alpha(0.1).color(color).legend('No.'+str(n)))
 
+        print(cut_masked_rot)
         return cut_masked_rot
         
     def create_segment(self, name, cut, color):
@@ -3224,7 +3229,7 @@ class MyFaceSelectingPlotter(vedo.Plotter):
                 check.append(isinstance(self.planar_views[pv]['pl_normal'], np.ndarray))
             else: 
                 check.append(False)
-        # print('\n')
+
         return all(check)
         
     def on_key_press(self, evt):
@@ -3242,7 +3247,6 @@ class MyFaceSelectingPlotter(vedo.Plotter):
                         vedo.printc('Now selecting '+planar_view.upper()+'...', c="g", invert=True)
                         self.get_msg()
                     else: 
-                        # print('BBB')
                         self.get_msg()
                         if self.check_full(): 
                             self.done = True

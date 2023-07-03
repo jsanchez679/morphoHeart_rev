@@ -1804,7 +1804,7 @@ QScrollBar::handle:vertical:hover {
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-659</y>
+             <y>-2658</y>
              <width>618</width>
              <height>3616</height>
             </rect>
@@ -2055,7 +2055,7 @@ border-color: #672146
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color:rgb(255, 255, 0);
-border-width: 2px;
+border-width: 1px;
 border-style: outset;
 border-color: rgb(0,0, 0);</string>
                    </property>
@@ -4134,7 +4134,7 @@ border-color: #672146
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color:rgb(255, 255, 0);
-border-width: 2px;
+border-width: 1px;
 border-style: outset;
 border-color: rgb(0,0, 0);</string>
                    </property>
@@ -6555,7 +6555,7 @@ border-color: #672146
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color:rgb(255, 255, 0);
-border-width: 2px;
+border-width: 1px;
 border-style: outset;
 border-color: rgb(0,0, 0);</string>
                    </property>
@@ -9186,7 +9186,7 @@ border-color: #672146
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color:rgb(255, 255, 0);
-border-width: 2px;
+border-width: 1px;
 border-style: outset;
 border-color: rgb(0,0, 0);</string>
                    </property>
@@ -10216,7 +10216,7 @@ border-color: #672146
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color:rgb(255, 255, 0);
-border-width: 2px;
+border-width: 1px;
 border-style: outset;
 border-color: rgb(0,0, 0);</string>
                       </property>
@@ -11396,7 +11396,7 @@ border-color: #672146
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color:rgb(255, 255, 0);
-border-width: 2px;
+border-width: 1px;
 border-style: outset;
 border-color: rgb(0,0, 0);</string>
                       </property>
@@ -14209,7 +14209,7 @@ border-color: #672146
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color:rgb(255, 255, 0);
-border-width: 2px;
+border-width: 1px;
 border-style: outset;
 border-color: rgb(0,0, 0);</string>
                       </property>
@@ -19897,7 +19897,7 @@ border-color: #672146
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color:rgb(255, 255, 0);
-border-width: 2px;
+border-width: 1px;
 border-style: outset;
 border-color: rgb(0,0, 0);</string>
                       </property>
@@ -24522,45 +24522,6 @@ border-color: rgb(115, 115, 115)}
                          </property>
                         </widget>
                        </item>
-                       <item>
-                        <widget class="QPushButton" name="segments_plot">
-                         <property name="minimumSize">
-                          <size>
-                           <width>60</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>60</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-                         </property>
-                         <property name="text">
-                          <string>Plot All</string>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
-                       </item>
                       </layout>
                      </item>
                     </layout>
@@ -24692,7 +24653,7 @@ border-color: #672146
                       </property>
                       <property name="styleSheet">
                        <string notr="true">background-color:rgb(255, 255, 0);
-border-width: 2px;
+border-width: 1px;
 border-style: outset;
 border-color: rgb(0,0, 0);</string>
                       </property>
@@ -28252,7 +28213,7 @@ QComboBox QAbstractItemView {
                              </property>
                              <property name="minimumSize">
                               <size>
-                               <width>230</width>
+                               <width>210</width>
                                <height>20</height>
                               </size>
                              </property>
@@ -28270,6 +28231,54 @@ QComboBox QAbstractItemView {
                              </property>
                              <property name="alignment">
                               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QPushButton" name="cl_ext_cut1">
+                             <property name="enabled">
+                              <bool>false</bool>
+                             </property>
+                             <property name="minimumSize">
+                              <size>
+                               <width>18</width>
+                               <height>18</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>18</width>
+                               <height>18</height>
+                              </size>
+                             </property>
+                             <property name="autoFillBackground">
+                              <bool>false</bool>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+
+background-color:  rgb(0, 255, 255);
+	color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}
+
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
+}</string>
+                             </property>
+                             <property name="text">
+                              <string>V</string>
+                             </property>
+                             <property name="checkable">
+                              <bool>true</bool>
                              </property>
                             </widget>
                            </item>
@@ -28324,7 +28333,7 @@ QComboBox QAbstractItemView {
                                </widget>
                               </item>
                               <item>
-                               <widget class="QRadioButton" name="radio_organ_cut1">
+                               <widget class="QRadioButton" name="radio_roi_cut1">
                                 <property name="enabled">
                                  <bool>true</bool>
                                 </property>
@@ -29069,7 +29078,7 @@ QComboBox QAbstractItemView {
                              </property>
                              <property name="minimumSize">
                               <size>
-                               <width>230</width>
+                               <width>210</width>
                                <height>20</height>
                               </size>
                              </property>
@@ -29087,6 +29096,54 @@ QComboBox QAbstractItemView {
                              </property>
                              <property name="alignment">
                               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QPushButton" name="cl_ext_cut2">
+                             <property name="enabled">
+                              <bool>false</bool>
+                             </property>
+                             <property name="minimumSize">
+                              <size>
+                               <width>18</width>
+                               <height>18</height>
+                              </size>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>18</width>
+                               <height>18</height>
+                              </size>
+                             </property>
+                             <property name="autoFillBackground">
+                              <bool>false</bool>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+
+background-color:  rgb(0, 255, 255);
+	color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}
+
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
+}</string>
+                             </property>
+                             <property name="text">
+                              <string>V</string>
+                             </property>
+                             <property name="checkable">
+                              <bool>true</bool>
                              </property>
                             </widget>
                            </item>
@@ -29141,7 +29198,7 @@ QComboBox QAbstractItemView {
                                </widget>
                               </item>
                               <item>
-                               <widget class="QRadioButton" name="radio_organ_cut2">
+                               <widget class="QRadioButton" name="radio_roi_cut2">
                                 <property name="enabled">
                                  <bool>true</bool>
                                 </property>
@@ -29211,7 +29268,7 @@ QComboBox QAbstractItemView {
                             </widget>
                            </item>
                            <item>
-                            <widget class="QLabel" name="sect_dir_cut1_2">
+                            <widget class="QLabel" name="sect_dir_cut2">
                              <property name="minimumSize">
                               <size>
                                <width>140</width>
@@ -29604,45 +29661,6 @@ border-color: rgb(115, 115, 115)}
                          </property>
                          <property name="text">
                           <string/>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QPushButton" name="sections_plot">
-                         <property name="minimumSize">
-                          <size>
-                           <width>60</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>60</width>
-                           <height>20</height>
-                          </size>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-                         </property>
-                         <property name="text">
-                          <string>Plot All</string>
                          </property>
                          <property name="checkable">
                           <bool>true</bool>

@@ -1129,19 +1129,114 @@ def run_sections(controller, btn):
         palette = [colors_all[key] for key in colors_all.keys()]
         sect_names = controller.organ.mH_settings['setup']['sect'][cut]['name_sections']
         
-        #Find centreline and method to cut
-        cl_name = controller.main_win.gui_sections[cut]['centreline'].split('(')[1][:-1]
-        nPoints = controller.main_win.gui_sections[cut]['nPoints']
-        mesh_cl = controller.organ.obj_meshes[cl_name].get_centreline(nPoints = nPoints)
-        nRes = controller.main_win.gui_sections[cut]['nRes']
-        method = controller.organ.mH_settings['wf_info']['segments']['setup'][cut]['ch_info'][ch][cont]
-        print('method: ', method)
+        #Find mesh to cut, centreline and settings to cut
         mesh2cut = controller.organ.obj_meshes[ch+'_'+cont]
-        print('mesh2cut_name:', mesh2cut.name)
+        cl_name = controller.main_win.gui_sect[cut]['centreline'].split('(')[1][:-1]
+        nPoints = controller.main_win.gui_sect[cut]['nPoints']
+        mesh_cl = controller.organ.obj_meshes[cl_name]
+        nRes = controller.main_win.gui_sect[cut]['nRes']
 
-        fcM.get_organ_ribbon(controller.organ, nRes, nPoints, clRib_type)
-        # organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
-        fcM.get_sect_mask(controller.organ, plotshow=True)
+        ext_plane = getattr(controller.main_win, 'extend_dir_'+cut.lower())['plane_normal']
+        print(ext_plane)
+        cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+                                         pl_normal=ext_plane, 
+                                         clRib_type=clRib_type)
+        
+        obj = [(mesh2cut.mesh, cl_ribbon)]
+        txt = [(0, controller.organ.user_organName+'- Extended Centreline Ribbon to cut organ into sections')]
+        plot_grid(obj=obj, txt=txt, axes=8, sc_side=max(controller.organ.get_maj_bounds()))
+        
+        print('Creating high resolution centreline ribbon for '+cut.title())
+        controller.main_win.win_msg('Creating high resolution centreline ribbon for '+cut.title())
+        s3_filledCube, test_rib = fcM.get_stack_clRibbon(organ = controller.organ, 
+                                                         mesh_cl = mesh_cl, 
+                                                         nPoints = nPoints, 
+                                                         nRes = nRes, 
+                                                         pl_normal = ext_plane, 
+                                                         clRib_type=clRib_type)
+        
+        obj = [(test_rib, mesh_cl.mesh)]
+        txt = [(0, controller.organ.user_organName)]
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
+        ACaaaaa!!!!
+        mask_cube, mask_cube_split = fcM.get_cube_clRibbon(organ = controller.organ, 
+                                                            s3_filledCube = s3_filledCube,
+                                                            res = mesh_cl.resolution,  
+                                                            pl_normal = ext_plane)
+        
+        obj = [(mask_cube, test_rib, mesh_cl.mesh)]
+        txt = [(0, controller.organ.user_organName)]
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
 
-        # Cut organ into sections
-        subms = fcM.get_sections(controller.organ, plotshow=True)
+        sel_side = fcM.select_ribMask(organ, mask_cube_split, mesh_cl.mesh)
+    
+        if 'SideA' in sel_side['name']:
+            mask_selected = s3_filledCube.astype('uint8')
+        else: #'SideB' in sel_side['name']:
+            mask_selected = s3_filledCubeBoolB.astype('uint8')
+
+        name2save = organ.user_organName + '_mask_sect.npy'
+        dir2save = organ.dir_res(dir ='s3_numpy') / name2save
+        np.save(dir2save, mask_selected)
+        if not dir2save.is_file():
+            print('>> Error: s3 mask of sections was not saved correctly!\n>> File: mask_sect.npy')
+            alert('error_beep')
+        else: 
+            print('>> s3 mask of sections saved correctly!')
+            alert('countdown')
+
+        # fcM.get_sect_mask(controller.organ, plotshow=True)
+ # if organ.check_method(method = 'E-Sections'): 
+    #     name_sections = organ.mH_settings['general_info']['sections']['name_sections']
+    #     user_names = '('+', '.join([name_sections[val] for val in name_sections])+')'
+      
+    #     #Check if there ir already a created mask
+    #     name2save = organ.user_organName + '_mask_sect.npy'
+    #     mask_file = organ.dir_res(dir ='s3_numpy') / name2save
+    #     # organ.info['dirs']['s3_numpy'] / name2save
+        
+    #     if mask_file.is_file(): 
+    #         q = 'You already created the mask to cut tissues into sections '+user_names+'. Do you want to create it again?'
+    #         res = {0: 'no, continue with next step', 1: 'yes, re-create it!'}
+    #         proceed = ask4input(q, res, bool)
+    
+    #     else: 
+    #         proceed = True
+        
+       
+        
+        # # organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
+        # fcM.get_sect_mask(controller.organ, plotshow=True)
+
+        # # Cut organ into sections
+        # subms = fcM.get_sections(controller.organ, plotshow=True)
+
+    # #Check if the orientation has alredy been stablished
+    # if 'orientation' in organ.mH_settings.keys(): 
+    #     if 'cl_ribbon' in organ.mH_settings['orientation'].keys():
+    #         q = 'You already created the centreline ribbon to cut tissues into sections. Do you want to create it again?'
+    #         res = {0: 'no, continue with next step', 1: 'yes, re-create it!'}
+    #         proceed = ask4input(q, res, bool)
+    #     else: 
+    #         proceed = True
+    # else: 
+    #     proceed = True
+            
+    # if proceed: 
+    #     q = 'Select the coordinate-axes you would like to use to define the plane in which the centreline will be extended to cut organ into sections:'
+    #     res = {0: 'Stack Coordinate Axes', 
+    #            1: 'ROI (Organ) Specific Coordinate Axes', 
+    #            2: 'Other'}
+    #     opt = ask4input(q, res, int)
+        
+    #     if opt in [0,1]: 
+    #         if opt == 0:
+    #             axes = res[opt].split(' ')[0].lower(); print(axes)
+    #         else: 
+    #             axes = res[opt].split(' ')[0].upper(); print(axes)
+    #         coord_ax = organ.mH_settings['orientation'][axes]
+    #         views = {}
+    #         for n, view in enumerate(list(coord_ax['planar_views'].keys())):
+    #             views[n] = view
+    #         q2 = 'From the -'+res[opt]+'- select the plane you want to use to extend the centreline: '
+    #         opt2 = ask4input(q2, views, int)

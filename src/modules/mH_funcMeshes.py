@@ -920,210 +920,12 @@ def get_distance_to(mesh_to, mesh_from, from_name, range, color_map='turbo'):#
     
     return mesh_toB, distance, min_max
     
-def get_organ_ribbon(organ, nRes, nPoints, clRib_type): 
+def get_stack_clRibbon(organ, mesh_cl, nPoints, nRes, pl_normal, clRib_type):
     
-    #Check if the orientation has alredy been stablished
-    if 'orientation' in organ.mH_settings.keys(): 
-        if 'cl_ribbon' in organ.mH_settings['orientation'].keys():
-            q = 'You already created the centreline ribbon to cut tissues into sections. Do you want to create it again?'
-            res = {0: 'no, continue with next step', 1: 'yes, re-create it!'}
-            proceed = ask4input(q, res, bool)
-        else: 
-            proceed = True
-    else: 
-        proceed = True
-            
-    if proceed: 
-        q = 'Select the coordinate-axes you would like to use to define the plane in which the centreline will be extended to cut organ into sections:'
-        res = {0: 'Stack Coordinate Axes', 
-               1: 'ROI (Organ) Specific Coordinate Axes', 
-               2: 'Other'}
-        opt = ask4input(q, res, int)
-        
-        if opt in [0,1]: 
-            if opt == 0:
-                axes = res[opt].split(' ')[0].lower(); print(axes)
-            else: 
-                axes = res[opt].split(' ')[0].upper(); print(axes)
-            coord_ax = organ.mH_settings['orientation'][axes]
-            views = {}
-            for n, view in enumerate(list(coord_ax['planar_views'].keys())):
-                views[n] = view
-            q2 = 'From the -'+res[opt]+'- select the plane you want to use to extend the centreline: '
-            opt2 = ask4input(q2, views, int)
-            
-            plane_normal = coord_ax['planar_views'][views[opt2]]['pl_normal']
-            
-            #% Mesh centreline
-            # Select the centreline you want to use to cut organ into sides
-            dict_cl = plot_organCLs(organ)
-            q = 'Select the centreline you want to use to cut organ into sections:'
-            select = ask4input(q, dict_cl, int)
-            
-            ch_cont_cl = dict_cl[select].split(' (')[1].split('-')
-            ch = ch_cont_cl[0]
-            cont = ch_cont_cl[1]
-            mesh_cl = organ.obj_meshes[ch+'_'+cont]
-            
-            cl_ribb_dict = {'coord_ax': res[opt].split(' ')[0],
-                            'planar_view': views[opt2],
-                            'mesh_cl': ch+'_'+cont,
-                            'pl_normal': plane_normal,
-                            'nRes': nRes,
-                            'nPoints': nPoints, 
-                            'cl_type': clRib_type}
-            
-            proc = ['orientation', 'cl_ribbon']
-            organ.update_settings(proc, update = cl_ribb_dict, mH = 'mH')
-            
-            cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
-                                  pl_normal=plane_normal, 
-                                  clRib_type=clRib_type)
-            
-            obj = [(mesh_cl.mesh, cl_ribbon)]
-            txt = [(0, organ.user_organName+'- Extended Centreline Ribbon to cut organ into sections')]
-            plot_grid(obj=obj, txt=txt, axes=8, sc_side=max(organ.get_maj_bounds()))
-            
-        else: 
-            print('Opt2: Code under development!')
-            
-            # sect_names = [item for item in organ.parent_project.mH_param2meas if 'sect1' in item]
-            # ext_ch, _ = organ.get_ext_int_chs()
-            # if any(ext_ch.channel_no in flag for (flag,_,_,_) in sect_names):
-            #     mesh_ext = organ.obj_meshes[ext_ch.channel_no+'tiss']
-            # else: 
-            #     mesh_ext = organ.obj_meshes[sect_names[0][0]+'_'+sect_names[0][1]]
-           
-            # pos = mesh_ext.mesh.center_of_mass()
-            # sph = vedo.Sphere(pos=pos,r=2,c='black')
-            # side = max(organ.get_maj_bounds())
-            
-            # color_o = [90,156,254,255]
-            # orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
-            # orient_cube.linewidth(1).force_opaque()
-            
-            # plane = organ.mH_settings['organ_orientation']['organ_specific']['plane']
-            # if rotate: 
-            #     pos_rot = new_normal_3DRot(pos, [angle], [0], [0])
-            #     sph_rot = vedo.Sphere(pos=pos_rot,r=2,c='tomato')
-            #     if plane=='XY':
-            #         orient_cube.rotate_z(angle, rad=False)
-            #         sph.rotate_z(angle, rad=False)
-            #     elif plane=='YZ':
-            #         orient_cube.rotate_x(angle, rad=False)
-            #         sph.rotate_x(angle, rad=False)
-            #     elif plane=='XZ':
-            #         orient_cube.rotate_y(angle, rad=False)
-            #         sph.rotate_y(angle, rad=False)
-            
-            # if rotateY: 
-            #     orient_cube.rotate_y(cust_angle, rad=False)
-            #     sph.rotate_z(cust_angle, rad=False)
-            
-            # pos = mesh_ext.mesh.center_of_mass()
-            # orient_cube.pos(pos)
-            # sph_COM = vedo.Sphere(pos=pos,r=5,c='gold')
-            
-            # #% Mesh centreline
-            # # Select the centreline you want to use to cut organ into sides
-            # dict_cl = plot_organCLs(organ)
-            # q = 'Select the centreline you want to use to cut organ into sections:'
-            # select = ask4input(q, dict_cl, int)
-            
-            # ch_cont_cl = dict_cl[select].split(' (')[1].split('-')
-            # ch = ch_cont_cl[0]
-            # cont = ch_cont_cl[1]
-            # mesh_cl = organ.obj_meshes[ch+'_'+cont]
-        
-            # orient_cube_clear = orient_cube.clone().alpha(0.5)
-            
-            # def select_cube_face(evt):
-            #     color_selected = [255,0,0,200]
-                
-            #     orient_cube = evt.actor
-            #     if not orient_cube:
-            #         return
-            #     pt = evt.picked3d
-            #     idcell = orient_cube.closest_point(pt, return_cell_id=True)
-            #     print('You clicked (idcell):', idcell)
-            #     if set(orient_cube.cellcolors[idcell]) == set(color_o):
-            #         orient_cube.cellcolors[idcell] = color_selected #RGBA 
-            #         for cell_no in range(len(orient_cube.cells())):
-            #             # print(cell_no)
-            #             if cell_no != idcell: 
-            #                 orient_cube.cellcolors[cell_no] = color_o #RGBA 
-                            
-            #     elif set(orient_cube.cellcolors[idcell]) == set(color_selected):
-            #         orient_cube.cellcolors[idcell] = color_o #RGBA 
-            #         for cell_no in range(len(orient_cube.cells())):
-            #             # print(cell_no)
-            #             if cell_no != idcell: 
-            #                 orient_cube.cellcolors[cell_no] = color_selected #RGBA 
-                            
-            #     cells = orient_cube.cells()[idcell]
-            #     points = [orient_cube.points()[cell] for cell in cells]
-                
-            #     plane_fit = vedo.fit_plane(points, signed=True)
-            #     # print('normal:',plane_fit.normal, 'center:',plane_fit.center)
-            #     organ.mH_settings['orientation']['cl_ribbon'] = {'mesh_cl': ch+'_'+cont,
-            #                                                         'pl_normal': plane_fit.normal,
-            #                                                         'nRes': nRes,
-            #                                                         'nPoints': nPoints, 
-            #                                                         'cl_type': clRib_type}
-         
-            # txt0 = vedo.Text2D(organ.user_organName+' - Reference cube and mesh.', c=txt_color, font=txt_font, s=txt_size)
-            # txt1 = vedo.Text2D('Select (click) cube face you want to use to extended centreline.\nNote: The face that is last selected will be used', c=txt_color, font=txt_font, s=txt_size)
-            # vpt = vedo.Plotter(N=2, axes=1)
-            # vpt.add_callback("mouse click", select_cube_face)
-            # vpt.show(mesh_ext.mesh, orient_cube_clear, txt0, at=0)
-            # vpt.show(orient_cube, txt1, at=1, azimuth=45, interactive=True)
-            
-            # pl_normal = organ.mH_settings['organ_orientation']['organ_specific']['cl_ribbon']['pl_normal']
-            # cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
-            #                       pl_normal=pl_normal, 
-            #                       clRib_type=clRib_type)
-            
-            # txt0 = vedo.Text2D('Final selected face', c=txt_color, font=txt_font, s=txt_size)
-            # txt1 = vedo.Text2D('Extended Centreline Ribbon to cut organ into sides', c=txt_color, font=txt_font, s=txt_size)
-            # vp = vedo.Plotter(N=2,axes=8)
-            # vp.show(mesh_ext.mesh, orient_cube_clear, sph, sph_rot, sph_COM, txt0, at=0)
-            # vp.show(mesh_cl.mesh, cl_ribbon, txt1, at=1, interactive=True)
-    
-#%% func - get_sect_mask
-def get_sect_mask(organ, plotshow=True):
-    
-    if organ.check_method(method = 'E-Sections'): 
-        name_sections = organ.mH_settings['general_info']['sections']['name_sections']
-        user_names = '('+', '.join([name_sections[val] for val in name_sections])+')'
-      
-        #Check if there ir already a created mask
-        name2save = organ.user_organName + '_mask_sect.npy'
-        mask_file = organ.dir_res(dir ='s3_numpy') / name2save
-        # organ.info['dirs']['s3_numpy'] / name2save
-        
-        if mask_file.is_file(): 
-            q = 'You already created the mask to cut tissues into sections '+user_names+'. Do you want to create it again?'
-            res = {0: 'no, continue with next step', 1: 'yes, re-create it!'}
-            proceed = ask4input(q, res, bool)
-    
-        else: 
-            proceed = True
-                
-        if proceed: 
-            cl_settings =  organ.mH_settings['orientation']['cl_ribbon']
-            mesh_cl = organ.obj_meshes[cl_settings['mesh_cl']]
-            
-            s3_filledCube, test_rib = get_stack_clRibbon(organ, mesh_cl, plotshow)
-            get_cube_clRibbon(organ, mesh_cl, s3_filledCube, test_rib, plotshow)
-    
-#%% func - get_stack_clRibbon
-def get_stack_clRibbon(organ, mesh_cl, plotshow=True):
-    
-    cl_settings =  organ.mH_settings['orientation']['cl_ribbon']
-    cl_ribbon =  mesh_cl.get_clRibbon(nPoints=cl_settings['nPoints'], 
-                                      nRes=cl_settings['nRes'], 
-                                      pl_normal=cl_settings['pl_normal'], 
-                                      clRib_type=cl_settings['cl_type'])
+    cl_ribbon =  mesh_cl.get_clRibbon(nPoints=nPoints, 
+                                      nRes=nRes, 
+                                      pl_normal=pl_normal, 
+                                      clRib_type=clRib_type)
     
     res = mesh_cl.resolution
     cl_ribbonR = cl_ribbon.clone().x(res[0])
@@ -1134,20 +936,20 @@ def get_stack_clRibbon(organ, mesh_cl, plotshow=True):
     #Load stack shape
     shape_s3 = organ.info['shape_s3']
     zdim, xdim, ydim = shape_s3
-    # print('shape_s3:',shape_s3, '- xdim:', xdim, '- ydim:',ydim, '- zdim:', zdim)
 
     # Rotate the points that make up the cl_ribbon, to convert them to a stack
     cust_angle = organ.info['custom_angle']
+    print('cust_angle:', cust_angle)
     
-    if organ.mH_settings['general_info']['rotateZ_90']: #'CJ' not in filename: 
+    if organ.mH_settings['setup']['rotateZ_90']: #'CJ' not in filename: 
         axis = [0,0,1]
         theta = np.radians(90)
     else: 
         axis = [0,0,0]
         theta = np.radians(0)
-    
     print('axis:',axis, '- theta:',theta)
-    if cust_angle != 0: 
+    
+    if int(cust_angle) != 0: 
         print('cust_angle != 0, develop this!')
 
     s3_rib = np.zeros((xdim, ydim, zdim+2))
@@ -1190,25 +992,18 @@ def get_stack_clRibbon(organ, mesh_cl, plotshow=True):
     # Create volume of extended centreline mask
     test_rib = s3_to_mesh(s3_rib, res=res, name='Extended CL', color='darkmagenta')
     
-    if plotshow: 
-        obj = [(test_rib, mesh_cl.mesh)]
-        txt = [(0, organ.user_organName)]
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-        
     return s3_filledCube, test_rib
 
-#%% func - get_cube_clRibbon
-def get_cube_clRibbon(organ, mesh_cl, s3_filledCube, test_rib, plotshow=True):
+def get_cube_clRibbon(organ, s3_filledCube, res, pl_normal):
     
-    cl_settings =  organ.mH_settings['orientation']['cl_ribbon']
-    res = mesh_cl.resolution
+    # cl_settings =  organ.mH_settings['orientation']['cl_ribbon']
+    # res = mesh_cl.resolution
 
     # #Load stack shape
     shape_s3 = organ.info['shape_s3']
     zdim, xdim, ydim = shape_s3
       
     #Identify the direction in which the cubes need to be built
-    pl_normal = cl_settings['pl_normal']
     ref_vect = organ.mH_settings['orientation']['ROI']['ref_vectF'][0]
     ext_dir = list(np.cross(ref_vect, pl_normal))
     max_ext_dir = max(ext_dir)
@@ -1262,12 +1057,7 @@ def get_cube_clRibbon(organ, mesh_cl, s3_filledCube, test_rib, plotshow=True):
     #Create volume of filled side of extended centreline mask
     mask_cube = s3_to_mesh(s3_filledCube, res=res, name='Filled CLRibbon SideA', color='darkblue')
     mask_cube.alpha(0.05)
-    
-    if plotshow: 
-        obj = [(mask_cube, test_rib, mesh_cl.mesh)]
-        txt = [(0, organ.user_organName)]
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-   
+
     s3_filledCube = s3_filledCube.astype('uint8')
 
     #Create the inverse section and make the user select the section that corresponds to section 1
@@ -1282,25 +1072,9 @@ def get_cube_clRibbon(organ, mesh_cl, s3_filledCube, test_rib, plotshow=True):
     
     mask_cube.color('darkblue'); mask_cubeB.color('skyblue')
     mask_cube_split = [mask_cube, mask_cubeB]
-    
-    sel_side = select_ribMask(organ, mask_cube_split, mesh_cl.mesh)
-    
-    if 'SideA' in sel_side['name']:
-        mask_selected = s3_filledCube.astype('uint8')
-    else: #'SideB' in sel_side['name']:
-        mask_selected = s3_filledCubeBoolB.astype('uint8')
 
-    name2save = organ.user_organName + '_mask_sect.npy'
-    dir2save = organ.dir_res(dir ='s3_numpy') / name2save
-    np.save(dir2save, mask_selected)
-    if not dir2save.is_file():
-        print('>> Error: s3 mask of sections was not saved correctly!\n>> File: mask_sect.npy')
-        alert('error_beep')
-    else: 
-        print('>> s3 mask of sections saved correctly!')
-        alert('countdown')
+    return mask_cube, mask_cube_split
     
-#%% func - select_ribMask
 def select_ribMask(organ, mask_cube_split, mesh_cl): 
     
     dict_sides = {}
@@ -1338,7 +1112,7 @@ def select_ribMask(organ, mask_cube_split, mesh_cl):
         else: 
             print('Other mesh was selected')
     
-    name_sect1 = organ.mH_settings['general_info']['sections']['name_sections']['sect1']
+    name_sect1 = organ.mH_settings['setup']['sections']['name_sections']['sect1']
     mks = [vedo.Marker('*').c(color_sel).legend('Section No.1 ('+name_sect1+')')]
     sym = ['o']
     lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
@@ -1358,13 +1132,12 @@ def select_ribMask(organ, mask_cube_split, mesh_cl):
     
     return selected_mesh
     
-#%% func - get_sections
 def get_sections(organ, plotshow):
     
     #Check first if sections is a method involved in this organ
     if organ.check_method(method = 'E-Sections'): 
         subms = []
-        name_sections = organ.mH_settings['general_info']['sections']['name_sections']
+        name_sections = organ.mH_settings['setup']['sections']['name_sections']
         user_names = '('+', '.join([name_sections[val] for val in name_sections])+')'
         
         #See if all sections have been stored in organ.submeshes
@@ -1425,7 +1198,6 @@ def get_sections(organ, plotshow):
            
     return subms
 
-#%% func - s3_to_mesh
 def s3_to_mesh(s3, res, name:str, color='cyan', rotateZ_90=True):
 
     verts, faces, _, _ = measure.marching_cubes(s3, spacing=res, method='lewiner')
@@ -1439,7 +1211,6 @@ def s3_to_mesh(s3, res, name:str, color='cyan', rotateZ_90=True):
 
     return mesh
 
-#%% func - sphs_in_spline
 def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
     """
     Function that creates a group of spheres through a spline given as input.
@@ -1470,7 +1241,6 @@ def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
 
     return spheres_spline
 
-#%% func - create_disc_mask
 def create_disc_mask(organ, cut, h_min = 0.1125): 
     
     #Load stack shape
@@ -1551,8 +1321,6 @@ def create_disc_mask(organ, cut, h_min = 0.1125):
             print('>> s3 mask of '+disc+' saved correctly!')
             alert('countdown')
 
-
-#%% func - segm_ext_ext
 def segm_ext_ext(organ, mesh, cut, segm_names, palette, win):
 
     #Mask the s3_stack to create segments
@@ -1614,7 +1382,6 @@ def get_segments(organ, mesh, cut, segm_names, palette, ext_subsgm, win):
 
     return meshes_segm
 
-#%% func - classify_segments
 #Working clicking 
 def classify_segments(meshes, dict_segm, colors_dict):
     
@@ -1632,6 +1399,8 @@ def classify_segments(meshes, dict_segm, colors_dict):
         if not evt.actor:
             return
         mesh_no = evt.actor.info['legend']
+        mesh_color = evt.actor.color()
+        # print('mesh_color:',mesh_color)
         mesh_color = evt.actor.color()*255
         is_in_list = np.any(np.all(mesh_color == colors, axis=1))
         if is_in_list:
@@ -1671,7 +1440,6 @@ def classify_segments(meshes, dict_segm, colors_dict):
     
     return dict_segm
     
-#%% func - classify_segments_from_ext
 def classify_segments_from_ext(meshes, dict_segm, ext_sub):
     
     ext_sub_mesh = ext_sub.get_segm_mesh()
@@ -1686,7 +1454,6 @@ def classify_segments_from_ext(meshes, dict_segm, ext_sub):
             
     return dict_segm
     
-#%% func - save_submesh
 def save_submesh(organ, submesh, mesh, win, ext='.vtk'):
     
     mesh_name = organ.user_organName+'_'+submesh.sub_name_all+ext
@@ -1701,7 +1468,6 @@ def save_submesh(organ, submesh, mesh, win, ext='.vtk'):
     win.win_msg('Mesh '+mesh_name+' has been saved!')
     alert('countdown')        
     
-#%% func - create_assign_subsg
 def create_subsg(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):#
     
     subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
@@ -1753,34 +1519,7 @@ def create_subsg(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):#
     # final_segm_mesh: instance of mesh (vedo)
     return subsgm, final_segm_mesh
     
-#%% func - dict_segments
-# def dict_segments(organ, cut, palette, other=True):
-    
-#     segments_info = organ.mH_settings['setup']['segm'][cut]
-#     # no_segm = segments_info['no_segments']
-#     #https://seaborn.pydata.org/tutorial/color_palettes.html
-#     # palette_all = sns.color_palette("cool_r", no_segm*4)
-#     # palette = random.sample(palette_all, no_segm)
-    
-#     if other: 
-#         dict_segm = {'other': {'user_name': 'other',
-#                                'meshes_number': []}}
-#     else:
-#         dict_segm = {}
-    
-#     colors = {'other': [128,128,128]}
-#     for n, segm in enumerate(segments_info['name_segments']): 
-#         dict_segm[segm] = {}
-#         dict_segm[segm]['user_name'] = segments_info['name_segments'][segm]
-#         dict_segm[segm]['meshes_number'] = []
-
-#         colors[segm] = palette[n]
-    
-#     return dict_segm, colors
-    
-
-#%% - Measuring function
-#%% func - measure_centreline
+#%% - Measuring functions
 def measure_centreline(organ, nPoints):
     
     cl_measurements = organ.mH_settings['setup']['params']['2']['measure']
@@ -1813,7 +1552,6 @@ def measure_centreline(organ, nPoints):
     print('organ.mH_settings', organ.mH_settings)
     print('organ.workflow', organ.workflow)
 
-#%% func - measure_volume  
 def measure_volume(organ):
     vol_names = [item for item in organ.parent_project.mH_param2meas if 'volume' in item]
     for name in vol_names: 
@@ -1843,7 +1581,6 @@ def measure_volume(organ):
         wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'volume']
         organ.update_workflow(process=wf_proc, update='DONE')
             
-#%% func - measure_area 
 def measure_area(organ):
     area_names = [item for item in organ.parent_project.mH_param2meas if 'surf_area' in item]
     for name in area_names: 
@@ -1872,7 +1609,7 @@ def measure_area(organ):
         wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'surf_area']
         organ.update_workflow(process=wf_proc, update='DONE')
             
-#%% func - find_angle_btw_pts
+#%% - Vectorial calculations
 def find_angle_btw_pts(pts1, pts2):
     """
     Function that returns the angle between two vectors on the input-plane
@@ -1890,7 +1627,6 @@ def find_angle_btw_pts(pts1, pts2):
 
     return angle
 
-#%% func - findDist
 def findDist(pt1, pt2):
     """
     Function that returns the distance between two points given as input
@@ -1900,7 +1636,6 @@ def findDist(pt1, pt2):
 
     return dist
 
-#%% func - get_plane_normal2pt
 def get_plane_normal2pt (pt_num, points):
     """
     Funtion that gets a plane normal to a point in a spline
@@ -1913,7 +1648,6 @@ def get_plane_normal2pt (pt_num, points):
     return normal, pt_centre
 
 #%% - Plotting functions
-#%% func - plot_grid
 def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350):
     
     # Load logo
@@ -1979,7 +1713,6 @@ def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350):
         else: # num == len(obj)-1
             vp.show(obj[num], lbox[num], txt_out[num], at=num, zoom=zoom, interactive=True)
 
-#%% func - plot_all_organ
 def plot_all_organ(organ):
     
     obj = []
@@ -1990,7 +1723,6 @@ def plot_all_organ(organ):
     
     plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
 
-#%% func - plot_meas_meshes
 def plot_meas_meshes(organ, meas:list, color_map = 'turbo', alpha=1):
     obj = []
     for param in meas: 
@@ -2014,7 +1746,6 @@ def plot_meas_meshes(organ, meas:list, color_map = 'turbo', alpha=1):
         txt = [(0, organ.user_organName)]
         plot_grid(obj, txt, axes=5, sc_side=max(organ.get_maj_bounds()))
         
-#%% ƒunc - plot_organCLs
 def plot_organCLs(organ, axes=5, plotshow=True):
 
     # # Select the mesh to use to measure organ orientation
@@ -2042,7 +1773,6 @@ def plot_organCLs(organ, axes=5, plotshow=True):
     return dict_cl
 
 #%% - Plane handling functions 
-#%% func - get_plane
 def get_plane(filename, txt:str, meshes:list, def_pl = None, 
                              option = [True,True,True,True,True,True]):#
     '''
@@ -2087,7 +1817,6 @@ def get_plane(filename, txt:str, meshes:list, def_pl = None,
     
     return plane_new, pl_dict
 
-#%% func - get_plane_pos
 def get_plane_pos(filename, txt, meshes, option, 
                      def_pl= {'pl_normal': (0,1,0), 'pl_centre': []}, zoom = 0.5):
     '''
@@ -2195,7 +1924,6 @@ def get_plane_pos(filename, txt, meshes, option,
 
     return plane, normal, rotX, rotY, rotZ
 
-#%% func - modify_disc
 def modify_disc(filename, txt, mesh, option,  
                     def_pl= {'pl_normal': (0,1,0), 'pl_centre': []}, 
                     radius = 60, height = 0.45, 
@@ -2305,7 +2033,6 @@ def modify_disc(filename, txt, mesh, option,
     return cyl_test, sph_cyl, rotX, rotY, rotZ
 
 #%% - Mesh Operations
-#%% func - get_pts_at_plane
 def get_pts_at_plane (points, pl_normal, pl_centre, tol=2, addData = []):
     """
     Function to get points within mesh at certain heights (y positions) to create kspline
@@ -2333,7 +2060,6 @@ def get_pts_at_plane (points, pl_normal, pl_centre, tol=2, addData = []):
     return pts_cut, data_cut
 
 #%% - Math operations 
-#%% func - new_normal_3DRot
 def new_normal_3DRot (normal, rotX, rotY, rotZ):
     '''
     Function that returns a vector rotated around X, Y and Z axis
@@ -2367,7 +2093,6 @@ def new_normal_3DRot (normal, rotX, rotY, rotZ):
 
     return normal_rotZ
 
-#%% func - rotation_matrix
 def rotation_matrix(axis, theta):
     """
     Returns the rotation matrix associated with counterclockwise rotation about
@@ -2399,7 +2124,6 @@ def rotation_matrix(axis, theta):
                      [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
                      [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
 
-#%% func - rotate_plane2im
 def rotate_plane2im (pl_centre_o, pl_normal_o, chNS = False):
     """
     Function that rotates the planes defined in the surface reconstructions to the images mask
@@ -2421,7 +2145,6 @@ def rotate_plane2im (pl_centre_o, pl_normal_o, chNS = False):
     
     return plane_im, pl_dict
 
-#%% func - unit_vector
 def unit_vector(v):
     """
     Function that returns the unit vector of the vector given as input
@@ -2445,7 +2168,6 @@ def unit_vector(v):
 
     return np.asarray(v_unit)
 
-#%% func - order_pts
 def order_pts (points):
     """
     Function that returns an ordered array of points
@@ -2468,7 +2190,6 @@ def order_pts (points):
 
     return ordered_pts, angle_deg
 
-#%% func - get_interpolated_pts
 def get_interpolated_pts(points, nPoints):
     """
     Function that interpolates input points

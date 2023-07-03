@@ -871,10 +871,11 @@ class CreateNewProj(QDialog):
         if color.isValid():
             # print('The selected color is: ', color.name())
             fill = getattr(self, 'fillcolor_'+name)
+            red, green, blue, _ = color.getRgb() #[red, green, blue]
             color_btn(btn = fill, color = color.name())
             # fill.setStyleSheet("background-color: "+color.name()+"; color: "+color.name()+"; font: 25 2pt 'Calibri Light'")#+"; border: 1px solid "+color.name())
-            fill.setText(color.name())
-            # print('Color:', fill.text())
+            fill.setText(str([red, green, blue]))
+            print('Color:', fill.text())
             
     def default_colors(self, name):
         if self.ck_def_colors.isChecked():
@@ -3080,7 +3081,7 @@ class MainWindow(QMainWindow):
         orient_roi = self.organ.mH_settings['setup']['orientation']['roi']
         self.roi_orientation.setText(orient_roi)
         self.stack_orient_plot.clicked.connect(lambda: self.plot_orient(name = 'stack'))
-        # self.roi_orient_plot.clicked.connect(lambda: )
+        self.roi_orient_plot.clicked.connect(lambda: self.plot_orient(name = 'roi'))
 
         self.q_orientation.clicked.connect(lambda: self.help('orientation'))
         self.orientation_set.clicked.connect(lambda: self.set_orientation())
@@ -3336,9 +3337,6 @@ class MainWindow(QMainWindow):
         self.segments_open.clicked.connect(lambda: self.open_section(name='segments'))
         self.segments_play.setStyleSheet(style_play)
         self.segments_play.setEnabled(False)
-        # self.segments_play
-        # self.segments_plot.
-        self.segments_plot.setEnabled(False)
         self.q_segments.clicked.connect(lambda: self.help('segments'))
         self.segments_set.clicked.connect(lambda: self.set_segments())
 
@@ -3470,9 +3468,6 @@ class MainWindow(QMainWindow):
         self.sections_open.clicked.connect(lambda: self.open_section(name='sections'))
         self.sections_play.setStyleSheet(style_play)
         self.sections_play.setEnabled(False)
-        # self.sections_play
-        # self.sections_plot
-        self.sections_plot.setEnabled(False)
         self.q_sections.clicked.connect(lambda: self.help('sections'))
         self.sections_set.clicked.connect(lambda: self.set_sections())
 
@@ -3481,8 +3476,8 @@ class MainWindow(QMainWindow):
         self.fillcolor_cut2_sect1.clicked.connect(lambda: self.color_picker(name = 'cut2_sect1'))
         self.fillcolor_cut2_sect2.clicked.connect(lambda: self.color_picker(name = 'cut2_sect2'))    
 
-        self.dir_sect_cut1.clicked.connect(lambda: self.select_ext_plane(name = 'cut1'))            
-        self.dir_sect_cut2.clicked.connect(lambda: self.select_ext_plane(name = 'cut2'))                                  
+        self.dir_sect_cut1.clicked.connect(lambda: self.select_extension_plane(cut = 'cut1'))            
+        self.dir_sect_cut2.clicked.connect(lambda: self.select_extension_plane(cut = 'cut2'))                                  
 
         sect_setup = self.organ.mH_settings['setup']['sect']
         no_cuts = [key for key in sect_setup.keys() if 'Cut' in key]
@@ -3564,8 +3559,8 @@ class MainWindow(QMainWindow):
             for aa in range(1,5,1): 
                 getattr(self, 'sect_line'+str(aa)).setVisible(False)
 
-        self.radio_organ_cut1.setChecked(True)
-        self.radio_organ_cut2.setChecked(True)
+        self.radio_roi_cut1.setChecked(True)
+        self.radio_roi_cut2.setChecked(True)
 
         print('Setup Sections: ', self.organ.mH_settings['setup']['sect'])
         print('sect_btns:', self.sect_btns)
@@ -4004,10 +3999,35 @@ class MainWindow(QMainWindow):
         wf_info = self.organ.mH_settings['wf_info']
         if 'sections' in wf_info.keys():
             print('wf_info[sections]:', wf_info['sections'])
+            sect_setup = self.organ.mH_settings['setup']['sect']
+            no_cuts = [key for key in sect_setup.keys() if 'Cut' in key]
 
-        
-        #Run Set Function 
-        self.set_sections(init=True)
+            for ct in no_cuts: 
+                cut = ct.lower()
+                centreline = wf_info['sections'][cut]['centreline']
+                nPoints = wf_info['sections'][cut]['nPoints']
+                nRes = wf_info['sections'][cut]['nRes']
+                axis = wf_info['sections'][cut]['axis_lab'].lower()
+                direction = wf_info['sections'][cut]['direction']
+
+                getatr(self, 'sect_cl_'+cut).setCurrentText(centreline)
+                getatr(self, 'sect_nPoints_'+cut).setValue(nPoints)
+                getatr(self, 'sect_nRes_'+cut).setValue(nRes)
+                getatr(self, 'radio_'+axis+'_'+cut).setChecked(True)
+                getatr(self, 'sect_dir_'+cut).setText('Face No.'+str(direction['plane_no']))
+                set_btn = getatr(self, 'dir_sect_'+cut)
+                set_btn.setChecked(True)
+                toggled(set_btn)
+                setattr(self, 'extend_dir_'+cut, direction)
+
+            #Update Status in GUI
+            self.update_status(wf, ['Status'], self.sections_status)
+
+            #Run Set Function 
+            self.set_sections(init=True)
+            
+        else: 
+            pass
   
     #Functions specific to gui functionality
     def open_section(self, name): 
@@ -4033,28 +4053,29 @@ class MainWindow(QMainWindow):
         for tick in [tick_int, tick_tiss, tick_ext]: 
             tick.setChecked(setChecked)
 
-    def color_picker(self, name): #Add update color in mesh!
+    def color_picker(self, name): 
 
         color = QColorDialog.getColor()
         if color.isValid():
             print('The selected color is: ', color.name())
+            red, green, blue, _ = color.getRgb() #[red, green, blue]
             fill = getattr(self, 'fillcolor_'+name)
             color_btn(btn = fill, color = color.name())
             chk, contk = name.split('_')
             if chk != 'chNS' and contk in ['int', 'ext', 'tiss']: 
                 # print('not chNS')
-                self.organ.mH_settings['setup']['color_chs'][chk][contk] = color.name()
-                self.organ.obj_meshes[chk+'_'+contk].set_color(color.name())
+                self.organ.mH_settings['setup']['color_chs'][chk][contk] = [red, green, blue]
+                self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])
             elif chk == 'chNS': 
                 # print('chNS')
-                self.organ.mH_settings['setup'][chk]['color_chns'][contk] = color.name()
-                self.organ.obj_meshes[chk+'_'+contk].set_color(color.name())
+                self.organ.mH_settings['setup'][chk]['color_chns'][contk] = [red, green, blue]#color.name()
+                self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])#color.name())
             else: # 'cut1_sect1' or 'cut1_segm1'
                 if 'segm' in contk: 
                     stype = 'segm'
                 else: 
                     stype = 'sect'
-                self.organ.mH_settings['setup'][stype][chk.title()]['colors'][contk] = color.name()
+                self.organ.mH_settings['setup'][stype][chk.title()]['colors'][contk] = [red, green, blue]#color.name()
             
     def set_colormap(self, name):
         value = getattr(self, 'colormap'+name).currentText()
@@ -4205,38 +4226,119 @@ class MainWindow(QMainWindow):
         else: 
             self.segm_centreline2use.setEnabled(False)
 
-    def select_ext_plane(self, cut): 
+    def select_extension_plane(self, cut): 
+        #Section names
+        sect_settings = self.organ.mH_settings['setup']['sect']
+        names_sect = sect_settings[cut.title()]['name_sections']
+        names = [names_sect[name] for name in names_sect]
+        namesf = ', '.join(names) 
+        print(namesf)
+        #Cuts 
+        cuts = [key for key in sect_settings.keys() if 'Cut' in key]
+        print('cuts:', cuts)
 
-        #Get Mesh
-        mesh_name = [key for key in self.sect_btns.keys() if cut.title() in key][0]
-        ch, cont = mesh_name.split(':')[1].split('_')
-        mesh = self.organ.obj_meshes[ch+'_'+cont]
+        if getattr(self, 'sect_cl_'+cut).currentText() != '----':
 
-        #Get Centreline
-        cl_name = self.gui_sections[cut]['centreline'].split('(')[1][:-1]
-        nPoints = self.gui_sections[cut]['nPoints']
-        mesh_cl = self.organ.obj_meshes[cl_name].get_centreline(nPoints = nPoints)
-        axis = self.gui_sections[cut]['axis_lab']
+            #Get Centreline
+            cl_name = getattr(self, 'sect_cl_'+cut).currentText().split('(')[1][:-1]
+            nPoints = getattr(self, 'sect_nPoints_'+cut).value()
+            mesh_cl = self.organ.obj_meshes[cl_name].get_centreline(nPoints = nPoints)
 
-        im_orient = self.organ.info['im_orientation']
-        print('self.info[im_orientation]',im_orient)
-        rotateY = False
-        if im_orient == 'custom': 
-            cust_angle = self.info['custom_angle']
-            rotateY = True
+            #Get Mesh
+            mesh_name = [key for key in self.sect_btns.keys() if cut.title() in key][0]
+            ch, cont = mesh_name.split(':')[1].split('_')
+            mesh = self.organ.obj_meshes[ch+'_'+cont]
 
-        pos = mesh.center_of_mass()
-        side = max(self.organ.get_maj_bounds())
-        color_o = [152,251,152,255]
-        orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
-        orient_cube.linewidth(1).force_opaque()
+            #Get Axis to extend cl
+            for opt in ['roi', 'stack']:
+                if getattr(self, 'radio_'+opt+'_'+cut).isChecked():
+                    axis_selected = opt
+                    cube2use = getattr(self.organ, opt+'_cube')
+                    break
+            print(axis_selected, cube2use)
+            orient_cube_clear = cube2use['clear']
+            orient_cube = cube2use['cube']
+            side = self.gui_orientation[axis_selected][axis_selected+'_cube']['side']
 
-        if rotateY: 
-            orient_cube.rotate_y(cust_angle)
+            color_o = 'white'
+            com = orient_cube.center_of_mass()
+            sph = vedo.Sphere(pos = com, r = side/12, c = color_o)
+            sph1 = vedo.Sphere(pos = com, r = side/12, c = color_o)
+            extend_dir = {'plane_no': None, 'plane_normal': None}
 
+            arrows = []
+            for n, centre in enumerate(orient_cube.cell_centers()):
+                cells = orient_cube.cells()[n]
+                points = [orient_cube.points()[cell] for cell in cells]
+                plane_fit = vedo.fit_plane(points, signed=True)
+                normal = plane_fit.normal
+                end_pt = centre + (normal*side/3)
+                arrow = vedo.Arrow(start_pt=(centre), end_pt=end_pt, c='cyan').legend('No.'+str(n))
+                arrows.append(arrow)
+            
+            def select_cube_face(evt):
+                orient_cube = evt.actor
+                if not orient_cube:
+                    return
+                pt = evt.picked3d
+                idcell = orient_cube.closest_point(pt, return_cell_id=True)
+                print("You clicked (idcell):", idcell)
 
-        
+                #Set arrow and sphere 
+                cell_centre = orient_cube.cell_centers()[int(idcell)]
+                sph.pos(cell_centre)
+                sil = arrows[idcell].silhouette().linewidth(6).c('gold')
+                sil.name = "silu" # give it a name so we can remove the old one
+                plt.remove('silu').add(sil)
+                
+                #Set arrow and sphere 1
+                if idcell%2 == 0: 
+                    idcell1 = idcell+1
+                else: 
+                    idcell1 = idcell-1
+                cell_centre1 = orient_cube.cell_centers()[int(idcell1)]
+                sph1.pos(cell_centre1)
+                sil1 = arrows[idcell1].silhouette().linewidth(6).c('gold')
+                sil1.name = "silu1" # give it a name so we can remove the old one
+                plt.remove('silu1').add(sil1)
 
+                #Get plane 
+                cells = orient_cube.cells()[idcell]
+                points = [orient_cube.points()[cell] for cell in cells]
+                plane_fit = vedo.fit_plane(points, signed=True)
+
+                msg.text("You selected face number: " + str(idcell))
+                extend_dir['plane_no'] = idcell
+                extend_dir['plane_normal'] = plane_fit.normal
+
+            msg = vedo.Text2D("", pos="bottom-center",  c=txt_color, font=txt_font, s=txt_size, alpha=0.8)
+            txt0 = vedo.Text2D('Reference cube and mesh to select the plane into which the centreline will be projected \nto cut tissues into  -'+ namesf +'-  regions',  c=txt_color, font=txt_font, s=txt_size)
+            txt1 = vedo.Text2D('Select (click) the cube face into which the centreline will be projected \nand close the window when done.',  c=txt_color, font=txt_font, s=txt_size)
+    
+            plt = vedo.Plotter(N=2, axes=1)
+            plt.add_callback("mouse click", select_cube_face)
+            plt.show(mesh.mesh, mesh_cl, orient_cube_clear, txt0, at=0)
+            plt.show(orient_cube, sph, arrows, msg, txt1, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)        
+
+            print('extend_dir:', extend_dir)
+            face_num = extend_dir['plane_no']
+            label_axis = getattr(self, 'sect_dir_'+cut).setText('Face No.'+str(face_num))
+            setattr(self, 'extend_dir_'+cut, extend_dir)
+
+            #Toggle button
+            btn = getattr(self, 'dir_sect_'+cut)
+            btn.setChecked(True)
+            toggled(btn)
+
+            done = []
+            for ct in cuts: 
+                done.append(hasattr(self, 'extend_dir_'+ct.lower()))
+            print('done sect:',done)
+            if all(done): 
+                self.set_sections()
+        else: 
+            error_txt = '*(Regions: '+cut.title()+') Please select the Centreline you want to use to cut tissue into  -'+namesf+'-  regions to continue.'
+            self.win_msg(error_txt)
 
     #Set functions 
     def set_keeplargest(self): 
@@ -4633,6 +4735,7 @@ class MainWindow(QMainWindow):
             update = self.gui_segm
             self.organ.update_settings(proc_set, update, 'mH', add='segments')
 
+            # print('self.organ.mH_settings:', self.organ.mH_settings)
         else: 
             return
 
@@ -4728,33 +4831,49 @@ class MainWindow(QMainWindow):
         return gui_segm
 
     def set_sections(self, init=False): 
-        wf_info = self.organ.mH_settings['wf_info']
-        current_gui_sect = self.gui_sections_n()
-        if current_gui_sect != None: 
-            if 'sections' not in wf_info.keys():
-                self.gui_sect = current_gui_sect
-            else: 
-                gui_sect_loaded = self.organ.mH_settings['wf_info']['sections']
-                if len(compare_dicts(gui_sect_loaded, current_gui_sect, 'loaded', 'current'))!= 0 and not init: 
-                    self.gui_sect = update_gui_set(loaded = gui_sect_loaded, 
-                                                        current = current_gui_sect)
-                    # self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
-                    self.update_status(None, 're-run', self.sections_status, override=True)
+        print('running sections')
+
+        sect_setup = self.organ.mH_settings['setup']['sect']
+        no_cuts = [key for key in sect_setup.keys() if 'Cut' in key]
+        done_set = []
+        for cut_no in no_cuts: 
+            done_set.append(hasattr(self, 'extend_dir_'+cut_no.lower()))
+        
+        print(done_set)
+        if all(done_set): 
+            wf_info = self.organ.mH_settings['wf_info']
+            current_gui_sect = self.gui_sections_n()
+            if current_gui_sect != None: 
+                if 'sections' not in wf_info.keys():
+                    self.gui_sect = current_gui_sect
                 else: 
-                    self.gui_sect = gui_sect_loaded
+                    gui_sect_loaded = self.organ.mH_settings['wf_info']['sections']
+                    if len(compare_dicts(gui_sect_loaded, current_gui_sect, 'loaded', 'current'))!= 0 and not init: 
+                        self.gui_sect = update_gui_set(loaded = gui_sect_loaded, 
+                                                            current = current_gui_sect)
+                        # self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
+                        self.update_status(None, 're-run', self.sections_status, override=True)
+                    else: 
+                        self.gui_sect = gui_sect_loaded
 
-            self.sections_set.setChecked(True)
-            toggled(self.sections_set)
-            print('self.gui_sect: ', self.gui_sect)
-            self.sections_play.setEnabled(True)   
+                self.sections_set.setChecked(True)
+                toggled(self.sections_set)
+                print('self.gui_sect: ', self.gui_sect)
+                self.sections_play.setEnabled(True)   
+                for btn in self.sect_btns.keys():
+                    self.sect_btns[btn]['play'].setEnabled(True)
 
-            # Update mH_settings
-            proc_set = ['wf_info']
-            update = self.gui_sect
-            self.organ.update_settings(proc_set, update, 'mH', add='sections')
-
+                # Update mH_settings
+                proc_set = ['wf_info']
+                update = self.gui_sect
+                self.organ.update_settings(proc_set, update, 'mH', add='sections')
+            else: 
+                return 
         else: 
-            return 
+            cut_not_done = [nn for nn, val in enumerate(done_set) if val==False][0]
+            print('cut_not_done:', cut_not_done)
+            error_txt = '* Please set the direction to extend the centreline for  -'+no_cuts[cut_not_done].title() +'-  to set the regions settings.'
+            self.win_msg(error_txt)
 
     def gui_sections_n(self):
 
@@ -4767,24 +4886,16 @@ class MainWindow(QMainWindow):
             if cutb in no_cuts: 
                 gui_sect[cutb] = {}
                 centreline = getattr(self, 'sect_cl_cut'+optcut).currentText()
-                if centreline != '----':
-                    gui_sect[cutb]['centreline'] = centreline
-                    gui_sect[cutb]['nPoints'] = getattr(self, 'sect_nPoints_cut'+optcut).value()
-                    gui_sect[cutb]['nRes'] = getattr(self, 'sect_nRes_cut'+optcut).value()
-                    for reg in ['organ', 'stack']: 
-                        if getattr(self, 'radio_'+reg+'_cut'+optcut).isChecked(): 
-                            selected = reg
-                            break
-                    gui_sect[cutb]['axis_lab'] = selected.title()
-                    direction = getattr(self, 'sect_dir_cut'+optcut).currentText()
-                    # if direction != '----': 
-                    gui_sect[cutb]['direction'] = direction
-                    # else: 
-                    #     self.win_msg('*Please select the direction in which you want the selected centreline to be expanded for  -'+cutb+'-  to cut tissue into regions!')
-                    #     return None
-                else: 
-                    self.win_msg('*Please select the centreline you want to use to perform  -'+cutb+'-  and cut tissue into regions!')
-                    return None
+                gui_sect[cutb]['centreline'] = centreline
+                gui_sect[cutb]['nPoints'] = getattr(self, 'sect_nPoints_cut'+optcut).value()
+                gui_sect[cutb]['nRes'] = getattr(self, 'sect_nRes_cut'+optcut).value()
+                for reg in ['roi', 'stack']: 
+                    if getattr(self, 'radio_'+reg+'_cut'+optcut).isChecked(): 
+                        selected = reg
+                        break
+                gui_sect[cutb]['axis_lab'] = selected.title()
+                direction = getattr(self, 'extend_dir_cut'+optcut)
+                gui_sect[cutb]['direction'] = direction
             
         return gui_sect
 
@@ -5000,7 +5111,12 @@ class MainWindow(QMainWindow):
         colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
 
         txt0 = vedo.Text2D(self.organ.user_organName+' - Reference cube and mesh to visualise planar views in '+name.title()+'...', c=txt_color, font=txt_font, s=txt_size)
-        txt1 = vedo.Text2D('- Reference cube with coloured faces that represent planar views in '+name.title()+'...', c=txt_color, font=txt_font, s=txt_size)
+        if name == 'roi': 
+            namef = name.upper()
+        else: 
+            namef = name.title()
+
+        txt1 = vedo.Text2D('- Reference cube with coloured faces that represent planar views in '+namef+'...', c=txt_color, font=txt_font, s=txt_size)
         
         mks = []; sym = ['o']*len(views)
         for n, view, col in zip(count(), views, colors):
