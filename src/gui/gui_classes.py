@@ -30,13 +30,14 @@ from functools import reduce
 import operator
 from typing import Union
 import vedo 
+import numpy as np
 
 #%% morphoHeart Imports - ##################################################
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set, alert
 from ..modules.mH_funcContours import checkWfCloseCont
-from ..modules.mH_funcMeshes import plot_grid
+from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
 
@@ -3278,6 +3279,7 @@ class MainWindow(QMainWindow):
             hm_plot2 = getattr(self, 'hm_plot'+str(num+1)+'_2D')
             hm_eg = getattr(self, 'cm_eg'+str(num+1))
             play = getattr(self, 'hm_play'+str(num+1))
+            play2d = getattr(self, 'hm2d_play'+str(num+1))
             if num < len(hm_items): 
                 label.setText(self.heatmap_dict[hm_items[num]]['name'])
                 mina.setValue(self.heatmap_dict[hm_items[num]]['min_val'])
@@ -3286,6 +3288,7 @@ class MainWindow(QMainWindow):
                 hm_plot.setEnabled(False)
                 hm_plot2.setEnabled(False)
                 play.setEnabled(True) #???
+                play2d.setEnabled(False)
             else: 
                 default.setVisible(False)
                 label.setVisible(False)
@@ -3297,6 +3300,7 @@ class MainWindow(QMainWindow):
                 hm_plot.setVisible(False)
                 hm_plot2.setVisible(False)
                 play.setVisible(False)
+                play2d.setVisible(False)
 
         #Set all colormaps eg
         self.colormap1.currentIndexChanged.connect(lambda: self.set_colormap('1'))
@@ -3427,8 +3431,8 @@ class MainWindow(QMainWindow):
             getattr(self, 'radius_val_cut2').setVisible(False)
             getattr(self, 'radius_segm_unit2').setVisible(False)
 
-        print('Setup segments: ', self.organ.mH_settings['setup']['segm'])
-        print('segm_btns:', self.segm_btns)
+        # print('Setup segments: ', self.organ.mH_settings['setup']['segm'])
+        # print('segm_btns:', self.segm_btns)
 
         self.segm_use_centreline.stateChanged.connect(lambda: self.segm_centreline())
         self.segm_centreline2use.addItems(self.items_centreline)
@@ -3562,8 +3566,39 @@ class MainWindow(QMainWindow):
         self.radio_roi_cut1.setChecked(True)
         self.radio_roi_cut2.setChecked(True)
 
-        print('Setup Sections: ', self.organ.mH_settings['setup']['sect'])
-        print('sect_btns:', self.sect_btns)
+        # print('Setup Sections: ', self.organ.mH_settings['setup']['sect'])
+        # print('sect_btns:', self.sect_btns)
+
+        #Plot buttons
+        self.cut1_plot_sect1.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect1'))
+        self.cut1_plot_sect2.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect2'))
+        self.cut1_plot_sect3.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect3'))
+        self.cut1_plot_sect4.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect4'))
+        self.cut1_plot_sect5.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect5'))
+        self.cut1_plot_sect6.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect6'))
+        self.cut1_plot_sect7.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect7'))
+        self.cut1_plot_sect8.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect8'))
+        self.cut1_plot_sect9.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect9'))
+        self.cut1_plot_sect10.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect10'))
+        self.cut1_plot_sect11.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect11'))
+        self.cut1_plot_sect12.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect12'))
+
+        self.cut2_plot_sect1.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect1'))
+        self.cut2_plot_sect2.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect2'))
+        self.cut2_plot_sect3.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect3'))
+        self.cut2_plot_sect4.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect4'))
+        self.cut2_plot_sect5.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect5'))
+        self.cut2_plot_sect6.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect6'))
+        self.cut2_plot_sect7.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect7'))
+        self.cut2_plot_sect8.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect8'))
+        self.cut2_plot_sect9.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect9'))
+        self.cut2_plot_sect10.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect10'))
+        self.cut2_plot_sect11.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect11'))
+        self.cut2_plot_sect12.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_sect12'))
+
+        #CL extension buttons
+        self.cl_ext_cut1.clicked.connect(lambda: self.plot_cl_ext(cut = 'cut1'))
+        self.cl_ext_cut2.clicked.connect(lambda: self.plot_cl_ext(cut = 'cut2'))
 
         #Initialise with user settings, if they exist!
         self.user_sections()
@@ -3920,6 +3955,9 @@ class MainWindow(QMainWindow):
                 print('proc:', proc)
                 if get_by_path(wf, proc) == 'DONE':
                     getattr(self, 'hm_plot'+str(nn)).setEnabled(True)
+                    if getattr(self, 'd3d2_'+str(nn)).isChecked():
+                        getattr(self, 'hm2d_play'+str(nn)).setEnabled(True)
+
                     at_least_one = True
                     # getattr(self, 'hm_plot'+str(nn)+'_2D')
                 nn+=1
@@ -3975,8 +4013,10 @@ class MainWindow(QMainWindow):
                 ch, cont = ch_cont.split('_')
                 num = self.segm_btns[name]['num']
                 if get_by_path(wf, [cut, ch, cont, 'Status']) == 'DONE':
-                    btn_play = self.segm_btns[name]['play'].setChecked(True)
-                    btn_plot = self.segm_btns[name]['plot'].setEnabled(True)
+                    btn_play = self.segm_btns[name]['play']
+                    btn_play.setChecked(True)
+                    btn_plot = self.segm_btns[name]['plot']
+                    btn_plot.setEnabled(True)
                 if wf_info['segments']['setup'][cut]['ch_info'][ch][cont] == 'ext-ext':
                     #If ext-ext cut has been made then enable other buttons 
                     if get_by_path(wf, [cut, ch, cont, 'Status']) == 'DONE':
@@ -4003,22 +4043,41 @@ class MainWindow(QMainWindow):
             no_cuts = [key for key in sect_setup.keys() if 'Cut' in key]
 
             for ct in no_cuts: 
-                cut = ct.lower()
+                cut = ct.title()
                 centreline = wf_info['sections'][cut]['centreline']
                 nPoints = wf_info['sections'][cut]['nPoints']
                 nRes = wf_info['sections'][cut]['nRes']
                 axis = wf_info['sections'][cut]['axis_lab'].lower()
                 direction = wf_info['sections'][cut]['direction']
 
-                getatr(self, 'sect_cl_'+cut).setCurrentText(centreline)
-                getatr(self, 'sect_nPoints_'+cut).setValue(nPoints)
-                getatr(self, 'sect_nRes_'+cut).setValue(nRes)
-                getatr(self, 'radio_'+axis+'_'+cut).setChecked(True)
-                getatr(self, 'sect_dir_'+cut).setText('Face No.'+str(direction['plane_no']))
-                set_btn = getatr(self, 'dir_sect_'+cut)
+                cut = ct.lower()
+                getattr(self, 'sect_cl_'+cut).setCurrentText(centreline)
+                getattr(self, 'sect_nPoints_'+cut).setValue(nPoints)
+                getattr(self, 'sect_nRes_'+cut).setValue(nRes)
+                getattr(self, 'radio_'+axis+'_'+cut).setChecked(True)
+                getattr(self, 'sect_dir_'+cut).setText('Face No.'+str(direction['plane_no']))
+                set_btn = getattr(self, 'dir_sect_'+cut)
                 set_btn.setChecked(True)
                 toggled(set_btn)
                 setattr(self, 'extend_dir_'+cut, direction)
+
+                if 'mask_name' in self.organ.mH_settings['wf_info']['sections'][cut.title()].keys(): 
+                    mask_name = self.organ.mH_settings['wf_info']['sections'][cut.title()]['mask_name']
+                    mask_dir = self.organ.dir_res(dir ='s3_numpy') / mask_name
+                    if mask_dir.is_file():
+                        cl_ext_btn = getattr(self, 'cl_ext_'+cut.lower())
+                        cl_ext_btn.setEnabled(True)
+                        for sect in self.sect_btns.keys():
+                            play_btn = self.sect_btns[sect]['play']
+                            play_btn.setEnabled(True)
+
+            #Enable buttons if cuts have been made
+            for name in self.sect_btns.keys():
+                cut, ch_cont = name.split(':')
+                ch, cont = ch_cont.split('_')
+                num = self.sect_btns[name]['num']
+                if get_by_path(wf, [cut, ch, cont, 'Status']) == 'DONE':
+                    self.sect_btns[name]['plot'].setEnabled(True)
 
             #Update Status in GUI
             self.update_status(wf, ['Status'], self.sections_status)
@@ -5037,20 +5096,20 @@ class MainWindow(QMainWindow):
         return mesh
 
     def plot_segm_sect(self, btn):
-        #btn = cut1_segm1
+        #btn = cut1_segm1 / cut1_sect1
 
         #Get button number
-        cut, segm = btn.split('_')
-        num = segm.split('segm')[1]
-
-        if 'segm' in segm: 
+        cut, subname = btn.split('_')
+        if 'segm' in subname: 
+            num = subname.split('segm')[1]
             txt = [(0, self.organ.user_organName + ' - Segment division')]
             list_btns = self.segm_btns
             colors = self.organ.mH_settings['setup']['segm'][cut.title()]['colors']
             name = 'segments'
             short = 'segm'
         else: #sect
-            txt = [(0, self.organ.user_organName - 'Region division')]
+            num = subname.split('sect')[1]
+            txt = [(0, self.organ.user_organName + ' - Region division')]
             list_btns = self.sect_btns
             colors = self.organ.mH_settings['setup']['sect'][cut.title()]['colors']
             name = 'sections'
@@ -5072,20 +5131,23 @@ class MainWindow(QMainWindow):
         try: 
             #get submesh from list buttons if it was saved in there...
             meshes = list_btns[key2cut]['meshes']
+            print('Meshes from try!')
         except: 
+            print('Meshes from except!')
             #Get submesh from organ
-            cut, segm_info = key2cut.split(':')
-            ch, cont = segm_info.split('_') #Cut1_ch1_ext_segm1
+            cut, subm_info = key2cut.split(':')
+            ch, cont = subm_info.split('_') #Cut1_ch1_ext_segm1
             # Do a for to load all the segments of that mesh
             meshes = {}
             print(cut, ch, cont)
-            for segm in self.organ.mH_settings['setup'][short][cut]['name_'+name].keys():
-                submesh_name = cut.title()+'_'+ch+'_'+cont+'_'+segm
+            for subm in self.organ.mH_settings['setup'][short][cut]['name_'+name].keys():
+                submesh_name = cut.title()+'_'+ch+'_'+cont+'_'+subm
                 submesh = self.organ.obj_subm[submesh_name]
-                if 'segm' in segm: 
-                    meshes[segm] = submesh.get_segm_mesh()
+                if 'segm' in subm: 
+                    meshes[subm] = submesh.get_segm_mesh()
                 else: #'sect' in segm
                     print('do this part of the code!')
+                    meshes[subm] = submesh.get_sect_mesh()
 
         for mesh in meshes.keys(): 
             if isinstance(meshes[mesh], vedo.Mesh):
@@ -5131,6 +5193,34 @@ class MainWindow(QMainWindow):
         vp.add_icon(logo, pos=(0.1,1), size=0.25)
         vp.show(mesh_ext.mesh, orient_cube_clear,txt0, at=0)
         vp.show(orient_cube, lb, txt1, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)
+
+    def plot_cl_ext(self, cut): 
+
+        clRib_type = 'ext2sides'
+        cl_name = self.gui_sect[cut.title()]['centreline'].split('(')[1][:-1]
+        mesh_cl = self.organ.obj_meshes[cl_name]
+        nPoints = self.gui_sect[cut.title()]['nPoints']
+        nRes = self.gui_sect[cut.title()]['nRes']
+        ext_plane = getattr(self, 'extend_dir_'+cut.lower())['plane_normal']
+        cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+                                            pl_normal=ext_plane, 
+                                            clRib_type=clRib_type)
+        #Get first mesh from buttons 
+        name_mesh = list(self.sect_btns.keys())[0].split(':')[1]
+        mesh2cut = self.organ.obj_meshes[name_mesh]
+
+        #Get Filled mask corresponding to sect1
+        mask_name = self.organ.mH_settings['wf_info']['sections'][cut.title()]['mask_name'] # getattr(self.organ, 'mask_sect_'+cut.lower())
+        mask_dir = self.organ.dir_res(dir ='s3_numpy') / mask_name
+        s3_mask = np.load(str(mask_dir))
+        sect_name = self.organ.mH_settings['setup']['sect'][cut.title()]['name_sections']['sect1']
+        sect_namef = 'Mask Section No.1 ('+sect_name+')'
+        mask_cube = s3_to_mesh(s3_mask, res=mesh2cut.resolution, name=sect_namef, color='coral')
+        mask_cube.alpha(0.1)
+
+        txt = [(0, self.organ.user_organName + ' - Centreline Extension ('+cut.title()+')')]
+        obj = [(mesh2cut.mesh, cl_ribbon), (mesh2cut.mesh, cl_ribbon, mask_cube)]
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
     #Help functions
     def help(self, process): 

@@ -33,7 +33,7 @@ import seaborn as sns
 from ..gui.gui_classes import *
 from .mH_funcBasics import alert, ask4input, make_Paths, make_tuples, get_by_path, set_by_path
 from .mH_funcMeshes import (unit_vector, plot_organCLs, find_angle_btw_pts, 
-                            classify_segments_from_ext, create_subsg, plot_grid)
+                            classify_segments_from_ext, create_subsegment, create_subsection, plot_grid)
 from ..gui.config import mH_config
 
 path_mHImages = mH_config.path_mHImages
@@ -990,18 +990,22 @@ class Organ():
     def load_objSubmeshes(self, submeshes_dict): 
         flat_subm_dict = flatdict.FlatDict(submeshes_dict)
         list_colors = [key.split(':') for key in flat_subm_dict if 'color' in key]
-        submeshes_dict_new = make_tuples(submeshes_dict, list_colors)
+        submeshes_dict = make_tuples(submeshes_dict, list_colors)
+        print('submeshes_dict:', submeshes_dict)
+
         self.obj_subm = {}
         for subm in submeshes_dict.keys():
             cut, ch, cont, sub = subm.split('_')
+            mesh = self.obj_meshes[ch+'_'+cont]
             if 'segm' in sub: 
                 #Get mesh to create submesh
-                mesh = self.obj_meshes[ch+'_'+cont]
                 color = submeshes_dict[subm]['color']
                 submesh = mesh.create_segment(name = sub, cut = cut, color =color)
                 self.obj_subm[subm] = submesh
             else: #'sect' in sub: 
-                print('write this section bit!')
+                color = submeshes_dict[subm]['color']
+                submesh = mesh.create_section(name = sub, cut = cut, color =color)
+                self.obj_subm[subm] = submesh
         
     def create_folders(self):#
         dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'centreline', 'settings']
@@ -1163,7 +1167,6 @@ class Organ():
 
         if submesh.sub_mesh_type == 'Section':
             self.submeshes[submesh.sub_name_all]['s3_invert'] = submesh.s3_invert
-            self.submeshes[submesh.sub_name_all]['s3_mask_dir'] = submesh.s3_mask_dir
         elif submesh.sub_mesh_type == 'Segment':
             if hasattr(submesh, 'dict_segm'):
                 self.submeshes[submesh.sub_name_all]['dict_segm'] = submesh.dict_segm
@@ -2992,28 +2995,25 @@ class Mesh_mH():
         mesh_area = self.mesh.area()
         return mesh_area
     
-    def create_section(self, name, color, alpha=0.05):
+    def create_section(self, name, cut, color, alpha=0.05):
            
-        # sect_info = self.parent_organ.mH_settings['general_info']['sections']['name_sections']
-        #This needs fixing!
-        sect_info = self.parent_organ.mH_settings['setup']['sect']['name_sections']
+        sect_info = self.parent_organ.mH_settings['setup']['sect'][cut]
         if name == 'sect1':
             invert = True
         else: 
             invert = False
-        # print('name:', name, '- invert:', invert)
+        print('name:', name, '- invert:', invert)
             
         submesh = SubMesh(parent_mesh = self, sub_mesh_type='Section', 
-                          name = name, user_name = sect_info[name],
+                          name = name, cut = cut, user_name = sect_info['name_sections'][name],
                           color = color, alpha = alpha)#,
         
         submesh.s3_invert = invert
-        name2save = self.parent_organ.user_organName + '_mask_sect.npy'
-        submesh.s3_mask_dir = self.parent_organ.dir_res(dir='s3_numpy') / name2save
+        # name2save = self.parent_organ.user_organName + '_mask_sect.npy'
+        # submesh.s3_mask_dir = self.parent_organ.dir_res(dir='s3_numpy') / name2save
         
-        segments_info = self.parent_organ.mH_settings['general_info']['sections']
-        submesh.sub_user_name = segments_info['name_sections'][submesh.sub_name]
-        
+        # segments_info = self.parent_organ.mH_settings['general_info']['sections']
+        submesh.sub_user_name = sect_info['name_sections'][submesh.sub_name]
         self.parent_organ.add_submesh(submesh)
         
         return submesh
@@ -3026,14 +3026,14 @@ class Mesh_mH():
 
         # Mask im_channel
         im_ch = self.imChannel
-        print('self.mesh_type: ',self.mesh_type)
+        # print('self.mesh_type: ',self.mesh_type)
         im_ch.load_chS3s([self.mesh_type])
         cont_tiss = getattr(im_ch, 's3_'+self.mesh_type)
         s3 = cont_tiss.s3()
         masked_s3 = s3.copy()
         
         for nn in range(no_discs):
-            print('nn: ', nn)
+            # print('nn: ', nn)
             name_s3 = self.parent_organ.user_organName+'_mask_'+cut+'_DiscNo'+str(nn)+'.npy'
             s3_dir = self.parent_organ.dir_res(dir='s3_numpy') / name_s3
             s3_mask = np.load(str(s3_dir))
@@ -3042,15 +3042,14 @@ class Mesh_mH():
             name = self.imChannel.channel_no+'_'+self.mesh_type
             masked_s3 = mask_disc(self.parent_organ.info['shape_s3'], masked_s3, s3_mask, directory, name)
 
-        rotateZ_90=self.rotateZ_90
-        keep_largest = False
         if 'NS' not in im_ch.channel_no: 
             max_depth = 1000
         else: 
             max_depth = 2000
         print('max_depth: ', max_depth)
         
-        masked_mesh = create_submesh(masked_s3, self.resolution, keep_largest=keep_largest, rotateZ_90=self.rotateZ_90)
+        masked_mesh = create_submesh(masked_s3, self.resolution, keep_largest=False, 
+                                     rotateZ_90=self.rotateZ_90)
         cut_masked = masked_mesh.split(maxdepth=max_depth)
         print('> Meshes making up tissue: ', len(cut_masked))
         alert('frog')
@@ -3061,12 +3060,12 @@ class Mesh_mH():
         else: 
             cut_masked_rot = []
             for n, mesh, color in zip(count(), cut_masked, palette):
-                if rotateZ_90:
+                if self.rotateZ_90:
                     cut_masked_rot.append(mesh.rotate_z(-90).alpha(0.1).color(color).legend('No.'+str(n)))
                 else:
                     cut_masked_rot.append(mesh.alpha(0.1).color(color).legend('No.'+str(n)))
 
-        print(cut_masked_rot)
+        print('Rotated final segments (vedo.Mesh):', cut_masked_rot)
         return cut_masked_rot
         
     def create_segment(self, name, cut, color):
@@ -3077,6 +3076,7 @@ class Mesh_mH():
         submesh = SubMesh(parent_mesh = self, sub_mesh_type='Segment', 
                           name = name, cut = cut, user_name = segm_info['name_segments'][name], 
                           color=color, alpha = alpha)
+        
         submesh.sub_user_name = segm_info['name_segments'][submesh.sub_name]
         self.parent_organ.add_submesh(submesh)
             
@@ -3085,11 +3085,12 @@ class Mesh_mH():
 class SubMesh():
     
     def __init__(self, parent_mesh: Mesh_mH, sub_mesh_type:str, name: str,
-                 cut, user_name='', color='gold', alpha=0.05):
+                 cut:str, user_name='', color='gold', alpha=0.05):
         
         self.parent_mesh = parent_mesh
         self.sub_name = name # ch_cont_segm/sect
         self.sub_name_all = cut+'_'+parent_mesh.name+'_'+name
+        self.cut = cut
         self.sub_mesh_type = sub_mesh_type # Section, Segment
         self.keep_largest = False#keep_largest
         
@@ -3125,7 +3126,12 @@ class SubMesh():
                     
     def get_sect_mesh(self):
         
-        s3_mask = np.load(str(self.s3_mask_dir))
+        print('>>>> get_sect_mesh: ',self.sub_name_all)
+        cut = self.cut
+        mask_name = self.parent_mesh.parent_organ.mH_settings['wf_info']['sections'][cut.title()]['mask_name']#getattr(self.parent_mesh.parent_organ, 'mask_sect_'+cut.lower())
+        mask_dir = self.parent_mesh.parent_organ.dir_res(dir ='s3_numpy') / mask_name
+
+        s3_mask = np.load(str(mask_dir))
         s3_mask = s3_mask.astype('bool')
         if self.s3_invert: 
             maskF = np.invert(s3_mask)
@@ -3318,7 +3324,7 @@ def draw_line (clicks, myIm, color_draw):
 
 #%% - Masking
 #%% func - mask_disc
-def mask_disc(shape_s3, s3, s3_cyl, directory, name):
+def mask_disc(shape_s3, s3, s3_cyl, directory, name, plot=False):
     
     #Load stack shape
     zdim, _, _ = shape_s3
@@ -3337,7 +3343,7 @@ def mask_disc(shape_s3, s3, s3_cyl, directory, name):
         myIm = draw_line(clicks_random, im, '0')
         s3_mask[:,:,slc] = myIm
 
-        if slc%20 == 0: 
+        if slc%20 == 0 and plot: 
             print('slc: ', str(slc))
             slc_plot(slc, im_cyl, im, myIm, directory, name)
 
@@ -3379,7 +3385,7 @@ def create_submesh(masked_s3, resolution, keep_largest:bool, rotateZ_90:bool):
         mesh = mesh.extract_largest_region()
     if rotateZ_90:
         mesh.rotate_z(-90)
-        
+    print('cccc')
     alert('woohoo')
     
     return mesh

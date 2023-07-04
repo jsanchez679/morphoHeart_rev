@@ -919,284 +919,6 @@ def get_distance_to(mesh_to, mesh_from, from_name, range, color_map='turbo'):#
     mesh_toB.legend(mesh_name+suffix)
     
     return mesh_toB, distance, min_max
-    
-def get_stack_clRibbon(organ, mesh_cl, nPoints, nRes, pl_normal, clRib_type):
-    
-    cl_ribbon =  mesh_cl.get_clRibbon(nPoints=nPoints, 
-                                      nRes=nRes, 
-                                      pl_normal=pl_normal, 
-                                      clRib_type=clRib_type)
-    
-    res = mesh_cl.resolution
-    cl_ribbonR = cl_ribbon.clone().x(res[0])
-    cl_ribbonF = cl_ribbon.clone().y(res[1])
-    cl_ribbonT = cl_ribbon.clone().z(res[1])
-    cl_ribbonS = [cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT]
-
-    #Load stack shape
-    shape_s3 = organ.info['shape_s3']
-    zdim, xdim, ydim = shape_s3
-
-    # Rotate the points that make up the cl_ribbon, to convert them to a stack
-    cust_angle = organ.info['custom_angle']
-    print('cust_angle:', cust_angle)
-    
-    if organ.mH_settings['setup']['rotateZ_90']: #'CJ' not in filename: 
-        axis = [0,0,1]
-        theta = np.radians(90)
-    else: 
-        axis = [0,0,0]
-        theta = np.radians(0)
-    print('axis:',axis, '- theta:',theta)
-    
-    if int(cust_angle) != 0: 
-        print('cust_angle != 0, develop this!')
-
-    s3_rib = np.zeros((xdim, ydim, zdim+2))
-    s3_filledCube = np.zeros((xdim, ydim, zdim+2))
-    s3_filledCube[1:xdim-1,1:ydim-1,1:zdim+1] = 1
-
-    # Rotate the points in all ribbons and fit into stack size 
-    for cl_rib in cl_ribbonS:
-        rib_pts = cl_rib.points()
-        rib_points_rot = np.zeros_like(rib_pts)
-        for i, pt in enumerate(rib_pts):
-            rib_points_rot[i] = (np.dot(rotation_matrix(axis = axis, theta = theta),pt))
-        rib_pix = np.transpose(np.asarray([rib_points_rot[:,i]//res[i] for i in range(len(res))]))
-        rib_pix = rib_pix.astype(int)
-        rib_pix = np.unique(rib_pix, axis=0)
-
-        rib_pix_out = rib_pix.copy()
-        index_out = []
-        # Clean rib_pix if out of stack shape
-        for index, pt in enumerate(rib_pix):
-            if pt[0] > xdim-2 or pt[0] < 0:
-                delete = True
-            elif pt[1] > ydim-2 or pt[1] < 0:
-                delete = True
-            elif pt[2] > zdim+2-1 or pt[2] < 0:
-                delete = True
-            else: 
-                delete = False
-            
-            if delete:
-                index_out.append(index)
-
-        rib_pix_out = np.delete(rib_pix_out, index_out, axis = 0)
-        # Create mask of cl_ribbon
-        s3_rib[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 1
-        # Create filled cube just to one side of cl
-        s3_filledCube[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 0
-        alert('clown')
-        
-    # Create volume of extended centreline mask
-    test_rib = s3_to_mesh(s3_rib, res=res, name='Extended CL', color='darkmagenta')
-    
-    return s3_filledCube, test_rib
-
-def get_cube_clRibbon(organ, s3_filledCube, res, pl_normal):
-    
-    # cl_settings =  organ.mH_settings['orientation']['cl_ribbon']
-    # res = mesh_cl.resolution
-
-    # #Load stack shape
-    shape_s3 = organ.info['shape_s3']
-    zdim, xdim, ydim = shape_s3
-      
-    #Identify the direction in which the cubes need to be built
-    ref_vect = organ.mH_settings['orientation']['ROI']['ref_vectF'][0]
-    ext_dir = list(np.cross(ref_vect, pl_normal))
-    max_ext_dir = max(ext_dir)
-    coord_dir = ext_dir.index(max_ext_dir)
-    print('pl_normal:', pl_normal, '\nref_vect:', ref_vect, '\next_dir:', ext_dir, '\ncoord_dir:', coord_dir)
-    
-    if coord_dir == 0: 
-        print('Extending cube in the x? direction')
-        for xpos in range(0,xdim):
-            for zpos in range(0,zdim+2): 
-                yline = s3_filledCube[xpos,0:ydim,zpos]
-                index_y = np.where(yline == 0)[0]
-                index_y = list(index_y)
-                index_y.pop(0);index_y.pop(-1)
-                if len(index_y) > 0:
-                    # if not repeat: 
-                    s3_filledCube[xpos,index_y[0]:ydim,zpos] = 0
-                    # else: # repeat: 
-                    #     s3_filledCube[xpos,0:index_y[0],zpos] = 0
-        
-    elif coord_dir == 1:
-        print('Extending cube in the y direction - check!!!')
-        for ypos in range(0,ydim):
-            for zpos in range(0,zdim+2): 
-                xline = s3_filledCube[0:xdim,ypos,zpos]
-                index_x = np.where(xline == 0)[0]
-                index_x = list(index_x)
-                index_x.pop(0);index_x.pop(-1)
-                if len(index_x) > 0:
-                    # if not repeat:
-                    s3_filledCube[index_x[-1]:xdim,ypos,zpos] = 0#[1]
-                    # else:
-                    #     s3_filledCube[0:index_x[1],ypos,zpos] = 0#[0]
-
-    elif coord_dir == 2: 
-        print('Extending cube in the z direction')
-        for xpos in range(0,xdim):
-            for ypos in range(0,ydim): 
-                zline = s3_filledCube[xpos,ypos,0:zdim+2]
-                index_z = np.where(zline == 0)[0]
-                index_z = list(index_z)
-                index_z.pop(0);index_z.pop(-1)
-                if len(index_z) > 0:
-                    # if not repeat: 
-                    s3_filledCube[xpos,ypos,index_z[0]:zdim+2] = 0
-                    # else: 
-                    #     s3_filledCube[xpos,ypos,0:index_z[0]] = 0
-        
-    alert('woohoo')
-    
-    #Create volume of filled side of extended centreline mask
-    mask_cube = s3_to_mesh(s3_filledCube, res=res, name='Filled CLRibbon SideA', color='darkblue')
-    mask_cube.alpha(0.05)
-
-    s3_filledCube = s3_filledCube.astype('uint8')
-
-    #Create the inverse section and make the user select the section that corresponds to section 1
-    s3_filledCubeBoolA =  copy.deepcopy(s3_filledCube).astype(bool)
-    s3_filledCubeBoolB = np.full_like(s3_filledCubeBoolA, False)
-    s3_filledCubeBoolB[1:-1,1:-1,1:-1] = True
-    s3_filledCubeBoolB[s3_filledCubeBoolA] = False
-
-    mask_cubeB = s3_to_mesh(s3_filledCubeBoolB, res=res, name='Filled CLRibbon SideB', color='skyblue')
-    mask_cubeB.alpha(0.05).linewidth(1)
-    mask_cube.linewidth(1)
-    
-    mask_cube.color('darkblue'); mask_cubeB.color('skyblue')
-    mask_cube_split = [mask_cube, mask_cubeB]
-
-    return mask_cube, mask_cube_split
-    
-def select_ribMask(organ, mask_cube_split, mesh_cl): 
-    
-    dict_sides = {}
-    for mesh in mask_cube_split:
-        dict_sides[mesh.info['legend']] = {'color': mesh.color()*255}
-
-    # dict_sides = copy.deepcopy(dict_sides)
-    flat_segm = flatdict.FlatDict(dict_sides)
-    colors = [flat_segm[key] for key in flat_segm if 'color' in key]
-    color_sel = [210,105,30] # yellow [255,215,0] # chocolate (210,105,30)
-    
-    def func(evt):
-        if not evt.actor:
-            return
-        mesh_no = evt.actor.info['legend']
-        if 'Ribbon' in mesh_no: 
-            mesh_color = evt.actor.color()*255
-            msg.text(mesh_no +' has been selected as '+name_sect1.upper())
-            is_in_list = np.any(np.all(mesh_color == colors, axis=1))
-            if is_in_list: 
-                new_color = color_sel
-                evt.actor.color(new_color)
-                selected_mesh['name'] = mesh_no
-                for mesh in mask_cube_split:
-                    if mesh.info['legend'] != mesh_no:
-                        # print('running for mesh: ', mesh.info['legend'])
-                        mesh.color(dict_sides[mesh.info['legend']]['color'])
-            else: 
-                new_color = color_sel
-                evt.actor.color(new_color)
-                selected_mesh['name'] = mesh_no
-                for mesh in mask_cube_split:
-                    if mesh.info['legend'] != mesh_no:
-                        mesh.color(dict_sides[mesh.info['legend']]['color'])
-        else: 
-            print('Other mesh was selected')
-    
-    name_sect1 = organ.mH_settings['setup']['sections']['name_sections']['sect1']
-    mks = [vedo.Marker('*').c(color_sel).legend('Section No.1 ('+name_sect1+')')]
-    sym = ['o']
-    lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
-                        width=leg_width, height=leg_height/3)
-    path_logo = path_mHImages / 'logo-07.jpg'
-    logo = vedo.Picture(str(path_logo))
-    msg = vedo.Text2D("", pos="bottom-center", c=txt_color, s=txt_size, bg='red', alpha=0.2)
-    selected_mesh = {'name': 'NS'}
-    
-    txA = 'Instructions: Select the mesh that corresponds to Section No.1 ('+name_sect1+'). Close the window when you are done.'
-    txt0 = vedo.Text2D(txA, c=txt_color, font=txt_font, s=txt_size)
-    
-    vpt = vedo.Plotter(axes=1)
-    vpt.add_icon(logo, pos=(0.1,1), size=0.25)
-    vpt.add_callback('mouse click', func)
-    vpt.show(mask_cube_split, mesh_cl, txt0, lb, msg, azimuth=45, elevation=20, zoom=0.8, interactive=True)
-    
-    return selected_mesh
-    
-def get_sections(organ, plotshow):
-    
-    #Check first if sections is a method involved in this organ
-    if organ.check_method(method = 'E-Sections'): 
-        subms = []
-        name_sections = organ.mH_settings['setup']['sections']['name_sections']
-        user_names = '('+', '.join([name_sections[val] for val in name_sections])+')'
-        
-        #See if all sections have been stored in organ.submeshes
-        sect_names = [item for item in organ.parent_project.mH_param2meas if 'sect1' in item and 'volume' in item]
-        org_subm = [key for key in organ.submeshes if 'sect' in key]
-        
-        #Check workflow status
-        workflow = organ.workflow
-        process = ['MeshesProc','E-Sections','Status']
-        check_proc = get_by_path(workflow, process)
-        if check_proc == 'DONE' and len(org_subm)==len(name_sections)*len(sect_names): 
-            q = 'You already divided the tissues into sections '+user_names+'. Do you want to repeat this process?'
-            res = {0: 'no, continue with next step', 1: 'yes, I want to repeat it!'}
-            proceed = ask4input(q, res, bool)
-        else: 
-            proceed = True
-            
-    else: 
-        proceed = False
-        return None
-        
-    if proceed: 
-        # Get user section names
-        sect_names = [item for item in organ.parent_project.mH_param2meas if 'sect1' in item and 'volume' in item]
-        palette =  sns.color_palette("husl", len(sect_names)*2)
-        aa = 0
-        
-        for name in sect_names: 
-            ch = name[0]; cont = name[1]
-            mesh = organ.obj_meshes[ch+'_'+cont]
-            print('\n- Dividing '+mesh.legend+' into sections '+user_names)
-            submeshes = [(mesh.mesh)]; 
-            for n, sect, color in zip(count(), name_sections, palette[aa:aa+len(name_sections)]):
-                # print(n, sect, color)
-                subm = mesh.create_section(name = sect, color = color)
-                sub_mesh = subm.get_sect_mesh()
-                submeshes.append((sub_mesh))
-                subms.append(subm)
-                
-                # Update organ workflow
-                proc_wft = ['MeshesProc', 'E-Sections', ch, cont, sect, 'Status']
-                organ.update_workflow(process = proc_wft, update = 'DONE')
-                
-            if plotshow: 
-                obj = submeshes
-                txt = [(0, organ.user_organName +' - '+mesh.legend)]
-                plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
-            
-            # Update organ workflow
-            proc_wft_up = ['MeshesProc', 'E-Sections', ch, cont, 'Status']
-            organ.update_workflow(process = proc_wft_up, update = 'DONE')
-            aa+=2
-            
-        # Update organ workflow
-        organ.update_workflow(process = process, update = 'DONE')
-        organ.check_status(process='MeshesProc')
-        organ.save_organ()  
-           
-    return subms
 
 def s3_to_mesh(s3, res, name:str, color='cyan', rotateZ_90=True):
 
@@ -1211,6 +933,7 @@ def s3_to_mesh(s3, res, name:str, color='cyan', rotateZ_90=True):
 
     return mesh
 
+#Segments functions
 def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
     """
     Function that creates a group of spheres through a spline given as input.
@@ -1339,15 +1062,13 @@ def segm_ext_ext(organ, mesh, cut, segm_names, palette, win):
         sp_dict_segm = dict_segm[segm]
         # subsgm: instance of class Submesh
         # final_segm_mesh: instance of mesh (vedo)
-        subsgm, final_segm_mesh = create_subsg(organ, mesh, cut, cut_masked,
+        subsgm, final_segm_mesh = create_subsegment(organ, mesh, cut, cut_masked,
                                                 segm, sp_dict_segm, color)
         save_submesh(organ, subsgm, final_segm_mesh, win)
         final_subsgm[segm]=subsgm
         meshes_segm[segm] = final_segm_mesh
         ext_subsgm_names[segm] = subsgm.sub_name_all
-        organ.obj_temp['segments'][cut][subsgm.sub_name_all] = final_segm_mesh 
 
-    print('obj_temp: ', organ.obj_temp)
     #Add ext_subsm names to load them in the future
     proc_set = ['wf_info', 'segments', 'setup', cut, 'names']
     organ.update_settings(proc_set, ext_subsgm_names, 'mH')
@@ -1365,24 +1086,26 @@ def get_segments(organ, mesh, cut, segm_names, palette, ext_subsgm, win):
     #Create a dictionary containing the information of the classified segments 
     dict_segm, _ = organ.dict_segments(cut, palette, other=False)
 
-    #Create submeshes for the input mesh and external mesh
+    #Create submeshes of the input mesh 
     meshes_segm = {}
     for n, segm, color in zip(count(), segm_names, palette):
         sp_dict_segm = classify_segments_from_ext(meshes = cut_masked, 
                                                     dict_segm = dict_segm[segm],
                                                     ext_sub = ext_subsgm[segm])
         print('dict_segm after classif: ', sp_dict_segm)
-        subsgm, final_segm_mesh = create_subsg(organ, mesh, cut, cut_masked, 
+        subsgm, final_segm_mesh = create_subsegment(organ, mesh, cut, cut_masked, 
                                                     segm, sp_dict_segm, color)
         save_submesh(organ, subsgm, final_segm_mesh, win)
         meshes_segm[segm] = final_segm_mesh
         
+    print('\n\n FINAL! mH_settings[measure]: ', organ.mH_settings['measure'], '\n\n')
+
     print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
     print('organ.submeshes:', organ.submeshes)
+    print('organ.obj_temp:', organ.obj_temp)
 
     return meshes_segm
 
-#Working clicking 
 def classify_segments(meshes, dict_segm, colors_dict):
     
     flat_segm = flatdict.FlatDict(dict_segm)
@@ -1427,7 +1150,7 @@ def classify_segments(meshes, dict_segm, colors_dict):
     logo = vedo.Picture(str(path_logo))
     
     txA = 'Instructions: Click each segment mesh until it is coloured according to the segment it belongs to.'
-    txB = '\n[Note: Colours will loop as you click]'
+    txB = '\n[Note: Colours will loop for each mesh as you click it ]'
     txt0 = vedo.Text2D(txA+txB, c=txt_color, font=txt_font, s=txt_size)
     lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
                         width=leg_width/1.5, height=leg_height/1.5)
@@ -1443,7 +1166,6 @@ def classify_segments(meshes, dict_segm, colors_dict):
 def classify_segments_from_ext(meshes, dict_segm, ext_sub):
     
     ext_sub_mesh = ext_sub.get_segm_mesh()
-    # print('classify_segments_from_ext-ext_sub_mesh:',ext_sub_mesh)
     list_meshes = []
     for mesh in meshes: 
         if isinstance(mesh, vedo.Mesh):
@@ -1460,19 +1182,40 @@ def save_submesh(organ, submesh, mesh, win, ext='.vtk'):
     mesh_dir = organ.dir_res(dir ='meshes') / mesh_name
     mesh.write(str(mesh_dir))
     
+    #Update mH_settings with directory
     cut, ch, cont, segm = submesh.sub_name_all.split('_')
     proc_set = ['wf_info', 'segments', 'setup', cut, 'dirs', ch, cont]
     organ.update_settings(proc_set+[segm], mesh_name, 'mH')
+
     print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
     print('>> Mesh '+mesh_name+' has been saved!')
     win.win_msg('Mesh '+mesh_name+' has been saved!')
     alert('countdown')        
     
-def create_subsg(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):#
-    
-    subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
-    cut, ch, cont, segm = subsgm.sub_name_all.split('_')
+def measure_submesh(organ, submesh, mesh, measurements): 
 
+    if submesh.sub_mesh_type == 'Segment': 
+        name = 'segm'
+    else: 
+        name = 'sect'
+
+    if measurements['Vol']: 
+        vol = mesh.volume()
+        organ.mH_settings['measure']['Vol('+name+')'][submesh.sub_name_all] = vol
+        # data['Vol'] = vol
+    if measurements['SA']: 
+        area = mesh.area()
+        organ.mH_settings['measure']['SA('+name+')'][submesh.sub_name_all] = area
+        # data['SA'] = area
+    if name == 'segm': 
+        if measurements['Ellip']: 
+            #Do the ellipsoid!
+            pass
+    
+def create_subsegment(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):#
+    
+    #Create submesh - segment
+    subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
     #Assign meshes and measure them
     list_meshes = sp_dict_segm['meshes_number']
     #Get segm measurements
@@ -1484,40 +1227,312 @@ def create_subsg(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):#
         if isinstance(cut_mesh, vedo.Mesh):
             if cut_mesh.info['legend'] in list_meshes: 
                 mesh_segm.append(cut_mesh)
-                data = {}
-                com = cut_mesh.center_of_mass()
-                data['COM'] = com
-                if measurements['Vol']: 
-                    vol = cut_mesh.volume()
-                    organ.mH_settings['measure']['Vol(segm)'][subsgm.sub_name_all] = vol
-                    data['Vol'] = vol
-                if measurements['SA']: 
-                    area = cut_mesh.area()
-                    organ.mH_settings['measure']['SA(segm)'][subsgm.sub_name_all] = area
-                    data['SA'] = area
-                if measurements['Ellip']: 
-                    #Do the ellipsoid!
-                    pass
-                cut, ch, cont, segm = subsgm.sub_name_all.split('_')
-                proc_set = ['wf_info', 'segments', 'setup', cut, 'measure', ch, cont, segm]
-                organ.update_settings(proc_set, data, 'mH')
 
     if len(mesh_segm) == 0: 
         print('Something went wrong and no meshes were recognised as part of this segment: ', subsgm.sub_name_all)
         final_segm_mesh = []
     else: 
+        #Merge all meshes and apply final settings
         final_segm_mesh = vedo.merge(mesh_segm)
         final_segm_mesh.color(color).alpha(0.1).legend(subsgm.sub_legend)
         subsgm.color = color
+        #Add submesh to organ
         organ.add_submesh(subsgm)
+        #Get measurements
+        measure_submesh(organ, subsgm, final_segm_mesh, measurements)
     
-    # Update organ workflow
-    proc_wft = ['MeshesProc', 'E-Segments', cut, ch, cont, 'Status']
-    organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+        # Update organ workflow
+        cut, ch, cont, segm = subsgm.sub_name_all.split('_')
+        proc_wft = ['MeshesProc', 'E-Segments', cut, ch, cont, 'Status']
+        organ.update_mHworkflow(process = proc_wft, update = 'DONE')
 
     # subsgm: instance of class submesh
     # final_segm_mesh: instance of mesh (vedo)
     return subsgm, final_segm_mesh
+
+#Sections/Regions Functions
+def get_stack_clRibbon(organ, mesh_cl, nPoints, nRes, pl_normal, clRib_type):
+    
+    cl_ribbon =  mesh_cl.get_clRibbon(nPoints=nPoints, 
+                                      nRes=nRes, 
+                                      pl_normal=pl_normal, 
+                                      clRib_type=clRib_type)
+    
+    res = mesh_cl.resolution
+    cl_ribbonR = cl_ribbon.clone().x(res[0])
+    cl_ribbonF = cl_ribbon.clone().y(res[1])
+    cl_ribbonT = cl_ribbon.clone().z(res[1])
+    cl_ribbonS = [cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT]
+
+    #Load stack shape
+    shape_s3 = organ.info['shape_s3']
+    zdim, xdim, ydim = shape_s3
+
+    # Rotate the points that make up the cl_ribbon, to convert them to a stack
+    cust_angle = organ.info['custom_angle']
+    print('cust_angle:', cust_angle)
+    
+    if organ.mH_settings['setup']['rotateZ_90']: #'CJ' not in filename: 
+        axis = [0,0,1]
+        theta = np.radians(90)
+    else: 
+        axis = [0,0,0]
+        theta = np.radians(0)
+    print('axis:',axis, '- theta:',theta)
+    
+    if int(cust_angle) != 0: 
+        print('cust_angle != 0, develop this!')
+
+    s3_rib = np.zeros((xdim, ydim, zdim+2))
+    s3_filledCube = np.zeros((xdim, ydim, zdim+2))
+    s3_filledCube[1:xdim-1,1:ydim-1,1:zdim+1] = 1
+
+    # Rotate the points in all ribbons and fit into stack size 
+    for cl_rib in cl_ribbonS:
+        rib_pts = cl_rib.points()
+        rib_points_rot = np.zeros_like(rib_pts)
+        for i, pt in enumerate(rib_pts):
+            rib_points_rot[i] = (np.dot(rotation_matrix(axis = axis, theta = theta),pt))
+        rib_pix = np.transpose(np.asarray([rib_points_rot[:,i]//res[i] for i in range(len(res))]))
+        rib_pix = rib_pix.astype(int)
+        rib_pix = np.unique(rib_pix, axis=0)
+
+        rib_pix_out = rib_pix.copy()
+        index_out = []
+        # Clean rib_pix if out of stack shape
+        for index, pt in enumerate(rib_pix):
+            if pt[0] > xdim-2 or pt[0] < 0:
+                delete = True
+            elif pt[1] > ydim-2 or pt[1] < 0:
+                delete = True
+            elif pt[2] > zdim+2-1 or pt[2] < 0:
+                delete = True
+            else: 
+                delete = False
+            
+            if delete:
+                index_out.append(index)
+
+        rib_pix_out = np.delete(rib_pix_out, index_out, axis = 0)
+        # Create mask of cl_ribbon
+        s3_rib[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 1
+        # Create filled cube just to one side of cl
+        s3_filledCube[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 0
+        alert('clown')
+        
+    # Create volume of extended centreline mask
+    test_rib = s3_to_mesh(s3_rib, res=res, name='Extended CL', color='darkmagenta')
+    
+    return s3_filledCube, test_rib
+
+def get_cube_clRibbon(organ, cut, s3_filledCube, res, pl_normal):
+
+    # #Load stack shape
+    shape_s3 = organ.info['shape_s3']
+    zdim, xdim, ydim = shape_s3
+      
+    #Identify the direction in which the cubes need to be built
+    if organ.mH_settings['wf_info']['sections'][cut.title()]['axis_lab'].lower() == 'roi':
+        ref_vect = [0, 1, 0]# [[0, 1, 0], [0, 0, 0]]
+    else: 
+        ref_vect = organ.mH_settings['wf_info']['orientation']['roi']['settings']['ref_vectF'][0]
+    
+    ext_dir = list(np.cross(ref_vect, pl_normal))
+    ext_dir_abs = np.absolute(ext_dir)
+    ext_dir_absf = list(ext_dir_abs)
+    max_ext_dir = max(ext_dir_abs)
+    coord_dir = ext_dir_absf.index(max_ext_dir)
+    print('pl_normal:', pl_normal, '\nref_vect:', ref_vect, '\next_dir:', ext_dir, '\ncoord_dir:', coord_dir)
+    
+    if coord_dir == 0: 
+        print('Extending cube in the x? direction')
+        for xpos in range(0,xdim):
+            for zpos in range(0,zdim+2): 
+                yline = s3_filledCube[xpos,0:ydim,zpos]
+                index_y = np.where(yline == 0)[0]
+                index_y = list(index_y)
+                index_y.pop(0);index_y.pop(-1)
+                if len(index_y) > 0:
+                    # if not repeat: 
+                    s3_filledCube[xpos,index_y[0]:ydim,zpos] = 0
+                    # else: # repeat: 
+                    #     s3_filledCube[xpos,0:index_y[0],zpos] = 0
+        
+    elif coord_dir == 1:
+        print('Extending cube in the y direction - check!!!')
+        for ypos in range(0,ydim):
+            for zpos in range(0,zdim+2): 
+                xline = s3_filledCube[0:xdim,ypos,zpos]
+                index_x = np.where(xline == 0)[0]
+                index_x = list(index_x)
+                index_x.pop(0);index_x.pop(-1)
+                if len(index_x) > 0:
+                    # if not repeat:
+                    s3_filledCube[index_x[-1]:xdim,ypos,zpos] = 0#[1]
+                    # else:
+                    #     s3_filledCube[0:index_x[1],ypos,zpos] = 0#[0]
+
+    elif coord_dir == 2: 
+        print('Extending cube in the z direction')
+        for xpos in range(0,xdim):
+            for ypos in range(0,ydim): 
+                zline = s3_filledCube[xpos,ypos,0:zdim+2]
+                index_z = np.where(zline == 0)[0]
+                index_z = list(index_z)
+                index_z.pop(0);index_z.pop(-1)
+                if len(index_z) > 0:
+                    # if not repeat: 
+                    s3_filledCube[xpos,ypos,index_z[0]:zdim+2] = 0
+                    # else: 
+                    #     s3_filledCube[xpos,ypos,0:index_z[0]] = 0
+        
+    alert('woohoo')
+    
+    #Create volume of filled side of extended centreline mask
+    mask_cube = s3_to_mesh(s3_filledCube, res=res, name='Filled CLRibbon SideA', color='darkblue')
+    mask_cube.alpha(0.05)
+
+    s3_filledCube = s3_filledCube.astype('uint8')
+
+    #Create the inverse section and make the user select the section that corresponds to section 1
+    s3_filledCubeBoolA = copy.deepcopy(s3_filledCube).astype(bool)
+    s3_filledCubeBoolB = np.full_like(s3_filledCubeBoolA, False)
+    s3_filledCubeBoolB[1:-1,1:-1,1:-1] = True
+    s3_filledCubeBoolB[s3_filledCubeBoolA] = False
+
+    mask_cubeB = s3_to_mesh(s3_filledCubeBoolB, res=res, name='Filled CLRibbon SideB', color='skyblue')
+    mask_cubeB.alpha(0.05).linewidth(1)
+    mask_cube.linewidth(1)
+    
+    mask_cube.color('darkblue'); mask_cubeB.color('skyblue')
+    mask_cube_split = [mask_cube, mask_cubeB]
+
+    s3_filledCubes = {'SideA': s3_filledCube, 'SideB': s3_filledCubeBoolB}
+
+    return mask_cube, mask_cube_split, s3_filledCubes
+    
+def select_ribMask(organ, cut, mask_cube_split, mesh_cl): 
+    
+    dict_sides = {}
+    for mesh in mask_cube_split:
+        dict_sides[mesh.info['legend']] = {'color': mesh.color()*255}
+
+    # dict_sides = copy.deepcopy(dict_sides)
+    flat_segm = flatdict.FlatDict(dict_sides)
+    colors = [flat_segm[key] for key in flat_segm if 'color' in key]
+    color_sel = [210,105,30] # yellow [255,215,0] # chocolate (210,105,30)
+    
+    def func(evt):
+        if not evt.actor:
+            return
+        mesh_no = evt.actor.info['legend']
+        if 'Ribbon' in mesh_no: 
+            mesh_color = evt.actor.color()*255
+            msg.text(mesh_no +' has been selected as '+name_sect1.upper())
+            is_in_list = np.any(np.all(mesh_color == colors, axis=1))
+            if is_in_list: 
+                new_color = color_sel
+                evt.actor.color(new_color)
+                selected_mesh['name'] = mesh_no
+                for mesh in mask_cube_split:
+                    if mesh.info['legend'] != mesh_no:
+                        # print('running for mesh: ', mesh.info['legend'])
+                        mesh.color(dict_sides[mesh.info['legend']]['color'])
+            else: 
+                new_color = color_sel
+                evt.actor.color(new_color)
+                selected_mesh['name'] = mesh_no
+                for mesh in mask_cube_split:
+                    if mesh.info['legend'] != mesh_no:
+                        mesh.color(dict_sides[mesh.info['legend']]['color'])
+        else: 
+            print('Other mesh was selected')
+    
+    name_sect1 = organ.mH_settings['setup']['sect'][cut.title()]['name_sections']['sect1']
+    mks = [vedo.Marker('*').c(color_sel).legend('Section No.1 ('+name_sect1+')')]
+    sym = ['o']
+    lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
+                        width=leg_width, height=leg_height/3)
+    path_logo = path_mHImages / 'logo-07.jpg'
+    logo = vedo.Picture(str(path_logo))
+    msg = vedo.Text2D("", pos="bottom-center", c=txt_color, s=txt_size, bg='red', alpha=0.2)
+    selected_mesh = {'name': 'NS'}
+    
+    txA = 'Instructions '+cut.title()+': Select the mesh that corresponds to Section No.1 ('+name_sect1.upper()+').\nClose the window when you are done.'
+    txt0 = vedo.Text2D(txA, c=txt_color, font=txt_font, s=txt_size)
+    
+    vpt = vedo.Plotter(axes=1)
+    vpt.add_icon(logo, pos=(0.1,1), size=0.25)
+    vpt.add_callback('mouse click', func)
+    vpt.show(mask_cube_split, mesh_cl, txt0, lb, msg, azimuth=45, elevation=20, zoom=0.8, interactive=True)
+    print('selected_mesh:', selected_mesh)
+
+    return selected_mesh
+
+def save_ribMask_side(organ, cut, selected_side, s3_filledCubes):
+
+    if 'SideA' in selected_side['name']:
+        mask = s3_filledCubes['SideA']
+    else: #'SideB' in sel_side['name']:
+        mask = s3_filledCubes['SideA']
+
+    mask_selected = mask.astype('uint8')
+    name2save = organ.user_organName +'_mask_'+cut.title()+'_sect1.npy'
+    dir2save = organ.dir_res(dir ='s3_numpy') / name2save
+    np.save(dir2save, mask_selected)
+    
+    proc = ['wf_info', 'sections', cut.title(), 'mask_name']
+    organ.update_settings(proc, update = name2save, mH = 'mH')
+    print(organ.mH_settings['wf_info']['sections'])
+    setattr(organ, 'mask_sect_'+cut.lower(), name2save)
+
+    if not dir2save.is_file():
+        print('>> Error: s3 mask of sections was not saved correctly!\n>> File: mask_sect.npy')
+        alert('error_beep')
+    else: 
+        print('>> s3 mask of sections saved correctly!')
+        alert('countdown')
+    
+def get_sections(organ, mesh, cut, sect_names, palette, win):
+    
+    #Create submeshes of the input mesh 
+    meshes_sect = {}
+    for n, sect, color in zip(count(), sect_names, palette):
+        subsct, final_sect_mesh = create_subsection(organ, mesh, cut, 
+                                                    sect, color)
+        # save_submesh(organ, subsct, final_sect_mesh, win)
+        meshes_sect[sect] = final_sect_mesh
+
+        subsct = mesh.create_section(name = sect, cut = cut, color = color)
+        sub_mesh = subsct.get_sect_mesh()
+        
+    print('\n\n FINAL! mH_settings[measure]: ', organ.mH_settings['measure'], '\n\n')
+
+    print('wf_info (sect)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'sections']))
+    print('organ.submeshes:', organ.submeshes)
+
+    return meshes_sect
+
+def create_subsection(organ, mesh, cut, sect, color):
+
+    #Create submesh - section
+    subsct = mesh.create_section(name = sect, cut = cut, color = color)
+    print(subsct.__dict__)
+    final_sect_mesh = subsct.get_sect_mesh()
+    final_sect_mesh.color(color).alpha(0.1).legend(subsct.sub_legend)
+    subsct.color = color
+    #Add submesh to organ
+    organ.add_submesh(subsct)
+    #Get segm measurements
+    measurements = organ.mH_settings['setup']['segm']['measure']
+    measure_submesh(organ, subsct, final_sect_mesh, measurements)
+
+    # Update organ workflow
+    cut, ch, cont, sect = subsct.sub_name_all.split('_')
+    proc_wft = ['MeshesProc', 'E-Sections', cut, ch, cont, 'Status']
+    organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+
+    return subsct, final_sect_mesh
     
 #%% - Measuring functions
 def measure_centreline(organ, nPoints):
