@@ -2555,6 +2555,7 @@ class LoadProj(QDialog):
                             color_status.setMinimumSize(QtCore.QSize(15, 15))
                             color_status.setMaximumSize(QtCore.QSize(15, 15))
                             color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
+                            color_status.setReadOnly(True)
                             layoutH.addWidget(color_status)
                             layoutH.setContentsMargins(0, 0, 0, 0)
                             update_status(proj.organs[organ], key, color_status)
@@ -2683,6 +2684,10 @@ class MainWindow(QMainWindow):
         self.on_cB_theme_currentIndexChanged(0)
 
         self.pushButton.clicked.connect(lambda: self.update_proj_organ())
+        self.btn_settings.clicked.connect(lambda: self.show_mH_settings())
+        self.btn_measurements.clicked.connect(lambda: self.show_measurements())
+        self.btn_workflow.clicked.connect(lambda: self.show_workflow())
+        self.btn_wf_info.clicked.connect(lambda: self.show_wf_info())
 
     def update_proj_organ(self):
         self.proj.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
@@ -2711,6 +2716,18 @@ class MainWindow(QMainWindow):
         
         # pass
 
+    def show_mH_settings(self):
+        print('------- MH_SETTINGS -------\n',self.organ.mH_settings)
+    
+    def show_measurements(self):
+        print('------- MEASUREMENTS -------\n',self.organ.mH_settings['measure'])
+
+    def show_workflow(self):
+        print('------- WORKFLOW -------\n',self.organ.workflow)
+
+    def show_wf_info(self):
+        print('------- WF_INFO -------\n',self.organ.mH_settings['wf_info'])
+
     @pyqtSlot(int)
     def on_cB_theme_currentIndexChanged(self, theme):
         print('mH_config.theme:',mH_config.theme)
@@ -2738,6 +2755,7 @@ class MainWindow(QMainWindow):
         value = 0
         self.prog_bar.setValue(value)
 
+    #Window message
     def win_msg(self, msg): 
         if msg[0] == '*':
             self.tE_validate.setStyleSheet(error_style)
@@ -2793,7 +2811,7 @@ class MainWindow(QMainWindow):
             self.lineEdit_genotype.clear()
             self.lineEdit_manipulation.clear()
     
-    #- Init tabs
+    #- Init SEGMENTATION Tab
     def init_segment_tab(self): 
         print('Setting up Segmentation Tab')
         self.channels = self.organ.mH_settings['setup']['name_chs'] # {'ch1': 'myocardium', 'ch2': 'endocardium', 'chNS': 'cardiac jelly'}
@@ -2810,6 +2828,74 @@ class MainWindow(QMainWindow):
         self.button_continue.clicked.connect(lambda: self.continue_next_tab())
         self.init_ch_progress()
 
+    #- Init Ch Progress Table
+    def init_ch_progress(self): 
+        im_chs = [key for key in self.channels.keys() if key != 'chNS']
+        workflow = self.organ.workflow['morphoHeart']
+        self.tabW_progress_ch.setRowCount(len(im_chs))
+        big_im_chs = [ch.title() for ch in im_chs]
+        self.tabW_progress_ch.setVerticalHeaderLabels(big_im_chs)
+        self.proc_keys = {'Ch':'gen','A-MaskChannel':'mask', 
+                            'A-Autom':'autom','B-Manual': 'manual', 
+                            'C-CloseInOut': 'trim', 'C-SelectCont': 'select'}
+        cS = []
+        #Adding channels to table
+        row = 0
+        for ch in im_chs:
+            col = 0        
+            for proc in self.proc_keys.keys():
+                #Create Layout
+                widget   = QWidget() 
+                hL = QtWidgets.QHBoxLayout(widget)
+                color_status = QtWidgets.QLineEdit()
+                color_status.setEnabled(True)
+                color_status.setMinimumSize(QtCore.QSize(15, 15))
+                color_status.setMaximumSize(QtCore.QSize(15, 15))
+                color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
+                color_status.setReadOnly(True)
+                hL.addWidget(color_status)
+                hL.setContentsMargins(0, 0, 0, 0)
+                self.tabW_progress_ch.setCellWidget(row, col, widget)
+                cS_name = 'cS_'+ch+'_'+self.proc_keys[proc]
+                setattr(self, cS_name, color_status)
+                cS.append(cS_name)
+                col+=1
+            row +=1                
+
+        headerc = self.tabW_progress_ch.horizontalHeader()  
+        for col in range(len(self.proc_keys)):   
+            headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+            # header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+            # header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        
+        headerr = self.tabW_progress_ch.verticalHeader()  
+        for row in range(len(im_chs)):   
+            headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
+            
+        self.tabW_progress_ch.resizeColumnsToContents()
+        self.tabW_progress_ch.resizeRowsToContents()
+        self.segm_status = cS
+        self.update_ch_progress()
+
+    def update_ch_progress(self): 
+        workflow = self.organ.workflow['morphoHeart']
+        for cs in self.segm_status: 
+            cS = getattr(self, cs)
+            _, ch, proc = cs.split('_')
+            if 'gen' in cs: 
+                items = ['ImProc',ch,'Status']
+            else: 
+                for key in self.proc_keys:
+                    if self.proc_keys[key] == proc:
+                        keyf = key
+                        break
+                if 'autom' in cs or 'manual' in cs or 'trim' in cs:
+                    items = ['ImProc',ch,'B-CloseCont','Steps', keyf,'Status']
+                elif 'mask' in cs or 'select' in cs:
+                    items = ['ImProc',ch,keyf,'Status']
+            update_status(workflow, items, cS)         
+
+    #- Init PROCESS AND ANALYSE Tab
     def init_pandq_tab(self): 
         #All Group box
         self.segmentationAll_play.setStyleSheet(style_play)
@@ -2856,75 +2942,8 @@ class MainWindow(QMainWindow):
         self.init_user_param()
         
         #Setup workflow
-        self.fill_workflow(tree= self.treeWorkflow, value = self.organ.workflow['morphoHeart']['MeshesProc'])
-
-    #- Init Ch Progress Table
-    def init_ch_progress(self): 
-        im_chs = [key for key in self.channels.keys() if key != 'chNS']
-        workflow = self.organ.workflow['morphoHeart']
-        self.tabW_progress_ch.setRowCount(len(im_chs))
-        big_im_chs = [ch.title() for ch in im_chs]
-        self.tabW_progress_ch.setVerticalHeaderLabels(big_im_chs)
-        self.proc_keys = {'Ch':'gen','A-MaskChannel':'mask', 
-                            'A-Autom':'autom','B-Manual': 'manual', 
-                            'C-CloseInOut': 'trim', 'C-SelectCont': 'select'}
-        cS = []
-        #Adding organs to table
-        row = 0
-        for ch in im_chs:
-            col = 0        
-            for proc in self.proc_keys.keys():
-                #Create Layout
-                widget   = QWidget() 
-                hL = QtWidgets.QHBoxLayout(widget)
-                hL.setObjectName("hL_"+ch)
-                color_status = QtWidgets.QLineEdit()
-                color_status.setEnabled(True)
-                color_status.setMinimumSize(QtCore.QSize(15, 15))
-                color_status.setMaximumSize(QtCore.QSize(15, 15))
-                color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
-                color_status.setObjectName("color_status_"+ch)
-                hL.addWidget(color_status)
-                hL.setContentsMargins(0, 0, 0, 0)
-                self.tabW_progress_ch.setCellWidget(row, col, widget)
-                cS_name = 'cS_'+ch+'_'+self.proc_keys[proc]
-                setattr(self, cS_name, color_status)
-                cS.append(cS_name)
-                col+=1
-            row +=1                
-
-        headerc = self.tabW_progress_ch.horizontalHeader()  
-        for col in range(len(self.proc_keys)):   
-            headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
-            # header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-            # header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        
-        headerr = self.tabW_progress_ch.verticalHeader()  
-        for row in range(len(im_chs)):   
-            headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
-            
-        self.tabW_progress_ch.resizeColumnsToContents()
-        self.tabW_progress_ch.resizeRowsToContents()
-        self.segm_status = cS
-        self.update_ch_progress()
-
-    def update_ch_progress(self): 
-        workflow = self.organ.workflow['morphoHeart']
-        for cs in self.segm_status: 
-            cS = getattr(self, cs)
-            _, ch, proc = cs.split('_')
-            if 'gen' in cs: 
-                items = ['ImProc',ch,'Status']
-            else: 
-                for key in self.proc_keys:
-                    if self.proc_keys[key] == proc:
-                        keyf = key
-                        break
-                if 'autom' in cs or 'manual' in cs or 'trim' in cs:
-                    items = ['ImProc',ch,'B-CloseCont','Steps', keyf,'Status']
-                elif 'mask' in cs or 'select' in cs:
-                    items = ['ImProc',ch,keyf,'Status']
-            update_status(workflow, items, cS)         
+        self.fill_workflow()
+        # self.fill_workflow(tree= self.treeWorkflow, value = self.organ.workflow['morphoHeart']['MeshesProc'])
 
     #>> Initialise all modules of Process and Analyse
     def init_keeplargest(self): 
@@ -3362,7 +3381,6 @@ class MainWindow(QMainWindow):
         self.segm_btns = {}
         
         for optcut in ['1','2']:
-            name_segm = []
             cutl = 'cut'+optcut
             cutb = 'Cut'+optcut
             if cutb in no_cuts: 
@@ -3372,14 +3390,13 @@ class MainWindow(QMainWindow):
                 else: 
                     colors_initialised = True
 
-                for segm in segm_setup[cutb]['name_segments'].keys():
-                    name_segm.append(segm_setup[cutb]['name_segments'][segm])
-                segm_names = ', '.join(name_segm)
-                html_txt_segm = html_txt[0].replace('font-size:11pt', 'font-size:10pt')+html_txt[1]+segm_names+html_txt[2]
-                getattr(self, 'names_segm_'+cutl).setHtml(html_txt_segm)
+                lab_names_segm = getattr(self, 'names_segm_'+cutl)
+                bb = set_qtextedit_text(lab_names_segm, segm_setup[cutb]['name_segments'])
+                set_qtextedit_size(lab_names_segm, (100, (bb+1)*25))
+
                 getattr(self, 'obj_segm_'+cutl).setText(segm_setup[cutb]['obj_segm'])
                 for nn in range(1,6,1):
-                    if nn > len(name_segm):
+                    if nn > bb+1:
                         getattr(self, 'label_'+cutl+'_segm'+str(nn)).setVisible(False)
                         getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn)).setVisible(False)
                     else: 
@@ -3489,7 +3506,6 @@ class MainWindow(QMainWindow):
         self.sect_btns = {}
         
         for optcut in ['1','2']:
-            name_sect = []
             cutl = 'cut'+optcut
             cutb = 'Cut'+optcut
             if cutb in no_cuts: 
@@ -3499,11 +3515,10 @@ class MainWindow(QMainWindow):
                 else: 
                     colors_initialised = True
 
-                for sect in sect_setup[cutb]['name_sections'].keys():
-                    name_sect.append(sect_setup[cutb]['name_sections'][sect])
-                sect_names = ', '.join(name_sect)
-                html_txt_segm = html_txt[0].replace('font-size:11pt', 'font-size:10pt')+html_txt[1]+sect_names+html_txt[2]
-                getattr(self, 'names_sect_'+cutl).setHtml(html_txt_segm)# Text(', '.join(name_segm))
+                lab_names_sect = getattr(self, 'names_sect_'+cutl)
+                bb = set_qtextedit_text(lab_names_sect, sect_setup[cutb]['name_sections'])
+                set_qtextedit_size(lab_names_sect, (100, (bb+1)*25))
+
                 getattr(self, 'sect_cl_'+cutl).addItems(self.items_centreline)
                 for nn in range(1,3,1):
                     if not colors_initialised: 
@@ -4078,6 +4093,7 @@ class MainWindow(QMainWindow):
                 num = self.sect_btns[name]['num']
                 if get_by_path(wf, [cut, ch, cont, 'Status']) == 'DONE':
                     self.sect_btns[name]['plot'].setEnabled(True)
+                    self.sect_btns[name]['play'].setChecked(True)
 
             #Update Status in GUI
             self.update_status(wf, ['Status'], self.sections_status)
@@ -4144,8 +4160,165 @@ class MainWindow(QMainWindow):
         cm_eg.setPixmap(pixmap)
         cm_eg.setScaledContents(True)
 
-    def fill_workflow(self, tree, value):
+    def fill_workflow(self):
+                
+        flat_wf = flatdict.FlatDict(self.organ.workflow['morphoHeart']['MeshesProc'])
+        keys_flat = flat_wf.keys()
+        keys_flat_filtered = [key for key in keys_flat if 'F-Measure' not in key]
 
+        main_titles = []
+        for key in keys_flat_filtered: 
+            # print(key)
+            split_key = key.split(':')
+            if len(split_key) == 2: 
+                main_titles.append(split_key[0])
+                keys_flat_filtered.remove(key)
+            if 'Set_Orientation' in key: 
+                main_titles.append('A-Set_Orientation')
+            if 'Set_Orientation:Status' in key: 
+                # print('ccc')
+                keys_flat_filtered.remove(key)
+
+        try:
+            keys_flat_filtered.remove('Status')
+        except: 
+            print('Status was not a key')
+        try: 
+            keys_flat_filtered.remove('A-Create3DMesh:Set_Orientation:Status')
+        except: 
+            print('A-Create3DMesh:Set_Orientation:Status was not a key')
+
+        main_titles_set = sorted(list(set(main_titles)))
+
+        dict_titles = {'A-Create3DMesh': {'title': 'Create 3D Mesh', 'short': 'createMesh'},
+                        'A-Set_Orientation' : {'title': 'Set Orientation', 'short': 'setOrientation'},
+                        'B-TrimMesh': {'title': 'Trim Meshes', 'short': 'trimMesh'},
+                        'C-Centreline' : {'title': 'Extract Centreline', 'short': 'setCentreline', 
+                                        'subprocesses': {'SimplifyMesh':{'title': 'Simplify Mesh', 'short': 'simpMesh'},
+                                                            'vmtk_CL':{'title': 'vmtk', 'short': 'vmtkCL'},
+                                                            'buildCL':{'title': 'Build Centreline', 'short': 'buildCL'}}},
+                        'D-Ballooning' : {'title': 'Centreline>Tissue', 'short': 'ballooning'},
+                        'D-Thickness_ext>int' : {'title': 'Tissue Thickness (ext>int*)', 'short': 'thExtInt'},
+                        'D-Thickness_int>ext' : {'title': 'Tissue Thickness (int>ext*)', 'short': 'thIntExt'},
+                        'E-Sections' : {'title': 'Sections', 'short': 'sect'},
+                        'E-Segments' : {'title': 'Regions', 'short': 'segm'}}
+
+        #Add here the heatmaps 2D that have been added to analysis 
+        # hereee!
+
+        #Set row count
+        self.tabW_progress_pandq.setRowCount(len(keys_flat_filtered)+len(main_titles_set))
+        cS = []
+
+        row = 0
+        for title in main_titles_set:
+            # print('\nTITLE:', title)
+            #Create a first label
+            label = dict_titles[title]['title']
+            # print(row, label)
+            short = dict_titles[title]['short']
+
+            #Assign label to table 
+            item = QTableWidgetItem(label)
+            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignHCenter)
+            self.tabW_progress_pandq.setItem(row,0, item)
+            row +=1
+
+            #Find all keys that contain this title: 
+            if title == 'A-Create3DMesh': 
+                keys_title = [key for key in keys_flat_filtered if title in key and 'Set_Orientation' not in key]
+            elif title == 'A-Set_Orientation':
+                keys_title = [key for key in keys_flat_filtered if 'A-Create3DMesh:Set_Orientation' in key]
+            else: 
+                keys_title = [key for key in keys_flat_filtered if title in key]
+            # print(keys_title)
+
+            for key in keys_title: 
+                sub_title = False
+                split_key = key.split(':')
+                if title == 'A-Set_Orientation':
+                    cleaned_key = split_key[-1]
+                    label_key = cleaned_key
+                    cS_name = short+'_('+label_key+')'
+                    # print('aaa:', row, label_key)
+                elif title == 'C-Centreline':
+                    if len(split_key) == 3: 
+                        cleaned_key = dict_titles[title]['subprocesses'][split_key[1]]['title']
+                        label_key = '- '+cleaned_key
+                        # print('bbb:', row, label_key)
+                        sub_title = True
+                    else: 
+                        cleaned_key = split_key[2:-1]
+                        label_key = '_'.join(cleaned_key)
+                        # print('ccc:', row, label)
+                        # print(key)
+                        subproc = dict_titles[title]['subprocesses'][split_key[1]]['short']
+                        cS_name = short+'_'+subproc+'_('+label_key+')'
+                else: 
+                    cleaned_key = split_key[1:-1]
+                    label_key = '_'.join(cleaned_key)
+                    cS_name = short+'_('+label_key+')'
+                    # print('bbb:', row, label_key)
+
+                #Assign label to table 
+                item_key = QTableWidgetItem(label_key)
+                if sub_title: 
+                    item_key.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                else: 
+                    item_key.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                self.tabW_progress_pandq.setItem(row, 0, item_key)
+
+                if not sub_title: 
+                    #Create status 
+                    widget   = QWidget() 
+                    hL = QtWidgets.QHBoxLayout(widget)
+                    color_status = QtWidgets.QLineEdit()
+                    color_status.setEnabled(True)
+                    color_status.setMinimumSize(QtCore.QSize(15, 15))
+                    color_status.setMaximumSize(QtCore.QSize(15, 15))
+                    color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
+                    color_status.setReadOnly(True)
+                    hL.addWidget(color_status)
+                    hL.setContentsMargins(0, 0, 0, 0)
+                    self.tabW_progress_pandq.setCellWidget(row, 1, widget)
+                    setattr(self, cS_name, color_status)
+                    cS.append(cS_name)
+                row +=1
+            
+        headerc = self.tabW_progress_pandq.horizontalHeader()  
+        for col in range(2):
+            headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+
+        headerr = self.tabW_progress_pandq.verticalHeader()  
+        for row in range(len(keys_flat_filtered)+len(main_titles_set)):   
+            headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
+            
+        self.tabW_progress_pandq.resizeColumnsToContents()
+        self.tabW_progress_pandq.resizeRowsToContents()
+        self.workflow_status = cS
+        self.update_workflow_progress()
+
+    def update_workflow_progress(self): 
+        pass
+        # workflow = self.organ.workflow['morphoHeart']
+        # for cs in self.segm_status: 
+        #     cS = getattr(self, cs)
+        #     _, ch, proc = cs.split('_')
+        #     if 'gen' in cs: 
+        #         items = ['ImProc',ch,'Status']
+        #     else: 
+        #         for key in self.proc_keys:
+        #             if self.proc_keys[key] == proc:
+        #                 keyf = key
+        #                 break
+        #         if 'autom' in cs or 'manual' in cs or 'trim' in cs:
+        #             items = ['ImProc',ch,'B-CloseCont','Steps', keyf,'Status']
+        #         elif 'mask' in cs or 'select' in cs:
+        #             items = ['ImProc',ch,keyf,'Status']
+        #     update_status(workflow, items, cS)  
+
+    def fill_workflow_OLD(self):
+        #OLD Version
         tree.setColumnCount(2)
         tree.setHeaderLabels(['Process', 'Status'])
         tree.setColumnWidth(0, 100)
@@ -5220,7 +5393,7 @@ class MainWindow(QMainWindow):
 
         txt = [(0, self.organ.user_organName + ' - Centreline Extension ('+cut.title()+')')]
         obj = [(mesh2cut.mesh, cl_ribbon), (mesh2cut.mesh, cl_ribbon, mask_cube)]
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()), azimuth=45, elevation=20)
 
     #Help functions
     def help(self, process): 
@@ -5539,6 +5712,35 @@ def validate_txt(input_str):
             error = None
     return error
 
+# QTextEdit label and size
+def set_qtextedit_text(label, dict_names): 
+    # names_list = []
+    names_f = ''
+    style = '</style></head><body style=" font-family:"Calibri Light"; font-size:10pt; font-weight:24; font-style:normal;">'
+    beg = '<p align="center" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">'
+    end = '</p>'
+    end_end = '</p></body></html>'
+    for bb, segm in enumerate(list(dict_names.keys())):
+        name_add = dict_names[segm]
+        # names_list.append(dict_names[segm])
+        if bb == 0: 
+            names_f = style+beg+roman_num[bb]+'. '+name_add
+        else: 
+            names_f = names_f+', '+end+beg+roman_num[bb]+'. '+name_add
+    names_f = names_f+end_end
+    label.setHtml(names_f)
+    print('bb:', bb)
+    return bb
+
+def set_qtextedit_size(label, size):
+    w, h = size
+    print(size)
+    sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+    sizePolicy.setHeightForWidth(label.sizePolicy().hasHeightForWidth())
+    label.setSizePolicy(sizePolicy)
+    label.setMinimumSize(QtCore.QSize(w, h))
+    label.setMaximumSize(QtCore.QSize(w, h))
+
 # Color palette as RGB
 def palette_rbg(name:str, num:int):
     rgb = []
@@ -5673,3 +5875,4 @@ mH_images, play_colors, style_play, html_txt, reg_exps, tE_styles = list_all
 mH_icon, mH_big, mH_top_corner = mH_images
 play_bw, play_gw, play_gb, play_btn = play_colors
 error_style, note_style, msg_style = tE_styles
+roman_num = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']

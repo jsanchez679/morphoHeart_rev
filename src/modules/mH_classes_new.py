@@ -2949,7 +2949,8 @@ class Mesh_mH():
         kspl_ext = vedo.KSpline(resamp_pts, res=nRes).color('purple').legend('ExtendedCL')#601
     
         pl_linLine_unitNormal = unit_vector(pl_normal)
-        pl_linLine_unitNormal120 = pl_linLine_unitNormal*120
+        maj_bound =(max(self.parent_organ.get_maj_bounds())/2)*1.2
+        pl_linLine_unitNormal120 = pl_linLine_unitNormal*maj_bound
     
         if clRib_type == 'ext2sides': # Names are switched but it works
             x_cl, y_cl, z_cl = pl_linLine_unitNormal120

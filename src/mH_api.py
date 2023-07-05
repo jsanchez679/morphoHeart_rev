@@ -1164,13 +1164,13 @@ def run_sections(controller, btn):
             plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
 
             # -> Create cube of ribbon and mask one side
-            mask_cube, mask_cube_split, s3_filledCubes = fcM.get_cube_clRibbon(organ = controller.organ,
+            mask_cube_split, s3_filledCubes = fcM.get_cube_clRibbon(organ = controller.organ,
                                                             cut = cut,  
                                                                 s3_filledCube = s3_filledCube,
                                                                 res = mesh_cl.resolution,  
                                                                 pl_normal = ext_plane)
             
-            obj = [(mask_cube, test_rib, mesh_cl.mesh)]
+            obj = [(mask_cube_split[0], mask_cube_split[1], test_rib, mesh_cl.mesh)]
             txt = [(0, controller.organ.user_organName)]
             plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
 

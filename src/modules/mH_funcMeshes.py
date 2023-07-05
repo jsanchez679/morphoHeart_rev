@@ -1409,7 +1409,7 @@ def get_cube_clRibbon(organ, cut, s3_filledCube, res, pl_normal):
 
     s3_filledCubes = {'SideA': s3_filledCube, 'SideB': s3_filledCubeBoolB}
 
-    return mask_cube, mask_cube_split, s3_filledCubes
+    return mask_cube_split, s3_filledCubes
     
 def select_ribMask(organ, cut, mask_cube_split, mesh_cl): 
     
@@ -1474,7 +1474,7 @@ def save_ribMask_side(organ, cut, selected_side, s3_filledCubes):
     if 'SideA' in selected_side['name']:
         mask = s3_filledCubes['SideA']
     else: #'SideB' in sel_side['name']:
-        mask = s3_filledCubes['SideA']
+        mask = s3_filledCubes['SideB']
 
     mask_selected = mask.astype('uint8')
     name2save = organ.user_organName +'_mask_'+cut.title()+'_sect1.npy'
@@ -1663,7 +1663,7 @@ def get_plane_normal2pt (pt_num, points):
     return normal, pt_centre
 
 #%% - Plotting functions
-def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350):
+def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350, azimuth = 0, elevation = 0):
     
     # Load logo
     path_logo = path_mHImages / 'logo-07.jpg'
@@ -1726,7 +1726,7 @@ def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350):
         if num != len(obj)-1:
             vp.show(obj[num], lbox[num], txt_out[num], at=num)
         else: # num == len(obj)-1
-            vp.show(obj[num], lbox[num], txt_out[num], at=num, zoom=zoom, interactive=True)
+            vp.show(obj[num], lbox[num], txt_out[num], at=num, zoom=zoom, azimuth = azimuth, elevation = elevation, interactive=True)
 
 def plot_all_organ(organ):
     
