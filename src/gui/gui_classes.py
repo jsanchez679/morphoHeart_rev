@@ -10,7 +10,7 @@ Version: Apr 26, 2023
 # import sys
 from PyQt6 import uic
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtCore import pyqtSlot, QDate, Qt, QRegularExpression, QRect, QSize
+from PyQt6.QtCore import pyqtSlot, QDate, Qt, QRegularExpression, QRect, QSize, QAbstractTableModel
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
                               QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem, QSpacerItem, QSizePolicy, 
@@ -31,6 +31,7 @@ import operator
 from typing import Union
 import vedo 
 import numpy as np
+import pandas as pd
 
 #%% morphoHeart Imports - ##################################################
 # from .src.modules.mH_funcBasics import get_by_path
@@ -2943,7 +2944,9 @@ class MainWindow(QMainWindow):
         
         #Setup workflow
         self.fill_workflow()
-        # self.fill_workflow(tree= self.treeWorkflow, value = self.organ.workflow['morphoHeart']['MeshesProc'])
+
+        #Setup results
+        self.fill_results()
 
     #>> Initialise all modules of Process and Analyse
     def init_keeplargest(self): 
@@ -4188,6 +4191,8 @@ class MainWindow(QMainWindow):
         except: 
             print('A-Create3DMesh:Set_Orientation:Status was not a key')
 
+        self.workflow_keys = keys_flat_filtered
+
         main_titles_set = sorted(list(set(main_titles)))
 
         dict_titles = {'A-Create3DMesh': {'title': 'Create 3D Mesh', 'short': 'createMesh'},
@@ -4200,8 +4205,8 @@ class MainWindow(QMainWindow):
                         'D-Ballooning' : {'title': 'Centreline>Tissue', 'short': 'ballooning'},
                         'D-Thickness_ext>int' : {'title': 'Tissue Thickness (ext>int*)', 'short': 'thExtInt'},
                         'D-Thickness_int>ext' : {'title': 'Tissue Thickness (int>ext*)', 'short': 'thIntExt'},
-                        'E-Sections' : {'title': 'Sections', 'short': 'sect'},
-                        'E-Segments' : {'title': 'Regions', 'short': 'segm'}}
+                        'E-Sections' : {'title': 'Regions', 'short': 'sect'},
+                        'E-Segments' : {'title': 'Segments', 'short': 'segm'}}
 
         #Add here the heatmaps 2D that have been added to analysis 
         # hereee!
@@ -4210,17 +4215,21 @@ class MainWindow(QMainWindow):
         self.tabW_progress_pandq.setRowCount(len(keys_flat_filtered)+len(main_titles_set))
         cS = []
 
+        font = QFont()
+        font.setFamily('Calibri')
+        font.setBold(True)
+        font.setItalic(True)
+        font.setPointSize(10)
+        
         row = 0
         for title in main_titles_set:
-            # print('\nTITLE:', title)
             #Create a first label
             label = dict_titles[title]['title']
-            # print(row, label)
             short = dict_titles[title]['short']
-
             #Assign label to table 
             item = QTableWidgetItem(label)
-            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignHCenter)
+            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+            item.setFont(font)
             self.tabW_progress_pandq.setItem(row,0, item)
             row +=1
 
@@ -4231,7 +4240,11 @@ class MainWindow(QMainWindow):
                 keys_title = [key for key in keys_flat_filtered if 'A-Create3DMesh:Set_Orientation' in key]
             else: 
                 keys_title = [key for key in keys_flat_filtered if title in key]
-            # print(keys_title)
+            
+            #Reorder Segments and Sections
+            if 'E-Sections' in main_titles_set and 'E-Segments' in main_titles_set: 
+                main_titles_set.remove('E-Sections')
+                main_titles_set.append('E-Sections')
 
             for key in keys_title: 
                 sub_title = False
@@ -4244,7 +4257,7 @@ class MainWindow(QMainWindow):
                 elif title == 'C-Centreline':
                     if len(split_key) == 3: 
                         cleaned_key = dict_titles[title]['subprocesses'][split_key[1]]['title']
-                        label_key = '- '+cleaned_key
+                        label_key = '    - '+cleaned_key
                         # print('bbb:', row, label_key)
                         sub_title = True
                     else: 
@@ -4265,7 +4278,7 @@ class MainWindow(QMainWindow):
                 if sub_title: 
                     item_key.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
                 else: 
-                    item_key.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                    item_key.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
                 self.tabW_progress_pandq.setItem(row, 0, item_key)
 
                 if not sub_title: 
@@ -4283,40 +4296,154 @@ class MainWindow(QMainWindow):
                     self.tabW_progress_pandq.setCellWidget(row, 1, widget)
                     setattr(self, cS_name, color_status)
                     cS.append(cS_name)
+                
+                self.tabW_progress_pandq.setRowHeight(row, 20)
                 row +=1
             
-        headerc = self.tabW_progress_pandq.horizontalHeader()  
-        for col in range(2):
-            headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+        # headerc = self.tabW_progress_pandq.horizontalHeader()  
+        # for col in range(2):
+        #     headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
 
         headerr = self.tabW_progress_pandq.verticalHeader()  
         for row in range(len(keys_flat_filtered)+len(main_titles_set)):   
             headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
-            
-        self.tabW_progress_pandq.resizeColumnsToContents()
-        self.tabW_progress_pandq.resizeRowsToContents()
+        
+        for nn, col, w  in zip(count(), [0,1], [180,60]): 
+            self.tabW_progress_pandq.setColumnWidth(col, w)
+        # self.tabW_progress_pandq.resizeColumnsToContents()
+        # self.tabW_progress_pandq.resizeRowsToContents()
+        
         self.workflow_status = cS
+        print('self.workflow_status:', self.workflow_status)
         self.update_workflow_progress()
 
     def update_workflow_progress(self): 
-        pass
-        # workflow = self.organ.workflow['morphoHeart']
-        # for cs in self.segm_status: 
-        #     cS = getattr(self, cs)
-        #     _, ch, proc = cs.split('_')
-        #     if 'gen' in cs: 
-        #         items = ['ImProc',ch,'Status']
-        #     else: 
-        #         for key in self.proc_keys:
-        #             if self.proc_keys[key] == proc:
-        #                 keyf = key
-        #                 break
-        #         if 'autom' in cs or 'manual' in cs or 'trim' in cs:
-        #             items = ['ImProc',ch,'B-CloseCont','Steps', keyf,'Status']
-        #         elif 'mask' in cs or 'select' in cs:
-        #             items = ['ImProc',ch,keyf,'Status']
-        #     update_status(workflow, items, cS)  
 
+        titles_inv = {'createMesh': 'A-Create3DMesh',
+                       'setOrientation': 'A-Set_Orientation',
+                       'trimMesh': 'B-TrimMesh',
+                       'setCentreline_simpMesh': 'C-Centreline:SimplifyMesh', 
+                       'setCentreline_vmtkCL': 'C-Centreline:vmtk_CL', 
+                       'setCentreline_buildCL': 'C-Centreline:buildCL', 
+                       'ballooning' : 'D-Ballooning',
+                       'thExtInt' : 'D-Thickness_ext>int',
+                       'thIntExt' : 'D-Thickness_int>ext' ,
+                       'sect' : 'E-Sections',
+                       'segm' : 'E-Segments'}
+        
+        workflow = self.organ.workflow['morphoHeart']['MeshesProc']
+        for cs in self.workflow_status: 
+            cS = getattr(self, cs)
+            split_cs = cs.split('_(')
+            if len(split_cs) == 2: 
+                proc, ch_info = split_cs
+
+                proc_inv = titles_inv[proc]
+                split_ch_info = ch_info[:-1].split('_')
+                if len(split_ch_info) == 2: 
+                    ch, cont = split_ch_info
+                    final_key = proc_inv+':'+ch+':'+cont+':Status'
+                elif len(split_ch_info) == 3: 
+                    cut, ch, cont = split_ch_info
+                    final_key = proc_inv+':'+cut+':'+ch+':'+cont+':Status'
+            else: 
+                #Ballooning
+                proc, ch_info, cl_info = split_cs
+                proc_inv = titles_inv[proc]
+                ch, cont = ch_info.split('_')
+                cl_info = cl_info.split(')')[0]
+                final_key = proc_inv+':'+ch+':'+cont+'_('+cl_info+'):Status'
+            if final_key in self.workflow_keys:
+                items = final_key.split(':')
+                update_status(workflow, items, cS)
+                # print('Updated:', final_key)
+            else: 
+                print('---False:', final_key)
+                alert('error_beep')
+
+    def fill_results(self): 
+        self.get_results_df()
+
+        self.model = MyPandasTable(self.df_res)
+        self.tabW_results.setModel(self.model)
+        # df_final.to_csv('out.csv', index=True)  
+
+    def get_results_df(self): 
+        #Actual names
+        params = self.organ.mH_settings['setup']['params']
+        dict_names = {}
+        for pp in params:
+            var = params[pp]
+            dict_names[var['s']] = var['l']
+        dict_names['Ellip'] = 'Ellipsoid'
+
+        # measurements = {'SA': {}, 'Vol': {'ch1_int_whole': True, 'ch1_tiss_whole': True, 'ch1_ext_whole': True, 'ch2_int_whole': True, 'ch2_tiss_whole': True, 'ch2_ext_whole': True, 'chNS_int_whole': True, 'chNS_tiss_whole': True, 'chNS_ext_whole': True}, 'CL': {'ch1_int_whole': {'looped_length': 278.5729836723767, 'lin_length': 196.40371704101562}, 'ch2_ext_whole': {'looped_length': 283.3270263262093, 'lin_length': 190.81484985351562}}, 'th_i2e': {'ch1_tiss_whole': True, 'ch2_tiss_whole': True, 'chNS_tiss_whole': True}, 'th_e2i': {'ch1_tiss_whole': True}, 'ball': {'ch1_int_(ch1_int)': True, 'ch1_int_(ch2_ext)': True}, 'LoopDir': {'roi': True}, 'AoLen': {'roi': True}, 'TgBright': {'roi': True}, 'Vol(segm)': {'Cut1_ch2_int_segm1': True, 'Cut1_ch2_int_segm2': True, 'Cut1_ch2_tiss_segm1': True, 'Cut1_ch2_tiss_segm2': True, 'Cut1_chNS_tiss_segm1': 171587.41563409223, 'Cut1_chNS_tiss_segm2': 65547.06146452879, 'Cut1_ch1_tiss_segm1': 239646.87518697616, 'Cut1_ch1_tiss_segm2': 233777.4398440119, 'Cut1_ch1_ext_segm1': 1132707.885333426, 'Cut1_ch1_ext_segm2': 666060.1459218762}, 'Ellip(segm)': {'Cut1_ch2_int_segm1': True, 'Cut1_ch2_int_segm2': True, 'Cut1_ch2_tiss_segm1': True, 'Cut1_ch2_tiss_segm2': True, 'Cut1_chNS_tiss_segm1': True, 'Cut1_chNS_tiss_segm2': True, 'Cut1_ch1_tiss_segm1': True, 'Cut1_ch1_tiss_segm2': True, 'Cut1_ch1_ext_segm1': True, 'Cut1_ch1_ext_segm2': True}, 'Vol(sect)': {'Cut1_ch2_tiss_sect1': True, 'Cut1_ch2_tiss_sect2': True, 'Cut1_chNS_tiss_sect1': True, 'Cut1_chNS_tiss_sect2': True, 'Cut1_ch1_tiss_sect1': 244132.6523907116, 'Cut1_ch1_tiss_sect2': 232157.19616130897, 'Cut2_ch2_tiss_sect1': True, 'Cut2_ch2_tiss_sect2': True, 'Cut2_chNS_tiss_sect1': True, 'Cut2_chNS_tiss_sect2': True, 'Cut2_ch1_tiss_sect1': 232110.88629832206, 'Cut2_ch1_tiss_sect2': 244163.6629483923}, 'hm3Dto2D': {'ch1_int': True}}
+        measurements = self.organ.mH_settings['measure']
+        df_index = pd.DataFrame.from_dict(measurements, orient='index')
+        vars2drop = ['th_e2i', 'th_i2e', 'ball', 'hm3Dto2D']
+        vars = list(df_index.index)
+        for var in vars: 
+            if var in vars2drop: 
+                df_index = df_index.drop(var)
+        cols = list(df_index.columns)
+
+        #Add column with actual names of variables
+        var_names = []
+        for index, row in df_index.iterrows(): 
+            try: 
+                var_names.append(dict_names[index])
+            except: 
+                var, typpe = index.split('(')
+                if typpe == 'segm)': 
+                    name = 'Segment'
+                else: 
+                    name = 'Region'
+                var_names.append(dict_names[var]+': '+name)
+
+        df_index['Parameter'] = var_names
+        df_index = df_index.reset_index()
+        df_index = df_index.drop(['index'], axis=1)
+        df_melt = pd.melt(df_index, id_vars = ['Parameter'],  value_vars=cols, value_name='Value')
+        df_melt = df_melt.rename(columns={"variable": "Tissue-Contour"})
+        df_meltf = df_melt.dropna()
+        mult_index= ['Parameter', 'Tissue-Contour']
+        df_multi = df_meltf.set_index(mult_index)
+
+        df_new = df_multi.copy(deep=True)
+        if 'CL' in vars:
+            dict_CL = {}
+            df_CL = df_multi.loc[[dict_names['CL']]]
+            for index, row in df_CL.iterrows():
+                # print(index)
+                if isinstance(row['Value'], dict): 
+                    df_new.drop(index, axis=0, inplace=True)
+                    for key, item in row['Value'].items():
+                        # print(key, item) 
+                        new_index = 'Centreline: '+key
+                        new_variable = index[1]
+                        dict_CL[(new_index, new_variable)] = item
+
+            df_CL = pd.DataFrame(dict_CL, index =[0])
+            df_CL_melt = pd.melt(df_CL, var_name=mult_index,value_name='Value')
+            df_CL_melt = df_CL_melt.set_index(mult_index)
+
+        df_final = pd.concat([df_new, df_CL_melt])
+        df_final = df_final.sort_values(by=['Parameter'])
+
+        #Change True Values to TBO
+        values_updated = []
+        for index, row in df_final.iterrows(): 
+            print(index, type(row['Value']))
+            if isinstance(row['Value'], bool): 
+                values_updated.append('TBO')
+            else: 
+                values_updated.append(row['Value'])
+
+        df_final['Value'] = values_updated
+        print('df_final: ', df_final)
+
+        self.df_res = df_final
+    
     def fill_workflow_OLD(self):
         #OLD Version
         tree.setColumnCount(2)
@@ -5564,6 +5691,52 @@ class MyTreeItem(QtWidgets.QWidget):
         layout.addWidget(self.status)
         layout.addStretch()
         self.setMaximumWidth(200)
+
+class MyPandasTable(QAbstractTableModel): 
+    def __init__(self, data, parent=None):
+        super().__init__(parent)
+        self._data = data
+    
+    # def __init__(self, data):
+    #     super(TableModel, self).__init__()
+    #     self._data = data
+
+    def rowCount(self, index): 
+        return self._data.shape[0]
+    
+    def columnCount(self, index): 
+        return self._data.shape[1]
+    
+    def data(self, index, role):
+        value = self._data.iloc[index.row(), index.column()]
+        if role == Qt.ItemDataRole.DisplayRole:
+            if isinstance(value, float):
+                # Render float to 2 dp
+                return "%.2f" % value
+            if isinstance(value, str):
+                # Render strings with quotes
+                return '"%s"' % value
+            return value
+        
+        if role == Qt.ItemDataRole.TextAlignmentRole:
+            # value = self._data[index.row()][index.column()]
+            # Align right, vertical middle.
+            return Qt.AlignmentFlag.AlignVCenter + Qt.AlignmentFlag.AlignHCenter
+        
+        if role == Qt.ItemDataRole.ForegroundRole:
+            # value = self._data[index.row()][index.column()]
+            if isinstance(value, str):
+                return QColor('blue')
+        
+    def headerData(self, section, orientation, role):
+        # section is the index of the column/row.
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return str(self._data.columns[section])
+
+            if orientation == Qt.Orientation.Vertical:
+                return str(self._data.index[section])
+
 
 #%% SOUNDS - ########################################################
 # Sound functions

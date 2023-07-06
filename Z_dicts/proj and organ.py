@@ -185,6 +185,8 @@ except:
 
 main_titles_set = sorted(list(set(main_titles)))
 
+
+
 dict_titles = {'A-Create3DMesh': {'title': 'Create 3D Mesh', 'short': 'createMesh'},
  'A-Set_Orientation' : {'title': 'Set Orientation', 'short': 'setOrientation'},
  'B-TrimMesh': {'title': 'Trim Meshes', 'short': 'trimMesh'},
@@ -198,12 +200,15 @@ dict_titles = {'A-Create3DMesh': {'title': 'Create 3D Mesh', 'short': 'createMes
  'E-Sections' : {'title': 'Sections', 'short': 'sect'},
  'E-Segments' : {'title': 'Regions', 'short': 'segm'}}
 
+
 row = 0
+cS = []
 for title in main_titles_set:
     print('\nTITLE:', title)
     #Create a first label
     label = dict_titles[title]['title']
     print(row, label)
+    short = dict_titles[title]['short']
     #Assign label to table 
 
     row +=1
@@ -221,6 +226,8 @@ for title in main_titles_set:
         if title == 'A-Set_Orientation':
             cleaned_key = split_key[-1]
             label = cleaned_key
+            cS_name = short+'_('+label+')'
+            cS.append(cS_name)
             print('aaa:', row, label)
         elif title == 'C-Centreline':
             if len(split_key) == 3: 
@@ -233,18 +240,129 @@ for title in main_titles_set:
                 label = '_'.join(cleaned_key)
                 print('ccc:', row, label)
                 print(key)
+                subproc = dict_titles[title]['subprocesses'][split_key[1]]['short']
+                cS_name = short+'_'+subproc+'_('+label+')'
+                cS.append(cS_name)
         else: 
             cleaned_key = split_key[1:-1]
             label = '_'.join(cleaned_key)
             print('ddd:', row, label)
+            cS_name = short+'_('+label+')'
+            cS.append(cS_name)
+
         #Assign label to table 
 
         row +=1
+
+titles_inv = {'createMesh': 'A-Create3DMesh',
+            'setOrientation': 'A-Set_Orientation',
+            'trimMesh': 'B-TrimMesh',
+            'setCentreline_simpMesh': 'C-Centreline:SimplifyMesh', 
+            'setCentreline_vmtkCL': 'C-Centreline:vmtk_CL', 
+            'setCentreline_buildCL': 'C-Centreline:buildCL', 
+            'ballooning' : 'D-Ballooning',
+            'thExtInt' : 'D-Thickness_ext>int',
+            'thIntExt' : 'D-Thickness_int>ext' ,
+            'sect' : 'E-Sections',
+            'segm' : 'E-Segments'}
+pass
+workflow_f = workflow
+for cs in cS: 
+    # cS = getattr(self, cs)
+    split_cs = cs.split('_(')
+    if len(split_cs) == 2: 
+        proc, ch_info = split_cs
+
+        proc_inv = titles_inv[proc]
+        split_ch_info = ch_info[:-1].split('_')
+        if len(split_ch_info) == 2: 
+            ch, cont = split_ch_info
+            final_key = proc_inv+':'+ch+':'+cont+':Status'
+        elif len(split_ch_info) == 3: 
+            cut, ch, cont = split_ch_info
+            final_key = proc_inv+':'+cut+':'+ch+':'+cont+':Status'
+    else: 
+        #Ballooning
+        proc, ch_info, cl_info = split_cs
+        proc_inv = titles_inv[proc]
+        ch, cont = ch_info.split('_')
+        cl_info = cl_info.split(')')[0]
+        final_key = proc_inv+':'+ch+':'+cont+'_('+cl_info+'):Status'
+    if final_key in keys_flat_filtered:
+        print('True:', final_key)
+    else: 
+        print('---False:', final_key)
     
+#https://stackoverflow.com/questions/53927460/select-rows-in-pandas-multiindex-dataframe
+import pandas as pd
+#Actual names
+params = all_info['mH_settings']['setup']['params']
+dict_names = {}
+for pp in params:
+    var = params[pp]
+    dict_names[var['s']] = var['l']
+dict_names['Ellip'] = 'Ellipsoid'
+
+measurements = {'SA': {}, 'Vol': {'ch1_int_whole': True, 'ch1_tiss_whole': True, 'ch1_ext_whole': True, 'ch2_int_whole': True, 'ch2_tiss_whole': True, 'ch2_ext_whole': True, 'chNS_int_whole': True, 'chNS_tiss_whole': True, 'chNS_ext_whole': True}, 'CL': {'ch1_int_whole': {'looped_length': 278.5729836723767, 'lin_length': 196.40371704101562}, 'ch2_ext_whole': {'looped_length': 283.3270263262093, 'lin_length': 190.81484985351562}}, 'th_i2e': {'ch1_tiss_whole': True, 'ch2_tiss_whole': True, 'chNS_tiss_whole': True}, 'th_e2i': {'ch1_tiss_whole': True}, 'ball': {'ch1_int_(ch1_int)': True, 'ch1_int_(ch2_ext)': True}, 'LoopDir': {'roi': True}, 'AoLen': {'roi': True}, 'TgBright': {'roi': True}, 'Vol(segm)': {'Cut1_ch2_int_segm1': True, 'Cut1_ch2_int_segm2': True, 'Cut1_ch2_tiss_segm1': True, 'Cut1_ch2_tiss_segm2': True, 'Cut1_chNS_tiss_segm1': 171587.41563409223, 'Cut1_chNS_tiss_segm2': 65547.06146452879, 'Cut1_ch1_tiss_segm1': 239646.87518697616, 'Cut1_ch1_tiss_segm2': 233777.4398440119, 'Cut1_ch1_ext_segm1': 1132707.885333426, 'Cut1_ch1_ext_segm2': 666060.1459218762}, 'Ellip(segm)': {'Cut1_ch2_int_segm1': True, 'Cut1_ch2_int_segm2': True, 'Cut1_ch2_tiss_segm1': True, 'Cut1_ch2_tiss_segm2': True, 'Cut1_chNS_tiss_segm1': True, 'Cut1_chNS_tiss_segm2': True, 'Cut1_ch1_tiss_segm1': True, 'Cut1_ch1_tiss_segm2': True, 'Cut1_ch1_ext_segm1': True, 'Cut1_ch1_ext_segm2': True}, 'Vol(sect)': {'Cut1_ch2_tiss_sect1': True, 'Cut1_ch2_tiss_sect2': True, 'Cut1_chNS_tiss_sect1': True, 'Cut1_chNS_tiss_sect2': True, 'Cut1_ch1_tiss_sect1': 244132.6523907116, 'Cut1_ch1_tiss_sect2': 232157.19616130897, 'Cut2_ch2_tiss_sect1': True, 'Cut2_ch2_tiss_sect2': True, 'Cut2_chNS_tiss_sect1': True, 'Cut2_chNS_tiss_sect2': True, 'Cut2_ch1_tiss_sect1': 232110.88629832206, 'Cut2_ch1_tiss_sect2': 244163.6629483923}, 'hm3Dto2D': {'ch1_int': True}}
+df_meas = pd.DataFrame.from_dict(measurements)
+df_index = pd.DataFrame.from_dict(measurements, orient='index')
+vars2drop = ['th_e2i', 'th_i2e', 'ball', 'hm3Dto2D']
+vars = list(df_index.index)
+for var in vars: 
+    if var in vars2drop: 
+        df_index = df_index.drop(var)
+cols = list(df_index.columns)
+
+#Add column with actual names of variables
+var_names = []
+for index, row in df_index.iterrows(): 
+    try: 
+        var_names.append(dict_names[index])
+    except: 
+        var, typpe = index.split('(')
+        if typpe == 'segm)': 
+            name = 'Segment'
+        else: 
+            name = 'Region'
+        var_names.append(dict_names[var]+': '+name)
+
+df_index['Parameter'] = var_names
+df_index = df_index.reset_index()
+df_index = df_index.drop(['index'], axis=1)
+df_melt = pd.melt(df_index, id_vars = ['Parameter'],  value_vars=cols, value_name='Value')
+df_melt = df_melt.rename(columns={"variable": "Tissue-Contour"})
+df_meltf = df_melt.dropna()
+mult_index= ['Parameter', 'Tissue-Contour']
+df_multi = df_meltf.set_index(mult_index)
+
+df_new = df_multi.copy(deep=True)
+if 'CL' in vars:
+    dict_CL = {}
+    df_CL = df_multi.loc[[dict_names['CL']]]
+    for index, row in df_CL.iterrows():
+        # print(index)
+        if isinstance(row['value'], dict): 
+            df_new.drop(index, axis=0, inplace=True)
+            for key, item in row['value'].items():
+                # print(key, item) 
+                new_index = 'Centreline: '+key
+                new_variable = index[1]
+                dict_CL[(new_index, new_variable)] = item
+
+    df_CL = pd.DataFrame(dict_CL, index =[0])
+    df_CL_melt = pd.melt(df_CL, var_name=['index', 'variable'])
+    df_CL_melt = df_CL_melt.set_index(['index', 'variable'])
+
+
+df_final = pd.concat([df_new, df_CL_melt])
+df_final = df_final.sort_values(by=['index'])
 
 
 
 
+
+
+df_multi.to_csv('out.csv', index=True)  
 
 
 

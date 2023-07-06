@@ -699,6 +699,7 @@ def run_heatmaps3D(controller, btn):
             hm2d_btn.setEnabled(True)
         nn+=1
         controller.main_win.prog_bar_update(nn)
+        controller.main_win.update_workflow_progress()
 
     # Update organ workflow
     all_all_done = []
@@ -779,6 +780,9 @@ def run_heatmaps3D(controller, btn):
     
 
     # print(thck_names)
+def run_heatmaps2D(controller, btn):
+    pass
+
     
 def run_segments(controller, btn): 
 

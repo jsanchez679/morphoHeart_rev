@@ -57,8 +57,7 @@ class NumpyArrayEncoder(json.JSONEncoder):
         else:
             return super(NumpyArrayEncoder, self).default(obj)
         
-#%% - morphoHeart B functions
-#%% func - s32Meshes
+#Functions linked to GUI
 def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):#
 
     workflow = organ.workflow['morphoHeart']
@@ -119,7 +118,6 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):#
         win.win_msg('*fcM.s32Meshes!')
         alert('error_beep')
 
-#%% func - clean_ch
 def clean_ch(organ, gui_clean, win, plot_settings=(False,None)):#
 
     workflow = organ.workflow['morphoHeart']
@@ -177,7 +175,6 @@ def clean_ch(organ, gui_clean, win, plot_settings=(False,None)):#
     print('organ.mH_settings:', organ.mH_settings)
     print('organ.workflow:', workflow)
    
-#%% func - trim_top_bottom_S3s
 def trim_top_bottom_S3s(organ, meshes, no_cut, cuts_out, win):#
     
     workflow = organ.workflow['morphoHeart']
@@ -374,6 +371,7 @@ def extract_chNS(organ, rotateZ_90, win, plot_settings):#
     print('organ.mH_settings:', organ.mH_settings)
     print('organ.workflow:', workflow)
     
+#Centreline functions
 def proc_meshes4cl(organ, win):#
     """
     Funtion that cuts the inflow and outflow tract of meshes from which 
@@ -795,6 +793,7 @@ def extend_CL(pts_int_o, pts_withOutf, num, nPoints, plane_info):
     
     return pts_int_opt, pt2add, sph_m10
 
+#Thickness / Ballooning
 def extract_ballooning(organ, name, name_cl, setup):#
    
     ch, cont = name
@@ -920,6 +919,195 @@ def get_distance_to(mesh_to, mesh_from, from_name, range, color_map='turbo'):#
     
     return mesh_toB, distance, min_max
 
+#Heatmaps 3D-2D
+def get_extCL_onSurf(filename, mesh, kspl_ext, pl_CLRibbon, process_plotshow = True):
+
+    #pl_CLRibbon = pl_normal for proj centreline to make ribbon
+
+    
+    # - Get unitary normal of plane to create CL_ribbon
+    pl_normCLRibbon = unit_vector(pl_CLRibbon['pl_normal'])
+
+    
+    # Increase the resolution of the extended centreline and interpolate to unify sampling
+    xd = np.diff(kspl_ext.points()[:,0])
+    yd = np.diff(kspl_ext.points()[:,1])
+    zd = np.diff(kspl_ext.points()[:,2])
+    dist = np.sqrt(xd**2+yd**2+zd**2)
+    u = np.cumsum(dist)
+    u = np.hstack([[0],u])
+    t = np.linspace(0, u[-1],1000)
+    resamp_pts = interpn((u,), kspl_ext.points(), t)
+    kspl_ext = vedo.KSpline(resamp_pts, res = 1000).lw(5).color('deeppink').legend('kspl_extHR')
+
+    #Find the points that intersect with the ribbon
+    pts_int = []
+    for num in range(len(kspl_ext.points())):
+        try:
+            cl_pt_test = kspl_ext.points()[num]
+            pt_int = mesh.intersectWithLine(cl_pt_test, cl_pt_test+150*pl_normCLRibbon)
+            rad_pts = [np.linalg.norm(x- cl_pt_test) for x in pt_int]
+            # if len(rad_pts)>1:
+                # print(rad_pts)
+            ind_pt = np.where(rad_pts == max(rad_pts))[0][0]
+            # print(ind_pt)
+            pts_int.append(pt_int[ind_pt])
+
+        except:
+            # print('exc')
+            if num > 750:
+                dist_pts = kspl_ext.points()[num] - kspl_ext.points()[num-1]
+                try:
+                    pt_int = pts_int[-1]+dist_pts
+                    pts_int.append(pt_int)
+                except:
+                    # print('pass')
+                    pass
+            else:
+                pass
+
+    # KSpline on surface
+    kspl_vSurf = KSpline(pts_int).color('black').lw(4).legend('kspl_VSurfaceIntMyoc')
+
+    if process_plotshow:
+        vp = Plotter(N=1, axes=4)
+        vp.show(kspl_vSurf, kspl_ext, mesh, at = 0, interactive = True)
+
+    return kspl_vSurf
+
+def getExtCLHighRes(filename, mesh, kspl_ext, kspl_CL, dict_planes, process_plotshow = True):
+
+    inv = [True, False]
+    # Create kspline_extended with higher resolution, but cut it using the inflow and outflow  planes defined to
+    # cut inf anf outf tracts of hearts to extract centreline
+
+    add_pts = 50
+    try:
+        # print('-CLHR Opt A')
+        kspl_CLnew = kspl_ext.clone()
+        # Cut with inflow plane
+        n_points_In = -10
+        for invert in inv:
+            kspl_test = kspl_ext.clone().cutWithMesh(Plane(pos=dict_planes['pl2CutMesh_inflow']['pl_centre'], normal=dict_planes['pl2CutMesh_inflow']['pl_normal'], sx=300), invert=invert)
+            # print('kspl_test In',kspl_test.NPoints())
+            if kspl_test.NPoints() > n_points_In:
+                # print('in-In')
+                inv_fin_In = invert
+                kspl_CLnew_cutIn = kspl_ext.clone().cutWithMesh(Plane(pos=dict_planes['pl2CutMesh_inflow']['pl_centre'], normal=dict_planes['pl2CutMesh_inflow']['pl_normal'], sx=300), invert=inv_fin_In).color('darkorange')
+                n_points_In = kspl_CLnew_cutIn.NPoints()
+        _, num_pt_inf = findClosestPtGuess(kspl_CLnew_cutIn.points(), kspl_ext.points(), index_guess = -1)
+    except:
+        num_pt_inf = kspl_ext.NPoints()-1
+
+    try:
+        # print('-CLHR Opt B')
+        n_points_Out = -10
+        for invert in inv:
+            kspl_test = kspl_ext.clone().cutWithMesh(Plane(pos=dict_planes['pl2CutMesh_outflow']['pl_centre'], normal=dict_planes['pl2CutMesh_outflow']['pl_normal'], sx=300), invert=invert)
+            # print('kspl_test Out',kspl_test.NPoints())
+            if kspl_test.NPoints() > n_points_Out:
+                # print('in-Out')
+                inv_fin_Out = invert
+                kspl_CLnew_cutOut = kspl_ext.clone().cutWithMesh(Plane(pos=dict_planes['pl2CutMesh_outflow']['pl_centre'], normal=dict_planes['pl2CutMesh_outflow']['pl_normal'], sx=300), invert=inv_fin_Out).color('lime')
+                n_points_Out = kspl_CLnew_cutOut.NPoints()
+        # _, num_pt_outf =  findClosestPt(kspl_CLnew_cutOut.points()[-1], kspl_ext.points())#, index_guess = 0)
+        _, num_pt_outf =  findClosestPtGuess(kspl_CLnew_cutOut.points(), kspl_ext.points(), index_guess = 0)
+    except:
+        num_pt_outf = 0
+    # print('Initial def:',num_pt_outf, num_pt_inf)
+
+    # Define starting point of new kspline
+    if (num_pt_outf-add_pts) < 0:
+        ind_outf = 0
+    else:
+        ind_outf = num_pt_outf - add_pts
+
+    # Define ending point of new kspline
+    if (num_pt_inf+add_pts) > len(kspl_ext.points()):
+        ind_inf = len(kspl_ext.points())
+    else:
+        ind_inf = num_pt_inf+add_pts
+    # print('Final def:',ind_outf, ind_inf)
+
+    # Create new extended and cut kspline with higher resolution
+    kspl_CLnew = KSpline(kspl_ext.points()[ind_outf:ind_inf], res = 600).lw(5).color('deeppink').legend(kspl_CL._legend+'_HighRes')
+
+    if process_plotshow:
+        vp = Plotter(N=3, axes=4)
+        vp.show(kspl_CLnew, kspl_ext, mesh, at = 0)
+        vp.show(kspl_CLnew_cutIn, mesh, at = 1)
+        vp.show(kspl_CLnew_cutOut, mesh, at = 2, interactive = True)
+
+    return kspl_CLnew
+
+def ksplChamberCut(mesh, kspl_CLnew, dict_shapes, dict_pts, process_plotshow = True):
+
+    cyl_chamber = dict_shapes['cyl2CutChambers_final']
+    disc = Cylinder(pos = cyl_chamber['cyl_centre'],r = cyl_chamber['radius_max'], height = 2*0.225,
+                    axis = cyl_chamber['cyl_axis'], c = 'purple', cap = True, res = 300)
+
+    # Find position within new kspline cut by disc used to cut chambers (num_pt new)
+    ksplCL_cut = kspl_CLnew.clone().cutWithMesh(Plane(pos=dict_shapes['cyl2CutChambers_final']['cyl_centre'], normal=dict_shapes['cyl2CutChambers_final']['cyl_axis'], sx=300), invert=True)
+    # Find point of new kspline closer to last point of kspline cut
+    # print('-ChCut')
+    _, num_pt = findClosestPtGuess(ksplCL_cut.points(), kspl_CLnew.points(),350)
+    # print('num_pt',num_pt)
+
+    # Add pt to dict
+    sph_cut = Sphere(pos = kspl_CLnew.points()[num_pt], r=4, c='gold').legend('sph_ChamberCutCLHighRes')
+    dict_pts = addPoints2Dict(spheres = [sph_cut], info = [''], dict_pts = dict_pts)
+    dict_pts['numPt_CLChamberCutHighRes'] = num_pt
+
+    # Create kspline for each chamber
+    n_vent_pts = 0
+    res_v = 595
+    while n_vent_pts < 610:
+        res_v +=1
+        kspl_vent_pts = kspl_CLnew.points()[0:num_pt]
+        kspl_vent = KSpline(points = kspl_vent_pts[::-1], res = res_v).color('tomato').lw(15).legend('kspl_vent')
+        # kspl_vent = KSpline(points = kspl_CLnew.points()[0:num_pt], res = res_v).color('tomato').lw(8).legend('kspl_vent')
+        n_vent_pts = kspl_vent.NPoints()
+
+    n_atr_pts = 0
+    res_a = 595
+    while n_atr_pts < 610:
+        res_a +=1
+        kspl_atr = KSpline(points = kspl_CLnew.points()[num_pt:], res = res_a).color('goldenrod').lw(15).legend('kspl_atr')
+        n_atr_pts = kspl_atr.NPoints()
+
+
+
+    if process_plotshow:
+        vp = Plotter(N=2, axes=4)
+        vp.show(kspl_CLnew, kspl_vent, sph_cut, disc, mesh, at = 0)
+        vp.show(kspl_CLnew, kspl_atr, mesh, sph_cut, disc, at = 1, interactive = True)
+
+    return kspl_vent, kspl_atr, dict_pts, sph_cut
+
+def unloopChembers(): 
+    print('\n\n- Unlooping the heart chambers...')
+    dfs_unlooped = []
+    spheres_zeroDeg = []
+    arr_vectZeroDeg = []
+
+    if plotshow:
+        plotevery = no_planes // 5
+        print('- Plotting every X number of planes:', plotevery)
+
+    # KSpline on surface
+    kspl_vSurf = getExtCLonSurf(filename, mesh, kspl_ext, pl_CLRibbon, False)
+    # print(len(kspl_vSurf.points()))
+
+    # Create new extended and cut kspline with higher resolution
+    kspl_CLnew = getExtCLHighRes(filename, mesh, kspl_ext, kspl_CL, dict_planes, False)
+
+    # # Create kspline for each chamber
+    kspl_vent, kspl_atr, dict_pts, sph_cut =  ksplChamberCut(mesh, kspl_CLnew, dict_shapes, dict_pts, False)
+    # Find position within new kspline cut by disc used to cut chambers (num_pt new)
+    num_pt_AVC = dict_pts['numPt_CLChamberCutHighRes']
+
+
+#Meshes functions
 def s3_to_mesh(s3, res, name:str, color='cyan', rotateZ_90=True):
 
     verts, faces, _, _ = measure.marching_cubes(s3, spacing=res, method='lewiner')
@@ -1175,80 +1363,6 @@ def classify_segments_from_ext(meshes, dict_segm, ext_sub):
     dict_segm['meshes_number'] = list_meshes
             
     return dict_segm
-    
-def save_submesh(organ, submesh, mesh, win, ext='.vtk'):
-    
-    mesh_name = organ.user_organName+'_'+submesh.sub_name_all+ext
-    mesh_dir = organ.dir_res(dir ='meshes') / mesh_name
-    mesh.write(str(mesh_dir))
-    
-    #Update mH_settings with directory
-    cut, ch, cont, segm = submesh.sub_name_all.split('_')
-    proc_set = ['wf_info', 'segments', 'setup', cut, 'dirs', ch, cont]
-    organ.update_settings(proc_set+[segm], mesh_name, 'mH')
-
-    print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
-    print('>> Mesh '+mesh_name+' has been saved!')
-    win.win_msg('Mesh '+mesh_name+' has been saved!')
-    alert('countdown')        
-    
-def measure_submesh(organ, submesh, mesh, measurements): 
-
-    if submesh.sub_mesh_type == 'Segment': 
-        name = 'segm'
-    else: 
-        name = 'sect'
-
-    if measurements['Vol']: 
-        vol = mesh.volume()
-        organ.mH_settings['measure']['Vol('+name+')'][submesh.sub_name_all] = vol
-        # data['Vol'] = vol
-    if measurements['SA']: 
-        area = mesh.area()
-        organ.mH_settings['measure']['SA('+name+')'][submesh.sub_name_all] = area
-        # data['SA'] = area
-    if name == 'segm': 
-        if measurements['Ellip']: 
-            #Do the ellipsoid!
-            pass
-    
-def create_subsegment(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):#
-    
-    #Create submesh - segment
-    subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
-    #Assign meshes and measure them
-    list_meshes = sp_dict_segm['meshes_number']
-    #Get segm measurements
-    measurements = organ.mH_settings['setup']['segm']['measure']
-    #Find meshes and add them to the mesh
-    mesh_segm = []; 
-    print('len(cut_masked) -'+subsgm.sub_name_all+': ', len(cut_masked))
-    for cut_mesh in cut_masked:
-        if isinstance(cut_mesh, vedo.Mesh):
-            if cut_mesh.info['legend'] in list_meshes: 
-                mesh_segm.append(cut_mesh)
-
-    if len(mesh_segm) == 0: 
-        print('Something went wrong and no meshes were recognised as part of this segment: ', subsgm.sub_name_all)
-        final_segm_mesh = []
-    else: 
-        #Merge all meshes and apply final settings
-        final_segm_mesh = vedo.merge(mesh_segm)
-        final_segm_mesh.color(color).alpha(0.1).legend(subsgm.sub_legend)
-        subsgm.color = color
-        #Add submesh to organ
-        organ.add_submesh(subsgm)
-        #Get measurements
-        measure_submesh(organ, subsgm, final_segm_mesh, measurements)
-    
-        # Update organ workflow
-        cut, ch, cont, segm = subsgm.sub_name_all.split('_')
-        proc_wft = ['MeshesProc', 'E-Segments', cut, ch, cont, 'Status']
-        organ.update_mHworkflow(process = proc_wft, update = 'DONE')
-
-    # subsgm: instance of class submesh
-    # final_segm_mesh: instance of mesh (vedo)
-    return subsgm, final_segm_mesh
 
 #Sections/Regions Functions
 def get_stack_clRibbon(organ, mesh_cl, nPoints, nRes, pl_normal, clRib_type):
@@ -1534,6 +1648,81 @@ def create_subsection(organ, mesh, cut, sect, color):
 
     return subsct, final_sect_mesh
     
+#General SubMeshes
+def save_submesh(organ, submesh, mesh, win, ext='.vtk'):
+    
+    mesh_name = organ.user_organName+'_'+submesh.sub_name_all+ext
+    mesh_dir = organ.dir_res(dir ='meshes') / mesh_name
+    mesh.write(str(mesh_dir))
+    
+    #Update mH_settings with directory
+    cut, ch, cont, segm = submesh.sub_name_all.split('_')
+    proc_set = ['wf_info', 'segments', 'setup', cut, 'dirs', ch, cont]
+    organ.update_settings(proc_set+[segm], mesh_name, 'mH')
+
+    print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
+    print('>> Mesh '+mesh_name+' has been saved!')
+    win.win_msg('Mesh '+mesh_name+' has been saved!')
+    alert('countdown')        
+    
+def measure_submesh(organ, submesh, mesh, measurements): 
+
+    if submesh.sub_mesh_type == 'Segment': 
+        name = 'segm'
+    else: 
+        name = 'sect'
+
+    if measurements['Vol']: 
+        vol = mesh.volume()
+        organ.mH_settings['measure']['Vol('+name+')'][submesh.sub_name_all] = vol
+        # data['Vol'] = vol
+    if measurements['SA']: 
+        area = mesh.area()
+        organ.mH_settings['measure']['SA('+name+')'][submesh.sub_name_all] = area
+        # data['SA'] = area
+    if name == 'segm': 
+        if measurements['Ellip']: 
+            #Do the ellipsoid!
+            pass
+    
+def create_subsegment(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):#
+    
+    #Create submesh - segment
+    subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
+    #Assign meshes and measure them
+    list_meshes = sp_dict_segm['meshes_number']
+    #Get segm measurements
+    measurements = organ.mH_settings['setup']['segm']['measure']
+    #Find meshes and add them to the mesh
+    mesh_segm = []; 
+    print('len(cut_masked) -'+subsgm.sub_name_all+': ', len(cut_masked))
+    for cut_mesh in cut_masked:
+        if isinstance(cut_mesh, vedo.Mesh):
+            if cut_mesh.info['legend'] in list_meshes: 
+                mesh_segm.append(cut_mesh)
+
+    if len(mesh_segm) == 0: 
+        print('Something went wrong and no meshes were recognised as part of this segment: ', subsgm.sub_name_all)
+        final_segm_mesh = []
+    else: 
+        #Merge all meshes and apply final settings
+        final_segm_mesh = vedo.merge(mesh_segm)
+        final_segm_mesh.color(color).alpha(0.1).legend(subsgm.sub_legend)
+        subsgm.color = color
+        #Add submesh to organ
+        organ.add_submesh(subsgm)
+        #Get measurements
+        measure_submesh(organ, subsgm, final_segm_mesh, measurements)
+    
+        # Update organ workflow
+        cut, ch, cont, segm = subsgm.sub_name_all.split('_')
+        proc_wft = ['MeshesProc', 'E-Segments', cut, ch, cont, 'Status']
+        organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+
+    # subsgm: instance of class submesh
+    # final_segm_mesh: instance of mesh (vedo)
+    return subsgm, final_segm_mesh
+
 #%% - Measuring functions
 def measure_centreline(organ, nPoints):
     
@@ -1762,11 +1951,6 @@ def plot_meas_meshes(organ, meas:list, color_map = 'turbo', alpha=1):
         plot_grid(obj, txt, axes=5, sc_side=max(organ.get_maj_bounds()))
         
 def plot_organCLs(organ, axes=5, plotshow=True):
-
-    # # Select the mesh to use to measure organ orientation
-    # dict_cl = plot_organCLs(self)
-    # q = 'Select the centreline you want to use to measure organ orientation:'
-    # extend_dir = ask4input(q, dict_cl, int)
 
     organ_info = organ.mH_settings['setup']
     dict_cl = {}; obj = []; txt = []; n = 0
@@ -2233,8 +2417,6 @@ def get_interpolated_pts(points, nPoints):
     pts_interp = np.c_[xnew, ynew, znew]
 
     return pts_interp
-#%% 
-
 
 #%% Module loaded
 print('morphoHeart! - Loaded funcMeshes')

@@ -756,7 +756,39 @@ QScrollBar::handle:vertical {
 
 QScrollBar::handle:vertical:hover {
 	background-color:rgb(0, 0, 0);
-}</string>
+}
+
+QHeaderView::section {
+    background-color: rgb(200, 200, 200);
+    padding: 0px;
+	font: bold 10pt &quot;Calibri&quot;;
+    border-style: none;
+    border-bottom: 1px solid #fffff8;
+    border-right: 1px solid #fffff8;
+}
+
+QHeaderView::section:horizontal
+{
+    border-top: 1px solid #fffff8;
+}
+
+QHeaderView::section:vertical
+{
+    border-left: 1px solid #fffff8;
+}
+
+QTableWidget {
+font: 25 10pt &quot;Calibri&quot;;
+padding:0px;
+height: 20px;
+}
+
+QTableWidget::item:focus{
+    border: 1px solid rgb(162, 0, 122);
+    background-color: white;
+	color: balck;
+}
+</string>
         </property>
         <property name="editTriggers">
          <set>QAbstractItemView::NoEditTriggers</set>

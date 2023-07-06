@@ -280,7 +280,19 @@ class Controller:
         self.main_win.hm_play10.clicked.connect(lambda: self.run_heatmaps3D(btn=10))
         self.main_win.hm_play11.clicked.connect(lambda: self.run_heatmaps3D(btn=11))
         self.main_win.hm_play12.clicked.connect(lambda: self.run_heatmaps3D(btn=12))
-        # self.main_win.heatmaps2D_play.clicked.connect(lambda: self.run_heatmaps2D())
+
+        self.main_win.hm2d_play1.clicked.connect(lambda: self.run_heatmaps2D(btn=1))
+        self.main_win.hm2d_play2.clicked.connect(lambda: self.run_heatmaps2D(btn=2))
+        self.main_win.hm2d_play3.clicked.connect(lambda: self.run_heatmaps2D(btn=3))
+        self.main_win.hm2d_play4.clicked.connect(lambda: self.run_heatmaps2D(btn=4))
+        self.main_win.hm2d_play5.clicked.connect(lambda: self.run_heatmaps2D(btn=5))
+        self.main_win.hm2d_play6.clicked.connect(lambda: self.run_heatmaps2D(btn=6))
+        self.main_win.hm2d_play7.clicked.connect(lambda: self.run_heatmaps2D(btn=7))
+        self.main_win.hm2d_play8.clicked.connect(lambda: self.run_heatmaps2D(btn=8))
+        self.main_win.hm2d_play9.clicked.connect(lambda: self.run_heatmaps2D(btn=9))
+        self.main_win.hm2d_play10.clicked.connect(lambda: self.run_heatmaps2D(btn=10))
+        self.main_win.hm2d_play11.clicked.connect(lambda: self.run_heatmaps2D(btn=11))
+        self.main_win.hm2d_play12.clicked.connect(lambda: self.run_heatmaps2D(btn=12))
 
         # SEGMENTS
         self.main_win.segments_play.clicked.connect(lambda: self.run_segments())
@@ -585,6 +597,9 @@ class Controller:
 
     def run_heatmaps3D(self, btn=None):
         mA.run_heatmaps3D(controller=self, btn = btn)
+
+    def run_heatmaps2D(self, btn=None):
+        mA.run_heatmaps2D(controller=self, btn = btn)
 
     # def run_heatmaps2D(self):
     #     mA.run_heatmaps2D(controller=self)

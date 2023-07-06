@@ -2921,7 +2921,7 @@ class Mesh_mH():
         
         return linLine
 
-    def get_clRibbon(self, nPoints, nRes, pl_normal, clRib_type):
+    def get_clRibbon(self, nPoints, nRes, pl_normal, clRib_type, return_kspl_ext=False):
         """
         Function that creates dorso-ventral extended centreline ribbon
         """
@@ -2986,7 +2986,10 @@ class Mesh_mH():
             cl_ribbon = vedo.merge(cl_ribbon)
             cl_ribbon.legend('HDStack').wireframe(True)
             
-        return cl_ribbon
+        if return_kspl_ext:
+            return cl_ribbon, kspl_ext
+        else: 
+            return cl_ribbon
         
     def get_volume(self): 
         mesh_vol = self.mesh.volume()

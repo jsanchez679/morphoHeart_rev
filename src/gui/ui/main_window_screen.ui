@@ -1881,7 +1881,7 @@ QScrollBar::handle:vertical:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-1359</y>
+                <y>-1455</y>
                 <width>632</width>
                 <height>3705</height>
                </rect>
@@ -14711,53 +14711,7 @@ background-color: rgb(211, 211, 211);
                             </item>
                            </layout>
                           </item>
-                          <item row="9" column="8">
-                           <widget class="QPushButton" name="hm2d_play9">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="10" column="5" alignment="Qt::AlignHCenter">
+                          <item row="10" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot10">
                             <property name="enabled">
                              <bool>false</bool>
@@ -14833,52 +14787,6 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="12" column="6">
-                           <widget class="QPushButton" name="hm_play12">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="1" column="4" alignment="Qt::AlignHCenter">
                            <widget class="QCheckBox" name="d3d2_1">
                             <property name="enabled">
@@ -14922,7 +14830,7 @@ border-color: rgb(115, 115, 115)}
                             </property>
                            </widget>
                           </item>
-                          <item row="1" column="5" alignment="Qt::AlignHCenter">
+                          <item row="1" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot1">
                             <property name="enabled">
                              <bool>false</bool>
@@ -15066,53 +14974,7 @@ background-color: rgb(211, 211, 211);
                             </item>
                            </layout>
                           </item>
-                          <item row="10" column="6">
-                           <widget class="QPushButton" name="hm_play10">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="0" column="7" alignment="Qt::AlignTop">
+                          <item row="0" column="8" alignment="Qt::AlignTop">
                            <widget class="QLabel" name="lab_no_ch_68">
                             <property name="minimumSize">
                              <size>
@@ -15369,7 +15231,7 @@ background-color: rgb(211, 211, 211);
                             </item>
                            </layout>
                           </item>
-                          <item row="3" column="7" alignment="Qt::AlignHCenter">
+                          <item row="3" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot3_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -15488,53 +15350,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="8" column="6">
-                           <widget class="QPushButton" name="hm_play8">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="7" column="7" alignment="Qt::AlignHCenter">
+                          <item row="7" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot7_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -15610,7 +15426,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="10" column="7" alignment="Qt::AlignHCenter">
+                          <item row="10" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot10_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -15825,7 +15641,7 @@ background-color: rgb(211, 211, 211);
                             </property>
                            </widget>
                           </item>
-                          <item row="4" column="5" alignment="Qt::AlignHCenter">
+                          <item row="4" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot4">
                             <property name="enabled">
                              <bool>false</bool>
@@ -15873,7 +15689,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="6" column="7" alignment="Qt::AlignHCenter">
+                          <item row="6" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot6_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -15921,191 +15737,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="6" column="6">
-                           <widget class="QPushButton" name="hm_play6">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="1" column="6">
-                           <widget class="QPushButton" name="hm_play1">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="1" column="8">
-                           <widget class="QPushButton" name="hm2d_play1">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="12" column="8">
-                           <widget class="QPushButton" name="hm2d_play12">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="11" column="5" alignment="Qt::AlignHCenter">
+                          <item row="11" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot11">
                             <property name="enabled">
                              <bool>false</bool>
@@ -16368,7 +16000,7 @@ background-color: rgb(211, 211, 211);
                             </property>
                            </widget>
                           </item>
-                          <item row="9" column="5" alignment="Qt::AlignHCenter">
+                          <item row="9" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot9">
                             <property name="enabled">
                              <bool>false</bool>
@@ -16416,7 +16048,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="0" column="5" alignment="Qt::AlignHCenter|Qt::AlignTop">
+                          <item row="0" column="6" alignment="Qt::AlignHCenter|Qt::AlignTop">
                            <widget class="QLabel" name="lab_no_ch_54">
                             <property name="minimumSize">
                              <size>
@@ -16577,98 +16209,6 @@ background-color: rgb(255, 255, 255);</string>
                             </item>
                            </layout>
                           </item>
-                          <item row="3" column="8">
-                           <widget class="QPushButton" name="hm2d_play3">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="11" column="8">
-                           <widget class="QPushButton" name="hm2d_play11">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="9" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_121">
                             <item>
@@ -16759,52 +16299,6 @@ border-color: rgb(115, 115, 115)}
                              </widget>
                             </item>
                            </layout>
-                          </item>
-                          <item row="4" column="6">
-                           <widget class="QPushButton" name="hm_play4">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
                           </item>
                           <item row="12" column="4" alignment="Qt::AlignHCenter">
                            <widget class="QCheckBox" name="d3d2_12">
@@ -16905,52 +16399,6 @@ border-color: rgb(115, 115, 115)}
                             </property>
                            </widget>
                           </item>
-                          <item row="7" column="8">
-                           <widget class="QPushButton" name="hm2d_play7">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="10" column="4" alignment="Qt::AlignHCenter">
                            <widget class="QCheckBox" name="d3d2_10">
                             <property name="enabled">
@@ -16994,7 +16442,7 @@ border-color: rgb(115, 115, 115)}
                             </property>
                            </widget>
                           </item>
-                          <item row="12" column="5" alignment="Qt::AlignHCenter">
+                          <item row="12" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot12">
                             <property name="enabled">
                              <bool>false</bool>
@@ -17042,53 +16490,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="8" column="8">
-                           <widget class="QPushButton" name="hm2d_play8">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="1" column="7" alignment="Qt::AlignHCenter">
+                          <item row="1" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot1_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -17164,7 +16566,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="3" column="5" alignment="Qt::AlignHCenter">
+                          <item row="3" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot3">
                             <property name="enabled">
                              <bool>false</bool>
@@ -17255,52 +16657,6 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="4" column="8">
-                           <widget class="QPushButton" name="hm2d_play4">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="3" column="4" alignment="Qt::AlignHCenter">
                            <widget class="QCheckBox" name="d3d2_3">
                             <property name="enabled">
@@ -17341,98 +16697,6 @@ border-color: rgb(115, 115, 115)}
                             </property>
                             <property name="tristate">
                              <bool>false</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="5" column="6">
-                           <widget class="QPushButton" name="hm_play5">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="11" column="6">
-                           <widget class="QPushButton" name="hm_play11">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
                             </property>
                            </widget>
                           </item>
@@ -17526,52 +16790,6 @@ border-color: rgb(115, 115, 115)}
                              </widget>
                             </item>
                            </layout>
-                          </item>
-                          <item row="2" column="6">
-                           <widget class="QPushButton" name="hm_play2">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
                           </item>
                           <item row="4" column="4" alignment="Qt::AlignHCenter">
                            <widget class="QCheckBox" name="d3d2_4">
@@ -17712,98 +16930,6 @@ border-color: rgb(115, 115, 115)}
                              </widget>
                             </item>
                            </layout>
-                          </item>
-                          <item row="3" column="6">
-                           <widget class="QPushButton" name="hm_play3">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="10" column="8">
-                           <widget class="QPushButton" name="hm2d_play10">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
                           </item>
                           <item row="1" column="3">
                            <layout class="QHBoxLayout" name="horizontalLayout_62">
@@ -17968,7 +17094,7 @@ Ref</string>
                             </item>
                            </layout>
                           </item>
-                          <item row="12" column="7" alignment="Qt::AlignHCenter">
+                          <item row="12" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot12_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -18016,7 +17142,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="11" column="7" alignment="Qt::AlignHCenter">
+                          <item row="11" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot11_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -18064,53 +17190,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="2" column="8">
-                           <widget class="QPushButton" name="hm2d_play2">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="2" column="5" alignment="Qt::AlignHCenter">
+                          <item row="2" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot2">
                             <property name="enabled">
                              <bool>false</bool>
@@ -18158,7 +17238,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="9" column="7" alignment="Qt::AlignHCenter">
+                          <item row="9" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot9_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -18401,7 +17481,7 @@ background-color: rgb(211, 211, 211);
                             </item>
                            </layout>
                           </item>
-                          <item row="5" column="5" alignment="Qt::AlignHCenter">
+                          <item row="5" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot5">
                             <property name="enabled">
                              <bool>false</bool>
@@ -18539,98 +17619,6 @@ background-color:rgb(203, 203, 203);
                              </widget>
                             </item>
                            </layout>
-                          </item>
-                          <item row="7" column="6">
-                           <widget class="QPushButton" name="hm_play7">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="6" column="8">
-                           <widget class="QPushButton" name="hm2d_play6">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
                           </item>
                           <item row="5" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_117">
@@ -18819,7 +17807,7 @@ background-color: rgb(211, 211, 211);
                             </item>
                            </layout>
                           </item>
-                          <item row="4" column="7" alignment="Qt::AlignHCenter">
+                          <item row="4" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot4_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -18867,7 +17855,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="6" column="5" alignment="Qt::AlignHCenter">
+                          <item row="6" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot6">
                             <property name="enabled">
                              <bool>false</bool>
@@ -18915,7 +17903,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="8" column="5" alignment="Qt::AlignHCenter">
+                          <item row="8" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot8">
                             <property name="enabled">
                              <bool>false</bool>
@@ -19059,52 +18047,6 @@ background-color: rgb(211, 211, 211);
                             </item>
                            </layout>
                           </item>
-                          <item row="9" column="6">
-                           <widget class="QPushButton" name="hm_play9">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="0" column="4">
                            <widget class="QLabel" name="lab_proj_name_12">
                             <property name="sizePolicy">
@@ -19164,7 +18106,7 @@ border-color: rgb(115, 115, 115)}
                             </property>
                            </widget>
                           </item>
-                          <item row="5" column="7" alignment="Qt::AlignHCenter">
+                          <item row="5" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot5_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -19212,7 +18154,7 @@ background-color:rgb(203, 203, 203);
                             </property>
                            </widget>
                           </item>
-                          <item row="7" column="5" alignment="Qt::AlignHCenter">
+                          <item row="7" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot7">
                             <property name="enabled">
                              <bool>false</bool>
@@ -19452,7 +18394,7 @@ background-color: rgb(211, 211, 211);
                             </item>
                            </layout>
                           </item>
-                          <item row="8" column="7" alignment="Qt::AlignHCenter">
+                          <item row="8" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot8_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -19687,53 +18629,7 @@ background-color: rgb(211, 211, 211);
                             </item>
                            </layout>
                           </item>
-                          <item row="5" column="8">
-                           <widget class="QPushButton" name="hm2d_play5">
-                            <property name="minimumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>20</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{
-border-radius:10px; 
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(66, 66, 66); 
-background-color:  rgb(0, 199, 0)}
-
-QPushButton:hover{
-background-color: rgb(0, 227, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
-QPushButton:disabled{
-background-color: rgb(179, 179, 179); 
-border-color: rgb(115, 115, 115)}
-</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="2" column="7" alignment="Qt::AlignHCenter">
+                          <item row="2" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot2_2D">
                             <property name="enabled">
                              <bool>false</bool>
@@ -19915,7 +18811,53 @@ background-color:rgb(203, 203, 203);
                             </item>
                            </layout>
                           </item>
-                          <item row="0" column="6">
+                          <item row="1" column="5">
+                           <widget class="QPushButton" name="hm_play1">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="5">
                            <widget class="QLabel" name="label_4">
                             <property name="minimumSize">
                              <size>
@@ -19941,7 +18883,329 @@ background-color: rgb(255, 255, 255);</string>
                             </property>
                            </widget>
                           </item>
-                          <item row="0" column="8">
+                          <item row="2" column="5">
+                           <widget class="QPushButton" name="hm_play2">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="5">
+                           <widget class="QPushButton" name="hm_play3">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="5">
+                           <widget class="QPushButton" name="hm_play4">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="5">
+                           <widget class="QPushButton" name="hm_play5">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="6" column="5">
+                           <widget class="QPushButton" name="hm_play6">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="7" column="5">
+                           <widget class="QPushButton" name="hm_play7">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="8" column="5">
+                           <widget class="QPushButton" name="hm_play8">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="7">
                            <widget class="QLabel" name="label_5">
                             <property name="minimumSize">
                              <size>
@@ -19964,6 +19228,742 @@ background-color: rgb(255, 255, 255);</string>
                             </property>
                             <property name="alignment">
                              <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="7">
+                           <widget class="QPushButton" name="hm2d_play1">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="7">
+                           <widget class="QPushButton" name="hm2d_play2">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="7">
+                           <widget class="QPushButton" name="hm2d_play3">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="7">
+                           <widget class="QPushButton" name="hm2d_play4">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="7">
+                           <widget class="QPushButton" name="hm2d_play5">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="6" column="7">
+                           <widget class="QPushButton" name="hm2d_play6">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="7" column="7">
+                           <widget class="QPushButton" name="hm2d_play7">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="8" column="7">
+                           <widget class="QPushButton" name="hm2d_play8">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="9" column="5">
+                           <widget class="QPushButton" name="hm_play9">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="9" column="7">
+                           <widget class="QPushButton" name="hm2d_play9">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="10" column="5">
+                           <widget class="QPushButton" name="hm_play10">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="10" column="7">
+                           <widget class="QPushButton" name="hm2d_play10">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="11" column="5">
+                           <widget class="QPushButton" name="hm_play11">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="11" column="7">
+                           <widget class="QPushButton" name="hm2d_play11">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="12" column="5">
+                           <widget class="QPushButton" name="hm_play12">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="12" column="7">
+                           <widget class="QPushButton" name="hm2d_play12">
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
                             </property>
                            </widget>
                           </item>
@@ -30602,18 +30602,11 @@ QScrollBar::handle:horizontal:hover {
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>481</width>
-                <height>770</height>
+                <width>525</width>
+                <height>744</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_12">
-               <item>
-                <widget class="QLineEdit" name="lineEdit_2">
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
                <item>
                 <widget class="QGroupBox" name="continuous">
                  <property name="enabled">
@@ -33034,7 +33027,7 @@ border-color: #672146
             </layout>
            </item>
            <item>
-            <widget class="QTableWidget" name="tabW_results">
+            <widget class="QTableView" name="tabW_results">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                <horstretch>0</horstretch>
@@ -33084,7 +33077,39 @@ QScrollBar::handle:vertical {
 
 QScrollBar::handle:vertical:hover {
 	background-color:rgb(0, 0, 0);
-}</string>
+}
+
+QHeaderView::section {
+    background-color: rgb(200, 200, 200);
+    padding: 0px;
+	font: bold 10pt &quot;Calibri&quot;;
+    border-style: none;
+    border-bottom: 1px solid #fffff8;
+    border-right: 1px solid #fffff8;
+}
+
+QHeaderView::section:horizontal
+{
+    border-top: 1px solid #fffff8;
+}
+
+QHeaderView::section:vertical
+{
+    border-left: 1px solid #fffff8;
+}
+
+QTableView {
+font: 25 10pt &quot;Calibri&quot;;
+padding:0px;
+height: 20px;
+}
+
+QTableView::item:focus{
+    border: 1px solid rgb(162, 0, 122);
+    background-color: white;
+	color: balck;
+}
+</string>
              </property>
              <property name="verticalScrollBarPolicy">
               <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -33104,36 +33129,6 @@ QScrollBar::handle:vertical:hover {
              <property name="gridStyle">
               <enum>Qt::SolidLine</enum>
              </property>
-             <column>
-              <property name="text">
-               <string>All</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Mask</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Autom</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Manual</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Trim</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Select</string>
-              </property>
-             </column>
             </widget>
            </item>
           </layout>
@@ -33141,6 +33136,12 @@ QScrollBar::handle:vertical:hover {
         </item>
         <item>
          <widget class="QWidget" name="widget_5" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="maximumSize">
            <size>
             <width>300</width>
@@ -33258,7 +33259,51 @@ QScrollBar::handle:vertical {
 
 QScrollBar::handle:vertical:hover {
 	background-color:rgb(0, 0, 0);
-}</string>
+}
+
+QHeaderView::section {
+    background-color: rgb(200, 200, 200);
+    padding: 0px;
+	font: bold 10pt &quot;Calibri&quot;;
+    border-style: none;
+    border-bottom: 1px solid #fffff8;
+    border-right: 1px solid #fffff8;
+}
+
+QHeaderView::section:horizontal
+{
+    border-top: 1px solid #fffff8;
+}
+
+QHeaderView::section:vertical
+{
+    border-left: 1px solid #fffff8;
+}
+
+QTableWidget {
+font: 25 10pt &quot;Calibri&quot;;
+padding:0px;
+height: 20px;
+}
+
+QTableWidget::item:focus{
+    border: 1px solid rgb(162, 0, 122);
+    background-color: white;
+	color: balck;
+}
+</string>
+             </property>
+             <property name="editTriggers">
+              <set>QAbstractItemView::NoEditTriggers</set>
+             </property>
+             <property name="tabKeyNavigation">
+              <bool>false</bool>
+             </property>
+             <property name="showDropIndicator" stdset="0">
+              <bool>false</bool>
+             </property>
+             <property name="dragDropOverwriteMode">
+              <bool>false</bool>
              </property>
              <property name="alternatingRowColors">
               <bool>true</bool>
