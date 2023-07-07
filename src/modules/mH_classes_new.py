@@ -1443,7 +1443,7 @@ class Organ():
         else:
             return False  
     
-    def get_orientation(self, views, colors, mtype:str):#
+    def get_orientation(self, views, colors, mtype:str):#CHECkk
        
         im_orient = self.info['im_orientation']
         print('self.info[im_orientation]',im_orient)
@@ -1451,8 +1451,11 @@ class Organ():
         if im_orient == 'custom': 
             cust_angle = self.info['custom_angle']
             rotateY = True
-        
-        ext_ch, _ = self.get_ext_int_chs()
+        try: 
+            ext_ch, _ = self.get_ext_int_chs()
+        except: 
+            ext_ch = organ.obj_imChannels['ch1']
+
         mesh_ext = self.obj_meshes[ext_ch.channel_no+'_tiss']
         
         pos = mesh_ext.mesh.center_of_mass()
@@ -1923,7 +1926,7 @@ class ImChannel(): #channel
         layerDict = {}
         return layerDict
 
-    def create_chS3s (self, layerDict:dict, win):
+    def create_chS3s (self, layerDict:dict, win, cont_list=['int', 'ext', 'tiss']):
         # Workflow process
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc',self.channel_no,'D-S3Create','Status']
@@ -1932,7 +1935,7 @@ class ImChannel(): #channel
         win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+'.')
         dirs_cont = []; shapes_s3 = []
         aa = 0
-        for cont in ['int', 'ext', 'tiss']:
+        for cont in cont_list:
             win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+' ('+str(aa+1)+'/3).')
             s3 = ContStack(im_channel=self, cont_type=cont, layerDict=layerDict)#new=True,
             self.add_contStack(s3)

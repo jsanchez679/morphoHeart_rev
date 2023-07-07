@@ -37,7 +37,7 @@ import pandas as pd
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set, alert
-from ..modules.mH_funcContours import checkWfCloseCont
+from ..modules.mH_funcContours import checkWfCloseCont, ImChannel
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
@@ -2632,6 +2632,116 @@ class LoadProj(QDialog):
             error_txt = '*Please select one organ to analyse.'
             self.win_msg(error_txt)
 
+class Load_S3s(QDialog): 
+    
+    def __init__(self, proj, organ):
+        super().__init__()
+        uic.loadUi('src/gui/ui/load_closed_channels_screen.ui', self)
+        self.setWindowTitle('Loading Stacks with Closed Contours...')
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+
+        #Select files
+        self.browse_ch1_int.clicked.connect(lambda: self.get_file(organ=organ, ch='ch1_int'))
+        self.browse_ch1_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch='ch1_tiss'))
+        self.browse_ch1_ext.clicked.connect(lambda: self.get_file(organ=organ, ch='ch1_ext'))
+
+        self.browse_ch2_int.clicked.connect(lambda: self.get_file(organ=organ, ch='ch2_int'))
+        self.browse_ch2_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch='ch2_tiss'))
+        self.browse_ch2_ext.clicked.connect(lambda: self.get_file(organ=organ, ch='ch2_ext'))
+
+        self.browse_ch3_int.clicked.connect(lambda: self.get_file(organ=organ, ch='ch3_int'))
+        self.browse_ch3_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch='ch3_tiss'))
+        self.browse_ch3_ext.clicked.connect(lambda: self.get_file(organ=organ, ch='ch3_ext'))
+
+        self.browse_ch4_int.clicked.connect(lambda: self.get_file(organ=organ, ch='ch4_int'))
+        self.browse_ch4_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch='ch4_tiss'))
+        self.browse_ch4_ext.clicked.connect(lambda: self.get_file(organ=organ, ch='ch4_ext'))
+
+        self.set_channel_info(proj)
+
+    def set_channel_info(self, proj): 
+        #Change channels
+        mH_channels = proj.mH_channels
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']: 
+            label = getattr(self, 'lab_'+ch) 
+            name = getattr(self, 'lab_filled_name_'+ch)
+
+            if ch not in mH_channels.keys():
+                label.setVisible(False)
+                name.setVisible(False)
+            else: 
+                name.setText(proj.mH_channels[ch])
+            
+            for cont in ['int', 'tiss', 'ext']:
+                brw_ch_cont = getattr(self, 'browse_'+ch+'_'+cont)
+                dir_ch_cont = getattr(self, 'lab_filled_dir_'+ch+'_'+cont)
+                check_ch_cont = getattr(self, 'check_'+ch+'_'+cont)
+                if ch not in mH_channels.keys():
+                    brw_ch_cont.setVisible(False)
+                    dir_ch_cont.setVisible(False)
+                    check_ch_cont.setVisible(False)
+                
+    def get_file(self, organ, ch):
+        self.win_msg('Loading '+ch+'... Wait for the indicator to turn green, then continue.')
+        btn_file = getattr(self, 'browse_'+ch)
+        title = 'Import closed stacks for '+ch
+        ch_name, cont_name = ch.split('_')
+
+        if hasattr(self, 'user_dir'):
+            cwd = self.user_dir
+        else: 
+            cwd = Path().absolute()
+
+        file_name, aaa = QFileDialog.getOpenFileName(self, title, str(cwd), "Numpy Arrays (*.npy)")
+        if Path(file_name).is_file(): 
+            label = getattr(self, 'lab_filled_dir_'+ch)
+            label.setText(str(file_name))
+            check = getattr(self, 'check_'+ch)
+            check.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(0, 255, 0); color: rgb(0, 255, 0); font: 25 2pt 'Calibri Light'")
+            check.setText('Done')
+            #Load npy array
+            npy_stack = np.load(file_name)
+            layer_dict = {}
+
+            #Create channels
+            if ch_name not in organ.obj_Channels.keys(): 
+                ImChannel(organ=organ, ch_name=ch_name)
+            im_ch = organ.obj_imChannels[ch_name]
+            #Create contour
+            # im_ch.create_chS3s(layerDict={}, win=self, cont_list = [cont_name])
+
+
+        #     title = str(self.dirs['arrays']['ballCL('+n_type+')'])+'.npy'
+        #     dir_npy = self.parent_organ.dir_res(dir='csv_all') / title
+        #     print('dir_mesh:', dir_mesh, '\n','-dir_npy:', dir_npy)
+
+        #     images_o = io.imread(str(file_name))
+        #     #Save files img_dirs
+        #     self.img_dirs[ch]['image'] = {}
+        #     self.img_dirs[ch]['image']['dir'] = Path(file_name)
+        #     self.img_dirs[ch]['image']['shape'] = images_o.shape
+            self.user_dir = Path(file_name).parent
+        # else: 
+        #     error_txt = '*Something went wrong importing the images for '+ch+'. Please try again.'
+        #     self.win_msg(error_txt)
+        #     return
+
+        # btn_file.setChecked(True)
+        # toggled(btn_file)
+
+    def win_msg(self, msg): 
+        if msg[0] == '*':
+            self.tE_validate.setStyleSheet(error_style)
+            msg = 'Error: '+msg
+            alert('error_beep')
+        elif msg[0] == '!':
+            self.tE_validate.setStyleSheet(note_style)
+            msg = msg[1:]
+        else: 
+            self.tE_validate.setStyleSheet(msg_style)
+        self.tE_validate.setText(msg)
+
 class MainWindow(QMainWindow):
 
     def __init__(self, proj, organ):
@@ -2689,6 +2799,12 @@ class MainWindow(QMainWindow):
         self.btn_measurements.clicked.connect(lambda: self.show_measurements())
         self.btn_workflow.clicked.connect(lambda: self.show_workflow())
         self.btn_wf_info.clicked.connect(lambda: self.show_wf_info())
+
+        self.pushButton.setVisible(False)
+        self.btn_settings.setVisible(False)
+        self.btn_measurements.setVisible(False)
+        self.btn_workflow.setVisible(False)
+        self.btn_wf_info.setVisible(False)
 
     def update_proj_organ(self):
         self.proj.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
@@ -2914,9 +3030,11 @@ class MainWindow(QMainWindow):
         self.init_clean()
         self.init_trim()
         self.init_orientation()
-        if self.organ.mH_settings['setup']['chNS']['layer_btw_chs']:
-            self.init_chNS()
-        else: 
+        #CHECK One Channel!
+        try:
+            if self.organ.mH_settings['setup']['chNS']['layer_btw_chs']:
+                self.init_chNS()
+        except: 
             self.chNS_all_widget.setVisible(False)
             print('Dissapear chNS')
 
@@ -3309,7 +3427,7 @@ class MainWindow(QMainWindow):
                 hm_eg.setEnabled(True)
                 hm_plot.setEnabled(False)
                 hm_plot2.setEnabled(False)
-                play.setEnabled(True) #???
+                play.setEnabled(False)
                 play2d.setEnabled(False)
             else: 
                 default.setVisible(False)
@@ -3341,11 +3459,19 @@ class MainWindow(QMainWindow):
         for num in range(1,13,1): 
             self.set_colormap(str(num))
 
-        #Set heatmap centreline
+        #Set heatmap centreline CHECK!
+        #Change if hm3d2t not selected, then set not visible!
+        print('error!:', self.organ.mH_settings['measure'])
         if 'hm3Dto2D' in  self.organ.mH_settings['measure'].keys():
-            hm_ch_cont = list(self.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
-            ch, cont = hm_ch_cont.split('_')
-            self.hm_centreline.setText(self.channels[ch]+' ('+ch+'-'+cont+')') 
+            if len(self.organ.mH_settings['measure']['hm3Dto2D'])>0:
+                hm_ch_cont = list(self.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
+                ch, cont = hm_ch_cont.split('_')
+                self.hm_centreline.setText(self.channels[ch]+' ('+ch+'-'+cont+')')
+            else: 
+                self.lab_hm3d2d.setEnabled(False)
+                self.hm_centreline.setEnabled(False)
+                self.lab_hm2d.setEnabled(False)
+                self.heatmaps2D_play.setEnabled(False) 
         else: 
             self.lab_hm3d2d.setEnabled(False)
             self.hm_centreline.setEnabled(False)
@@ -4379,7 +4505,9 @@ class MainWindow(QMainWindow):
 
         # measurements = {'SA': {}, 'Vol': {'ch1_int_whole': True, 'ch1_tiss_whole': True, 'ch1_ext_whole': True, 'ch2_int_whole': True, 'ch2_tiss_whole': True, 'ch2_ext_whole': True, 'chNS_int_whole': True, 'chNS_tiss_whole': True, 'chNS_ext_whole': True}, 'CL': {'ch1_int_whole': {'looped_length': 278.5729836723767, 'lin_length': 196.40371704101562}, 'ch2_ext_whole': {'looped_length': 283.3270263262093, 'lin_length': 190.81484985351562}}, 'th_i2e': {'ch1_tiss_whole': True, 'ch2_tiss_whole': True, 'chNS_tiss_whole': True}, 'th_e2i': {'ch1_tiss_whole': True}, 'ball': {'ch1_int_(ch1_int)': True, 'ch1_int_(ch2_ext)': True}, 'LoopDir': {'roi': True}, 'AoLen': {'roi': True}, 'TgBright': {'roi': True}, 'Vol(segm)': {'Cut1_ch2_int_segm1': True, 'Cut1_ch2_int_segm2': True, 'Cut1_ch2_tiss_segm1': True, 'Cut1_ch2_tiss_segm2': True, 'Cut1_chNS_tiss_segm1': 171587.41563409223, 'Cut1_chNS_tiss_segm2': 65547.06146452879, 'Cut1_ch1_tiss_segm1': 239646.87518697616, 'Cut1_ch1_tiss_segm2': 233777.4398440119, 'Cut1_ch1_ext_segm1': 1132707.885333426, 'Cut1_ch1_ext_segm2': 666060.1459218762}, 'Ellip(segm)': {'Cut1_ch2_int_segm1': True, 'Cut1_ch2_int_segm2': True, 'Cut1_ch2_tiss_segm1': True, 'Cut1_ch2_tiss_segm2': True, 'Cut1_chNS_tiss_segm1': True, 'Cut1_chNS_tiss_segm2': True, 'Cut1_ch1_tiss_segm1': True, 'Cut1_ch1_tiss_segm2': True, 'Cut1_ch1_ext_segm1': True, 'Cut1_ch1_ext_segm2': True}, 'Vol(sect)': {'Cut1_ch2_tiss_sect1': True, 'Cut1_ch2_tiss_sect2': True, 'Cut1_chNS_tiss_sect1': True, 'Cut1_chNS_tiss_sect2': True, 'Cut1_ch1_tiss_sect1': 244132.6523907116, 'Cut1_ch1_tiss_sect2': 232157.19616130897, 'Cut2_ch2_tiss_sect1': True, 'Cut2_ch2_tiss_sect2': True, 'Cut2_chNS_tiss_sect1': True, 'Cut2_chNS_tiss_sect2': True, 'Cut2_ch1_tiss_sect1': 232110.88629832206, 'Cut2_ch1_tiss_sect2': 244163.6629483923}, 'hm3Dto2D': {'ch1_int': True}}
         measurements = self.organ.mH_settings['measure']
+        print('measurements: ', measurements)
         df_index = pd.DataFrame.from_dict(measurements, orient='index')
+        print('df_index', df_index)
         vars2drop = ['th_e2i', 'th_i2e', 'ball', 'hm3Dto2D']
         vars = list(df_index.index)
         for var in vars: 
@@ -4414,8 +4542,9 @@ class MainWindow(QMainWindow):
             dict_CL = {}
             df_CL = df_multi.loc[[dict_names['CL']]]
             for index, row in df_CL.iterrows():
-                # print(index)
+                print(index, row['Value'])
                 if isinstance(row['Value'], dict): 
+                    merge = True
                     df_new.drop(index, axis=0, inplace=True)
                     for key, item in row['Value'].items():
                         # print(key, item) 
@@ -4423,12 +4552,16 @@ class MainWindow(QMainWindow):
                         new_variable = index[1]
                         dict_CL[(new_index, new_variable)] = item
 
-            df_CL = pd.DataFrame(dict_CL, index =[0])
-            df_CL_melt = pd.melt(df_CL, var_name=mult_index,value_name='Value')
-            df_CL_melt = df_CL_melt.set_index(mult_index)
-
-        df_final = pd.concat([df_new, df_CL_melt])
-        df_final = df_final.sort_values(by=['Parameter'])
+            print('dict_CL:',  dict_CL)
+            if len(dict_CL) != 0: 
+                df_CL = pd.DataFrame(dict_CL, index =[0])
+                print('df_CL:', df_CL)
+                df_CL_melt = pd.melt(df_CL, var_name=mult_index,value_name='Value')
+                df_CL_melt = df_CL_melt.set_index(mult_index)
+                df_final = pd.concat([df_new, df_CL_melt])
+                df_final = df_final.sort_values(by=['Parameter'])
+            else: 
+                df_final = df_new.sort_values(by=['Parameter'])
 
         #Change True Values to TBO
         values_updated = []
@@ -5039,7 +5172,14 @@ class MainWindow(QMainWindow):
         self.thickness_set.setChecked(True)
         toggled(self.thickness_set)
         print('self.gui_thickness_ballooning: ', self.gui_thickness_ballooning)
+
+        #Enable play buttons CHECK!
         self.heatmaps3D_play.setEnabled(True) 
+        for num in range(1,13,1): 
+            btn_play = getattr(self, 'hm_play'+str(num))
+            if btn_play.isVisible():
+                # if not btn_play.isChecked(): 
+                btn_play.setEnabled(True)
 
         # Update mH_settings
         proc_set = ['wf_info']

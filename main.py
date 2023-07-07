@@ -30,6 +30,7 @@ class Controller:
         self.load_proj_win = None
         self.new_organ_win = None
         self.main_win = None
+        self.load_s3s = None
 
     def show_welcome(self):
         #Close previous windows if existent
@@ -239,6 +240,11 @@ class Controller:
             self.init_main_win()
         self.main_win.show()
 
+    def show_load_closed_stacks(self):
+        if self.load_s3s == None:
+            self.load_s3s = Load_S3s(proj = self.proj, organ = self.organ) 
+        self.load_s3s.show()
+    
     def init_main_win(self): 
 
         #Segmentation Tab
@@ -251,6 +257,8 @@ class Controller:
         self.main_win.ch3_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch3'))
         self.main_win.ch4_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch4'))
         self.main_win.ch4_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch4'))
+
+        self.main_win.all_closed.clicked.connect(lambda: self.show_load_closed_stacks())
 
         #Process and Analyse Tab
         self.main_win.keeplargest_play.clicked.connect(lambda: self.run_keeplargest())

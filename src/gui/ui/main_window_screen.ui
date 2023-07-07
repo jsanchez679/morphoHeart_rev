@@ -1645,7 +1645,7 @@ border-color: #672146
 }</string>
                </property>
                <property name="text">
-                <string>I already have the closed contour files for all channels</string>
+                <string>I have already closed the contours in all channels</string>
                </property>
                <property name="checkable">
                 <bool>true</bool>
