@@ -9951,13 +9951,13 @@ border-color: #672146
                 <property name="minimumSize">
                  <size>
                   <width>150</width>
-                  <height>23</height>
+                  <height>28</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
                   <width>150</width>
-                  <height>23</height>
+                  <height>28</height>
                  </size>
                 </property>
                 <property name="styleSheet">
@@ -9982,20 +9982,21 @@ border-color: #672146
                 <property name="minimumSize">
                  <size>
                   <width>100</width>
-                  <height>23</height>
+                  <height>28</height>
                  </size>
                 </property>
                 <property name="maximumSize">
                  <size>
                   <width>100</width>
-                  <height>23</height>
+                  <height>28</height>
                  </size>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                 </property>
                 <property name="text">
-                 <string>channel:</string>
+                 <string>Centreline from
+Channel :</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -10026,7 +10027,8 @@ border-color: #672146
                  <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                 </property>
                 <property name="text">
-                 <string>contour:</string>
+                 <string>Centreline from
+Contour:</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>

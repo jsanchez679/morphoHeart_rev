@@ -928,7 +928,6 @@ class CreateNewProj(QDialog):
         # Get ticked channels:
         ch_ticked = [self.tick_ch1.isChecked(), self.tick_ch2.isChecked(), 
                      self.tick_ch3.isChecked(), self.tick_ch4.isChecked()]
-        # print('ch_ticked:',ch_ticked)
         if not any(ch_ticked):
             error_txt = '*Please select at least one channel.'
             self.win_msg(error_txt)
@@ -1049,6 +1048,7 @@ class CreateNewProj(QDialog):
         self.set_processes.setEnabled(True)
         toggled(self.button_set_initial_set)
         self.tick_ch1.setChecked(True)
+
         #Get data from initial settings
         # Get data form ticked channels:
         ch_ticked = [self.tick_ch1.isChecked(), self.tick_ch2.isChecked(), 
@@ -1079,10 +1079,17 @@ class CreateNewProj(QDialog):
         self.mH_settings['one_contained'] = self.ck_chs_contained.isChecked()
 
         self.ch_selected = ch_selected
+
         #Set the comboBoxes for chNS
-        self.ext_chNS.clear(); self.int_chNS.clear()
-        self.ext_chNS.addItems(['----']+self.ch_selected)
-        self.int_chNS.addItems(['----']+self.ch_selected)
+        print(ch_relation)
+        ch_rel = [item for key, item in ch_relation.items()]
+        if self.mH_settings['no_chs'] > 1 and any('external' in flag for flag in ch_rel) and any('internal' in flag for flag in ch_rel):
+            self.ext_chNS.clear(); self.int_chNS.clear()
+            self.ext_chNS.addItems(['----']+self.ch_selected)
+            self.int_chNS.addItems(['----']+self.ch_selected)
+            self.tick_chNS.setEnabled(True)
+        else: 
+            self.tick_chNS.setEnabled(False)
         
         self.win_msg("Great! Now select the processes you would like to include in the workflow and setup their details.")
 
@@ -1116,6 +1123,9 @@ class CreateNewProj(QDialog):
 
         self.button_set_processes.setChecked(True)
         toggled(self.button_set_processes)
+
+        #Enable measurement parameters now to know whether regions was selected
+        self.set_meas_param_all.setEnabled(True)
 
     # -- Functions for ChannelNS
     def validate_chNS_settings(self): 
@@ -1213,7 +1223,6 @@ class CreateNewProj(QDialog):
                             'alpha': {}}
         
         self.mH_settings['chNS'] = chNS_settings
-        # print(self.mH_settings)
 
     # -- Functions for segments and sections
     def add_segm_sect(self, stype):
@@ -1303,7 +1312,7 @@ class CreateNewProj(QDialog):
                 if any([meas_vol, meas_area, meas_ellip]):
                     valid.append(True)
                 else: 
-                    error_txt = "*Please select the measurement parameter(s) (e.g. volume and/or surface area) you want to extract from the segments"
+                    error_txt = "*Please select the measurement parameter(s) (e.g. volume, surface area) you want to extract from the segments"
                     self.win_msg(error_txt)
                     return
 
@@ -1359,7 +1368,7 @@ class CreateNewProj(QDialog):
                 if any([meas_vol, meas_area]):
                     valid.append(True)
                 else: 
-                    error_txt = "*Please select the measurement parameter(s) (e.g. volume and/or surface area) you want to extract from the sections"
+                    error_txt = "*Please select the measurement parameter(s) (e.g. volume, surface area) you want to extract from the sections"
                     self.win_msg(error_txt)
                     return
                 
@@ -1367,7 +1376,7 @@ class CreateNewProj(QDialog):
                 valid_all.append(True)
         
         if all(valid_all): 
-            self.win_msg('All good! Sections have been set (1).')
+            self.win_msg('All good! Regions have been set (1).')
             self.set_sect_settings()
         else: 
             print('Aja? - sections')
@@ -1527,7 +1536,7 @@ class CreateNewProj(QDialog):
         # print('self.mH_settings (set_sect_settings):',self.mH_settings)
         if all(valid_all):
             self.button_set_sect.setChecked(True)
-            self.win_msg('All good! Sections have been set.')
+            self.win_msg('All good! Regions have been set.')
         else: 
             self.button_set_sect.setChecked(False)
         toggled(self.button_set_sect)
@@ -1551,7 +1560,13 @@ class CreateNewProj(QDialog):
                 return
             
         if self.checked('sect'): 
-            if self.button_set_sect.isChecked():
+            CL_meas = self.mH_user_params['CL']
+            dict_CL = [CL_meas[key] for key in CL_meas.keys()]
+            if all(not x for x in dict_CL):
+                error_txt = '*To create region divisions, at least one centreline needs to be created. Go back to  -Set Measurement Parameters-  and select at least one centreline.'
+                self.win_msg(error_txt)
+                return
+            elif self.button_set_sect.isChecked():
                 valid.append(True)
             else: 
                 error_txt = '*You need to set sections settings before creating the new project.'
@@ -2800,11 +2815,12 @@ class MainWindow(QMainWindow):
         self.btn_workflow.clicked.connect(lambda: self.show_workflow())
         self.btn_wf_info.clicked.connect(lambda: self.show_wf_info())
 
-        self.pushButton.setVisible(False)
-        self.btn_settings.setVisible(False)
-        self.btn_measurements.setVisible(False)
-        self.btn_workflow.setVisible(False)
-        self.btn_wf_info.setVisible(False)
+        if not mH_config.dev: 
+            self.pushButton.setVisible(False)
+            self.btn_settings.setVisible(False)
+            self.btn_measurements.setVisible(False)
+            self.btn_workflow.setVisible(False)
+            self.btn_wf_info.setVisible(False)
 
     def update_proj_organ(self):
         self.proj.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
@@ -2830,7 +2846,6 @@ class MainWindow(QMainWindow):
         print(self.proj.workflow['morphoHeart'])
         print(self.organ.workflow['morphoHeart'])
 
-        
         # pass
 
     def show_mH_settings(self):
@@ -3027,37 +3042,49 @@ class MainWindow(QMainWindow):
         # self.segments_sectionsAll_play.clicked.connect(lambda: self.())
 
         self.init_keeplargest()
-        self.init_clean()
+        if int(self.organ.mH_settings['setup']['no_chs'])>1:
+            self.init_clean()
+        else: 
+            self.cleanup_all_widget.setVisible(False)
         self.init_trim()
         self.init_orientation()
-        #CHECK One Channel!
-        try:
+
+        #ChNS
+        if isinstance(self.organ.mH_settings['setup']['chNS'], dict):
             if self.organ.mH_settings['setup']['chNS']['layer_btw_chs']:
                 self.init_chNS()
-        except: 
+            else: 
+                print('Initialisong chNS - dict but no layer_btw_chs?')
+                alert('bubble')
+        else:
             self.chNS_all_widget.setVisible(False)
             print('Dissapear chNS')
-
+        
+        #Centreline
         if len(self.organ.mH_settings['measure']['CL']) > 0:
             self.init_centreline()
         else: 
             self.centreline_all_widget.setVisible(False)
 
+        'Thickness/Ballooning'
         if len(self.organ.mH_settings['measure']['th_i2e'])+len(self.organ.mH_settings['measure']['th_e2i'])+len(self.organ.mH_settings['measure']['ball'])>0:
             self.init_thickness_ballooning()
         else: 
             self.thickness_ballooning_all_widget.setVisible(False)
 
+        #Segments
         if isinstance(self.organ.mH_settings['setup']['segm'], dict):
             self.init_segments()
         else: 
-            self.segments_widget.setVisible(False)
+            self.segments_all_widget.setVisible(False)
 
+        #Regions
         if isinstance(self.organ.mH_settings['setup']['sect'], dict):
             self.init_sections()
         else: 
-            self.sections_widget.setVisible(False)
+            self.sections_all_widget.setVisible(False)
 
+        #User parameters
         self.init_user_param()
         
         #Setup workflow
@@ -3295,7 +3322,7 @@ class MainWindow(QMainWindow):
         self.centreline_vmtk_play.setStyleSheet(style_play)
         self.centreline_vmtk_play.setEnabled(False)
         self.centreline_select.setStyleSheet(style_play)
-        self.centreline_select.setEnabled(True)#False)
+        self.centreline_select.setEnabled(False)
         self.q_centreline.clicked.connect(lambda: self.help('centreline'))
         self.centreline_set.clicked.connect(lambda: self.set_centreline())
 
@@ -3380,67 +3407,69 @@ class MainWindow(QMainWindow):
         self.all_d3d2.stateChanged.connect(lambda: self.check_all(mtype = 'd3d2'))
 
         #Heatmap settings
-        self.heatmap_dict = {}
+        self.hm_btns = {}
         setup = {'th_i2e': {'proc': ['measure','th_i2e'], 'name': 'Thickness (int>ext)', 'min_val': 0, 'max_val': 20}, 
                  'th_e2i': {'proc': ['measure','th_e2i'], 'name': 'Thickness (ext>int)', 'min_val': 0, 'max_val': 20},
                  'ball': {'proc': ['measure','ball'], 'name': 'Ballooning', 'min_val': 0, 'max_val': 60}}
 
+        nn = 0
+        cmaps = ['turbo','viridis', 'jet', 'magma', 'inferno', 'plasma']
         for proc in setup: 
             name = setup[proc]['name']
             minn = setup[proc]['min_val']
             maxx = setup[proc]['max_val']
             for item in self.organ.mH_settings['measure'][proc]:
+                print('item being set: ', item)
                 if proc != 'ball': 
                     chh, conth, _ = item.split('_')
-                    self.heatmap_dict[proc+'['+chh+'-'+conth+']'] = {'name': name+' ['+chh+'-'+conth+']',
-                                                                        'min_val': minn, 
-                                                                        'max_val': maxx}
-                else: 
+                    key = proc+'['+chh+'-'+conth+']'
+                    nameff = name+' ['+chh+'-'+conth+']'
+                else: #ball[ch1-int(CL.ch1-int)]
                     namef = item.replace('_(', '(CL.')
                     namef = namef.replace('_', '-')
-                    self.heatmap_dict[proc+'['+namef+']'] = {'name': name+' ['+namef+']',
-                                                                'min_val': minn, 
-                                                                'max_val': maxx}
-                    
-        print('heatmap_dict:', self.heatmap_dict)
+                    nameff =  name+' ['+namef+']'
+                    key = proc+'['+namef+']'
+                
+                #Assign objects to GUI
+                label = getattr(self,'label_hm'+str(nn+1))
+                mina = getattr(self,'min_hm'+str(nn+1))
+                maxa = getattr(self,'max_hm'+str(nn+1))
+                hm_plot = getattr(self, 'hm_plot'+str(nn+1))
+                hm_plot2 = getattr(self, 'hm_plot'+str(nn+1)+'_2D')
+                play = getattr(self, 'hm_play'+str(nn+1))
+                play2d = getattr(self, 'hm2d_play'+str(nn+1))
 
-        cmaps = ['turbo','viridis', 'jet', 'magma', 'inferno', 'plasma']
-        hm_items = list(self.heatmap_dict.keys())
-        for num in range(0,12,1):
-            label = getattr(self,'label_hm'+str(num+1))
-            default = getattr(self, 'def'+str(num+1))
-            mina = getattr(self,'min_hm'+str(num+1))
-            maxa = getattr(self,'max_hm'+str(num+1))
-            cm = getattr(self,'colormap'+str(num+1))
-            cm.clear()
-            cm.addItems(cmaps)
-            d3d2 = getattr(self,'d3d2_'+str(num+1))
-            hm_plot = getattr(self, 'hm_plot'+str(num+1))
-            hm_plot2 = getattr(self, 'hm_plot'+str(num+1)+'_2D')
-            hm_eg = getattr(self, 'cm_eg'+str(num+1))
-            play = getattr(self, 'hm_play'+str(num+1))
-            play2d = getattr(self, 'hm2d_play'+str(num+1))
-            if num < len(hm_items): 
-                label.setText(self.heatmap_dict[hm_items[num]]['name'])
-                mina.setValue(self.heatmap_dict[hm_items[num]]['min_val'])
-                maxa.setValue(self.heatmap_dict[hm_items[num]]['max_val'])
-                hm_eg.setEnabled(True)
-                hm_plot.setEnabled(False)
-                hm_plot2.setEnabled(False)
+                label.setText(nameff)
+                mina.setValue(minn)
+                maxa.setValue(maxx)
                 play.setEnabled(False)
+                hm_plot.setEnabled(False)
                 play2d.setEnabled(False)
-            else: 
-                default.setVisible(False)
-                label.setVisible(False)
-                mina.setVisible(False)
-                maxa.setVisible(False)
-                cm.setVisible(False)
-                d3d2.setVisible(False)
-                hm_eg.setVisible(False)
-                hm_plot.setVisible(False)
-                hm_plot2.setVisible(False)
-                play.setVisible(False)
-                play2d.setVisible(False)
+                hm_plot2.setEnabled(False)
+                
+                self.hm_btns[key] = {'name': nameff,
+                                            'min_val': minn, 
+                                            'max_val': maxx, 
+                                            'num' : nn+1,
+                                            'play': play, 
+                                            'plot': play2d, 
+                                            'play2d': hm_plot,
+                                            'plot2d': hm_plot2}
+                nn +=1
+                
+        print('hm_btns:', self.hm_btns)
+        for num in range(nn,12,1):
+            getattr(self,'label_hm'+str(num+1)).setVisible(False)
+            getattr(self, 'def'+str(num+1)).setVisible(False)
+            getattr(self,'min_hm'+str(num+1)).setVisible(False)
+            getattr(self,'max_hm'+str(num+1)).setVisible(False)
+            getattr(self,'colormap'+str(num+1)).setVisible(False)
+            getattr(self,'d3d2_'+str(num+1)).setVisible(False)
+            getattr(self, 'hm_plot'+str(num+1)).setVisible(False)
+            getattr(self, 'hm_plot'+str(num+1)+'_2D').setVisible(False)
+            getattr(self, 'cm_eg'+str(num+1)).setVisible(False)
+            getattr(self, 'hm_play'+str(num+1)).setVisible(False)
+            getattr(self, 'hm2d_play'+str(num+1)).setVisible(False)
 
         #Set all colormaps eg
         self.colormap1.currentIndexChanged.connect(lambda: self.set_colormap('1'))
@@ -3459,28 +3488,33 @@ class MainWindow(QMainWindow):
         for num in range(1,13,1): 
             self.set_colormap(str(num))
 
-        #Set heatmap centreline CHECK!
-        #Change if hm3d2t not selected, then set not visible!
-        print('error!:', self.organ.mH_settings['measure'])
+        #Change if hm3d2t not selected, then set all widgets related to unlooping/unrolling to not visible
         if 'hm3Dto2D' in  self.organ.mH_settings['measure'].keys():
-            if len(self.organ.mH_settings['measure']['hm3Dto2D'])>0:
+            if len(self.organ.mH_settings['measure']['hm3Dto2D'].keys())>0:
                 hm_ch_cont = list(self.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
                 ch, cont = hm_ch_cont.split('_')
                 self.hm_centreline.setText(self.channels[ch]+' ('+ch+'-'+cont+')')
+                hide = False
             else: 
-                self.lab_hm3d2d.setEnabled(False)
-                self.hm_centreline.setEnabled(False)
-                self.lab_hm2d.setEnabled(False)
-                self.heatmaps2D_play.setEnabled(False) 
+                hide = True
         else: 
-            self.lab_hm3d2d.setEnabled(False)
-            self.hm_centreline.setEnabled(False)
-            self.lab_hm2d.setEnabled(False)
-            self.heatmaps2D_play.setEnabled(False)
+            hide = True
+
+        if hide: 
+            self.all_d3d2.setVisible(False)
+            self.lab_hm3d2d.setVisible(False)
+            self.hm_centreline.setVisible(False)
+            self.lab_hm2d.setVisible(False)
+            self.heatmaps2D_play.setVisible(False)
+            self.lab_3d2d.setVisible(False)
+            self.lab_2d.setVisible(False)
+            self.lab_plot2d.setVisible(False)
 
             for num in range(1,13,1): 
-                getattr(self, 'hm_plot'+str(num)+'_2D').setEnabled(False)
-
+                getattr(self, 'hm2d_play'+str(num)).setVisible(False)
+                getattr(self, 'hm_plot'+str(num)+'_2D').setVisible(False)
+                getattr(self, 'd3d2_'+str(num)).setVisible(False)
+            
         #Initialise with user settings, if they exist!
         self.user_heatmaps()
 
@@ -3578,7 +3612,7 @@ class MainWindow(QMainWindow):
             getattr(self, 'radius_segm_unit2').setVisible(False)
 
         # print('Setup segments: ', self.organ.mH_settings['setup']['segm'])
-        # print('segm_btns:', self.segm_btns)
+        print('segm_btns:', self.segm_btns)
 
         self.segm_use_centreline.stateChanged.connect(lambda: self.segm_centreline())
         self.segm_centreline2use.addItems(self.items_centreline)
@@ -3690,11 +3724,13 @@ class MainWindow(QMainWindow):
                 getattr(self, 'sect_nRes_'+cutl).setVisible(False)    
                 getattr(self, 'lab_cl_ext_'+cutl).setVisible(False)
                 getattr(self, 'lab_axis_'+cutl).setVisible(False)
-                getattr(self, 'radio_organ_'+cutl).setVisible(False)
+                getattr(self, 'radio_roi_'+cutl).setVisible(False)
                 getattr(self, 'radio_stack_'+cutl).setVisible(False)
                 getattr(self, 'lab_dir_'+cutl).setVisible(False)
                 getattr(self, 'sect_dir_'+cutl).setVisible(False)
                 getattr(self, 'lab_colors_'+cutl).setVisible(False)
+                getattr(self, 'cl_ext_'+cutl).setVisible(False)
+                getattr(self, 'dir_sect_'+cutl).setVisible(False)
                 for nn in range(1,3,1):
                     getattr(self, 'label_'+cutl+'_sect'+str(nn)).setVisible(False)
                     getattr(self, 'fillcolor_'+cutl+'_'+'sect'+str(nn)).setVisible(False)
@@ -3711,7 +3747,7 @@ class MainWindow(QMainWindow):
         self.radio_roi_cut2.setChecked(True)
 
         # print('Setup Sections: ', self.organ.mH_settings['setup']['sect'])
-        # print('sect_btns:', self.sect_btns)
+        print('sect_btns:', self.sect_btns)
 
         #Plot buttons
         self.cut1_plot_sect1.clicked.connect(lambda: self.plot_segm_sect(btn='cut1_sect1'))
@@ -4071,10 +4107,10 @@ class MainWindow(QMainWindow):
         at_least_one = False
         if 'heatmaps' in wf_info.keys():
             print('wf_info[heatmaps]:', wf_info['heatmaps'])
-            hm_items = list(self.heatmap_dict.keys())
-            print('hm_items:', hm_items)
-            nn = 1
-            for item in hm_items: 
+
+            for item in self.hm_btns.keys(): 
+                nn = self.hm_btns[item]['num']
+                print('item:', item)
                 getattr(self, 'def'+str(nn)).setChecked(wf_info['heatmaps'][item]['default'])
                 getattr(self, 'min_hm'+str(nn)).setValue(wf_info['heatmaps'][item]['min_val'])
                 getattr(self, 'max_hm'+str(nn)).setValue(wf_info['heatmaps'][item]['max_val'])
@@ -4096,15 +4132,25 @@ class MainWindow(QMainWindow):
                     ch, cont = ch_info.split('-')
                     proc = [process, ch, cont+'_('+cl_info.replace('-','_')+')', 'Status']
                     
-                print('proc:', proc)
+                print('proc:', get_by_path(wf, proc))
                 if get_by_path(wf, proc) == 'DONE':
-                    getattr(self, 'hm_plot'+str(nn)).setEnabled(True)
+                    self.hm_btns[item]['play'].setEnabled(True)
+                    self.hm_btns[item]['play'].setChecked(True)
+                    self.hm_btns[item]['plot'].setEnabled(True)
                     if getattr(self, 'd3d2_'+str(nn)).isChecked():
-                        getattr(self, 'hm2d_play'+str(nn)).setEnabled(True)
-
+                        self.hm_btns[item]['play2d'].setEnabled(True)
                     at_least_one = True
-                    # getattr(self, 'hm_plot'+str(nn)+'_2D')
-                nn+=1
+                else: 
+                    if 'th' in item:
+                        self.hm_btns[item]['play'].setEnabled(True)
+                    else: 
+                        print('\nnot thickness')
+                        cl_ch, cl_cont = cl_info.split('-')
+                        wf_cl = ['C-Centreline', 'buildCL', cl_ch, cl_cont, 'Status']
+                        cl_done = get_by_path(wf, wf_cl)
+                        print(wf_cl, cl_done)
+                        if cl_done == 'DONE': 
+                            self.hm_btns[item]['play'].setEnabled(True)
 
             done_all = []
             for proc_n in ['D-Thickness_int>ext','D-Thickness_ext>int','D-Ballooning']:
@@ -4120,6 +4166,7 @@ class MainWindow(QMainWindow):
                     
             #Run Set Function 
             self.set_thickness(init=True)
+
         else: 
             pass
 
@@ -5169,27 +5216,19 @@ class MainWindow(QMainWindow):
             else: 
                 self.gui_thickness_ballooning = gui_thickness_ballooning_loaded
             
-        self.thickness_set.setChecked(True)
-        toggled(self.thickness_set)
-        print('self.gui_thickness_ballooning: ', self.gui_thickness_ballooning)
-
-        #Enable play buttons CHECK!
-        self.heatmaps3D_play.setEnabled(True) 
-        for num in range(1,13,1): 
-            btn_play = getattr(self, 'hm_play'+str(num))
-            if btn_play.isVisible():
-                # if not btn_play.isChecked(): 
-                btn_play.setEnabled(True)
-
         # Update mH_settings
         proc_set = ['wf_info']
         update = self.gui_thickness_ballooning
         self.organ.update_settings(proc_set, update, 'mH', add='heatmaps')
 
+        self.thickness_set.setChecked(True)
+        toggled(self.thickness_set)
+        print('self.gui_thickness_ballooning: ', self.gui_thickness_ballooning)
+
     def gui_thickness_ballooning_n(self):
         gui_thickness_ballooning = {}
         nn = 1
-        for item in self.heatmap_dict:
+        for item in self.hm_btns:
             default = getattr(self, 'def'+str(nn)).isChecked()
             if default: 
                 min_val = None
@@ -5264,9 +5303,10 @@ class MainWindow(QMainWindow):
 
         segm_set = self.organ.mH_settings['setup']['segm']
         segments = {}; measure = {}
+
         #Set the way in which each mesh is going to be cut
         if self.organ.mH_settings['setup']['all_contained'] or self.organ.mH_settings['setup']['one_contained']: 
-            ext_ch, int_ch = self.organ.get_ext_int_chs()
+            ext_ch = self.organ.get_ext_int_chs()
             ext_ch_name = ext_ch.channel_no
             nn = 1
             for cut in [key for key in segm_set.keys() if 'Cut' in key]:
@@ -5467,7 +5507,7 @@ class MainWindow(QMainWindow):
         txt = [(0, self.organ.user_organName)]
         #Get button number
         btn_num = int(btn[-1])-1
-        hm_all = list(self.heatmap_dict.keys())
+        hm_all = list(self.hm_btns.keys())
         hm_name = hm_all[btn_num]
         short, ch_info = hm_name.split('[')
         self.win_msg('Plotting heatmaps3D ('+hm_name+')')
@@ -5603,7 +5643,10 @@ class MainWindow(QMainWindow):
 
     def plot_orient(self, name): 
 
-        ext_ch, _ = self.organ.get_ext_int_chs()
+        ext_ch = self.organ.get_ext_int_chs()
+        if isinstance(ext_ch, str) and ext_ch == 'independent':
+            ext_ch = self.organ.obj_imChannels[list(self.organ.obj_imChannels.keys())[0]]
+
         mesh_ext = self.organ.obj_meshes[ext_ch.channel_no+'_tiss']
         cubes = getattr(self.organ, name+'_cube')
         orient_cube = cubes['cube']
@@ -5876,7 +5919,6 @@ class MyPandasTable(QAbstractTableModel):
 
             if orientation == Qt.Orientation.Vertical:
                 return str(self._data.index[section])
-
 
 #%% SOUNDS - ########################################################
 # Sound functions

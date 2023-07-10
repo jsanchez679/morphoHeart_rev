@@ -734,6 +734,7 @@ class Project():
             if isinstance(out_dict[keyi], flatdict.FlatDict):
                 out_dict[keyi] = out_dict[keyi].as_dict()
         
+        print('out_dict: ', out_dict)
         return out_dict
 
     def remove_organ(self, organ):
@@ -1390,18 +1391,29 @@ class Organ():
 
         set_by_path(settingsf, process, update)
     
-    def get_ext_int_chs(self): 
+    def get_ext_int_chs(self, return_int=False): 
         chs = list(self.imChannels.keys())
         ch_ext = []; ch_int = []
-        if len(chs)>1:# and len(chs)<3:
-            for ch in chs:
-                # if self.mH_settings['general_info'][ch]['ch_relation'] == 'external':
-                if self.mH_settings['setup']['chs_relation'][ch] == 'external':
+        if self.mH_settings['setup']['all_contained'] or self.mH_settings['setup']['one_contained']:
+            if len(chs)>1:# and len(chs)<3:
+                for ch in chs:
+                    if self.mH_settings['setup']['chs_relation'][ch] == 'external':
+                        ch_ext = self.obj_imChannels[ch]
+                    if self.mH_settings['setup']['chs_relation'][ch] == 'internal':
+                        ch_int = self.obj_imChannels[ch]
+            else: #if len(chs) == 1: 
+                print('There is only one channel and it is:', chs)
+                for ch in chs:
                     ch_ext = self.obj_imChannels[ch]
-                if self.mH_settings['setup']['chs_relation'][ch] == 'internal':
-                    ch_int = self.obj_imChannels[ch]
+                ch_int = None
+        else: 
+            ch_ext = 'independent'
+            return_int = False
                     
-        return ch_ext, ch_int
+        if return_int: 
+            return ch_ext, ch_int
+        else: 
+            return ch_ext
     
     def get_ext_subsgm(self, cut): 
         print('get_ext_subsgm: ',self.mH_settings['wf_info']['segments']['setup'][cut]['names'])
@@ -1443,7 +1455,7 @@ class Organ():
         else:
             return False  
     
-    def get_orientation(self, views, colors, mtype:str):#CHECkk
+    def get_orientation(self, views, colors, mtype:str, win):#CHECkk
        
         im_orient = self.info['im_orientation']
         print('self.info[im_orientation]',im_orient)
@@ -1451,13 +1463,12 @@ class Organ():
         if im_orient == 'custom': 
             cust_angle = self.info['custom_angle']
             rotateY = True
-        try: 
-            ext_ch, _ = self.get_ext_int_chs()
-        except: 
-            ext_ch = organ.obj_imChannels['ch1']
+
+        ext_ch = self.get_ext_int_chs()
+        if isinstance(ext_ch, str) and ext_ch == 'independent':
+            ext_ch = self.obj_imChannels[list(self.obj_imChannels.keys())[0]]
 
         mesh_ext = self.obj_meshes[ext_ch.channel_no+'_tiss']
-        
         pos = mesh_ext.mesh.center_of_mass()
         print('pos:', pos, type(pos))
         side = max(self.get_maj_bounds())

@@ -248,7 +248,7 @@ def get_stack_orientation(organ, gui_orientation, win):#
     workflow = organ.workflow['morphoHeart']
     colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
     views = organ.mH_settings['setup']['orientation']['stack'].split(', ')
-    planar_views, stack_cube = organ.get_orientation(views, colors, mtype='STACK')
+    planar_views, stack_cube = organ.get_orientation(views, colors, mtype='STACK', win=win)
 
     #Update organ workflow
     process = ['MeshesProc', 'A-Create3DMesh', 'Set_Orientation']

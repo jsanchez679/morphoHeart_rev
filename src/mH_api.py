@@ -118,7 +118,6 @@ def select_cont(controller, ch_name):
 def run_keeplargest(controller):
     workflow = controller.organ.workflow
     #Check channels have already been created: 
-
     if len(controller.organ.obj_imChannels.keys()) == controller.organ.mH_settings['setup']['no_chs']:
         fcM.s32Meshes(organ = controller.organ, gui_keep_largest=controller.main_win.gui_keep_largest, 
                     win = controller.main_win, rotateZ_90=controller.organ.mH_settings['setup']['rotateZ_90'])
@@ -137,10 +136,11 @@ def run_keeplargest(controller):
     
     else: 
         title = 'Channels not closed / Contours not selected!'
-        msg = 'You are not done closing/selecting the contours of the input channels! \nPlease go back to  -mH: Segment Channels-  Tab and continue processing the channels before turning into this tab'
+        msg = 'You are not done closing/selecting the contours of the input channels! \nPlease go back to  -mH: Segment Channels-  Tab and continue processing the channels before running the processes in this tab'
         prompt = Prompt_ok_cancel(title, msg, parent=controller.welcome_win)
         prompt.exec()
         print('output:', prompt.output)
+        return
 
     print('\nEND Keeplargest')
     print('organ.mH_settings:', controller.organ.mH_settings)
@@ -647,16 +647,21 @@ def run_heatmaps3D(controller, btn):
                             'method': 'D-Thickness_ext>int', 
                             'param': 'thickness ext>int',
                             'n_type': 'ext>int'}}
-    
+
+    hm3d_list = list(controller.main_win.hm_btns.keys())
     if btn != None: 
-        items = [list(controller.main_win.heatmap_dict.keys())[btn-1]]
-        controller.main_win.prog_bar_range(0,1)
+        for key in hm3d_list: 
+            num_key = controller.main_win.hm_btns[key]['num']
+            if int(num_key) == int(btn): 
+                hm3get = key
+                break
+        hm3d_set = [hm3get] #[segm_list[int(num)-1]]
     else: 
-        controller.main_win.prog_bar_range(0,len(controller.main_win.heatmap_dict))
-        items = controller.main_win.heatmap_dict
-    nn = 0
-    for item in items:
-        short, ch_info = item.split('[') #short = th_i2e, th_e2i, ball
+        hm3d_set = hm3d_list
+    print('hm3d_set:',hm3d_set)
+
+    for hmitem in hm3d_set:
+        short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball
         ch_info = ch_info[:-1]
         if 'th' in short: 
             _, th_val = short.split('_')
@@ -665,7 +670,7 @@ def run_heatmaps3D(controller, btn):
             mesh_tiss = controller.organ.obj_meshes[ch+'_tiss'].legend
             print('\n>> Extracting thickness information for '+mesh_tiss+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
             controller.main_win.win_msg('Extracting thickness information for '+mesh_tiss+'... NOTE: it takes about 5min to process each mesh... just be patient :)')
-            setup = controller.main_win.gui_thickness_ballooning[item]
+            setup = controller.main_win.gui_thickness_ballooning[hmitem]
             fcM.get_thickness(organ = controller.organ, name = (ch, cont), 
                                 thck_dict = thck_values[th_val], 
                                 setup = setup)
@@ -679,26 +684,21 @@ def run_heatmaps3D(controller, btn):
             mesh2ball = controller.organ.obj_meshes[ch+'_'+cont].legend
             print('\n>> Extracting ballooning information for '+mesh2ball+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
             controller.main_win.win_msg('Extracting ballooning information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
-            setup = controller.main_win.gui_thickness_ballooning[item]
+            setup = controller.main_win.gui_thickness_ballooning[hmitem]
 
             fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
                                 name_cl = (cl_ch, cl_cont), setup = setup)
 
         #Enable buttons to plot heatmaps
-        if btn != None:
-            plot_btn = getattr(controller.main_win, 'hm_plot'+str(btn))
-            hm2d_btn = getattr(controller.main_win, 'hm2d_play'+str(btn))
-            d3d2_btn = getattr(controller.main_win, 'd3d2_'+str(btn))
-        else: 
-            plot_btn = getattr(controller.main_win, 'hm_plot'+str(nn+1))
-            hm2d_btn = getattr(controller.main_win, 'hm2d_play'+str(nn+1))
-            d3d2_btn = getattr(controller.main_win, 'd3d2_'+str(nn+1))
-
+        plot_btn = controller.main_win.hm_btns[hmitem]['plot']
         plot_btn.setEnabled(True)
+        hm2d_btn = controller.main_win.hm_btns[hmitem]['play2d']
+        num = controller.main_win.hm_btns[hmitem]['num']
+        d3d2_btn = getattr(controller.main_win, 'd3d2_'+str(num))
         if d3d2_btn.isChecked(): 
             hm2d_btn.setEnabled(True)
-        nn+=1
-        controller.main_win.prog_bar_update(nn)
+
+        # controller.main_win.prog_bar_update(nn)
         controller.main_win.update_workflow_progress()
 
     # Update organ workflow
@@ -780,8 +780,52 @@ def run_heatmaps3D(controller, btn):
     
 
     # print(thck_names)
+
 def run_heatmaps2D(controller, btn):
-    pass
+
+    workflow = controller.organ.workflow['morphoHeart']
+    hm2d_list = list(controller.main_win.hm_btns.keys())
+    if btn != None: 
+        for key in hm2d_list: 
+            num_key = controller.main_win.hm_btns[key]['num']
+            if int(num_key) == int(btn): 
+                hm2get = key
+                break
+        hm2d_set = [hm2get] #[segm_list[int(num)-1]]
+    else: 
+        hm2d_set = hm2d_list
+    print('hm2d_set:',hm2d_set)
+
+    for hmitem in hm2d_set:
+        short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball
+        ch_info = ch_info[:-1]
+        if 'th' in short: 
+            _, th_val = short.split('_')
+            ch, cont = ch_info.split('-')
+            mesh_tiss = controller.organ.obj_meshes[ch+'_tiss'].legend
+            print('\n>> Extracting thickness information for '+mesh_tiss+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
+            controller.main_win.win_msg('Extracting thickness information for '+mesh_tiss+'... NOTE: it takes about 5min to process each mesh... just be patient :)')
+            setup = controller.main_win.gui_thickness_ballooning[hmitem]
+            fcM.get_thickness(organ = controller.organ, name = (ch, cont), 
+                                thck_dict = thck_values[th_val], 
+                                setup = setup)
+
+        else: # if 'ball' in short
+            ch_cont, cl_info = ch_info.split('(')
+            ch, cont = ch_cont.split('-')
+
+            cl_info = cl_info[:-1].split('.')[1]
+            cl_ch, cl_cont = cl_info.split('-')
+            mesh2ball = controller.organ.obj_meshes[ch+'_'+cont].legend
+            print('\n>> Extracting ballooning information for '+mesh2ball+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
+            controller.main_win.win_msg('Extracting ballooning information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
+            setup = controller.main_win.gui_thickness_ballooning[hmitem]
+
+            fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
+                                name_cl = (cl_ch, cl_cont), setup = setup)
+
+        
+
 
     
 def run_segments(controller, btn): 
@@ -1042,7 +1086,7 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
             while happy == None: 
                 disc_radius = radius
                 items = {0: {'opt': 'no, I would like to define a new position for the disc'}, 
-                         1: {'opt': 'yes, but I would like to redefine the disc radius', 'lineEdit': True, 'regEx': "int3d"}, 
+                         1: {'opt': 'yes, but I would like to redefine the disc radius [um]', 'lineEdit': True, 'regEx': "int3d"}, 
                          2: {'opt': 'yes, I am happy with both, disc position and radius'}}
                 title = 'Happy with the defined Disc No.'+str(n)+'?'
                 msg = 'Are you happy with the position of the disc [radius: '+str(disc_radius)+'um] to cut tissue into segments  '+user_names+'?'

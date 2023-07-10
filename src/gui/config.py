@@ -27,6 +27,7 @@ class mH_Config():
 
         self.path_o = os.path.abspath(__file__)
         self.path_mHImages = Path(self.path_o).parent.parent.parent / 'images'
+        self.dev = True
 
 mH_config = mH_Config()
 

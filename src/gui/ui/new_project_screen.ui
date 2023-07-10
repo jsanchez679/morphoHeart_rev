@@ -72,7 +72,7 @@ QScrollBar::handle:vertical:hover {
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-452</y>
         <width>1070</width>
         <height>1248</height>
        </rect>
@@ -4589,6 +4589,9 @@ QComboBox QAbstractItemView {
                 </item>
                 <item>
                  <widget class="QPushButton" name="set_meas_param_all">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                     <horstretch>0</horstretch>
@@ -7844,7 +7847,7 @@ border-color: #672146
 }</string>
                        </property>
                        <property name="text">
-                        <string>Set Sections</string>
+                        <string>Set Regions</string>
                        </property>
                        <property name="checkable">
                         <bool>true</bool>

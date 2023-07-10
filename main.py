@@ -113,7 +113,6 @@ class Controller:
         prompt.exec()
         print(prompt.output)
 
-
     def show_create_new_proj(self):
         #Close welcome window
         self.sound = self.welcome_win.sound
@@ -207,9 +206,8 @@ class Controller:
             if self.new_organ_win.button_create_new_organ.isChecked():
                 self.new_organ_win.close()
             else: 
-                error_txt = '*You need to create the organ to continue.'
+                error_txt = '*You need to first create the organ to continue.'
                 self.new_organ_win.win_msg(error_txt)
-                print('Error in new proj window')
                 return
             
         elif parent_win == 'load_proj_win':
@@ -434,6 +432,7 @@ class Controller:
     def new_proj(self):
         if self.new_proj_win.validate_set_all():
             self.new_proj_win.win_msg("Creating and saving new project...")
+            #Save as template
             temp_dir = None
             if self.new_proj_win.cB_proj_as_template.isChecked():
                 line_temp = self.new_proj_win.lineEdit_template_name.text()
