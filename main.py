@@ -240,9 +240,10 @@ class Controller:
 
     def show_load_closed_stacks(self):
         if self.load_s3s == None:
-            self.load_s3s = Load_S3s(proj = self.proj, organ = self.organ) 
-        self.load_s3s.show()
-    
+            self.load_s3s = Load_S3s(proj = self.proj, organ = self.organ, parent_win=self.main_win) 
+        else: 
+            self.load_s3s.show()
+        
     def init_main_win(self): 
 
         #Segmentation Tab
@@ -537,7 +538,7 @@ class Controller:
 
                     self.organ = mHC.Organ(project=self.proj, organ_dict=organ_dict, new = True)
                     self.new_organ_win.lab_filled_organ_dir.setText(str(self.organ.dir_res()))
-                    print('\n>>> New Organ: ', self.organ.__dict__.keys())
+                    print('\n>>> New Organ: ', self.organ.__dict__)
                     self.proj.add_organ(self.organ)
                     self.organ.save_organ()
                     self.new_organ_win.win_msg('New organ "'+name+'" has been created as part of "'+self.proj.user_projName+'" project.')
@@ -574,39 +575,59 @@ class Controller:
 
     def run_keeplargest(self):
         mA.run_keeplargest(controller=self)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     def run_cleanup(self):
         mA.run_cleanup(controller=self)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
     
     def run_trimming(self):
         mA.run_trimming(controller=self)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     def run_axis_orientation(self):
         mA.run_axis_orientation(controller=self)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     def run_chNS(self):
         mA.run_chNS(controller=self)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     def run_centreline_clean(self):
         mA.run_centreline_clean(controller=self)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     def run_centreline_ML(self):
         mA.run_centreline_ML(controller=self)
 
     def run_centreline_vmtk(self): 
         mA.run_centreline_vmtk(controller=self)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
     
     def run_centreline_select(self): 
         mA.run_centreline_select(controller=self)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     # def run_centreline(self):
     #     mA.run_centreline(controller=self)
 
     def run_heatmaps3D(self, btn=None):
         mA.run_heatmaps3D(controller=self, btn = btn)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     def run_heatmaps2D(self, btn=None):
         mA.run_heatmaps2D(controller=self, btn = btn)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     # def run_heatmaps2D(self):
     #     mA.run_heatmaps2D(controller=self)

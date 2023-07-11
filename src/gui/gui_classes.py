@@ -2649,59 +2649,92 @@ class LoadProj(QDialog):
 
 class Load_S3s(QDialog): 
     
-    def __init__(self, proj, organ):
+    def __init__(self, proj, organ, parent_win):
         super().__init__()
         uic.loadUi('src/gui/ui/load_closed_channels_screen.ui', self)
         self.setWindowTitle('Loading Stacks with Closed Contours...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
 
+        self.channels = [key for key in proj.mH_channels.keys() if 'NS' not in key]
+
         #Select files
-        self.browse_ch1_int.clicked.connect(lambda: self.get_file(organ=organ, ch='ch1_int'))
-        self.browse_ch1_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch='ch1_tiss'))
-        self.browse_ch1_ext.clicked.connect(lambda: self.get_file(organ=organ, ch='ch1_ext'))
+        self.browse_ch1_int.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch1_int', parent_win=parent_win))
+        self.browse_ch1_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch1_tiss', parent_win=parent_win))
+        self.browse_ch1_ext.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch1_ext', parent_win=parent_win))
 
-        self.browse_ch2_int.clicked.connect(lambda: self.get_file(organ=organ, ch='ch2_int'))
-        self.browse_ch2_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch='ch2_tiss'))
-        self.browse_ch2_ext.clicked.connect(lambda: self.get_file(organ=organ, ch='ch2_ext'))
+        self.browse_ch2_int.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch2_int', parent_win=parent_win))
+        self.browse_ch2_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch2_tiss', parent_win=parent_win))
+        self.browse_ch2_ext.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch2_ext', parent_win=parent_win))
 
-        self.browse_ch3_int.clicked.connect(lambda: self.get_file(organ=organ, ch='ch3_int'))
-        self.browse_ch3_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch='ch3_tiss'))
-        self.browse_ch3_ext.clicked.connect(lambda: self.get_file(organ=organ, ch='ch3_ext'))
+        self.browse_ch3_int.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch3_int', parent_win=parent_win))
+        self.browse_ch3_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch3_tiss', parent_win=parent_win))
+        self.browse_ch3_ext.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch3_ext', parent_win=parent_win))
 
-        self.browse_ch4_int.clicked.connect(lambda: self.get_file(organ=organ, ch='ch4_int'))
-        self.browse_ch4_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch='ch4_tiss'))
-        self.browse_ch4_ext.clicked.connect(lambda: self.get_file(organ=organ, ch='ch4_ext'))
+        self.browse_ch4_int.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch4_int', parent_win=parent_win))
+        self.browse_ch4_tiss.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch4_tiss', parent_win=parent_win))
+        self.browse_ch4_ext.clicked.connect(lambda: self.get_file(organ=organ, ch_cont='ch4_ext', parent_win=parent_win))
 
+        self.setModal(True)
+        parent_win.all_closed.setChecked(True)
+        toggled(parent_win.all_closed)
+
+        #Buttons
+        self.create_channels.clicked.connect(lambda: self.create_imChannels(organ=organ))
+        self.button_add_channels.clicked.connect(lambda: self.add_channels_to_organ(proj=proj, organ=organ, parent_win=parent_win))
+
+        #Set channel info
         self.set_channel_info(proj)
+        self.show()
 
+        print('organ.__dict__:', organ.__dict__)
+        
     def set_channel_info(self, proj): 
         #Change channels
-        mH_channels = proj.mH_channels
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']: 
             label = getattr(self, 'lab_'+ch) 
             name = getattr(self, 'lab_filled_name_'+ch)
 
-            if ch not in mH_channels.keys():
+            if ch not in self.channels:
                 label.setVisible(False)
                 name.setVisible(False)
             else: 
                 name.setText(proj.mH_channels[ch])
-            
+        
             for cont in ['int', 'tiss', 'ext']:
                 brw_ch_cont = getattr(self, 'browse_'+ch+'_'+cont)
                 dir_ch_cont = getattr(self, 'lab_filled_dir_'+ch+'_'+cont)
                 check_ch_cont = getattr(self, 'check_'+ch+'_'+cont)
-                if ch not in mH_channels.keys():
+                if ch not in self.channels:
                     brw_ch_cont.setVisible(False)
                     dir_ch_cont.setVisible(False)
                     check_ch_cont.setVisible(False)
-                
-    def get_file(self, organ, ch):
-        self.win_msg('Loading '+ch+'... Wait for the indicator to turn green, then continue.')
-        btn_file = getattr(self, 'browse_'+ch)
-        title = 'Import closed stacks for '+ch
-        ch_name, cont_name = ch.split('_')
+
+    def create_imChannels(self, organ):
+        self.win_msg('Creating Organ Channels... Please wait...')
+        names = []
+        for ch_name in self.channels:
+            names.append(organ.mH_settings['setup']['name_chs'][ch_name])
+            self.win_msg('Creating Channel '+str(ch_name[-1]))
+            im_ch = organ.create_ch(ch_name=ch_name)
+            for cont in ['int', 'tiss', 'ext']: 
+                getattr(self, 'browse_'+ch_name+'_'+cont).setEnabled(True)
+    
+        str_names = ', '.join(names)
+        self.win_msg('Organ channels  -'+str_names+'-  have been successfully created! Please continue by loading the closed contour stacks...')
+        self.create_channels.setChecked(True)
+        toggled(self.create_channels)
+
+    def get_file(self, organ, ch_cont, parent_win):
+        self.win_msg('Loading '+ch_cont+'... Wait for the indicator to turn green, then continue.')
+        btn_file = getattr(self, 'browse_'+ch_cont)
+        ch_name, cont_name = ch_cont.split('_')
+        ch_num = int(ch_name[-1])
+        if cont_name == 'tiss':
+            cont_namef = 'all'
+        else: 
+            cont_namef = cont_name
+        title = 'Import closed stacks for '+ch_cont+ ' (previous version name: s3_ch'+str(ch_num-1)+'_'+cont_namef+'.npy)'
 
         if hasattr(self, 'user_dir'):
             cwd = self.user_dir
@@ -2710,40 +2743,64 @@ class Load_S3s(QDialog):
 
         file_name, aaa = QFileDialog.getOpenFileName(self, title, str(cwd), "Numpy Arrays (*.npy)")
         if Path(file_name).is_file(): 
-            label = getattr(self, 'lab_filled_dir_'+ch)
+            label = getattr(self, 'lab_filled_dir_'+ch_cont)
             label.setText(str(file_name))
-            check = getattr(self, 'check_'+ch)
-            check.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(0, 255, 0); color: rgb(0, 255, 0); font: 25 2pt 'Calibri Light'")
-            check.setText('Done')
+            check = getattr(self, 'check_'+ch_cont)
+            
             #Load npy array
             npy_stack = np.load(file_name)
-            layer_dict = {}
+            if isinstance(npy_stack, np.ndarray):
+                setattr(self, 'npy_'+ch_name+'_'+cont_name, file_name)
+                self.user_dir = Path(file_name).parent
+                check.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(0, 255, 0); color: rgb(0, 255, 0); font: 25 2pt 'Calibri Light'")
+                check.setText('Done')
+            else: 
+                self.win_msg('*The selected file is not a numpy array. Please select a valid file.')
 
-            #Create channels
-            if ch_name not in organ.obj_Channels.keys(): 
-                ImChannel(organ=organ, ch_name=ch_name)
-            im_ch = organ.obj_imChannels[ch_name]
-            #Create contour
-            # im_ch.create_chS3s(layerDict={}, win=self, cont_list = [cont_name])
+    def add_channels_to_organ(self, proj, organ, parent_win): 
+        if self.create_channels.isChecked(): 
+            all_done = []
+            nn = 1; total_n = len(self.channels)*3
+            for ch in self.channels: 
+                process_up =  ['ImProc', ch, 'Status']
+                self.win_msg("Adding channels' contours to organ ("+str(nn)+"/"+str(total_n)+")")
+                for cont in ['int', 'tiss', 'ext']: 
+                    text = getattr(self, 'check_'+ch+'_'+cont).text()
+                    if text != 'Done':
+                        self.win_msg('*Please select the stack with closed contours for '+ch+'_'+cont+'!')
+                        self.button_add_channels.setChecked(False)
+                        toggled(self.button_add_channels)
+                        return
+                    else: 
+                        im_ch = organ.obj_imChannels[ch]
+                        file_name = getattr(self, 'npy_'+ch+'_'+cont)
+                        npy_stack = np.load(file_name)
+                        im_ch.create_chS3s(layerDict=npy_stack, win=self, cont_list=[cont])
+                        process = ['ImProc', ch, 'C-SelectCont','Status']
+                        
+                        #Update organ workflow
+                        organ.update_mHworkflow(process, update = 'DONE')
+                        all_done.append(True)
+                        nn += 1
 
+                #Update organ workflow
+                organ.update_mHworkflow(process_up, update = 'DONE')
 
-        #     title = str(self.dirs['arrays']['ballCL('+n_type+')'])+'.npy'
-        #     dir_npy = self.parent_organ.dir_res(dir='csv_all') / title
-        #     print('dir_mesh:', dir_mesh, '\n','-dir_npy:', dir_npy)
-
-        #     images_o = io.imread(str(file_name))
-        #     #Save files img_dirs
-        #     self.img_dirs[ch]['image'] = {}
-        #     self.img_dirs[ch]['image']['dir'] = Path(file_name)
-        #     self.img_dirs[ch]['image']['shape'] = images_o.shape
-            self.user_dir = Path(file_name).parent
-        # else: 
-        #     error_txt = '*Something went wrong importing the images for '+ch+'. Please try again.'
-        #     self.win_msg(error_txt)
-        #     return
-
-        # btn_file.setChecked(True)
-        # toggled(btn_file)
+            if all(all_done):
+                parent_win.update_ch_progress()
+                organ.save_organ()
+                proj.add_organ(organ)
+                proj.save_project()
+                print('organ.__dict__:', organ.__dict__)
+                self.win_msg('Project  -'+ proj.user_projName + 'and Organ  -'+ organ.user_organName +'-  were saved succesfully!')
+                self.close()
+                parent_win.win_msg('All closed channels have been successfully imported in this organ!')
+                
+        else: 
+            self.win_msg('*Please create organ channels first to continue')
+            self.button_add_channels.setChecked(False)
+            toggled(self.button_add_channels)
+            return
 
     def win_msg(self, msg): 
         if msg[0] == '*':
@@ -3092,6 +3149,7 @@ class MainWindow(QMainWindow):
 
         #Setup results
         self.fill_results()
+        self.results_save.clicked.connect(lambda: self.save_results())
 
     #>> Initialise all modules of Process and Analyse
     def init_keeplargest(self): 
@@ -3418,6 +3476,7 @@ class MainWindow(QMainWindow):
             name = setup[proc]['name']
             minn = setup[proc]['min_val']
             maxx = setup[proc]['max_val']
+            
             for item in self.organ.mH_settings['measure'][proc]:
                 print('item being set: ', item)
                 if proc != 'ball': 
@@ -3438,7 +3497,19 @@ class MainWindow(QMainWindow):
                 hm_plot2 = getattr(self, 'hm_plot'+str(nn+1)+'_2D')
                 play = getattr(self, 'hm_play'+str(nn+1))
                 play2d = getattr(self, 'hm2d_play'+str(nn+1))
-
+                cm = getattr(self,'colormap'+str(nn+1))
+                cm.clear()
+                cm.addItems(cmaps)
+                
+                self.hm_btns[key] = {'name': nameff,
+                                        'min_val': minn, 
+                                        'max_val': maxx, 
+                                        'num' : nn+1,
+                                        'play': play, 
+                                        'plot': hm_plot, 
+                                        'play2d': play2d,
+                                        'plot2d': hm_plot2}
+                
                 label.setText(nameff)
                 mina.setValue(minn)
                 maxa.setValue(maxx)
@@ -3446,15 +3517,7 @@ class MainWindow(QMainWindow):
                 hm_plot.setEnabled(False)
                 play2d.setEnabled(False)
                 hm_plot2.setEnabled(False)
-                
-                self.hm_btns[key] = {'name': nameff,
-                                            'min_val': minn, 
-                                            'max_val': maxx, 
-                                            'num' : nn+1,
-                                            'play': play, 
-                                            'plot': play2d, 
-                                            'play2d': hm_plot,
-                                            'plot2d': hm_plot2}
+
                 nn +=1
                 
         print('hm_btns:', self.hm_btns)
@@ -3494,6 +3557,7 @@ class MainWindow(QMainWindow):
                 hm_ch_cont = list(self.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
                 ch, cont = hm_ch_cont.split('_')
                 self.hm_centreline.setText(self.channels[ch]+' ('+ch+'-'+cont+')')
+                self.cl4hm = hm_ch_cont
                 hide = False
             else: 
                 hide = True
@@ -3509,6 +3573,7 @@ class MainWindow(QMainWindow):
             self.lab_3d2d.setVisible(False)
             self.lab_2d.setVisible(False)
             self.lab_plot2d.setVisible(False)
+            self.hm_centreline_status.setVisible(False)
 
             for num in range(1,13,1): 
                 getattr(self, 'hm2d_play'+str(num)).setVisible(False)
@@ -4110,7 +4175,6 @@ class MainWindow(QMainWindow):
 
             for item in self.hm_btns.keys(): 
                 nn = self.hm_btns[item]['num']
-                print('item:', item)
                 getattr(self, 'def'+str(nn)).setChecked(wf_info['heatmaps'][item]['default'])
                 getattr(self, 'min_hm'+str(nn)).setValue(wf_info['heatmaps'][item]['min_val'])
                 getattr(self, 'max_hm'+str(nn)).setValue(wf_info['heatmaps'][item]['max_val'])
@@ -4134,13 +4198,15 @@ class MainWindow(QMainWindow):
                     
                 print('proc:', get_by_path(wf, proc))
                 if get_by_path(wf, proc) == 'DONE':
-                    self.hm_btns[item]['play'].setEnabled(True)
+                    print('done')
                     self.hm_btns[item]['play'].setChecked(True)
+                    self.hm_btns[item]['play'].setEnabled(True)
                     self.hm_btns[item]['plot'].setEnabled(True)
                     if getattr(self, 'd3d2_'+str(nn)).isChecked():
                         self.hm_btns[item]['play2d'].setEnabled(True)
                     at_least_one = True
                 else: 
+                    print('not done')
                     if 'th' in item:
                         self.hm_btns[item]['play'].setEnabled(True)
                     else: 
@@ -4169,6 +4235,13 @@ class MainWindow(QMainWindow):
 
         else: 
             pass
+
+        #Update status of hm_cl if centreline has been already obtained
+        if hasattr(self, 'cl4hm'):
+            ch4cl, cont4cl = self.cl4hm.split('_')
+            proc4cl = ['C-Centreline', 'buildCL', ch4cl, cont4cl, 'Status']
+            if get_by_path(wf, proc4cl) == 'DONE':
+                self.update_status(None, 'DONE', self.hm_centreline_status, override=True)
 
     def user_segments(self):
 
@@ -4336,6 +4409,17 @@ class MainWindow(QMainWindow):
         cm_eg.setPixmap(pixmap)
         cm_eg.setScaledContents(True)
 
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'heatmaps' in wf_info.keys() and hasattr(self, 'gui_thickness_ballooning'):
+            for key in list(self.hm_btns.keys()): 
+                num_key = self.hm_btns[key]['num']
+                if int(num_key) == int(name): 
+                    item = key
+                    break
+            
+            self.gui_thickness_ballooning[item]['colormap'] = value
+            print('Updated colormap: ',self.gui_thickness_ballooning[item])
+
     def fill_workflow(self):
                 
         flat_wf = flatdict.FlatDict(self.organ.workflow['morphoHeart']['MeshesProc'])
@@ -4473,16 +4557,17 @@ class MainWindow(QMainWindow):
                 self.tabW_progress_pandq.setRowHeight(row, 20)
                 row +=1
             
-        # headerc = self.tabW_progress_pandq.horizontalHeader()  
-        # for col in range(2):
-        #     headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+        headerc = self.tabW_progress_pandq.horizontalHeader()  
+        for col in range(1):
+            headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+        self.tabW_progress_pandq.setColumnWidth(1, 60)
 
         headerr = self.tabW_progress_pandq.verticalHeader()  
         for row in range(len(keys_flat_filtered)+len(main_titles_set)):   
             headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
         
-        for nn, col, w  in zip(count(), [0,1], [180,60]): 
-            self.tabW_progress_pandq.setColumnWidth(col, w)
+        # for nn, col, w  in zip(count(), [0,1], [180,60]): 
+        #     self.tabW_progress_pandq.setColumnWidth(col, w)
         # self.tabW_progress_pandq.resizeColumnsToContents()
         # self.tabW_progress_pandq.resizeRowsToContents()
         
@@ -4537,8 +4622,40 @@ class MainWindow(QMainWindow):
     def fill_results(self): 
         self.get_results_df()
 
-        self.model = MyPandasTable(self.df_res)
-        self.tabW_results.setModel(self.model)
+        #Set row count
+        self.tabW_results.setRowCount(len(self.df_res))
+        row = 0
+        for index, rowv in self.df_res.iterrows(): 
+            col0, _, col2 = index
+            value = rowv['Value']
+            if isinstance(value, float): 
+                valuef = str(value)#str("%.2f" % value)
+            if isinstance(value, str): 
+                valuef = value
+
+            item_col0 = QTableWidgetItem(col0)
+            self.tabW_results.setItem(row, 0, item_col0)
+            item_col0.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+            item_col2 = QTableWidgetItem(col2)
+            self.tabW_results.setItem(row, 1, item_col2)
+            item_col2.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+            item_value = QTableWidgetItem(value)
+            self.tabW_results.setItem(row, 2, item_value)
+            item_value.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+
+            row+=1
+
+        headerc = self.tabW_results.horizontalHeader()  
+        for col in range(2):
+            headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+        self.tabW_results.setColumnWidth(2, 100)
+        
+        headerr = self.tabW_results.verticalHeader()  
+        for row in range(len(self.df_res)):   
+            headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
+        
+        # self.model = MyPandasTable(self.df_res)
+        # self.tabW_results.setModel(self.model)
         # df_final.to_csv('out.csv', index=True)  
 
     def get_results_df(self): 
@@ -4619,10 +4736,49 @@ class MainWindow(QMainWindow):
             else: 
                 values_updated.append(row['Value'])
 
-        df_final['Value'] = values_updated
-        print('df_final: ', df_final)
+        #Add column with better names
+        user_tiss_cont = []
+        name_chs = self.organ.mH_settings['setup']['name_chs']
+        if isinstance(self.organ.mH_settings['setup']['segm'], dict):
+            name_segm = {}
+            for cut in [key for key in self.organ.mH_settings['setup']['segm'] if 'Cut' in key]:
+                name_segm[cut] = self.organ.mH_settings['setup']['segm'][cut]['name_segments']
+        if isinstance(self.organ.mH_settings['setup']['sect'], dict):
+            name_sect = {}
+            for cut in [key for key in self.organ.mH_settings['setup']['sect'] if 'Cut' in key]:
+                name_sect[cut] = self.organ.mH_settings['setup']['sect'][cut]['name_sections']
+        name_cont = {'int': 'internal', 'tiss': 'tissue', 'ext': 'external'}
 
-        self.df_res = df_final
+        for index, _ in df_final.iterrows(): 
+            param, tiss_cont = index
+            split_name = tiss_cont.split('_')
+            # print(split_name, len(split_name))
+            if len(split_name) == 1 and tiss_cont == 'roi': 
+                namef = 'Organ/ROI'
+            elif len(split_name) == 3: 
+                ch, cont, _ = split_name
+                namef = name_chs[ch]+ ' ('+name_cont[cont]+')'
+            elif len(split_name) == 4: 
+                cut, ch, cont, subm = split_name
+                if 'segm' in subm: 
+                    namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_segm[cut][subm]+')'
+                else: 
+                    namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_sect[cut][subm]+')'
+            else: 
+                print(index, len(split_name))
+                namef = 'Check: '+tiss_cont
+            
+            # print(index, namef.title())
+            nameff = namef.title()
+            user_tiss_cont.append(nameff)
+
+        df_final['Value'] = values_updated
+        df_final['User (Tissue-Contour)'] = user_tiss_cont
+        df_finalf = df_final.reset_index()
+        df_finalf = df_finalf.set_index(mult_index+['User (Tissue-Contour)'])
+
+        # print('df_finalf: ', df_finalf)
+        self.df_res = df_finalf
     
     def fill_workflow_OLD(self):
         #OLD Version
@@ -5211,11 +5367,13 @@ class MainWindow(QMainWindow):
             if len(compare_dicts(gui_thickness_ballooning_loaded, current_gui_thickness_ballooning, 'loaded', 'current'))!= 0 and not init: 
                 self.gui_thickness_ballooning = update_gui_set(loaded = gui_thickness_ballooning_loaded, 
                                                                 current = current_gui_thickness_ballooning)
-                self.win_msg("Remember to re-run  -Thickness / Ballooning Measurements-  section to make sure changes are made and saved!")
+                # self.win_msg("Remember to re-run  -Thickness / Ballooning Measurements-  section to make sure changes are made and saved!")
                 self.update_status(None, 're-run', self.heatmaps_status, override=True)
             else: 
                 self.gui_thickness_ballooning = gui_thickness_ballooning_loaded
             
+        self.update_3d2d()
+
         # Update mH_settings
         proc_set = ['wf_info']
         update = self.gui_thickness_ballooning
@@ -5246,7 +5404,48 @@ class MainWindow(QMainWindow):
             nn+=1
 
         return gui_thickness_ballooning
-        
+    
+    def update_3d2d(self): 
+
+        wf = self.organ.workflow['morphoHeart']['MeshesProc']
+        for item in self.hm_btns: 
+            if 'th' in item: #'th_i2e[ch1-tiss]'
+                if 'i2e' in item: 
+                    process = 'D-Thickness_int>ext'
+                else: 
+                    process = 'D-Thickness_ext>int'
+                ch_cont = item[0:-1].split('[')[1]
+                ch, cont = ch_cont.split('-')
+                btn_play = self.hm_btns[item]['play']
+                btn_play.setEnabled(True)
+                proc = [process, ch, cont, 'Status']
+                        
+            else: #'ball[ch1-int(CL:ch1-int)]'
+                process = 'D-Ballooning'
+                ch_cl_info = item[0:-2].split('[')[1]
+                ch_info, cl_info = ch_cl_info.split('(CL.')
+                ch, cont = ch_info.split('-')
+                cl_ch, cl_cont = cl_info.split('-')
+                proc_cl = ['C-Centreline', 'buildCL', cl_ch, cl_cont, 'Status']
+                if get_by_path(wf, proc_cl) == 'DONE':
+                    btn_play = self.hm_btns[item]['play']
+                    btn_play.setEnabled(True)
+                    proc = [process, ch, cont+'_('+cl_info.replace('-','_')+')', 'Status']
+
+            if self.gui_thickness_ballooning[item]['d3d2']: 
+                ch4cl, cont4cl = self.cl4hm.split('_')
+                proc4cl = ['C-Centreline', 'buildCL', ch4cl, cont4cl, 'Status']
+                if get_by_path(wf, proc) == 'DONE' and get_by_path(wf, proc4cl) == 'DONE' :
+                    print('done')
+                    self.hm_btns[item]['play2d'].setEnabled(True)
+
+        if hasattr(self, 'cl4hm'):
+            ch4cl, cont4cl = self.cl4hm.split('_')
+            proc4cl = ['C-Centreline', 'buildCL', ch4cl, cont4cl, 'Status']
+            print(proc4cl, get_by_path(wf, proc4cl))
+            if get_by_path(wf, proc4cl):
+                self.update_status(None, 'DONE', self.hm_centreline_status, override=True)
+   
     def set_segments(self, init=False):
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_segm = self.gui_segments_n()
@@ -5446,7 +5645,7 @@ class MainWindow(QMainWindow):
         txt = [(0, self.organ.user_organName)]
         obj = []
         if ch != 'all': 
-            for cont in ['ext', 'tiss', 'int']: 
+            for cont in ['int', 'tiss', 'ext']: 
                 obj.append(self.organ.obj_meshes[ch+'_'+cont].mesh)
         else: 
             print('self.channels:', self.channels)
@@ -5712,6 +5911,18 @@ class MainWindow(QMainWindow):
     def run_segmentationAll(self): 
         print('Running segmentation All!')
     
+    #Save functions
+    def save_results(self): 
+        if self.cB_transpose.isChecked():
+            df_final = self.df_res.T
+        else: 
+            df_final = self.df_res
+        
+        ext = self.cB_extension.currentText()
+        filename = self.organ.folder+'_results'+ext
+        df_dir = self.organ.dir_res() / filename
+        df_final.to_csv(df_dir, index=True)  
+
     #Functions for all tabs
     def continue_next_tab(self): #A delete bit
         if self.tabWidget.currentIndex() == 0: 
@@ -5740,13 +5951,13 @@ class MainWindow(QMainWindow):
         print('Setting Plot Tab')
 
     #Menu functions
-    def save_project_and_organ_pressed(self):
+    def save_project_and_organ_pressed(self, alert_on=True):
         print('Save project and organ was pressed')
-        self.organ.save_organ()
-        self.win_msg('Organ  -'+ self.organ.user_organName +'-  was saved succesfully!')
+        self.organ.save_organ(alert_on)
         self.proj.add_organ(self.organ)
-        self.proj.save_project()
-        self.win_msg('Project  -'+ self.proj.user_projName +'-  was saved succesfully!')
+        self.proj.save_project(alert_on)
+        if alert_on: 
+            self.win_msg('Project  -'+ self.proj.user_projName + 'and Organ  -'+ self.organ.user_organName +'-  were saved succesfully!')
     
     def close_morphoHeart_pressed(self):
         print('Close was pressed')
@@ -5974,25 +6185,18 @@ def update_status(root_dict, items, fillcolor, override=False):
 
     if wf_status == 'NI': 
         color = 'rgb(255, 255, 127)'
-        # color_txt = "background-color: rgb(255, 255, 127); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
     elif wf_status == 'Initialised': 
         color = 'rgb(255, 151, 60)'
-        # color_txt = "background-color: rgb(255, 151, 60); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
     elif wf_status == 'DONE' or wf_status == 'Done':
         color = 'rgb(0, 255, 0)'
-        # color_txt = "background-color:  rgb(0, 255, 0); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
     elif wf_status == 'N/A': 
         color = 'rgb(0, 0, 0)'
-        # color_txt = "background-color:  rgb(0, 0, 0); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
     elif wf_status == 're-run': 
         color = 'rgb(35, 207, 255)'
-        # color_txt = "background-color:  rgb(35, 207, 255); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
     else: 
         color = 'rgb(255, 0, 255)'
-        # color_txt = "background-color:  rgb(255, 0, 255); border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset;"
         print('other status unknown')
     color_btn(btn = fillcolor, color = color)
-    # fillcolor.setStyleSheet(color_txt)
 
 # Button general functions
 def toggled(button_name): 
@@ -6019,6 +6223,7 @@ def color_btn(btn, color, small=True):
         color = 'rgb'+str(tuple(color))
     else: 
         pass
+
     if small: 
         pt = "25 2pt 'Calibri Light'"
     else: 

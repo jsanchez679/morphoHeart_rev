@@ -531,7 +531,7 @@ def proc_meshes4cl(organ, win):#
 
     print('m4clf:', m4clf)
     return m4clf
-    
+
 def extract_cl(organ, win, voronoi=False):#
     
     workflow = organ.workflow['morphoHeart']
@@ -1903,14 +1903,11 @@ def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350, a
     vp.add_icon(logo, pos=pos, size=0.25)
     for num in range(len(obj)):
         if isinstance(obj[num], tuple):
-            # print('A')
             try: 
                 lbox.append(vedo.LegendBox(list(obj[num]), font=leg_font, width=leg_width))
             except: 
                 lbox.append('')
-                # print('Legend box error:', type(obj[num]))
         else:
-            # print('B')
             lbox.append(vedo.LegendBox([obj[num]], font=leg_font, width=leg_width))
         if num != len(obj)-1:
             vp.show(obj[num], lbox[num], txt_out[num], at=num)

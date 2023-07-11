@@ -133,6 +133,10 @@ def run_keeplargest(controller):
         select_btn = getattr(controller.main_win, 'keeplargest_play')
         select_btn.setChecked(True)
         toggled(select_btn)
+
+        #Update progress in main_win
+        controller.main_win.update_workflow_progress()
+        
     
     else: 
         title = 'Channels not closed / Contours not selected!'
@@ -178,6 +182,9 @@ def run_cleanup(controller):
     select_btn = getattr(controller.main_win, 'cleanup_play')
     select_btn.setChecked(True)
     toggled(select_btn)
+
+    #Update progress in main_win
+    controller.main_win.update_workflow_progress()
             
 def run_trimming(controller):
     workflow = controller.organ.workflow
@@ -227,6 +234,9 @@ def run_trimming(controller):
     select_btn = getattr(controller.main_win, 'trimming_play')
     select_btn.setChecked(True)
     toggled(select_btn)
+
+    #Update progress in main_win
+    controller.main_win.update_workflow_progress()
 
 def get_trimming_planes(organ, gui_trim, win): 
     filename = organ.user_organName
@@ -342,7 +352,7 @@ def run_axis_orientation(controller, only_roi=False):
     on_hold = fcM.get_roi_orientation(organ = controller.organ,
                                         gui_orientation = gui_orientation,  
                                         win = controller.main_win)
-
+    
     #Update Status in GUI
     process = ['MeshesProc', 'A-Create3DMesh', 'Set_Orientation', 'Status']
     controller.main_win.update_status(workflow, process, controller.main_win.orient_status)
@@ -357,6 +367,9 @@ def run_axis_orientation(controller, only_roi=False):
         controller.organ.on_hold = on_hold
         select_btn.setChecked(False)
     toggled(select_btn)
+
+    #Update progress in main_win
+    controller.main_win.update_workflow_progress()
 
 def run_chNS(controller):
     workflow = controller.organ.workflow['morphoHeart']
@@ -386,6 +399,9 @@ def run_chNS(controller):
     select_btn = getattr(controller.main_win, 'chNS_play')
     select_btn.setChecked(True)
     toggled(select_btn)
+
+    #Update progress in main_win
+    controller.main_win.update_workflow_progress()
 
 def run_centreline_clean(controller):
 
@@ -442,6 +458,9 @@ def run_centreline_clean(controller):
 
     prompt_meshLab(controller)
 
+    #Update progress in main_win
+    controller.main_win.update_workflow_progress()
+
 def run_centreline_ML(controller): 
     workflow = controller.organ.workflow['morphoHeart']
     proc_simp = ['MeshesProc', 'C-Centreline', 'SimplifyMesh', 'Status']
@@ -470,6 +489,9 @@ def run_centreline_ML(controller):
                 select_btn = getattr(controller.main_win, 'centreline_ML_play')
                 select_btn.setChecked(True)
                 toggled(select_btn)
+
+                #Update progress in main_win
+                controller.main_win.update_workflow_progress()
 
             else:
                 error = '*'+str(name_ML)+' has not been created! Clean this mesh in MeshLab to proceed.'
@@ -526,6 +548,9 @@ def run_centreline_vmtk(controller):
     select_btn = getattr(controller.main_win, 'centreline_vmtk_play')
     select_btn.setChecked(True)
     toggled(select_btn)
+
+    #Update progress in main_win
+    controller.main_win.update_workflow_progress()
 
 def run_centreline_select(controller):
     
@@ -592,6 +617,9 @@ def run_centreline_select(controller):
         #Enable button for plot cl
         plot_btn = getattr(controller.main_win, 'cl_plot'+str(nn+1))
         plot_btn.setEnabled(True)
+
+        #Update progress in main_win
+        controller.main_win.update_workflow_progress()
         nn+=1
     
     # Update organ workflow
@@ -699,6 +727,7 @@ def run_heatmaps3D(controller, btn):
             hm2d_btn.setEnabled(True)
 
         # controller.main_win.prog_bar_update(nn)
+        #Update progress in main_win
         controller.main_win.update_workflow_progress()
 
     # Update organ workflow
@@ -823,11 +852,7 @@ def run_heatmaps2D(controller, btn):
 
             fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
                                 name_cl = (cl_ch, cl_cont), setup = setup)
-
-        
-
-
-    
+            
 def run_segments(controller, btn): 
 
     workflow = controller.organ.workflow['morphoHeart']
@@ -928,6 +953,9 @@ def run_segments(controller, btn):
         controller.main_win.segm_btns[segm]['meshes'] = meshes_segm
         print('meshes_segm: ',meshes_segm)
         print(controller.main_win.segm_btns[segm])
+
+        #Update progress in main_win
+        controller.main_win.update_workflow_progress()
 
     # Update organ workflow and GUI Status
     flat_semg_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Segments']))
@@ -1245,6 +1273,9 @@ def run_sections(controller, btn):
         btn = controller.main_win.sect_btns[sect]['plot']
         btn.setEnabled(True)
         print('wf:', controller.organ.workflow['morphoHeart']['MeshesProc'])
+
+        #Update progress in main_win
+        controller.main_win.update_workflow_progress()
     
     # Update organ workflow and GUI Status
     flat_sect_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Sections']))

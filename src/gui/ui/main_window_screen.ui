@@ -1881,8 +1881,8 @@ QScrollBar::handle:vertical:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-1415</y>
-                <width>634</width>
+                <y>-586</y>
+                <width>635</width>
                 <height>3723</height>
                </rect>
               </property>
@@ -14825,7 +14825,7 @@ background-color: rgb(211, 211, 211);
                           <item row="10" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot10">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -14944,7 +14944,7 @@ background-color:rgb(203, 203, 203);
                           <item row="1" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot1">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -15345,7 +15345,7 @@ background-color: rgb(211, 211, 211);
                           <item row="3" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot3_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -15464,7 +15464,7 @@ background-color:rgb(203, 203, 203);
                           <item row="7" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot7_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -15540,7 +15540,7 @@ background-color:rgb(203, 203, 203);
                           <item row="10" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot10_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -15755,7 +15755,7 @@ background-color: rgb(211, 211, 211);
                           <item row="4" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot4">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -15803,7 +15803,7 @@ background-color:rgb(203, 203, 203);
                           <item row="6" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot6_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -15851,7 +15851,7 @@ background-color:rgb(203, 203, 203);
                           <item row="11" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot11">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -16114,7 +16114,7 @@ background-color: rgb(211, 211, 211);
                           <item row="9" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot9">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -16556,7 +16556,7 @@ background-color: rgb(255, 255, 255);</string>
                           <item row="12" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot12">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -16604,7 +16604,7 @@ background-color:rgb(203, 203, 203);
                           <item row="1" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot1_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -16680,7 +16680,7 @@ background-color:rgb(203, 203, 203);
                           <item row="3" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot3">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -17208,7 +17208,7 @@ Ref</string>
                           <item row="12" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot12_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -17256,7 +17256,7 @@ background-color:rgb(203, 203, 203);
                           <item row="11" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot11_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -17304,7 +17304,7 @@ background-color:rgb(203, 203, 203);
                           <item row="2" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot2">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -17352,7 +17352,7 @@ background-color:rgb(203, 203, 203);
                           <item row="9" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot9_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -17595,7 +17595,7 @@ background-color: rgb(211, 211, 211);
                           <item row="5" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot5">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -17921,7 +17921,7 @@ background-color: rgb(211, 211, 211);
                           <item row="4" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot4_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -17969,7 +17969,7 @@ background-color:rgb(203, 203, 203);
                           <item row="6" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot6">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -18017,7 +18017,7 @@ background-color:rgb(203, 203, 203);
                           <item row="8" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot8">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -18220,7 +18220,7 @@ background-color: rgb(211, 211, 211);
                           <item row="5" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot5_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -18268,7 +18268,7 @@ background-color:rgb(203, 203, 203);
                           <item row="7" column="6" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot7">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -18508,7 +18508,7 @@ background-color: rgb(211, 211, 211);
                           <item row="8" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot8_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -18743,7 +18743,7 @@ background-color: rgb(211, 211, 211);
                           <item row="2" column="8" alignment="Qt::AlignHCenter">
                            <widget class="QPushButton" name="hm_plot2_2D">
                             <property name="enabled">
-                             <bool>false</bool>
+                             <bool>true</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -20293,6 +20293,31 @@ background-color: rgb(255, 255, 255);</string>
                             </property>
                             <property name="alignment">
                              <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QLabel" name="hm_centreline_status">
+                            <property name="minimumSize">
+                             <size>
+                              <width>15</width>
+                              <height>15</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>15</width>
+                              <height>15</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">background-color:rgb(255, 255, 0);
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0,0, 0);</string>
+                            </property>
+                            <property name="text">
+                             <string/>
                             </property>
                            </widget>
                           </item>
@@ -30636,18 +30661,6 @@ border-color: rgb(115, 115, 115)}
         <item>
          <widget class="QWidget" name="widget_4" native="true">
           <layout class="QVBoxLayout" name="verticalLayout_45">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_8">
              <item>
@@ -30723,7 +30736,7 @@ QScrollBar::handle:horizontal:hover {
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>525</width>
+                <width>507</width>
                 <height>744</height>
                </rect>
               </property>
@@ -31520,7 +31533,8 @@ font: 10pt &quot;Calibri Light&quot;;}
 QPushButton:hover{
 background-color: #eb6fbd;
 border-color: #672146
-}</string>
+}
+</string>
                     </property>
                     <property name="text">
                      <string>Set</string>
@@ -33113,42 +33127,10 @@ font: bold 10pt &quot;Calibri Light&quot;;</string>
                </property>
               </widget>
              </item>
-             <item>
-              <widget class="QPushButton" name="results_save">
-               <property name="minimumSize">
-                <size>
-                 <width>50</width>
-                 <height>18</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>50</width>
-                 <height>18</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton{border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color:  rgba(0, 158, 0,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(145, 145, 145);
-border-color: #672146
-}</string>
-               </property>
-               <property name="text">
-                <string>Save</string>
-               </property>
-              </widget>
-             </item>
             </layout>
            </item>
            <item>
-            <widget class="QTableView" name="tabW_results">
+            <widget class="QTableWidget" name="tabW_results">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                <horstretch>0</horstretch>
@@ -33250,7 +33232,235 @@ QTableView::item:focus{
              <property name="gridStyle">
               <enum>Qt::SolidLine</enum>
              </property>
+             <column>
+              <property name="text">
+               <string>Parameter</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>User (Tissue-Contour)</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </column>
             </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_179">
+             <item>
+              <spacer name="horizontalSpacer_14">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QLabel" name="lab_no_ch_47">
+               <property name="minimumSize">
+                <size>
+                 <width>70</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>70</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="text">
+                <string>Entension:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="cB_extension">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>60</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>60</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>.csv</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>.xlsx</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_segm_ch1_int_12">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>15</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>15</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="cB_transpose">
+               <property name="styleSheet">
+                <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
+               </property>
+               <property name="text">
+                <string>Transpose</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_segm_ch1_int_15">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>15</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>15</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="results_save">
+               <property name="minimumSize">
+                <size>
+                 <width>50</width>
+                 <height>18</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>50</width>
+                 <height>18</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QPushButton{border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color:  rgba(0, 158, 0,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(145, 145, 145);
+border-color: #672146
+}</string>
+               </property>
+               <property name="text">
+                <string>Export</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>

@@ -341,28 +341,33 @@ if 'CL' in vars:
     df_CL = df_multi.loc[[dict_names['CL']]]
     for index, row in df_CL.iterrows():
         # print(index)
-        if isinstance(row['value'], dict): 
+        if isinstance(row['Value'], dict): 
             df_new.drop(index, axis=0, inplace=True)
-            for key, item in row['value'].items():
+            for key, item in row['Value'].items():
                 # print(key, item) 
                 new_index = 'Centreline: '+key
                 new_variable = index[1]
                 dict_CL[(new_index, new_variable)] = item
 
     df_CL = pd.DataFrame(dict_CL, index =[0])
-    df_CL_melt = pd.melt(df_CL, var_name=['index', 'variable'])
-    df_CL_melt = df_CL_melt.set_index(['index', 'variable'])
-
+    df_CL_melt = pd.melt(df_CL, var_name=mult_index,value_name='Value')
+    df_CL_melt = df_CL_melt.set_index(mult_index)
 
 df_final = pd.concat([df_new, df_CL_melt])
-df_final = df_final.sort_values(by=['index'])
+df_final = df_final.sort_values(by=['Parameter'])
 
+#Change True Values to TBO
+values_updated = []
+for index, row in df_final.iterrows(): 
+    print(index, type(row['Value']))
+    if isinstance(row['Value'], bool): 
+        values_updated.append('TBO')
+    else: 
+        values_updated.append(row['Value'])
 
+df_final['Value'] = values_updated
 
-
-
-
-df_multi.to_csv('out.csv', index=True)  
+df_final.to_csv('out.csv', index=True)  
 
 
 

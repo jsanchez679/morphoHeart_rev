@@ -320,72 +320,6 @@ class Project():
             methods = []
         
         self.mH_methods = methods
-    
-    def update_mH_settings(self):#to delete
-        print('Check this as you go along')
-        # methods = self.mH_methods
-        # mH_settings = self.mH_settings
-        # mH_params = self.mH_param2meas
-        # if len(methods)>0:
-        #     mH_settings['wf_info']={'ImProc':{'E-CleanCh': {'Settings': {'ch':None,
-        #                                                                  's3_mask': None,
-        #                                                                  'inverted': False}},
-        #                                       'E-TrimS3': {'Planes': None}},
-        #                             'MeshesProc': {'B-TrimMesh': {'Planes': None}}}
-        # if 'C-Centreline' in methods:
-        #     centreline = True
-        #     item_centreline = [item for item in mH_params if 'centreline' in item]
-        #     mH_settings['wf_info']['MeshesProc']['C-Centreline'] = {}
-        #     mH_settings['wf_info']['MeshesProc']['C-Centreline']['Planes'] = {'bottom': None, 'top': None}
-        #     # mH_settings['wf_info']['MeshesProc']['C-Centreline']['KSplines'] = {}
-        #     for tup in item_centreline:
-        #         ch, cont, _, _ = tup
-        #         if ch not in mH_settings['wf_info']['MeshesProc']['C-Centreline'].keys():
-        #             mH_settings['wf_info']['MeshesProc']['C-Centreline'][ch] = {}
-        #         mH_settings['wf_info']['MeshesProc']['C-Centreline'][ch][cont] = {'dir_cleanMesh': None, 
-        #                                                                            'dir_meshLabMesh': None, 
-        #                                                                            'vmtktxt': None,
-        #                                                                            'connect_cl': None}
-                
-        # if 'D-Ballooning' in methods:
-        #     item_ball = [item for item in mH_params if 'ballooning' in item]
-        #     mH_settings['wf_info']['MeshesProc']['D-Ballooning'] = {}
-        #     for tup in item_ball:
-        #         ch, cont, _, _ = tup
-        #         if ch not in mH_settings['wf_info']['MeshesProc']['D-Ballooning'].keys():
-        #             mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch] = {}
-        #         mH_settings['wf_info']['MeshesProc']['D-Ballooning'][ch][cont] = self.mH_settings['measure'][ch][cont]['whole']['ballooning']
-            
-        # if 'D-Thickness_int>ext' in methods:
-        #     item_th = [item for item in mH_params if 'thickness int>ext' in item]
-        #     mH_settings['wf_info']['MeshesProc']['D-Thickness_int>ext'] = {}
-        #     for tup in item_th:
-        #         ch, cont, _, _ = tup
-        #         if ch not in mH_settings['wf_info']['MeshesProc']['D-Thickness_int>ext'].keys():
-        #             mH_settings['wf_info']['MeshesProc']['D-Thickness_int>ext'][ch] = {}
-        #         mH_settings['wf_info']['MeshesProc']['D-Thickness_int>ext'][ch][cont] = {'range' : {}}
-                
-        # if 'D-Thickness_ext>int' in methods:
-        #     item_th = [item for item in mH_params if 'thickness ext>int' in item]
-        #     mH_settings['wf_info']['MeshesProc']['D-Thickness_ext>int'] = {}
-        #     for tup in item_th:
-        #         ch, cont, _, _ = tup
-        #         if ch not in mH_settings['wf_info']['MeshesProc']['D-Thickness_ext>int'].keys():
-        #             mH_settings['wf_info']['MeshesProc']['D-Thickness_ext>int'][ch] = {}
-        #         mH_settings['wf_info']['MeshesProc']['D-Thickness_ext>int'][ch][cont] = {'range' : {}}
-                
-        # if self.analysis['morphoHeart']:
-        #     self.info['dirs'] = {'meshes': 'NotAssigned', 
-        #                         'csv_all': 'NotAssigned',
-        #                         'imgs_videos': 'NotAssigned', 
-        #                         's3_numpy': 'NotAssigned',
-        #                         'settings': 'NotAssigned'}
-        #     if centreline:
-        #         self.info['dirs']['centreline'] = 'NotAssigned'
-        # elif self.analysis['morphoCell']:
-        #     self.info['dirs'] = {'csv_all': 'NotAssigned',
-        #                         'imgs_videos': 'NotAssigned', 
-        #                         'settings': 'NotAssigned'}
 
     def create_proj_dir(self):#
         self.dir_proj.mkdir(parents=True, exist_ok=True)
@@ -625,7 +559,7 @@ class Project():
         self.workflow = workflow
         # print('self.workflow:',self.workflow)
 
-    def save_project(self, temp_dir=None):#
+    def save_project(self, temp_dir=None, alert_on=True):#
         #Create a new dictionary that contains all the settings
         proj_name = self.user_projName.replace(' ', '_')
         jsonDict_name = 'mH_'+proj_name+'_project.json'
@@ -659,7 +593,8 @@ class Project():
         
         if not json2save_par.is_dir():
             print('>> Error: Settings directory could not be created!\n>> Directory: '+jsonDict_name)
-            alert('error_beep')
+            if alert_on: 
+                alert('error_beep')
         else: 
             json2save_dir = json2save_par / jsonDict_name
             with open(str(json2save_dir), "w") as write_file:
@@ -667,11 +602,12 @@ class Project():
 
             if not json2save_dir.is_file():
                 print('>> Error: Project settings file was not saved correctly!\n>> File: '+jsonDict_name)
-                alert('error_beep')
+                if alert_on: 
+                    alert('error_beep')
             else: 
                 print('>> Project settings file saved correctly! - File: '+jsonDict_name)
-                # print('>> File: '+ str(json2save_dir)+'\n')
-                alert('countdown')
+                if alert_on: 
+                    alert('countdown')
 
             if temp_dir != None and isinstance(temp_dir, Path): 
                 temp_name = temp_dir.stem
@@ -800,6 +736,7 @@ class Organ():
                 self.mC_settings = copy.deepcopy(project.mC_settings)
             self.workflow = copy.deepcopy(project.workflow)
             self.create_folders()
+            self.create_channels()
         else: 
             print('\nLoading organ!')
             load_dict = organ_dict['load_dict']
@@ -808,6 +745,11 @@ class Organ():
     def create_mHName(self): #
         now_str = datetime.now().strftime('%Y%m%d%H%M')
         self.mH_organName = 'mH_Organ-'+now_str
+
+    def create_channels(self): 
+        channels = [key for key in self.parent_project.mH_channels.keys() if 'NS' not in key]
+        for ch_name in channels:
+            im_ch = self.create_ch(ch_name=ch_name)
 
     def load_organ(self, load_dict:dict):#
         # print('load_dict:', load_dict)
@@ -1066,7 +1008,8 @@ class Organ():
         else: # just update im_proc 
             self.imChannels[imChannel.channel_no]['process'] = imChannel.process
             self.imChannels[imChannel.channel_no]['contStack'] = imChannel.contStack
-            if imChannel.dir_stckproc.is_file():
+            dir_stck = self.dir_res(dir='s3_numpy') / imChannel.dir_stckproc            
+            if dir_stck.is_file():
                 self.imChannels[imChannel.channel_no]['dir_stckproc'] = imChannel.dir_stckproc
             if hasattr(imChannel, 'shape_s3'):
                 self.imChannels[imChannel.channel_no]['shape_s3'] = imChannel.shape_s3
@@ -1236,7 +1179,7 @@ class Organ():
         image = ImChannel(organ=self, ch_name=ch_name)#,new=True
         return image
 
-    def save_organ(self):#
+    def save_organ(self, alert_on=True):#
         print('Saving organ')
         print('self.obj_temp:', self.obj_temp)
         all_info = {}
@@ -1278,35 +1221,21 @@ class Organ():
         
         all_info['workflow'] = self.workflow
 
-        # #Save cube info
-        # orient_cubes = {}
-        # for or_cube in ['stack', 'organ']:
-        #     if hasattr(self, or_cube+'_cube'):
-        #         dict_val = {} 
-        #         dict_cube = getattr(self, or_cube+'_cube')
-        #         for key in dict_cube: 
-        #             if key != 'cube': 
-        #                 dict_val[key] = dict_cube[key]
-        #         orient_cubes[or_cube+'_cube'] = dict_val
-
-        # print('orient_cubes:', orient_cubes)
-        # all_info['orientation_cubes'] = orient_cubes
-    
         self.dir_info = Path('settings') / jsonDict_name
         all_info['dir_info'] = self.dir_info
         all_info['mH_organName'] = self.mH_organName
 
-        print('\n\n\nall_info[mH_settings]', all_info['mH_settings'])
-        print('\n\n\n', all_info)
         with open(str(json2save_dir), "w") as write_file:
             json.dump(all_info, write_file, cls=NumpyArrayEncoder)
 
         if not json2save_dir.is_file():
             print('>> Error: Organ settings file was not saved correctly!\n>> File: '+jsonDict_name)
-            alert('error_beep')
+            if alert_on: 
+                alert('error_beep')
         else: 
             print('\n>> Organ settings file saved correctly! - File: '+jsonDict_name)
-            alert('countdown')
+            if alert_on:
+                alert('countdown')
             
     def check_status(self, process:str):
         wf = self.workflow['morphoHeart']
@@ -1409,7 +1338,7 @@ class Organ():
         else: 
             ch_ext = 'independent'
             return_int = False
-                    
+
         if return_int: 
             return ch_ext, ch_int
         else: 
@@ -1707,9 +1636,10 @@ class ImChannel(): #channel
             im_proc =  np.copy(self.im())  
         else: 
             if hasattr(self, 'dir_stckproc'):
-                im_proc = io.imread(str(self.dir_stckproc))
+                dir_stck = self.parent_organ.dir_res(dir='s3_numpy') / self.dir_stckproc
+                im_proc = io.imread(str(dir_stck))#self.dir_stckproc))
                 if not isinstance(im_proc, np.ndarray):
-                    print('>> Error: morphoHeart was unable to load processed tiff.\n>> Directory: ',str(self.dir_stckproc))
+                    print('>> Error: morphoHeart was unable to load processed tiff.\n>> Directory: ',str(dir_stck))
                     alert('error_beep')
             else: 
                 im_proc =  np.copy(self.im())      
@@ -1731,7 +1661,7 @@ class ImChannel(): #channel
         self.process = organ.imChannels[ch_name]['process']
         contStack_dict = organ.imChannels[ch_name]['contStack']
         for cont in contStack_dict.keys():
-            contStack_dict[cont]['s3_dir'] = Path(contStack_dict[cont]['s3_dir'])
+            contStack_dict[cont]['s3_file'] = Path(contStack_dict[cont]['s3_file'])
         self.contStack = contStack_dict
         self.dir_stckproc = organ.imChannels[ch_name]['dir_stckproc']
 
@@ -1942,22 +1872,31 @@ class ImChannel(): #channel
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc',self.channel_no,'D-S3Create','Status']
         
-        win.prog_bar_range(0,3)
+        try: 
+            win.prog_bar_range(0,3)
+        except: 
+            pass
+
         win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+'.')
         dirs_cont = []; shapes_s3 = []
         aa = 0
         for cont in cont_list:
-            win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+' ('+str(aa+1)+'/3).')
+            win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+' ('+str(aa+1)+'/'+str(len(cont_list))+').')
             s3 = ContStack(im_channel=self, cont_type=cont, layerDict=layerDict)#new=True,
             self.add_contStack(s3)
-            dirs_cont.append(s3.s3_dir.is_file())
+            path2file = self.parent_organ.dir_res(dir='s3_numpy') / s3.s3_file
+            dirs_cont.append(path2file.is_file())
             shapes_s3.append(s3.shape_s3)
             #Update organ workflow
             process_cont = ['ImProc',self.channel_no,'D-S3Create','Info',cont,'Status']
             self.parent_organ.update_mHworkflow(process_cont, update = 'DONE')
             aa+=1
-            win.prog_bar_update(aa)
+            try: 
+                win.prog_bar_update(aa)
+            except:
+                pass
         
+        print('dirs_cont:', dirs_cont)
         #Update organ workflow
         if all(flag for flag in dirs_cont):
             if shapes_s3.count(shapes_s3[0]) == len(shapes_s3):
@@ -2061,7 +2000,7 @@ class ImChannel(): #channel
             print('>> Processed channel saved correctly! - ', im_name)
             # print('>> Directory: '+ str(im_dir)+'\n')
             alert('countdown')
-            self.dir_stckproc = im_dir
+            self.dir_stckproc = im_name
     
     def ch_clean (self, s3_mask, s3, inverted, plot_settings):#
         """
@@ -2191,7 +2130,7 @@ class ImChannelNS(): #channel
         self.process = organ.imChannelNS[ch_name]['process']
         contStack_dict = organ.imChannelNS[ch_name]['contStack']
         for cont in contStack_dict.keys():
-            contStack_dict[cont]['s3_dir'] = Path(contStack_dict[cont]['s3_dir'])
+            contStack_dict[cont]['s3_file'] = Path(contStack_dict[cont]['s3_file'])
             contStack_dict[cont]['shape_s3'] = tuple(contStack_dict[cont]['shape_s3'])
         self.contStack = contStack_dict
         self.setup_NS = organ.imChannelNS[ch_name]['setup_NS']
@@ -2255,7 +2194,7 @@ class ImChannelNS(): #channel
             contStack_dict['imfilled_name'] = contStack.imfilled_name
             contStack_dict['cont_name'] = contStack.cont_name
             contStack_dict['s3_file'] = contStack.s3_file
-            contStack_dict['s3_dir'] = contStack.s3_dir
+            # contStack_dict['s3_dir'] = contStack.s3_dir
             contStack_dict['shape_s3'] = contStack.shape_s3
             contStack_dict['process'] = contStack.process
             self.contStack[cont_type] = contStack_dict
@@ -2386,7 +2325,7 @@ class ContStack():
         
         parent_organ = im_channel.parent_organ
         self.s3_file = parent_organ.user_organName + '_s3_' + im_channel.channel_no + '_' + self.cont_type + '.npy'
-        self.s3_dir = parent_organ.dir_res(dir='s3_numpy') / self.s3_file
+        # self.s3_dir = self.s3_file
         
         if self.cont_type not in self.im_channel.contStack.keys():
             if im_channel.channel_no == 'chNS':
@@ -2399,7 +2338,6 @@ class ContStack():
                 s3 = self.s3_create(layerDict = layerDict)
                 parent_organ.mH_settings['setup']['keep_largest'][im_channel.channel_no][self.cont_type] = {}
                 parent_organ.mH_settings['setup']['alpha'][im_channel.channel_no][self.cont_type] = {}
-
             self.s3_save(s3)
             self.shape_s3 = s3.shape
             self.process = ['Init']
@@ -2410,23 +2348,28 @@ class ContStack():
             self.process.append('Loaded')
     
     def s3_create(self, layerDict:dict):
-        x_dim = self.im_channel.shape[0]
-        y_dim = self.im_channel.shape[1]
-        z_dim = self.im_channel.shape[2]
-        
-        s3 = np.empty((x_dim,y_dim,z_dim+2))
-        for pos, keySlc in enumerate(layerDict.keys()):
-            if keySlc[0:3] == "slc":
-                slcNum = int(keySlc[3:6])
-                im_FilledCont = layerDict[keySlc][self.cont_type]
-                s3[:,:,slcNum+1] = im_FilledCont
+        if isinstance(layerDict, dict): 
+            x_dim = self.im_channel.shape[0]
+            y_dim = self.im_channel.shape[1]
+            z_dim = self.im_channel.shape[2]
+            
+            s3 = np.empty((x_dim,y_dim,z_dim+2))
+            for pos, keySlc in enumerate(layerDict.keys()):
+                if keySlc[0:3] == "slc":
+                    slcNum = int(keySlc[3:6])
+                    im_FilledCont = layerDict[keySlc][self.cont_type]
+                    s3[:,:,slcNum+1] = im_FilledCont
+            s3 = s3.astype('uint8')
 
-        s3 = s3.astype('uint8')
+        elif isinstance(layerDict, np.ndarray): 
+            s3 = layerDict
+
         return s3
     
     def s3(self):
-        if self.s3_dir.is_file():
-            s3 = np.load(self.s3_dir)
+        dir_s3 = self.im_channel.parent_organ.dir_res(dir='s3_numpy') / self.s3_file
+        if dir_s3.is_file():
+            s3 = np.load(dir_s3)
         else: 
             print('>> Error: s3 file does not exist!\n>> File: '+self.s3_file)
             alert('error_beep')
@@ -2626,7 +2569,7 @@ class Mesh_mH():
             self.color = self.parent_organ.mH_settings['setup'][self.channel_no]['color_chns'][self.mesh_type]
             self.alpha = self.parent_organ.mH_settings['setup'][self.channel_no]['alpha'][self.mesh_type]
 
-        self.s3_dir = self.imChannel.contStack[self.mesh_type]['s3_dir']
+        self.s3_dir = self.imChannel.contStack[self.mesh_type]['s3_file']
 
         if new_set: 
             if mesh_prop['keep_largest'] != None: 
@@ -2679,7 +2622,7 @@ class Mesh_mH():
             self.imChannel.load_chS3s(cont_types=[self.mesh_type])
             s3 = getattr(self.imChannel, s3_type)
             
-        self.s3_dir = s3.s3_dir
+        self.s3_dir = s3.s3_file
         s3s3 = s3.s3()
         verts, faces, _, _ = measure.marching_cubes(s3s3, spacing=self.resolution, method='lewiner')
     
