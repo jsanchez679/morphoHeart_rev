@@ -411,7 +411,11 @@ def proc_meshes4cl(organ, win):#
     if 'trimming' in organ.mH_settings['wf_info'].keys():
         trimming_info = organ.mH_settings['wf_info']['trimming']
         for side in ['bottom', 'top']: 
-            planes_info[side] = trimming_info[side]['plane_info_mesh']
+            try: 
+                planes_info[side] = trimming_info[side]['plane_info_mesh']
+            except:
+                print('No plane has been created for this side:', side)
+                planes_info[side] = None
     else: 
         planes_info = {'bottom': None, 'top': None}
         
@@ -1675,11 +1679,9 @@ def measure_submesh(organ, submesh, mesh, measurements):
     if measurements['Vol']: 
         vol = mesh.volume()
         organ.mH_settings['measure']['Vol('+name+')'][submesh.sub_name_all] = vol
-        # data['Vol'] = vol
     if measurements['SA']: 
         area = mesh.area()
         organ.mH_settings['measure']['SA('+name+')'][submesh.sub_name_all] = area
-        # data['SA'] = area
     if name == 'segm': 
         if measurements['Ellip']: 
             #Do the ellipsoid!

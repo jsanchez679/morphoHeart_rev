@@ -260,6 +260,7 @@ def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=
     res = key_err + value_err + err
     return res
 
+
 #%% func - compare_nested_dicts
 def compare_nested_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
     
@@ -272,22 +273,70 @@ def compare_nested_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
 def update_gui_set(loaded:dict, current:dict): 
     flat_loaded = flatdict.FlatDict(loaded)
     flat_current = flatdict.FlatDict(current)
-    for key in flat_current.keys():
-        print('\n\n ------------ Validating Keys ------------ ')
+    current_keys = flat_current.keys()
+
+    changed = False
+    final_dict = copy.deepcopy(loaded)
+    for key in current_keys: 
+        # print('>>', key)
+        value_current = get_by_path(current, key.split(':'))
+        # print('current:',value_current)
         try: 
-            if type(flat_current[key]) == type(flat_loaded[key]) and flat_current[key] != flat_loaded[key]:
-                print('Key changed:', key, '- from loaded:', flat_loaded[key], '- to current:', flat_current[key])
-                flat_loaded[key] = flat_current[key]
-            elif type(flat_current[key]) == type(flat_loaded[key]) and flat_current[key] == flat_loaded[key]: 
-                pass
-            else: 
-                print('-> Different types - key', key, ' - loaded:', flat_loaded[key], '- current:', flat_current[key])
+            value_loaded = get_by_path(loaded, key.split(':'))
+            # print('loaded:',value_loaded)
+
+            if value_current != value_loaded:
+                set_by_path(final_dict, key.split(':'),value_current)
+                changed = True
         except: 
-            print('-Unable to update key: ',key)
+            # print('add key to loaded!')
+            changed = True
             try: 
-                print('-> Values - loaded:', flat_loaded[key], '- current:', flat_current[key])
-            except: 
-                print('-> Values - loaded:', key, '- current:', key)
+                set_by_path(final_dict, key.split(':'), value_current)
+            except KeyError as e: 
+                key_error = e.args[0]
+                #Get the position of that key in the flat key
+                split_key = key.split(':')
+                len_all_keys = len(split_key)
+                index = split_key.index(key_error)
+                #Get the length of the keys that need to be added
+                len_key = len(split_key[index:])
+                for num in range(len_key):
+                    # print(split_key, index+num)
+                    key2add = split_key[:index+num+1]
+                    # print('key2add:', key2add)
+                    if num != len_key-1:
+                        set_by_path(final_dict, key2add, {})
+                    else:
+                        set_by_path(final_dict, key2add, value_current)
+    
+    print('GUI:', current)
+    print('Loaded_o: ',loaded)
+    print('Loaded_f: ',final_dict)
+
+    return final_dict, changed
+            
+    # flat_loaded = flatdict.FlatDict(loaded)
+    # flat_current = flatdict.FlatDict(current)
+    # current_keys = flat_current.keys()
+
+
+    # for key in flat_current.keys():
+    #     print('\n\n ------------ Validating Keys ------------ ')
+    #     try: 
+    #         if type(flat_current[key]) == type(flat_loaded[key]) and flat_current[key] != flat_loaded[key]:
+    #             print('Key changed:', key, '- from loaded:', flat_loaded[key], '- to current:', flat_current[key])
+    #             flat_loaded[key] = flat_current[key]
+    #         elif type(flat_current[key]) == type(flat_loaded[key]) and flat_current[key] == flat_loaded[key]: 
+    #             pass
+    #         else: 
+    #             print('-> Different types - key', key, ' - loaded:', flat_loaded[key], '- current:', flat_current[key])
+    #     except: 
+    #         print('-Unable to update key: ',key)
+    #         try: 
+    #             print('-> Values - loaded:', flat_loaded[key], '- current:', flat_current[key])
+    #         except: 
+    #             print('-> Values - loaded:', key, '- current:', key)
 
     return flat_loaded.as_dict()
         

@@ -265,6 +265,7 @@ class Controller:
         self.main_win.trimming_play.clicked.connect(lambda: self.run_trimming())
         self.main_win.orientation_play.clicked.connect(lambda: self.run_axis_orientation())
         self.main_win.chNS_play.clicked.connect(lambda: self.run_chNS())
+        self.main_win.measureAll_play.clicked.connect(lambda: self.run_measure())
 
         self.main_win.centreline_clean_play.clicked.connect(lambda: self.run_centreline_clean())
         self.main_win.centreline_ML_play.clicked.connect(lambda: self.run_centreline_ML())
@@ -273,7 +274,7 @@ class Controller:
         # self.main_win.centreline_play.clicked.connect(lambda: self.run_centreline())
 
         #HEATMAPS
-        self.main_win.heatmaps3D_play.clicked.connect(lambda: self.run_heatmaps3D())
+        # self.main_win.heatmaps3D_play.clicked.connect(lambda: self.run_heatmaps3D())
         #Heatmap Indiv Play buttons
         self.main_win.hm_play1.clicked.connect(lambda: self.run_heatmaps3D(btn=1))
         self.main_win.hm_play2.clicked.connect(lambda: self.run_heatmaps3D(btn=2))
@@ -302,7 +303,7 @@ class Controller:
         self.main_win.hm2d_play12.clicked.connect(lambda: self.run_heatmaps2D(btn=12))
 
         # SEGMENTS
-        self.main_win.segments_play.clicked.connect(lambda: self.run_segments())
+        # self.main_win.segments_play.clicked.connect(lambda: self.run_segments())
         #Segments Indiv Play buttons
         #Cut 1
         self.main_win.cut1_play_segm1.clicked.connect(lambda: self.run_segments(btn='Cut1_1'))
@@ -331,6 +332,7 @@ class Controller:
         self.main_win.cut2_play_segm11.clicked.connect(lambda: self.run_segments(btn='Cut2_11'))
         self.main_win.cut2_play_segm12.clicked.connect(lambda: self.run_segments(btn='Cut2_12'))
 
+        # SECTIONS
         # self.main_win.sections_play.clicked.connect(lambda: self.run_sections())
         #Cut 1
         self.main_win.cut1_play_sect1.clicked.connect(lambda: self.run_sections(btn='Cut1_1'))
@@ -626,18 +628,27 @@ class Controller:
 
     def run_heatmaps2D(self, btn=None):
         mA.run_heatmaps2D(controller=self, btn = btn)
-        if not mH_config.dev:
-            self.main_win.save_project_and_organ_pressed(alert_on = False)
+        # if not mH_config.dev:
+        #     self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     # def run_heatmaps2D(self):
     #     mA.run_heatmaps2D(controller=self)
 
     def run_segments(self, btn=None):
         mA.run_segments(controller=self, btn=btn)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     def run_sections(self, btn=None):
         mA.run_sections(controller=self, btn=btn)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
     
+    def run_measure(self): 
+        mA.run_measure(controller=self)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
     screen = app.primaryScreen()

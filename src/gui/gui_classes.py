@@ -3086,6 +3086,7 @@ class MainWindow(QMainWindow):
 
     #- Init PROCESS AND ANALYSE Tab
     def init_pandq_tab(self): 
+
         #All Group box
         self.segmentationAll_play.setStyleSheet(style_play)
         # setup_play_btn(btn = self.segmentationAll_play, win = self)
@@ -3098,6 +3099,7 @@ class MainWindow(QMainWindow):
         self.segments_sectionsAll_play.setEnabled(False)
         # self.segments_sectionsAll_play.clicked.connect(lambda: self.())
 
+        #Keep largest
         self.init_keeplargest()
         if int(self.organ.mH_settings['setup']['no_chs'])>1:
             self.init_clean()
@@ -3105,7 +3107,6 @@ class MainWindow(QMainWindow):
             self.cleanup_all_widget.setVisible(False)
         self.init_trim()
         self.init_orientation()
-
         #ChNS
         if isinstance(self.organ.mH_settings['setup']['chNS'], dict):
             if self.organ.mH_settings['setup']['chNS']['layer_btw_chs']:
@@ -3116,40 +3117,36 @@ class MainWindow(QMainWindow):
         else:
             self.chNS_all_widget.setVisible(False)
             print('Dissapear chNS')
-        
+        #Measure
+        self.init_measure()
         #Centreline
         if len(self.organ.mH_settings['measure']['CL']) > 0:
             self.init_centreline()
         else: 
             self.centreline_all_widget.setVisible(False)
-
         'Thickness/Ballooning'
         if len(self.organ.mH_settings['measure']['th_i2e'])+len(self.organ.mH_settings['measure']['th_e2i'])+len(self.organ.mH_settings['measure']['ball'])>0:
             self.init_thickness_ballooning()
         else: 
             self.thickness_ballooning_all_widget.setVisible(False)
-
         #Segments
         if isinstance(self.organ.mH_settings['setup']['segm'], dict):
             self.init_segments()
         else: 
             self.segments_all_widget.setVisible(False)
-
         #Regions
         if isinstance(self.organ.mH_settings['setup']['sect'], dict):
             self.init_sections()
         else: 
             self.sections_all_widget.setVisible(False)
-
         #User parameters
         self.init_user_param()
-        
-        #Setup workflow
-        self.fill_workflow()
-
-        #Setup results
-        self.fill_results()
-        self.results_save.clicked.connect(lambda: self.save_results())
+        #Plot results
+        self.init_plot_results()
+        #Results
+        self.init_results_table()
+        #Workflow
+        self.init_workflow()
 
     #>> Initialise all modules of Process and Analyse
     def init_keeplargest(self): 
@@ -3367,6 +3364,11 @@ class MainWindow(QMainWindow):
 
         #Initialise with user settings, if they exist!
         self.user_chNS()
+
+    def init_measure(self): 
+        #Buttons
+        self.measureAll_play.setStyleSheet(style_play)
+        self.measure_open.clicked.connect(lambda: self.open_section(name='measure'))
 
     def init_centreline(self):
         #Buttons
@@ -3849,11 +3851,18 @@ class MainWindow(QMainWindow):
         self.user_sections()
 
     def init_user_param(self): 
+
+        self.user_params_open.clicked.connect(lambda: self.open_section(name = 'user_params'))
+
         user_params = self.organ.mH_settings['setup']['params']
         measure = self.organ.mH_settings['measure']
         widgets_params = {'continuous': {'enable': False, 'n_params': 0}, 
                           'descriptive': {'enable': False,'n_params': 0},  
                           'categorical': {'enable': False,'n_params': 0}}
+        gui_user_params = {'continuous': {}, 
+                           'descriptive': {}, 
+                           'categorical': {}}
+        
         for key in user_params: 
             if int(key)>5: 
                 ptype = user_params[key]['type']
@@ -3863,6 +3872,7 @@ class MainWindow(QMainWindow):
                     label = user_params[key]['l']
                     short = user_params[key]['s']
                     categories = user_params[key]['categories']
+                    gui_user_params['categorical'][short] = {}
                     nn = 1
                     for item in measure[short].keys(): 
                         getattr(self, 'lab_categorical'+str(nn)).setText(label)
@@ -3871,16 +3881,19 @@ class MainWindow(QMainWindow):
                         getattr(self, 'tiss_cont_categorical'+str(nn)).setEnabled(True)
                         getattr(self, 'value_categorical'+str(nn)).addItems(categories)
                         getattr(self, 'value_categorical'+str(nn)).setEnabled(True)
+                        gui_user_params['categorical'][short][item] = {'num': nn}
                         nn+=1
                     for aa in range(nn,7,1):
                         getattr(self, 'lab_categorical'+str(aa)).setVisible(False)
                         getattr(self, 'tiss_cont_categorical'+str(aa)).setVisible(False)
                         getattr(self, 'value_categorical'+str(aa)).setVisible(False)
+                    
                 elif ptype == 'continuous' or ptype == 'descriptive': 
                     if not widgets_params[ptype]['enable']:
                         widgets_params[ptype]['enable'] = True
                     label = user_params[key]['l']
                     short = user_params[key]['s']
+                    gui_user_params[ptype][short] = {}
                     mm = 1
                     for item in measure[short].keys(): 
                         getattr(self, 'lab_'+ptype+str(mm)).setText(label)
@@ -3888,6 +3901,7 @@ class MainWindow(QMainWindow):
                         getattr(self, 'tiss_cont_'+ptype+str(mm)).setText(item)
                         getattr(self, 'tiss_cont_'+ptype+str(mm)).setEnabled(True)
                         getattr(self, 'value_'+ptype+str(mm)).setEnabled(True)
+                        gui_user_params[ptype][short][item] = {'num': mm, }
                         mm+=1
                     for bb in range(mm,7,1):
                         getattr(self, 'lab_'+ptype+str(bb)).setVisible(False)
@@ -3896,11 +3910,42 @@ class MainWindow(QMainWindow):
                 else: #ptype == '
                     print('other?')
         
+        at_least_one = False
         for mtype in widgets_params: 
             if widgets_params[mtype]['enable']: 
                 getattr(self, mtype).setEnabled(True)
+                at_least_one = True
             else: 
                 getattr(self, mtype).setVisible(False)
+        
+        if not at_least_one: 
+            self.user_params_widget.setVisible(False)
+            self.user_params_open.setVisible(False)
+            self.label_user_params.setVisible(False)
+            self.spacer_user_params.setVisible(False)
+        else: 
+            self.continuous_set.clicked.connect(lambda: self.set_user_user_params(ptype='continuous'))
+            self.categorical_set.clicked.connect(lambda: self.set_user_user_params(ptype='categorical'))
+            self.descriptive_set.clicked.connect(lambda: self.set_user_user_params(ptype='descriptive'))
+
+        self.gui_key_user_params = gui_user_params
+        #Initialise with user settings, if they exist!
+        self.user_user_params()
+
+    def init_results_table(self): 
+        self.results_open.clicked.connect(lambda: self.open_section(name = 'results'))
+
+        #Setup results
+        self.fill_results()
+        self.results_save.clicked.connect(lambda: self.save_results())
+
+    def init_plot_results(self):
+        self.plot_open.clicked.connect(lambda: self.open_section(name = 'plot')) 
+        self.open_section(name='plot')
+
+    def init_workflow(self):
+        #Setup workflow
+        self.fill_workflow()
 
     def update_status(self, root_dict, items, fillcolor, override=False):
         update_status(root_dict, items, fillcolor, override)
@@ -3928,6 +3973,7 @@ class MainWindow(QMainWindow):
                 #Toggle Button
                 self.keeplargest_set.setChecked(True)
                 toggled(self.keeplargest_set)
+                self.keeplargest_play.setChecked(True)
                 #Enable other buttons
                 self.keeplargest_plot.setEnabled(True)
                 #Update Status in GUI
@@ -3977,6 +4023,7 @@ class MainWindow(QMainWindow):
                 #Toggle Button
                 self.cleanup_set.setChecked(True)
                 toggled(self.cleanup_set)
+                self.cleanup_play.setChecked(True)
                 #Enable other buttons
                 self.clean_plot.setEnabled(True)
                 #Update Status in GUI
@@ -4003,7 +4050,7 @@ class MainWindow(QMainWindow):
                         cB = getattr(self, side[0:3]+'_'+ch+'_'+cont)
                         cB.setChecked(wf_info['trimming'][side]['chs'][ch][cont])
                         done_cont.append(workflow[ch][cont]['Status'])
-                    if all(flag == 'DONE' for flag in done_cont): 
+                    if all(flag == 'DONE' for flag in done_cont) or all(flag == 'DONE-NoCut' for flag in done_cont): 
                         done_ch.append(True)
                     else: 
                         done_ch.append(False)
@@ -4020,6 +4067,7 @@ class MainWindow(QMainWindow):
                 #Toggle Button
                 self.trimming_set.setChecked(True)
                 toggled(self.trimming_set)
+                self.trimming_play.setChecked(True)
                 #Update Status in GUI
                 self.update_status(None, 'DONE', self.trimming_status, override=True)
             elif any(done_all):
@@ -4063,6 +4111,7 @@ class MainWindow(QMainWindow):
                 #Toggle Button
                 self.orientation_set.setChecked(True)
                 toggled(self.orientation_set)
+                self.orientation_play.setChecked(True)
 
             #Update Status in GUI
             self.update_status(workflow, ['Status'], self.orient_status)
@@ -4088,6 +4137,7 @@ class MainWindow(QMainWindow):
                 toggled(self.chNS_set)
                 #Update Status in GUI
                 self.update_status(None, 'DONE', self.chNS_status, override=True)
+                self.chNS_play.setChecked(True)
 
             #Run Set Function 
             self.set_chNS()
@@ -4124,6 +4174,8 @@ class MainWindow(QMainWindow):
                     #Enable button for ML
                     plot_btn = getattr(self, 'centreline_ML_play')
                     plot_btn.setEnabled(True)
+                    #Check button
+                    self.centreline_clean_play.setChecked(True)
 
                 if self.organ.mH_settings['wf_info']['centreline']['dirs'] != None: 
                     if ch in self.organ.mH_settings['wf_info']['centreline']['dirs'].keys():
@@ -4137,6 +4189,8 @@ class MainWindow(QMainWindow):
                                 #Enable button for vmtk
                                 plot_btn = getattr(self, 'centreline_vmtk_play')
                                 plot_btn.setEnabled(True)
+                                #Check button
+                                self.centreline_ML_play.setChecked(True)
 
                 if wf['vmtk_CL'][ch][cont]['Status'] == 'DONE': 
                     #Update Status in GUI
@@ -4145,6 +4199,8 @@ class MainWindow(QMainWindow):
                     #Enable button for select
                     plot_btn = getattr(self, 'centreline_select')
                     plot_btn.setEnabled(True)
+                    #Check button
+                    self.centreline_vmtk_play.setChecked(True)
                 
                 if wf['buildCL'][ch][cont]['Status'] == 'DONE': 
                     #Update Status in GUI
@@ -4153,6 +4209,8 @@ class MainWindow(QMainWindow):
                     #Enable button for plot
                     plot_btn = getattr(self, 'cl_plot'+str(nn+1))
                     plot_btn.setEnabled(True)
+                    #Check button
+                    self.centreline_select.setChecked(True)
 
                     value = wf_info['centreline']['buildCL']['connect_cl'][ch+'_'+cont]
                     valuef = value.split('-')[0]
@@ -4353,6 +4411,13 @@ class MainWindow(QMainWindow):
         else: 
             pass
   
+    def user_user_params(self): 
+
+        print('self.gui_key_user_params: ', self.gui_key_user_params)
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'user_params' in wf_info.keys(): 
+            print('wf_info[user_params]:', wf_info['user_params'])
+
     #Functions specific to gui functionality
     def open_section(self, name): 
         #Get button
@@ -4629,8 +4694,8 @@ class MainWindow(QMainWindow):
             col0, _, col2 = index
             value = rowv['Value']
             if isinstance(value, float): 
-                valuef = str(value)#str("%.2f" % value)
-            if isinstance(value, str): 
+                valuef = "%.2f" % value
+            elif isinstance(value, str): 
                 valuef = value
 
             item_col0 = QTableWidgetItem(col0)
@@ -4639,15 +4704,16 @@ class MainWindow(QMainWindow):
             item_col2 = QTableWidgetItem(col2)
             self.tabW_results.setItem(row, 1, item_col2)
             item_col2.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
-            item_value = QTableWidgetItem(value)
+            item_value = QTableWidgetItem(valuef)
             self.tabW_results.setItem(row, 2, item_value)
             item_value.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
 
             row+=1
 
         headerc = self.tabW_results.horizontalHeader()  
-        for col in range(2):
+        for col in range(1):
             headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+        self.tabW_results.setColumnWidth(1, 250)
         self.tabW_results.setColumnWidth(2, 100)
         
         headerr = self.tabW_results.verticalHeader()  
@@ -4669,9 +4735,9 @@ class MainWindow(QMainWindow):
 
         # measurements = {'SA': {}, 'Vol': {'ch1_int_whole': True, 'ch1_tiss_whole': True, 'ch1_ext_whole': True, 'ch2_int_whole': True, 'ch2_tiss_whole': True, 'ch2_ext_whole': True, 'chNS_int_whole': True, 'chNS_tiss_whole': True, 'chNS_ext_whole': True}, 'CL': {'ch1_int_whole': {'looped_length': 278.5729836723767, 'lin_length': 196.40371704101562}, 'ch2_ext_whole': {'looped_length': 283.3270263262093, 'lin_length': 190.81484985351562}}, 'th_i2e': {'ch1_tiss_whole': True, 'ch2_tiss_whole': True, 'chNS_tiss_whole': True}, 'th_e2i': {'ch1_tiss_whole': True}, 'ball': {'ch1_int_(ch1_int)': True, 'ch1_int_(ch2_ext)': True}, 'LoopDir': {'roi': True}, 'AoLen': {'roi': True}, 'TgBright': {'roi': True}, 'Vol(segm)': {'Cut1_ch2_int_segm1': True, 'Cut1_ch2_int_segm2': True, 'Cut1_ch2_tiss_segm1': True, 'Cut1_ch2_tiss_segm2': True, 'Cut1_chNS_tiss_segm1': 171587.41563409223, 'Cut1_chNS_tiss_segm2': 65547.06146452879, 'Cut1_ch1_tiss_segm1': 239646.87518697616, 'Cut1_ch1_tiss_segm2': 233777.4398440119, 'Cut1_ch1_ext_segm1': 1132707.885333426, 'Cut1_ch1_ext_segm2': 666060.1459218762}, 'Ellip(segm)': {'Cut1_ch2_int_segm1': True, 'Cut1_ch2_int_segm2': True, 'Cut1_ch2_tiss_segm1': True, 'Cut1_ch2_tiss_segm2': True, 'Cut1_chNS_tiss_segm1': True, 'Cut1_chNS_tiss_segm2': True, 'Cut1_ch1_tiss_segm1': True, 'Cut1_ch1_tiss_segm2': True, 'Cut1_ch1_ext_segm1': True, 'Cut1_ch1_ext_segm2': True}, 'Vol(sect)': {'Cut1_ch2_tiss_sect1': True, 'Cut1_ch2_tiss_sect2': True, 'Cut1_chNS_tiss_sect1': True, 'Cut1_chNS_tiss_sect2': True, 'Cut1_ch1_tiss_sect1': 244132.6523907116, 'Cut1_ch1_tiss_sect2': 232157.19616130897, 'Cut2_ch2_tiss_sect1': True, 'Cut2_ch2_tiss_sect2': True, 'Cut2_chNS_tiss_sect1': True, 'Cut2_chNS_tiss_sect2': True, 'Cut2_ch1_tiss_sect1': 232110.88629832206, 'Cut2_ch1_tiss_sect2': 244163.6629483923}, 'hm3Dto2D': {'ch1_int': True}}
         measurements = self.organ.mH_settings['measure']
-        print('measurements: ', measurements)
+        # print('measurements: ', measurements)
         df_index = pd.DataFrame.from_dict(measurements, orient='index')
-        print('df_index', df_index)
+        # print('df_index', df_index)
         vars2drop = ['th_e2i', 'th_i2e', 'ball', 'hm3Dto2D']
         vars = list(df_index.index)
         for var in vars: 
@@ -4702,24 +4768,25 @@ class MainWindow(QMainWindow):
         df_multi = df_meltf.set_index(mult_index)
 
         df_new = df_multi.copy(deep=True)
+        key_cl = {'lin_length': 'Linear Length', 'looped_length': 'Looped Length'}
         if 'CL' in vars:
             dict_CL = {}
             df_CL = df_multi.loc[[dict_names['CL']]]
             for index, row in df_CL.iterrows():
-                print(index, row['Value'])
+                # print(index, row['Value'])
                 if isinstance(row['Value'], dict): 
                     merge = True
                     df_new.drop(index, axis=0, inplace=True)
                     for key, item in row['Value'].items():
                         # print(key, item) 
-                        new_index = 'Centreline: '+key
+                        new_index = 'Centreline: '+key_cl[key]
                         new_variable = index[1]
                         dict_CL[(new_index, new_variable)] = item
 
-            print('dict_CL:',  dict_CL)
+            # print('dict_CL:',  dict_CL)
             if len(dict_CL) != 0: 
                 df_CL = pd.DataFrame(dict_CL, index =[0])
-                print('df_CL:', df_CL)
+                # print('df_CL:', df_CL)
                 df_CL_melt = pd.melt(df_CL, var_name=mult_index,value_name='Value')
                 df_CL_melt = df_CL_melt.set_index(mult_index)
                 df_final = pd.concat([df_new, df_CL_melt])
@@ -4727,10 +4794,12 @@ class MainWindow(QMainWindow):
             else: 
                 df_final = df_new.sort_values(by=['Parameter'])
 
+        # key_ellip = {'lin_length': 'Linear Length', 'looped_length': 'Looped Length'}
+
         #Change True Values to TBO
         values_updated = []
         for index, row in df_final.iterrows(): 
-            print(index, type(row['Value']))
+            # print(index, type(row['Value']))
             if isinstance(row['Value'], bool): 
                 values_updated.append('TBO')
             else: 
@@ -4777,106 +4846,11 @@ class MainWindow(QMainWindow):
         df_finalf = df_final.reset_index()
         df_finalf = df_finalf.set_index(mult_index+['User (Tissue-Contour)'])
 
-        # print('df_finalf: ', df_finalf)
+        df_finalf = df_finalf.sort_values(['Parameter','Tissue-Contour'],
+                                                ascending = [True, True])
+        
+        print('df_finalf: ', df_finalf)
         self.df_res = df_finalf
-    
-    def fill_workflow_OLD(self):
-        #OLD Version
-        tree.setColumnCount(2)
-        tree.setHeaderLabels(['Process', 'Status'])
-        tree.setColumnWidth(0, 100)
-        tree.setColumnWidth(1, 20)
-
-        # tree.invisibleRootItem().setExpanded(True)
-        root_item = tree.invisibleRootItem()
-        root_item.setExpanded(True)
-        self.topLevelItem = QTreeWidgetItem()
-        for method in self.proj.mH_methods:
-            # print(method)
-            method_item = QTreeWidgetItem(tree)
-            method_item.setText(0,method)
-            #set child 
-            keys_method = self.organ.workflow['morphoHeart']['MeshesProc'][method].keys()
-            # print(keys_method)
-            for subproc in keys_method:
-                if subproc != 'Status':
-                    child = QtWidgets.QTreeWidgetItem(tree)
-                    labeltree = MyTreeItem(subproc, tree)
-                    # method_item.addChild(labeltree)
-                    tree.setItemWidget(child, 1, labeltree)
-
-                    # root = QTreeWidgetItem(self.treeWidget, ["root"])
-                    # A = QTreeWidgetItem(root, ["A"])
-                    # barA = QTreeWidgetItem(A, ["bar", "i", "ii"])
-                    # bazA = QTreeWidgetItem(A, ["baz", "a", "b"])
-
-                    # labeltree = QTreeWidgetItem(method_item)
-                    # subproc_label =  QtWidgets.QLabel()
-                    # subproc_label.setStyleSheet("QLabel {background-color:rgb(255, 255, 0); border-width: 2px; border-style: outset; border-color: rgb(0,0, 0);}")
-                    # subproc_label.resize(18, 18)
-
-                    # subproc_method = QTreeWidgetItem(method_item, [subproc, subproc_label])
-                    # # subproc_method.setText(0, subproc)
-                    # method_item.addChild(subproc_method)
-                    # method_item.setExpanded(True)
-
-                    #Create the label widget
-                    # labeltree = QTreeWidgetItem(method_item)
-                    # subproc_label =  QtWidgets.QLabel()
-                    # subproc_label.setStyleSheet("QLabel {background-color:rgb(255, 255, 0); border-width: 2px; border-style: outset; border-color: rgb(0,0, 0);}")
-                    # subproc_label.resize(18, 18)
-                    # tree.setItemWidget(labeltree, 1, subproc_label)
-
-
-        #  for department in departments:
-        #     department_item = QTreeWidgetItem(tree)
-        #     department_item.setText(0,department)
-        #     # set the child
-        #     for employee in employees[department]:
-        #         employee_item   = QTreeWidgetItem(tree)
-        #         employee_item.setText(1,employee)
-
-        #         department_item.addChild(employee_item)
-
-        #///
-        # tree.clear()
-        # self.fill_wf_item(tree.invisibleRootItem(), value)
-
-    def fill_wf_item(self, item, value):
-        item.setExpanded(True)
-        if type(value) is dict:
-            print('dict:',value)
-            print('type val', type(value))
-            for key, val in value.items():
-                child = QTreeWidgetItem()
-                child.setText(0, str(key))#0, unicode(key))
-                item.addChild(child)
-                self.fill_wf_item(child, val)
-        elif type(value) is list:
-            print('list:',value)
-            for val in value:
-                child = QTreeWidgetItem()
-                item.addChild(child)
-                print('type val', type(val))
-                if type(val) is dict:     
-                    print('dict2:',val) 
-                    child.setText(0, '[dict]')
-                    self.fill_wf_item(child, val)
-                elif type(val) is list:
-                    print('list2:',val) 
-                    child.setText(0, '[list]')
-                    self.fill_wf_item(child, val)
-                else:
-                    print('??2:',val) 
-                    child.setText(0, str(val))              
-                child.setExpanded(True)
-        else:
-            if value == 'Status': 
-                print('Aja')
-            else: 
-                child = QTreeWidgetItem()
-                child.setText(0, str(value))#unicode(value))
-                item.addChild(child)
             
     def n_slices(self, process):
         cB = getattr(self, process+'_plot2d')
@@ -5043,13 +5017,11 @@ class MainWindow(QMainWindow):
             self.gui_keep_largest = current_gui_keep_largest
         else: 
             gui_keep_largest_loaded = self.organ.mH_settings['wf_info']['keep_largest']
-            if len(compare_dicts(gui_keep_largest_loaded, current_gui_keep_largest, 'loaded', 'current'))!= 0: 
-                self.gui_keep_largest = update_gui_set(loaded = gui_keep_largest_loaded, 
-                                                       current = current_gui_keep_largest)
+            self.gui_keep_largest, changed  = update_gui_set(loaded = gui_keep_largest_loaded, 
+                                                                current = current_gui_keep_largest)
+            if changed:
                 self.win_msg("Remember to re-run  -Keep Largest-  section to make sure changes are made and saved!")
                 self.update_status(None, 're-run', self.keeplargest_status, override=True)
-            else: 
-                self.gui_keep_largest = gui_keep_largest_loaded
 
         self.keeplargest_set.setChecked(True)
         toggled(self.keeplargest_set)
@@ -5080,13 +5052,11 @@ class MainWindow(QMainWindow):
             self.gui_clean = current_gui_clean
         else: 
             gui_clean_loaded = self.organ.mH_settings['wf_info']['cleanup']
-            if len(compare_dicts(gui_clean_loaded, current_gui_clean, 'loaded', 'current'))!= 0: 
-                self.gui_clean = update_gui_set(loaded = gui_clean_loaded, 
-                                                current = current_gui_clean)
+            self.gui_clean, changed = update_gui_set(loaded = gui_clean_loaded, 
+                                                        current = current_gui_clean)
+            if changed: 
                 self.win_msg("Remember to re-run  -Segmentation Clean-Up-  section to make sure changes are made and saved!")
                 self.update_status(None, 're-run', self.cleanup_status, override=True)
-            else: 
-                self.gui_clean = gui_clean_loaded
 
         self.cleanup_set.setChecked(True)
         toggled(self.cleanup_set)
@@ -5142,15 +5112,12 @@ class MainWindow(QMainWindow):
             self.gui_trim = current_gui_trim
         else: 
             gui_trim_loaded = self.organ.mH_settings['wf_info']['trimming']
-            print('DictComp:', compare_dicts(gui_trim_loaded, current_gui_trim, 'loaded', 'current'))
-            if len(compare_dicts(gui_trim_loaded, current_gui_trim, 'loaded', 'current'))!= 0 and not init: 
-                self.gui_trim = update_gui_set(loaded = gui_trim_loaded, 
+            self.gui_trim, changed = update_gui_set(loaded = gui_trim_loaded, 
                                                     current = current_gui_trim)
+            if changed: 
                 self.win_msg("Remember to re-run  -Meshes Trimming-  section to make sure changes are made and saved!")
                 self.update_status(None, 're-run', self.trimming_status, override=True)
-            else: 
-                self.gui_trim = gui_trim_loaded
-
+        
         self.trimming_set.setChecked(True)
         toggled(self.trimming_set)
         print('self.gui_trim: ', self.gui_trim)
@@ -5220,13 +5187,11 @@ class MainWindow(QMainWindow):
                 self.gui_orientation = current_gui_orientation
             else: 
                 gui_orientation_loaded = self.organ.mH_settings['wf_info']['orientation']
-                if len(compare_dicts(gui_orientation_loaded, current_gui_orientation, 'loaded', 'current'))!= 0 and not init: 
-                    self.gui_orientation = update_gui_set(loaded = gui_orientation_loaded, 
+                self.gui_orientation, changed = update_gui_set(loaded = gui_orientation_loaded, 
                                                         current = current_gui_orientation)
+                if changed: 
                     self.win_msg("Remember to re-run  -Organ/ROI Axis Labels-  section to make sure changes are made and saved!")
                     self.update_status(None, 're-run', self.orient_status, override=True)
-                else: 
-                    self.gui_orientation = gui_orientation_loaded
 
             self.orientation_set.setChecked(True)
             toggled(self.orientation_set)
@@ -5286,13 +5251,11 @@ class MainWindow(QMainWindow):
             self.gui_chNS = current_gui_chNS
         else: 
             gui_chNS_loaded = self.organ.mH_settings['wf_info']['chNS']
-            if len(compare_dicts(gui_chNS_loaded, current_gui_chNS, 'loaded', 'current'))!= 0: 
-                self.gui_chNS = update_gui_set(loaded = gui_chNS_loaded, 
+            self.gui_chNS, changed = update_gui_set(loaded = gui_chNS_loaded, 
                                                        current = current_gui_chNS)
+            if changed: 
                 self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
                 self.update_status(None, 're-run', self.chNS_status, override=True)
-            else: 
-                self.gui_chNS = gui_chNS_loaded
 
         self.chNS_set.setChecked(True)
         toggled(self.chNS_set)
@@ -5321,14 +5284,13 @@ class MainWindow(QMainWindow):
         if 'centreline' not in wf_info.keys():
             self.gui_centreline = current_gui_centreline
         else: 
-            gui_centreline_loaded = self.organ.mH_settings['wf_info']['centreline']
-            if len(compare_dicts(gui_centreline_loaded, current_gui_centreline, 'loaded', 'current'))!= 0 and not init: 
-                self.gui_centreline = update_gui_set(loaded = gui_centreline_loaded, 
-                                                       current = current_gui_centreline)
-                self.win_msg("Remember to re-run  -Keep Largest-  section to make sure changes are made and saved!")
-                self.update_status(None, 're-run', self.centreline_status, override=True)
-            else: 
-                self.gui_centreline = gui_centreline_loaded
+            self.gui_centreline = self.organ.mH_settings['wf_info']['centreline']
+            # gui_centreline_loaded = self.organ.mH_settings['wf_info']['centreline']
+            # self.gui_centreline, changed = update_gui_set(loaded = gui_centreline_loaded, 
+            #                                         current = current_gui_centreline)
+            # if changed: 
+            #     self.win_msg("Remember to re-run  -Keep Largest-  section to make sure changes are made and saved!")
+            #     self.update_status(None, 're-run', self.centreline_status, override=True)
         
         self.centreline_set.setChecked(True)
         toggled(self.centreline_set)
@@ -5364,13 +5326,11 @@ class MainWindow(QMainWindow):
             self.gui_thickness_ballooning = current_gui_thickness_ballooning
         else: 
             gui_thickness_ballooning_loaded = self.organ.mH_settings['wf_info']['heatmaps']
-            if len(compare_dicts(gui_thickness_ballooning_loaded, current_gui_thickness_ballooning, 'loaded', 'current'))!= 0 and not init: 
-                self.gui_thickness_ballooning = update_gui_set(loaded = gui_thickness_ballooning_loaded, 
+            self.gui_thickness_ballooning, changed = update_gui_set(loaded = gui_thickness_ballooning_loaded, 
                                                                 current = current_gui_thickness_ballooning)
+            if changed: 
                 # self.win_msg("Remember to re-run  -Thickness / Ballooning Measurements-  section to make sure changes are made and saved!")
                 self.update_status(None, 're-run', self.heatmaps_status, override=True)
-            else: 
-                self.gui_thickness_ballooning = gui_thickness_ballooning_loaded
             
         self.update_3d2d()
 
@@ -5454,13 +5414,11 @@ class MainWindow(QMainWindow):
                 self.gui_segm = current_gui_segm
             else: 
                 gui_segm_loaded = self.organ.mH_settings['wf_info']['segments']
-                if len(compare_dicts(gui_segm_loaded, current_gui_segm, 'loaded', 'current'))!= 0 and not init: 
-                    self.gui_segm = update_gui_set(loaded = gui_segm_loaded, 
+                self.gui_segm, changed = update_gui_set(loaded = gui_segm_loaded, 
                                                         current = current_gui_segm)
+                if changed: 
                     # self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
                     self.update_status(None, 're-run', self.segments_status, override=True)
-                else: 
-                    self.gui_segm = gui_segm_loaded
 
             self.segments_set.setChecked(True)
             toggled(self.segments_set)
@@ -5569,7 +5527,6 @@ class MainWindow(QMainWindow):
         return gui_segm
 
     def set_sections(self, init=False): 
-        print('running sections')
 
         sect_setup = self.organ.mH_settings['setup']['sect']
         no_cuts = [key for key in sect_setup.keys() if 'Cut' in key]
@@ -5586,13 +5543,11 @@ class MainWindow(QMainWindow):
                     self.gui_sect = current_gui_sect
                 else: 
                     gui_sect_loaded = self.organ.mH_settings['wf_info']['sections']
-                    if len(compare_dicts(gui_sect_loaded, current_gui_sect, 'loaded', 'current'))!= 0 and not init: 
-                        self.gui_sect = update_gui_set(loaded = gui_sect_loaded, 
+                    self.gui_sect, changed = update_gui_set(loaded = gui_sect_loaded, 
                                                             current = current_gui_sect)
+                    if changed: 
                         # self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
                         self.update_status(None, 're-run', self.sections_status, override=True)
-                    else: 
-                        self.gui_sect = gui_sect_loaded
 
                 self.sections_set.setChecked(True)
                 toggled(self.sections_set)
@@ -5637,6 +5592,53 @@ class MainWindow(QMainWindow):
             
         return gui_sect
 
+    def set_user_user_params(self, ptype):
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_user_params = self.gui_user_params_n(ptype) 
+        if current_gui_user_params != None: 
+            if 'user_params' not in wf_info.keys():
+                self.gui_user_params = current_gui_user_params
+            else: 
+                gui_user_params_loaded = self.organ.mH_settings['wf_info']['user_params']
+                self.gui_user_params, changed = update_gui_set(loaded = gui_user_params_loaded, 
+                                                        current = current_gui_user_params)
+                # if changed: 
+                #     # # self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
+                #     # self.update_status(None, 're-run', self.gui_user_params_loaded, override=True)
+    
+            set_btn = getattr(self, ptype+'_set')
+            set_btn.setChecked(True)
+            toggled(set_btn)
+            print('self.gui_user_params: ', self.gui_user_params)
+
+        else: 
+            return
+
+    def gui_user_params_n(self, ptype): 
+
+        gui_user_params = {}
+        if len(self.gui_key_user_params[ptype]) > 0: 
+            gui_user_params[ptype] = {}
+            #Get values
+            for param in self.gui_key_user_params[ptype].keys(): 
+                gui_user_params[ptype][param] = {}
+                for item in self.gui_key_user_params[ptype][param].keys(): 
+                    num = self.gui_key_user_params[ptype][param][item]['num']
+                    gui_user_params[ptype][param][item] = {'num': int(num)}
+                    if ptype == 'categorical': 
+                        value = getattr(self, 'value_categorical'+str(num)).currentText()
+                    else: 
+                        value = getattr(self, 'value_'+ptype+str(num)).text()
+                    gui_user_params[ptype][param][item]['value'] = value
+
+                self.organ.mH_settings['measure'][param][item] = value
+
+        print('gui_user_params:', gui_user_params)
+        print('self.gui_key_user_params:', self.gui_key_user_params)
+        self.fill_results()                    
+
+        return gui_user_params
+    
     #Plot functions
     def plot_meshes(self, ch, chNS=False):
         self.win_msg('Plotting meshes ('+ch+')')
@@ -5921,7 +5923,9 @@ class MainWindow(QMainWindow):
         ext = self.cB_extension.currentText()
         filename = self.organ.folder+'_results'+ext
         df_dir = self.organ.dir_res() / filename
-        df_final.to_csv(df_dir, index=True)  
+        df_final.to_csv(df_dir, index=True) 
+        alert('countdown') 
+        self.win_msg('Results file  -'+ filename + '  was succesfully saved!')
 
     #Functions for all tabs
     def continue_next_tab(self): #A delete bit
@@ -5956,8 +5960,7 @@ class MainWindow(QMainWindow):
         self.organ.save_organ(alert_on)
         self.proj.add_organ(self.organ)
         self.proj.save_project(alert_on)
-        if alert_on: 
-            self.win_msg('Project  -'+ self.proj.user_projName + 'and Organ  -'+ self.organ.user_organName +'-  were saved succesfully!')
+        self.win_msg('Project  -'+ self.proj.user_projName + '-  and Organ  -'+ self.organ.user_organName +'-  were succesfully saved!')
     
     def close_morphoHeart_pressed(self):
         print('Close was pressed')
@@ -6063,7 +6066,7 @@ class MyToggle(QtWidgets.QPushButton):
         font.setPointSize(10)
         painter.setFont(font)
 
-class MyTreeItem(QtWidgets.QWidget):
+class MyTreeItem(QtWidgets.QWidget): #to delete
     def __init__(self, subproc, parent=None):
         super().__init__(parent)
 
@@ -6086,7 +6089,7 @@ class MyTreeItem(QtWidgets.QWidget):
         layout.addStretch()
         self.setMaximumWidth(200)
 
-class MyPandasTable(QAbstractTableModel): 
+class MyPandasTable(QAbstractTableModel): #to delete
     def __init__(self, data, parent=None):
         super().__init__(parent)
         self._data = data
@@ -6193,9 +6196,11 @@ def update_status(root_dict, items, fillcolor, override=False):
         color = 'rgb(0, 0, 0)'
     elif wf_status == 're-run': 
         color = 'rgb(35, 207, 255)'
+    elif wf_status == 'DONE-NoCut':
+        color = 'rgb(0, 85, 127)'
     else: 
         color = 'rgb(255, 0, 255)'
-        print('other status unknown')
+        print('other status unknown: ', fillcolor)
     color_btn(btn = fillcolor, color = color)
 
 # Button general functions
@@ -6323,13 +6328,13 @@ def set_txts():
     # Play buttons
     play_bw = 'images/logos_play_black_white.png'
     play_gw = 'images/logos_play_green_white.png'
-    play_gb = 'images/logos_play_green_black.png'
+    play_gb = 'images/logos_play_green_dark.png'
     play_grw = 'images/logos_play_gray_white.png'
     play_colors = [play_bw, play_gw, play_gb, play_grw]
 
     play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-repeat; width: 65px; height: 56px;} "
     hover_btn = "QPushButton:hover {border-image: url("+play_bw+")} "
-    pressed_btn = "QPushButton:pressed {border-image: url("+play_gb+")}; "
+    pressed_btn = "QPushButton:checked {border-image: url("+play_gb+")}; "
     disbled_btn = "QPushButton:disabled {border-image: url("+play_grw+")}; "
     style_play = play_btn+hover_btn+pressed_btn+disbled_btn
 

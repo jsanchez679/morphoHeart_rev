@@ -132,7 +132,6 @@ def run_keeplargest(controller):
         #Toggle button
         select_btn = getattr(controller.main_win, 'keeplargest_play')
         select_btn.setChecked(True)
-        toggled(select_btn)
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
@@ -151,92 +150,55 @@ def run_keeplargest(controller):
     print('organ.workflow:', workflow)
 
 def run_cleanup(controller):
-    workflow = controller.organ.workflow
-    # if proceed: #== None: 
-    #     workflow = self.parent_organ.workflow['morphoHeart']
-    #     s3s = [self.s3_int, self.s3_ext, self.s3_tiss]
-    #     process = ['ImProc',self.channel_no,'E-CleanCh', 'Status']
-    #     check_proc = get_by_path(workflow, process)
-    #     if check_proc == 'DONE':
-    #         q = 'You already cleanes the '+ self.user_chName+' with the '+s3_mask.im_channel.user_chName+'. Do you want to re-run this process?'
-    #         res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-    #         proceed2 = ask4input(q, res, bool)
-    #     else: 
-    #         proceed2 = True
-        
-    # if proceed2: 
-    if controller.main_win.gui_clean['plot2d']:
-        plot_settings = (True, controller.main_win.gui_clean['n_slices'])
+    if controller.main_win.keeplargest_play.isChecked(): 
+        workflow = controller.organ.workflow
+        if controller.main_win.gui_clean['plot2d']:
+            plot_settings = (True, controller.main_win.gui_clean['n_slices'])
+        else: 
+            plot_settings = (False, None) 
+
+        fcM.clean_ch(organ = controller.organ, 
+                    gui_clean = controller.main_win.gui_clean, 
+                    win=controller.main_win, plot_settings=plot_settings)
+
+        #Enable button for plot all
+        plot_all = getattr(controller.main_win, 'clean_plot')
+        plot_all.setEnabled(True)
+
+        #Toggle button
+        select_btn = getattr(controller.main_win, 'cleanup_play')
+        select_btn.setChecked(True)
+
+        #Update progress in main_win
+        controller.main_win.update_workflow_progress()
+
     else: 
-        plot_settings = (False, None) 
-
-    fcM.clean_ch(organ = controller.organ, 
-                 gui_clean = controller.main_win.gui_clean, 
-                 win=controller.main_win, plot_settings=plot_settings)
-
-    #Enable button for plot all
-    plot_all = getattr(controller.main_win, 'clean_plot')
-    plot_all.setEnabled(True)
-
-    #Toggle button
-    select_btn = getattr(controller.main_win, 'cleanup_play')
-    select_btn.setChecked(True)
-    toggled(select_btn)
-
-    #Update progress in main_win
-    controller.main_win.update_workflow_progress()
+        controller.main_win.win_msg('*To clean-up the tissues make sure you have at least run the  -Keep Largest-  section.')
             
 def run_trimming(controller):
-    workflow = controller.organ.workflow
-
-    # #Check workflow status
-    # workflow = organ.workflow
-    # check_proc = []
-    # mesh_names = []
-    # for mesh in meshes: 
-    #     process = ['ImProc', mesh.channel_no,'E-TrimS3','Status']
-    #     check_proc.append(get_by_path(workflow, process))
-    #     mesh_names.append(mesh.channel_no)
-    # if all(flag == 'DONE' for flag in check_proc):
-    #     q = 'You already trimmed the top/bottom of '+ str(mesh_names)+'. Do you want to cut them again?'
-    #     res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-    #     proceed = ask4input(q, res, bool)
-    # else: 
-    #     proceed = True
+    if controller.main_win.keeplargest_play.isChecked(): 
+        workflow = controller.organ.workflow
+        meshes, no_cut, cuts_out = get_trimming_planes(organ = controller.organ,
+                                                        gui_trim = controller.main_win.gui_trim,
+                                                        win = controller.main_win)
         
-    # if proceed: 
+        fcM.trim_top_bottom_S3s(organ = controller.organ, meshes = meshes, 
+                                no_cut = no_cut, cuts_out = cuts_out,
+                                win = controller.main_win)
+        
+        #Enable button for plot all
+        plot_all = getattr(controller.main_win, 'trimming_plot')
+        plot_all.setEnabled(True)
 
-    #  #Check workflow status
-    #     workflow = self.parent_organ.workflow['morphoHeart']
-    #     process = ['ImProc', self.channel_no, 'E-TrimS3','Status']
-    #     check_proc = get_by_path(workflow, process)
-    #     if check_proc == 'DONE':
-    #         q = 'You already trimmed this channel ('+ self.user_chName+'). Do you want to re-run it?'
-    #         res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-    #         proceed = ask4input(q, res, bool)
-    #     else: 
-    #         proceed = True
-                
-    #     if proceed: 
-    meshes, no_cut, cuts_out = get_trimming_planes(organ = controller.organ,
-                                                    gui_trim = controller.main_win.gui_trim,
-                                                    win = controller.main_win)
-    
-    fcM.trim_top_bottom_S3s(organ = controller.organ, meshes = meshes, 
-                            no_cut = no_cut, cuts_out = cuts_out,
-                            win = controller.main_win)
-    
-    #Enable button for plot all
-    plot_all = getattr(controller.main_win, 'trimming_plot')
-    plot_all.setEnabled(True)
+        #Toggle button
+        select_btn = getattr(controller.main_win, 'trimming_play')
+        select_btn.setChecked(True)
 
-    #Toggle button
-    select_btn = getattr(controller.main_win, 'trimming_play')
-    select_btn.setChecked(True)
-    toggled(select_btn)
+        #Update progress in main_win
+        controller.main_win.update_workflow_progress()
 
-    #Update progress in main_win
-    controller.main_win.update_workflow_progress()
+    else: 
+        controller.main_win.win_msg('*To trim the tissues make sure you have at least run the  -Keep Largest-  section.')
 
 def get_trimming_planes(organ, gui_trim, win): 
     filename = organ.user_organName
@@ -324,142 +286,100 @@ def get_trimming_planes(organ, gui_trim, win):
     return meshes, no_cut, cuts_out
 
 def run_axis_orientation(controller, only_roi=False):
-    # #Check if the orientation has alredy been stablished
-    #     if 'orientation' in self.mH_settings.keys(): 
-    #         if 'ROI' in self.mH_settings['orientation'].keys():
-    #             q = 'You already selected the ROI (organ) orientation for this organ. Do you want to re-assign it?'
-    #             res = {0: 'no, continue with next step', 1: 'yes, re-assign it!'}
-    #             proceed = ask4input(q, res, bool)
-    #         else: 
-    #             proceed = True
-    #     else: 
-    #         proceed = True
-    #CHECK HERE WHICH ONE HAS BEEN RUN AND IF STACK WAS RUN, 
-    # PROGRAM SO THAT THE STACK DATA DOESN'T GET REMOVED 
-    workflow = controller.organ.workflow['morphoHeart']
-    if not only_roi: 
-        fcM.get_stack_orientation(organ = controller.organ,  
-                                gui_orientation = controller.main_win.gui_orientation, 
-                                win = controller.main_win)
-    
-    try: 
-        print('tryA')
-        gui_orientation = controller.main_win.gui_orientation
-    except: 
-        print('exceptA')
-        gui_orientation = controller.organ.mH_settings['wf_info']['orientation']
+    if controller.main_win.keeplargest_play.isChecked(): 
+        #CHECK HERE WHICH ONE HAS BEEN RUN AND IF STACK WAS RUN, 
+        # PROGRAM SO THAT THE STACK DATA DOESN'T GET REMOVED 
+        workflow = controller.organ.workflow['morphoHeart']
+        if not only_roi: 
+            fcM.get_stack_orientation(organ = controller.organ,  
+                                    gui_orientation = controller.main_win.gui_orientation, 
+                                    win = controller.main_win)
+        
+        try: 
+            print('tryA')
+            gui_orientation = controller.main_win.gui_orientation
+        except: 
+            print('exceptA')
+            gui_orientation = controller.organ.mH_settings['wf_info']['orientation']
 
-    on_hold = fcM.get_roi_orientation(organ = controller.organ,
-                                        gui_orientation = gui_orientation,  
-                                        win = controller.main_win)
-    
-    #Update Status in GUI
-    process = ['MeshesProc', 'A-Create3DMesh', 'Set_Orientation', 'Status']
-    controller.main_win.update_status(workflow, process, controller.main_win.orient_status)
+        on_hold = fcM.get_roi_orientation(organ = controller.organ,
+                                            gui_orientation = gui_orientation,  
+                                            win = controller.main_win)
+        
+        #Update Status in GUI
+        process = ['MeshesProc', 'A-Create3DMesh', 'Set_Orientation', 'Status']
+        controller.main_win.update_status(workflow, process, controller.main_win.orient_status)
 
-    #Toggle button
-    print('organ.on_hold:', on_hold)
-    select_btn = getattr(controller.main_win, 'orientation_play')
-    if not on_hold:
-        controller.organ.on_hold = on_hold
-        select_btn.setChecked(True)
+        #Toggle button
+        print('organ.on_hold:', on_hold)
+        select_btn = getattr(controller.main_win, 'orientation_play')
+        if not on_hold:
+            controller.organ.on_hold = on_hold
+            select_btn.setChecked(True)
+        else: 
+            controller.organ.on_hold = on_hold
+            select_btn.setChecked(False)
+
+        #Update progress in main_win
+        controller.main_win.update_workflow_progress()
     else: 
-        controller.organ.on_hold = on_hold
-        select_btn.setChecked(False)
-    toggled(select_btn)
-
-    #Update progress in main_win
-    controller.main_win.update_workflow_progress()
+        controller.main_win.win_msg('*To set the stack and roi axes make sure you have at least run the  -Keep Largest-  section.')
 
 def run_chNS(controller):
-    workflow = controller.organ.workflow['morphoHeart']
-      # #Check workflow status
-        # workflow = self.parent_organ.workflow
-        # process = ['ImProc', self.channel_no,'D-S3Create','Status']
-        # check_proc = get_by_path(workflow, process)
-        # if check_proc == 'DONE':
-        #     q = 'You already extracted the '+ self.user_chName+' from the negative space. Do you want to re-run this process?'
-        #     res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-        #     proceed = ask4input(q, res, bool)
-        # else: 
-        #     proceed = True
-            
-        # if proceed: 
-    if controller.main_win.gui_chNS['plot2d']:
-        plot_settings = (True, controller.main_win.gui_chNS['n_slices'])
+    if controller.main_win.keeplargest_play.isChecked(): 
+        workflow = controller.organ.workflow['morphoHeart']
+
+        if controller.main_win.gui_chNS['plot2d']:
+            plot_settings = (True, controller.main_win.gui_chNS['n_slices'])
+        else: 
+            plot_settings = (False, None) 
+
+        fcM.extract_chNS(organ = controller.organ, 
+                        rotateZ_90 = controller.organ.mH_settings['setup']['rotateZ_90'],
+                        win = controller.main_win, 
+                        plot_settings = plot_settings)
+
+        #Toggle button
+        select_btn = getattr(controller.main_win, 'chNS_play')
+        select_btn.setChecked(True)
+
+        #Update progress in main_win
+        controller.main_win.update_workflow_progress()
+
     else: 
-        plot_settings = (False, None) 
-
-    fcM.extract_chNS(organ = controller.organ, 
-                     rotateZ_90 = controller.organ.mH_settings['setup']['rotateZ_90'],
-                     win = controller.main_win, 
-                     plot_settings = plot_settings)
-
-    #Toggle button
-    select_btn = getattr(controller.main_win, 'chNS_play')
-    select_btn.setChecked(True)
-    toggled(select_btn)
-
-    #Update progress in main_win
-    controller.main_win.update_workflow_progress()
+        controller.main_win.win_msg('*To extract the channel from the negative space make sure you have at least run the  -Keep Largest-  section.')
 
 def run_centreline_clean(controller):
+    if controller.main_win.keeplargest_play.isChecked(): 
+        workflow = controller.organ.workflow['morphoHeart']
 
-#   #Check first if extracting centrelines is a process involved in this organ/project
-#     if organ.check_method(method = 'C-Centreline'): 
-#     # if 'C-Centreline' in organ.parent_project.mH_methods: 
-#         #Check workflow status
-#         workflow = organ.workflow
-#         process = ['MeshesProc','C-Centreline','SimplifyMesh','Status']
-#         check_proc = get_by_path(workflow, process)
-        
-#         #Check meshes to process in MeshLab have been saved
-#         path2files = organ.mH_settings['wf_info']['MeshesProc']['C-Centreline']
-#         files_exist = []
-#         for ch_s in path2files.keys():
-#             if 'ch' in ch_s:
-#                 for cont_s in path2files[ch_s].keys():
-#                     dir2check = path2files[ch_s][cont_s]['dir_meshLabMesh']
-#                     if dir2check != None: 
-#                         files_exist.append(dir2check.is_file())
-#                     else: 
-#                         files_exist.append(dir2check)
-#                     print (ch_s, cont_s)
-        
-#         if check_proc == 'DONE' and all(flag for flag in files_exist):
-#             q = 'You already cleaned and cut the meshes to extract the centreline. Do you want to clean and cut them again?'
-#             res = {0: 'no, continue with next step', 1: 'yes, re-run these two processes!'}
-#             cut_meshes4cl = ask4input(q, res, bool)
-#         else: 
-#             cut_meshes4cl = True
-            
-    workflow = controller.organ.workflow['morphoHeart']
+        m4clf = fcM.proc_meshes4cl(controller.organ, 
+                                    win=controller.main_win) 
+                                                        
+        if not hasattr(controller.organ, 'obj_temp'):
+            controller.organ.obj_temp = {}
+        controller.organ.obj_temp['centreline'] = {'SimplifyMesh': m4clf}
+        print('obj_temp: ', controller.organ.obj_temp)
 
-    m4clf = fcM.proc_meshes4cl(controller.organ, 
-                                win=controller.main_win) 
-                                                    
-    if not hasattr(controller.organ, 'obj_temp'):
-        controller.organ.obj_temp = {}
-    controller.organ.obj_temp['centreline'] = {'SimplifyMesh': m4clf}
-    print('obj_temp: ', controller.organ.obj_temp)
+        #Enable button for ML
+        plot_btn = getattr(controller.main_win, 'centreline_ML_play')
+        plot_btn.setEnabled(True)
 
-    #Enable button for ML
-    plot_btn = getattr(controller.main_win, 'centreline_ML_play')
-    plot_btn.setEnabled(True)
+        #Toggle button
+        select_btn = getattr(controller.main_win, 'centreline_clean_play')
+        select_btn.setChecked(True)
 
-    #Toggle button
-    select_btn = getattr(controller.main_win, 'centreline_clean_play')
-    select_btn.setChecked(True)
-    toggled(select_btn)
+        #Update Status in GUI
+        process = process =  ['MeshesProc','C-Centreline','Status']
+        controller.main_win.update_status(workflow, process, controller.main_win.centreline_status)
 
-    #Update Status in GUI
-    process = process =  ['MeshesProc','C-Centreline','Status']
-    controller.main_win.update_status(workflow, process, controller.main_win.centreline_status)
+        prompt_meshLab(controller)
 
-    prompt_meshLab(controller)
+        #Update progress in main_win
+        controller.main_win.update_workflow_progress()
 
-    #Update progress in main_win
-    controller.main_win.update_workflow_progress()
+    else: 
+        controller.main_win.win_msg('*To extract the centreline from tissues make sure you have at least run the  -Keep Largest-  section.')
 
 def run_centreline_ML(controller): 
     workflow = controller.organ.workflow['morphoHeart']
@@ -488,7 +408,6 @@ def run_centreline_ML(controller):
                 #Toggle button
                 select_btn = getattr(controller.main_win, 'centreline_ML_play')
                 select_btn.setChecked(True)
-                toggled(select_btn)
 
                 #Update progress in main_win
                 controller.main_win.update_workflow_progress()
@@ -502,149 +421,111 @@ def run_centreline_ML(controller):
                 return
 
 def run_centreline_vmtk(controller): 
-    workflow = controller.organ.workflow['morphoHeart']
-    # Please input list of inlet profile ids: Please input list of outlet profile ids (leave empty for all available profiles):
-    # #Check first if extracting centrelines is a process involved in this organ/project
-    # if organ.check_method(method = 'C-Centreline'): 
-    # # if 'C-Centreline' in organ.parent_project.mH_methods: 
-    #     #Check workflow status
-    #     workflow = organ.workflow
-    #     process = ['MeshesProc','C-Centreline','vmtk_CL','Status']
-    #     check_proc = get_by_path(workflow, process)
-    #     if check_proc == 'DONE': 
-    #         q = 'You already extracted the centreline of the selected meshes. Do you want to extract the centreline again?'
-    #         res = {0: 'no, continue with next step', 1: 'yes, re-run this process!'}
-    #         extractCL = ask4input(q, res, bool)
-    #     else: 
-    #         extractCL = True
-            
-    #     if extractCL: 
-
-    #   while not dir_meshML.is_file():
-    #     q = 'No meshes are recognised in the path: \n'+ str(dir_meshML) +'.\nMake sure you have named your cleaned meshes correctly after running the processing in Meshlab and press -Enter- when ready.'
-    #     res = {0:'Please remind me what I need to do', 1:'I have done it now, please continue'}
-    #     print_ins = ask4input(q, res, int)
-    #     if print_ins == 0:
-    #         print("\nTo get the centreline of each of the selected meshes follow the next steps:")
-    #         print("> 1. Open the stl file(s) in Meshlab")
-    #         print("> 2. Run Filters > Remeshing, Simplification.. > Screened Poisson Surf Reco (check Pre-clean)")
-    #         print("> 3. Cut inflow and outflow tract as close as the cuts from the original mesh you opened in \n\t Meshlab and export the resulting surface adding 'ML' at the end of the filename\n\t (e.g _cut4clML.stl) in the same folder")
-    #         print("> 4. Come back and continue processing!...")
-    try: 
-        print('try')
-        voronoi = controller.main_win.gui_centreline['vmtk_CL']['voronoi']
-    except:
-        print('except') 
-        voronoi = controller.organ.mH_settings['wf_info']['centreline']['vmtk_CL']['voronoi']
-    fcM.extract_cl(organ=controller.organ, 
-                   win=controller.main_win, 
-                   voronoi=voronoi)
-    
-    #Enable button for select
-    plot_btn = getattr(controller.main_win, 'centreline_select')
-    plot_btn.setEnabled(True)
-
-    #Toggle button
-    select_btn = getattr(controller.main_win, 'centreline_vmtk_play')
-    select_btn.setChecked(True)
-    toggled(select_btn)
-
-    #Update progress in main_win
-    controller.main_win.update_workflow_progress()
-
-def run_centreline_select(controller):
-    
-    # #Check first if extracting centrelines is a process involved in this organ/project
-    # if organ.check_method(method = 'C-Centreline'): 
-    # # if 'C-Centreline' in organ.parent_project.mH_methods: 
-    #     #Check workflow status
-    #     workflow = organ.workflow
-    #     process = ['MeshesProc','C-Centreline','buildCL','Status']
-    #     check_proc = get_by_path(workflow, process)
-    #     if check_proc == 'DONE': 
-    #         q = 'You already extracted the centreline of the selected meshes. Do you want to extract the centreline again?'
-    #         res = {0: 'no, continue with next step', 1: 'yes, re-run this process!'}
-    #         buildCL = ask4input(q, res, bool)
-    #     else: 
-    #         buildCL = True
-    
-    # if buildCL: 
-    try: 
-        print('try')
-        nPoints = controller.main_win.gui_centreline['buildCL']['nPoints']
-    except: 
-        print('except')
-        nPoints = controller.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
-
-    workflow = controller.organ.workflow['morphoHeart']
-    process = ['MeshesProc','C-Centreline','buildCL','Status']
-    cl_names = list(controller.organ.mH_settings['measure']['CL'].keys())
-    nn = 0
-    for name in cl_names: 
-        ch, cont, _ = name.split('_')
-        proc_wft = ['MeshesProc', 'C-Centreline', 'buildCL', ch, cont, 'Status']
-        dict_clOpt = fcM.create_CLs(organ=controller.organ, 
-                                    name=name,
-                                    nPoints = nPoints)
+    if controller.main_win.centreline_ML_play.isChecked(): 
+        workflow = controller.organ.workflow['morphoHeart']
+        try: 
+            print('try')
+            voronoi = controller.main_win.gui_centreline['vmtk_CL']['voronoi']
+        except:
+            print('except') 
+            voronoi = controller.organ.mH_settings['wf_info']['centreline']['vmtk_CL']['voronoi']
+        fcM.extract_cl(organ=controller.organ, 
+                    win=controller.main_win, 
+                    voronoi=voronoi)
         
-        title = 'Select best centreline for tissue-contour' 
-        msg = 'Select the preferred centreline for processing this tissue-contour ('+ch+'-'+cont+')'
-        items = {1: {'opt': 'Option 1'}, 2: {'opt': 'Option 2'}, 3: {'opt': 'Option 3'}, 
-                      4: {'opt': 'Option 4'}, 5:{'opt': 'Option 5'}, 6:{'opt': 'Option 6'}}
-        prompt = Prompt_ok_cancel_radio(title, msg, items, parent=controller.main_win)
-        prompt.exec()
-        print('output:', prompt.output, '\n')  
-        opt_selected = prompt.output[0]
-        cl_selected = items[opt_selected]['opt']
-        proc_set = ['wf_info','centreline','buildCL','connect_cl',ch+'_'+cont]
-        update = cl_selected +'-'+dict_clOpt[items[opt_selected]['opt']]['description']
-        controller.organ.update_settings(process = proc_set, update = update, mH='mH')
-
-        #Add text to Opt Centreline
-        opt_txt = getattr(controller.main_win, 'opt_cl'+str(nn+1))
-        opt_txt.setText(prompt.output[1])
-        
-        #Add centreline to organ
-        cl_final = dict_clOpt[cl_selected]['kspl']
-        controller.organ.add_object(cl_final, proc='Centreline', class_name=ch+'_'+cont, name='KSpline')
-        controller.organ.obj_meshes[ch+'_'+cont].set_centreline()
-        
-        # Update organ workflow
-        controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
-        status_sq = getattr(controller.main_win, 'opt_cl_status'+str(nn+1))
-        controller.main_win.update_status(workflow, proc_wft, status_sq)
-
-        #Enable button for plot cl
-        plot_btn = getattr(controller.main_win, 'cl_plot'+str(nn+1))
+        #Enable button for select
+        plot_btn = getattr(controller.main_win, 'centreline_select')
         plot_btn.setEnabled(True)
+
+        #Toggle button
+        select_btn = getattr(controller.main_win, 'centreline_vmtk_play')
+        select_btn.setChecked(True)
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
-        nn+=1
-    
-    # Update organ workflow
-    controller.organ.update_mHworkflow(process = process, update = 'DONE')
-    controller.organ.update_mHworkflow(process = ['MeshesProc','C-Centreline','Status'], update = 'DONE')
-    controller.organ.check_status(process='MeshesProc')
+    else: 
+        controller.main_win.win_msg('*To extract the centrelines using VMTK make sure you have run the  -MeshLab-  cleanup first.')
 
-    #Update Status in GUI
-    controller.main_win.update_status(workflow, ['MeshesProc','C-Centreline','Status'], 
-                                      controller.main_win.centreline_status)
+def run_centreline_select(controller):
+    if controller.main_win.centreline_vmtk_play.isChecked(): 
+        try: 
+            print('try')
+            nPoints = controller.main_win.gui_centreline['buildCL']['nPoints']
+        except: 
+            print('except')
+            nPoints = controller.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
 
-    #Toggle button
-    select_btn = getattr(controller.main_win, 'centreline_select')
-    select_btn.setChecked(True)
-    toggled(select_btn)
+        workflow = controller.organ.workflow['morphoHeart']
+        process = ['MeshesProc','C-Centreline','buildCL','Status']
+        cl_names = list(controller.organ.mH_settings['measure']['CL'].keys())
+        nn = 0
+        for name in cl_names: 
+            ch, cont, _ = name.split('_')
+            proc_wft = ['MeshesProc', 'C-Centreline', 'buildCL', ch, cont, 'Status']
+            dict_clOpt = fcM.create_CLs(organ=controller.organ, 
+                                        name=name,
+                                        nPoints = nPoints)
+            
+            title = 'Select best centreline for tissue-contour' 
+            msg = 'Select the preferred centreline for processing this tissue-contour ('+ch+'-'+cont+')'
+            items = {1: {'opt': 'Option 1'}, 2: {'opt': 'Option 2'}, 3: {'opt': 'Option 3'}, 
+                        4: {'opt': 'Option 4'}, 5:{'opt': 'Option 5'}, 6:{'opt': 'Option 6'}}
+            prompt = Prompt_ok_cancel_radio(title, msg, items, parent=controller.main_win)
+            prompt.exec()
+            print('output:', prompt.output, '\n')  
+            opt_selected = prompt.output[0]
+            cl_selected = items[opt_selected]['opt']
+            proc_set = ['wf_info','centreline','buildCL','connect_cl',ch+'_'+cont]
+            update = cl_selected +'-'+dict_clOpt[items[opt_selected]['opt']]['description']
+            controller.organ.update_settings(process = proc_set, update = update, mH='mH')
 
-    #Check if user selected measuring centreline length
-    cl_measurements = controller.organ.mH_settings['setup']['params']['2']['measure']
-    cl_measure = [cl_measurements[key] for key in cl_measurements.keys()]
-    if any(cl_measure): 
-        fcM.measure_centreline(organ=controller.organ, nPoints=nPoints)
+            #Add text to Opt Centreline
+            opt_txt = getattr(controller.main_win, 'opt_cl'+str(nn+1))
+            opt_txt.setText(prompt.output[1])
+            
+            #Add centreline to organ
+            cl_final = dict_clOpt[cl_selected]['kspl']
+            controller.organ.add_object(cl_final, proc='Centreline', class_name=ch+'_'+cont, name='KSpline')
+            controller.organ.obj_meshes[ch+'_'+cont].set_centreline()
+            
+            # Update organ workflow
+            controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+            status_sq = getattr(controller.main_win, 'opt_cl_status'+str(nn+1))
+            controller.main_win.update_status(workflow, proc_wft, status_sq)
 
-    #If orientation is on_hold
-    if controller.organ.on_hold: 
-        run_axis_orientation(controller=controller, only_roi=True)
+            #Enable button for plot cl
+            plot_btn = getattr(controller.main_win, 'cl_plot'+str(nn+1))
+            plot_btn.setEnabled(True)
+
+            #Update progress in main_win
+            controller.main_win.update_workflow_progress()
+            nn+=1
+        
+        # Update organ workflow
+        controller.organ.update_mHworkflow(process = process, update = 'DONE')
+        controller.organ.update_mHworkflow(process = ['MeshesProc','C-Centreline','Status'], update = 'DONE')
+        controller.organ.check_status(process='MeshesProc')
+
+        #Update Status in GUI
+        controller.main_win.update_status(workflow, ['MeshesProc','C-Centreline','Status'], 
+                                        controller.main_win.centreline_status)
+
+        #Toggle button
+        select_btn = getattr(controller.main_win, 'centreline_select')
+        select_btn.setChecked(True)
+
+        #Check if user selected measuring centreline length
+        cl_measurements = controller.organ.mH_settings['setup']['params']['2']['measure']
+        cl_measure = [cl_measurements[key] for key in cl_measurements.keys()]
+        if any(cl_measure): 
+            fcM.measure_centreline(organ=controller.organ, nPoints=nPoints)
+
+        #If orientation is on_hold
+        if controller.organ.on_hold: 
+            run_axis_orientation(controller=controller, only_roi=True)
+
+    else: 
+        controller.main_win.win_msg('*To select the centreline to use make sure you have created the centrelines using VMTK first.')
     
 def prompt_meshLab(controller, msg_add=None):
 
@@ -665,127 +546,131 @@ def prompt_meshLab(controller, msg_add=None):
     print('output:',prompt.output, '\n')
 
 def run_heatmaps3D(controller, btn):
+    if controller.main_win.keeplargest_play.isChecked(): 
+        workflow = controller.organ.workflow['morphoHeart']
+        thck_values = {'i2e': {'short': 'th_i2e',
+                                'method': 'D-Thickness_int>ext', 
+                                'param': 'thickness int>ext', 
+                                'n_type': 'int>ext'},
+                    'e2i': {'short': 'th_e2i', 
+                                'method': 'D-Thickness_ext>int', 
+                                'param': 'thickness ext>int',
+                                'n_type': 'ext>int'}}
 
-    workflow = controller.organ.workflow['morphoHeart']
-    thck_values = {'i2e': {'short': 'th_i2e',
-                            'method': 'D-Thickness_int>ext', 
-                            'param': 'thickness int>ext', 
-                            'n_type': 'int>ext'},
-                   'e2i': {'short': 'th_e2i', 
-                            'method': 'D-Thickness_ext>int', 
-                            'param': 'thickness ext>int',
-                            'n_type': 'ext>int'}}
-
-    hm3d_list = list(controller.main_win.hm_btns.keys())
-    if btn != None: 
-        for key in hm3d_list: 
-            num_key = controller.main_win.hm_btns[key]['num']
-            if int(num_key) == int(btn): 
-                hm3get = key
-                break
-        hm3d_set = [hm3get] #[segm_list[int(num)-1]]
-    else: 
-        hm3d_set = hm3d_list
-    print('hm3d_set:',hm3d_set)
-
-    for hmitem in hm3d_set:
-        short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball
-        ch_info = ch_info[:-1]
-        if 'th' in short: 
-            _, th_val = short.split('_')
-            ch, cont = ch_info.split('-')
-            method = thck_values[th_val]['method']
-            mesh_tiss = controller.organ.obj_meshes[ch+'_tiss'].legend
-            print('\n>> Extracting thickness information for '+mesh_tiss+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
-            controller.main_win.win_msg('Extracting thickness information for '+mesh_tiss+'... NOTE: it takes about 5min to process each mesh... just be patient :)')
-            setup = controller.main_win.gui_thickness_ballooning[hmitem]
-            fcM.get_thickness(organ = controller.organ, name = (ch, cont), 
-                                thck_dict = thck_values[th_val], 
-                                setup = setup)
-
-        else: # if 'ball' in short
-            ch_cont, cl_info = ch_info.split('(')
-            ch, cont = ch_cont.split('-')
-
-            cl_info = cl_info[:-1].split('.')[1]
-            cl_ch, cl_cont = cl_info.split('-')
-            mesh2ball = controller.organ.obj_meshes[ch+'_'+cont].legend
-            print('\n>> Extracting ballooning information for '+mesh2ball+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
-            controller.main_win.win_msg('Extracting ballooning information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
-            setup = controller.main_win.gui_thickness_ballooning[hmitem]
-
-            fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
-                                name_cl = (cl_ch, cl_cont), setup = setup)
-
-        #Enable buttons to plot heatmaps
-        plot_btn = controller.main_win.hm_btns[hmitem]['plot']
-        plot_btn.setEnabled(True)
-        hm2d_btn = controller.main_win.hm_btns[hmitem]['play2d']
-        num = controller.main_win.hm_btns[hmitem]['num']
-        d3d2_btn = getattr(controller.main_win, 'd3d2_'+str(num))
-        if d3d2_btn.isChecked(): 
-            hm2d_btn.setEnabled(True)
-
-        # controller.main_win.prog_bar_update(nn)
-        #Update progress in main_win
-        controller.main_win.update_workflow_progress()
-
-    # Update organ workflow
-    all_all_done = []
-    processes = ['D-Thickness_int>ext', 'D-Thickness_ext>int', 'D-Ballooning']
-    for proc in processes:
-        all_done = []
-        if len(workflow['MeshesProc'][proc].keys())>0: 
-            for ch in workflow['MeshesProc'][proc].keys():
-                if ch != 'Status':
-                    for cont in workflow['MeshesProc'][proc][ch].keys():
-                        print(proc, ch, cont, workflow['MeshesProc'][proc][ch][cont]['Status'])
-                        all_done.append(workflow['MeshesProc'][proc][ch][cont]['Status'])
-
-            if all(flag == 'DONE' for flag in all_done): 
-                proc_wft = ['MeshesProc', proc, 'Status']
-                controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
-                all_all_done.append('DONE')
-            elif any(flag == 'DONE' for flag in all_done):
-                proc_wft = ['MeshesProc', proc, 'Status']
-                controller.organ.update_mHworkflow(process = proc_wft, update = 'Initialised')
-                all_all_done.append('Initialised')
-            else: 
-                pass
+        hm3d_list = list(controller.main_win.hm_btns.keys())
+        if btn != None: 
+            for key in hm3d_list: 
+                num_key = controller.main_win.hm_btns[key]['num']
+                if int(num_key) == int(btn): 
+                    hm3get = key
+                    break
+            hm3d_set = [hm3get] #[segm_list[int(num)-1]]
         else: 
-            all_all_done.append(True)
+            hm3d_set = hm3d_list
+        print('hm3d_set:',hm3d_set)
 
-    # Update mH_settings
-    proc_set = ['wf_info']
-    update = controller.main_win.gui_thickness_ballooning
-    controller.organ.update_settings(proc_set, update, 'mH', add='heatmaps')
+        for hmitem in hm3d_set:
+            short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball
+            ch_info = ch_info[:-1]
+            if 'th' in short: 
+                _, th_val = short.split('_')
+                ch, cont = ch_info.split('-')
+                method = thck_values[th_val]['method']
+                mesh_tiss = controller.organ.obj_meshes[ch+'_tiss'].legend
+                print('\n>> Extracting thickness information for '+mesh_tiss+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
+                controller.main_win.win_msg('Extracting thickness information for '+mesh_tiss+'... NOTE: it takes about 5min to process each mesh... just be patient :)')
+                setup = controller.main_win.gui_thickness_ballooning[hmitem]
+                fcM.get_thickness(organ = controller.organ, name = (ch, cont), 
+                                    thck_dict = thck_values[th_val], 
+                                    setup = setup)
 
-    #Update Status in GUI
-    if all(flag == 'DONE' for flag in all_all_done): 
-        process = ['MeshesProc', processes[0], 'Status']
-        toggle = True
-    elif any(flag == 'DONE' for flag in all_all_done):
-        for proc in processes: 
-            test_proc = ['MeshesProc', proc, 'Status']
-            if get_by_path(workflow, test_proc) == 'Initialised' or get_by_path(workflow, test_proc) == 'NI': 
-                process = test_proc
-                break
-        toggle = False
+            else: # if 'ball' in short
+                ch_cont, cl_info = ch_info.split('(')
+                ch, cont = ch_cont.split('-')
+
+                cl_info = cl_info[:-1].split('.')[1]
+                cl_ch, cl_cont = cl_info.split('-')
+                mesh2ball = controller.organ.obj_meshes[ch+'_'+cont].legend
+                print('\n>> Extracting ballooning information for '+mesh2ball+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
+                controller.main_win.win_msg('Extracting ballooning information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
+                setup = controller.main_win.gui_thickness_ballooning[hmitem]
+
+                fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
+                                    name_cl = (cl_ch, cl_cont), setup = setup)
+
+            #Enable buttons to plot heatmaps
+            plot_btn = controller.main_win.hm_btns[hmitem]['plot']
+            plot_btn.setEnabled(True)
+            hm2d_btn = controller.main_win.hm_btns[hmitem]['play2d']
+            num = controller.main_win.hm_btns[hmitem]['num']
+            d3d2_btn = getattr(controller.main_win, 'd3d2_'+str(num))
+            if d3d2_btn.isChecked(): 
+                hm2d_btn.setEnabled(True)
+
+            # controller.main_win.prog_bar_update(nn)
+            #Update progress in main_win
+            controller.main_win.update_workflow_progress()
+
+        # Update organ workflow
+        all_all_done = []
+        processes = ['D-Thickness_int>ext', 'D-Thickness_ext>int', 'D-Ballooning']
+        for proc in processes:
+            all_done = []
+            if len(workflow['MeshesProc'][proc].keys())>0: 
+                for ch in workflow['MeshesProc'][proc].keys():
+                    if ch != 'Status':
+                        for cont in workflow['MeshesProc'][proc][ch].keys():
+                            print(proc, ch, cont, workflow['MeshesProc'][proc][ch][cont]['Status'])
+                            all_done.append(workflow['MeshesProc'][proc][ch][cont]['Status'])
+
+                if all(flag == 'DONE' for flag in all_done): 
+                    proc_wft = ['MeshesProc', proc, 'Status']
+                    controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+                    all_all_done.append('DONE')
+                elif any(flag == 'DONE' for flag in all_done):
+                    proc_wft = ['MeshesProc', proc, 'Status']
+                    controller.organ.update_mHworkflow(process = proc_wft, update = 'Initialised')
+                    all_all_done.append('Initialised')
+                else: 
+                    pass
+            else: 
+                all_all_done.append(True)
+
+        # Update mH_settings
+        proc_set = ['wf_info']
+        update = controller.main_win.gui_thickness_ballooning
+        controller.organ.update_settings(proc_set, update, 'mH', add='heatmaps')
+
+        #Update Status in GUI
+        if all(flag == 'DONE' for flag in all_all_done): 
+            process = ['MeshesProc', processes[0], 'Status']
+            toggle = True
+        elif any(flag == 'DONE' for flag in all_all_done):
+            for proc in processes: 
+                test_proc = ['MeshesProc', proc, 'Status']
+                if get_by_path(workflow, test_proc) == 'Initialised' or get_by_path(workflow, test_proc) == 'NI': 
+                    process = test_proc
+                    break
+            toggle = False
+        else: 
+            process = ['MeshesProc', processes[0], 'Status']
+            toggle = False
+        controller.main_win.update_status(workflow, process, controller.main_win.heatmaps_status)
+                
+        #Toggle button
+        if toggle: 
+            select_btn = getattr(controller.main_win, 'heatmaps3D_play')
+            select_btn.setChecked(True)
+            toggled(select_btn)
+
+        print('\nEND Heatmaps')
+        print('organ.mH_settings:', controller.organ.mH_settings)
+        print('organ.workflow:', workflow)
+
     else: 
-        process = ['MeshesProc', processes[0], 'Status']
-        toggle = False
-    controller.main_win.update_status(workflow, process, controller.main_win.heatmaps_status)
-            
-    #Toggle button
-    if toggle: 
-        select_btn = getattr(controller.main_win, 'heatmaps3D_play')
-        select_btn.setChecked(True)
-        toggled(select_btn)
+        controller.main_win.win_msg('*To extract the thickness meshes make sure you have at least run the  -Keep Largest-  section.')
 
-    print('\nEND Heatmaps')
-    print('organ.mH_settings:', controller.organ.mH_settings)
-    print('organ.workflow:', workflow)
-    
+        
         # controller.organ.update_workflow(process = process, update = 'DONE')
 
     #Check first if extracting centrelines is a process involved in this organ/project
@@ -812,46 +697,48 @@ def run_heatmaps3D(controller, btn):
 
 def run_heatmaps2D(controller, btn):
 
-    workflow = controller.organ.workflow['morphoHeart']
-    hm2d_list = list(controller.main_win.hm_btns.keys())
-    if btn != None: 
-        for key in hm2d_list: 
-            num_key = controller.main_win.hm_btns[key]['num']
-            if int(num_key) == int(btn): 
-                hm2get = key
-                break
-        hm2d_set = [hm2get] #[segm_list[int(num)-1]]
-    else: 
-        hm2d_set = hm2d_list
-    print('hm2d_set:',hm2d_set)
+    controller.main_win.win_msg('!This section of code is under development... you will be able to use it soon!')
+    alert('bubble')
+    # workflow = controller.organ.workflow['morphoHeart']
+    # hm2d_list = list(controller.main_win.hm_btns.keys())
+    # if btn != None: 
+    #     for key in hm2d_list: 
+    #         num_key = controller.main_win.hm_btns[key]['num']
+    #         if int(num_key) == int(btn): 
+    #             hm2get = key
+    #             break
+    #     hm2d_set = [hm2get] #[segm_list[int(num)-1]]
+    # else: 
+    #     hm2d_set = hm2d_list
+    # print('hm2d_set:',hm2d_set)
 
-    for hmitem in hm2d_set:
-        short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball
-        ch_info = ch_info[:-1]
-        if 'th' in short: 
-            _, th_val = short.split('_')
-            ch, cont = ch_info.split('-')
-            mesh_tiss = controller.organ.obj_meshes[ch+'_tiss'].legend
-            print('\n>> Extracting thickness information for '+mesh_tiss+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
-            controller.main_win.win_msg('Extracting thickness information for '+mesh_tiss+'... NOTE: it takes about 5min to process each mesh... just be patient :)')
-            setup = controller.main_win.gui_thickness_ballooning[hmitem]
-            fcM.get_thickness(organ = controller.organ, name = (ch, cont), 
-                                thck_dict = thck_values[th_val], 
-                                setup = setup)
+    # for hmitem in hm2d_set:
+    #     short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball
+    #     ch_info = ch_info[:-1]
+    #     if 'th' in short: 
+    #         _, th_val = short.split('_')
+    #         ch, cont = ch_info.split('-')
+    #         mesh_tiss = controller.organ.obj_meshes[ch+'_tiss'].legend
+    #         print('\n>> Extracting thickness information for '+mesh_tiss+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
+    #         controller.main_win.win_msg('Extracting thickness information for '+mesh_tiss+'... NOTE: it takes about 5min to process each mesh... just be patient :)')
+    #         setup = controller.main_win.gui_thickness_ballooning[hmitem]
+    #         fcM.get_thickness(organ = controller.organ, name = (ch, cont), 
+    #                             thck_dict = thck_values[th_val], 
+    #                             setup = setup)
 
-        else: # if 'ball' in short
-            ch_cont, cl_info = ch_info.split('(')
-            ch, cont = ch_cont.split('-')
+    #     else: # if 'ball' in short
+    #         ch_cont, cl_info = ch_info.split('(')
+    #         ch, cont = ch_cont.split('-')
 
-            cl_info = cl_info[:-1].split('.')[1]
-            cl_ch, cl_cont = cl_info.split('-')
-            mesh2ball = controller.organ.obj_meshes[ch+'_'+cont].legend
-            print('\n>> Extracting ballooning information for '+mesh2ball+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
-            controller.main_win.win_msg('Extracting ballooning information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
-            setup = controller.main_win.gui_thickness_ballooning[hmitem]
+    #         cl_info = cl_info[:-1].split('.')[1]
+    #         cl_ch, cl_cont = cl_info.split('-')
+    #         mesh2ball = controller.organ.obj_meshes[ch+'_'+cont].legend
+    #         print('\n>> Extracting ballooning information for '+mesh2ball+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
+    #         controller.main_win.win_msg('Extracting ballooning information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
+    #         setup = controller.main_win.gui_thickness_ballooning[hmitem]
 
-            fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
-                                name_cl = (cl_ch, cl_cont), setup = setup)
+    #         fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
+    #                             name_cl = (cl_ch, cl_cont), setup = setup)
             
 def run_segments(controller, btn): 
 
@@ -873,13 +760,19 @@ def run_segments(controller, btn):
     #Setup everything to cut
     if controller.main_win.gui_segm['use_centreline']: 
         cl_name = controller.main_win.gui_segm['centreline'].split('(')[1][:-1]
-        #Get centreline
-        nPoints = controller.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
-        cl = controller.organ.obj_meshes[cl_name].get_centreline(nPoints = nPoints)
-        spheres_spl = fcM.sphs_in_spline(kspl = cl, colour = True)
-        cl_spheres = {'centreline': cl, 
-                      'spheres': spheres_spl, 
-                      'nPoints' : nPoints}
+        cl_ch, cl_cont = cl_name.split('_')
+        if workflow['MeshesProc']['C-Centreline']['buildCL'][cl_ch][cl_cont]['Status'] != 'DONE':
+            controller.main_win.win_msg('*Finish obtaining the centreline ('+cl_name+') to continue running this section!')
+            controller.main_win.segm_btns[segm_set[0]]['play'].setChecked(False)
+            return 
+        else: 
+            #Get centreline
+            nPoints = controller.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
+            cl = controller.organ.obj_meshes[cl_name].get_centreline(nPoints = nPoints)
+            spheres_spl = fcM.sphs_in_spline(kspl = cl, colour = True)
+            cl_spheres = {'centreline': cl, 
+                        'spheres': spheres_spl, 
+                        'nPoints' : nPoints}
     else: 
         cl_spheres = None
 
@@ -956,6 +849,9 @@ def run_segments(controller, btn):
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
+
+        #Fill-up results table
+        controller.main_win.fill_results()
 
     # Update organ workflow and GUI Status
     flat_semg_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Segments']))
@@ -1221,9 +1117,9 @@ def run_sections(controller, btn):
             cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
                                             pl_normal=ext_plane, 
                                             clRib_type=clRib_type)
-            obj = [(mesh2cut.mesh, cl_ribbon)]
-            txt = [(0, controller.organ.user_organName+'- Extended Centreline Ribbon to cut organ into sections')]
-            plot_grid(obj=obj, txt=txt, axes=8, sc_side=max(controller.organ.get_maj_bounds()))
+            # obj = [(mesh2cut.mesh, cl_ribbon)]
+            # txt = [(0, controller.organ.user_organName+'- Extended Centreline Ribbon to cut organ into sections')]
+            # plot_grid(obj=obj, txt=txt, axes=8, sc_side=max(controller.organ.get_maj_bounds()))
             
             # -> Create high resolution ribbon
             print('Creating high resolution centreline ribbon for '+cut.title())
@@ -1235,9 +1131,9 @@ def run_sections(controller, btn):
                                                             pl_normal = ext_plane, 
                                                             clRib_type=clRib_type)
             
-            obj = [(test_rib, mesh_cl.mesh)]
-            txt = [(0, controller.organ.user_organName)]
-            plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
+            # obj = [(test_rib, mesh_cl.mesh)]
+            # txt = [(0, controller.organ.user_organName)]
+            # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
 
             # -> Create cube of ribbon and mask one side
             mask_cube_split, s3_filledCubes = fcM.get_cube_clRibbon(organ = controller.organ,
@@ -1246,9 +1142,9 @@ def run_sections(controller, btn):
                                                                 res = mesh_cl.resolution,  
                                                                 pl_normal = ext_plane)
             
-            obj = [(mask_cube_split[0], mask_cube_split[1], test_rib, mesh_cl.mesh)]
-            txt = [(0, controller.organ.user_organName)]
-            plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
+            # obj = [(mask_cube_split[0], mask_cube_split[1], test_rib, mesh_cl.mesh)]
+            # txt = [(0, controller.organ.user_organName)]
+            # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
 
             #Select the side of the ribbon that corresponds to section 1
             selected_side = fcM.select_ribMask(controller.organ, cut, mask_cube_split, mesh_cl.mesh)
@@ -1276,6 +1172,9 @@ def run_sections(controller, btn):
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
+
+        #Fill-up results table
+        controller.main_win.fill_results()
     
     # Update organ workflow and GUI Status
     flat_sect_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Sections']))
@@ -1293,7 +1192,6 @@ def run_sections(controller, btn):
     else: 
         pass
     controller.main_win.update_status(workflow, proc_wft, controller.main_win.sections_status)
-
 
  # if organ.check_method(method = 'E-Sections'): 
     #     name_sections = organ.mH_settings['general_info']['sections']['name_sections']
@@ -1349,3 +1247,38 @@ def run_sections(controller, btn):
     #             views[n] = view
     #         q2 = 'From the -'+res[opt]+'- select the plane you want to use to extend the centreline: '
     #         opt2 = ask4input(q2, views, int)
+
+def run_measure(controller): 
+    if controller.main_win.keeplargest_play.isChecked(): 
+        organ = controller.organ
+        measurements = organ.mH_settings['measure']
+        for param in measurements.keys():
+            print('param:', param )
+            print(measurements[param].keys())
+            for item in measurements[param]:
+                if 'whole' in item: 
+                    print('item:', item)
+                    ch, cont, _ = item.split('_')
+                    mesh2meas = organ.obj_meshes[ch+'_'+cont]
+                    mesh = mesh2meas.mesh
+                    print('mesh_name:', mesh2meas.name)
+                    if param == 'Vol': 
+                        vol = mesh.volume()
+                        organ.mH_settings['measure']['Vol'][mesh2meas.name+'_whole'] = vol
+                    if param == 'SA': 
+                        area = mesh.area()
+                        organ.mH_settings['measure']['SA'][mesh2meas.name+'_whole'] = area
+                else: 
+                    pass
+
+        # Update organ workflow and GUI Status
+        controller.main_win.update_status(None, 'DONE', controller.main_win.measure_status, override=True)
+
+        #Update progress in main_win
+        controller.main_win.update_workflow_progress()
+
+        #Fill-up results table
+        controller.main_win.fill_results()
+    
+    else: 
+        controller.main_win.win_msg('*To measure whole tissue make sure you have at least run the  -Keep Largest-  section.')

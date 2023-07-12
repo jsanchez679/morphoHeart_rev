@@ -336,6 +336,7 @@ mult_index= ['Parameter', 'Tissue-Contour']
 df_multi = df_meltf.set_index(mult_index)
 
 df_new = df_multi.copy(deep=True)
+key_cl = {'lin_length': 'Linear Length', 'looped_length': 'Looped Length'}
 if 'CL' in vars:
     dict_CL = {}
     df_CL = df_multi.loc[[dict_names['CL']]]
@@ -345,7 +346,7 @@ if 'CL' in vars:
             df_new.drop(index, axis=0, inplace=True)
             for key, item in row['Value'].items():
                 # print(key, item) 
-                new_index = 'Centreline: '+key
+                new_index = 'Centreline: '+key_cl[key]
                 new_variable = index[1]
                 dict_CL[(new_index, new_variable)] = item
 
@@ -405,9 +406,84 @@ for pt in orient_cube.cell_centers():
             # vp.show(orient_cube, at=1, zoom=1, interactive = True)
 
 
+current = {'ch1': {'cont': ['int', 'tiss', 'ext'], 'with_ch': 'ch2', 'with_cont': 'int', 'inverted': False}, 'ch2': {'cont': ['int', 'tiss', 'ext'], 'with_ch': 'ch1', 'with_cont': 'ext', 'inverted': True}, 'plot2d': False}
+loaded = {'ch2': {'cont': ['int', 'tiss', 'ext'], 'with_ch': 'ch1', 'with_cont': 'ext', 'inverted': True}, 'plot2d': False}
+
+flat_loaded = flatdict.FlatDict(loaded)
+flat_current = flatdict.FlatDict(current)
+current_keys = flat_current.keys()
+final_dict = copy.deepcopy(loaded)
+print('original: ',final_dict)
+for key in current_keys: 
+    print('>>', key)
+    value_current = get_by_path(current, key.split(':'))
+    # print('current:',value_current)
+    try: 
+        value_loaded = get_by_path(loaded, key.split(':'))
+        # print('loaded:',value_loaded)
+
+        if value_current != value_loaded:
+            set_by_path(final_dict, key.split(':'),value_current)
+    except: 
+        print('add key to loaded!')
+        try: 
+            set_by_path(final_dict, key.split(':'), value_current)
+        except KeyError as e: 
+            key_error = e.args[0]
+            #Get the position of that key in the flat key
+            split_key = key.split(':')
+            len_all_keys = len(split_key)
+            index = split_key.index(key_error)
+            #Get the length of the keys that need to be added
+            len_key = len(split_key[index:])
+            for num in range(len_key):
+                print(split_key, index+num)
+                key2add = split_key[:index+num+1]
+                print('key2add:', key2add)
+                if num != len_key-1:
+                    set_by_path(final_dict, key2add, {})
+                else:
+                    set_by_path(final_dict, key2add, value_current)
+        
+print('final: ',final_dict)
+print('current:',current)
+
+def compare_dictionaries(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
+    """Compare two dictionaries recursively to find non matching elements
+
+    Args:
+        dict_1: dictionary 1
+        dict_2: dictionary 2
+
+    Returns: string
+
+    """
+    err = ''
+    key_err = ''
+    value_err = ''
+    old_path = path
+    for k in dict_1.keys():
+        path = old_path + "[%s]" % k
+        if not dict_2.has_key(k):
+            key_err += "Key %s%s not in %s\n" % (dict_1_name, path, dict_2_name)
+        else:
+            if isinstance(dict_1[k], dict) and isinstance(dict_2[k], dict):
+                err += compare_dictionaries(dict_1[k],dict_2[k],'d1','d2', path)
+            else:
+                if dict_1[k] != dict_2[k]:
+                    value_err += "Value of %s%s (%s) not same as %s%s (%s)\n"\
+                        % (dict_1_name, path, dict_1[k], dict_2_name, path, dict_2[k])
+
+    for k in dict_2.keys():
+        path = old_path + "[%s]" % k
+        if not dict_1.has_key(k):
+            key_err += "Key %s%s not in %s\n" % (dict_2_name, path, dict_1_name)
+
+    return key_err + value_err + err
 
 
-
+a = compare_dictionaries(d1,d2,'d1','d2')
+print a
 
 
 
