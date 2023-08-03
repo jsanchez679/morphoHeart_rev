@@ -3480,7 +3480,7 @@ class MainWindow(QMainWindow):
             maxx = setup[proc]['max_val']
             
             for item in self.organ.mH_settings['measure'][proc]:
-                print('item being set: ', item)
+                # print('item being set: ', item)
                 if proc != 'ball': 
                     chh, conth, _ = item.split('_')
                     key = proc+'['+chh+'-'+conth+']'
@@ -3635,7 +3635,7 @@ class MainWindow(QMainWindow):
                             self.organ.mH_settings['setup']['segm'][cutb]['colors']['segm'+str(nn)] = color
                         else: 
                             color = self.organ.mH_settings['setup']['segm'][cutb]['colors']['segm'+str(nn)]
-                            print(cutb, str(nn), '- color:', color)
+                            # print(cutb, str(nn), '- color:', color)
                         btn_color = getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn))
                         color_btn(btn = btn_color, color = color)
 
@@ -4254,9 +4254,9 @@ class MainWindow(QMainWindow):
                     ch, cont = ch_info.split('-')
                     proc = [process, ch, cont+'_('+cl_info.replace('-','_')+')', 'Status']
                     
-                print('proc:', get_by_path(wf, proc))
+                # print('proc:', get_by_path(wf, proc))
                 if get_by_path(wf, proc) == 'DONE':
-                    print('done')
+                    # print('done')
                     self.hm_btns[item]['play'].setChecked(True)
                     self.hm_btns[item]['play'].setEnabled(True)
                     self.hm_btns[item]['plot'].setEnabled(True)
@@ -4264,15 +4264,15 @@ class MainWindow(QMainWindow):
                         self.hm_btns[item]['play2d'].setEnabled(True)
                     at_least_one = True
                 else: 
-                    print('not done')
+                    # print('not done')
                     if 'th' in item:
                         self.hm_btns[item]['play'].setEnabled(True)
                     else: 
-                        print('\nnot thickness')
+                        # print('\nnot thickness')
                         cl_ch, cl_cont = cl_info.split('-')
                         wf_cl = ['C-Centreline', 'buildCL', cl_ch, cl_cont, 'Status']
                         cl_done = get_by_path(wf, wf_cl)
-                        print(wf_cl, cl_done)
+                        # print(wf_cl, cl_done)
                         if cl_done == 'DONE': 
                             self.hm_btns[item]['play'].setEnabled(True)
 
@@ -5430,7 +5430,6 @@ class MainWindow(QMainWindow):
             update = self.gui_segm
             self.organ.update_settings(proc_set, update, 'mH', add='segments')
 
-            # print('self.organ.mH_settings:', self.organ.mH_settings)
         else: 
             return
 
@@ -5533,8 +5532,8 @@ class MainWindow(QMainWindow):
         done_set = []
         for cut_no in no_cuts: 
             done_set.append(hasattr(self, 'extend_dir_'+cut_no.lower()))
-        
-        print(done_set)
+        print('Done selecting sections cut direction:', done_set)
+
         if all(done_set): 
             wf_info = self.organ.mH_settings['wf_info']
             current_gui_sect = self.gui_sections_n()
@@ -5601,7 +5600,7 @@ class MainWindow(QMainWindow):
             else: 
                 gui_user_params_loaded = self.organ.mH_settings['wf_info']['user_params']
                 self.gui_user_params, changed = update_gui_set(loaded = gui_user_params_loaded, 
-                                                        current = current_gui_user_params)
+                                                                current = current_gui_user_params)
                 # if changed: 
                 #     # # self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
                 #     # self.update_status(None, 're-run', self.gui_user_params_loaded, override=True)
@@ -6294,12 +6293,12 @@ def set_qtextedit_text(label, dict_names):
             names_f = names_f+', '+end+beg+roman_num[bb]+'. '+name_add
     names_f = names_f+end_end
     label.setHtml(names_f)
-    print('bb:', bb)
+    # print('bb:', bb)
     return bb
 
 def set_qtextedit_size(label, size):
     w, h = size
-    print(size)
+    # print(size)
     sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
     sizePolicy.setHeightForWidth(label.sizePolicy().hasHeightForWidth())
     label.setSizePolicy(sizePolicy)

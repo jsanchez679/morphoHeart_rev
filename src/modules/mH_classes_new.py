@@ -790,6 +790,7 @@ class Organ():
         if self.analysis['morphoHeart']:
             # mH_Settings
             self.mH_settings = load_dict['mH_settings']
+            print('==== Loaded mH_settings: ', self.mH_settings)
             # imChannels
             self.imChannels = load_dict['imChannels']
             self.load_objImChannels()
@@ -809,7 +810,6 @@ class Organ():
                 self.load_objSubmeshes(submeshes_dict)
             else: 
                 self.submeshes = {}
-            print('\n\n\n\n')
             print('>>>> Loaded submeshes: ', self.submeshes)
             #obj_temp
             if 'obj_temp' in load_dict.keys():
@@ -1192,6 +1192,7 @@ class Organ():
         organ_name = self.user_organName#.replace(' ', '_')
         jsonDict_name = 'mH_'+organ_name+'_organ.json'
         json2save_dir = self.dir_res(dir='settings') / jsonDict_name
+
         if self.analysis['morphoHeart']:
             all_info['mH_settings'] = self.mH_settings
             
@@ -1351,6 +1352,7 @@ class Organ():
         for name in self.mH_settings['wf_info']['segments']['setup'][cut]['names'].items():
             ext_subsgm[name[0]] = self.obj_subm[name[1]]
         self.ext_subsgm = ext_subsgm
+        print('ext_subsgm:', ext_subsgm)
 
         return self.ext_subsgm
     

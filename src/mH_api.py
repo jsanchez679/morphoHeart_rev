@@ -775,10 +775,12 @@ def run_segments(controller, btn):
                         'nPoints' : nPoints}
     else: 
         cl_spheres = None
-
+    print('cl_spheres: ', cl_spheres)
     print('organ.obj_temp:', controller.organ.obj_temp)
+
     #Loop through all the tissues that are going to be segmented
     for segm in segm_set: 
+        print('Cutting segm:', segm)
         #Find cut
         cut, ch_cont = segm.split(':')
         ch, cont = ch_cont.split('_')
@@ -790,7 +792,7 @@ def run_segments(controller, btn):
         #Find method to cut
         method = controller.organ.mH_settings['wf_info']['segments']['setup'][cut]['ch_info'][ch][cont]
         mesh2cut = controller.organ.obj_meshes[ch+'_'+cont]
-        print('Cutting into segments:', mesh2cut.name, '- method: ', method, )
+        print('Cutting into segments:', mesh2cut.name, '- method: ', method)
 
         #Get usernames string
         user_names = '('+', '.join([segm_names[val] for val in segm_names])+')'
@@ -824,8 +826,10 @@ def run_segments(controller, btn):
             #Loading external subsegments 
             try: 
                 ext_subsgm = controller.organ.ext_subsgm
+                print('try ext_subsgm')
             except: 
                 ext_subsgm = controller.organ.get_ext_subsgm(cut)
+                print('except ext_subsgm')
             print('ext_subsgm: ',ext_subsgm)
 
             # -> Get segments using ext segments
@@ -852,6 +856,10 @@ def run_segments(controller, btn):
 
         #Fill-up results table
         controller.main_win.fill_results()
+
+        #Check button 
+        controller.main_win.segm_btns[segm]['play'].setChecked(True)
+        
 
     # Update organ workflow and GUI Status
     flat_semg_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Segments']))

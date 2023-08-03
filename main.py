@@ -145,7 +145,7 @@ class Controller:
         else: 
             error_txt = "*Make sure all the 'Set' Buttons are toggle/checked to continue."
             self.new_proj_win.win_msg(error_txt)
-            print('Something is wrong: show_meas_param')
+            print('Controller, show_meas_param: Something is wrong')
             return
 
     def show_load_proj(self): 
@@ -180,8 +180,8 @@ class Controller:
         elif parent_win == 'load_proj_win':
             self.load_proj_win.close()
         else: 
-            print('Other parent window?')
-        print('parent_win:', parent_win)
+            print('Controller: show_new_organ: Other parent window?')
+        print('Controller, show_new_organ > parent_win:', parent_win)
 
         #Create new organ window and show
         if self.new_organ_win == None:
@@ -224,16 +224,16 @@ class Controller:
                 else: 
                     error_txt = '*Please select one organ to analyse.'
                     self.load_proj_win.win_msg(error_txt)
-                    print('Error in loading window')
+                    print('Controller, show_main_window: Error in loading window')
                 return
         else: 
-            print('Other parent window?')
-        print('parent_win:', parent_win)
+            print('Controller, show_main_window: Other parent window?')
+        print('Controller, show_main_window > parent_win:', parent_win)
 
         #Create Main Project Window and show
         if self.main_win == None:
-            print('\nLoaded Project and Organ!\n >> Proj:', self.proj.__dict__.keys())
-            print('>> Organ:', self.organ.__dict__.keys())
+            # print('\nLoaded Project and Organ!\n >> Proj:', self.proj.__dict__.keys())
+            # print('>> Organ:', self.organ.__dict__.keys())
             self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
             self.init_main_win()
         self.main_win.show()
@@ -416,7 +416,7 @@ class Controller:
                 selected_params['hm3Dto2D']['ch_cont'] = False
 
             self.new_proj_win.mH_user_params = selected_params
-            print('Selected_params', selected_params)
+            # print('Selected_params', selected_params)
 
             #Toogle button and close window
             self.meas_param_win.button_set_params.setChecked(True)

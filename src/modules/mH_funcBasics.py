@@ -286,8 +286,13 @@ def update_gui_set(loaded:dict, current:dict):
             # print('loaded:',value_loaded)
 
             if value_current != value_loaded:
-                set_by_path(final_dict, key.split(':'),value_current)
-                changed = True
+                print('value_current != value_loaded:', value_current, value_loaded, '- key: ', key)
+                if value_current == {} and isinstance(value_loaded, dict): 
+                    print('>> NOT Changed')
+                    pass
+                else: 
+                    set_by_path(final_dict, key.split(':'),value_current)
+                    changed = True
         except: 
             # print('add key to loaded!')
             changed = True
