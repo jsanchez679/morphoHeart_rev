@@ -2635,10 +2635,12 @@ class LoadProj(QDialog):
                 error_txt = '*Please select only one organ to analyse.'
                 self.win_msg(error_txt)
             else: 
+                print('checked:', checked)
                 if len(checked) > 1:
                     index = [i for i, x in enumerate(checked) if x][0]
                     print('len>1:',index)
-                    self.organ_selected = organ_cB[index].split('cB_')[1]
+                    print('organ_cB:',organ_cB)
+                    self.organ_selected = self.organ_checkboxes[index].split('cB_')[1]
                 else: 
                     print('len=1:',organ_cB)
                     self.organ_selected = organ_cB.split('cB_')[1]

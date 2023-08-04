@@ -2326,9 +2326,18 @@ class ContStack():
         self.cont_name = im_channel.channel_no+'_'+self.cont_type
         
         parent_organ = im_channel.parent_organ
-        self.s3_file = parent_organ.user_organName + '_s3_' + im_channel.channel_no + '_' + self.cont_type + '.npy'
-        # self.s3_dir = self.s3_file
-        
+
+        if im_channel.channel_no == 'chNS':
+            if self.cont_type == 'ext' or self.cont_type == 'int': 
+                ch_name = im_channel.setup_NS[self.cont_type]['name']
+                cont_name = im_channel.setup_NS[self.cont_type]['type']
+                self.s3_file = parent_organ.user_organName + '_s3_' + ch_name + '_' + cont_name + '.npy'
+            else: 
+                self.s3_file = parent_organ.user_organName + '_s3_' + im_channel.channel_no + '_' + self.cont_type + '.npy'
+        else: 
+            self.s3_file = parent_organ.user_organName + '_s3_' + im_channel.channel_no + '_' + self.cont_type + '.npy'
+        print('self.s3_file:', self.s3_file)
+
         if self.cont_type not in self.im_channel.contStack.keys():
             if im_channel.channel_no == 'chNS':
                 # TO DO! Add information about the masking process as attributes here!
@@ -2370,6 +2379,7 @@ class ContStack():
     
     def s3(self):
         dir_s3 = self.im_channel.parent_organ.dir_res(dir='s3_numpy') / self.s3_file
+
         if dir_s3.is_file():
             s3 = np.load(dir_s3)
         else: 

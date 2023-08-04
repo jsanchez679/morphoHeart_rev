@@ -966,7 +966,7 @@ background-color: rgb(255, 255, 255);</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="usesScrollButtons">
        <bool>false</bool>
@@ -1016,10 +1016,55 @@ background-color: rgb(255, 255, 255);</string>
                <x>0</x>
                <y>0</y>
                <width>398</width>
-               <height>212</height>
+               <height>238</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_33">
+              <item>
+               <widget class="QPushButton" name="all_closed">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>400</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="mouseTracking">
+                 <bool>true</bool>
+                </property>
+                <property name="focusPolicy">
+                 <enum>Qt::ClickFocus</enum>
+                </property>
+                <property name="autoFillBackground">
+                 <bool>false</bool>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+                </property>
+                <property name="text">
+                 <string>I have already closed the contours in all channels</string>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
               <item>
                <widget class="QTabWidget" name="tab_chs">
                 <property name="currentIndex">
@@ -1608,51 +1653,6 @@ border: 0px</string>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="all_closed">
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>400</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="mouseTracking">
-                <bool>true</bool>
-               </property>
-               <property name="focusPolicy">
-                <enum>Qt::ClickFocus</enum>
-               </property>
-               <property name="autoFillBackground">
-                <bool>false</bool>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
-               </property>
-               <property name="text">
-                <string>I have already closed the contours in all channels</string>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
               <layout class="QHBoxLayout" name="horizontalLayout_7">
                <item>
                 <spacer name="horizontalSpacer_6">
@@ -1881,7 +1881,7 @@ QScrollBar::handle:vertical:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-2566</y>
+                <y>0</y>
                 <width>633</width>
                 <height>3737</height>
                </rect>
@@ -30921,7 +30921,7 @@ QScrollBar::handle:horizontal:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-446</y>
+                <y>0</y>
                 <width>525</width>
                 <height>744</height>
                </rect>
@@ -36364,6 +36364,8 @@ background-color: rgb(250, 250, 250);</string>
     <addaction name="actionSave_Project_and_Organ"/>
     <addaction name="separator"/>
     <addaction name="actionNew_Project"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpen_organ_from_current_project"/>
     <addaction name="actionCreate_new_organ_within_the_current_project"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
@@ -36484,6 +36486,11 @@ background-color: rgb(250, 250, 250);</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionOpen_organ_from_current_project">
+   <property name="text">
+    <string>Open another organ from current project...</string>
    </property>
   </action>
  </widget>
