@@ -2589,15 +2589,6 @@ class LoadProj(QDialog):
                 self.tabW_select_organ.resizeColumnsToContents()
                 self.tabW_select_organ.resizeRowsToContents()
 
-                # delegate = AlignDelegate(self.tabW_select_organ)
-                # self.tabW_select_organ.setItemDelegate(delegate)
-
-                # for rr in range(self.tabW_select_organ.rowCount()): 
-                #     for cc in range(self.tabW_select_organ.columnCount()):
-                #         item = self.tabW_select_organ.item(rr, cc)
-                #         # print(item)
-                #         if item != None: 
-                #             item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
             else: 
                 error_txt = "!The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
                 self.win_msg(error_txt)
