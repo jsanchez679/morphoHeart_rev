@@ -214,12 +214,26 @@ border-style: outset;
 border-color: rgb(66, 66, 66);
 background-color: rgb(134, 134, 134); 
 color: rgb(255, 255, 255);
-font: 12pt &quot;Calibri&quot;;}
+font: 11pt &quot;Calibri&quot;;}
 
 QPushButton:hover{
-	background-color: rgba(162, 0, 122,180);
-	border-color: rgba(162, 0, 122,180);
-	border-width: 2px}
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+border-width: 2px
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(59, 59, 59);
+border-color: rgb(0, 0, 0);
+color: rgb(230, 230, 230);
+}
 </string>
          </property>
          <property name="text">
@@ -254,12 +268,26 @@ border-style: outset;
 border-color: rgb(66, 66, 66);
 background-color: rgb(134, 134, 134); 
 color: rgb(255, 255, 255);
-font: 12pt &quot;Calibri&quot;;}
+font: 11pt &quot;Calibri&quot;;}
 
 QPushButton:hover{
-	background-color: rgba(162, 0, 122,180);
-	border-color: rgba(162, 0, 122,180);
-	border-width: 2px}
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+border-width: 2px
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(59, 59, 59);
+border-color: rgb(0, 0, 0);
+color: rgb(230, 230, 230);
+}
 </string>
          </property>
          <property name="text">
@@ -294,12 +322,27 @@ border-style: outset;
 border-color: rgb(66, 66, 66);
 background-color: rgb(134, 134, 134); 
 color: rgb(255, 255, 255);
-font: 12pt &quot;Calibri&quot;;}
+font: 11pt &quot;Calibri&quot;;}
 
 QPushButton:hover{
-	background-color: rgba(162, 0, 122,180);
-	border-color: rgba(162, 0, 122,180);
-	border-width: 2px}</string>
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+border-width: 2px
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(59, 59, 59);
+border-color: rgb(0, 0, 0);
+color: rgb(230, 230, 230);
+}
+</string>
          </property>
          <property name="text">
           <string>Load Project</string>

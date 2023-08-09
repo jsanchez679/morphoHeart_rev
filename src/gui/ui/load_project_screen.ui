@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>796</width>
-    <height>732</height>
+    <height>733</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -243,8 +243,21 @@ color: rgb(39, 39, 39);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
 }</string>
             </property>
             <property name="text">
@@ -542,8 +555,21 @@ color: rgb(39, 39, 39);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
 }</string>
           </property>
           <property name="text">
@@ -561,6 +587,10 @@ border-color: #672146
    </item>
    <item>
     <widget class="QTabWidget" name="tab_select_organs">
+     <property name="styleSheet">
+      <string notr="true">font: 25 italic 9pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+     </property>
      <property name="currentIndex">
       <number>0</number>
      </property>
@@ -646,8 +676,21 @@ color: rgb(39, 39, 39);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
 }</string>
            </property>
            <property name="text">
@@ -779,8 +822,21 @@ color: rgb(39, 39, 39);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
 }</string>
            </property>
            <property name="text">
@@ -837,8 +893,21 @@ color: rgb(39, 39, 39);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
 }</string>
            </property>
            <property name="text">
@@ -852,6 +921,125 @@ border-color: #672146
            </property>
            <property name="autoDefault">
             <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_go_back">
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>80</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(134, 134, 134); 
+color: rgb(255, 255, 255);
+font: 11pt &quot;Calibri&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+border-width: 2px
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(59, 59, 59);
+border-color: rgb(0, 0, 0);
+color: rgb(230, 230, 230);
+}
+</string>
+           </property>
+           <property name="text">
+            <string>Go Back...</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="go_to_main_window">
+           <property name="minimumSize">
+            <size>
+             <width>180</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>200</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(134, 134, 134); 
+color: rgb(255, 255, 255);
+font: 11pt &quot;Calibri&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+border-width: 2px
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(59, 59, 59);
+border-color: rgb(0, 0, 0);
+color: rgb(230, 230, 230);
+}
+</string>
+           </property>
+           <property name="text">
+            <string>Open Project and Organ</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -954,9 +1142,17 @@ color: rgb(39, 39, 39);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
                </property>
                <property name="text">
                 <string>&amp;Browse Project...</string>
@@ -1096,12 +1292,20 @@ border-style: outset;
 border-color: rgb(66, 66, 66);
 background-color: rgb(211, 211, 211);
 color: rgb(39, 39, 39);
-font: 11pt bold &quot;Calibri Light&quot;;}
+font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
              </property>
              <property name="text">
               <string>&gt;</string>
@@ -1129,12 +1333,20 @@ border-style: outset;
 border-color: rgb(66, 66, 66);
 background-color: rgb(211, 211, 211);
 color: rgb(39, 39, 39);
-font: 11pt bold &quot;Calibri Light&quot;;}
+font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
              </property>
              <property name="text">
               <string>&lt;</string>
@@ -1307,9 +1519,17 @@ color: rgb(39, 39, 39);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
-}</string>
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
            </property>
            <property name="text">
             <string>Add Organ from Another Project</string>
@@ -1322,6 +1542,125 @@ border-color: #672146
            </property>
            <property name="autoDefault">
             <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <spacer name="horizontalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_go_back2">
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>80</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(134, 134, 134); 
+color: rgb(255, 255, 255);
+font: 11pt &quot;Calibri&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+border-width: 2px
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(59, 59, 59);
+border-color: rgb(0, 0, 0);
+color: rgb(230, 230, 230);
+}
+</string>
+           </property>
+           <property name="text">
+            <string>Go Back...</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="go_to_analysis_window">
+           <property name="minimumSize">
+            <size>
+             <width>180</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>200</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(134, 134, 134); 
+color: rgb(255, 255, 255);
+font: 11pt &quot;Calibri&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+border-width: 2px
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(59, 59, 59);
+border-color: rgb(0, 0, 0);
+color: rgb(230, 230, 230);
+}
+</string>
+           </property>
+           <property name="text">
+            <string>Open Project and Organs</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -1361,97 +1700,6 @@ background-color: rgb(250, 250, 250);
       <bool>true</bool>
      </property>
     </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <item>
-      <spacer name="horizontalSpacer_4">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="button_go_back">
-       <property name="minimumSize">
-        <size>
-         <width>80</width>
-         <height>25</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>80</width>
-         <height>25</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(134, 134, 134); 
-color: rgb(255, 255, 255);
-font: 11pt &quot;Calibri&quot;;}
-
-QPushButton:hover{
-	background-color: rgba(162, 0, 122,180);
-	border-color: rgba(162, 0, 122,180);
-	border-width: 2px}
-</string>
-       </property>
-       <property name="text">
-        <string>Go Back...</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="go_to_main_window">
-       <property name="minimumSize">
-        <size>
-         <width>180</width>
-         <height>25</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>200</width>
-         <height>25</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(134, 134, 134); 
-color: rgb(255, 255, 255);
-font: 11pt &quot;Calibri&quot;;}
-
-QPushButton:hover{
-	background-color: rgba(162, 0, 122,180);
-	border-color: rgba(162, 0, 122,180);
-	border-width: 2px}
-</string>
-       </property>
-       <property name="text">
-        <string>Open Project and Organ</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
   </layout>
  </widget>

@@ -92,7 +92,7 @@ class Controller:
 
         #Save all
         # msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
-        # self.prompt = Propmt_save_all(msg, info=[], parent=self.welcome_win)
+        # self.prompt = Prompt_save_all(msg, info=[], parent=self.welcome_win)
         # self.prompt.exec()
         # print('output:',self.prompt.output, '\n')
 
@@ -141,7 +141,7 @@ class Controller:
             self.meas_param_win.show()
             self.meas_param_win.button_set_params.clicked.connect(lambda: self.set_proj_meas_param())
             self.new_proj_win.set_meas_param_all.setChecked(True)
-            toggled(self.new_proj_win.set_meas_param_all)
+
         else: 
             error_txt = "*Make sure all the 'Set' Buttons are toggle/checked to continue."
             self.new_proj_win.win_msg(error_txt)
@@ -175,7 +175,6 @@ class Controller:
                 error_txt = "*Please create the New Project first before adding an organ to it."
                 self.new_proj_win.win_msg(error_txt)
                 self.new_proj_win.button_new_proj.setChecked(False)
-                toggled(self.new_proj_win.button_new_proj)
                 return
         elif parent_win == 'load_proj_win':
             self.load_proj_win.close()
@@ -420,11 +419,9 @@ class Controller:
 
             #Toogle button and close window
             self.meas_param_win.button_set_params.setChecked(True)
-            toggled(self.meas_param_win.button_set_params)
             self.meas_param_win.close()
             #Toggle button in new project window
             self.new_proj_win.set_meas_param_all.setChecked(True)
-            toggled(self.new_proj_win.set_meas_param_all)
             error_txt = "Well done! Continue setting up new project."
             self.new_proj_win.win_msg(error_txt)
         else: 
@@ -451,7 +448,6 @@ class Controller:
                     temp_dir = dir_temp
 
             self.new_proj_win.button_new_proj.setChecked(True)
-            toggled(self.new_proj_win.button_new_proj)
             # self.new_proj_win.button_new_proj.setDisabled(True)
 
             proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text(), 
@@ -493,7 +489,6 @@ class Controller:
             self.load_proj_win.fill_proj_info(proj = self.proj)
         else: 
             self.load_proj_win.button_browse_proj.setChecked(False)
-            toggled(self.load_proj_win.button_browse_proj)
             self.load_proj_win.win_msg('*There is no settings file for a project within the selected directory. Please select a new directory.')
 
     #Organ related
@@ -503,7 +498,6 @@ class Controller:
             if self.new_organ_win.check_selection(self.proj):
                 if self.new_organ_win.check_shapes(self.proj): 
                     self.new_organ_win.button_create_new_organ.setChecked(True)
-                    toggled(self.new_organ_win.button_create_new_organ)
                     self.new_organ_win.win_msg('Creating organ "'+self.new_organ_win.lineEdit_organ_name.text()+'"')
                     # self.new_organ_win.button_create_new_organ.setDisabled(True)
 
@@ -546,15 +540,12 @@ class Controller:
                     self.new_organ_win.win_msg('New organ "'+name+'" has been created as part of "'+self.proj.user_projName+'" project.')
                 else: 
                     self.new_organ_win.button_create_new_organ.setChecked(False)
-                    toggled(self.new_organ_win.button_create_new_organ)
                     return
             else: 
                 self.new_organ_win.button_create_new_organ.setChecked(False)
-                toggled(self.new_organ_win.button_create_new_organ)
                 return 
         else:
             self.new_organ_win.button_create_new_organ.setChecked(False)
-            toggled(self.new_organ_win.button_create_new_organ)
             return 
     
     def load_organ(self, proj, organ_to_load):
