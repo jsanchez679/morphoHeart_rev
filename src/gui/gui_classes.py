@@ -1613,16 +1613,66 @@ class CreateNewProj(QDialog):
                 self.tick_segm_sect_2.setEnabled(True)
 
     def set_segm_sect_settings(self): 
-        pass
+        valid_all = []
+        segm_sect_settings = {'cutLayersIn2SegmSect': True}
+
+        #Get selected contours
+        for scut in ['sCut1', 'sCut2']:
+            scut_list = [item for item in self.list_segm_sect if scut in item]
+            if len(scut_list)> 0:
+                segm_sect_settings[scut] = {}
+                for rcut in ['_Cut1', '_Cut2']: 
+                    rcut_list = [item for item in scut_list if rcut in item]
+                    if len(rcut_list)> 0: 
+                        segm_sect_settings[scut][rcut[1:]] = {'ch_segm_sect': []}
+                        for cB_item in rcut_list: 
+                            if getattr(self, cB_item).isChecked(): 
+                                segm_sect_settings[scut][rcut[1:]]['ch_segm_sect'].append(cB_item[14:])
+                    
+        #Measure
+        meas_vol = getattr(self, 'cB_volume_segm_sect').isChecked()
+        meas_area = getattr(self, 'cB_area_segm_sect').isChecked()
+        segm_sect_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area}
+        print('segm_sect_settings:',segm_sect_settings)
+
+        #Get segments and section settings
+        segm_settings = self.mH_settings['segm']
+        sect_settings = self.mH_settings['sect']
+        print('segm_settings:',segm_settings)
+        print('sect_settings:',sect_settings)
+
+        #Add parameters to segments
+        selected_params = self.mH_user_params 
+        if selected_params == None: 
+            selected_params = {}
+        #Add measure params from sections
+        cuts = [key for key in segm_sect_settings if 'sCut' in key]
+        params_segm_sect = [param for param in segm_sect_settings['measure'].keys() if segm_sect_settings['measure'][param]]
+        for param_c in params_segm_sect: 
+            selected_params[param_c+'(segm-sect)'] = {}
+            for cut_c in cuts: 
+                no_segm = segm_settings[cut_c[1:]]['no_segments']
+                for cut_r in segm_sect_settings[cut_c].keys():
+                    no_sect = sect_settings[cut_r]['no_sections']
+                    cut_segm_sect = segm_sect_settings[cut_c][cut_r]['ch_segm_sect']
+                    print('cut_segm_sect:', cut_segm_sect)
+                    for cut_ch_cont in cut_segm_sect: 
+                        for segm in range(1,no_segm+1,1):
+                            for sect in range(1,no_sect+1,1):
+                                selected_params[param_c+'(segm-sect)'][cut_c+'_'+cut_r+'_'+cut_ch_cont+'_segm'+str(segm)+'_sect'+str(sect)] = True
+
+        self.mH_user_params = selected_params
+        self.mH_settings['segm-sect'] = segm_sect_settings
+        print('self.mH_settings (segm_sect_settings):', self.mH_settings['segm-sect'])
+    
+        self.button_set_segm_sect.setChecked(True)
+        self.win_msg('All good! Segment-Region Intersections have been set.')
 
     def open_sect_segm(self): 
         if self.tick_segm_sect_2.isChecked(): 
             self.widget_segm_sect.setVisible(True)
 
     def fill_segm_sect(self): 
-        print('dict_segm:', self.dict_segm)
-        print('dict_sect:', self.dict_sect)
-
         if not self.tick_segm2.isChecked(): 
             bool_segm = False
         else: 
@@ -1696,6 +1746,13 @@ class CreateNewProj(QDialog):
                 error_txt = '*You need to set sections settings before creating the new project.'
                 self.win_msg(error_txt, self.button_new_proj)
                 return
+        
+        if self.button_set_segm_sect.isChecked(): 
+            valid.append(True)
+        else: 
+            error_txt = '*You need to set segment-region intersection settings before creating the new project.'
+            self.win_msg(error_txt, self.button_new_proj)
+            return
 
         if all(valid): 
             return True
@@ -1734,6 +1791,23 @@ class CreateNewProj(QDialog):
     def tabChanged(self):
         print('Tab was changed to ', self.tabWidget.currentIndex())
 
+    def check_template(self): 
+        temp_dir = None
+        if self.cB_proj_as_template.isChecked():
+            line_temp = self.lineEdit_template_name.text()
+            line_temp = line_temp.replace(' ', '_')
+            temp_name = 'mH_'+line_temp+'_project.json'
+            cwd = Path().absolute()
+            dir_temp = cwd / 'db' / 'templates' / temp_name 
+            if dir_temp.is_file():
+                self.win_msg('*There is already a template with the selected name. Please give this template a new name.')
+                return
+            else: 
+                print('New project template: ', dir_temp)
+                temp_dir = dir_temp
+        
+        return temp_dir
+    
     def save_as_template(self):
         if self.cB_proj_as_template.isChecked(): 
             self.lab_temp.setEnabled(True)
@@ -2441,6 +2515,7 @@ class NewOrgan(QDialog):
             self.img_dirs[ch]['image']['dir'] = Path(file_name)
             self.img_dirs[ch]['image']['shape'] = images_o.shape
             self.user_dir = Path(file_name).parent
+            getattr(self, 'browse_'+ch).setChecked(True)
         else: 
             error_txt = '*Something went wrong importing the images for '+ch+'. Please try again.'
             self.win_msg(error_txt, getattr(self, 'browse_'+ch))
@@ -2477,6 +2552,7 @@ class NewOrgan(QDialog):
                     self.img_dirs[ch]['mask']['shape'] = mask_o.shape
                     check.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(0, 255, 0); color: rgb(0, 255, 0); font: 25 2pt 'Calibri Light'")
                     check.setText('Done')
+                    getattr(self, 'browse_mask_'+ch).setChecked(True)
             else: 
                 error_txt = '*Something went wrong importing the mask images for '+ch+'. Please try again.'
                 self.win_msg(error_txt, getattr(self, 'browse_mask_'+ch))
@@ -2609,6 +2685,7 @@ class LoadProj(QDialog):
     def get_proj_wf(self, proj): 
         flat_wf = flatdict.FlatDict(copy.deepcopy(proj.workflow))
         keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))== 4 and 'Status' in key]
+        # print('flat_wf.keys():', flat_wf.keys())
         for key in flat_wf.keys(): 
             if key not in keep_keys: 
                 flat_wf.pop(key, None)
@@ -4201,7 +4278,7 @@ class MainWindow(QMainWindow):
             
     def user_orientation(self): 
         wf_info = self.organ.mH_settings['wf_info']
-        workflow = self.organ.workflow['morphoHeart']['MeshesProc']['A-Create3DMesh']['Set_Orientation']
+        workflow = self.organ.workflow['morphoHeart']['MeshesProc']['A-Set_Orientation']
         if 'orientation' in wf_info.keys():
             #Organ/ROI
             reorient = getattr(self, 'roi_reorient')
@@ -4605,32 +4682,27 @@ class MainWindow(QMainWindow):
         flat_wf = flatdict.FlatDict(self.organ.workflow['morphoHeart']['MeshesProc'])
         keys_flat = flat_wf.keys()
         keys_flat_filtered = [key for key in keys_flat if 'F-Measure' not in key]
-
+        print('keys_flat_filtered:', keys_flat_filtered)
         main_titles = []
         for key in keys_flat_filtered: 
-            # print(key)
             split_key = key.split(':')
             if len(split_key) == 2: 
                 main_titles.append(split_key[0])
-                keys_flat_filtered.remove(key)
-            if 'Set_Orientation' in key: 
-                main_titles.append('A-Set_Orientation')
-            if 'Set_Orientation:Status' in key: 
-                # print('ccc')
-                keys_flat_filtered.remove(key)
-
+                if 'Orientation' not in key:
+                    keys_flat_filtered.remove(key)
         try:
             keys_flat_filtered.remove('Status')
         except: 
             print('Status was not a key')
         try: 
-            keys_flat_filtered.remove('A-Create3DMesh:Set_Orientation:Status')
+            keys_flat_filtered.remove('A-Set_Orientation:Status')
         except: 
-            print('A-Create3DMesh:Set_Orientation:Status was not a key')
+            print('A-Set_Orientation:Status was not a key')
 
+        print('keys_flat_filtered:', keys_flat_filtered)
         self.workflow_keys = keys_flat_filtered
-
         main_titles_set = sorted(list(set(main_titles)))
+        print('main_titles_set_sorted:', main_titles_set)
 
         dict_titles = {'A-Create3DMesh': {'title': 'Create 3D Mesh', 'short': 'createMesh'},
                         'A-Set_Orientation' : {'title': 'Set Orientation', 'short': 'setOrientation'},
@@ -4643,7 +4715,8 @@ class MainWindow(QMainWindow):
                         'D-Thickness_ext>int' : {'title': 'Tissue Thickness (ext>int*)', 'short': 'thExtInt'},
                         'D-Thickness_int>ext' : {'title': 'Tissue Thickness (int>ext*)', 'short': 'thIntExt'},
                         'E-Sections' : {'title': 'Regions', 'short': 'sect'},
-                        'E-Segments' : {'title': 'Segments', 'short': 'segm'}}
+                        'E-Segments' : {'title': 'Segments', 'short': 'segm'},
+                        'E-Segments_Sections': {'title': 'Segments-Regions', 'short': 'segm-sect'}}
 
         #Add here the heatmaps 2D that have been added to analysis 
         # hereee!
@@ -4657,86 +4730,81 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         font.setItalic(True)
         font.setPointSize(10)
-        
+
+        main_titles_set_all = list(dict_titles.keys())
+
         row = 0
-        for title in main_titles_set:
-            #Create a first label
-            label = dict_titles[title]['title']
-            short = dict_titles[title]['short']
-            #Assign label to table 
-            item = QTableWidgetItem(label)
-            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
-            item.setFont(font)
-            self.tabW_progress_pandq.setItem(row,0, item)
-            row +=1
-
-            #Find all keys that contain this title: 
-            if title == 'A-Create3DMesh': 
-                keys_title = [key for key in keys_flat_filtered if title in key and 'Set_Orientation' not in key]
-            elif title == 'A-Set_Orientation':
-                keys_title = [key for key in keys_flat_filtered if 'A-Create3DMesh:Set_Orientation' in key]
-            else: 
-                keys_title = [key for key in keys_flat_filtered if title in key]
-            
-            #Reorder Segments and Sections
-            if 'E-Sections' in main_titles_set and 'E-Segments' in main_titles_set: 
-                main_titles_set.remove('E-Sections')
-                main_titles_set.append('E-Sections')
-
-            for key in keys_title: 
-                sub_title = False
-                split_key = key.split(':')
-                if title == 'A-Set_Orientation':
-                    cleaned_key = split_key[-1]
-                    label_key = cleaned_key
-                    cS_name = short+'_('+label_key+')'
-                    # print('aaa:', row, label_key)
-                elif title == 'C-Centreline':
-                    if len(split_key) == 3: 
-                        cleaned_key = dict_titles[title]['subprocesses'][split_key[1]]['title']
-                        label_key = '    - '+cleaned_key
-                        # print('bbb:', row, label_key)
-                        sub_title = True
-                    else: 
-                        cleaned_key = split_key[2:-1]
-                        label_key = '_'.join(cleaned_key)
-                        # print('ccc:', row, label)
-                        # print(key)
-                        subproc = dict_titles[title]['subprocesses'][split_key[1]]['short']
-                        cS_name = short+'_'+subproc+'_('+label_key+')'
-                else: 
-                    cleaned_key = split_key[1:-1]
-                    label_key = '_'.join(cleaned_key)
-                    cS_name = short+'_('+label_key+')'
-                    # print('bbb:', row, label_key)
-
+        for title in main_titles_set_all:
+            if title in main_titles_set: 
+                #Create a first label
+                label = dict_titles[title]['title']
+                short = dict_titles[title]['short']
                 #Assign label to table 
-                item_key = QTableWidgetItem(label_key)
-                if sub_title: 
-                    item_key.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
-                else: 
-                    item_key.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
-                self.tabW_progress_pandq.setItem(row, 0, item_key)
-
-                if not sub_title: 
-                    #Create status 
-                    widget   = QWidget() 
-                    hL = QtWidgets.QHBoxLayout(widget)
-                    color_status = QtWidgets.QLineEdit()
-                    color_status.setEnabled(True)
-                    color_status.setMinimumSize(QtCore.QSize(15, 15))
-                    color_status.setMaximumSize(QtCore.QSize(15, 15))
-                    color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
-                    color_status.setReadOnly(True)
-                    hL.addWidget(color_status)
-                    hL.setContentsMargins(0, 0, 0, 0)
-                    self.tabW_progress_pandq.setCellWidget(row, 1, widget)
-                    setattr(self, cS_name, color_status)
-                    cS.append(cS_name)
-                
-                self.tabW_progress_pandq.setRowHeight(row, 20)
+                item = QTableWidgetItem(label)
+                item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                item.setFont(font)
+                self.tabW_progress_pandq.setItem(row,0, item)
                 row +=1
-            
+
+                #Find all keys that contain this title: 
+                keys_title = [key for key in keys_flat_filtered if title+':' in key]
+                # print('keys_title:', keys_title)
+
+                for key in keys_title: 
+                    sub_title = False
+                    split_key = key.split(':')
+                    if title == 'A-Set_Orientation':
+                        cleaned_key = split_key[-1]
+                        label_key = cleaned_key
+                        cS_name = short+'_('+label_key+')'
+                        # print('aaa:', row, label_key, cS_name)
+                    elif title == 'C-Centreline':
+                        if len(split_key) == 3: 
+                            cleaned_key = dict_titles[title]['subprocesses'][split_key[1]]['title']
+                            label_key = '    - '+cleaned_key
+                            # print('bbb:', row, label_key)
+                            sub_title = True
+                        else: 
+                            cleaned_key = split_key[2:-1]
+                            label_key = '_'.join(cleaned_key)
+                            # print('ccc:', row, label)
+                            # print(key)
+                            subproc = dict_titles[title]['subprocesses'][split_key[1]]['short']
+                            cS_name = short+'_'+subproc+'_('+label_key+')'
+                    else: 
+                        cleaned_key = split_key[1:-1]
+                        # print('cleaned_key:',cleaned_key)
+                        label_key = '_'.join(cleaned_key)
+                        cS_name = short+'_('+label_key+')'
+                        # print('bbb:', row, label_key)
+
+                    #Assign label to table 
+                    item_key = QTableWidgetItem(label_key)
+                    if sub_title: 
+                        item_key.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                    else: 
+                        item_key.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                    self.tabW_progress_pandq.setItem(row, 0, item_key)
+
+                    if not sub_title: 
+                        #Create status 
+                        widget   = QWidget() 
+                        hL = QtWidgets.QHBoxLayout(widget)
+                        color_status = QtWidgets.QLineEdit()
+                        color_status.setEnabled(True)
+                        color_status.setMinimumSize(QtCore.QSize(15, 15))
+                        color_status.setMaximumSize(QtCore.QSize(15, 15))
+                        color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
+                        color_status.setReadOnly(True)
+                        hL.addWidget(color_status)
+                        hL.setContentsMargins(0, 0, 0, 0)
+                        self.tabW_progress_pandq.setCellWidget(row, 1, widget)
+                        setattr(self, cS_name, color_status)
+                        cS.append(cS_name)
+                    
+                    self.tabW_progress_pandq.setRowHeight(row, 20)
+                    row +=1
+                
         headerc = self.tabW_progress_pandq.horizontalHeader()  
         for col in range(1):
             headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
@@ -4746,17 +4814,12 @@ class MainWindow(QMainWindow):
         for row in range(len(keys_flat_filtered)+len(main_titles_set)):   
             headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
         
-        # for nn, col, w  in zip(count(), [0,1], [180,60]): 
-        #     self.tabW_progress_pandq.setColumnWidth(col, w)
-        # self.tabW_progress_pandq.resizeColumnsToContents()
-        # self.tabW_progress_pandq.resizeRowsToContents()
-        
         self.workflow_status = cS
         print('self.workflow_status:', self.workflow_status)
         self.update_workflow_progress()
 
     def update_workflow_progress(self): 
-
+        # print('self.workflow_keys:', self.workflow_keys)
         titles_inv = {'createMesh': 'A-Create3DMesh',
                        'setOrientation': 'A-Set_Orientation',
                        'trimMesh': 'B-TrimMesh',
@@ -4767,23 +4830,29 @@ class MainWindow(QMainWindow):
                        'thExtInt' : 'D-Thickness_ext>int',
                        'thIntExt' : 'D-Thickness_int>ext' ,
                        'sect' : 'E-Sections',
-                       'segm' : 'E-Segments'}
+                       'segm' : 'E-Segments', 
+                       'segm-sect': 'E-Segments_Sections'}
         
         workflow = self.organ.workflow['morphoHeart']['MeshesProc']
         for cs in self.workflow_status: 
             cS = getattr(self, cs)
             split_cs = cs.split('_(')
+            # print('cs:', cs, split_cs)
             if len(split_cs) == 2: 
-                proc, ch_info = split_cs
-
-                proc_inv = titles_inv[proc]
-                split_ch_info = ch_info[:-1].split('_')
-                if len(split_ch_info) == 2: 
-                    ch, cont = split_ch_info
-                    final_key = proc_inv+':'+ch+':'+cont+':Status'
-                elif len(split_ch_info) == 3: 
-                    cut, ch, cont = split_ch_info
-                    final_key = proc_inv+':'+cut+':'+ch+':'+cont+':Status'
+                if 'Orientation' in cs: 
+                    proc, orient = split_cs
+                    proc_inv = titles_inv[proc]
+                    final_key = proc_inv+':'+orient[:-1]
+                else: 
+                    proc, ch_info = split_cs
+                    proc_inv = titles_inv[proc]
+                    split_ch_info = ch_info[:-1].split('_')
+                    if len(split_ch_info) == 2: 
+                        ch, cont = split_ch_info
+                        final_key = proc_inv+':'+ch+':'+cont+':Status'
+                    elif len(split_ch_info) == 3: 
+                        cut, ch, cont = split_ch_info
+                        final_key = proc_inv+':'+cut+':'+ch+':'+cont+':Status'
             else: 
                 #Ballooning
                 proc, ch_info, cl_info = split_cs
@@ -4791,6 +4860,7 @@ class MainWindow(QMainWindow):
                 ch, cont = ch_info.split('_')
                 cl_info = cl_info.split(')')[0]
                 final_key = proc_inv+':'+ch+':'+cont+'_('+cl_info+'):Status'
+
             if final_key in self.workflow_keys:
                 items = final_key.split(':')
                 update_status(workflow, items, cS)
@@ -4828,16 +4898,12 @@ class MainWindow(QMainWindow):
         headerc = self.tabW_results.horizontalHeader()  
         for col in range(1):
             headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
-        self.tabW_results.setColumnWidth(1, 250)
+        self.tabW_results.setColumnWidth(1, 270)
         self.tabW_results.setColumnWidth(2, 100)
         
         headerr = self.tabW_results.verticalHeader()  
         for row in range(len(self.df_res)):   
             headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
-        
-        # self.model = MyPandasTable(self.df_res)
-        # self.tabW_results.setModel(self.model)
-        # df_final.to_csv('out.csv', index=True)  
 
     def get_results_df(self): 
         #Actual names
@@ -4847,10 +4913,10 @@ class MainWindow(QMainWindow):
             var = params[pp]
             dict_names[var['s']] = var['l']
         dict_names['Ellip'] = 'Ellipsoid'
+        dict_names['Angles'] = 'Angles'
 
-        # measurements = {'SA': {}, 'Vol': {'ch1_int_whole': True, 'ch1_tiss_whole': True, 'ch1_ext_whole': True, 'ch2_int_whole': True, 'ch2_tiss_whole': True, 'ch2_ext_whole': True, 'chNS_int_whole': True, 'chNS_tiss_whole': True, 'chNS_ext_whole': True}, 'CL': {'ch1_int_whole': {'looped_length': 278.5729836723767, 'lin_length': 196.40371704101562}, 'ch2_ext_whole': {'looped_length': 283.3270263262093, 'lin_length': 190.81484985351562}}, 'th_i2e': {'ch1_tiss_whole': True, 'ch2_tiss_whole': True, 'chNS_tiss_whole': True}, 'th_e2i': {'ch1_tiss_whole': True}, 'ball': {'ch1_int_(ch1_int)': True, 'ch1_int_(ch2_ext)': True}, 'LoopDir': {'roi': True}, 'AoLen': {'roi': True}, 'TgBright': {'roi': True}, 'Vol(segm)': {'Cut1_ch2_int_segm1': True, 'Cut1_ch2_int_segm2': True, 'Cut1_ch2_tiss_segm1': True, 'Cut1_ch2_tiss_segm2': True, 'Cut1_chNS_tiss_segm1': 171587.41563409223, 'Cut1_chNS_tiss_segm2': 65547.06146452879, 'Cut1_ch1_tiss_segm1': 239646.87518697616, 'Cut1_ch1_tiss_segm2': 233777.4398440119, 'Cut1_ch1_ext_segm1': 1132707.885333426, 'Cut1_ch1_ext_segm2': 666060.1459218762}, 'Ellip(segm)': {'Cut1_ch2_int_segm1': True, 'Cut1_ch2_int_segm2': True, 'Cut1_ch2_tiss_segm1': True, 'Cut1_ch2_tiss_segm2': True, 'Cut1_chNS_tiss_segm1': True, 'Cut1_chNS_tiss_segm2': True, 'Cut1_ch1_tiss_segm1': True, 'Cut1_ch1_tiss_segm2': True, 'Cut1_ch1_ext_segm1': True, 'Cut1_ch1_ext_segm2': True}, 'Vol(sect)': {'Cut1_ch2_tiss_sect1': True, 'Cut1_ch2_tiss_sect2': True, 'Cut1_chNS_tiss_sect1': True, 'Cut1_chNS_tiss_sect2': True, 'Cut1_ch1_tiss_sect1': 244132.6523907116, 'Cut1_ch1_tiss_sect2': 232157.19616130897, 'Cut2_ch2_tiss_sect1': True, 'Cut2_ch2_tiss_sect2': True, 'Cut2_chNS_tiss_sect1': True, 'Cut2_chNS_tiss_sect2': True, 'Cut2_ch1_tiss_sect1': 232110.88629832206, 'Cut2_ch1_tiss_sect2': 244163.6629483923}, 'hm3Dto2D': {'ch1_int': True}}
         measurements = self.organ.mH_settings['measure']
-        # print('measurements: ', measurements)
+        print('measurements: ', measurements)
         df_index = pd.DataFrame.from_dict(measurements, orient='index')
         # print('df_index', df_index)
         vars2drop = ['th_e2i', 'th_i2e', 'ball', 'hm3Dto2D']
@@ -4869,8 +4935,10 @@ class MainWindow(QMainWindow):
                 var, typpe = index.split('(')
                 if typpe == 'segm)': 
                     name = 'Segment'
+                elif typpe == 'segm-sect)': 
+                    name = 'Segm-Reg'
                 else: 
-                    name = 'Region'
+                    name == 'Region'
                 var_names.append(dict_names[var]+': '+name)
 
         df_index['Parameter'] = var_names
@@ -4943,11 +5011,17 @@ class MainWindow(QMainWindow):
                 ch, cont, _ = split_name
                 namef = name_chs[ch]+ ' ('+name_cont[cont]+')'
             elif len(split_name) == 4: 
+                # print('split_name:', split_name)
                 cut, ch, cont, subm = split_name
                 if 'segm' in subm: 
                     namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_segm[cut][subm]+')'
                 else: 
                     namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_sect[cut][subm]+')'
+                # print(namef)
+            elif len(split_name) == 6: #Intersections
+                # print('split_name:', split_name)
+                scut, rcut, ch, cont, segm, sect = split_name
+                namef = scut[1:]+'-'+rcut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_segm[scut[1:]][segm]+'-'+name_sect[rcut][sect]+')'
             else: 
                 print(index, len(split_name))
                 namef = 'Check: '+tiss_cont

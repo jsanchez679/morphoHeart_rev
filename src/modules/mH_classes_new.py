@@ -204,8 +204,6 @@ class Project():
             self.mH_settings['setup']['keep_largest'] = {}
             self.mH_settings['setup']['alpha'] = {}
 
-            # self.mH_settings['setup']['rotate'] = {'Z90' : {}}
-
             #Add empty dict to save info related to the user-selected processes
             self.mH_settings['wf_info'] = {}
 
@@ -298,7 +296,7 @@ class Project():
         mH_param2meas = self.mH_settings['measure'] #self.mH_param2meas
 
         if len(mH_param2meas)>0: 
-            methods = ['A-Create3DMesh','B-TrimMesh']
+            methods = ['A-Set_Orientation', 'A-Create3DMesh','B-TrimMesh']
         
             if 'ball' in mH_param2meas.keys():
                 methods.append('C-Centreline')
@@ -315,7 +313,8 @@ class Project():
                 methods.append('E-Segments')
             if 'Vol(sect)' in mH_param2meas.keys() or 'SA(sect)' in mH_param2meas.keys(): 
                 methods.append('E-Sections')
-        
+            if 'Vol(segm-sect)' in mH_param2meas.keys() or 'SA(segm-sect)' in mH_param2meas.keys(): 
+                methods.append('E-Segments_Sections')
         else: 
             methods = []
         
@@ -370,7 +369,6 @@ class Project():
                 ch_segm = sorted(list(set([tup for (_,tup,_,_) in segm_list])))
             else: 
                 segm_list = []; cut_segm = []; ch_segm = []
-            # print('Segments:', segm_list, cut_segm, ch_segm)
 
             # Find the meas_param that include the extraction of mH_sections
             if 'Vol(sect)' in mH_param2meas:
@@ -389,10 +387,29 @@ class Project():
                 ch_sect=  sorted(list(set([tup for (_,tup,_,_) in sect_list])))
             else: 
                 sect_list = []; cut_sect = []; ch_sect = []
-            # print('Sections:', sect_list, cut_sect, ch_sect)
+
+            print('mH_param2meas:',mH_param2meas)
+            # Find the meas_param that include the extraction of mH_segm-sect
+            if 'Vol(segm-sect)' in mH_param2meas:
+                segm_sect_vol = [item for item in mH_param2meas['Vol(segm-sect)'].keys()]
+            else: 
+                segm_sect_vol = []
+            if 'SA(segm-sect)' in mH_param2meas:
+                segm_sect_sa = [item for item in mH_param2meas['SA(segm-sect)'].keys()]
+            else: 
+                segm_sect_sa = []
+
+            segm_sect_list = list(set(segm_sect_vol) | set(segm_sect_sa))
+            if len(segm_sect_list) > 0: 
+                segm_sect_list = [tuple(item.split('_')) for item in segm_sect_list]
+                scut_segm_sect = sorted(list(set([tup for (tup,_,_,_,_,_) in segm_sect_list])))
+                rcut_segm_sect = sorted(list(set([tup for (_,tup,_,_,_,_) in segm_sect_list])))
+                ch_segm_sect=  sorted(list(set([tup for (_,_,tup,_,_,_) in segm_sect_list])))
+            else: 
+                segm_sect_list = []; scut_segm_sect = []; rcut_segm_sect = []; ch_segm_sect = []
+            print('segm_sect_list:',segm_sect_list, scut_segm_sect, rcut_segm_sect, ch_segm_sect)
 
             # Find the meas_param that include the extraction of ballooning
-            item_ballooning = [tuple(item.split('_')) for item in mH_param2meas['ball'].keys()]
             ball_opts = self.mH_settings['setup']['params'][5]['measure']
             # Find the meas_param that include the extraction of thickness
             item_thickness_intext = [tuple(item.split('_')) for item in mH_param2meas['th_i2e'].keys()]
@@ -405,9 +422,9 @@ class Project():
             # Project status
             for ch in mH_channels:
                 if 'A-Create3DMesh' in dict_MeshesProc.keys():
-                    dict_MeshesProc['A-Create3DMesh']['Set_Orientation'] = {'Status': 'NI', 
-                                                                            'Stack': 'NI', 
-                                                                            'ROI': 'NI'}
+                    dict_MeshesProc['A-Set_Orientation'] = {'Status': 'NI', 
+                                                            'Stack': 'NI', 
+                                                            'ROI': 'NI'}
                     if 'NS' not in ch:
                         if self.mH_settings['setup']['mask_ch'][ch]:
                             mask_status = 'NI'
@@ -424,13 +441,6 @@ class Project():
                                                         'Info': {'tiss':{'Status': 'NI'}, 
                                                                 'int':{'Status': 'NI'}, 
                                                                 'ext':{'Status': 'NI'}}}}
-                        # #Check the external channel
-                        # if self.mH_settings['setup']['chs_relation'][ch] == 'external':
-                        #     dict_ImProc[ch]['E-TrimS3'] = {'Status': 'NI',
-                        #                                      'Info':{'tiss':{'Status': 'NI'}, 
-                        #                                              'int':{'Status': 'NI'},
-                        #                                              'ext':{'Status': 'NI'}}}
-                        # else: 
                         dict_ImProc[ch]['E-CleanCh'] = {'Status': 'NI',
                                                             'Info': {'tiss':{'Status': 'NI'}, 
                                                                     'int':{'Status': 'NI'}, 
@@ -442,6 +452,7 @@ class Project():
                     else: 
                         dict_ImProc[ch] = {'Status': 'NI',
                                             'D-S3Create':{'Status': 'NI'}} 
+                        
             for nn, ch in enumerate(mH_channels):
                 for process in ['A-Create3DMesh','B-TrimMesh','C-Centreline']:
                     if 'NS' not in ch:
@@ -458,7 +469,6 @@ class Project():
                                     dict_MeshesProc[process]['SimplifyMesh'] = {'Status':'NI'}
                                     dict_MeshesProc[process]['vmtk_CL'] = {'Status':'NI'}
                                     dict_MeshesProc[process]['buildCL'] = {'Status':'NI'}
-                                    print('AAAAA')
                                     print('item_centreline:', item_centreline)
                                 if (ch, cont, 'whole') in item_centreline:
                                     print(ch,cont)
@@ -488,9 +498,7 @@ class Project():
                 cont = ball_opts[opt]['to_mesh_type']
                 cl_ch = ball_opts[opt]['from_cl']
                 cl_cont = ball_opts[opt]['from_cl_type']
-                # print('\n\n\nBallooning Workflow')
-                # print(ch, cont, cl_ch, cl_cont)
-                # print(cont+'_('+cl_ch+'_'+cl_cont+')')
+            
                 if ch in dict_MeshesProc['D-Ballooning'].keys():
                     dict_MeshesProc['D-Ballooning'][ch][cont+'_('+cl_ch+'_'+cl_cont+')'] =  {'Status': 'NI'}
                 else: 
@@ -514,6 +522,25 @@ class Project():
                     for cont in ['tiss', 'int', 'ext']:
                         if (cutc, ch, cont, 'sect1') in sect_list:
                             dict_MeshesProc['E-Sections'][cutc][ch][cont] = {'Status': 'NI'}
+
+            # Segments-Sections
+            dict_segm_sect = {'Status': 'NI'}
+            for cutk in scut_segm_sect: 
+                dict_segm_sect[cutk] = {}
+                for cutr in rcut_segm_sect: 
+                    dict_segm_sect[cutk][cutr] = {}
+                    for ch in ch_segm_sect:
+                        dict_segm_sect[cutk][cutr][ch] = {}
+                        for cont in ['tiss', 'int', 'ext']:
+                            if (cutk, cutr, ch, cont, 'segm1', 'sect1') in segm_sect_list:
+                                dict_segm_sect[cutk][cutr][ch][cont] = {'Status': 'NI'}
+
+            dict_segm_sectf = flatdict.FlatDict(dict_segm_sect)
+            for key in dict_segm_sectf.keys(): 
+                if dict_segm_sectf[key] == {}:
+                    dict_segm_sectf.pop(key, None)
+
+            dict_MeshesProc['E-Segments_Sections'] = dict_segm_sectf.as_dict()
 
             # Measure Dictionary
             dict_meas = flatdict.FlatDict(mH_param2meas).as_dict()
@@ -550,6 +577,7 @@ class Project():
                                                                                        
             dict_mH['ImProc'] = dict_ImProc
             dict_mH['MeshesProc'] = dict_MeshesProc
+            print('dict_mH:', dict_mH)
         
         if self.analysis['morphoCell']:
             pass

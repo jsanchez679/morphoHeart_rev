@@ -596,7 +596,7 @@ background-color: rgb(255, 255, 255);</string>
      </property>
      <widget class="QWidget" name="tab_load_create_delete_organ">
       <attribute name="title">
-       <string>Load, Create or Delete Organ</string>
+       <string>Load, Create or Delete Organs</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>

@@ -432,20 +432,21 @@ class Controller:
     def new_proj(self):
         if self.new_proj_win.validate_set_all():
             self.new_proj_win.win_msg("Creating and saving new project...")
+            temp_dir = self.new_proj_win.check_template()
             #Save as template
-            temp_dir = None
-            if self.new_proj_win.cB_proj_as_template.isChecked():
-                line_temp = self.new_proj_win.lineEdit_template_name.text()
-                line_temp = line_temp.replace(' ', '_')
-                temp_name = 'mH_'+line_temp+'_project.json'
-                cwd = Path().absolute()
-                dir_temp = cwd / 'db' / 'templates' / temp_name 
-                if dir_temp.is_file():
-                    self.new_proj_win.win_msg('*There is already a template with the selected name. Please give this template a new name.')
-                    return
-                else: 
-                    print('New project template: ', dir_temp)
-                    temp_dir = dir_temp
+            # temp_dir = None
+            # if self.new_proj_win.cB_proj_as_template.isChecked():
+            #     line_temp = self.new_proj_win.lineEdit_template_name.text()
+            #     line_temp = line_temp.replace(' ', '_')
+            #     temp_name = 'mH_'+line_temp+'_project.json'
+            #     cwd = Path().absolute()
+            #     dir_temp = cwd / 'db' / 'templates' / temp_name 
+            #     if dir_temp.is_file():
+            #         self.new_proj_win.win_msg('*There is already a template with the selected name. Please give this template a new name.')
+            #         return
+            #     else: 
+            #         print('New project template: ', dir_temp)
+            #         temp_dir = dir_temp
 
             self.new_proj_win.button_new_proj.setChecked(True)
             # self.new_proj_win.button_new_proj.setDisabled(True)
@@ -458,7 +459,6 @@ class Controller:
                         'heart_default': self.new_proj_win.heart_analysis.isChecked()}
             
             self.proj = mHC.Project(proj_dict, new=True)
-
             self.new_proj_win.mH_settings['chs_all'] = self.ch_all
             self.new_proj_win.mH_settings['params'] = self.mH_params
             self.proj.set_settings(settings={'mH': {'settings':self.new_proj_win.mH_settings, 
@@ -468,7 +468,9 @@ class Controller:
             
             self.proj.set_workflow()
             self.proj.create_proj_dir()
+    
             self.proj.save_project(temp_dir = temp_dir)
+            self.new_proj_win.button_add_organ.setEnabled(True)
             print('\n>>> New Project: ',self.proj.__dict__.keys())
             self.new_proj_win.win_msg("New project '"+self.new_proj_win.lineEdit_proj_name.text()+"' has been created and saved! Continue creating an organ as part of this project. ")
     
