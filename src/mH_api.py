@@ -307,7 +307,7 @@ def run_axis_orientation(controller, only_roi=False):
                                             win = controller.main_win)
         
         #Update Status in GUI
-        process = ['MeshesProc', 'A-Create3DMesh', 'Set_Orientation', 'Status']
+        process = ['MeshesProc', 'A-Set_Orientation', 'Status']
         controller.main_win.update_status(workflow, process, controller.main_win.orient_status)
 
         #Toggle button
@@ -670,31 +670,6 @@ def run_heatmaps3D(controller, btn):
     else: 
         controller.main_win.win_msg('*To extract the thickness meshes make sure you have at least run the  -Keep Largest-  section.')
 
-        
-        # controller.organ.update_workflow(process = process, update = 'DONE')
-
-    #Check first if extracting centrelines is a process involved in this organ/project
-    # if organ.check_method(method = 'D-Ballooning'): 
-    # # if 'D-Ballooning' in organ.parent_project.mH_methods: 
-    #     #Check workflow status
-    #     workflow = organ.workflow
-    #     process = ['MeshesProc','D-Ballooning','Status']
-    #     check_proc = get_by_path(workflow, process)
-    #     if check_proc == 'DONE': 
-    #         q = 'You already extracted the ballooning parameters of the selected meshes. Do you want to extract them again?'
-    #         res = {0: 'no, continue with next step', 1: 'yes, re-run this process!'}
-    #         balloon = ask4input(q, res, bool)
-    #     else: 
-    #         balloon = True
-    # else:
-    #     balloon = False
-    #     return None
-    
-    # if balloon: 
-    
-
-    # print(thck_names)
-
 def run_heatmaps2D(controller, btn):
 
     controller.main_win.win_msg('!This section of code is under development... you will be able to use it soon!')
@@ -879,46 +854,6 @@ def run_segments(controller, btn):
     controller.main_win.update_status(workflow, proc_wft, controller.main_win.segments_status)
 
     print('organ.obj_temp:', controller.organ.obj_temp)
-        
-            # #Check if there ir already a created mask
-            # mask_file_bool = []
-            # for ii in range(no_cuts):
-            #     name2save = organ.user_organName + '_mask_DiscNo'+str(ii)+'.npy'
-            #     mask_file = organ.dir_res(dir ='s3_numpy') / name2save
-            #     mask_file_bool.append(mask_file.is_file())
-            
-            # if all(mask_file_bool): 
-            #     q = 'You already created the disc mask(s) to cut tissues into segments '+user_names+'. Do you want to re-run this process?'
-            #     res = {0: 'no, continue with next step', 1: 'yes, re-run it!'}
-            #     proceed = ask4input(q, res, bool)
-        
-            # else: 
-            #     proceed = True
-        
-    # if proceed: 
-              # #Check first if segments is a method involved in this organ
-    # if organ.check_method(method = 'E-Segments'): 
-    #     meshes_segm=[]; final_subsgm=[]
-    #     name_segments = organ.mH_settings['general_info']['segments']['name_segments']
-    #     user_names = '('+', '.join([name_segments[val] for val in name_segments])+')'
-        
-    #     #See if all sections have been stored in organ.submeshes
-    #     segm_names = [item for item in organ.parent_project.mH_param2meas if 'segm1' in item and 'volume' in item]
-    #     org_subm = [key for key in organ.submeshes if 'segm' in key]
-        
-    #     #Check workflow status
-    #     workflow = organ.workflow
-    #     process = ['MeshesProc','E-Segments','Status']
-    #     check_proc = get_by_path(workflow, process)
-    #     if check_proc == 'DONE' and len(org_subm)==len(name_segments)*len(segm_names): 
-    #         q = 'You already divided the tissues into segments '+user_names+'. Do you want to repeat this process?'
-    #         res = {0: 'no, continue with next step', 1: 'yes, I want to repeat it!'}
-    #         proceed = ask4input(q, res, bool)
-    #     else: 
-    #         proceed = True
-    # else:
-    #     proceed = False
-    #     return None
 
 def get_segm_discs(organ, cut, ch, cont, cl_spheres, win): 
 
@@ -1201,65 +1136,11 @@ def run_sections(controller, btn):
         pass
     controller.main_win.update_status(workflow, proc_wft, controller.main_win.sections_status)
 
- # if organ.check_method(method = 'E-Sections'): 
-    #     name_sections = organ.mH_settings['general_info']['sections']['name_sections']
-    #     user_names = '('+', '.join([name_sections[val] for val in name_sections])+')'
-      
-    #     #Check if there ir already a created mask
-    #     name2save = organ.user_organName + '_mask_sect.npy'
-    #     mask_file = organ.dir_res(dir ='s3_numpy') / name2save
-    #     # organ.info['dirs']['s3_numpy'] / name2save
-        
-    #     if mask_file.is_file(): 
-    #         q = 'You already created the mask to cut tissues into sections '+user_names+'. Do you want to create it again?'
-    #         res = {0: 'no, continue with next step', 1: 'yes, re-create it!'}
-    #         proceed = ask4input(q, res, bool)
-    
-    #     else: 
-    #         proceed = True
-        
-       
-        
-        # # organ.info['shape_s3'] = organ.imChannels['ch1']['shape']
-        # fcM.get_sect_mask(controller.organ, plotshow=True)
-
-        # # Cut organ into sections
-        # subms = fcM.get_sections(controller.organ, plotshow=True)
-
-    # #Check if the orientation has alredy been stablished
-    # if 'orientation' in organ.mH_settings.keys(): 
-    #     if 'cl_ribbon' in organ.mH_settings['orientation'].keys():
-    #         q = 'You already created the centreline ribbon to cut tissues into sections. Do you want to create it again?'
-    #         res = {0: 'no, continue with next step', 1: 'yes, re-create it!'}
-    #         proceed = ask4input(q, res, bool)
-    #     else: 
-    #         proceed = True
-    # else: 
-    #     proceed = True
-            
-    # if proceed: 
-    #     q = 'Select the coordinate-axes you would like to use to define the plane in which the centreline will be extended to cut organ into sections:'
-    #     res = {0: 'Stack Coordinate Axes', 
-    #            1: 'ROI (Organ) Specific Coordinate Axes', 
-    #            2: 'Other'}
-    #     opt = ask4input(q, res, int)
-        
-    #     if opt in [0,1]: 
-    #         if opt == 0:
-    #             axes = res[opt].split(' ')[0].lower(); print(axes)
-    #         else: 
-    #             axes = res[opt].split(' ')[0].upper(); print(axes)
-    #         coord_ax = organ.mH_settings['orientation'][axes]
-    #         views = {}
-    #         for n, view in enumerate(list(coord_ax['planar_views'].keys())):
-    #             views[n] = view
-    #         q2 = 'From the -'+res[opt]+'- select the plane you want to use to extend the centreline: '
-    #         opt2 = ask4input(q2, views, int)
-
 def run_measure(controller): 
     if controller.main_win.keeplargest_play.isChecked(): 
         organ = controller.organ
         measurements = organ.mH_settings['measure']
+        all_done = []; whole_done = []; other_done = []
         for param in measurements.keys():
             print('param:', param )
             print(measurements[param].keys())
@@ -1267,24 +1148,42 @@ def run_measure(controller):
                 if 'whole' in item: 
                     print('item:', item)
                     ch, cont, _ = item.split('_')
-                    mesh2meas = organ.obj_meshes[ch+'_'+cont]
-                    mesh = mesh2meas.mesh
-                    print('mesh_name:', mesh2meas.name)
-                    if param == 'Vol': 
-                        vol = mesh.volume()
-                        organ.mH_settings['measure']['Vol'][mesh2meas.name+'_whole'] = vol
-                    if param == 'SA': 
-                        area = mesh.area()
-                        organ.mH_settings['measure']['SA'][mesh2meas.name+'_whole'] = area
+                    try: 
+                        mesh2meas = organ.obj_meshes[ch+'_'+cont]
+                        mesh = mesh2meas.mesh
+                        print('mesh_name:', mesh2meas.name)
+                        if param == 'Vol': 
+                            vol = mesh.volume()
+                            organ.mH_settings['measure']['Vol'][mesh2meas.name+'_whole'] = vol
+                        if param == 'SA': 
+                            area = mesh.area()
+                            organ.mH_settings['measure']['SA'][mesh2meas.name+'_whole'] = area
+                        all_done.append(True); whole_done.append(True)
+                    except: 
+                        print('Ch-Cont: '+ch+'_'+cont+' not found!')
+                        all_done.append(False); whole_done.append(False)
                 else: 
+                    print('Variable to measure:', item, param)
+                    all_done.append(False)
                     pass
 
         # Update organ workflow and GUI Status
-        controller.main_win.update_status(None, 'DONE', controller.main_win.measure_status, override=True)
+        # Whole 
+        if all(whole_done): 
+            controller.main_win.update_status(None, 'DONE', controller.main_win.measure_whole_status, override=True)
+        elif any(whole_done): 
+            controller.main_win.update_status(None, 'Initialised', controller.main_win.measure_whole_status, override=True)
+        else: 
+            controller.main_win.update_status(None, 'NI', controller.main_win.measure_whole_status, override=True)
 
-        #Update progress in main_win
-        controller.main_win.update_workflow_progress()
-
+        # All 
+        if all(all_done): 
+            controller.main_win.update_status(None, 'DONE', controller.main_win.measure_status, override=True)
+        elif any(all_done): 
+            controller.main_win.update_status(None, 'Initialised', controller.main_win.measure_status, override=True)
+        else: 
+            controller.main_win.update_status(None, 'NI', controller.main_win.measure_status, override=True)
+        
         #Fill-up results table
         controller.main_win.fill_results()
     

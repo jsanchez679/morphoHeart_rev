@@ -823,7 +823,7 @@ QScrollBar::handle:vertical:hover {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-622</y>
+            <y>-440</y>
             <width>1047</width>
             <height>1178</height>
            </rect>
@@ -6201,6 +6201,12 @@ background-color: rgb(255, 255, 255);</string>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
                          </property>
+                         <property name="minimum">
+                          <number>1</number>
+                         </property>
+                         <property name="maximum">
+                          <number>5</number>
+                         </property>
                         </widget>
                        </item>
                        <item>
@@ -7016,6 +7022,12 @@ Cutters:</string>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="minimum">
+                          <number>1</number>
+                         </property>
+                         <property name="maximum">
+                          <number>5</number>
                          </property>
                         </widget>
                        </item>

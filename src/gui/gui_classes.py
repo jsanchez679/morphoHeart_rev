@@ -1633,13 +1633,10 @@ class CreateNewProj(QDialog):
         meas_vol = getattr(self, 'cB_volume_segm_sect').isChecked()
         meas_area = getattr(self, 'cB_area_segm_sect').isChecked()
         segm_sect_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area}
-        print('segm_sect_settings:',segm_sect_settings)
 
         #Get segments and section settings
         segm_settings = self.mH_settings['segm']
         sect_settings = self.mH_settings['sect']
-        print('segm_settings:',segm_settings)
-        print('sect_settings:',sect_settings)
 
         #Add parameters to segments
         selected_params = self.mH_user_params 
@@ -1671,6 +1668,9 @@ class CreateNewProj(QDialog):
     def open_sect_segm(self): 
         if self.tick_segm_sect_2.isChecked(): 
             self.widget_segm_sect.setVisible(True)
+            self.mH_settings['segm-sect'] = True
+        else: 
+            self.mH_settings['segm-sect'] = False
 
     def fill_segm_sect(self): 
         if not self.tick_segm2.isChecked(): 
@@ -3316,7 +3316,7 @@ class MainWindow(QMainWindow):
             self.chNS_all_widget.setVisible(False)
             print('Dissapear chNS')
         #Measure
-        self.init_measure()
+        self.init_measure_whole()
         #Centreline
         if len(self.organ.mH_settings['measure']['CL']) > 0:
             self.init_centreline()
@@ -3337,6 +3337,13 @@ class MainWindow(QMainWindow):
             self.init_sections()
         else: 
             self.sections_all_widget.setVisible(False)
+        #Segments-Regions 
+        if isinstance(self.organ.mH_settings['setup']['segm-sect'], dict):
+            self.init_segm_sect()
+            print('aja, intit_segm_sect')
+        else: 
+            self.segm_sect_all_widget.setVisible(False)
+        
         #User parameters
         self.init_user_param()
         #Plot results
@@ -3563,10 +3570,10 @@ class MainWindow(QMainWindow):
         #Initialise with user settings, if they exist!
         self.user_chNS()
 
-    def init_measure(self): 
+    def init_measure_whole(self): 
         #Buttons
-        self.measureAll_play.setStyleSheet(style_play)
-        self.measure_open.clicked.connect(lambda: self.open_section(name='measure'))
+        self.measure_wholeAll_play.setStyleSheet(style_play)
+        self.measure_whole_open.clicked.connect(lambda: self.open_section(name='measure_whole'))
 
     def init_centreline(self):
         #Buttons
@@ -3819,7 +3826,7 @@ class MainWindow(QMainWindow):
                     colors_initialised = True
 
                 lab_names_segm = getattr(self, 'names_segm_'+cutl)
-                bb = set_qtextedit_text(lab_names_segm, segm_setup[cutb]['name_segments'])
+                bb = set_qtextedit_text(lab_names_segm, segm_setup[cutb]['name_segments'], 'segm')
                 set_qtextedit_size(lab_names_segm, (100, (bb+1)*25))
 
                 getattr(self, 'obj_segm_'+cutl).setText(segm_setup[cutb]['obj_segm'])
@@ -3944,7 +3951,7 @@ class MainWindow(QMainWindow):
                     colors_initialised = True
 
                 lab_names_sect = getattr(self, 'names_sect_'+cutl)
-                bb = set_qtextedit_text(lab_names_sect, sect_setup[cutb]['name_sections'])
+                bb = set_qtextedit_text(lab_names_sect, sect_setup[cutb]['name_sections'], 'sect')
                 set_qtextedit_size(lab_names_sect, (100, (bb+1)*25))
 
                 getattr(self, 'sect_cl_'+cutl).addItems(self.items_centreline)
@@ -4048,6 +4055,217 @@ class MainWindow(QMainWindow):
         #Initialise with user settings, if they exist!
         self.user_sections()
 
+    def init_segm_sect(self): 
+        #Buttons
+        self.segm_sect_open.clicked.connect(lambda: self.open_section(name='segm_sect'))
+        self.segm_sect_play.setStyleSheet(style_play)
+        self.segm_sect_play.setEnabled(False)
+        self.q_segm_sect.clicked.connect(lambda: self.help('segm_sect'))
+        # self.segm_sect_set.clicked.connect(lambda: self.set_segm_sect())
+
+        #sCut1_Cut1
+        self.fillcolor_sCut1_Cut1_segm1_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut1_segm1_sect1'))
+        self.fillcolor_sCut1_Cut1_segm1_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut1_segm1_sect2'))
+        self.fillcolor_sCut1_Cut1_segm2_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut1_segm2_sect1'))
+        self.fillcolor_sCut1_Cut1_segm2_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut1_segm2_sect2'))
+        self.fillcolor_sCut1_Cut1_segm3_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut1_segm3_sect1'))
+        self.fillcolor_sCut1_Cut1_segm3_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut1_segm3_sect2'))
+        self.fillcolor_sCut1_Cut1_segm4_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut1_segm4_sect1'))
+        self.fillcolor_sCut1_Cut1_segm4_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut1_segm4_sect2'))
+        self.fillcolor_sCut1_Cut1_segm5_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut1_segm5_sect1'))
+        self.fillcolor_sCut1_Cut1_segm5_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut1_segm5_sect2'))
+
+        #sCut1_Cut2
+        self.fillcolor_sCut1_Cut2_segm1_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut2_segm1_sect1'))
+        self.fillcolor_sCut1_Cut2_segm1_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut2_segm1_sect2'))
+        self.fillcolor_sCut1_Cut2_segm2_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut2_segm2_sect1'))
+        self.fillcolor_sCut1_Cut2_segm2_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut2_segm2_sect2'))
+        self.fillcolor_sCut1_Cut2_segm3_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut2_segm3_sect1'))
+        self.fillcolor_sCut1_Cut2_segm3_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut2_segm3_sect2'))
+        self.fillcolor_sCut1_Cut2_segm4_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut2_segm4_sect1'))
+        self.fillcolor_sCut1_Cut2_segm4_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut2_segm4_sect2'))
+        self.fillcolor_sCut1_Cut2_segm5_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut2_segm5_sect1'))
+        self.fillcolor_sCut1_Cut2_segm5_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut1_Cut2_segm5_sect2'))
+
+        #sCut2_Cut1
+        self.fillcolor_sCut2_Cut1_segm1_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut1_segm1_sect1'))
+        self.fillcolor_sCut2_Cut1_segm1_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut1_segm1_sect2'))
+        self.fillcolor_sCut2_Cut1_segm2_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut1_segm2_sect1'))
+        self.fillcolor_sCut2_Cut1_segm2_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut1_segm2_sect2'))
+        self.fillcolor_sCut2_Cut1_segm3_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut1_segm3_sect1'))
+        self.fillcolor_sCut2_Cut1_segm3_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut1_segm3_sect2'))
+        self.fillcolor_sCut2_Cut1_segm4_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut1_segm4_sect1'))
+        self.fillcolor_sCut2_Cut1_segm4_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut1_segm4_sect2'))
+        self.fillcolor_sCut2_Cut1_segm5_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut1_segm5_sect1'))
+        self.fillcolor_sCut2_Cut1_segm5_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut1_segm5_sect2'))
+
+        #sCut2_Cut2
+        self.fillcolor_sCut2_Cut2_segm1_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut2_segm1_sect1'))
+        self.fillcolor_sCut2_Cut2_segm1_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut2_segm1_sect2'))
+        self.fillcolor_sCut2_Cut2_segm2_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut2_segm2_sect1'))
+        self.fillcolor_sCut2_Cut2_segm2_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut2_segm2_sect2'))
+        self.fillcolor_sCut2_Cut2_segm3_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut2_segm3_sect1'))
+        self.fillcolor_sCut2_Cut2_segm3_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut2_segm3_sect2'))
+        self.fillcolor_sCut2_Cut2_segm4_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut2_segm4_sect1'))
+        self.fillcolor_sCut2_Cut2_segm4_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut2_segm4_sect2'))
+        self.fillcolor_sCut2_Cut2_segm5_sect1.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut2_segm5_sect1'))
+        self.fillcolor_sCut2_Cut2_segm5_sect2.clicked.connect(lambda: self.color_picker(name = 'sCut2_Cut2_segm5_sect2'))
+
+        segm_sect_setup = self.organ.mH_settings['setup']['segm-sect']
+        segm_setup = self.organ.mH_settings['setup']['segm']
+        no_cuts_segm = [key for key in segm_setup.keys() if 'Cut' in key]
+        sect_setup = self.organ.mH_settings['setup']['sect']
+        no_cuts_sect = [key for key in sect_setup.keys() if 'Cut' in key]
+        self.segm_sect_btns = {}
+
+        palettes = ['Accent', 'Dark2','Paired', 'Set1']
+        print('SETTINGSS:', segm_sect_setup, '\n', segm_setup, '\n', no_cuts_segm, '\n', sect_setup, '\n', no_cuts_sect)
+
+        nun = 0
+        for cut in ['Cut1', 'Cut2']: 
+            scut = 's'+cut
+            if scut in segm_sect_setup.keys(): 
+                n_segm = segm_setup[cut]['no_segments']
+                print('Aja -', scut, ' In ')
+                for rcut in no_cuts_sect:
+                    if rcut in segm_sect_setup[scut].keys():
+                        n_sect = sect_setup[cut]['no_sections']
+                        print('Aja -', rcut, ' In ')
+                        if 'colors' not in self.organ.mH_settings['setup']['segm-sect'][scut][rcut].keys():
+                            colors_initialised = False
+                            self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors'] = {}
+                        else: 
+                            colors_initialised = True
+
+                        lab_names_segm = getattr(self, 'names_'+scut+'_'+rcut+'_segm')
+                        bbsegm = set_qtextedit_text(lab_names_segm, segm_setup[cut]['name_segments'], 'segm')
+                        set_qtextedit_size(lab_names_segm, (100, (bbsegm+1)*25))
+
+                        lab_names_sect = getattr(self, 'names_'+scut+'_'+rcut+'_sect')
+                        bbsect = set_qtextedit_text(lab_names_sect, sect_setup[rcut]['name_sections'], 'sect')
+                        set_qtextedit_size(lab_names_sect, (100, (bbsect+1)*25))
+
+                        palette = palette_rbg(palettes[nun], 10); nun+=1
+                        num = 1
+                        for ns in range(1,6,1):#n_segm+1,1):
+                            for nr in range(1,3,1):#n_sect+1,1):
+                                if ns > bbsegm+1: 
+                                    # label_sCut1_Cut1_segm1_sect1
+                                    getattr(self, 'label_'+scut+'_'+rcut+'_segm'+str(ns)+'_sect'+str(nr)).setVisible(False)
+                                    getattr(self, 'fillcolor_'+scut+'_'+rcut+'_segm'+str(ns)+'_sect'+str(nr)).setVisible(False)
+                                else:
+                                    if not colors_initialised: 
+                                        color = palette[num-1]
+                                        self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors']['segm'+str(ns)+'_sect'+str(nr)] = color
+                                    else: 
+                                        color = self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors']['segm'+str(ns)+'_sect'+str(nr)]
+                                    btn_color = getattr(self, 'fillcolor_'+scut+'_'+rcut+'_segm'+str(ns)+'_sect'+str(nr))
+                                    print('color:', color)
+                                    color_btn(btn = btn_color, color = color)
+                                num+=1
+
+                        ch_conts = sorted(self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['ch_segm_sect'])
+                        mm = 1
+                        for ch_cont in ch_conts: 
+                            #scut1_cut1_chcont_sect1
+                            getattr(self, scut.lower()+'_'+rcut.lower()+'_chcont_sect'+str(mm)).setText(str(mm)+'. '+ch_cont)
+                            #scut1_cut1_play_sect1
+                            getattr(self, scut.lower()+'_'+rcut.lower()+'_play_sect'+str(mm)).setEnabled(False)
+                            #scut1_cut1_plot_sect1
+                            getattr(self,  scut.lower()+'_'+rcut.lower()+'_plot_sect'+str(mm)).setEnabled(False)
+                            self.segm_sect_btns[scut+'_o_'+rcut+':'+ch_cont] = {'num': str(mm), 
+                                                                            'play': getattr(self, scut.lower()+'_'+rcut.lower()+'_play_sect'+str(mm)),
+                                                                            'plot': getattr(self, scut.lower()+'_'+rcut.lower()+'_plot_sect'+str(mm))}
+                            mm+=1
+                        #Make invisible the rest of the items
+                        for el in range(mm,13,1):
+                            getattr(self, scut.lower()+'_'+rcut.lower()+'_chcont_sect'+str(el)).setVisible(False)
+                            getattr(self, scut.lower()+'_'+rcut.lower()+'_play_sect'+str(el)).setVisible(False)
+                            getattr(self, scut.lower()+'_'+rcut.lower()+'_plot_sect'+str(el)).setVisible(False)
+
+                    else: 
+                        print('Aja -', rcut, ' Out ')
+                        getattr(self, 'names_'+scut+'_'+rcut+'_segm').setVisible(False)
+                        getattr(self, 'names_'+scut+'_'+rcut+'_sect').setVisible(False)
+                        getattr(self, 'wcolor_'+scut+'_'+rcut).setVisible(False)
+                        getattr(self, 'wbuttons_'+scut+'_'+rcut).setVisible(False)
+                        getattr(self, 'segm_sect_line_'+scut+'_1').setVisible(False)
+                        getattr(self, 'segm_sect_line_'+scut+'_2').setVisible(False)
+                        getattr(self, 'segm_sect_line_'+scut+'_3').setVisible(False)
+            else: 
+                print('-', scut, ' Out ')
+                getattr(self, 'segm_sect_line_sCut1_sCut2_1').setVisible(False)
+                getattr(self, 'segm_sect_line_sCut1_sCut2_2').setVisible(False)
+                getattr(self, 'segm_sect_line_sCut1_sCut2_3').setVisible(False)
+                getattr(self, 'segm_sect_line_sCut1_sCut2_4').setVisible(False)
+                getattr(self, 'segm_sect_line_sCut2_1').setVisible(False)
+                getattr(self, 'segm_sect_line_sCut2_2').setVisible(False)
+                getattr(self, 'segm_sect_line_sCut2_3').setVisible(False)
+                for rcut in ['Cut1', 'Cut2']:
+                    getattr(self, 'names_'+scut+'_'+rcut+'_segm').setVisible(False)
+                    getattr(self, 'names_'+scut+'_'+rcut+'_sect').setVisible(False)
+                    getattr(self, 'wcolor_'+scut+'_'+rcut).setVisible(False)
+                    getattr(self, 'wbuttons_'+scut+'_'+rcut).setVisible(False)
+
+        print('segm_sect_btns:', self.segm_sect_btns)
+        print('mH-colors:', self.organ.mH_settings['setup']['segm-sect'])
+
+        #Plot buttons
+        self.scut1_cut1_plot_sect1.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect1'))
+        self.scut1_cut1_plot_sect2.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect2'))
+        self.scut1_cut1_plot_sect3.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect3'))
+        self.scut1_cut1_plot_sect4.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect4'))
+        self.scut1_cut1_plot_sect5.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect5'))
+        self.scut1_cut1_plot_sect6.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect6'))
+        self.scut1_cut1_plot_sect7.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect7'))
+        self.scut1_cut1_plot_sect8.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect8'))
+        self.scut1_cut1_plot_sect9.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect9'))
+        self.scut1_cut1_plot_sect10.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect10'))
+        self.scut1_cut1_plot_sect11.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect11'))
+        self.scut1_cut1_plot_sect12.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect12'))
+
+        self.scut1_cut2_plot_sect1.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect1'))
+        self.scut1_cut2_plot_sect2.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect2'))
+        self.scut1_cut2_plot_sect3.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect3'))
+        self.scut1_cut2_plot_sect4.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect4'))
+        self.scut1_cut2_plot_sect5.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect5'))
+        self.scut1_cut2_plot_sect6.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect6'))
+        self.scut1_cut2_plot_sect7.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect7'))
+        self.scut1_cut2_plot_sect8.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect8'))
+        self.scut1_cut2_plot_sect9.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect9'))
+        self.scut1_cut2_plot_sect10.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect10'))
+        self.scut1_cut2_plot_sect11.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect11'))
+        self.scut1_cut2_plot_sect12.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect12'))
+
+        self.scut2_cut1_plot_sect1.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect1'))
+        self.scut2_cut1_plot_sect2.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect2'))
+        self.scut2_cut1_plot_sect3.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect3'))
+        self.scut2_cut1_plot_sect4.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect4'))
+        self.scut2_cut1_plot_sect5.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect5'))
+        self.scut2_cut1_plot_sect6.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect6'))
+        self.scut2_cut1_plot_sect7.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect7'))
+        self.scut2_cut1_plot_sect8.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect8'))
+        self.scut2_cut1_plot_sect9.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect9'))
+        self.scut2_cut1_plot_sect10.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect10'))
+        self.scut2_cut1_plot_sect11.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect11'))
+        self.scut2_cut1_plot_sect12.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect12'))
+
+        self.scut2_cut2_plot_sect1.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect1'))
+        self.scut2_cut2_plot_sect2.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect2'))
+        self.scut2_cut2_plot_sect3.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect3'))
+        self.scut2_cut2_plot_sect4.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect4'))
+        self.scut2_cut2_plot_sect5.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect5'))
+        self.scut2_cut2_plot_sect6.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect6'))
+        self.scut2_cut2_plot_sect7.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect7'))
+        self.scut2_cut2_plot_sect8.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect8'))
+        self.scut2_cut2_plot_sect9.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect9'))
+        self.scut2_cut2_plot_sect10.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect10'))
+        self.scut2_cut2_plot_sect11.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect11'))
+        self.scut2_cut2_plot_sect12.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect12'))
+
+        #Initialise with user settings, if they exist!
+        self.user_segm_sect()
+
     def init_user_param(self): 
 
         self.user_params_open.clicked.connect(lambda: self.open_section(name = 'user_params'))
@@ -4137,6 +4355,9 @@ class MainWindow(QMainWindow):
         self.fill_results()
         self.results_save.clicked.connect(lambda: self.save_results())
 
+        #Init measure_status
+        self.user_measure_whole()
+
     def init_plot_results(self):
         self.plot_open.clicked.connect(lambda: self.open_section(name = 'plot')) 
         self.open_section(name='plot')
@@ -4175,6 +4396,8 @@ class MainWindow(QMainWindow):
                 self.keeplargest_plot.setEnabled(True)
                 #Update Status in GUI
                 self.update_status(None, 'DONE', self.keeplargest_status, override=True)
+                # self.keeplargest_open.setChecked(True)
+                # self.open_section(name = 'keeplargest')
             elif any(done_all):
                 #Update Status in GUI
                 self.update_status(None, 'Initialised', self.keeplargest_status, override=True)
@@ -4224,6 +4447,8 @@ class MainWindow(QMainWindow):
                 self.clean_plot.setEnabled(True)
                 #Update Status in GUI
                 self.update_status(None, 'DONE', self.cleanup_status, override=True)
+                self.cleanup_open.setChecked(True)
+                self.open_section(name = 'cleanup')
             elif any(done_all):
                 #Update Status in GUI
                 self.update_status(None, 'Initialised', self.cleanup_status, override=True)
@@ -4265,6 +4490,8 @@ class MainWindow(QMainWindow):
                 self.trimming_play.setChecked(True)
                 #Update Status in GUI
                 self.update_status(None, 'DONE', self.trimming_status, override=True)
+                self.trimming_open.setChecked(True)
+                self.open_section(name = 'trimming')
             elif any(done_all):
                 #Update Status in GUI
                 self.update_status(None, 'Initialised', self.trimming_status, override=True)
@@ -4306,7 +4533,9 @@ class MainWindow(QMainWindow):
                 #Toggle Button
                 self.orientation_set.setChecked(True)
                 self.orientation_play.setChecked(True)
-
+            if workflow['Status'] == 'DONE': 
+                self.orient_open.setChecked(True)
+                self.open_section(name = 'orient')
             #Update Status in GUI
             self.update_status(workflow, ['Status'], self.orient_status)
 
@@ -4331,12 +4560,33 @@ class MainWindow(QMainWindow):
                 #Update Status in GUI
                 self.update_status(None, 'DONE', self.chNS_status, override=True)
                 self.chNS_play.setChecked(True)
+                # self.chNS_open.setChecked(True)
+                # self.open_section(name = 'chNS')
 
             #Run Set Function 
             self.set_chNS()
         else: 
             pass
 
+    def user_measure_whole(self): 
+        measurements = self.organ.mH_settings['measure']
+        whole_done = []
+        for index, val in self.df_res.iterrows():
+            var, tiss, _, = index
+            if 'whole' in tiss and var != 'Centreline': 
+                if val[0] != 'TBO': 
+                    whole_done.append(True)
+                else:
+                    whole_done.append(False)
+
+        if all(whole_done): 
+            self.update_status(None, 'DONE', self.measure_whole_status, override=True)
+            self.measure_wholeAll_play.setChecked(True)
+        elif any(whole_done): 
+            self.update_status(None, 'Initialised', self.measure_whole_status, override=True)
+        else: 
+            self.update_status(None, 'NI', self.measure_whole_status, override=True)
+        
     def user_centreline(self): 
 
         wf = self.organ.workflow['morphoHeart']['MeshesProc']['C-Centreline']
@@ -4408,6 +4658,9 @@ class MainWindow(QMainWindow):
                     value = wf_info['centreline']['buildCL']['connect_cl'][ch+'_'+cont]
                     valuef = value.split('-')[0]
                     getattr(self, 'opt_cl'+str(nn+1)).setText(valuef)
+
+                    self.centreline_open.setChecked(True)
+                    self.open_section(name = 'centreline')
             
             #Update Status in GUI
             self.update_status(wf, ['Status'], self.centreline_status)
@@ -4603,6 +4856,9 @@ class MainWindow(QMainWindow):
         else: 
             pass
   
+    def user_segm_sect(self): 
+        pass
+    
     def user_user_params(self): 
 
         print('self.gui_key_user_params: ', self.gui_key_user_params)
@@ -4642,22 +4898,34 @@ class MainWindow(QMainWindow):
             red, green, blue, _ = color.getRgb() #[red, green, blue]
             fill = getattr(self, 'fillcolor_'+name)
             color_btn(btn = fill, color = color.name())
-            chk, contk = name.split('_')
-            if chk != 'chNS' and contk in ['int', 'ext', 'tiss']: 
-                # print('not chNS')
-                self.organ.mH_settings['setup']['color_chs'][chk][contk] = [red, green, blue]
-                self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])
-            elif chk == 'chNS': 
-                # print('chNS')
-                self.organ.mH_settings['setup'][chk]['color_chns'][contk] = [red, green, blue]#color.name()
-                self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])#color.name())
-            else: # 'cut1_sect1' or 'cut1_segm1'
-                if 'segm' in contk: 
-                    stype = 'segm'
-                else: 
-                    stype = 'sect'
-                self.organ.mH_settings['setup'][stype][chk.title()]['colors'][contk] = [red, green, blue]#color.name()
-            
+            name_split = name.split('_')
+            if len(name_split) == 2: 
+                chk, contk = name_split
+                if chk != 'chNS' and contk in ['int', 'ext', 'tiss']: 
+                    # print('not chNS')
+                    self.organ.mH_settings['setup']['color_chs'][chk][contk] = [red, green, blue]
+                    try: 
+                        self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])
+                    except: 
+                        pass
+                elif chk == 'chNS': 
+                    # print('chNS')
+                    self.organ.mH_settings['setup'][chk]['color_chns'][contk] = [red, green, blue]#color.name()
+                    try: 
+                        self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])#color.name())
+                    except: 
+                        pass
+                else: # 'cut1_sect1' or 'cut1_segm1'
+                    if 'segm' in contk: 
+                        stype = 'segm'
+                    else: 
+                        stype = 'sect'
+                    self.organ.mH_settings['setup'][stype][chk.title()]['colors'][contk] = [red, green, blue]#color.name()
+            else: 
+                print('name:', name) #sCut1_Cut1_segm1_sect1
+                scut, rcut, segm, sect = name_split
+                self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors'][segm+'_'+sect] = [red, green, blue]
+   
     def set_colormap(self, name):
         value = getattr(self, 'colormap'+name).currentText()
         dir_pix = 'images/'+value+'.png'
@@ -4682,7 +4950,7 @@ class MainWindow(QMainWindow):
         flat_wf = flatdict.FlatDict(self.organ.workflow['morphoHeart']['MeshesProc'])
         keys_flat = flat_wf.keys()
         keys_flat_filtered = [key for key in keys_flat if 'F-Measure' not in key]
-        print('keys_flat_filtered:', keys_flat_filtered)
+        # print('keys_flat_filtered:', keys_flat_filtered)
         main_titles = []
         for key in keys_flat_filtered: 
             split_key = key.split(':')
@@ -4905,6 +5173,18 @@ class MainWindow(QMainWindow):
         for row in range(len(self.df_res)):   
             headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
 
+        #Update measure_status
+        col_list = self.df_res["Value"].values.tolist()
+        if all(flag == 'TBO' for flag in col_list):
+            self.update_status(None, 'NI', self.measure_status, override=True)
+            self.organ.measure_status = 'NI'
+        elif any(flag == 'TBO' for flag in col_list):
+            self.update_status(None, 'Initialised', self.measure_status, override=True)
+            self.organ.measure_status = 'Initialised'
+        else: 
+            self.update_status(None, 'DONE', self.measure_status, override=True)
+            self.organ.measure_status = 'DONE'
+
     def get_results_df(self): 
         #Actual names
         params = self.organ.mH_settings['setup']['params']
@@ -4916,7 +5196,6 @@ class MainWindow(QMainWindow):
         dict_names['Angles'] = 'Angles'
 
         measurements = self.organ.mH_settings['measure']
-        print('measurements: ', measurements)
         df_index = pd.DataFrame.from_dict(measurements, orient='index')
         # print('df_index', df_index)
         vars2drop = ['th_e2i', 'th_i2e', 'ball', 'hm3Dto2D']
@@ -6019,6 +6298,9 @@ class MainWindow(QMainWindow):
         obj = [tuple(obj_meshes)]
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
 
+    def plot_segm_section(self, btn): 
+        print('plotting..', btn)
+
     def plot_orient(self, name): 
 
         ext_ch = self.organ.get_ext_int_chs()
@@ -6389,7 +6671,6 @@ def setup_play_btn(btn, win):
     
 def color_btn(btn, color, small=True): 
 
-    # print('color:',color, type(color))
     if isinstance(color, list): 
         color = 'rgb'+str(tuple(color))
     else: 
@@ -6451,7 +6732,7 @@ def validate_txt(input_str):
     return error
 
 # QTextEdit label and size
-def set_qtextedit_text(label, dict_names): 
+def set_qtextedit_text(label, dict_names, stype): 
     # names_list = []
     names_f = ''
     style = '</style></head><body style=" font-family:"Calibri Light"; font-size:10pt; font-weight:24; font-style:normal;">'
@@ -6462,9 +6743,9 @@ def set_qtextedit_text(label, dict_names):
         name_add = dict_names[segm]
         # names_list.append(dict_names[segm])
         if bb == 0: 
-            names_f = style+beg+roman_num[bb]+'. '+name_add
+            names_f = style+beg+roman_num[stype][bb]+'. '+name_add
         else: 
-            names_f = names_f+', '+end+beg+roman_num[bb]+'. '+name_add
+            names_f = names_f+', '+end+beg+roman_num[stype][bb]+'. '+name_add
     names_f = names_f+end_end
     label.setHtml(names_f)
     # print('bb:', bb)
@@ -6613,4 +6894,5 @@ mH_images, play_colors, style_play, html_txt, reg_exps, tE_styles = list_all
 mH_icon, mH_big, mH_top_corner = mH_images
 play_bw, play_gw, play_gb, play_btn = play_colors
 error_style, note_style, msg_style = tE_styles
-roman_num = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+roman_num ={'sect': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'], 
+            'segm': ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']}

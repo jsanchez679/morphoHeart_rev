@@ -251,7 +251,7 @@ def get_stack_orientation(organ, gui_orientation, win):#
     planar_views, stack_cube = organ.get_orientation(views, colors, mtype='STACK', win=win)
 
     #Update organ workflow
-    process = ['MeshesProc', 'A-Create3DMesh', 'Set_Orientation']
+    process = ['MeshesProc', 'A-Set_Orientation']
     organ.update_mHworkflow(process+['Stack'],'DONE')
     roi_status = get_by_path(workflow, process+['ROI'])
     if  roi_status == 'NI':
@@ -301,7 +301,7 @@ def get_roi_orientation(organ, gui_orientation:dict, win):#
 
     if not on_hold: 
         #Update organ workflow
-        process = ['MeshesProc', 'A-Create3DMesh', 'Set_Orientation']
+        process = ['MeshesProc', 'A-Set_Orientation']
         organ.update_mHworkflow(process+['ROI'],'DONE')
         stack_status = get_by_path(workflow, process+['Stack'])
         if  stack_status == 'NI':
@@ -380,6 +380,7 @@ def proc_meshes4cl(organ, win):#
     """
     tol = win.gui_centreline['SimplifyMesh']['tol']
     workflow = organ.workflow['morphoHeart']
+    
     # Set cut names 
     cuts_names = {'top': {'heart_def': 'outflow tract','other': 'top'},
                 'bottom': {'heart_def': 'inflow tract','other': 'bottom'}}

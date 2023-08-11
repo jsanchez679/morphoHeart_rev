@@ -686,7 +686,6 @@ class Project():
             print('wf_so_far:', wf_so_far)
             self.organs[organ_name]['workflow'] = wf_so_far
         
-
     def get_current_wf(self, organ): #
         flat_wf = flatdict.FlatDict(copy.deepcopy(organ.workflow))
         keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))==4 and 'Status' in key]
@@ -698,6 +697,7 @@ class Project():
             if isinstance(out_dict[keyi], flatdict.FlatDict):
                 out_dict[keyi] = out_dict[keyi].as_dict()
         
+        out_dict['morphoHeart']['MeshesProc']['F-Measure']['Status'] = organ.measure_status
         print('out_dict: ', out_dict)
         return out_dict
 
@@ -735,8 +735,10 @@ class Organ():
         
         self.parent_project = project
         self.on_hold = False
+        
         if new:
             print('\nCreating new organ!')
+            self.measure_status = 'NI'
             user_settings = organ_dict['settings']
             img_dirs = organ_dict['img_dirs']
             self.user_organName = user_settings['user_organName']#.replace(' ', '_')
@@ -1309,6 +1311,10 @@ class Organ():
             
             if all(flag == 'DONE' for flag in proc_done):
                 self.update_mHworkflow([process,'Status'], 'DONE')
+            elif any(flag == 'DONE' for flag in proc_done):
+                self.update_mHworkflow([process,'Status'], 'Initialised')
+            else: 
+                pass
 
     def update_mHworkflow(self, process, update):#
         workflow = self.workflow['morphoHeart']
@@ -2192,6 +2198,10 @@ class ImChannelNS(): #channel
         self.s3_tiss = tiss_s3
         self.add_contStack(tiss_s3, cont_type = 'tiss')
 
+        process = ['ImProc','chNS','Status']
+        organ.update_mHworkflow(process, 'DONE')
+        organ.check_status('ImProc')
+
     def load_chS3s (self, cont_types:list):
         for cont in cont_types:
             # print(cont)
@@ -2312,31 +2322,8 @@ class ImChannelNS(): #channel
 
         mesh = Mesh_mH(imChannel = self, mesh_type = cont_type, 
                         mesh_prop = mesh_prop, new_set = new_set)
-
         
-        # meshes_out = []
-        # for mesh_type in cont_types:
-        #     name = self.channel_no + '_' + mesh_type
-        #     if name not in self.parent_organ.meshes.keys():
-        #         keep_largest_f = keep_largest[mesh_type]
-        #         print('>> New mesh NS!')
-        #     else: 
-        #         if new_set: 
-        #             print('>> New_set = True')
-        #             try: 
-        #                 keep_largest_f = keep_largest[mesh_type]
-        #                 print('>> New keep_largest')
-        #             except: 
-        #                 print('>> Old keep_largest')
-        #                 keep_largest_f = self.parent_organ.mH_settings['setup'][self.channel_no]['keep_largest'][mesh_type]
-        #             print('>> Recreating mesh with new settings -keep largest')
-        #         else: 
-        #             keep_largest_f = keep_largest
-        #             print('>> Recreating mesh with same settings as original')
-        #     mesh = Mesh_mH(self, mesh_type, keep_largest_f, rotateZ_90, new_set=new_set)#, new=True)
-        #     meshes_out.append(mesh)
-            
-        # return meshes_out
+        self.parent_organ.check_status('MeshesProc')
         
 class ContStack(): 
     'morphoHeart Contour Stack Class'

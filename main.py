@@ -264,7 +264,7 @@ class Controller:
         self.main_win.trimming_play.clicked.connect(lambda: self.run_trimming())
         self.main_win.orientation_play.clicked.connect(lambda: self.run_axis_orientation())
         self.main_win.chNS_play.clicked.connect(lambda: self.run_chNS())
-        self.main_win.measureAll_play.clicked.connect(lambda: self.run_measure())
+        self.main_win.measure_wholeAll_play.clicked.connect(lambda: self.run_measure_whole())
 
         self.main_win.centreline_clean_play.clicked.connect(lambda: self.run_centreline_clean())
         self.main_win.centreline_ML_play.clicked.connect(lambda: self.run_centreline_ML())
@@ -637,7 +637,7 @@ class Controller:
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
     
-    def run_measure(self): 
+    def run_measure_whole(self): 
         mA.run_measure(controller=self)
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
