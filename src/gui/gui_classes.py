@@ -2875,7 +2875,7 @@ class Load_S3s(QDialog):
         parent_win.all_closed.setChecked(True)
 
         #Buttons
-        self.create_channels.clicked.connect(lambda: self.create_imChannels(organ=organ))
+        self.create_imChannels(organ=organ)
         self.button_add_channels.clicked.connect(lambda: self.add_channels_to_organ(proj=proj, organ=organ, parent_win=parent_win))
 
         #Set channel info
@@ -2917,7 +2917,6 @@ class Load_S3s(QDialog):
     
         str_names = ', '.join(names)
         self.win_msg('Organ channels  -'+str_names+'-  have been successfully created! Please continue by loading the closed contour stacks...')
-        self.create_channels.setChecked(True)
 
     def get_file(self, organ, ch_cont, parent_win):
         self.win_msg('Loading '+ch_cont+'... Wait for the indicator to turn green, then continue.')
@@ -2952,47 +2951,49 @@ class Load_S3s(QDialog):
                 self.win_msg('*The selected file is not a numpy array. Please select a valid file.', getattr(self, 'browse_'+ch_cont))
 
     def add_channels_to_organ(self, proj, organ, parent_win): 
-        if self.create_channels.isChecked(): 
-            all_done = []
-            nn = 1; total_n = len(self.channels)*3
-            for ch in self.channels: 
-                process_up =  ['ImProc', ch, 'Status']
-                self.win_msg("Adding channels' contours to organ ("+str(nn)+"/"+str(total_n)+")")
-                for cont in ['int', 'tiss', 'ext']: 
-                    text = getattr(self, 'check_'+ch+'_'+cont).text()
-                    if text != 'Done':
-                        self.win_msg('*Please select the stack with closed contours for '+ch+'_'+cont+'!')
-                        self.button_add_channels.setChecked(False)
-                        return
-                    else: 
-                        im_ch = organ.obj_imChannels[ch]
-                        file_name = getattr(self, 'npy_'+ch+'_'+cont)
-                        npy_stack = np.load(file_name)
-                        im_ch.create_chS3s(layerDict=npy_stack, win=self, cont_list=[cont])
-                        process = ['ImProc', ch, 'C-SelectCont','Status']
-                        
-                        #Update organ workflow
-                        organ.update_mHworkflow(process, update = 'DONE')
-                        all_done.append(True)
-                        nn += 1
 
+        all_done = []
+        nn = 1; total_n = len(self.channels)*3
+        for ch in self.channels: 
+            process_up =  ['ImProc', ch, 'Status']
+            self.win_msg("Adding channels' contours to organ ("+str(nn)+"/"+str(total_n)+")")
+            for cont in ['int', 'tiss', 'ext']: 
+                text = getattr(self, 'check_'+ch+'_'+cont).text()
+                if text != 'Done':
+                    self.win_msg('*Please select the stack with closed contours for '+ch+'_'+cont+'!')
+                    self.button_add_channels.setChecked(False)
+                    return
+                else: 
+                    im_ch = organ.obj_imChannels[ch]
+                    file_name = getattr(self, 'npy_'+ch+'_'+cont)
+                    npy_stack = np.load(file_name)
+                    im_ch.create_chS3s(layerDict=npy_stack, win=self, cont_list=[cont])
+                    process = ['ImProc', ch, 'C-SelectCont','Status']
+                    
+                    #Update organ workflow
+                    organ.update_mHworkflow(process, update = 'DONE')
+                    all_done.append(True)
+                    nn += 1
+
+            #Update organ workflow
+            organ.update_mHworkflow(process_up, update = 'DONE')
+
+            #Update other processes to DONE-Other way
+            processes = ['A-Autom','B-Manual','C-CloseInOut']
+            for proc in processes: 
+                process_x = ['ImProc', ch, 'B-CloseCont', 'Steps', proc, 'Status']
                 #Update organ workflow
-                organ.update_mHworkflow(process_up, update = 'DONE')
+                organ.update_mHworkflow(process_x, update = 'DONE-Loaded')
 
-            if all(all_done):
-                parent_win.update_ch_progress()
-                organ.save_organ()
-                proj.add_organ(organ)
-                proj.save_project()
-                print('organ.__dict__:', organ.__dict__)
-                self.win_msg('Project  -'+ proj.user_projName + 'and Organ  -'+ organ.user_organName +'-  were saved succesfully!')
-                self.close()
-                parent_win.win_msg('All closed channels have been successfully imported in this organ!')
-                
-        else: 
-            self.win_msg('*Please create organ channels first to continue', self.button_add_channels)
-            self.button_add_channels.setChecked(False)
-            return
+        if all(all_done):
+            parent_win.update_ch_progress()
+            organ.save_organ()
+            proj.add_organ(organ)
+            proj.save_project()
+            print('organ.__dict__:', organ.__dict__)
+            self.win_msg('Project  -'+ proj.user_projName + 'and Organ  -'+ organ.user_organName +'-  were saved succesfully!')
+            self.close()
+            parent_win.win_msg('All closed channels have been successfully imported in this organ!')
 
     def win_msg(self, msg, btn=None): 
         if msg[0] == '*':
@@ -4113,13 +4114,13 @@ class MainWindow(QMainWindow):
 
         segm_sect_setup = self.organ.mH_settings['setup']['segm-sect']
         segm_setup = self.organ.mH_settings['setup']['segm']
-        no_cuts_segm = [key for key in segm_setup.keys() if 'Cut' in key]
+        # no_cuts_segm = [key for key in segm_setup.keys() if 'Cut' in key]
         sect_setup = self.organ.mH_settings['setup']['sect']
-        no_cuts_sect = [key for key in sect_setup.keys() if 'Cut' in key]
+        # no_cuts_sect = [key for key in sect_setup.keys() if 'Cut' in key]
         self.segm_sect_btns = {}
 
         palettes = ['Accent', 'Dark2','Paired', 'Set1']
-        print('SETTINGSS:', segm_sect_setup, '\n', segm_setup, '\n', no_cuts_segm, '\n', sect_setup, '\n', no_cuts_sect)
+        print('SETTINGSS:', segm_sect_setup, '\n', segm_setup, '\n', sect_setup)
 
         nun = 0
         for cut in ['Cut1', 'Cut2']: 
@@ -4127,9 +4128,9 @@ class MainWindow(QMainWindow):
             if scut in segm_sect_setup.keys(): 
                 n_segm = segm_setup[cut]['no_segments']
                 print('Aja -', scut, ' In ')
-                for rcut in no_cuts_sect:
+                for rcut in ['Cut1', 'Cut2']:
                     if rcut in segm_sect_setup[scut].keys():
-                        n_sect = sect_setup[cut]['no_sections']
+                        n_sect = sect_setup[rcut]['no_sections']
                         print('Aja -', rcut, ' In ')
                         if 'colors' not in self.organ.mH_settings['setup']['segm-sect'][scut][rcut].keys():
                             colors_initialised = False
@@ -4595,6 +4596,7 @@ class MainWindow(QMainWindow):
             self.tolerance.setValue(wf_info['centreline']['SimplifyMesh']['tol'])
             self.cB_voronoi.setChecked(wf_info['centreline']['vmtk_CL']['voronoi'])
             self.nPoints.setValue(wf_info['centreline']['buildCL']['nPoints'])
+            self.cB_same_planes.setChecked(wf_info['centreline']['SimplifyMesh']['same_planes'])
             #Enable set button 
             plot_btn = getattr(self, 'centreline_set')
             plot_btn.setEnabled(True)
@@ -5115,7 +5117,10 @@ class MainWindow(QMainWindow):
                     proc, ch_info = split_cs
                     proc_inv = titles_inv[proc]
                     split_ch_info = ch_info[:-1].split('_')
-                    if len(split_ch_info) == 2: 
+                    if len(split_ch_info) == 1: #chNS
+                        ch = split_ch_info
+                        final_key = proc_inv+':'+ch[0]+':Status'
+                    elif len(split_ch_info) == 2: 
                         ch, cont = split_ch_info
                         final_key = proc_inv+':'+ch+':'+cont+':Status'
                     elif len(split_ch_info) == 3: 
@@ -5770,10 +5775,11 @@ class MainWindow(QMainWindow):
             namef = name.split('_whole')[0]
             connect_cl[namef] = None
 
+        same_planes = self.cB_same_planes.isChecked()
         tol = self.tolerance.value()
         voronoi = self.cB_voronoi.isChecked()
         nPoints = self.nPoints.value()
-        gui_centreline =  {'SimplifyMesh': {'plane_cuts': None, 'tol': tol},
+        gui_centreline =  {'SimplifyMesh': {'same_planes': same_planes, 'plane_cuts': None, 'tol': tol},
                                 'vmtk_CL': {'voronoi': voronoi},
                                 'buildCL': {'nPoints': nPoints, 'connect_cl': connect_cl}, 
                                 'dirs' : None}
@@ -6639,8 +6645,10 @@ def sound_opt(win):
 def update_status(root_dict, items, fillcolor, override=False): 
     if not override: 
         wf_status = get_by_path(root_dict, items)
+        # print('wf_status gbp:', wf_status)
     else: 
         wf_status = items
+        # print('wf_status:', wf_status)
 
     if wf_status == 'NI': 
         color = 'rgb(255, 255, 127)'
@@ -6654,9 +6662,12 @@ def update_status(root_dict, items, fillcolor, override=False):
         color = 'rgb(35, 207, 255)'
     elif wf_status == 'DONE-NoCut':
         color = 'rgb(0, 85, 127)'
+    elif wf_status == 'DONE-Loaded':
+        color = 'rgb(0,170,127)'
     else: 
         color = 'rgb(255, 0, 255)'
         print('other status unknown: ', fillcolor)
+    
     color_btn(btn = fillcolor, color = color)
 
 # Button general functions

@@ -378,6 +378,7 @@ def proc_meshes4cl(organ, win):#
     the centreline will be obtained.
 
     """
+    same_planes = win.gui_centreline['SimplifyMesh']['same_planes']
     tol = win.gui_centreline['SimplifyMesh']['tol']
     workflow = organ.workflow['morphoHeart']
     
@@ -407,6 +408,8 @@ def proc_meshes4cl(organ, win):#
         mH_mesh4cl.append(mH_mesh)
         chs4cl.append(organ.obj_meshes[ch+'_'+cont].channel_no)
     
+    print(cl_names, mH_mesh4cl, chs4cl)
+
     # Get dictionary with initialised planes to cut top/bottom
     planes_info = {'top':None, 'bottom':None}
     if 'trimming' in organ.mH_settings['wf_info'].keys():
@@ -419,24 +422,26 @@ def proc_meshes4cl(organ, win):#
                 planes_info[side] = None
     else: 
         planes_info = {'bottom': None, 'top': None}
-        
+    
     ksplines = []; spheres = []; m4clf={}
     plane_cuts = {'bottom': {'dir': True, 'plane': None, 'pl_dict': None}, 
                     'top': {'dir': False,'plane': None, 'pl_dict': None}}
+    plane_cuts_all = {}
     ch_cuts = {}
     proc_all = ['MeshesProc','C-Centreline','SimplifyMesh', 'Status']
-    for n, mH_msh in enumerate(mH_mesh4cl):
+    for n, mH_msh in enumerate(mH_mesh4cl): # iterate through meshes2cut
         kspl_ch = {}
         sp_ch = {}
         mesh_ch = mH_msh.channel_no
         mesh_cont = mH_msh.mesh_type
         proc_mesh = ['MeshesProc','C-Centreline','SimplifyMesh', mesh_ch, mesh_cont, 'Status']
-        for nn, pl_cut in zip(count(), plane_cuts.keys()):
-            if nn == 0:
+        for nn, pl_cut in zip(count(), plane_cuts.keys()): # iterate through cuts (top and bottom)
+            if nn == 0: #add and not same plane: y un else que sea nn == 0 and same plane en el que se agreguen todos las mallas smootheadas
                 print('>> Smoothing mesh - ',pl_cut, 'direction:', plane_cuts[pl_cut]['dir'])
                 sm_msh = mH_msh.mesh4CL()
+
             # Get planes for first mesh
-            if n == 0: 
+            if n == 0 and same_planes: 
                 if planes_info[pl_cut] == None:
                     #Planes have not been initialised
                     print('-Planes have not been initialised for ', pl_cut)
@@ -452,13 +457,30 @@ def proc_meshes4cl(organ, win):#
                 
                 plane_cuts[pl_cut]['plane'] = plane
                 plane_cuts[pl_cut]['pl_dict'] = pl_dict
-        
+            
+            elif not same_planes: #This planes are specific for the mesh being cut
+                if planes_info[pl_cut] == None:
+                    #Planes have not been initialised
+                    print('-Planes have not been initialised for ', pl_cut)
+                    plane, pl_dict = get_plane(filename=filename, 
+                                                txt = 'cut '+cuts_names[pl_cut][name_dict],
+                                                meshes = [sm_msh]) 
+                else:
+                    print('-Planes had been initialised for ', pl_cut)
+                    # Planes have been initialised
+                    plane, pl_dict = get_plane(filename=filename, 
+                                                txt = 'cut '+cuts_names[pl_cut][name_dict],
+                                                meshes = [sm_msh], def_pl = planes_info[pl_cut]) 
+                
+                plane_cuts[pl_cut]['plane'] = plane
+                plane_cuts[pl_cut]['pl_dict'] = pl_dict
+
             print('> Cutting mesh: ', mH_msh.legend, '-', pl_cut)
             pts2cut, _ = get_pts_at_plane(points = sm_msh.points(), 
                                             pl_normal = plane_cuts[pl_cut]['pl_dict']['pl_normal'],
                                             pl_centre = plane_cuts[pl_cut]['pl_dict']['pl_centre'], tol=tol)
             ordpts, _ = order_pts(points = pts2cut)
-
+        
             # Create spline around cut
             kspl = vedo.KSpline(ordpts, continuity=0, tension=0, bias=0, closed=True)
             kspl.color(color_cuts[pl_cut]).legend('cut4CL_'+pl_cut).lw(2)
@@ -498,6 +520,11 @@ def proc_meshes4cl(organ, win):#
             ch_cuts[mesh_ch][mesh_cont] = {'dir_cleanMesh': mesh_title, 
                                             'dir_meshLabMesh': mesh_titleML}
 
+        if same_planes: 
+            plane_cuts_all = plane_cuts
+        else: 
+            plane_cuts_all[mesh_ch+'_'+mesh_cont] = plane_cuts
+
         # Update organ workflow
         organ.update_mHworkflow(proc_mesh, 'DONE')
 
@@ -519,11 +546,16 @@ def proc_meshes4cl(organ, win):#
     organ.update_mHworkflow(process =  ['MeshesProc','C-Centreline','Status'], update = 'Initialised')
 
     #Remove plane key from plane cuts to add to mH_settings['wf_info']
-    for side in ['bottom', 'top']: 
-        plane_cuts[side].pop('plane', None)
+    if not same_planes: 
+        for mH_msh in mH_mesh4cl: 
+            for side in ['bottom', 'top']: 
+                plane_cuts_all[mH_msh.name][side].pop('plane', None)
+    else: 
+        for side in ['bottom', 'top']: 
+            plane_cuts_all[side].pop('plane', None)
 
     #Update mH_settings
-    win.gui_centreline['SimplifyMesh']['plane_cuts'] = plane_cuts
+    win.gui_centreline['SimplifyMesh']['plane_cuts'] = plane_cuts_all
     win.gui_centreline['dirs'] = ch_cuts
     proc_set = ['wf_info']
     update =  win.gui_centreline
@@ -533,6 +565,7 @@ def proc_meshes4cl(organ, win):#
     print('\nEND Simplifying Mesh')
     print('organ.mH_settings:', organ.mH_settings)
     print('organ.workflow:', workflow)
+    print(' win.gui_centreline:',  win.gui_centreline)
 
     print('m4clf:', m4clf)
     return m4clf
@@ -651,7 +684,7 @@ def load_vmtkCL(organ, ch, cont):#
 
     return decodedArray
     
-def create_CLs(organ, name, nPoints = 300):#
+def create_CLs(organ, name, nPoints, same_plane):#
     """
     Function that creates the centrelines using the points given as input in the dict_cl
 
@@ -681,7 +714,10 @@ def create_CLs(organ, name, nPoints = 300):#
     #Dictionary with kspl options
     dict_clOpt = {}
     #Get planes that cut meshes4cl
-    plane_info = organ.mH_settings['wf_info']['centreline']['SimplifyMesh']['plane_cuts']['bottom']['pl_dict']
+    if same_plane: 
+        plane_info = organ.mH_settings['wf_info']['centreline']['SimplifyMesh']['plane_cuts']['bottom']['pl_dict']
+    else: 
+        plane_info = organ.mH_settings['wf_info']['centreline']['SimplifyMesh']['plane_cuts'][ch+'_'+cont]['bottom']['pl_dict']
     
     # Get inflow point for that layer (four options)
     # - Option 1, use centroids of kspline cuts
@@ -2234,16 +2270,14 @@ def modify_disc(filename, txt, mesh, option,
 #%% - Mesh Operations
 def get_pts_at_plane (points, pl_normal, pl_centre, tol=2, addData = []):
     """
-    Function to get points within mesh at certain heights (y positions) to create kspline
+    Function to get points within mesh at a certain plane position to create kspline
 
     """
     pts_cut = []
     data_cut = []
 
     d = pl_normal.dot(pl_centre)
-    #print('d for tol:', d)
     d_range = [d-tol, d+tol]
-    #print('d range:', d_range)
     d_range.sort()
 
     for i, pt in enumerate(points):

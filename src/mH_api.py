@@ -355,7 +355,7 @@ def run_centreline_clean(controller):
 
         m4clf = fcM.proc_meshes4cl(controller.organ, 
                                     win=controller.main_win) 
-                                                        
+                                                                    
         if not hasattr(controller.organ, 'obj_temp'):
             controller.organ.obj_temp = {}
         controller.organ.obj_temp['centreline'] = {'SimplifyMesh': m4clf}
@@ -448,12 +448,14 @@ def run_centreline_vmtk(controller):
 
 def run_centreline_select(controller):
     if controller.main_win.centreline_vmtk_play.isChecked(): 
-        try: 
-            print('try')
-            nPoints = controller.main_win.gui_centreline['buildCL']['nPoints']
-        except: 
-            print('except')
-            nPoints = controller.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
+        # try: 
+        print('try')
+        nPoints = controller.main_win.gui_centreline['buildCL']['nPoints']
+        same_plane = controller.main_win.gui_centreline['SimplifyMesh']['same_planes']
+        # except: 
+            # print('except')
+            # nPoints = controller.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
+            # same_plane = controller.organ.mH_settings['wf_info']['centreline']['SimplifyMesh']['same_planes']
 
         workflow = controller.organ.workflow['morphoHeart']
         process = ['MeshesProc','C-Centreline','buildCL','Status']
@@ -461,10 +463,12 @@ def run_centreline_select(controller):
         nn = 0
         for name in cl_names: 
             ch, cont, _ = name.split('_')
+            print('name:', name)
             proc_wft = ['MeshesProc', 'C-Centreline', 'buildCL', ch, cont, 'Status']
             dict_clOpt = fcM.create_CLs(organ=controller.organ, 
                                         name=name,
-                                        nPoints = nPoints)
+                                        nPoints = nPoints, 
+                                        same_plane = same_plane)
             
             title = 'Select best centreline for tissue-contour' 
             msg = 'Select the preferred centreline for processing this tissue-contour ('+ch+'-'+cont+')'

@@ -1108,7 +1108,7 @@ color: rgb(234, 234, 234);
                  <string notr="true"/>
                 </property>
                 <property name="currentIndex">
-                 <number>3</number>
+                 <number>0</number>
                 </property>
                 <property name="tabBarAutoHide">
                  <bool>false</bool>
@@ -2038,7 +2038,7 @@ QScrollBar::handle:vertical:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-1343</y>
+                <y>-2277</y>
                 <width>635</width>
                 <height>5112</height>
                </rect>
@@ -23004,14 +23004,14 @@ background-color:rgb(203, 203, 203);
                            <widget class="QTextEdit" name="names_segm_cut1">
                             <property name="minimumSize">
                              <size>
-                              <width>100</width>
-                              <height>20</height>
+                              <width>50</width>
+                              <height>50</height>
                              </size>
                             </property>
                             <property name="maximumSize">
                              <size>
                               <width>100</width>
-                              <height>60</height>
+                              <height>150</height>
                              </size>
                             </property>
                             <property name="styleSheet">
@@ -23019,6 +23019,12 @@ background-color:rgb(203, 203, 203);
                             </property>
                             <property name="frameShape">
                              <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="verticalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
+                            </property>
+                            <property name="horizontalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
                             </property>
                             <property name="html">
                              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -24066,14 +24072,14 @@ border-color: rgb(255, 255, 255)
                            <widget class="QTextEdit" name="names_segm_cut2">
                             <property name="minimumSize">
                              <size>
-                              <width>100</width>
-                              <height>20</height>
+                              <width>50</width>
+                              <height>50</height>
                              </size>
                             </property>
                             <property name="maximumSize">
                              <size>
                               <width>100</width>
-                              <height>60</height>
+                              <height>150</height>
                              </size>
                             </property>
                             <property name="sizeIncrement">
@@ -24087,6 +24093,12 @@ border-color: rgb(255, 255, 255)
                             </property>
                             <property name="frameShape">
                              <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="verticalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
+                            </property>
+                            <property name="horizontalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
                             </property>
                             <property name="html">
                              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -31359,14 +31371,14 @@ border-color: rgb(0,0, 0);</string>
                            <widget class="QTextEdit" name="names_sCut1_Cut2_segm">
                             <property name="minimumSize">
                              <size>
-                              <width>100</width>
-                              <height>60</height>
+                              <width>50</width>
+                              <height>50</height>
                              </size>
                             </property>
                             <property name="maximumSize">
                              <size>
                               <width>100</width>
-                              <height>80</height>
+                              <height>150</height>
                              </size>
                             </property>
                             <property name="styleSheet">
@@ -31374,6 +31386,12 @@ border-color: rgb(0,0, 0);</string>
                             </property>
                             <property name="frameShape">
                              <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="verticalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
+                            </property>
+                            <property name="horizontalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
                             </property>
                             <property name="html">
                              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -31391,14 +31409,14 @@ p, li { white-space: pre-wrap; }
                            <widget class="QTextEdit" name="names_sCut2_Cut1_segm">
                             <property name="minimumSize">
                              <size>
-                              <width>100</width>
-                              <height>60</height>
+                              <width>50</width>
+                              <height>50</height>
                              </size>
                             </property>
                             <property name="maximumSize">
                              <size>
                               <width>100</width>
-                              <height>80</height>
+                              <height>150</height>
                              </size>
                             </property>
                             <property name="styleSheet">
@@ -31406,6 +31424,12 @@ p, li { white-space: pre-wrap; }
                             </property>
                             <property name="frameShape">
                              <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="verticalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
+                            </property>
+                            <property name="horizontalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
                             </property>
                             <property name="html">
                              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -31469,14 +31493,14 @@ p, li { white-space: pre-wrap; }
                            <widget class="QTextEdit" name="names_sCut1_Cut1_segm">
                             <property name="minimumSize">
                              <size>
-                              <width>100</width>
-                              <height>60</height>
+                              <width>50</width>
+                              <height>50</height>
                              </size>
                             </property>
                             <property name="maximumSize">
                              <size>
                               <width>100</width>
-                              <height>80</height>
+                              <height>150</height>
                              </size>
                             </property>
                             <property name="styleSheet">
@@ -31484,6 +31508,12 @@ p, li { white-space: pre-wrap; }
                             </property>
                             <property name="frameShape">
                              <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="verticalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
+                            </property>
+                            <property name="horizontalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
                             </property>
                             <property name="html">
                              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -31738,14 +31768,14 @@ p, li { white-space: pre-wrap; }
                            <widget class="QTextEdit" name="names_sCut2_Cut2_segm">
                             <property name="minimumSize">
                              <size>
-                              <width>100</width>
-                              <height>60</height>
+                              <width>50</width>
+                              <height>50</height>
                              </size>
                             </property>
                             <property name="maximumSize">
                              <size>
                               <width>100</width>
-                              <height>80</height>
+                              <height>150</height>
                              </size>
                             </property>
                             <property name="styleSheet">
@@ -31753,6 +31783,12 @@ p, li { white-space: pre-wrap; }
                             </property>
                             <property name="frameShape">
                              <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="verticalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
+                            </property>
+                            <property name="horizontalScrollBarPolicy">
+                             <enum>Qt::ScrollBarAlwaysOff</enum>
                             </property>
                             <property name="html">
                              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -41092,7 +41128,7 @@ QScrollBar::handle:horizontal:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-593</y>
+                <y>0</y>
                 <width>525</width>
                 <height>744</height>
                </rect>
