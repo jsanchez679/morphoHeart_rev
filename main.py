@@ -593,6 +593,11 @@ class Controller:
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 
+    def run_measure_whole(self): 
+        mA.run_measure(controller=self)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
+
     def run_centreline_clean(self):
         mA.run_centreline_clean(controller=self)
         if not mH_config.dev:
@@ -637,10 +642,6 @@ class Controller:
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
     
-    def run_measure_whole(self): 
-        mA.run_measure(controller=self)
-        if not mH_config.dev:
-            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
 def main():
     app = QtWidgets.QApplication(sys.argv)

@@ -205,13 +205,20 @@ def get_trimming_planes(organ, gui_trim, win):
     #Get meshes to cut
     meshes = []
     no_cut = []
+    settings = {'color': {}, 'name':{}}
+    aa = 0
     for ch in organ.obj_imChannels.keys():
         for cont in ['tiss', 'ext', 'int']:
             if gui_trim['top']['chs'][ch][cont] or gui_trim['bottom']['chs'][ch][cont]:
                 meshes.append(organ.obj_meshes[ch+'_'+cont])
+                settings['color'][aa] = organ.obj_meshes[ch+'_'+cont].color
+                settings['name'][aa] = organ.obj_meshes[ch+'_'+cont].legend
+                aa+=1
                 break
             else: 
                 no_cut.append(ch+'_'+cont)
+    print('settings:', settings)
+
     # User user input to select which meshes need to be cut
     cuts_names = {'top': {'heart_def': 'outflow tract','other': 'top'},
                 'bottom': {'heart_def': 'inflow tract','other': 'bottom'}}
@@ -242,7 +249,7 @@ def get_trimming_planes(organ, gui_trim, win):
         while not happy: 
             plane_bott, pl_dict_bott = fcM.get_plane(filename=filename, 
                                                 txt = 'cut '+cuts_names['bottom'][name_dict],
-                                                meshes = meshes)#, win=win)  
+                                                meshes = meshes, settings=settings)#, win=win)  
             title = 'Happy with the defined plane?' 
             msg = 'Are you happy with the defined plane to cut '+cuts_names['bottom'][name_dict]+'?'
             items = {0: {'opt':'no, I would like to define a new plane.'}, 1: {'opt':'yes, continue!'}}
@@ -265,7 +272,7 @@ def get_trimming_planes(organ, gui_trim, win):
         while not happy: 
             plane_top, pl_dict_top = fcM.get_plane(filename=filename, 
                                                 txt = 'cut '+cuts_names['top'][name_dict],
-                                                meshes = meshes)#, win=win)
+                                                meshes = meshes, settings=settings)#, win=win)
 
             title = 'Happy with the defined plane?' 
             msg = 'Are you happy with the defined plane to cut '+cuts_names['top'][name_dict]+'?'
@@ -395,6 +402,7 @@ def run_centreline_ML(controller):
             name_ML = controller.organ.mH_settings['wf_info']['centreline']['dirs'][ch][cont]['dir_meshLabMesh']
             mesh_dir = directory / name_ML
             if mesh_dir.is_file():
+                controller.main_win.win_msg('MeshLab cut mesh ' +str(name_ML)+' was found!')
                 all_saved.append(True)
 
                 # Update organ workflow
@@ -415,10 +423,14 @@ def run_centreline_ML(controller):
             else:
                 error = '*'+str(name_ML)+' has not been created! Clean this mesh in MeshLab to proceed.'
                 controller.main_win.win_msg(error)
-                msg_add = [str(name_ML)+' was not found in the centreline folder. Make sure you have named your cleaned meshes correctly after running the processing in Meshlab and press  -Enter-  when ready.', 
+                msg_add = [str(name_ML)+' was not found in the centreline folder. Make sure you have named your cleaned meshes correctly after running the processing in Meshlab.', 
                             'To clean up the meshes with MeshLab follow the next steps:']
                 prompt_meshLab(controller, msg_add=msg_add)
+                controller.main_win.centreline_ML_play.setChecked(False)
                 return
+            
+            controller.main_win.win_msg('All MeshLab cut Meshes were successfully found!')
+
 
 def run_centreline_vmtk(controller): 
     if controller.main_win.centreline_ML_play.isChecked(): 
@@ -678,18 +690,18 @@ def run_heatmaps2D(controller, btn):
 
     controller.main_win.win_msg('!This section of code is under development... you will be able to use it soon!')
     alert('bubble')
-    # workflow = controller.organ.workflow['morphoHeart']
-    # hm2d_list = list(controller.main_win.hm_btns.keys())
-    # if btn != None: 
-    #     for key in hm2d_list: 
-    #         num_key = controller.main_win.hm_btns[key]['num']
-    #         if int(num_key) == int(btn): 
-    #             hm2get = key
-    #             break
-    #     hm2d_set = [hm2get] #[segm_list[int(num)-1]]
-    # else: 
-    #     hm2d_set = hm2d_list
-    # print('hm2d_set:',hm2d_set)
+    workflow = controller.organ.workflow['morphoHeart']
+    hm2d_list = list(controller.main_win.hm_btns.keys())
+    if btn != None: 
+        for key in hm2d_list: 
+            num_key = controller.main_win.hm_btns[key]['num']
+            if int(num_key) == int(btn): 
+                hm2get = key
+                break
+        hm2d_set = [hm2get] #[segm_list[int(num)-1]]
+    else: 
+        hm2d_set = hm2d_list
+    print('hm2d_set:',hm2d_set)
 
     # for hmitem in hm2d_set:
     #     short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball

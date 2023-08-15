@@ -2038,9 +2038,9 @@ QScrollBar::handle:vertical:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-2277</y>
+                <y>-2022</y>
                 <width>635</width>
-                <height>5112</height>
+                <height>5402</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -6590,6 +6590,10 @@ background-color: rgb(255, 255, 255);</string>
                               <height>19</height>
                              </size>
                             </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                            </property>
                             <property name="alignment">
                              <set>Qt::AlignCenter</set>
                             </property>
@@ -10557,7 +10561,7 @@ border-color: rgb(115, 115, 115)}
                         <number>0</number>
                        </property>
                        <item>
-                        <widget class="QLabel" name="label_12">
+                        <widget class="QLabel" name="label_chNS_extraction">
                          <property name="minimumSize">
                           <size>
                            <width>0</width>
@@ -11468,6 +11472,10 @@ background-color: rgb(255, 255, 255);</string>
                               <height>19</height>
                              </size>
                             </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                            </property>
                             <property name="alignment">
                              <set>Qt::AlignCenter</set>
                             </property>
@@ -11595,6 +11603,1666 @@ border-color: rgb(115, 115, 115)}
                              <bool>true</bool>
                             </property>
                            </widget>
+                          </item>
+                         </layout>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="spacer_13">
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>5</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>16777215</width>
+                      <height>5</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QFrame" name="summary_whole_all_widget">
+                    <property name="styleSheet">
+                     <string notr="true"/>
+                    </property>
+                    <property name="frameShape">
+                     <enum>QFrame::NoFrame</enum>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_71">
+                     <property name="leftMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>0</number>
+                     </property>
+                     <item>
+                      <layout class="QHBoxLayout" name="summary_whole_heading">
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <widget class="QLabel" name="summary_whole_title">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Summary: Whole Meshes</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="summary_whole_open">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+
+background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>o</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QLabel" name="chNS_status_2">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">background-color:rgb(0, 0, 0);
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0,0, 0);</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                     <item>
+                      <widget class="QWidget" name="summary_whole_widget" native="true">
+                       <property name="styleSheet">
+                        <string notr="true"/>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_72">
+                        <property name="leftMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>3</number>
+                        </property>
+                        <item>
+                         <layout class="QGridLayout" name="gridLayout_14">
+                          <item row="3" column="0" alignment="Qt::AlignHCenter">
+                           <widget class="QLabel" name="sum_label_ch1f">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>150</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Ch1</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="2" alignment="Qt::AlignHCenter">
+                           <widget class="QLabel" name="lab_no_ch_30">
+                            <property name="minimumSize">
+                             <size>
+                              <width>60</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>60</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                            </property>
+                            <property name="text">
+                             <string>Opacity</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="3" alignment="Qt::AlignHCenter">
+                           <widget class="QPushButton" name="summary_whole_plot_ch3">
+                            <property name="enabled">
+                             <bool>false</bool>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+
+background-color:  rgb(0, 255, 255);
+	color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}
+
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
+}</string>
+                            </property>
+                            <property name="text">
+                             <string>V</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="6" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_250">
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch4_intf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch4_tissf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch4_extf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="QLabel" name="lab_no_ch_31">
+                            <property name="minimumSize">
+                             <size>
+                              <width>150</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>180</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                            </property>
+                            <property name="text">
+                             <string>Colour</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="6" column="3" alignment="Qt::AlignHCenter">
+                           <widget class="QPushButton" name="summary_whole_plot_ch4">
+                            <property name="enabled">
+                             <bool>false</bool>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+
+background-color:  rgb(0, 255, 255);
+	color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}
+
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
+}</string>
+                            </property>
+                            <property name="text">
+                             <string>V</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="3" alignment="Qt::AlignHCenter">
+                           <widget class="QPushButton" name="summary_whole_plot_ch2">
+                            <property name="enabled">
+                             <bool>false</bool>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+
+background-color:  rgb(0, 255, 255);
+	color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}
+
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
+}</string>
+                            </property>
+                            <property name="text">
+                             <string>V</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="7" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_251">
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_chNS_intf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_chNS_tissf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_chNS_extf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="2" column="0" alignment="Qt::AlignHCenter">
+                           <widget class="QLabel" name="lab_no_ch_32">
+                            <property name="minimumSize">
+                             <size>
+                              <width>150</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>150</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                            </property>
+                            <property name="text">
+                             <string>Channel</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="7" column="0">
+                           <widget class="QLabel" name="sum_label_chNSf">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>150</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>ChNS</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="0" alignment="Qt::AlignHCenter">
+                           <widget class="QLabel" name="sum_label_ch2f">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>150</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Ch2</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="3" alignment="Qt::AlignHCenter">
+                           <widget class="QPushButton" name="summary_whole_plot_ch1">
+                            <property name="enabled">
+                             <bool>false</bool>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="statusTip">
+                             <string>Plot resulting Ch1 meshes</string>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+
+background-color:  rgb(0, 255, 255);
+	color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}
+
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
+}</string>
+                            </property>
+                            <property name="text">
+                             <string>V</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_252">
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch2_intf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch2_tissf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch2_extf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="6" column="0" alignment="Qt::AlignHCenter">
+                           <widget class="QLabel" name="sum_label_ch4f">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>150</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Ch4</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="0" alignment="Qt::AlignHCenter">
+                           <widget class="QLabel" name="sum_label_ch3f">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>150</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Ch3</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_253">
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch3_intf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch3_tissf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch3_extf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="3" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_254">
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch1_intf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch1_tissf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="fillcolor_ch1_extf">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+}
+QPushButton:hover{
+border-color: rgb(255, 255, 255)
+}</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="7" column="3" alignment="Qt::AlignHCenter">
+                           <widget class="QPushButton" name="summary_whole_plot_chNS">
+                            <property name="enabled">
+                             <bool>false</bool>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+
+background-color:  rgb(0, 255, 255);
+	color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}
+
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
+}</string>
+                            </property>
+                            <property name="text">
+                             <string>V</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="3">
+                           <widget class="QLabel" name="lab_no_ch_33">
+                            <property name="minimumSize">
+                             <size>
+                              <width>50</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>30</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                            </property>
+                            <property name="text">
+                             <string>Plot</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_255">
+                            <item>
+                             <widget class="QLabel" name="label_segm_ch1_int_16">
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>20</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>20</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                              </property>
+                              <property name="text">
+                               <string>int</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="label_segm_ch1_tiss_13">
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>20</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>20</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                              </property>
+                              <property name="text">
+                               <string>tiss</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="label_segm_ch1_ext_9">
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>20</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>20</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                              </property>
+                              <property name="text">
+                               <string>ext</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="2" column="2">
+                           <layout class="QHBoxLayout" name="horizontalLayout_256">
+                            <item>
+                             <widget class="QLabel" name="label_segm_ch1_int_17">
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>20</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>20</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                              </property>
+                              <property name="text">
+                               <string>int</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="label_segm_ch1_tiss_14">
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>20</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>20</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                              </property>
+                              <property name="text">
+                               <string>tiss</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="label_segm_ch1_ext_10">
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>20</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>20</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                              </property>
+                              <property name="text">
+                               <string>ext</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="3" column="2">
+                           <layout class="QHBoxLayout" name="horizontalLayout_257">
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch1_intf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch1_tissf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch1_extf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="4" column="2">
+                           <layout class="QHBoxLayout" name="horizontalLayout_258">
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch2_intf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch2_tissf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch2_extf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="5" column="2">
+                           <layout class="QHBoxLayout" name="horizontalLayout_259">
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch3_intf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch3_tissf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch3_extf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="6" column="2">
+                           <layout class="QHBoxLayout" name="horizontalLayout_260">
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch4_intf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch4_tissf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_ch4_extf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="7" column="2">
+                           <layout class="QHBoxLayout" name="horizontalLayout_261">
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_chNS_intf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_chNS_tissf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QDoubleSpinBox" name="alpha_chNS_extf">
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <double>1.000000000000000</double>
+                              </property>
+                              <property name="singleStep">
+                               <double>0.050000000000000</double>
+                              </property>
+                              <property name="value">
+                               <double>0.050000000000000</double>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
                           </item>
                          </layout>
                         </item>
@@ -14470,6 +16138,10 @@ border-color: #672146
                               <height>19</height>
                              </size>
                             </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                            </property>
                             <property name="alignment">
                              <set>Qt::AlignCenter</set>
                             </property>
@@ -14660,6 +16332,10 @@ border-color: #672146
                               <width>50</width>
                               <height>19</height>
                              </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                             </property>
                             <property name="alignment">
                              <set>Qt::AlignCenter</set>
@@ -15134,6 +16810,10 @@ border-color: rgb(0,0, 0);</string>
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -15155,6 +16835,10 @@ border-color: rgb(0,0, 0);</string>
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -15225,6 +16909,10 @@ border-color: rgb(0,0, 0);</string>
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -15246,6 +16934,10 @@ border-color: rgb(0,0, 0);</string>
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -15316,6 +17008,10 @@ border-color: rgb(0,0, 0);</string>
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -15337,6 +17033,10 @@ border-color: rgb(0,0, 0);</string>
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -15796,6 +17496,10 @@ background-color: rgb(255, 255, 255);</string>
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -15817,6 +17521,10 @@ background-color: rgb(255, 255, 255);</string>
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -16676,6 +18384,10 @@ background-color: rgb(211, 211, 211);
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -16697,6 +18409,10 @@ background-color: rgb(211, 211, 211);
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -16913,6 +18629,10 @@ background-color: rgb(255, 255, 255);</string>
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -16934,6 +18654,10 @@ background-color: rgb(255, 255, 255);</string>
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -17004,6 +18728,10 @@ background-color: rgb(255, 255, 255);</string>
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -17025,6 +18753,10 @@ background-color: rgb(255, 255, 255);</string>
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -17495,6 +19227,10 @@ background-color:rgb(203, 203, 203);
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -17516,6 +19252,10 @@ background-color:rgb(203, 203, 203);
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -18324,6 +20064,10 @@ background-color:rgb(203, 203, 203);
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -18345,6 +20089,10 @@ background-color:rgb(203, 203, 203);
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -18415,6 +20163,10 @@ background-color:rgb(203, 203, 203);
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -18436,6 +20188,10 @@ background-color:rgb(203, 203, 203);
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -19237,6 +20993,10 @@ background-color:rgb(203, 203, 203);
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -19258,6 +21018,10 @@ background-color:rgb(203, 203, 203);
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -19515,6 +21279,10 @@ background-color:rgb(203, 203, 203);
                                 <height>19</height>
                                </size>
                               </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
                               </property>
@@ -19536,6 +21304,10 @@ background-color:rgb(203, 203, 203);
                                 <width>50</width>
                                 <height>19</height>
                                </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -20796,6 +22568,251 @@ border-color: rgb(115, 115, 115)}
                          </layout>
                         </item>
                         <item>
+                         <layout class="QVBoxLayout" name="verticalLayout_73">
+                          <item>
+                           <layout class="QHBoxLayout" name="horizontalLayout_262">
+                            <item>
+                             <widget class="QLabel" name="lab_cl_ext_cut1_2">
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>210</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>70</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: bold 10pt &quot;Calibri Light&quot;;</string>
+                              </property>
+                              <property name="text">
+                               <string>2D Heatmap(s) Settings: </string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <spacer name="horizontalSpacer_29">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="lab_hm3d2d">
+                              <property name="minimumSize">
+                               <size>
+                                <width>110</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>135</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                              </property>
+                              <property name="text">
+                               <string>Centreline (3D&gt;2D):</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="hm_centreline">
+                              <property name="minimumSize">
+                               <size>
+                                <width>120</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>100</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                              </property>
+                              <property name="text">
+                               <string>----</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="hm_centreline_status">
+                              <property name="minimumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>15</width>
+                                <height>15</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">background-color:rgb(255, 255, 0);
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0,0, 0);</string>
+                              </property>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item>
+                           <layout class="QHBoxLayout" name="horizontalLayout_263">
+                            <item>
+                             <spacer name="horizontalSpacer_28">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                            <item>
+                             <widget class="QCheckBox" name="improve_hm2D">
+                              <property name="enabled">
+                               <bool>true</bool>
+                              </property>
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>230</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>65</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="layoutDirection">
+                               <enum>Qt::LeftToRight</enum>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                              </property>
+                              <property name="text">
+                               <string>Improve 2D heatmaps using segments: </string>
+                              </property>
+                              <property name="checkable">
+                               <bool>true</bool>
+                              </property>
+                              <property name="checked">
+                               <bool>false</bool>
+                              </property>
+                              <property name="tristate">
+                               <bool>false</bool>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QComboBox" name="segm_use_hm2D">
+                              <property name="enabled">
+                               <bool>false</bool>
+                              </property>
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>150</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>120</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                              </property>
+                              <item>
+                               <property name="text">
+                                <string>----</string>
+                               </property>
+                              </item>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                         </layout>
+                        </item>
+                        <item>
                          <layout class="QHBoxLayout" name="horizontalLayout_91">
                           <item>
                            <widget class="QPushButton" name="q_heatmaps">
@@ -20879,83 +22896,6 @@ color: rgb(234, 234, 234);
                             </property>
                             <property name="checkable">
                              <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item>
-                           <widget class="QLabel" name="lab_hm3d2d">
-                            <property name="minimumSize">
-                             <size>
-                              <width>110</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>135</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                            </property>
-                            <property name="text">
-                             <string>Centreline (3D&gt;2D):</string>
-                            </property>
-                            <property name="alignment">
-                             <set>Qt::AlignCenter</set>
-                            </property>
-                           </widget>
-                          </item>
-                          <item>
-                           <widget class="QLabel" name="hm_centreline">
-                            <property name="minimumSize">
-                             <size>
-                              <width>120</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>100</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                            </property>
-                            <property name="text">
-                             <string>----</string>
-                            </property>
-                            <property name="alignment">
-                             <set>Qt::AlignCenter</set>
-                            </property>
-                           </widget>
-                          </item>
-                          <item>
-                           <widget class="QLabel" name="hm_centreline_status">
-                            <property name="minimumSize">
-                             <size>
-                              <width>15</width>
-                              <height>15</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>15</width>
-                              <height>15</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">background-color:rgb(255, 255, 0);
-border-width: 1px;
-border-style: outset;
-border-color: rgb(0,0, 0);</string>
-                            </property>
-                            <property name="text">
-                             <string/>
                             </property>
                            </widget>
                           </item>
@@ -23124,6 +25064,10 @@ p, li { white-space: pre-wrap; }
                                   <height>19</height>
                                  </size>
                                 </property>
+                                <property name="styleSheet">
+                                 <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                                </property>
                                 <property name="alignment">
                                  <set>Qt::AlignCenter</set>
                                 </property>
@@ -23648,6 +25592,10 @@ border-color: rgb(255, 255, 255)
                                   <width>55</width>
                                   <height>19</height>
                                  </size>
+                                </property>
+                                <property name="styleSheet">
+                                 <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
                                 </property>
                                 <property name="alignment">
                                  <set>Qt::AlignCenter</set>
@@ -40812,58 +42760,6 @@ border-color: #672146
                             </property>
                             <property name="text">
                              <string>?</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item>
-                           <widget class="QPushButton" name="segm_sect_set">
-                            <property name="minimumSize">
-                             <size>
-                              <width>60</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>60</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
-                            </property>
-                            <property name="text">
-                             <string>Set</string>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
                             </property>
                            </widget>
                           </item>

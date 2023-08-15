@@ -436,9 +436,25 @@ def proc_meshes4cl(organ, win):#
         mesh_cont = mH_msh.mesh_type
         proc_mesh = ['MeshesProc','C-Centreline','SimplifyMesh', mesh_ch, mesh_cont, 'Status']
         for nn, pl_cut in zip(count(), plane_cuts.keys()): # iterate through cuts (top and bottom)
-            if nn == 0: #add and not same plane: y un else que sea nn == 0 and same plane en el que se agreguen todos las mallas smootheadas
+            if nn == 0 and same_planes: 
+                if n == 0: 
+                    settings = {'color': {}, 'name':{}}
+                    meshes_in = []
+                    for aa, msh in enumerate(mH_mesh4cl): 
+                        print('>> Smoothing mesh - ',pl_cut, 'direction:', plane_cuts[pl_cut]['dir'])
+                        sm_msh_o = msh.mesh4CL()
+                        meshes_in.append(sm_msh_o)
+                        settings['color'][aa] = msh.color
+                        settings['name'][aa] = msh.legend
+                        
+                sm_msh = meshes_in[n]
+            elif nn == 0 and not same_planes:
                 print('>> Smoothing mesh - ',pl_cut, 'direction:', plane_cuts[pl_cut]['dir'])
                 sm_msh = mH_msh.mesh4CL()
+                settings = {'color': {0: mH_msh.color}, 'name':{0: mH_msh.legend}}
+            else: 
+                pass
+            print('settings:', settings)
 
             # Get planes for first mesh
             if n == 0 and same_planes: 
@@ -447,13 +463,14 @@ def proc_meshes4cl(organ, win):#
                     print('-Planes have not been initialised for ', pl_cut)
                     plane, pl_dict = get_plane(filename=filename, 
                                                 txt = 'cut '+cuts_names[pl_cut][name_dict],
-                                                meshes = [sm_msh]) 
+                                                meshes = meshes_in, settings = settings) 
                 else:
                     print('-Planes had been initialised for ', pl_cut)
                     # Planes have been initialised
                     plane, pl_dict = get_plane(filename=filename, 
                                                 txt = 'cut '+cuts_names[pl_cut][name_dict],
-                                                meshes = [sm_msh], def_pl = planes_info[pl_cut]) 
+                                                meshes = meshes_in, settings = settings, 
+                                                def_pl = planes_info[pl_cut]) 
                 
                 plane_cuts[pl_cut]['plane'] = plane
                 plane_cuts[pl_cut]['pl_dict'] = pl_dict
@@ -464,13 +481,14 @@ def proc_meshes4cl(organ, win):#
                     print('-Planes have not been initialised for ', pl_cut)
                     plane, pl_dict = get_plane(filename=filename, 
                                                 txt = 'cut '+cuts_names[pl_cut][name_dict],
-                                                meshes = [sm_msh]) 
+                                                meshes = [sm_msh], settings = settings) 
                 else:
                     print('-Planes had been initialised for ', pl_cut)
                     # Planes have been initialised
                     plane, pl_dict = get_plane(filename=filename, 
                                                 txt = 'cut '+cuts_names[pl_cut][name_dict],
-                                                meshes = [sm_msh], def_pl = planes_info[pl_cut]) 
+                                                meshes = [sm_msh], settings = settings,
+                                                def_pl = planes_info[pl_cut]) 
                 
                 plane_cuts[pl_cut]['plane'] = plane
                 plane_cuts[pl_cut]['pl_dict'] = pl_dict
@@ -1610,7 +1628,7 @@ def select_ribMask(organ, cut, mask_cube_split, mesh_cl):
                         width=leg_width, height=leg_height/3)
     path_logo = path_mHImages / 'logo-07.jpg'
     logo = vedo.Picture(str(path_logo))
-    msg = vedo.Text2D("", pos="bottom-center", c=txt_color, s=txt_size, bg='red', alpha=0.2)
+    msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
     selected_mesh = {'name': 'NS'}
     
     txA = 'Instructions '+cut.title()+': Select the mesh that corresponds to Section No.1 ('+name_sect1.upper()+').\nClose the window when you are done.'
@@ -2008,11 +2026,10 @@ def plot_organCLs(organ, axes=5, plotshow=True):
     return dict_cl
 
 #%% - Plane handling functions 
-def get_plane(filename, txt:str, meshes:list, def_pl = None, 
+def get_plane(filename, txt:str, meshes:list, settings: dict, def_pl = None, 
                              option = [True,True,True,True,True,True]):#
     '''
     Function that creates a plane defined by the user
-
     '''
     
     # Load logo
@@ -2026,9 +2043,9 @@ def get_plane(filename, txt:str, meshes:list, def_pl = None,
         
     # Create plane
     if def_pl != None:
-        plane, normal, rotX, rotY, rotZ = get_plane_pos(filename, txt, meshes_mesh, option, def_pl)
+        plane, normal, rotX, rotY, rotZ = get_plane_pos(filename, txt, meshes_mesh, settings, option, def_pl)
     else:
-        plane, normal, rotX, rotY, rotZ = get_plane_pos(filename, txt, meshes_mesh, option)
+        plane, normal, rotX, rotY, rotZ = get_plane_pos(filename, txt, meshes_mesh, settings, option)
         
     # Get new normal of rotated plane
     normal_corrected = new_normal_3DRot(normal, rotX, rotY, rotZ)
@@ -2052,7 +2069,7 @@ def get_plane(filename, txt:str, meshes:list, def_pl = None,
     
     return plane_new, pl_dict
 
-def get_plane_pos(filename, txt, meshes, option, 
+def get_plane_pos(filename, txt, meshes, settings, option, 
                      def_pl= {'pl_normal': (0,1,0), 'pl_centre': []}, zoom = 0.5):
     '''
     Function that shows a plot so that the user can define a plane (mesh opacity can be changed)
@@ -2112,6 +2129,23 @@ def get_plane_pos(filename, txt, meshes, option,
     def sliderAlphaMeshOut(widget, event):
         valueAlpha = widget.GetRepresentation().GetValue()
         meshes[0].alpha(valueAlpha)
+    
+    if len(meshes) >= 2: 
+        def sliderAlphaMeshOut2(widget, event):
+            valueAlpha = widget.GetRepresentation().GetValue()
+            meshes[1].alpha(valueAlpha)
+    if len(meshes) >= 3: 
+        def sliderAlphaMeshOut3(widget, event):
+            valueAlpha = widget.GetRepresentation().GetValue()
+            meshes[2].alpha(valueAlpha)
+    if len(meshes) >= 4: 
+        def sliderAlphaMeshOut4(widget, event):
+            valueAlpha = widget.GetRepresentation().GetValue()
+            meshes[3].alpha(valueAlpha)
+    if len(meshes) >= 5: 
+        def sliderAlphaMeshOut5(widget, event):
+            valueAlpha = widget.GetRepresentation().GetValue()
+            meshes[4].alpha(valueAlpha)
 
     lbox = vedo.LegendBox(meshes, font=leg_font, width=leg_width, padding=1)
     #vedo.settings.legendSize = .2
@@ -2144,15 +2178,23 @@ def get_plane_pos(filename, txt, meshes, option,
                     pos=[(0.7,0.05), (0.9,0.05)], title='- > z rotation > +', 
                     c='teal', title_size=txt_slider_size)
         
-    if len(meshes)>1: 
-        titleOp = 'Outer mesh opacity'
-    else: 
-        titleOp = 'Mesh opacity'
+    txt_slider_size2 = 0.7
+    vp.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.01,
+               pos=[(0.92,0.25), (0.92,0.35)], c= settings['color'][0], 
+               title='Opacity\n'+ settings['name'][0].title(), title_size=txt_slider_size2)
+    if len(meshes) >=2:
+        vp.addSlider2D(sliderAlphaMeshOut2, xmin=0, xmax=0.99, value=0.01,
+               pos=[(0.92,0.40), (0.92,0.50)], c=settings['color'][1], 
+               title='Opacity\n'+ settings['name'][1].title(), title_size=txt_slider_size2)
+    if len(meshes) >=3:
+        vp.addSlider2D(sliderAlphaMeshOut3, xmin=0, xmax=0.99, value=0.01,
+               pos=[(0.72,0.25), (0.72,0.35)], c=settings['color'][2],
+               title='Opacity\n'+ settings['name'][2].title(), title_size=txt_slider_size2)
+    if len(meshes) >=4:
+        vp.addSlider2D(sliderAlphaMeshOut4, xmin=0, xmax=0.99, value=0.01,
+               pos=[(0.72,0.40), (0.72,0.50)], c=settings['color'][3], 
+               title='Opacity\n'+ settings['name'][3].title(), title_size=txt_slider_size2)
         
-    vp.addSlider2D(sliderAlphaMeshOut, xmin=0.01, xmax=0.99, value=0.01,
-               pos=[(0.95,0.25), (0.95,0.45)], c='blue', 
-               title=titleOp, title_size=txt_slider_size)
-
     text = filename+'\n\nDefine plane position to '+txt+'. \nClose the window when done'
     txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
     vp.show(meshes, plane, lbox, txt, viewup='y', zoom=zoom, interactive=True)

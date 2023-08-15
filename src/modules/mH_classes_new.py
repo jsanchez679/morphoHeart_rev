@@ -2774,24 +2774,25 @@ class Mesh_mH():
         self.mesh.alpha(mesh_alpha)
         self.alpha = mesh_alpha
         #Update settings
-        set_proc = [self.channel_no, self.mesh_type]
-        self.parent_organ.update_settings(['setup','alpha']+set_proc, self.alpha, 'mH')
-        
+        if self.channel_no != 'chNS': 
+            self.parent_organ.update_settings(['setup','alpha',self.channel_no, self.mesh_type], self.alpha, 'mH')
+        else: 
+            self.parent_organ.update_settings(['setup',self.channel_no, 'alpha', self.mesh_type], self.alpha, 'mH')
         self.parent_organ.meshes[self.name]['alpha'] = self.alpha
-        # self.parent_organ.save_organ()
     
     def get_alpha(self):
-        return self.mesh_alpha
+        return self.alpha
         
     def set_color(self, mesh_color):
         self.mesh.color(mesh_color)
         self.color = mesh_color
         #Update settings
-        set_proc = [self.channel_no, self.mesh_type]
-        self.parent_organ.update_settings(['setup','color_chs']+set_proc, self.color, 'mH')
+        if self.channel_no != 'chNS': 
+            self.parent_organ.update_settings(['setup','color_chs', self.channel_no, self.mesh_type], self.color, 'mH')
+        else: 
+            self.parent_organ.update_settings(['setup',self.channel_no,'alpha',self.mesh_type], self.color, 'mH')
         
         self.parent_organ.meshes[self.name]['color'] = self.color
-        # self.parent_organ.save_organ()
         
     def get_color(self):
         return self.mesh_color   

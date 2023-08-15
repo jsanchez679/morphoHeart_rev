@@ -3316,6 +3316,8 @@ class MainWindow(QMainWindow):
         else:
             self.chNS_all_widget.setVisible(False)
             print('Dissapear chNS')
+        #Summary whole
+        self.init_summary_whole()
         #Measure
         self.init_measure_whole()
         #Centreline
@@ -3397,14 +3399,12 @@ class MainWindow(QMainWindow):
                     getattr(self, 'kl_'+chk+'_'+contk).setVisible(False)
                     getattr(self, 'fillcolor_'+chk+'_'+contk).setVisible(False)
             else: 
-                getattr(self, 'kl_label_'+chk).setText(self.channels[chk]+' ('+chk+')')
+                getattr(self, 'kl_label_'+chk).setText(chk.title()+': '+self.channels[chk].title())
                 for contk in ['int', 'tiss', 'ext']:
                     color = self.organ.mH_settings['setup']['color_chs'][chk][contk]
                     print(chk, contk, '- color:', color)
-                    # color_txt = "QPushButton{ border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+color+";} QPushButton:hover{border-color: rgb(255, 255, 255)}"
                     btn_color = getattr(self, 'fillcolor_'+chk+'_'+contk)
                     color_btn(btn = btn_color, color = color)
-                    # color_btn.setStyleSheet(color_txt)
 
         self.kl_ch1_all.stateChanged.connect(lambda: self.tick_all('ch1', 'kl'))
         self.kl_ch2_all.stateChanged.connect(lambda: self.tick_all('ch2', 'kl'))
@@ -3537,6 +3537,9 @@ class MainWindow(QMainWindow):
         self.user_orientation()
         
     def init_chNS(self):
+        
+        chns_name = self.organ.mH_settings
+        self.label_chNS_extraction.setText('Channel from the negative space extraction  - ChNS: '+self.channels['chNS'].title())
         #Buttons
         self.chNS_open.clicked.connect(lambda: self.open_section(name='chNS'))
         self.chNS_plot.clicked.connect(lambda: self.plot_meshes('chNS'))
@@ -3552,11 +3555,11 @@ class MainWindow(QMainWindow):
         
         chNS_setup = self.organ.mH_settings['setup']['chNS']
         ch_ext = chNS_setup['ch_ext'][0]
-        self.chNS_extch.setText(self.channels[ch_ext]+' ('+ch_ext+')')
+        self.chNS_extch.setText(ch_ext.title()+': '+self.channels[ch_ext].title())
         self.chNS_extcont.setText(chNS_setup['ch_ext'][1]+'ernal')
         self.chNS_operation.setText(chNS_setup['operation'])
         ch_int = chNS_setup['ch_int'][0]
-        self.chNS_intch.setText(self.channels[ch_int]+' ('+ch_int+')')
+        self.chNS_intch.setText(ch_int.title()+': '+self.channels[ch_int].title())
         self.chNS_intcont.setText(chNS_setup['ch_int'][1]+'ernal')
 
         for contk in ['int', 'tiss', 'ext']:
@@ -3571,6 +3574,79 @@ class MainWindow(QMainWindow):
         #Initialise with user settings, if they exist!
         self.user_chNS()
 
+    def init_summary_whole(self): 
+        #Buttons
+        self.fillcolor_ch1_intf.clicked.connect(lambda: self.color_picker(name = 'ch1_int'))
+        self.fillcolor_ch1_tissf.clicked.connect(lambda: self.color_picker(name = 'ch1_tiss'))
+        self.fillcolor_ch1_extf.clicked.connect(lambda: self.color_picker(name = 'ch1_ext'))
+        self.fillcolor_ch2_intf.clicked.connect(lambda: self.color_picker(name = 'ch2_int'))
+        self.fillcolor_ch2_tissf.clicked.connect(lambda: self.color_picker(name = 'ch2_tiss'))
+        self.fillcolor_ch2_extf.clicked.connect(lambda: self.color_picker(name = 'ch2_ext'))
+        self.fillcolor_ch3_intf.clicked.connect(lambda: self.color_picker(name = 'ch3_int'))
+        self.fillcolor_ch3_tissf.clicked.connect(lambda: self.color_picker(name = 'ch3_tiss'))
+        self.fillcolor_ch3_extf.clicked.connect(lambda: self.color_picker(name = 'ch3_ext'))
+        self.fillcolor_ch4_intf.clicked.connect(lambda: self.color_picker(name = 'ch4_int'))
+        self.fillcolor_ch4_tissf.clicked.connect(lambda: self.color_picker(name = 'ch4_tiss'))
+        self.fillcolor_ch4_extf.clicked.connect(lambda: self.color_picker(name = 'ch4_ext'))
+        self.fillcolor_chNS_intf.clicked.connect(lambda: self.color_picker(name = 'chNS_int'))
+        self.fillcolor_chNS_tissf.clicked.connect(lambda: self.color_picker(name = 'chNS_tiss'))
+        self.fillcolor_chNS_extf.clicked.connect(lambda: self.color_picker(name = 'chNS_ext'))
+
+        self.summary_whole_plot_ch1.clicked.connect(lambda: self.plot_meshes('ch1'))
+        self.summary_whole_plot_ch2.clicked.connect(lambda: self.plot_meshes('ch2'))
+        self.summary_whole_plot_ch3.clicked.connect(lambda: self.plot_meshes('ch3'))
+        self.summary_whole_plot_ch4.clicked.connect(lambda: self.plot_meshes('ch4'))
+        self.summary_whole_plot_chNS.clicked.connect(lambda: self.plot_meshes('chNS'))
+        self.summary_whole_plot_ch1.setEnabled(False)
+        self.summary_whole_plot_ch2.setEnabled(False)
+        self.summary_whole_plot_ch3.setEnabled(False)
+        self.summary_whole_plot_ch4.setEnabled(False)
+        self.summary_whole_plot_chNS.setEnabled(False) 
+
+        # -Summary whole
+        self.summary_whole_open.clicked.connect(lambda: self.open_section(name = 'summary_whole'))
+
+        for chk in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
+            if chk not in self.channels.keys():
+                getattr(self, 'sum_label_'+chk+'f').setVisible(False)
+                getattr(self, 'summary_whole_plot_'+chk).setVisible(False)
+                for contk in ['int', 'tiss', 'ext']:
+                    getattr(self, 'fillcolor_'+chk+'_'+contk+'f').setVisible(False)
+                    getattr(self, 'alpha_'+chk+'_'+contk+'f').setVisible(False)
+            else: 
+                if 'NS' in chk: 
+                    txt = 'ChNS: '+self.channels[chk].title()
+                else: 
+                    txt = chk.title()+': '+self.channels[chk].title()
+                getattr(self, 'sum_label_'+chk+'f').setText(txt)
+                for contk in ['int', 'tiss', 'ext']:
+                    if 'NS' not in chk: 
+                        color = self.organ.mH_settings['setup']['color_chs'][chk][contk]
+                    else: 
+                        color = self.organ.mH_settings['setup']['chNS']['color_chns'][contk]
+                    print(chk, contk, '- color:', color)
+                    btn_color = getattr(self, 'fillcolor_'+chk+'_'+contk+'f')
+                    color_btn(btn = btn_color, color = color)
+            
+        self.alpha_ch1_intf.valueChanged.connect(lambda: self.update_alpha('ch1_int'))
+        self.alpha_ch1_tissf.valueChanged.connect(lambda: self.update_alpha('ch1_tiss'))
+        self.alpha_ch1_extf.valueChanged.connect(lambda: self.update_alpha('ch1_ext'))
+        self.alpha_ch2_intf.valueChanged.connect(lambda: self.update_alpha('ch2_int'))
+        self.alpha_ch2_tissf.valueChanged.connect(lambda: self.update_alpha('ch2_tiss'))
+        self.alpha_ch2_extf.valueChanged.connect(lambda: self.update_alpha('ch2_ext'))
+        self.alpha_ch3_intf.valueChanged.connect(lambda: self.update_alpha('ch3_int'))
+        self.alpha_ch3_tissf.valueChanged.connect(lambda: self.update_alpha('ch3_tiss'))
+        self.alpha_ch3_extf.valueChanged.connect(lambda: self.update_alpha('ch3_ext'))
+        self.alpha_ch4_intf.valueChanged.connect(lambda: self.update_alpha('ch4_int'))
+        self.alpha_ch4_tissf.valueChanged.connect(lambda: self.update_alpha('ch4_tiss'))
+        self.alpha_ch4_extf.valueChanged.connect(lambda: self.update_alpha('ch4_ext'))
+        self.alpha_chNS_intf.valueChanged.connect(lambda: self.update_alpha('chNS_int'))
+        self.alpha_chNS_tissf.valueChanged.connect(lambda: self.update_alpha('chNS_tiss'))
+        self.alpha_chNS_extf.valueChanged.connect(lambda: self.update_alpha('chNS_ext'))
+
+        #Initialise with user settings, if they exist!
+        self.user_summary_whole()
+    
     def init_measure_whole(self): 
         #Buttons
         self.measure_wholeAll_play.setStyleSheet(style_play)
@@ -3642,6 +3718,7 @@ class MainWindow(QMainWindow):
         self.q_heatmaps.clicked.connect(lambda: self.help('heatmaps'))
 
         #Plot buttons
+        # 3D
         self.hm_plot1.clicked.connect(lambda: self.plot_heatmap3d(btn='1'))
         self.hm_plot2.clicked.connect(lambda: self.plot_heatmap3d(btn='2'))
         self.hm_plot3.clicked.connect(lambda: self.plot_heatmap3d(btn='3'))
@@ -3654,6 +3731,19 @@ class MainWindow(QMainWindow):
         self.hm_plot10.clicked.connect(lambda: self.plot_heatmap3d(btn='10'))
         self.hm_plot11.clicked.connect(lambda: self.plot_heatmap3d(btn='11'))
         self.hm_plot12.clicked.connect(lambda: self.plot_heatmap3d(btn='12'))
+        # 2D
+        self.hm_plot1_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='1'))
+        self.hm_plot2_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='2'))
+        self.hm_plot3_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='3'))
+        self.hm_plot4_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='4'))
+        self.hm_plot5_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='5'))
+        self.hm_plot6_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='6'))
+        self.hm_plot7_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='7'))
+        self.hm_plot8_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='8'))
+        self.hm_plot9_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='9'))
+        self.hm_plot10_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='10'))
+        self.hm_plot11_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='11'))
+        self.hm_plot12_2D.clicked.connect(lambda: self.plot_heatmap2d(btn='12'))
 
         #Default values
         self.def1.stateChanged.connect(lambda: self.default_range('1'))
@@ -3767,6 +3857,11 @@ class MainWindow(QMainWindow):
                 self.hm_centreline.setText(self.channels[ch]+' ('+ch+'-'+cont+')')
                 self.cl4hm = hm_ch_cont
                 hide = False
+                for cut in ['Cut1','Cut2']: 
+                    if cut in [key for key in segm_setup.keys() if 'Cut' in key]:
+                        #Hereee!!!
+                items_segments = 
+                self.segm_use_hm2D.addItems(self.items_segments)
             else: 
                 hide = True
         else: 
@@ -3782,6 +3877,9 @@ class MainWindow(QMainWindow):
             self.lab_2d.setVisible(False)
             self.lab_plot2d.setVisible(False)
             self.hm_centreline_status.setVisible(False)
+            self.lab_hm2d_settings.setVisible(False)
+            self.improve_hm2D.setVisible(False)
+            self.segm_use_hm2D.setVisible(False)
 
             for num in range(1,13,1): 
                 getattr(self, 'hm2d_play'+str(num)).setVisible(False)
@@ -4397,8 +4495,8 @@ class MainWindow(QMainWindow):
                 self.keeplargest_plot.setEnabled(True)
                 #Update Status in GUI
                 self.update_status(None, 'DONE', self.keeplargest_status, override=True)
-                # self.keeplargest_open.setChecked(True)
-                # self.open_section(name = 'keeplargest')
+                self.keeplargest_open.setChecked(True)
+                self.open_section(name = 'keeplargest')
             elif any(done_all):
                 #Update Status in GUI
                 self.update_status(None, 'Initialised', self.keeplargest_status, override=True)
@@ -4561,13 +4659,41 @@ class MainWindow(QMainWindow):
                 #Update Status in GUI
                 self.update_status(None, 'DONE', self.chNS_status, override=True)
                 self.chNS_play.setChecked(True)
-                # self.chNS_open.setChecked(True)
-                # self.open_section(name = 'chNS')
+                self.chNS_open.setChecked(True)
+                self.open_section(name = 'chNS')
 
             #Run Set Function 
             self.set_chNS()
         else: 
             pass
+
+    def user_summary_whole(self): 
+        wf_info = self.organ.mH_settings['wf_info']
+        workflow = self.organ.workflow['morphoHeart']['MeshesProc']['A-Create3DMesh']
+
+        for ch in self.channels.keys():
+            if 'NS' not in ch: 
+                for cont in ['int', 'tiss', 'ext']: 
+                    alpha_spin = getattr(self, 'alpha_'+ch+'_'+cont+'f')
+                    try: 
+                        alpha_val = self.organ.mH_settings['setup']['alpha'][ch][cont]
+                    except: 
+                        alpha_val = 0.05
+                    alpha_spin.setValue(alpha_val)
+
+                    if workflow[ch][cont]['Status'] == 'DONE':
+                        getattr(self, 'summary_whole_plot_'+ch).setEnabled(True)
+            else: 
+                if workflow[ch]['Status'] == 'DONE':
+                    for cont in ['int', 'tiss', 'ext']: 
+                        alpha_spin = getattr(self, 'alpha_'+ch+'_'+cont+'f')
+                        try: 
+                            alpha_val = self.organ.mH_settings['setup']['chNS']['alpha'][cont]
+                        except: 
+                            alpha_val = 0.05
+                        alpha_spin.setValue(alpha_val)
+
+                        getattr(self, 'summary_whole_plot_'+ch).setEnabled(True)
 
     def user_measure_whole(self): 
         measurements = self.organ.mH_settings['measure']
@@ -4898,20 +5024,27 @@ class MainWindow(QMainWindow):
         if color.isValid():
             print('The selected color is: ', color.name())
             red, green, blue, _ = color.getRgb() #[red, green, blue]
+
+            #Color the buttons
             fill = getattr(self, 'fillcolor_'+name)
             color_btn(btn = fill, color = color.name())
+            try: 
+                fillf = getattr(self, 'fillcolor_'+name+'f')
+                color_btn(btn = fillf, color = color.name())
+            except: 
+                pass
+            
+            #Update colour in mH_settings
             name_split = name.split('_')
             if len(name_split) == 2: 
                 chk, contk = name_split
                 if chk != 'chNS' and contk in ['int', 'ext', 'tiss']: 
-                    # print('not chNS')
                     self.organ.mH_settings['setup']['color_chs'][chk][contk] = [red, green, blue]
                     try: 
                         self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])
                     except: 
                         pass
                 elif chk == 'chNS': 
-                    # print('chNS')
                     self.organ.mH_settings['setup'][chk]['color_chns'][contk] = [red, green, blue]#color.name()
                     try: 
                         self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])#color.name())
@@ -4928,6 +5061,20 @@ class MainWindow(QMainWindow):
                 scut, rcut, segm, sect = name_split
                 self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors'][segm+'_'+sect] = [red, green, blue]
    
+    def update_alpha(self, name): 
+        alpha_value = getattr(self, 'alpha_'+name+'f').value()
+        # print('The updated alpha value for '+name+' is: '+ str(alpha_value))
+        chk,contk = name.split('_')
+        if chk != 'chNS': 
+            self.organ.update_settings(['setup','alpha', chk, contk], alpha_value, 'mH')
+        else: 
+            self.organ.update_settings(['setup',chk,'alpha',contk], alpha_value, 'mH')
+
+        try: 
+            self.organ.obj_meshes[chk+'_'+contk].set_alpha(alpha_value)
+        except: 
+            pass
+
     def set_colormap(self, name):
         value = getattr(self, 'colormap'+name).currentText()
         dir_pix = 'images/'+value+'.png'
@@ -6237,6 +6384,9 @@ class MainWindow(QMainWindow):
         mesh.mapper().SetScalarRange(min_val,max_val)
 
         return mesh
+
+    def plot_heatmap2d(self, btn): 
+        print('Plotting heatmap2d: ', btn)
 
     def plot_segm_sect(self, btn):
         #btn = cut1_segm1 / cut1_sect1
