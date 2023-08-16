@@ -2868,7 +2868,12 @@ class Mesh_mH():
         title_print = title.replace('\n', ' ')
         print('>> Loading mesh '+title_print)
         mesh_out = vedo.load(str(dir_mesh))
+        # print('len(mesh_out):',len(mesh_out.points()))
+        # title_s = self.parent_organ.dir_res(dir='csv_all') / 'whole_new.npy'
+        # np.save(title_s, mesh_out.points())
         npy_colour = np.load(dir_npy)
+        # print('dir_npy:', dir_npy)
+        # print('len(npy_colour):',len(npy_colour))
         color_map = setup['colormap']
         
         # Assign colour

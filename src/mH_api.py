@@ -687,21 +687,117 @@ def run_heatmaps3D(controller, btn):
         controller.main_win.win_msg('*To extract the thickness meshes make sure you have at least run the  -Keep Largest-  section.')
 
 def run_heatmaps2D(controller, btn):
+    # controller.main_win.win_msg('!This section of code is under development... you will be able to use it soon!')
+    # alert('bubble')
+    if controller.main_win.keeplargest_play.isChecked(): 
+        workflow = controller.organ.workflow['morphoHeart']
+        hm2d_list = list(controller.main_win.hm_btns.keys())
+        if btn != None: 
+            for key in hm2d_list: 
+                num_key = controller.main_win.hm_btns[key]['num']
+                if int(num_key) == int(btn): 
+                    hm2get = key
+                    break
+            hm2d_set = [hm2get] #[segm_list[int(num)-1]]
+        else: 
+            hm2d_set = hm2d_list
+        print('hm2d_set:',hm2d_set)
 
-    controller.main_win.win_msg('!This section of code is under development... you will be able to use it soon!')
-    alert('bubble')
-    workflow = controller.organ.workflow['morphoHeart']
-    hm2d_list = list(controller.main_win.hm_btns.keys())
-    if btn != None: 
-        for key in hm2d_list: 
-            num_key = controller.main_win.hm_btns[key]['num']
-            if int(num_key) == int(btn): 
-                hm2get = key
-                break
-        hm2d_set = [hm2get] #[segm_list[int(num)-1]]
-    else: 
-        hm2d_set = hm2d_list
-    print('hm2d_set:',hm2d_set)
+        for hmitem in hm2d_set: 
+            short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball
+            ch_info = ch_info[:-1]
+            if 'th' in short: 
+                ch, contf = ch_info.split('-')
+                if 'i2e' in short: 
+                    n_type = 'intTOext'
+                    cont = 'ext'
+                elif 'e2i' in short: 
+                    n_type = 'extTOint'
+                    cont = 'int'
+                array_name = 'thck('+n_type+')'
+            else: 
+                ch_cont, cl_info = ch_info.split('(')
+                ch, contf = ch_cont.split('-')
+                n_type = 'AAA'
+                array_name = 'AAA'
+                cont = 'aaa'
+            
+            #Get whole mesh and heatmap3d data
+            whole_mesh = controller.organ.obj_meshes[ch+'_'+contf]
+            #Get data from heatmap 3D - LS52_F02_ch1_tiss_CMthck(intTOext)
+            title = str(whole_mesh.dirs['arrays'][array_name])+'.npy'
+            print(whole_mesh.dirs['arrays'])
+            dir_npy = whole_mesh.parent_organ.dir_res(dir='csv_all') / title
+            npy_array = np.load(dir_npy)
+            print('dir_npy:', dir_npy)
+
+            array_mesh = controller.organ.obj_meshes[ch+'_'+cont]
+            
+            if controller.main_win.gui_thickness_ballooning['heatmaps2D']['use_segms']: 
+                cut2use = controller.main_win.gui_thickness_ballooning['heatmaps2D']['segms'].split(': ')[0]
+                segm_setup = controller.organ.mH_settings['setup']['segm'][cut2use]
+                print('segm_setup:',segm_setup)
+
+                #See if the meshes have already been cut
+                obj_segm = {}
+                for n_segm in range(1,segm_setup['no_segments']+1,1):
+                    segm_name = cut2use+'_'+ch+'_'+cont+'_segm'+str(n_segm)
+                    if segm_name in controller.organ.submeshes.keys():
+                        key = 'segm'+str(n_segm)+':'+segm_setup['name_segments']['segm'+str(n_segm)]
+                        print('segm_name:', segm_name)
+                        obj_segm[key] = controller.organ.obj_subm[segm_name]
+                    else: 
+                        print('The segments for this tissue have not been obtained yet! ('+controller.main_win.gui_thickness_ballooning['heatmaps2D']['segms']+')')
+                        break
+                print('len(obj_segm):', len(obj_segm), obj_segm)
+
+                if len(obj_segm) != segm_setup['no_segments']: 
+                    #Use the whole tissue to create 2D heatmap
+                    print('Use the whole tissue to create 2D heatmap')
+
+                else: 
+                    # Classify points
+                    print('Classify points')
+                    data = {array_name: npy_array}
+                    df_classPts = fcM.classify_heart_pts(array_mesh.mesh, obj_segm, data)
+
+
+                    # fcM.plotPtClassif(m_whole, pts_whole, [pts_classAnV])#, pts_classDnV, pts_classLnR])
+
+
+                    # for segm in obj_segm.keys(): 
+                    #     # obj_segm[segm].__dict__ = {'parent_mesh': <src.modules.mH_classes_new.Mesh_mH object at 0x000001CFDCB50CA0>, 
+                    #     #                            'sub_name': 'segm1', 
+                    #     #                            'sub_name_all': 'Cut1_ch1_tiss_segm1', 
+                    #     #                            'cut': 'Cut1', 
+                    #     #                            'sub_mesh_type': 'Segment', 
+                    #     #                            'keep_largest': False, 
+                    #     #                            'sub_legend': 'myocardium_tiss_atrium', 
+                    #     #                            'color': (247, 113, 137), 
+                    #     #                            'alpha': 0.05, 
+                    #     #                            'rotateZ_90': True, 
+                    #     #                            'imChannel': <src.modules.mH_classes_new.ImChannel object at 0x000001CFE07D67F0>, 
+                    #     #                            'mesh_type': 'tiss', 
+                    #     #                            'resolution': [0.22832596445005057, 0.22832596445005057, 0.75], 
+                    #     #                            'sub_user_name': 'atrium'}
+                    #     print(obj_segm[segm].__dict__)
+                    #     subm = obj_segm[segm].get_segm_mesh()
+                    #     pts_subm = subm.points()
+                    #     title_pts = obj_segm[segm].sub_name_all+'.npy'
+                    #     dir_pts = whole_mesh.parent_organ.dir_res(dir='csv_all') / title_pts
+                    #     np.save(dir_pts, pts_subm)
+
+                    # pts_subm = whole_mesh.mesh.points()
+                    # title_pts = 'whole.npy'
+                    # dir_pts = whole_mesh.parent_organ.dir_res(dir='csv_all') / title_pts
+                    # np.save(dir_pts, pts_subm)
+                        
+                   
+                    
+
+
+
+
 
     # for hmitem in hm2d_set:
     #     short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball

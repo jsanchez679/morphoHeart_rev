@@ -25,6 +25,7 @@ from typing import Union
 from skimage import measure
 import seaborn as sns
 import random
+import pandas as pd
 
 #%% ##### - Other Imports - ##################################################
 from ..gui.config import mH_config
@@ -1870,6 +1871,66 @@ def measure_area(organ):
         wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'surf_area']
         organ.update_workflow(process=wf_proc, update='DONE')
             
+#%% Points classification
+def classify_heart_pts(m_whole, obj_segm, data):
+    """
+    Function that classifies the points that make up a mesh as atrium/ventricle, dorsal/ventral and left/right
+
+    """
+    pts_whole = m_whole.points()
+
+    index_segm_all = []
+    pts_classAnV = np.empty(len(pts_whole), dtype='object')
+    pts_classAnV[:] = 'other'
+    names = []
+    for segm in obj_segm.keys(): 
+        # Classify AnV
+        print('Classifying points for '+segm)
+        subm = obj_segm[segm].get_segm_mesh()
+        no_segm, name = segm.split(':')
+        names.append(name)
+        pts_segm = subm.points()
+
+        #Classify
+        av = pts_whole.view([('', pts_whole.dtype)] * pts_whole.shape[1]).ravel()
+        cv = pts_segm.view([('', pts_segm.dtype)] * pts_segm.shape[1]).ravel()
+        d_isin = np.isin(av,cv)
+        index_segm = np.where(d_isin == True)[0]
+        print('length original index_segm: ',len(index_segm))
+        if len(index_segm_all) >0: 
+            for indx in index_segm_all: 
+                print(indx)
+                intersect = np.intersect1d(index_segm, indx)
+                if len(intersect)!= 0:
+                    index_segm = np.setdiff1d(index_segm, intersect)
+                    print('length final index_segm: ',len(index_segm))
+        else: 
+            pass
+    
+        index_segm_all.append(index_segm)
+        
+        pts_classAnV[index_segm] = segm
+        unique = np.unique(pts_classAnV)
+        print('unique:', unique)
+    
+    class_name = '-'.join(names)
+    cols = [class_name]+list(data.keys())
+    df_classPts = pd.DataFrame(columns=cols)
+    df_classPts[class_name] = pts_classAnV
+    print('len(df_classPts):', len(df_classPts))
+    for key, item in data.items():
+        print(len(item))
+        df_classPts[key] = item
+
+    print("- All Done - points have been classified!\n- Sample of classified points")
+    print(df_classPts.sample(10))
+    alert('whistle')
+    
+    if True: 
+        plotPtClassif(m_whole, pts_whole, list(obj_segm.keys()), pts_classAnV)#, pts_classDnV, pts_classLnR])
+
+    return df_classPts
+
 #%% - Vectorial calculations
 def find_angle_btw_pts(pts1, pts2):
     """
@@ -2024,6 +2085,30 @@ def plot_organCLs(organ, axes=5, plotshow=True):
         plot_grid(obj=obj, txt=txt, axes=axes, sc_side=max(organ.get_maj_bounds()))
 
     return dict_cl
+
+def plotPtClassif(mesh, pts_whole, names_class, pts_class, every=20):
+    """
+    Function that plots a subset of the classified points
+    """
+    color = ['tomato','gold','magenta','deepblue','pink','crimson']
+    
+    text = '>> Point classification'
+    txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
+
+    vp = vedo.Plotter(shape = (1, 2), axes = 13)#13
+    vp.show(mesh, txt, at = 0)
+    spheres = []; text_class = []
+    for i, sp_class in enumerate(names_class):
+        ind_first = np.where(pts_class == sp_class)[0]
+        print(len(ind_first))
+        pts_first = pts_whole[ind_first]
+        sph_first = vedo.Spheres(pts_first[0::every,:], c = color[i], r=1).legend(names_class[i])
+        spheres.append(sph_first)
+        text_class.append(names_class[i]+':'+color[i])
+
+    text_classf = ', '.join(text_class)
+    txt2 = vedo.Text2D(text_classf,  c=txt_color, font=txt_font, s=txt_size)
+    vp.show(mesh, spheres, txt2, at = 1, interactive = True)
 
 #%% - Plane handling functions 
 def get_plane(filename, txt:str, meshes:list, settings: dict, def_pl = None, 

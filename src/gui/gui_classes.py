@@ -3851,17 +3851,24 @@ class MainWindow(QMainWindow):
 
         #Change if hm3d2t not selected, then set all widgets related to unlooping/unrolling to not visible
         if 'hm3Dto2D' in  self.organ.mH_settings['measure'].keys():
+            self.improve_hm2D.stateChanged.connect(lambda: self.improve_2DHM_segm())
             if len(self.organ.mH_settings['measure']['hm3Dto2D'].keys())>0:
                 hm_ch_cont = list(self.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
                 ch, cont = hm_ch_cont.split('_')
                 self.hm_centreline.setText(self.channels[ch]+' ('+ch+'-'+cont+')')
                 self.cl4hm = hm_ch_cont
                 hide = False
+                segm_setup = self.organ.mH_settings['setup']['segm']
+                items_segments = []
                 for cut in ['Cut1','Cut2']: 
                     if cut in [key for key in segm_setup.keys() if 'Cut' in key]:
-                        #Hereee!!!
-                items_segments = 
-                self.segm_use_hm2D.addItems(self.items_segments)
+                        segms = segm_setup[cut]['name_segments']
+                        name_segm = []
+                        for key, item in segms.items(): 
+                            name_segm.append(item)
+                        name2add = ', '.join(name_segm)
+                        items_segments.append(cut+': '+name2add)
+                self.segm_use_hm2D.addItems(items_segments)
             else: 
                 hide = True
         else: 
@@ -3880,6 +3887,7 @@ class MainWindow(QMainWindow):
             self.lab_hm2d_settings.setVisible(False)
             self.improve_hm2D.setVisible(False)
             self.segm_use_hm2D.setVisible(False)
+            self.line_2dhm.setVisible(False)
 
             for num in range(1,13,1): 
                 getattr(self, 'hm2d_play'+str(num)).setVisible(False)
@@ -4850,6 +4858,10 @@ class MainWindow(QMainWindow):
                         if cl_done == 'DONE': 
                             self.hm_btns[item]['play'].setEnabled(True)
 
+            if wf_info['heatmaps']['heatmaps2D']['use_segms']:
+                self.improve_hm2D.setChecked(True)
+                self.segm_use_hm2D.setCurrentText(wf_info['heatmaps']['heatmaps2D']['segms'])
+            
             done_all = []
             for proc_n in ['D-Thickness_int>ext','D-Thickness_ext>int','D-Ballooning']:
                 done_all.append(get_by_path(wf, [proc_n, 'Status']) == 'DONE')
@@ -5482,6 +5494,13 @@ class MainWindow(QMainWindow):
         getattr(self, process+'_n_slices').setEnabled(state)
         getattr(self, process+'_lab2').setEnabled(state)
 
+    def improve_2DHM_segm(self):
+        cB = getattr(self, 'improve_hm2D')
+        if cB.isChecked():
+            getattr(self, 'segm_use_hm2D').setEnabled(True)
+        else: 
+            getattr(self, 'segm_use_hm2D').setEnabled(False)
+
     def default_range(self, btn_num):
         btn = getattr(self, 'def'+btn_num)
         if btn.isChecked(): 
@@ -5936,25 +5955,26 @@ class MainWindow(QMainWindow):
 
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_thickness_ballooning = self.gui_thickness_ballooning_n()
-        if 'heatmaps' not in wf_info.keys():
-            self.gui_thickness_ballooning = current_gui_thickness_ballooning
-        else: 
-            gui_thickness_ballooning_loaded = self.organ.mH_settings['wf_info']['heatmaps']
-            self.gui_thickness_ballooning, changed = update_gui_set(loaded = gui_thickness_ballooning_loaded, 
-                                                                current = current_gui_thickness_ballooning)
-            if changed: 
-                # self.win_msg("Remember to re-run  -Thickness / Ballooning Measurements-  section to make sure changes are made and saved!")
-                self.update_status(None, 're-run', self.heatmaps_status, override=True)
-            
-        self.update_3d2d()
+        if current_gui_thickness_ballooning != None:
+            if 'heatmaps' not in wf_info.keys():
+                self.gui_thickness_ballooning = current_gui_thickness_ballooning
+            else: 
+                gui_thickness_ballooning_loaded = self.organ.mH_settings['wf_info']['heatmaps']
+                self.gui_thickness_ballooning, changed = update_gui_set(loaded = gui_thickness_ballooning_loaded, 
+                                                                    current = current_gui_thickness_ballooning)
+                if changed: 
+                    # self.win_msg("Remember to re-run  -Thickness / Ballooning Measurements-  section to make sure changes are made and saved!")
+                    self.update_status(None, 're-run', self.heatmaps_status, override=True)
+                
+            self.update_3d2d()
 
-        # Update mH_settings
-        proc_set = ['wf_info']
-        update = self.gui_thickness_ballooning
-        self.organ.update_settings(proc_set, update, 'mH', add='heatmaps')
+            # Update mH_settings
+            proc_set = ['wf_info']
+            update = self.gui_thickness_ballooning
+            self.organ.update_settings(proc_set, update, 'mH', add='heatmaps')
 
-        self.thickness_set.setChecked(True)
-        print('self.gui_thickness_ballooning: ', self.gui_thickness_ballooning)
+            self.thickness_set.setChecked(True)
+            print('self.gui_thickness_ballooning: ', self.gui_thickness_ballooning)
 
     def gui_thickness_ballooning_n(self):
         gui_thickness_ballooning = {}
@@ -5976,7 +5996,20 @@ class MainWindow(QMainWindow):
                                                    'd3d2': d3d2}
             nn+=1
 
-        return gui_thickness_ballooning
+        improve_hm2d = getattr(self, 'improve_hm2D').isChecked()
+        if improve_hm2d: 
+            if getattr(self, 'segm_use_hm2D').currentText() != '----':
+                gui_thickness_ballooning['heatmaps2D'] = {'use_segms': improve_hm2d, 
+                                                        'segms': getattr(self, 'segm_use_hm2D').currentText()}
+                return gui_thickness_ballooning
+            else: 
+                self.win_msg('*Please select the segments that you would like to use to improve the 2D heatmaps to set the Thickness and Ballooning Settings')
+                self.thickness_set.setChecked(False)
+                return None
+        else: 
+            gui_thickness_ballooning['heatmaps2D'] = {'use_segms': improve_hm2d, 
+                                                    'segms': 'NA'}
+            return gui_thickness_ballooning
     
     def update_3d2d(self): 
 

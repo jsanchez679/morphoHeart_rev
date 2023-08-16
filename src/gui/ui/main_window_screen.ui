@@ -2038,9 +2038,9 @@ QScrollBar::handle:vertical:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-2022</y>
+                <y>-2067</y>
                 <width>635</width>
-                <height>5402</height>
+                <height>5411</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -22568,11 +22568,21 @@ border-color: rgb(115, 115, 115)}
                          </layout>
                         </item>
                         <item>
+                         <widget class="Line" name="line_2dhm">
+                          <property name="frameShadow">
+                           <enum>QFrame::Raised</enum>
+                          </property>
+                          <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
                          <layout class="QVBoxLayout" name="verticalLayout_73">
                           <item>
                            <layout class="QHBoxLayout" name="horizontalLayout_262">
                             <item>
-                             <widget class="QLabel" name="lab_cl_ext_cut1_2">
+                             <widget class="QLabel" name="lab_hm2d_settings">
                               <property name="sizePolicy">
                                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                                 <horstretch>0</horstretch>
@@ -22765,13 +22775,13 @@ border-color: rgb(0,0, 0);</string>
                               </property>
                               <property name="minimumSize">
                                <size>
-                                <width>150</width>
+                                <width>200</width>
                                 <height>20</height>
                                </size>
                               </property>
                               <property name="maximumSize">
                                <size>
-                                <width>120</width>
+                                <width>200</width>
                                 <height>20</height>
                                </size>
                               </property>
@@ -27788,13 +27798,13 @@ color: rgb(234, 234, 234);
                             </property>
                             <property name="minimumSize">
                              <size>
-                              <width>110</width>
+                              <width>200</width>
                               <height>20</height>
                              </size>
                             </property>
                             <property name="maximumSize">
                              <size>
-                              <width>65</width>
+                              <width>200</width>
                               <height>20</height>
                              </size>
                             </property>
