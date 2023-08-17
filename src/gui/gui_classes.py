@@ -468,7 +468,7 @@ class Prompt_save_all(QDialog):
 
 class CreateNewProj(QDialog):
 
-    def __init__(self, parent=None):
+    def __init__(self, controller, parent=None):
         super().__init__()
         self.proj_name = ''
         self.proj_dir_parent = ''
@@ -476,6 +476,7 @@ class CreateNewProj(QDialog):
         self.setWindowTitle('Create New Project...')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
+        self.controller = controller
 
         self.mH_user_params = None
         self.mC_user_params = None
@@ -615,6 +616,7 @@ class CreateNewProj(QDialog):
         self.chNS_operation.addItems(['----', 'XOR'])
 
     def init_segments_group(self):
+        self.use_semgs_improve_hm2D = False
         # -- Segments
         self.set_segm.setDisabled(True)
         self.set_segm.setVisible(False)
@@ -650,6 +652,8 @@ class CreateNewProj(QDialog):
         self.button_set_segm.clicked.connect(lambda: self.validate_segments())
 
         self.tick_segm1.stateChanged.connect(lambda: always_checked(self.tick_segm1))
+
+        self.improve_hm2D.clicked.connect(lambda: self.improve2DHM())
 
     def init_sections_group(self):
         # -- Sections
@@ -914,6 +918,7 @@ class CreateNewProj(QDialog):
                         fill.setText(color)
 
     def checked(self, stype):
+        # print('self.mH_settings (checked):', self.mH_settings)
         ck_type = getattr(self, 'tick_'+stype)
         s_set = getattr(self, 'set_'+stype)
         if ck_type.isChecked():
@@ -1295,6 +1300,16 @@ class CreateNewProj(QDialog):
         # print(getattr(self, 'dict_'+stype))
         # print(dict_stype.items())
 
+    def improve2DHM(self): 
+        if self.improve_hm2D.isChecked(): 
+            self.use_semgs_improve_hm2D = True
+            if self.controller.meas_param_win != None: 
+                self.controller.meas_param_win.improve_hm2D.setChecked(True)
+        else: 
+            self.use_semgs_improve_hm2D = False
+            if self.controller.meas_param_win != None: 
+                self.controller.meas_param_win.improve_hm2D.setChecked(False)
+
     def validate_segments(self): 
         valid_all = []
         stype = 'segm'
@@ -1351,7 +1366,19 @@ class CreateNewProj(QDialog):
         
         if all(valid_all): 
             self.win_msg('All good! Segments have been set (1).')
-            self.set_segm_settings()
+            if self.improve_hm2D.isChecked(): 
+                title = 'Segments for improving 3D heatmaps unrolling into 2D'
+                msg = 'Make sure you have selected all the required segments to aid the unrolling of the 3D heatmaps into 2D. If you are happy with your selection press  -Ok-, else press  -Cancel- and change your selection.' 
+                prompt = Prompt_ok_cancel(title, msg, parent=self)
+                prompt.exec()
+                print('output:',prompt.output, '\n')
+                if prompt.output: 
+                    self.set_segm_settings()
+                    self.button_set_segm.setChecked(True)
+                else: 
+                    self.button_set_segm.setChecked(False)
+            else: 
+                self.set_segm_settings()
         else: 
             print('Aja? - segments')
 
@@ -1462,6 +1489,7 @@ class CreateNewProj(QDialog):
                 meas_area = getattr(self, 'cB_area_'+stype).isChecked()
                 meas_ellip = getattr(self, 'cB_ellip_'+stype).isChecked()
                 meas_angles = getattr(self, 'cB_angles_'+stype).isChecked()
+                improve_hm2d = getattr(self, 'improve_hm2D').isChecked()
 
                 #Get names
                 names_segmF = {}
@@ -1492,7 +1520,8 @@ class CreateNewProj(QDialog):
                             'obj_segm': obj_type,
                             'no_cuts_4segments': no_obj,
                             'name_segments': names_segmF,
-                            'ch_segments': ch_segments}
+                            'ch_segments': ch_segments,
+                            'improve_hm2d': improve_hm2d}
                             
                 segm_settings[cut] = dict_cut
                 valid_all.append(True)
@@ -1671,6 +1700,7 @@ class CreateNewProj(QDialog):
             self.mH_settings['segm-sect'] = True
         else: 
             self.mH_settings['segm-sect'] = False
+            self.widget_segm_sect.setVisible(False)
 
     def fill_segm_sect(self): 
         if not self.tick_segm2.isChecked(): 
@@ -1739,7 +1769,7 @@ class CreateNewProj(QDialog):
             if all(not x for x in dict_CL):
                 error_txt = '*To create region divisions, at least one centreline needs to be created. Go back to  -Set Measurement Parameters-  and select at least one centreline.'
                 self.win_msg(error_txt, self.button_new_proj)
-                return
+                returnvalidate_set_all
             elif self.button_set_sect.isChecked():
                 valid.append(True)
             else: 
@@ -1747,12 +1777,16 @@ class CreateNewProj(QDialog):
                 self.win_msg(error_txt, self.button_new_proj)
                 return
         
-        if self.button_set_segm_sect.isChecked(): 
-            valid.append(True)
+        if self.tick_segm_sect_2.isChecked():
+            if self.button_set_segm_sect.isChecked(): 
+                valid.append(True)
+            else: 
+                error_txt = '*You need to set segment-region intersection settings before creating the new project.'
+                self.win_msg(error_txt, self.button_new_proj)
+                return
         else: 
-            error_txt = '*You need to set segment-region intersection settings before creating the new project.'
-            self.win_msg(error_txt, self.button_new_proj)
-            return
+            self.mH_settings['segm-sect'] = False
+            valid.append(True)
 
         if all(valid): 
             return True
@@ -1886,6 +1920,11 @@ class SetMeasParam(QDialog):
         self.lab_param8.clicked.connect(lambda: self.tick_all_param(8))
         self.lab_param9.clicked.connect(lambda: self.tick_all_param(9))
 
+        self.del_param6.clicked.connect(lambda: self.delete_param(6))
+        self.del_param7.clicked.connect(lambda: self.delete_param(7))
+        self.del_param8.clicked.connect(lambda: self.delete_param(8))
+        self.del_param9.clicked.connect(lambda: self.delete_param(9))
+
         #Param ballooning
         self.cB_ch1_int_param5.clicked.connect(lambda: self.settings_ballooning('ch1_int'))
         self.cB_ch1_ext_param5.clicked.connect(lambda: self.settings_ballooning('ch1_ext'))
@@ -1904,8 +1943,18 @@ class SetMeasParam(QDialog):
         poss_chs = [ch for ch in self.ch_all.keys() if ch != 'chNS']
         hm_ch = getattr(self, 'hm_cB_ch')
         hm_ch.addItems(['--select--']+poss_chs)
+        self.improve_hm2D.clicked.connect(lambda: self.improve2DHM())
 
         self.cB_hm3d2d.clicked.connect(lambda: self.heatmap3d2d())
+
+        if self.parent.use_semgs_improve_hm2D: 
+            self.improve_hm2D.setChecked(True)
+
+    def improve2DHM(self): 
+        if self.improve_hm2D.isChecked(): 
+            self.parent.improve_hm2D.setChecked(True)
+        else: 
+            self.parent.improve_hm2D.setChecked(False)
 
     def win_msg(self, msg, btn=None): 
         if msg[0] == '*':
@@ -1963,6 +2012,21 @@ class SetMeasParam(QDialog):
                     # else: 
                     #     print('Checkbox -'+'cB_'+ch_s+'_'+cont+'_param'+str(num)+ '- is disabled!')
 
+    def delete_param(self, num:int): 
+        print('self.params before:', self.params)
+        param_name = self.params[num]['l']
+        self.params.pop(num)
+        for nn in range(num+1,10,1): 
+            if nn in self.params.keys(): 
+                print('num:', num,'nn:',  nn)
+                self.params[num] = self.params[nn]
+                print('self.params interm:', self.params)
+                self.params.pop(nn)
+            print('self.params after:', self.params)
+
+        self.set_meas_param_table()
+        self.win_msg("Parameter '"+param_name+"' has been deleted!")
+
     def check_checkBoxes(self):
         if hasattr(self, 'dict_meas'):
             delattr(self, 'dict_meas')
@@ -1988,8 +2052,18 @@ class SetMeasParam(QDialog):
     def set_meas_param_table(self): 
         #Set Measurement Parameters
         for key in self.params.keys():
+            getattr(self, 'q_param'+str(key)).setVisible(True)
+            getattr(self, 'lab_param'+str(key)).setVisible(True)
             getattr(self, 'lab_param'+str(key)).setEnabled(True)
             getattr(self, 'lab_param'+str(key)).setText(self.params[key]['l'])
+            if key >= 6: 
+                getattr(self, 'del_param'+str(key)).setVisible(True)
+
+        for nn in range(key+1,10,1): 
+            getattr(self, 'lab_param'+str(nn)).setVisible(False)
+            getattr(self, 'q_param'+str(nn)).setVisible(False)
+            if nn >= 6: 
+                getattr(self, 'del_param'+str(nn)).setVisible(False)
         
         # print(len(self.params),'---', self.params)
         for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']: 
@@ -1998,11 +2072,12 @@ class SetMeasParam(QDialog):
                 for num in range(10): 
                     if num < len(self.params):
                         for cont in ['int', 'tiss', 'ext']:
+                            getattr(self, 'cB_'+ch+'_'+cont+'_param'+str(num)).setVisible(True)
                             getattr(self, 'cB_'+ch+'_'+cont+'_param'+str(num)).setEnabled(True)
                     else: 
-                        getattr(self, 'lab_param'+str(num)).setEnabled(False)
+                        getattr(self, 'lab_param'+str(num)).setVisible(False)
                         for cont in ['int', 'tiss', 'ext']:
-                            getattr(self, 'cB_'+ch+'_'+cont+'_param'+str(num)).setEnabled(False)
+                            getattr(self, 'cB_'+ch+'_'+cont+'_param'+str(num)).setVisible(False)
             else:
                 getattr(self, 'label_'+ch).setVisible(False)   
                 getattr(self, 'label_'+ch+'_2').setVisible(False)    
@@ -2014,9 +2089,10 @@ class SetMeasParam(QDialog):
 
         for num in range(6,10,1):
             if num < len(self.params):
+                getattr(self, 'cB_roi_param'+str(num)).setVisible(True)
                 getattr(self, 'cB_roi_param'+str(num)).setEnabled(True)
             else: 
-                getattr(self, 'cB_roi_param'+str(num)).setEnabled(False)
+                getattr(self, 'cB_roi_param'+str(num)).setVisible(False)
 
         #Disable parameters
         for pars in self.disable_pars:
@@ -2030,59 +2106,66 @@ class SetMeasParam(QDialog):
         # print(getattr(self, 'dict_meas'))
 
     def add_user_param(self):
-        valid = []; error_txt = ''
-        param_name = self.lineEdit_param_name.text()
-        param_abbr = self.lineEdit_param_abbr.text()
-        param_desc = self.textEdit_param_desc.toPlainText()
-        param_type = [getattr(self, 'rB_'+opt).opt for opt in ['descriptive', 'continuous', 'categorical'] if getattr(self, 'rB_'+opt).isChecked()]
-        param_categ = self.lineEdit_param_classes.text()
 
-        if len(param_name)<5: 
-            error_txt = "*Parameter's name needs have at least five (5) characters."
-            self.win_msg(error_txt, self.button_add_param)
-            return
-        elif validate_txt(param_name) != None:
-            error_txt = "*Please avoid using invalid characters in the parameter's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
-            self.win_msg(error_txt, self.button_add_param)
-            return
-        else: 
-            valid.append(True)
-        
-        if len(param_abbr)<3: 
-            error_txt = "*Parameter's abbreviation needs to have between 3 and 12 characters."
-            self.win_msg(error_txt, self.button_add_param)
-            return
-        elif validate_txt(param_abbr) != None:
-            error_txt = "*Please avoid using invalid characters in the parameter's abbreviation e.g.['(',')', ':', '-', '/', '\', '.', ',']"
-            self.win_msg(error_txt, self.button_add_param)
-            return
-        else: 
-            valid.append(True)
-            param_abbr_line = param_abbr.replace(' ', '_')
-        
-        if self.rB_categorical.isChecked(): 
-            try: 
-                param_categs = split_str(param_categ)
-                valid.append(True)
-            except: 
-                error_txt = "*Please check the values introduced in Parameter Classes."
+        if len(self.params) < 10: 
+            valid = []; error_txt = ''
+            param_name = self.lineEdit_param_name.text()
+            param_abbr = self.lineEdit_param_abbr.text()
+            param_desc = self.textEdit_param_desc.toPlainText()
+            param_type = [getattr(self, 'rB_'+opt).opt for opt in ['descriptive', 'continuous', 'categorical'] if getattr(self, 'rB_'+opt).isChecked()]
+            param_categ = self.lineEdit_param_classes.text()
+
+            if len(param_name)<5: 
+                error_txt = "*Parameter's name needs have at least five (5) characters."
                 self.win_msg(error_txt, self.button_add_param)
                 return
-        else: 
-            param_categs = []
-            valid.append(True)
+            elif validate_txt(param_name) != None:
+                error_txt = "*Please avoid using invalid characters in the parameter's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+                self.win_msg(error_txt, self.button_add_param)
+                return
+            else: 
+                valid.append(True)
+            
+            if len(param_abbr)<3: 
+                error_txt = "*Parameter's abbreviation needs to have between 3 and 12 characters."
+                self.win_msg(error_txt, self.button_add_param)
+                return
+            elif validate_txt(param_abbr) != None:
+                error_txt = "*Please avoid using invalid characters in the parameter's abbreviation e.g.['(',')', ':', '-', '/', '\', '.', ',']"
+                self.win_msg(error_txt, self.button_add_param)
+                return
+            else: 
+                valid.append(True)
+                param_abbr_line = param_abbr.replace(' ', '_')
+            
+            if self.rB_categorical.isChecked(): 
+                try: 
+                    param_categs = split_str(param_categ)
+                    valid.append(True)
+                except: 
+                    error_txt = "*Please check the values introduced in Parameter Classes."
+                    self.win_msg(error_txt, self.button_add_param)
+                    return
+            else: 
+                param_categs = []
+                valid.append(True)
+            
+            if all(valid):
+                param_num = len(self.params)
+                self.params[param_num]={'s': param_abbr_line, 'l': param_name, 
+                                            'description': param_desc, 'type': param_type[0], 'categories': param_categs}
+                # print(self.params)
+                self.set_meas_param_table()
+                self.win_msg("New parameter '"+param_name+"' has been added! Now select the tissues from which you would like to measure this new parameter.")
+                param_name = self.lineEdit_param_name.clear()
+                param_abbr = self.lineEdit_param_abbr.clear()
+                param_desc = self.textEdit_param_desc.clear()
+                param_categ = self.lineEdit_param_classes.clear()
         
-        if all(valid):
-            param_num = len(self.params)
-            self.params[param_num]={'s': param_abbr_line, 'l': param_name, 
-                                        'description': param_desc, 'type': param_type[0], 'categories': param_categs}
-            # print(self.params)
-            self.set_meas_param_table()
-            self.win_msg("New parameter '"+param_name+"' has been added! Now select the tissues from which you would like to measure this new parameter.")
-            param_name = self.lineEdit_param_name.clear()
-            param_abbr = self.lineEdit_param_abbr.clear()
-            param_desc = self.textEdit_param_desc.clear()
-            param_categ = self.lineEdit_param_classes.clear()
+        else: 
+            error_txt = "*You have reached the limit of user specific parameters to add."
+            self.win_msg(error_txt, self.button_add_param)
+            return
         
     def set_ballooning_opt(self):
         for opt in range(1,5,1):
@@ -2129,6 +2212,7 @@ class SetMeasParam(QDialog):
         self.hm_lab_cont.setEnabled(value)
         self.hm_cB_ch.setEnabled(value)
         self.hm_cB_cont.setEnabled(value)
+        self.improve_hm2D.setEnabled(value)
 
     def validate_params(self): 
         valid = []
@@ -2222,6 +2306,9 @@ class SetMeasParam(QDialog):
         if all(valid): 
             self.win_msg('All done setting measurement parameters!')
             self.get_parameters()
+            self.parent.button_set_segm.setEnabled(True)
+            self.parent.button_set_sect.setEnabled(True)
+            self.parent.button_set_segm_sect.setEnabled(True)
             return True
         else: 
             return False
@@ -2262,7 +2349,6 @@ class SetMeasParam(QDialog):
         if self.cB_hm3d2d.isChecked():
             hm3d2d['ch'] = getattr(self, 'hm_cB_ch').currentText()
             hm3d2d['cont'] = getattr(self, 'hm_cB_cont').currentText()
-
                 
         centreline = {'looped_length': getattr(self, 'cB_cl_LoopLen').isChecked(),
                         'linear_length': getattr(self, 'cB_cl_LinLen').isChecked()}
@@ -2271,6 +2357,76 @@ class SetMeasParam(QDialog):
                              'centreline': centreline, 
                              'hm3d2d': hm3d2d}
         # print('self.final_params:',self.final_params)
+    
+    def get_final_parameters(self, controller): 
+
+        controller.mH_params = self.params
+        controller.ch_all = self.ch_all
+        controller.mH_params[2]['measure'] = self.final_params['centreline']
+        controller.mH_params[5]['measure'] = self.final_params['ballooning']
+    
+        selected_params = controller.new_proj_win.mH_user_params 
+        if selected_params == None: 
+            selected_params = {}
+            
+        #First add all whole measure parameters selected
+        for numa in self.params: 
+            selected_params[self.params[numa]['s']] = {}
+
+        hm_ticked = []
+        for cbox in self.dict_meas:
+            if 'roi' not in cbox:
+                _,chf,contf,param_num = cbox.split('_')
+                num_p = int(param_num.split('param')[1])
+                param_name = self.params[num_p]['s']
+                cBox = getattr(self, cbox)
+                if cBox.isEnabled():
+                    is_checked = cBox.isChecked()
+                    selected_params[param_name][chf+'_'+contf+'_whole'] = is_checked
+                    if is_checked: 
+                        if param_name in ['th_i2e','th_e2i','ball']:
+                            hm_ticked.append(param_name+':'+chf+'_'+contf)
+            else: 
+                _,roi,param_num = cbox.split('_')
+                num_p = int(param_num.split('param')[1])
+                param_name = self.params[num_p]['s']
+                cBox = getattr(self, cbox)
+                if cBox.isEnabled():
+                    is_checked = cBox.isChecked()
+                    selected_params[param_name]['roi'] = is_checked
+                        
+        #Add ballooning measurements
+        param_name = self.params[5]['s']
+        selected_params[param_name] = {}
+        for opt in controller.mH_params[5]['measure']:
+            to_mesh = controller.mH_params[5]['measure'][opt]['to_mesh']
+            to_mesh_type = controller.mH_params[5]['measure'][opt]['to_mesh_type']
+            from_cl = controller.mH_params[5]['measure'][opt]['from_cl']
+            from_cl_type = controller.mH_params[5]['measure'][opt]['from_cl_type']
+            selected_params[param_name][to_mesh+'_'+to_mesh_type+'_('+from_cl+'_'+from_cl_type+')'] = True
+        
+        controller.new_proj_win.text_hmselected.setText(', '.join(hm_ticked))
+
+        #Add heatmaps 3d to 2d
+        selected_params['hm3Dto2D'] = {}
+        if self.cB_hm3d2d.isChecked():
+            hm_ch = self.hm_cB_ch.currentText()
+            hm_cont = self.hm_cB_cont.currentText()[0:3]
+            name = hm_ch+'_'+hm_cont
+            selected_params['hm3Dto2D'][name] = True
+        else: 
+            selected_params['hm3Dto2D']['ch_cont'] = False
+
+        controller.new_proj_win.mH_user_params = selected_params
+        print('Selected_params', selected_params)
+
+        #Toogle button and close window
+        self.button_set_params.setChecked(True)
+        self.close()
+        #Toggle button in new project window
+        controller.new_proj_win.set_meas_param_all.setChecked(True)
+        error_txt = "Well done! Continue setting up new project."
+        controller.new_proj_win.win_msg(error_txt)
 
 class NewOrgan(QDialog):
 

@@ -761,6 +761,12 @@ def run_heatmaps2D(controller, btn):
                     data = {array_name: npy_array}
                     df_classPts = fcM.classify_heart_pts(array_mesh.mesh, obj_segm, data)
 
+                    #Get the centreline that will be used to unloop and unroll heatmaps
+                    hm_ch_cont_cl = list(controller.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
+                    ch_cl, cont_cl = hm_ch_cont_cl.split('_')
+                    #Get the mesh and then its centreline
+                    nPoints = controller.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
+                    cl_final = controller.organ.obj_meshes[ch_cl+'_'+cont_cl].get_centreline(nPoints=nPoints)
 
                     # fcM.plotPtClassif(m_whole, pts_whole, [pts_classAnV])#, pts_classDnV, pts_classLnR])
 

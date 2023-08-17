@@ -119,7 +119,7 @@ class Controller:
         self.welcome_win.close()
         #Create new proj window and show
         if self.new_proj_win == None: 
-            self.new_proj_win = CreateNewProj()
+            self.new_proj_win = CreateNewProj(controller=self)
         self.new_proj_win.show()
 
         #Connect Buttons
@@ -364,89 +364,14 @@ class Controller:
     # Project Related  
     def set_proj_meas_param(self):
         if self.meas_param_win.validate_params() == True: 
-            self.mH_params = self.meas_param_win.params
-            self.ch_all = self.meas_param_win.ch_all
-            self.mH_params[2]['measure'] = self.meas_param_win.final_params['centreline']
-            self.mH_params[5]['measure'] = self.meas_param_win.final_params['ballooning']
-        
-            selected_params = self.new_proj_win.mH_user_params 
-            if selected_params == None: 
-                selected_params = {}
-            #First add all whole measure parameters selected
-            for numa in self.meas_param_win.params: 
-                selected_params[self.meas_param_win.params[numa]['s']] = {}
-
-            for cbox in self.meas_param_win.dict_meas:
-                if 'roi' not in cbox:
-                    _,chf,contf,param_num = cbox.split('_')
-                    num_p = int(param_num.split('param')[1])
-                    param_name = self.meas_param_win.params[num_p]['s']
-                    cBox = getattr(self.meas_param_win, cbox)
-                    if cBox.isEnabled():
-                        is_checked = cBox.isChecked()
-                        selected_params[param_name][chf+'_'+contf+'_whole'] = is_checked
-                else: 
-                    _,roi,param_num = cbox.split('_')
-                    num_p = int(param_num.split('param')[1])
-                    param_name = self.meas_param_win.params[num_p]['s']
-                    cBox = getattr(self.meas_param_win, cbox)
-                    if cBox.isEnabled():
-                        is_checked = cBox.isChecked()
-                        selected_params[param_name]['roi'] = is_checked
-                        
-            #Add ballooning measurements
-            param_name = self.meas_param_win.params[5]['s']
-            selected_params[param_name] = {}
-            for opt in self.mH_params[5]['measure']:
-                to_mesh = self.mH_params[5]['measure'][opt]['to_mesh']
-                to_mesh_type = self.mH_params[5]['measure'][opt]['to_mesh_type']
-                from_cl = self.mH_params[5]['measure'][opt]['from_cl']
-                from_cl_type = self.mH_params[5]['measure'][opt]['from_cl_type']
-                selected_params[param_name][to_mesh+'_'+to_mesh_type+'_('+from_cl+'_'+from_cl_type+')'] = True
-
-            #Add heatmaps 3d to 2d
-            selected_params['hm3Dto2D'] = {}
-            if self.meas_param_win.cB_hm3d2d.isChecked():
-                hm_ch = self.meas_param_win.hm_cB_ch.currentText()
-                hm_cont = self.meas_param_win.hm_cB_cont.currentText()[0:3]
-                name = hm_ch+'_'+hm_cont
-                selected_params['hm3Dto2D'][name] = True
-            else: 
-                selected_params['hm3Dto2D']['ch_cont'] = False
-
-            self.new_proj_win.mH_user_params = selected_params
-            # print('Selected_params', selected_params)
-
-            #Toogle button and close window
-            self.meas_param_win.button_set_params.setChecked(True)
-            self.meas_param_win.close()
-            #Toggle button in new project window
-            self.new_proj_win.set_meas_param_all.setChecked(True)
-            error_txt = "Well done! Continue setting up new project."
-            self.new_proj_win.win_msg(error_txt)
+            self.meas_param_win.get_final_parameters(self)  
         else: 
-            # error_txt = "*Please validate selected measurement parameters first."
-            # self.meas_param_win.win_msg(error_txt)
             return 
         
     def new_proj(self):
         if self.new_proj_win.validate_set_all():
             self.new_proj_win.win_msg("Creating and saving new project...")
             temp_dir = self.new_proj_win.check_template()
-            #Save as template
-            # temp_dir = None
-            # if self.new_proj_win.cB_proj_as_template.isChecked():
-            #     line_temp = self.new_proj_win.lineEdit_template_name.text()
-            #     line_temp = line_temp.replace(' ', '_')
-            #     temp_name = 'mH_'+line_temp+'_project.json'
-            #     cwd = Path().absolute()
-            #     dir_temp = cwd / 'db' / 'templates' / temp_name 
-            #     if dir_temp.is_file():
-            #         self.new_proj_win.win_msg('*There is already a template with the selected name. Please give this template a new name.')
-            #         return
-            #     else: 
-            #         print('New project template: ', dir_temp)
-            #         temp_dir = dir_temp
 
             self.new_proj_win.button_new_proj.setChecked(True)
             # self.new_proj_win.button_new_proj.setDisabled(True)
@@ -461,6 +386,7 @@ class Controller:
             self.proj = mHC.Project(proj_dict, new=True)
             self.new_proj_win.mH_settings['chs_all'] = self.ch_all
             self.new_proj_win.mH_settings['params'] = self.mH_params
+
             self.proj.set_settings(settings={'mH': {'settings':self.new_proj_win.mH_settings, 
                                                     'params': self.new_proj_win.mH_user_params},
                                             'mC': {'settings': self.new_proj_win.mC_settings,

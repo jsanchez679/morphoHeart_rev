@@ -196,7 +196,8 @@ class Project():
         
     def set_mH_settings(self, mH_settings:dict, mH_params:dict):#
         
-        # print('mH_settings: ', mH_settings)
+        print('mH_settings: ', mH_settings)
+        print('mH_params: ', mH_params)
         if self.analysis['morphoHeart']:
             self.mH_settings = {}
             #Add setup dict containing all mH_settings for the new project
@@ -260,6 +261,7 @@ class Project():
         print('mH_params: ',mH_params)
         print('self.mH_settings[setup][segm]: ', self.mH_settings['setup']['segm'])
         self.clean_False(user_param = mH_params)
+        print('mH_params after clean: ',mH_params)
         self.set_mH_methods()
 
     def set_mC_settings(self, mC_settings:dict, mC_params:dict):# 
@@ -282,6 +284,7 @@ class Project():
             self.mC_methods = None
         
     def clean_False(self, user_param:dict):#
+        print('user_param:', user_param)
         user_param_new = copy.deepcopy(user_param)
         for param in user_param: 
             for key in user_param[param]: 

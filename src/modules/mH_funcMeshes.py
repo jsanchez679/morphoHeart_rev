@@ -1927,9 +1927,60 @@ def classify_heart_pts(m_whole, obj_segm, data):
     alert('whistle')
     
     if True: 
-        plotPtClassif(m_whole, pts_whole, list(obj_segm.keys()), pts_classAnV)#, pts_classDnV, pts_classLnR])
+        plot_classif_pts(m_whole, pts_whole, list(obj_segm.keys()), pts_classAnV)
 
     return df_classPts
+
+def get_extCL_on_surf(mesh, kspl_ext, pl_CLRibbon, process_plotshow = True):
+    
+    # - Get unitary normal of plane to create CL_ribbon
+    pl_normCLRibbon = unit_vector(pl_CLRibbon['pl_normal'])
+    
+    # Increase the resolution of the extended centreline and interpolate to unify sampling
+    xd = np.diff(kspl_ext.points()[:,0])
+    yd = np.diff(kspl_ext.points()[:,1])
+    zd = np.diff(kspl_ext.points()[:,2])
+    dist = np.sqrt(xd**2+yd**2+zd**2)
+    u = np.cumsum(dist)
+    u = np.hstack([[0],u])
+    t = np.linspace(0, u[-1],1000)
+    resamp_pts = interpn((u,), kspl_ext.points(), t)
+    kspl_ext = KSpline(resamp_pts, res = 1000).lw(5).color('deeppink').legend('kspl_extHR')
+    
+    #Find the points that intersect with the ribbon
+    pts_int = []
+    for num in range(len(kspl_ext.points())):
+        try: 
+            cl_pt_test = kspl_ext.points()[num]
+            pt_int = mesh.intersectWithLine(cl_pt_test, cl_pt_test+150*pl_normCLRibbon)
+            rad_pts = [np.linalg.norm(x- cl_pt_test) for x in pt_int]
+            # if len(rad_pts)>1:
+                # print(rad_pts)
+            ind_pt = np.where(rad_pts == max(rad_pts))[0][0]
+            # print(ind_pt)
+            pts_int.append(pt_int[ind_pt])
+
+        except: 
+            # print('exc')
+            if num > 750:
+                dist_pts = kspl_ext.points()[num] - kspl_ext.points()[num-1]
+                try: 
+                    pt_int = pts_int[-1]+dist_pts
+                    pts_int.append(pt_int)
+                except:
+                    # print('pass')
+                    pass
+            else: 
+                pass
+    
+    # KSpline on surface
+    kspl_vSurf = KSpline(pts_int).color('black').lw(4).legend('kspl_VSurfaceIntMyoc')
+    
+    if process_plotshow: 
+        vp = Plotter(N=1, axes=4)
+        vp.show(kspl_vSurf, kspl_ext, mesh, at = 0, interactive = True)
+    
+    return kspl_vSurf
 
 #%% - Vectorial calculations
 def find_angle_btw_pts(pts1, pts2):
@@ -2086,7 +2137,7 @@ def plot_organCLs(organ, axes=5, plotshow=True):
 
     return dict_cl
 
-def plotPtClassif(mesh, pts_whole, names_class, pts_class, every=20):
+def plot_classif_pts(mesh, pts_whole, names_class, pts_class, every=50):
     """
     Function that plots a subset of the classified points
     """
