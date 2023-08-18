@@ -2038,9 +2038,9 @@ QScrollBar::handle:vertical:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-2104</y>
+                <y>-1951</y>
                 <width>635</width>
-                <height>5467</height>
+                <height>5495</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -22626,7 +22626,7 @@ border-color: rgb(115, 115, 115)}
                               </property>
                               <property name="minimumSize">
                                <size>
-                                <width>210</width>
+                                <width>90</width>
                                 <height>20</height>
                                </size>
                               </property>
@@ -22640,10 +22640,43 @@ border-color: rgb(115, 115, 115)}
                                <string notr="true">font: bold 10pt &quot;Calibri Light&quot;;</string>
                               </property>
                               <property name="text">
-                               <string>Centreline Extension:</string>
+                               <string>CL Extension:</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="q_cl_extension_hm2d">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                              </property>
+                              <property name="text">
+                               <string>?</string>
                               </property>
                              </widget>
                             </item>
@@ -22740,12 +22773,206 @@ border-color: rgb(0,0, 0);</string>
                            </layout>
                           </item>
                           <item>
+                           <layout class="QHBoxLayout" name="horizontalLayout_267">
+                            <item>
+                             <spacer name="horizontalSpacer_31">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="lab_nPoints_hm2d">
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>70</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>50</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                              </property>
+                              <property name="text">
+                               <string>nPoints:</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QSpinBox" name="sect_nPoints_hm2d">
+                              <property name="minimumSize">
+                               <size>
+                                <width>50</width>
+                                <height>19</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>50</width>
+                                <height>19</height>
+                               </size>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <number>500</number>
+                              </property>
+                              <property name="singleStep">
+                               <number>10</number>
+                              </property>
+                              <property name="value">
+                               <number>300</number>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="lab_nRes_hm2d">
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>70</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>50</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                              </property>
+                              <property name="text">
+                               <string>nRes:</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QSpinBox" name="sect_nRes_hm2d">
+                              <property name="minimumSize">
+                               <size>
+                                <width>50</width>
+                                <height>19</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>50</width>
+                                <height>19</height>
+                               </size>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <number>1001</number>
+                              </property>
+                              <property name="singleStep">
+                               <number>20</number>
+                              </property>
+                              <property name="value">
+                               <number>601</number>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="lab_nPlanes_hm2d">
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>70</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>50</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                              </property>
+                              <property name="text">
+                               <string>nPlanes:</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QSpinBox" name="sect_nPlanes_hm2d">
+                              <property name="minimumSize">
+                               <size>
+                                <width>50</width>
+                                <height>19</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>50</width>
+                                <height>19</height>
+                               </size>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="maximum">
+                               <number>300</number>
+                              </property>
+                              <property name="singleStep">
+                               <number>10</number>
+                              </property>
+                              <property name="value">
+                               <number>150</number>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item>
                            <layout class="QHBoxLayout" name="horizontalLayout_264">
                             <property name="spacing">
                              <number>0</number>
                             </property>
                             <item>
-                             <widget class="QWidget" name="widget_9" native="true">
+                             <widget class="QWidget" name="widget_hm2d" native="true">
                               <layout class="QHBoxLayout" name="horizontalLayout_265">
                                <property name="leftMargin">
                                 <number>0</number>

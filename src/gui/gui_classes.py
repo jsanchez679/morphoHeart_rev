@@ -1475,6 +1475,8 @@ class CreateNewProj(QDialog):
         segm_settings = {'cutLayersIn2Segments': True}
         stype = 'segm'
         cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
+        improve_hm2d = getattr(self, 'improve_hm2D').isChecked()
+
         for cut in cuts_sel.keys(): 
             if cuts_sel[cut]:
                 cut_no = cut[-1]
@@ -1489,8 +1491,7 @@ class CreateNewProj(QDialog):
                 meas_area = getattr(self, 'cB_area_'+stype).isChecked()
                 meas_ellip = getattr(self, 'cB_ellip_'+stype).isChecked()
                 meas_angles = getattr(self, 'cB_angles_'+stype).isChecked()
-                improve_hm2d = getattr(self, 'improve_hm2D').isChecked()
-
+            
                 #Get names
                 names_segmF = {}
                 for dd in range(int(no_segm)): 
@@ -1520,14 +1521,14 @@ class CreateNewProj(QDialog):
                             'obj_segm': obj_type,
                             'no_cuts_4segments': no_obj,
                             'name_segments': names_segmF,
-                            'ch_segments': ch_segments,
-                            'improve_hm2d': improve_hm2d}
+                            'ch_segments': ch_segments}
                             
                 segm_settings[cut] = dict_cut
                 valid_all.append(True)
 
         # print('valid_all:', valid_all)
         segm_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area, 'Ellip': meas_ellip, 'Angles': meas_angles}
+        segm_settings['improve_hm2d'] = improve_hm2d
         
         #Add parameters to segments
         selected_params = self.mH_user_params 
@@ -2016,13 +2017,17 @@ class SetMeasParam(QDialog):
         print('self.params before:', self.params)
         param_name = self.params[num]['l']
         self.params.pop(num)
-        for nn in range(num+1,10,1): 
+        print('param removed num:', str(num))
+        nun = num
+        for nn in range(nun+1,10,1): 
             if nn in self.params.keys(): 
-                print('num:', num,'nn:',  nn)
-                self.params[num] = self.params[nn]
+                print('num:', nun,'nn:',  nn)
+                self.params[nun] = self.params[nn]
                 print('self.params interm:', self.params)
                 self.params.pop(nn)
-            print('self.params after:', self.params)
+                nun+=1
+                
+        print('self.params after:', self.params)
 
         self.set_meas_param_table()
         self.win_msg("Parameter '"+param_name+"' has been deleted!")
@@ -4008,6 +4013,8 @@ class MainWindow(QMainWindow):
         #Change if hm3d2t not selected, then set all widgets related to unlooping/unrolling to not visible
         if 'hm3Dto2D' in  self.organ.mH_settings['measure'].keys():
             self.improve_hm2D.stateChanged.connect(lambda: self.improve_2DHM_segm())
+            self.set_hm2d.clicked.connect(lambda: self.select_extension_plane1D())
+            self.cl_ext_hm2d.clicked.connect(lambda: self.plot_cl_ext1D())
             if len(self.organ.mH_settings['measure']['hm3Dto2D'].keys())>0:
                 hm_ch_cont = list(self.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
                 ch, cont = hm_ch_cont.split('_')
@@ -4025,6 +4032,12 @@ class MainWindow(QMainWindow):
                         name2add = ', '.join(name_segm)
                         items_segments.append(cut+': '+name2add)
                 self.segm_use_hm2D.addItems(items_segments)
+                if 'improve_hm2d' in self.organ.mH_settings['setup']['segm'].keys():
+                    if self.organ.mH_settings['setup']['segm']['improve_hm2d']:
+                        self.improve_hm2D.setChecked(True)
+                else: 
+                    self.organ.mH_settings['setup']['segm']['improve_hm2d'] = False
+                    self.improve_hm2D.setChecked(False)
             else: 
                 hide = True
         else: 
@@ -4032,18 +4045,30 @@ class MainWindow(QMainWindow):
 
         if hide: 
             self.all_d3d2.setVisible(False)
-            self.lab_hm3d2d.setVisible(False)
-            self.hm_centreline.setVisible(False)
             self.lab_hm2d.setVisible(False)
             self.heatmaps2D_play.setVisible(False)
             self.lab_3d2d.setVisible(False)
             self.lab_2d.setVisible(False)
             self.lab_plot2d.setVisible(False)
-            self.hm_centreline_status.setVisible(False)
+            self.line_2dhm.setVisible(False)
             self.lab_hm2d_settings.setVisible(False)
+            self.lab_cl_ext_hm2d.setVisible(False)
+            self.lab_hm3d2d.setVisible(False)
+            self.hm_centreline.setVisible(False)
+            self.hm_centreline_status.setVisible(False)
+            self.lab_nPoints_hm2d.setVisible(False)
+            self.sect_nPoints_hm2d.setVisible(False)
+            self.lab_nRes_hm2d.setVisible(False)
+            self.sect_nRes_hm2d.setVisible(False)
+            self.lab_nPlanes_hm2d.setVisible(False)
+            self.sect_nPlanes_hm2d.setVisible(False)
+            self.widget_hm2d.setVisible(False)
+            self.lab_dir_hm2d.setVisible(False)
+            self.sect_dir_hm2d.setVisible(False)
+            self.set_hm2d.setVisible(False)
+            self.cl_ext_hm2d.setVisible(False)
             self.improve_hm2D.setVisible(False)
             self.segm_use_hm2D.setVisible(False)
-            self.line_2dhm.setVisible(False)
 
             for num in range(1,13,1): 
                 getattr(self, 'hm2d_play'+str(num)).setVisible(False)
@@ -4966,6 +4991,7 @@ class MainWindow(QMainWindow):
         wf = self.organ.workflow['morphoHeart']['MeshesProc']
         wf_info = self.organ.mH_settings['wf_info']
         at_least_one = False
+        error_load = False
         if 'heatmaps' in wf_info.keys():
             print('wf_info[heatmaps]:', wf_info['heatmaps'])
 
@@ -5014,9 +5040,23 @@ class MainWindow(QMainWindow):
                         if cl_done == 'DONE': 
                             self.hm_btns[item]['play'].setEnabled(True)
 
-            if wf_info['heatmaps']['heatmaps2D']['use_segms']:
-                self.improve_hm2D.setChecked(True)
-                self.segm_use_hm2D.setCurrentText(wf_info['heatmaps']['heatmaps2D']['segms'])
+            if 'hm3Dto2D' in  self.organ.mH_settings['measure'].keys():
+                try:
+                    axis = wf_info['heatmaps']['heatmaps2D']['axis_lab'].lower()
+                    direction = wf_info['heatmaps']['heatmaps2D']['direction']
+                    setattr(self, 'extend_dir_hm2d', direction)
+                    getattr(self, 'radio_'+axis+'_hm2d').setChecked(True)
+                    getattr(self, 'sect_dir_hm2d').setText('Face No.'+str(direction['plane_no']))
+                    set_btn = getattr(self, 'set_hm2d')
+                    set_btn.setChecked(True)
+                    self.improve_hm2D.setChecked(wf_info['heatmaps']['heatmaps2D']['use_segms'])
+                    self.segm_use_hm2D.setCurrentText(wf_info['heatmaps']['heatmaps2D']['segms'])
+                    self.sect_nPoints_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nPoints'])
+                    self.sect_nRes_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nRes'])
+                    self.sect_nPlanes_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nPlanes'])
+                except: 
+                    self.win_msg('Unable to load 2D Heatmap settings, please reset them.')
+                    error_load = True
             
             done_all = []
             for proc_n in ['D-Thickness_int>ext','D-Thickness_ext>int','D-Ballooning']:
@@ -5029,6 +5069,9 @@ class MainWindow(QMainWindow):
                 self.update_status(None, 'Initialised', self.heatmaps_status, override=True)
             else: 
                 pass
+
+            if error_load: 
+                self.update_status(None, 're-run', self.heatmaps_status, override=True)
                     
             #Run Set Function 
             self.set_thickness(init=True)
@@ -5803,6 +5846,91 @@ class MainWindow(QMainWindow):
             error_txt = '*(Regions: '+cut.title()+') Please select the Centreline you want to use to cut tissue into  -'+namesf+'-  regions to continue.'
             self.win_msg(error_txt, getattr(self, 'dir_sect_'+cut))
 
+    def select_extension_plane1D(self): 
+    
+        if self.centreline_select.isChecked(): 
+            #Get the centreline that will be used to unloop and unroll heatmaps
+            hm_ch_cont_cl = list(self.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
+            ch_cl, cont_cl = hm_ch_cont_cl.split('_')
+            #Get the mesh and then its centreline
+            nPoints = self.sect_nPoints_hm2d.value()
+            mesh = self.organ.obj_meshes[ch_cl+'_'+cont_cl]
+            mesh_cl = mesh.get_centreline(nPoints=nPoints)
+
+            #Get Axis to extend cl
+            for opt in ['roi', 'stack']:
+                if getattr(self, 'radio_'+opt+'_hm2d').isChecked():
+                    axis_selected = opt
+                    cube2use = getattr(self.organ, opt+'_cube')
+                    break
+
+            print(axis_selected, cube2use)
+            orient_cube_clear = cube2use['clear']
+            orient_cube = cube2use['cube']
+            side = self.gui_orientation[axis_selected][axis_selected+'_cube']['side']
+
+            color_o = 'white'
+            com = orient_cube.center_of_mass()
+            sph = vedo.Sphere(pos = com, r = side/12, c = color_o)
+            sph1 = vedo.Sphere(pos = com, r = side/12, c = color_o)
+            extend_dir = {'plane_no': None, 'plane_normal': None}
+
+            arrows = []
+            for n, centre in enumerate(orient_cube.cell_centers()):
+                cells = orient_cube.cells()[n]
+                points = [orient_cube.points()[cell] for cell in cells]
+                plane_fit = vedo.fit_plane(points, signed=True)
+                normal = plane_fit.normal
+                end_pt = centre + (normal*side/3)
+                arrow = vedo.Arrow(start_pt=(centre), end_pt=end_pt, c='cyan').legend('No.'+str(n))
+                arrows.append(arrow)
+            
+            def select_cube_face(evt):
+                orient_cube = evt.actor
+                if not orient_cube:
+                    return
+                pt = evt.picked3d
+                idcell = orient_cube.closest_point(pt, return_cell_id=True)
+                print("You clicked (idcell):", idcell)
+
+                #Set arrow and sphere 
+                cell_centre = orient_cube.cell_centers()[int(idcell)]
+                sph.pos(cell_centre)
+                sil = arrows[idcell].silhouette().linewidth(6).c('gold')
+                sil.name = "silu" # give it a name so we can remove the old one
+                plt.remove('silu').add(sil)
+                
+                #Get plane 
+                cells = orient_cube.cells()[idcell]
+                points = [orient_cube.points()[cell] for cell in cells]
+                plane_fit = vedo.fit_plane(points, signed=True)
+
+                msg.text("You selected face number: " + str(idcell))
+                extend_dir['plane_no'] = idcell
+                extend_dir['plane_normal'] = plane_fit.normal
+
+            msg = vedo.Text2D("", pos="bottom-center",  c=txt_color, font=txt_font, s=txt_size, alpha=0.8)
+            txt0 = vedo.Text2D('Reference cube and mesh to select the plane into which the centreline will be projected \nto unloop and unroll the 3D heatmaps into 2D',  c=txt_color, font=txt_font, s=txt_size)
+            txt1 = vedo.Text2D('Select (click) the cube face into which the centreline will be projected \nand close the window when done.',  c=txt_color, font=txt_font, s=txt_size)
+
+            plt = vedo.Plotter(N=2, axes=1)
+            plt.add_callback("mouse click", select_cube_face)
+            plt.show(mesh.mesh, mesh_cl, orient_cube_clear, txt0, at=0)
+            plt.show(orient_cube, sph, arrows, msg, txt1, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)        
+
+            print('extend_dir:', extend_dir)
+            face_num = extend_dir['plane_no']
+            label_axis = getattr(self, 'sect_dir_hm2d').setText('Face No.'+str(face_num))
+            setattr(self, 'extend_dir_hm2d', extend_dir)
+
+            #Toggle button
+            btn = getattr(self, 'set_hm2d')
+            btn.setChecked(True)
+
+        else: 
+            error_txt = '*Please make sure you have already acquired the centreline you are using to unloop the 3D heatmaps to be able to continue.'
+            self.win_msg(error_txt, getattr(self, 'set_hm2d'))
+
     #Set functions 
     def set_keeplargest(self): 
         wf_info = self.organ.mH_settings['wf_info']
@@ -6152,19 +6280,37 @@ class MainWindow(QMainWindow):
                                                    'd3d2': d3d2}
             nn+=1
 
-        improve_hm2d = getattr(self, 'improve_hm2D').isChecked()
-        if improve_hm2d: 
-            if getattr(self, 'segm_use_hm2D').currentText() != '----':
-                gui_thickness_ballooning['heatmaps2D'] = {'use_segms': improve_hm2d, 
-                                                        'segms': getattr(self, 'segm_use_hm2D').currentText()}
+        if 'hm3Dto2D' in  self.organ.mH_settings['measure']: 
+            if self.set_hm2d.isChecked():
+                centreline = list(self.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
+                nPoints = self.sect_nPoints_hm2d.value()
+                nRes = self.sect_nRes_hm2d.value()
+                nPlanes = self.sect_nPlanes_hm2d.value()
+                gui_thickness_ballooning['heatmaps2D'] = {'centreline': centreline, 
+                                                          'nPoints': nPoints, 
+                                                          'nRes': nRes,
+                                                          'nPlanes': nPlanes} 
+                for reg in ['roi', 'stack']: 
+                    if getattr(self, 'radio_'+reg+'_hm2d').isChecked(): 
+                        selected = reg
+                        break
+                
+                gui_thickness_ballooning['heatmaps2D']['axis_lab'] = selected.title()
+                direction = getattr(self, 'extend_dir_hm2d')
+                gui_thickness_ballooning['heatmaps2D']['direction'] = direction
+                improve_hm2d = getattr(self, 'improve_hm2D').isChecked()
+                gui_thickness_ballooning['heatmaps2D']['use_segms'] = improve_hm2d
+                if improve_hm2d: 
+                    gui_thickness_ballooning['heatmaps2D']['segms'] = getattr(self, 'segm_use_hm2D').currentText()
+                else: 
+                    gui_thickness_ballooning['heatmaps2D']['segms'] = '----'
+                self.cl_ext_hm2d.setEnabled(True)
                 return gui_thickness_ballooning
             else: 
-                self.win_msg('*Please select the segments that you would like to use to improve the 2D heatmaps to set the Thickness and Ballooning Settings')
+                self.win_msg('*Please set the settings to unloop and unroll the 3D into 2D to be able to continue.')
                 self.thickness_set.setChecked(False)
                 return None
         else: 
-            gui_thickness_ballooning['heatmaps2D'] = {'use_segms': improve_hm2d, 
-                                                    'segms': 'NA'}
             return gui_thickness_ballooning
     
     def update_3d2d(self): 
@@ -6709,6 +6855,28 @@ class MainWindow(QMainWindow):
         txt = [(0, self.organ.user_organName + ' - Centreline Extension ('+cut.title()+')')]
         obj = [(mesh2cut.mesh, cl_ribbon), (mesh2cut.mesh, cl_ribbon, mask_cube)]
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()), azimuth=45, elevation=20)
+
+    def plot_cl_ext1D(self, plotshow=True): 
+
+        clRib_type = 'ext1side'
+        #Get the centreline that will be used to unloop and unroll heatmaps
+        hm_ch_cont_cl = list(self.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
+        ch_cl, cont_cl = hm_ch_cont_cl.split('_')
+        #Get the mesh and then its centreline
+        nPoints = self.gui_thickness_ballooning['heatmaps2D']['nPoints']
+        nRes = self.gui_thickness_ballooning['heatmaps2D']['nRes']
+        mesh_cl = self.organ.obj_meshes[ch_cl+'_'+cont_cl]        
+        ext_plane = self.gui_thickness_ballooning['heatmaps2D']['direction']['plane_normal']
+        cl_ribbon, kspl_ext = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+                                            pl_normal=ext_plane, 
+                                            clRib_type=clRib_type, 
+                                            return_kspl_ext=True)
+        if plotshow:
+            txt = [(0, self.organ.user_organName + ' - Extended Centreline to Unloop and Unroll 3D Heatmaps')]
+            obj = [(mesh_cl.mesh, cl_ribbon, kspl_ext)]
+            plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()), azimuth=45, elevation=20)
+        else: 
+            return cl_ribbon, kspl_ext
 
     #Help functions
     def help(self, process): 

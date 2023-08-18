@@ -2939,7 +2939,7 @@ class Mesh_mH():
         u = np.hstack([[0],u])
         t = np.linspace(0, u[-1], nRes)#601
         resamp_pts = interpn((u,), pts_cl_ext, t)
-        kspl_ext = vedo.KSpline(resamp_pts, res=nRes).color('purple').legend('ExtendedCL')#601
+        kspl_ext = vedo.KSpline(resamp_pts, res=nRes).color('pink').legend('ExtendedCL').lw(2)#601
     
         pl_linLine_unitNormal = unit_vector(pl_normal)
         maj_bound =(max(self.parent_organ.get_maj_bounds())/2)*1.2

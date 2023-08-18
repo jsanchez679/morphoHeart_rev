@@ -64,6 +64,8 @@ def alert(sound:str):
         sound_mp3= sound +'.mp3'
         path = path_parentSounds / 'sounds' / sound_mp3
         playsound(str(path))
+        if sound == 'error_beep': 
+            print('EEERROR')
 
 #%% func - ask4input
 def ask4input(text:str, res:dict, type_response:type, keep=False):

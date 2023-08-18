@@ -1926,15 +1926,16 @@ def classify_heart_pts(m_whole, obj_segm, data):
     print(df_classPts.sample(10))
     alert('whistle')
     
-    if True: 
+    if mH_config.dev_plots: 
         plot_classif_pts(m_whole, pts_whole, list(obj_segm.keys()), pts_classAnV)
 
     return df_classPts
 
-def get_extCL_on_surf(mesh, kspl_ext, pl_CLRibbon, process_plotshow = True):
+def get_extCL_on_surf(mesh, kspl_ext, direction):
     
     # - Get unitary normal of plane to create CL_ribbon
-    pl_normCLRibbon = unit_vector(pl_CLRibbon['pl_normal'])
+    pl_normCLRibbon = unit_vector(direction)
+    print('direction:', direction, pl_normCLRibbon)
     
     # Increase the resolution of the extended centreline and interpolate to unify sampling
     xd = np.diff(kspl_ext.points()[:,0])
@@ -1945,42 +1946,92 @@ def get_extCL_on_surf(mesh, kspl_ext, pl_CLRibbon, process_plotshow = True):
     u = np.hstack([[0],u])
     t = np.linspace(0, u[-1],1000)
     resamp_pts = interpn((u,), kspl_ext.points(), t)
-    kspl_ext = KSpline(resamp_pts, res = 1000).lw(5).color('deeppink').legend('kspl_extHR')
+    kspl_ext = vedo.KSpline(resamp_pts, res = 1000).lw(5).color('deeppink').legend('kspl_extHR')
     
     #Find the points that intersect with the ribbon
     pts_int = []
     for num in range(len(kspl_ext.points())):
-        try: 
-            cl_pt_test = kspl_ext.points()[num]
-            pt_int = mesh.intersectWithLine(cl_pt_test, cl_pt_test+150*pl_normCLRibbon)
+        cl_pt_test = kspl_ext.points()[num]
+        pt_int = mesh.intersect_with_line(cl_pt_test, cl_pt_test+150*pl_normCLRibbon)
+        if len(pt_int) != 0: 
             rad_pts = [np.linalg.norm(x- cl_pt_test) for x in pt_int]
-            # if len(rad_pts)>1:
-                # print(rad_pts)
             ind_pt = np.where(rad_pts == max(rad_pts))[0][0]
-            # print(ind_pt)
             pts_int.append(pt_int[ind_pt])
-
-        except: 
-            # print('exc')
-            if num > 750:
-                dist_pts = kspl_ext.points()[num] - kspl_ext.points()[num-1]
-                try: 
-                    pt_int = pts_int[-1]+dist_pts
-                    pts_int.append(pt_int)
-                except:
-                    # print('pass')
-                    pass
-            else: 
-                pass
+        else: 
+            pass
     
     # KSpline on surface
-    kspl_vSurf = KSpline(pts_int).color('black').lw(4).legend('kspl_VSurfaceIntMyoc')
+    kspl_vSurf = vedo.KSpline(pts_int).color('black').lw(4).legend('kspl_VSurfaceIntMyoc')
     
-    if process_plotshow: 
-        vp = Plotter(N=1, axes=4)
+    if mH_config.dev_plots: 
+        vp = vedo.Plotter(N=1, axes=4)
         vp.show(kspl_vSurf, kspl_ext, mesh, at = 0, interactive = True)
     
     return kspl_vSurf
+
+def get_extCL_highRes(mesh, kspl_ext, dict_planes):
+    
+    inv = [True, False]
+    # Create kspline_extended with higher resolution, but cut it using the inflow and outflow  planes defined to 
+    # cut inf anf outf tracts of hearts to extract centreline
+    
+    add_pts = 50
+    try: 
+        kspl_CLnew = kspl_ext.clone()
+        # Cut with inflow plane
+        n_points_In = -10
+        for invert in inv:
+            kspl_test = kspl_ext.clone().cutWithMesh(Plane(pos=dict_planes['pl2CutMesh_inflow']['pl_centre'], normal=dict_planes['pl2CutMesh_inflow']['pl_normal'], sx=300), invert=invert)
+            # print('kspl_test In',kspl_test.NPoints())
+            if kspl_test.NPoints() > n_points_In: 
+                # print('in-In')
+                inv_fin_In = invert
+                kspl_CLnew_cutIn = kspl_ext.clone().cutWithMesh(Plane(pos=dict_planes['pl2CutMesh_inflow']['pl_centre'], normal=dict_planes['pl2CutMesh_inflow']['pl_normal'], sx=300), invert=inv_fin_In).color('darkorange')
+                n_points_In = kspl_CLnew_cutIn.NPoints() 
+        _, num_pt_inf = findClosestPtGuess(kspl_CLnew_cutIn.points(), kspl_ext.points(), index_guess = -1)
+    except: 
+        num_pt_inf = kspl_ext.NPoints()-1
+    
+    try: 
+        # print('-CLHR Opt B')
+        n_points_Out = -10
+        for invert in inv:
+            kspl_test = kspl_ext.clone().cutWithMesh(Plane(pos=dict_planes['pl2CutMesh_outflow']['pl_centre'], normal=dict_planes['pl2CutMesh_outflow']['pl_normal'], sx=300), invert=invert)
+            # print('kspl_test Out',kspl_test.NPoints())
+            if kspl_test.NPoints() > n_points_Out: 
+                # print('in-Out')
+                inv_fin_Out = invert
+                kspl_CLnew_cutOut = kspl_ext.clone().cutWithMesh(Plane(pos=dict_planes['pl2CutMesh_outflow']['pl_centre'], normal=dict_planes['pl2CutMesh_outflow']['pl_normal'], sx=300), invert=inv_fin_Out).color('lime')
+                n_points_Out = kspl_CLnew_cutOut.NPoints() 
+        # _, num_pt_outf =  findClosestPt(kspl_CLnew_cutOut.points()[-1], kspl_ext.points())#, index_guess = 0)
+        _, num_pt_outf =  findClosestPtGuess(kspl_CLnew_cutOut.points(), kspl_ext.points(), index_guess = 0)
+    except: 
+        num_pt_outf = 0
+    # print('Initial def:',num_pt_outf, num_pt_inf)
+    
+    # Define starting point of new kspline
+    if (num_pt_outf-add_pts) < 0:
+        ind_outf = 0
+    else: 
+        ind_outf = num_pt_outf - add_pts
+        
+    # Define ending point of new kspline
+    if (num_pt_inf+add_pts) > len(kspl_ext.points()):
+        ind_inf = len(kspl_ext.points())
+    else: 
+        ind_inf = num_pt_inf+add_pts
+    # print('Final def:',ind_outf, ind_inf)
+
+    # Create new extended and cut kspline with higher resolution
+    kspl_CLnew = vedo.KSpline(kspl_ext.points()[ind_outf:ind_inf], res = 600).lw(5).color('deeppink').legend(kspl_CL._legend+'_HighRes')
+    
+    if mH_config.dev_plots: 
+        vp = vedo.Plotter(N=3, axes=4)
+        vp.show(kspl_CLnew, kspl_ext, mesh, at = 0)
+        vp.show(kspl_CLnew_cutIn, mesh, at = 1)
+        vp.show(kspl_CLnew_cutOut, mesh, at = 2, interactive = True)
+    
+    return kspl_CLnew
 
 #%% - Vectorial calculations
 def find_angle_btw_pts(pts1, pts2):
@@ -2019,6 +2070,52 @@ def get_plane_normal2pt (pt_num, points):
     normal = points[pt_num-1]-points[pt_num+1]
 
     return normal, pt_centre
+
+def findClosestPtGuess(pts_cut, pts, index_guess):
+    """
+    Function that finds the closest point of the centreline where a plane cuts given a point index as an initial guess
+
+    Parameters
+    ----------
+    pts_cut : array of coordinates
+        np array with the x,y,z coordinates of all the points that make the cut section of the kspline
+    pts : array of coordinates
+        Array with x,y,z coordinates of ALL the centreline points
+    index_guess : int
+        Index of the point guessed to be closest to new closest point
+
+    Returns
+    -------
+    pt_out : numpy array
+        np array with the x,y,z coordinates of the centreline point closest to the kspline cut
+    num_pt : int
+        Index of the centreline point closer to the plane that cuts the kspline.
+
+    """
+    # First find the closes point of the input pts_cut to pt_guess = pts[index]
+    pt_guess = pts[index_guess]
+    min_dist_guess = 999999999999999999
+    for pt_1 in pts_cut:
+        squared_dist_guess = np.sum((pt_1-pt_guess)**2, axis=0)
+        dist_guess = np.sqrt(squared_dist_guess)
+
+        if dist_guess < min_dist_guess:
+            min_dist_guess = dist_guess
+            pt_o = pt_1
+            
+    # Now that we know the coordinates (pt_o) of the cut centreline that is cut by the plane and closest to the pt_guess then
+    # find the closest point of all the centreline points closest to pt_o and get also its index
+    min_dist = 999999999999999999
+    for n, pt in enumerate(pts):
+        squared_dist = np.sum((pt-pt_o)**2, axis=0)
+        dist = np.sqrt(squared_dist)
+
+        if dist < min_dist:
+            min_dist = dist
+            pt_out = pt
+            num_pt = n
+
+    return pt_out, num_pt
 
 #%% - Plotting functions
 def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350, azimuth = 0, elevation = 0):
