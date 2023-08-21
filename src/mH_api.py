@@ -431,7 +431,6 @@ def run_centreline_ML(controller):
             
             controller.main_win.win_msg('All MeshLab cut Meshes were successfully found!')
 
-
 def run_centreline_vmtk(controller): 
     if controller.main_win.centreline_ML_play.isChecked(): 
         workflow = controller.organ.workflow['morphoHeart']
@@ -460,14 +459,9 @@ def run_centreline_vmtk(controller):
 
 def run_centreline_select(controller):
     if controller.main_win.centreline_vmtk_play.isChecked(): 
-        # try: 
-        print('try')
+
         nPoints = controller.main_win.gui_centreline['buildCL']['nPoints']
         same_plane = controller.main_win.gui_centreline['SimplifyMesh']['same_planes']
-        # except: 
-            # print('except')
-            # nPoints = controller.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
-            # same_plane = controller.organ.mH_settings['wf_info']['centreline']['SimplifyMesh']['same_planes']
 
         workflow = controller.organ.workflow['morphoHeart']
         process = ['MeshesProc','C-Centreline','buildCL','Status']
@@ -703,6 +697,8 @@ def run_heatmaps2D(controller, btn):
             hm2d_set = hm2d_list
         print('hm2d_set:',hm2d_set)
 
+        gui_heatmaps2d = controller.main_win.gui_thickness_ballooning['heatmaps2D']
+
         for hmitem in hm2d_set: 
             short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball
             ch_info = ch_info[:-1]
@@ -732,10 +728,24 @@ def run_heatmaps2D(controller, btn):
             dir_npy = whole_mesh.parent_organ.dir_res(dir='csv_all') / title
             npy_array = np.load(dir_npy)
             print(short+'> whole_mesh: '+ch+'_'+contf+' -- array_mesh: '+ch+'_'+cont+' - loaded_npy:', dir_npy)
+
+            #Get the extended and cut centrelines
+            # Get the centreline ribbon
+            cl_ribbon, kspl_ext = controller.main_win.plot_cl_ext1D(plotshow=False)
+
+            # KSpline on surface
+            ext_plane = controller.main_win.gui_thickness_ballooning['heatmaps2D']['direction']['plane_normal']
+            kspl_vSurf = fcM.get_extCL_on_surf(mesh = array_mesh.mesh, kspl_ext = kspl_ext, direction = ext_plane)
+
+            # Create new extended and cut kspline with higher resolution
+            kspl_CLnew = fcM.get_extCL_highRes(organ = controller.organ, mesh = array_mesh.mesh, 
+                                               kspl_ext = kspl_ext) 
             
-            if controller.main_win.gui_thickness_ballooning['heatmaps2D']['use_segms']: 
-                cut2use = controller.main_win.gui_thickness_ballooning['heatmaps2D']['segms'].split(': ')[0]
+            #If the user wants to use the segments to aid heatmap unlooping....
+            if gui_heatmaps2d['use_segms']: 
+                cut2use = gui_heatmaps2d['segms'].split(': ')[0]
                 segm_setup = controller.organ.mH_settings['setup']['segm'][cut2use]
+                segm_cuts_info = controller.organ.mH_settings['wf_info']['segments']['setup'][cut2use]['cut_info']
                 print('segm_setup:',segm_setup)
 
                 #See if the meshes have already been cut
@@ -761,29 +771,37 @@ def run_heatmaps2D(controller, btn):
                     data = {array_name: npy_array}
                     # df_classPts = fcM.classify_heart_pts(array_mesh.mesh, obj_segm, data)
 
-                    # Get the centreline ribbon
-                    cl_ribbon, kspl_ext = controller.main_win.plot_cl_ext1D(plotshow=False)
+                    # Create kspline for each segment
+                    ordered_kspl = fcM.kspl_chamber_cut(organ = controller.organ, 
+                                                        mesh = array_mesh.mesh, 
+                                                        kspl_CLnew = kspl_CLnew, 
+                                                        segm_cuts_info=segm_cuts_info, 
+                                                        cut=cut2use)
+                    
+                    # Initialise index_vSurf_cut when i == 0 for extreme segments
+                    os_keys = list(ordered_kspl.keys())
+                    ordered_kspl[os_keys[0]]['index_vSurf_cut'] = 0
+                    ordered_kspl[os_keys[-1]]['index_vSurf_cut'] = len(kspl_vSurf.points())-1
 
-                    # KSpline on surface
-                    ext_plane = controller.main_win.gui_thickness_ballooning['heatmaps2D']['direction']['plane_normal']
-                    kspl_vSurf = fcM.get_extCL_on_surf(mesh = array_mesh.mesh, kspl_ext = kspl_ext, direction = ext_plane)
+                    if len(ordered_kspl) == 2: 
+                        out2in = True
+                    else: 
+                        out2in = False
+                    print('out2in:', out2in)
 
-                    # # Create new extended and cut kspline with higher resolution
-                    trimming_set = controller.organ.mH_settings['wf_info']['trimming']
-                    dict_planes = {}
-                    for side in ['top', 'bottom']: 
-                        if 'plane_info_mesh' in trimming_set[side]:
-                            dict_planes[side] = trimming_set[side]['plane_info_mesh']
-                        else: 
-                            dict_planes[side] = 'NI'
-                    print('dict_planes:', dict_planes)
-                    # kspl_CLnew = fcM.get_extCL_highRes(mesh = array_mesh.mesh, kspl_ext = kspl_ext,
-                    #                                     dict_planes = dict_planes) 
+                    order_segm_upside = list(ordered_kspl.keys())
+                    order_segm_upside.reverse()
 
-                    # # # Create kspline for each chamber
-                    # kspl_vent, kspl_atr, dict_pts, sph_cut =  ksplChamberCut(mesh, kspl_CLnew, dict_shapes, dict_pts, False)
-                    # # Find position within new kspline cut by disc used to cut chambers (num_pt new)
-                    # num_pt_AVC = dict_pts['numPt_CLChamberCutHighRes']
+                    for div in order_segm_upside: 
+                        print('div:', div, ordered_kspl[div])
+                        fcM.unloopChamber(mesh = array_mesh.mesh, 
+                                            kspl_CLnew = kspl_CLnew,
+                                            kspl_vSurf = kspl_vSurf,
+                                            param = data[array_name], 
+                                            gui_heatmaps2d = gui_heatmaps2d, 
+                                            div = div, kspl_data=ordered_kspl[div], 
+                                            out2in=out2in)
+                        
 
 
 

@@ -4062,6 +4062,8 @@ class MainWindow(QMainWindow):
             self.sect_nRes_hm2d.setVisible(False)
             self.lab_nPlanes_hm2d.setVisible(False)
             self.sect_nPlanes_hm2d.setVisible(False)
+            self.lab_tol_hm2d.setVisible(False)
+            self.sect_tol_hm2d.setVisible(False)
             self.widget_hm2d.setVisible(False)
             self.lab_dir_hm2d.setVisible(False)
             self.sect_dir_hm2d.setVisible(False)
@@ -5054,6 +5056,7 @@ class MainWindow(QMainWindow):
                     self.sect_nPoints_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nPoints'])
                     self.sect_nRes_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nRes'])
                     self.sect_nPlanes_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nPlanes'])
+                    self.sect_tol_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['tol'])
                 except: 
                     self.win_msg('Unable to load 2D Heatmap settings, please reset them.')
                     error_load = True
@@ -6286,10 +6289,12 @@ class MainWindow(QMainWindow):
                 nPoints = self.sect_nPoints_hm2d.value()
                 nRes = self.sect_nRes_hm2d.value()
                 nPlanes = self.sect_nPlanes_hm2d.value()
+                tol = self.sect_tol_hm2d.value()
                 gui_thickness_ballooning['heatmaps2D'] = {'centreline': centreline, 
                                                           'nPoints': nPoints, 
                                                           'nRes': nRes,
-                                                          'nPlanes': nPlanes} 
+                                                          'nPlanes': nPlanes, 
+                                                          'tol': tol} 
                 for reg in ['roi', 'stack']: 
                     if getattr(self, 'radio_'+reg+'_hm2d').isChecked(): 
                         selected = reg

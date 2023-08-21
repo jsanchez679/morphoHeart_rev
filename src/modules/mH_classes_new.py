@@ -1383,13 +1383,13 @@ class Organ():
             return ch_ext
     
     def get_ext_subsgm(self, cut): 
-        print('get_ext_subsgm: ',self.mH_settings['wf_info']['segments']['setup'][cut]['names'])
-        print(self.submeshes, self.obj_subm)
+        # print('get_ext_subsgm: ',self.mH_settings['wf_info']['segments']['setup'][cut]['names'])
+        # print(self.submeshes, self.obj_subm)
         ext_subsgm = {}
         for name in self.mH_settings['wf_info']['segments']['setup'][cut]['names'].items():
             ext_subsgm[name[0]] = self.obj_subm[name[1]]
         self.ext_subsgm = ext_subsgm
-        print('ext_subsgm:', ext_subsgm)
+        # print('ext_subsgm:', ext_subsgm)
 
         return self.ext_subsgm
     
