@@ -769,7 +769,7 @@ def run_heatmaps2D(controller, btn):
                     # Classify points
                     print('Classify points')
                     data = {array_name: npy_array}
-                    # df_classPts = fcM.classify_heart_pts(array_mesh.mesh, obj_segm, data)
+                    df_classPts, class_name = fcM.classify_heart_pts(array_mesh.mesh, obj_segm, data)
 
                     # Create kspline for each segment
                     ordered_kspl = fcM.kspl_chamber_cut(organ = controller.organ, 
@@ -797,7 +797,9 @@ def run_heatmaps2D(controller, btn):
                         fcM.unloopChamber(mesh = array_mesh.mesh, 
                                             kspl_CLnew = kspl_CLnew,
                                             kspl_vSurf = kspl_vSurf,
-                                            param = data[array_name], 
+                                            df_classPts = df_classPts,
+                                            array_name = array_name, 
+                                            class_name = class_name, 
                                             gui_heatmaps2d = gui_heatmaps2d, 
                                             div = div, kspl_data=ordered_kspl[div], 
                                             out2in=out2in)

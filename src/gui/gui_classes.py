@@ -4050,27 +4050,8 @@ class MainWindow(QMainWindow):
             self.lab_3d2d.setVisible(False)
             self.lab_2d.setVisible(False)
             self.lab_plot2d.setVisible(False)
-            self.line_2dhm.setVisible(False)
-            self.lab_hm2d_settings.setVisible(False)
-            self.lab_cl_ext_hm2d.setVisible(False)
-            self.lab_hm3d2d.setVisible(False)
-            self.hm_centreline.setVisible(False)
-            self.hm_centreline_status.setVisible(False)
-            self.lab_nPoints_hm2d.setVisible(False)
-            self.sect_nPoints_hm2d.setVisible(False)
-            self.lab_nRes_hm2d.setVisible(False)
-            self.sect_nRes_hm2d.setVisible(False)
-            self.lab_nPlanes_hm2d.setVisible(False)
-            self.sect_nPlanes_hm2d.setVisible(False)
-            self.lab_tol_hm2d.setVisible(False)
-            self.sect_tol_hm2d.setVisible(False)
-            self.widget_hm2d.setVisible(False)
-            self.lab_dir_hm2d.setVisible(False)
-            self.sect_dir_hm2d.setVisible(False)
-            self.set_hm2d.setVisible(False)
-            self.cl_ext_hm2d.setVisible(False)
-            self.improve_hm2D.setVisible(False)
-            self.segm_use_hm2D.setVisible(False)
+
+            self.widget_hm2d_settings.setVisible(False)
 
             for num in range(1,13,1): 
                 getattr(self, 'hm2d_play'+str(num)).setVisible(False)
@@ -5057,6 +5038,8 @@ class MainWindow(QMainWindow):
                     self.sect_nRes_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nRes'])
                     self.sect_nPlanes_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nPlanes'])
                     self.sect_tol_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['tol'])
+                    self.plot_planes.setChecked(wf_info['heatmaps']['heatmaps2D']['plot']['plot_planes'])
+                    self.every_planes.setValue(wf_info['heatmaps']['heatmaps2D']['plot']['every_planes'])
                 except: 
                     self.win_msg('Unable to load 2D Heatmap settings, please reset them.')
                     error_load = True
@@ -5703,6 +5686,17 @@ class MainWindow(QMainWindow):
         else: 
             getattr(self, 'segm_use_hm2D').setEnabled(False)
 
+#Update this to be used for the heatmap 2d plot_planes
+    # def n_slices(self, process):
+    #     cB = getattr(self, process+'_plot2d')
+    #     if cB.isChecked():
+    #         state = True
+    #     else: 
+    #         state = False
+    #     getattr(self, process+'_lab1').setEnabled(state)
+    #     getattr(self, process+'_n_slices').setEnabled(state)
+    #     getattr(self, process+'_lab2').setEnabled(state)
+
     def default_range(self, btn_num):
         btn = getattr(self, 'def'+btn_num)
         if btn.isChecked(): 
@@ -6290,11 +6284,16 @@ class MainWindow(QMainWindow):
                 nRes = self.sect_nRes_hm2d.value()
                 nPlanes = self.sect_nPlanes_hm2d.value()
                 tol = self.sect_tol_hm2d.value()
+                plot_planes = self.plot_planes.isChecked()
+                every_planes = self.every_planes.value()
+
                 gui_thickness_ballooning['heatmaps2D'] = {'centreline': centreline, 
                                                           'nPoints': nPoints, 
                                                           'nRes': nRes,
                                                           'nPlanes': nPlanes, 
-                                                          'tol': tol} 
+                                                          'tol': tol,
+                                                          'plot': {'plot_planes': plot_planes, 
+                                                                   'every_planes': every_planes}} 
                 for reg in ['roi', 'stack']: 
                     if getattr(self, 'radio_'+reg+'_hm2d').isChecked(): 
                         selected = reg

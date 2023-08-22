@@ -1930,7 +1930,7 @@ def classify_heart_pts(m_whole, obj_segm, data):
     if mH_config.dev_plots: 
         plot_classif_pts(m_whole, pts_whole, list(obj_segm.keys()), pts_classAnV)
 
-    return df_classPts
+    return df_classPts, class_name
 
 def get_extCL_on_surf(mesh, kspl_ext, direction):
     
@@ -2145,7 +2145,16 @@ def order_segms(organ, kspl_CLnew, num_pts, cut):
 
     return ordered_segm
 
-def unloopChamber(mesh, kspl_CLnew, kspl_vSurf, param, gui_heatmaps2d, div, kspl_data, out2in):
+def unloopChamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, array_name, class_name,
+                   gui_heatmaps2d, div, kspl_data, out2in):
+
+    print('\n\n- Unlooping the heart chambers...')
+    dfs_unlooped = []
+    spheres_zeroDeg = []
+    arr_vectZeroDeg = []
+
+    param = df_classPts[array_name]
+    classes = df_classPts[class_name]
     
     # Create matrix with all data
     #0:x, 1:y, 2:z, 3:taken, 4:z_plane, 5:theta, 6: radius, 7: parameter
@@ -2199,7 +2208,7 @@ def unloopChamber(mesh, kspl_CLnew, kspl_vSurf, param, gui_heatmaps2d, div, kspl
             pt_out, pt_num = find_closest_pt_guess(pts_o, kspl_CLnew.points(), index_guess)
             index_guess = pt_num
             print('index_guess:',index_guess)
-            chamber = kspl_data['name']
+            chamber = kspl_data['segm']+':'+kspl_data['name']
             print('name:', chamber)
 
             # C. Cut surface centreline (kspl_vSurf) with plane and identify 0 deg angle point
@@ -2245,7 +2254,8 @@ def unloopChamber(mesh, kspl_CLnew, kspl_vSurf, param, gui_heatmaps2d, div, kspl
                 except: 
                     index_vSurf_cut = 'UnAssigned'
             else: 
-                tol2use = gui_heatmaps2d['tol']
+                pass
+            tol2use = gui_heatmaps2d['tol']
 
             print('index_vSurf_cut_in:', index_vSurf_cut, type(index_vSurf_cut))
         
@@ -2265,8 +2275,6 @@ def unloopChamber(mesh, kspl_CLnew, kspl_vSurf, param, gui_heatmaps2d, div, kspl
                         plane = vedo.Plane(pos=centre, normal=normal, s=(300,300), alpha=0.5).color('mediumorchid')
                         index_vSurf_cut = select_sph_vSurf(pts_in_plane, colors, centre, 
                                                         normal, mesh, kspl, plane, kspl_vSurf)
-                        aaa = input()
-            
             # No points in plane
             else: 
                 print('aja! - No points in plane')
@@ -2274,7 +2282,70 @@ def unloopChamber(mesh, kspl_CLnew, kspl_vSurf, param, gui_heatmaps2d, div, kspl
             
             print('index_vSurf_cut_out:', index_vSurf_cut, type(index_vSurf_cut))
             
-            # plane = vedo.Plane(pos=centre, normal=normal, sx=300, alpha=0.5).color('medium orchid')
+            plane = vedo.Plane(pos=centre, normal=normal, s=(300,300), alpha=0.5).color('mediumorchid')
+            print('FINAL: index_vSurf_cut_out:', index_vSurf_cut, '- type:', type(index_vSurf_cut))
+
+            if not isinstance(index_vSurf_cut, str):
+                spheres_zeroDeg.append(sph_pt_uniq)
+                # Vector from centre to cl_surface point being cut by plane
+                v_zero = unit_vector(kspl_vSurf.points()[index_vSurf_cut] - centre)
+                arr_vectZeroDeg.append(vedo.Arrow(centre, kspl_vSurf.points()[index_vSurf_cut], s = 0.1, c='dodgerblue'))
+                # D. Get points of mesh at plane
+                d_points = np.absolute(np.dot(np.subtract(matrix_unlooped[:,0:3],np.asarray(centre)),np.asarray(normal)))
+                # Find the indexes of the points that have not been yet taken, are at the plane and are in the 
+                # chamber being analysed
+                index_ptsAtPlane = np.where((d_points <= tol2use) & (matrix_unlooped[:,3] == 0) & (classes == chamber))
+                # print(d_points.min(), d_points.max(),'-lenptsatplane:',len(index_ptsAtPlane[0]))
+                # Define new matrix just with the points on plane
+                new_matrix = matrix_unlooped[index_ptsAtPlane,:][0]
+                # - Get points of mesh that are on plane, centered on centreline point
+                ptsC = np.subtract(new_matrix[:,0:3],np.asarray(centre))
+                # - Get the radius of those points
+                radius = [np.linalg.norm(x) for x in ptsC]
+                
+                # E. Find direction of point with respect to plane that includes central point, vC and the normal of the cutting plane
+                # Vector normal to plane normal and v_zero (vector defined from centre of plane to cut-pt in centreline surface)
+                normal_divLR = np.cross(normal, v_zero)
+                # Define using these vectors if the points are all lying in the same side or not (1, -1)
+                lORr = np.sign(np.dot(ptsC, np.asarray(normal_divLR)))
+    
+                # F. Get angle of points in that plane using v_zero
+                av = np.dot(ptsC,v_zero)
+                cosTheta = np.divide(av, radius) # vectors of magnitude one
+                theta = np.arccos(cosTheta)*180/np.pi
+                theta_corr = np.multiply(lORr, theta)
+
+                 # - Save all obtained values in matrix_unlooped
+                for num, index in enumerate(index_ptsAtPlane[0]):
+                    #3:taken, 4:z_plane, 5:theta, 6: radius, 7-8: param
+                    matrix_unlooped[index,3] = 1
+                    matrix_unlooped[index,4] = plane_num[i]
+                    matrix_unlooped[index,5] = theta_corr[num]
+                    matrix_unlooped[index,6] = radius[num]
+
+                # Plot stuff every X planes
+                if mH_config.dev_plots:
+                    plotevery = no_planes // 5
+                    print('- Plotting every X number of planes:', plotevery)
+
+                    if i % plotevery == 0:
+                        sphL = []; sphR = []
+                        for num, pt in enumerate(ptsC):
+                            if num % 20 == 0:
+                                if lORr[num] == 1:
+                                    sphL.append(vedo.Sphere(pt+centre, r=2, c='blueviolet'))
+                                else:
+                                    sphR.append(vedo.Sphere(pt+centre, r=2, c='gold'))
+
+                        text = '\n\n >> Unlooping the heart (chamber: '+chamber+') - Plane No: '+str(i)+'/'+str(no_planes+2)
+                        txt = vedo.Text2D(text, c=txt_color, font=txt_font)
+                        plane = vedo.Plane(pos=centre, normal=normal, s=(300,300), alpha=0.5).color('medium orchid')
+                        sph_centre = vedo.Sphere(centre, r=2, c='red')
+                        arr_centre2vzero = vedo.Arrow(centre, kspl_vSurf.points()[index_vSurf_cut], s = 0.1, c='light green')
+                        # kspl_vSurf_cut_all.append(kspl_vSurf_cut)
+                        vp= vedo.Plotter(N=1, axes=13)
+                        vp.show(mesh, sphL, sphR, kspl, plane, arr_vectPlCut, kspl_vSurf, kspl_split_plane, sph_pt_uniq, sph_centre, arr_centre2vzero, txt, at=0, interactive=True)
+    
 
 def select_sph_vSurf(pts_in_plane, colors, centre, normal, mesh, kspl, plane, kspl_vSurf): 
     
