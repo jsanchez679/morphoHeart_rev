@@ -744,7 +744,7 @@ class Organ():
             self.measure_status = 'NI'
             user_settings = organ_dict['settings']
             img_dirs = organ_dict['img_dirs']
-            self.user_organName = user_settings['user_organName']#.replace(' ', '_')
+            self.user_organName = user_settings['user_organName']
             self.info = user_settings
             self.info['dirs'] = project.info['dirs']    
             self.img_dirs = img_dirs

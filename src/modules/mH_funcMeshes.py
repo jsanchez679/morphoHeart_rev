@@ -2057,7 +2057,7 @@ def get_extCL_highRes(organ, mesh, kspl_ext):
     
     return kspl_CLnew
 
-def kspl_chamber_cut(organ, mesh, kspl_CLnew, segm_cuts_info, cut): 
+def kspl_chamber_cut(organ, mesh, kspl_CLnew, segm_cuts_info, cut, init=False): 
     
     num_pts = {}; spheres = []; kspls_segm = {}; list_num_pts = []
     for n, disc in enumerate(segm_cuts_info.keys()): 
@@ -2095,7 +2095,7 @@ def kspl_chamber_cut(organ, mesh, kspl_CLnew, segm_cuts_info, cut):
         while n_pts < 610:
             res +=1
             kspl_pts = kspl_CLnew.points()[numa:numb]
-            kspl_final = vedo.KSpline(points = kspl_pts, res = res).color(colors[nn]).lw(15)
+            kspl_final = vedo.KSpline(points = kspl_pts[::-1], res = res).color(colors[nn]).lw(15)
             n_pts = kspl_final.NPoints()
         print('n_pts:',n_pts)
         ordered_segm[div]['kspl'] = kspl_final
@@ -2104,7 +2104,7 @@ def kspl_chamber_cut(organ, mesh, kspl_CLnew, segm_cuts_info, cut):
     
     print('ordered_segm:', ordered_segm)
 
-    if mH_config.dev_plots: 
+    if mH_config.dev_plots and not init: 
         vp = vedo.Plotter(N=1, axes=4)
         vp.show(kspl_CLnew, kspl_list, sph_cut, sph_o, sph_f, disc, mesh, at = 0, interactive = True)
         
@@ -2138,22 +2138,25 @@ def order_segms(organ, kspl_CLnew, num_pts, cut):
                                                 'segm': m_ext, 
                                                 'name': names[m_ext],
                                                 'y_axis': (n+1, n),
-                                                'kspl': None}
+                                                'kspl': None, 
+                                                'invert_plane_num': None, 
+                                                'invert_normal': None, 
+                                                'index_guess': None}
                 break
 
     print('Final dict_pts after ordering segms through out centreline:',ordered_segm)
 
     return ordered_segm
 
-def unloopChamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, array_name, class_name,
+def unloop_chamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
                    gui_heatmaps2d, div, kspl_data, out2in):
 
     print('\n\n- Unlooping the heart chambers...')
-    dfs_unlooped = []
     spheres_zeroDeg = []
     arr_vectZeroDeg = []
 
-    param = df_classPts[array_name]
+    hmitem, class_name = labels
+    param = df_classPts[hmitem]
     classes = df_classPts[class_name]
     
     # Create matrix with all data
@@ -2177,49 +2180,48 @@ def unloopChamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, array_name, class_n
         pass
 
     # Iterate through planeS
-    cont = True
     for i, normal, centre in zip(count(), pl_normals, pl_centres):
-        if cont: 
-            print('\n>-Plane num:', i, 'normal:', normal)
-            # Initialise variables for each chamber
-            if div == 'div1' and out2in:
-                normal = -normal
-            
-            # A. Get cut plane info
-            #   Info Plane (Plane orientation/normal representation)
-            arr_vectPlCut = vedo.Arrow(centre, centre+normal*10, s = 0.1, c='orange')
-            
-            # B. Cut high resolution centreline with plane and define chamber
-            ksplCL_cut = kspl_CLnew.clone().cutWithMesh(vedo.Plane(pos=centre, normal=normal, s=(300,300)), invert=True).lw(5).color('tomato')
-            #   Find point of centreline closer to last point of kspline that was cut by plane (ksplCL_cut)
-            #   If kspl_CLnew wasn't cut, then initialise it with last index of cl
-            if len(ksplCL_cut.points()) == 0:
-                pts_o = [kspl_CLnew.points()[-1]]
-                print('entered here!')
-            #   Else, initialise it with all the points of the cut cl
-            else: 
-                pts_o = ksplCL_cut.points()
-            
-            #   If the ventricle is the one being unlooped, then initialise index as length of centreline
-            if div == 'div1' and out2in:
-                index_guess= len(ksplCL_cut.points())
+        print('\n>-Plane num:', i, 'normal:', normal)
+        # Initialise variables for each chamber
+        if div == 'div1' and out2in:
+            normal = -normal
+        
+        # A. Get cut plane info
+        #   Info Plane (Plane orientation/normal representation)
+        arr_vectPlCut = vedo.Arrow(centre, centre+normal*10, s = 0.1, c='orange')
+        
+        # B. Cut high resolution centreline with plane and define chamber
+        ksplCL_cut = kspl_CLnew.clone().cutWithMesh(vedo.Plane(pos=centre, normal=normal, s=(300,300)), invert=True).lw(5).color('tomato')
+        #   Find point of centreline closer to last point of kspline that was cut by plane (ksplCL_cut)
+        #   If kspl_CLnew wasn't cut, then initialise it with last index of cl
+        if len(ksplCL_cut.points()) == 0:
+            pts_o = [kspl_CLnew.points()[-1]]
+            print('entered here!')
+        #   Else, initialise it with all the points of the cut cl
+        else: 
+            pts_o = ksplCL_cut.points()
+        
+        #   If the ventricle is the one being unlooped, then initialise index as length of centreline
+        if div == 'div1' and out2in:
+            index_guess= len(ksplCL_cut.points())
 
-            #   Find closest point between the pts_o and the high resolution centreline, initialising it using the index_guess prev defined
-            pt_out, pt_num = find_closest_pt_guess(pts_o, kspl_CLnew.points(), index_guess)
-            index_guess = pt_num
-            print('index_guess:',index_guess)
-            chamber = kspl_data['segm']+':'+kspl_data['name']
-            print('name:', chamber)
+        #   Find closest point between the pts_o and the high resolution centreline, initialising it using the index_guess prev defined
+        pt_out, pt_num = find_closest_pt_guess(pts_o, kspl_CLnew.points(), index_guess)
+        index_guess = pt_num
+        print('index_guess:',index_guess)
+        chamber = kspl_data['segm']+':'+kspl_data['name']
+        print('name:', chamber)
 
-            # C. Cut surface centreline (kspl_vSurf) with plane and identify 0 deg angle point
-            #   Find point of surf_centreline cut by plane (ksplCL_vSurf_cut)
-            kspl_vSurf_cut_T = kspl_vSurf.clone().cutWithMesh(vedo.Plane(pos=centre, normal=normal, s=(300,300)), invert=True).lw(5).color('magenta')
-            
-            # -> The plane can cut the surf_centreline in more than two segments To identify the point that is exactly being cut by the 
-            #    plane, only those points cut by the plane are evaluated
-            kspl_vSurf_split_TF = []
-            kspl_vSurf_split_T = kspl_vSurf_cut_T.split()
-            print('lenT',len(kspl_vSurf_split_T))
+        # C. Cut surface centreline (kspl_vSurf) with plane and identify 0 deg angle point
+        #   Find point of surf_centreline cut by plane (ksplCL_vSurf_cut)
+        kspl_vSurf_cut_T = kspl_vSurf.clone().cutWithMesh(vedo.Plane(pos=centre, normal=normal, s=(300,300)), invert=True).lw(5).color('magenta')
+        
+        # -> The plane can cut the surf_centreline in more than two segments To identify the point that is exactly being cut by the 
+        #    plane, only those points cut by the plane are evaluated
+        kspl_vSurf_split_TF = []
+        kspl_vSurf_split_T = kspl_vSurf_cut_T.split()
+        print('lenT',len(kspl_vSurf_split_T))
+        if len(kspl_vSurf_split_T) > 0: 
             kspl_vSurf_split_TF.append(kspl_vSurf_cut_T)
 
             # Get all points of kspl_vSurf_cut in plane
@@ -2308,14 +2310,14 @@ def unloopChamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, array_name, class_n
                 normal_divLR = np.cross(normal, v_zero)
                 # Define using these vectors if the points are all lying in the same side or not (1, -1)
                 lORr = np.sign(np.dot(ptsC, np.asarray(normal_divLR)))
-    
+
                 # F. Get angle of points in that plane using v_zero
                 av = np.dot(ptsC,v_zero)
                 cosTheta = np.divide(av, radius) # vectors of magnitude one
                 theta = np.arccos(cosTheta)*180/np.pi
                 theta_corr = np.multiply(lORr, theta)
 
-                 # - Save all obtained values in matrix_unlooped
+                    # - Save all obtained values in matrix_unlooped
                 for num, index in enumerate(index_ptsAtPlane[0]):
                     #3:taken, 4:z_plane, 5:theta, 6: radius, 7-8: param
                     matrix_unlooped[index,3] = 1
@@ -2345,7 +2347,115 @@ def unloopChamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, array_name, class_n
                         # kspl_vSurf_cut_all.append(kspl_vSurf_cut)
                         vp= vedo.Plotter(N=1, axes=13)
                         vp.show(mesh, sphL, sphR, kspl, plane, arr_vectPlCut, kspl_vSurf, kspl_split_plane, sph_pt_uniq, sph_centre, arr_centre2vzero, txt, at=0, interactive=True)
+
+
+            else: 
+                print('-Plane No.', i, ' - PASS!')
+        else: 
+            plane = vedo.Plane(pos=centre, normal=normal, s=(300,300), alpha=0.5).color('medium orchid')
+            sph_centre = vedo.Sphere(centre, r=2, c='red')
+            vp= vedo.Plotter(N=1, axes=13)
+            vp.show(mesh, plane, sph_centre, at=0, interactive=True)
+            print('-Plane No.', i, ' - PASS len0!')
+
+    df_unlooped = pd.DataFrame(matrix_unlooped, columns=['x','y','z','taken','z_plane','theta','radius',hmitem])
+    df_unlooped = df_unlooped[df_unlooped['taken']==1]
+    df_unloopedf = df_unlooped.drop(['x', 'y','z'], axis=1)
+    df_unloopedf.astype({'taken': 'bool','z_plane':'float16','theta':'float16','radius':'float16', hmitem:'float16'}).dtypes
+    print(df_unloopedf.sample(10))
+
+    return df_unlooped, df_unloopedf
+      
+def heatmap_unlooped(organ, div, df_unloopedf, array_name, ch_cont, gui_thickness_ballooning):
+        # filename, val2unloop, dir_results, dirImgs, save_names, hm_names, saveHM = True, 
+        #              savePlot = True, default = False, cmap = 'turbo'):
+    """
+    Function to create heatmap of unlooped data, specifically of the columns given as input by the val2unloop variable.  
+
+    """
+
+    organ_name = organ.user_organName
+    title_df = organ_name+'_dfUnloop_'+array_name+'_'+ch_cont+'_'+div['name']+'.csv'
+    title_hm = organ_name+'_hmUnloop_'+array_name+'_'+ch_cont+'_'+div['name']+'.png'
+    dir_df = organ.dir_res(dir='csv_all') / title_df
+    dir_hm = organ.dir_res(dir='imgs_videos') / title_hm
+
+    heatmaps = []; scale_all = []
     
+    print('\n- Creating heatmaps for '+array_name+'...'+ch_cont+'_'+div['name'].title())
+    df_unloopedf.astype('float16').dtypes
+    
+    heatmap = pd.pivot_table(df_unloopedf, values= array_name, columns = 'theta', index='z_plane', aggfunc=np.max)
+    heatmap.astype('float16').dtypes
+
+    tissue_name = organ.mH_ettings['setup']['name_chs'][ch_cont.split('_'[0])]
+    if 'thck' in array_name: 
+        if 'intToext' in array_name: 
+            title = organ_name +' - '+tissue_name.title()+' Thickness (int2ext) [um] - '+div['name'].title()
+        else: 
+            title = organ_name +' - '+tissue_name.title()+' Thickness (ext2int) [um] - '+div['name'].title()
+    else: 
+        title = organ_name +' - Myocardium ballooning [um] - '+div['name'].title()
+    print('\t- title:', title)
+
+    cmap = gui_thickness_ballooning[hmitem]
+                    
+    # Make figure
+    fig, ax = plt.subplots(figsize=(16, 10))
+    ax = sns.heatmap(heatmap, cmap=cmap, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+    
+    max_val = df_unloopedf.z_plane.max()
+    if max_val > 1.1: 
+        y_labels = [1,2]
+        y_text = '[Inflow tract >> Valve]'
+    else: # Ventricle
+        y_labels = [0,1]
+        y_text = '[Valve >> Outflow tract]'
+        
+    x_pos = ax.get_xticks()
+    # x_lab = ax.get_xticklabels()
+    x_pos_new = np.linspace(x_pos[0], x_pos[-1], 19)
+    x_lab_new = np.arange(-180,200,20)
+    ax.set_xticks(x_pos_new) 
+    ax.set_xticklabels(x_lab_new, rotation=30)
+    
+    y_pos = ax.get_yticks()
+    # y_lab = ax.get_yticklabels()
+    y_pos_new = np.linspace(y_pos[0], y_pos[-1], 11)
+    y_lab_new = np.linspace(y_labels[0],y_labels[1],11)
+    y_lab_new = [format(y,'.2f') for y in y_lab_new]
+    ax.set_yticks(y_pos_new) 
+    ax.set_yticklabels(y_lab_new, rotation=0)
+    
+    plt.ylabel('Centreline position '+y_text+'\n', fontsize=10)
+    plt.xlabel('Angle (\N{DEGREE SIGN}) [Dorsal >> Right >> Ventral >> Left >> Dorsal]', fontsize=10)
+
+    plt.title(title, fontsize = 15)
+    
+    # if isinstance(hm_name, list):
+    #     sp_hm_name = hm_name[i]
+    # elif isinstance(hm_name, str):
+    #     sp_hm_name = hm_name
+    sp_hm_name = hm_names[nn][i]
+    print('\t- sp_hm_name:',sp_hm_name)
+    
+    if savePlot: 
+        dir4heatmap = os.path.join(dirImgsf,organ_name+'_hm_'+sp_hm_name+'cR.png')
+        plt.savefig(dir4heatmap, dpi=300, bbox_inches='tight', transparent=True)
+        # print(dir4heatmap)
+        
+    plt.show()
+    if saveHM: 
+        saveDF(filename = organ_name, df2save = heatmap, df_name = 'hm_'+sp_hm_name, dir2save = dir2savef)
+        print('\t- Saved hm_'+sp_hm_name)
+    
+    heatmaps.append(heatmap)
+
+    alert('wohoo')
+    scale_set = (vmin,vmax)
+    scale_all.append(scale_set)
+    
+    return heatmaps, scale_all
 
 def select_sph_vSurf(pts_in_plane, colors, centre, normal, mesh, kspl, plane, kspl_vSurf): 
     

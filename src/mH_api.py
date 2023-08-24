@@ -768,15 +768,17 @@ def run_heatmaps2D(controller, btn):
                 else: 
                     # Classify points
                     print('Classify points')
-                    data = {array_name: npy_array}
+                    data = {hmitem: npy_array}
                     df_classPts, class_name = fcM.classify_heart_pts(array_mesh.mesh, obj_segm, data)
 
                     # Create kspline for each segment
+                    print('controller.main_win.ordered_kspl:',controller.main_win.ordered_kspl)
                     ordered_kspl = fcM.kspl_chamber_cut(organ = controller.organ, 
                                                         mesh = array_mesh.mesh, 
                                                         kspl_CLnew = kspl_CLnew, 
                                                         segm_cuts_info=segm_cuts_info, 
                                                         cut=cut2use)
+                    print('ordered_kspl:', ordered_kspl)
                     
                     # Initialise index_vSurf_cut when i == 0 for extreme segments
                     os_keys = list(ordered_kspl.keys())
@@ -794,15 +796,23 @@ def run_heatmaps2D(controller, btn):
 
                     for div in order_segm_upside: 
                         print('div:', div, ordered_kspl[div])
-                        fcM.unloopChamber(mesh = array_mesh.mesh, 
-                                            kspl_CLnew = kspl_CLnew,
-                                            kspl_vSurf = kspl_vSurf,
-                                            df_classPts = df_classPts,
-                                            array_name = array_name, 
-                                            class_name = class_name, 
-                                            gui_heatmaps2d = gui_heatmaps2d, 
-                                            div = div, kspl_data=ordered_kspl[div], 
-                                            out2in=out2in)
+                        if div == 'div1': 
+                            print(array_name, short, hmitem)
+
+                            df_unlooped, df_unloopedf = fcM.unloop_chamber(mesh = array_mesh.mesh, 
+                                                                            kspl_CLnew = kspl_CLnew,
+                                                                            kspl_vSurf = kspl_vSurf,
+                                                                            df_classPts = df_classPts,
+                                                                            labels = (hmitem, class_name),
+                                                                            gui_heatmaps2d = gui_heatmaps2d, 
+                                                                            div = div, kspl_data=ordered_kspl[div], 
+                                                                            out2in=out2in)
+                        
+                        # fcM.heatmap_unlooped(organ = controller.organ, div = div, 
+                        #                      df_unloopedf = df_unloopedf, array_name = array_name,
+                        #                      ch_cont = ch+'_'+contf, 
+                        #                      gui_thickness_ballooning = controller.main_win.gui_thickness_ballooning)
+                        
                         
 
 

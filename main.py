@@ -415,6 +415,10 @@ class Controller:
             self.load_proj_win.proj = self.proj
             #Fill window with project info
             self.load_proj_win.fill_proj_info(proj = self.proj)
+            self.load_proj_win.button_load_organs.setChecked(False)
+            self.load_proj_win.tabW_select_organ.clear()
+            self.load_proj_win.tabW_select_organ.setRowCount(0)
+            self.load_proj_win.tabW_select_organ.setColumnCount(0)
         else: 
             self.load_proj_win.button_browse_proj.setChecked(False)
             self.load_proj_win.win_msg('*There is no settings file for a project within the selected directory. Please select a new directory.')
