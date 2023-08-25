@@ -79,7 +79,6 @@ def close_cont(controller, ch_name):
     #Toggle Button
     close_cont_btn = getattr(controller.main_win, ch_name+'_closecont')
     close_cont_btn.setChecked(True)
-    toggled(close_cont_btn)
 
 def select_cont(controller, ch_name):
     #Check workflow status
@@ -113,7 +112,6 @@ def select_cont(controller, ch_name):
     #Toggle Button
     select_btn = getattr(controller.main_win, ch_name+'_selectcont')
     select_btn.setChecked(True)
-    toggled(select_btn)
 
 def run_keeplargest(controller):
     workflow = controller.organ.workflow
@@ -614,7 +612,8 @@ def run_heatmaps3D(controller, btn):
             hm2d_btn = controller.main_win.hm_btns[hmitem]['play2d']
             num = controller.main_win.hm_btns[hmitem]['num']
             d3d2_btn = getattr(controller.main_win, 'd3d2_'+str(num))
-            if d3d2_btn.isChecked(): 
+            #Hereee!
+            if d3d2_btn.isChecked() and controller.main_win.thickness2D_set.isChecked(): 
                 hm2d_btn.setEnabled(True)
 
             # controller.main_win.prog_bar_update(nn)
@@ -671,7 +670,6 @@ def run_heatmaps3D(controller, btn):
         if toggle: 
             select_btn = getattr(controller.main_win, 'heatmaps3D_play')
             select_btn.setChecked(True)
-            toggled(select_btn)
 
         print('\nEND Heatmaps')
         print('organ.mH_settings:', controller.organ.mH_settings)
@@ -683,138 +681,134 @@ def run_heatmaps3D(controller, btn):
 def run_heatmaps2D(controller, btn):
     # controller.main_win.win_msg('!This section of code is under development... you will be able to use it soon!')
     # alert('bubble')
-    if controller.main_win.keeplargest_play.isChecked(): 
-        workflow = controller.organ.workflow['morphoHeart']
-        hm2d_list = list(controller.main_win.hm_btns.keys())
-        if btn != None: 
-            for key in hm2d_list: 
-                num_key = controller.main_win.hm_btns[key]['num']
-                if int(num_key) == int(btn): 
-                    hm2get = key
-                    break
-            hm2d_set = [hm2get] #[segm_list[int(num)-1]]
-        else: 
-            hm2d_set = hm2d_list
-        print('hm2d_set:',hm2d_set)
-
-        gui_heatmaps2d = controller.main_win.gui_thickness_ballooning['heatmaps2D']
-
-        for hmitem in hm2d_set: 
-            short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball
-            ch_info = ch_info[:-1]
-            if 'th' in short: 
-                ch, contf = ch_info.split('-')
-                if 'i2e' in short: 
-                    n_type = 'intTOext'
-                    cont = 'ext'
-                elif 'e2i' in short: 
-                    n_type = 'extTOint'
-                    cont = 'int'
-                array_name = 'thck('+n_type+')'
-            else: 
-                ch_cont, cl_info = ch_info.split('(')
-                ch, contf = ch_cont.split('-')
-                n_type = 'AAA'
-                array_name = 'AAA'
-                cont = 'aaa'
-            
-            #Get whole mesh and heatmap3d data
-            whole_mesh = controller.organ.obj_meshes[ch+'_'+contf]
-            array_mesh = controller.organ.obj_meshes[ch+'_'+cont]
-            
-            #Get data from heatmap 3D - LS52_F02_ch1_tiss_CMthck(intTOext)
-            title = str(whole_mesh.dirs['arrays'][array_name])+'.npy'
-            print(whole_mesh.dirs['arrays'])
-            dir_npy = whole_mesh.parent_organ.dir_res(dir='csv_all') / title
-            npy_array = np.load(dir_npy)
-            print(short+'> whole_mesh: '+ch+'_'+contf+' -- array_mesh: '+ch+'_'+cont+' - loaded_npy:', dir_npy)
-
-            #Get the extended and cut centrelines
-            # Get the centreline ribbon
-            cl_ribbon, kspl_ext = controller.main_win.plot_cl_ext1D(plotshow=False)
-
-            # KSpline on surface
-            ext_plane = controller.main_win.gui_thickness_ballooning['heatmaps2D']['direction']['plane_normal']
-            kspl_vSurf = fcM.get_extCL_on_surf(mesh = array_mesh.mesh, kspl_ext = kspl_ext, direction = ext_plane)
-
-            # Create new extended and cut kspline with higher resolution
-            kspl_CLnew = fcM.get_extCL_highRes(organ = controller.organ, mesh = array_mesh.mesh, 
-                                               kspl_ext = kspl_ext) 
-            
-            #If the user wants to use the segments to aid heatmap unlooping....
-            if gui_heatmaps2d['use_segms']: 
-                cut2use = gui_heatmaps2d['segms'].split(': ')[0]
-                segm_setup = controller.organ.mH_settings['setup']['segm'][cut2use]
-                segm_cuts_info = controller.organ.mH_settings['wf_info']['segments']['setup'][cut2use]['cut_info']
-                print('segm_setup:',segm_setup)
-
-                #See if the meshes have already been cut
-                obj_segm = {}
-                for n_segm in range(1,segm_setup['no_segments']+1,1):
-                    segm_name = cut2use+'_'+ch+'_'+cont+'_segm'+str(n_segm)
-                    if segm_name in controller.organ.submeshes.keys():
-                        key = 'segm'+str(n_segm)+':'+segm_setup['name_segments']['segm'+str(n_segm)]
-                        print('segm_name:', segm_name)
-                        obj_segm[key] = controller.organ.obj_subm[segm_name]
-                    else: 
-                        print('The segments for this tissue have not been obtained yet! ('+controller.main_win.gui_thickness_ballooning['heatmaps2D']['segms']+')')
+    if controller.main_win.keeplargest_play.isChecked():
+        if controller.main_win.thickness2D_set.isChecked():  
+            workflow = controller.organ.workflow['morphoHeart']
+            hm2d_list = list(controller.main_win.hm_btns.keys())
+            if btn != None: 
+                for key in hm2d_list: 
+                    num_key = controller.main_win.hm_btns[key]['num']
+                    if int(num_key) == int(btn): 
+                        hm2get = key
                         break
-                print('len(obj_segm):', len(obj_segm), obj_segm)
+                hm2d_set = [hm2get] #[segm_list[int(num)-1]]
+            else: 
+                hm2d_set = hm2d_list
+            print('hm2d_set:',hm2d_set)
 
-                if len(obj_segm) != segm_setup['no_segments']: 
-                    #Use the whole tissue to create 2D heatmap
-                    print('Use the whole tissue to create 2D heatmap')
+            gui_heatmaps2d = controller.main_win.gui_thickness_ballooning['heatmaps2D']
 
+            for hmitem in hm2d_set: 
+                short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball
+                ch_info = ch_info[:-1]
+                if 'th' in short: 
+                    ch, contf = ch_info.split('-')
+                    if 'i2e' in short: 
+                        n_type = 'intTOext'
+                        cont = 'ext'
+                    elif 'e2i' in short: 
+                        n_type = 'extTOint'
+                        cont = 'int'
+                    array_name = 'thck('+n_type+')'
                 else: 
-                    # Classify points
-                    print('Classify points')
-                    data = {hmitem: npy_array}
-                    df_classPts, class_name = fcM.classify_heart_pts(array_mesh.mesh, obj_segm, data)
+                    ch_cont, cl_info = ch_info.split('(')
+                    ch, contf = ch_cont.split('-')
+                    n_type = 'AAA'
+                    array_name = 'AAA'
+                    cont = 'aaa'
+                
+                #Get whole mesh and heatmap3d data
+                whole_mesh = controller.organ.obj_meshes[ch+'_'+contf]
+                array_mesh = controller.organ.obj_meshes[ch+'_'+cont]
+                
+                #Get data from heatmap 3D - LS52_F02_ch1_tiss_CMthck(intTOext)
+                title = str(whole_mesh.dirs['arrays'][array_name])+'.npy'
+                print(whole_mesh.dirs['arrays'])
+                dir_npy = whole_mesh.parent_organ.dir_res(dir='csv_all') / title
+                npy_array = np.load(dir_npy)
+                print(short+'> whole_mesh: '+ch+'_'+contf+' -- array_mesh: '+ch+'_'+cont+' - loaded_npy:', dir_npy)
 
-                    # Create kspline for each segment
-                    print('controller.main_win.ordered_kspl:',controller.main_win.ordered_kspl)
-                    ordered_kspl = fcM.kspl_chamber_cut(organ = controller.organ, 
-                                                        mesh = array_mesh.mesh, 
-                                                        kspl_CLnew = kspl_CLnew, 
-                                                        segm_cuts_info=segm_cuts_info, 
-                                                        cut=cut2use)
-                    print('ordered_kspl:', ordered_kspl)
-                    
-                    # Initialise index_vSurf_cut when i == 0 for extreme segments
-                    os_keys = list(ordered_kspl.keys())
-                    ordered_kspl[os_keys[0]]['index_vSurf_cut'] = 0
-                    ordered_kspl[os_keys[-1]]['index_vSurf_cut'] = len(kspl_vSurf.points())-1
+                #Get the extended and cut centrelines
+                # Get the centreline ribbon
+                cl_ribbon, kspl_ext = controller.main_win.plot_cl_ext1D(plotshow=False)
 
-                    if len(ordered_kspl) == 2: 
-                        out2in = True
+                # KSpline on surface
+                ext_plane = controller.main_win.gui_thickness_ballooning['heatmaps2D']['direction']['plane_normal']
+                kspl_vSurf = fcM.get_extCL_on_surf(mesh = array_mesh.mesh, kspl_ext = kspl_ext, direction = ext_plane)
+                print('len(kspl_vSurf.points()):',len(kspl_vSurf.points()))
+
+                # Create new extended and cut kspline with higher resolution
+                kspl_CLnew = fcM.get_extCL_highRes(organ = controller.organ, mesh = array_mesh.mesh, 
+                                                kspl_ext = kspl_ext) 
+                print('len(kspl_CLnew.points()):',len(kspl_CLnew.points()))
+                
+                #If the user wants to use the segments to aid heatmap unlooping....
+                if gui_heatmaps2d['use_segms']: 
+                    cut2use = gui_heatmaps2d['segms'].split(': ')[0]
+                    segm_setup = controller.organ.mH_settings['setup']['segm'][cut2use]
+                    segm_cuts_info = controller.organ.mH_settings['wf_info']['segments']['setup'][cut2use]['cut_info']
+                    print('segm_setup:',segm_setup)
+
+                    #See if the meshes have already been cut
+                    obj_segm = {}
+                    for n_segm in range(1,segm_setup['no_segments']+1,1):
+                        segm_name = cut2use+'_'+ch+'_'+cont+'_segm'+str(n_segm)
+                        if segm_name in controller.organ.submeshes.keys():
+                            key = 'segm'+str(n_segm)+':'+segm_setup['name_segments']['segm'+str(n_segm)]
+                            print('segm_name:', segm_name)
+                            obj_segm[key] = controller.organ.obj_subm[segm_name]
+                        else: 
+                            print('The segments for this tissue have not been obtained yet! ('+controller.main_win.gui_thickness_ballooning['heatmaps2D']['segms']+')')
+                            break
+                    print('len(obj_segm):', len(obj_segm), obj_segm)
+
+                    if len(obj_segm) != segm_setup['no_segments']: 
+                        #Use the whole tissue to create 2D heatmap
+                        print('Use the whole tissue to create 2D heatmap')
+
                     else: 
-                        out2in = False
-                    print('out2in:', out2in)
+                        # Classify points
+                        print('Classify points')
+                        data = {hmitem: npy_array}
+                        df_classPts, class_name = fcM.classify_heart_pts(array_mesh.mesh, obj_segm, data)
 
-                    order_segm_upside = list(ordered_kspl.keys())
-                    order_segm_upside.reverse()
+                        # Create kspline for each segment
+                        print('controller.main_win.ordered_kspl:',controller.main_win.ordered_kspl)
+                        ordered_kspl = controller.organ.mH_settings['wf_info']['heatmaps']['heatmaps2D']['div']
+                        ordered_kspl = fcM.kspl_chamber_cut(organ = controller.organ, 
+                                                            mesh = array_mesh.mesh, 
+                                                            kspl_CLnew = kspl_CLnew, 
+                                                            segm_cuts_info=segm_cuts_info, 
+                                                            cut=cut2use, ordered_segm=ordered_kspl)
 
-                    for div in order_segm_upside: 
-                        print('div:', div, ordered_kspl[div])
-                        if div == 'div1': 
+                        order_segm_upside = list(ordered_kspl.keys())
+                        order_segm_upside.reverse()
+
+                        for div in order_segm_upside: 
+                            print('\n\n- Unlooping the heart chambers for '+ordered_kspl[div]['name']+'...')
+                            print('div:', div, 'ordered_kspl[div]:', ordered_kspl[div])
                             print(array_name, short, hmitem)
+                            # if div == 'div1': 
+                            # df_unlooped, df_unloopedf = 
+                            fcM.unloop_chamber(mesh = array_mesh.mesh, 
+                                                    kspl_CLnew = kspl_CLnew,
+                                                    kspl_vSurf = kspl_vSurf,
+                                                    df_classPts = df_classPts,
+                                                    labels = (hmitem, class_name),
+                                                    gui_heatmaps2d = gui_heatmaps2d, 
+                                                    kspl_data=ordered_kspl[div])
+                            
+                            # fcM.heatmap_unlooped(organ = controller.organ, div = div, 
+                            #                      df_unloopedf = df_unloopedf, array_name = array_name,
+                            #                      ch_cont = ch+'_'+contf, 
+                            #                      gui_thickness_ballooning = controller.main_win.gui_thickness_ballooning)
+                            
+                            
 
-                            df_unlooped, df_unloopedf = fcM.unloop_chamber(mesh = array_mesh.mesh, 
-                                                                            kspl_CLnew = kspl_CLnew,
-                                                                            kspl_vSurf = kspl_vSurf,
-                                                                            df_classPts = df_classPts,
-                                                                            labels = (hmitem, class_name),
-                                                                            gui_heatmaps2d = gui_heatmaps2d, 
-                                                                            div = div, kspl_data=ordered_kspl[div], 
-                                                                            out2in=out2in)
-                        
-                        # fcM.heatmap_unlooped(organ = controller.organ, div = div, 
-                        #                      df_unloopedf = df_unloopedf, array_name = array_name,
-                        #                      ch_cont = ch+'_'+contf, 
-                        #                      gui_thickness_ballooning = controller.main_win.gui_thickness_ballooning)
-                        
-                        
-
+        else: 
+            controller.main_win.win_msg('*Set the 2D Heatmap settings first to be able to run this process')
+    else: 
+        controller.main_win.win_msg('*To extract the 2D Heatmaps make sure you have run the  -Keep Largest-  section, extracted the Centreline and created the 3D Heatmap.')
 
 
 #------------------------------------------

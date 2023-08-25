@@ -5020,7 +5020,7 @@ class MainWindow(QMainWindow):
                     self.hm_btns[item]['play'].setChecked(True)
                     self.hm_btns[item]['play'].setEnabled(True)
                     self.hm_btns[item]['plot'].setEnabled(True)
-                    if getattr(self, 'd3d2_'+str(nn)).isChecked():
+                    if getattr(self, 'd3d2_'+str(nn)).isChecked() and 'heatmaps2D' in wf_info['heatmaps'].keys():
                         self.hm_btns[item]['play2d'].setEnabled(True)
                     at_least_one = True
                 else: 
@@ -5036,7 +5036,7 @@ class MainWindow(QMainWindow):
                         if cl_done == 'DONE': 
                             self.hm_btns[item]['play'].setEnabled(True)
 
-            if 'hm3Dto2D' in  self.organ.mH_settings['measure'].keys():
+            if 'hm3Dto2D' in self.organ.mH_settings['measure'].keys():
                 try:
                     axis = wf_info['heatmaps']['heatmaps2D']['axis_lab'].lower()
                     direction = wf_info['heatmaps']['heatmaps2D']['direction']
@@ -5347,23 +5347,33 @@ class MainWindow(QMainWindow):
                                              'name': new_name,
                                              'y_axis': (1, 0), 
                                              'kspl': None, 
-                                             'invert_plane_num': False, 
-                                             'invert_normal': None, 
-                                             'index_guess': None}}
+                                             'invert_plane_num': False}}#, 
+                                            #  'index_guess': None}}
                 else: 
                     button.setVisible(False)
 
         self.ordered_kspl = ordered_kspl
         print('self.ordered_kspl:',self.ordered_kspl)
+        if self.thickness2D_set.isChecked():
+            self.set_thickness2D()
 
     def change_segm_dir(self, div):
         button = getattr(self, 'dir_'+div)
         if button.isChecked(): 
             button.setText('< '+self.segm_dir_names[div]+' <')
             self.ordered_kspl[div]['invert_plane_num'] = True
+            try: 
+                self.gui_thickness_ballooning['heatmaps2D']['div'][div]['invert_plane_num'] = True
+            except: 
+                pass
         else:
             button.setText('> '+self.segm_dir_names[div]+' >')
             self.ordered_kspl[div]['invert_plane_num'] = False
+            try: 
+                self.gui_thickness_ballooning['heatmaps2D']['div'][div]['invert_plane_num'] = False
+            except: 
+                pass
+        print('self.gui_thickness_ballooning:',self.gui_thickness_ballooning)
 
     def set_colormap(self, name):
         value = getattr(self, 'colormap'+name).currentText()
@@ -6375,7 +6385,7 @@ class MainWindow(QMainWindow):
     def set_thickness2D(self, init=False):
 
         wf_info = self.organ.mH_settings['wf_info']
-        current_gui_thickness_ballooning2D = self.gui_thickness_ballooning2D_n()
+        current_gui_thickness_ballooning2D, list_div = self.gui_thickness_ballooning2D_n()
         if current_gui_thickness_ballooning2D != None:
             if 'heatmaps2D' not in self.gui_thickness_ballooning.keys(): 
                 self.gui_thickness_ballooning['heatmaps2D'] = current_gui_thickness_ballooning2D
@@ -6383,6 +6393,14 @@ class MainWindow(QMainWindow):
                 gui_thickness_ballooning2D_loaded = self.organ.mH_settings['wf_info']['heatmaps']['heatmaps2D']
                 gui_thickness_ballooning2D, changed = update_gui_set(loaded = gui_thickness_ballooning2D_loaded, 
                                                                     current = current_gui_thickness_ballooning2D)
+                div2del = []
+                for div in gui_thickness_ballooning2D['div'].keys():
+                    if div not in list_div:
+                        div2del.append(div)
+                for div2 in div2del: 
+                    print('deleting div:', div2)
+                    gui_thickness_ballooning2D['div'].pop(div2)
+
                 self.gui_thickness_ballooning['heatmaps2D'] = gui_thickness_ballooning2D
                 if changed: 
                     # self.win_msg("Remember to re-run  -Thickness / Ballooning Measurements-  section to make sure changes are made and saved!")
@@ -6397,6 +6415,7 @@ class MainWindow(QMainWindow):
 
             self.thickness2D_set.setChecked(True)
             print('self.gui_thickness_ballooning: ', self.gui_thickness_ballooning)
+            print('self.segm_dir_names: ', self.segm_dir_names)
         
     def gui_thickness_ballooning2D_n(self): 
 
@@ -6411,12 +6430,16 @@ class MainWindow(QMainWindow):
 
             print('self.ordered_kspl:',self.ordered_kspl)
             print('self.segm_dir_names:', self.segm_dir_names)
+            gui_hm2D['div'] = {}
             for div in self.ordered_kspl.keys(): 
                 dir_btn = getattr(self, 'dir_'+div)
                 if dir_btn.isChecked(): 
                     self.ordered_kspl[div]['invert_plane_num'] = True
-                    
-
+                else: 
+                    self.ordered_kspl[div]['invert_plane_num'] = False
+                gui_hm2D['div'][div] = self.ordered_kspl[div]
+                gui_hm2D['div'][div].pop('kspl', None)
+                gui_hm2D['div'][div]['kspl'] = None
 
             centreline = list(self.organ.mH_settings['measure']['hm3Dto2D'].keys())[0]
             gui_hm2D['centreline'] = centreline
@@ -6441,14 +6464,14 @@ class MainWindow(QMainWindow):
             plot_planes = self.plot_planes.isChecked()
             every_planes = self.every_planes.value()
             gui_hm2D['plot'] = {'plot_planes': plot_planes, 
-                                                'every_planes': every_planes}
+                                'every_planes': every_planes}
             
             self.cl_ext_hm2d.setEnabled(True)
-            return gui_hm2D
+            return gui_hm2D, list(gui_hm2D['div'].keys())
         else: 
             self.win_msg('*Please set the direction in which the centreline should be projected to unloop and unroll the 3D into 2D.')
             self.thickness2D_set.setChecked(False)
-            return None
+            return None, None
         
     def update_3d2d(self): 
 
@@ -6480,9 +6503,10 @@ class MainWindow(QMainWindow):
             if self.gui_thickness_ballooning[item]['d3d2']: 
                 ch4cl, cont4cl = self.cl4hm.split('_')
                 proc4cl = ['C-Centreline', 'buildCL', ch4cl, cont4cl, 'Status']
-                if get_by_path(wf, proc) == 'DONE' and get_by_path(wf, proc4cl) == 'DONE' :
-                    print('done')
+                if get_by_path(wf, proc) == 'DONE' and get_by_path(wf, proc4cl) == 'DONE' and 'heatmaps2D' in self.organ.mH_settings['wf_info']['heatmaps'].keys():
                     self.hm_btns[item]['play2d'].setEnabled(True)
+                else: 
+                    print('xxx not done')
 
         if hasattr(self, 'cl4hm'):
             ch4cl, cont4cl = self.cl4hm.split('_')
