@@ -788,22 +788,19 @@ def run_heatmaps2D(controller, btn):
                             print('\n\n- Unlooping the heart chambers for '+ordered_kspl[div]['name']+'...')
                             print('div:', div, 'ordered_kspl[div]:', ordered_kspl[div])
                             print(array_name, short, hmitem)
-                            # if div == 'div1': 
-                            # df_unlooped, df_unloopedf = 
-                            fcM.unloop_chamber(mesh = array_mesh.mesh, 
-                                                    kspl_CLnew = kspl_CLnew,
-                                                    kspl_vSurf = kspl_vSurf,
-                                                    df_classPts = df_classPts,
-                                                    labels = (hmitem, class_name),
-                                                    gui_heatmaps2d = gui_heatmaps2d, 
-                                                    kspl_data=ordered_kspl[div])
-                            
-                            # fcM.heatmap_unlooped(organ = controller.organ, div = div, 
-                            #                      df_unloopedf = df_unloopedf, array_name = array_name,
-                            #                      ch_cont = ch+'_'+contf, 
-                            #                      gui_thickness_ballooning = controller.main_win.gui_thickness_ballooning)
-                            
-                            
+                            if div == 'div2': 
+                                df_unloopedf = fcM.unloop_chamber(mesh = array_mesh.mesh, 
+                                                                    kspl_CLnew = kspl_CLnew,
+                                                                    kspl_vSurf = kspl_vSurf,
+                                                                    df_classPts = df_classPts,
+                                                                    labels = (hmitem, class_name),
+                                                                    gui_heatmaps2d = gui_heatmaps2d, 
+                                                                    kspl_data=ordered_kspl[div])
+                                
+                                fcM.heatmap_unlooped(organ = controller.organ, div = ordered_kspl[div], 
+                                                    df_unloopedf = df_unloopedf, hmitem= hmitem,
+                                                    ch_cont = ch+'_'+contf, 
+                                                    gui_thball = controller.main_win.gui_thickness_ballooning)
 
         else: 
             controller.main_win.win_msg('*Set the 2D Heatmap settings first to be able to run this process')
@@ -1125,11 +1122,10 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
                 del prompt
             if happy[0] == 1: 
                 happy_rad = False
+                disc_radius = int(happy[2])
                 while not happy_rad: 
-                    disc_radius = int(happy[2])
                     cyl_final = vedo.Cylinder(pos = pl_centre_new, r = disc_radius, height = height, axis = normal_unit, c = disc_color, cap = True, res = disc_res)
-
-                    msg = '\n> New radius: Check the radius of Disc No.'+str(n)+' to cut the tissue into segments '+user_names+'. \nMake sure it is cutting the tissue effectively separating it into individual segments.\nClose the window when done.'
+                    msg = '\n> New radius:'+str(disc_radius)+'um. \nCheck the radius of Disc No.'+str(n)+' to cut the tissue into segments '+user_names+'. \nMake sure it is cutting the tissue effectively separating it into individual segments.\nClose the window when done.'
                     txt = [(0, organ.user_organName + msg)]
                     obj = [(mesh2cut.mesh.alpha(1), cl, cyl_final, sph_cut)]
                     plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds()))
@@ -1141,10 +1137,10 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
                     prompt = Prompt_ok_cancel_radio(title, msg, items, parent = win)
                     prompt.exec()
                     output = prompt.output
+                    print('output:', output)
                     del prompt
-
                     if output[0] == 0: 
-                        disc_radius = output[2]
+                        disc_radius = int(output[2])
                     else: 
                         happy_rad = True
                 happyWithDisc = True
