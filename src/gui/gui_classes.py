@@ -33,6 +33,14 @@ import vedo
 import numpy as np
 import pandas as pd
 
+import matplotlib
+matplotlib.use('QtAgg')
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
+# from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
+
 #%% morphoHeart Imports - ##################################################
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
@@ -3976,7 +3984,7 @@ class MainWindow(QMainWindow):
                 play.setEnabled(False)
                 hm_plot.setEnabled(False)
                 play2d.setEnabled(False)
-                hm_plot2.setEnabled(False)
+                # hm_plot2.setEnabled(False)
 
                 nn +=1
                 
@@ -6884,6 +6892,58 @@ class MainWindow(QMainWindow):
     def plot_heatmap2d(self, btn): 
         print('Plotting heatmap2d: ', btn)
 
+        btn_num = int(btn[-1])-1
+        hm_all = list(self.hm_btns.keys())
+        hm_name = hm_all[btn_num]
+        short, ch_info = hm_name.split('[')
+        self.win_msg('Plotting heatmaps3D ('+hm_name+')')
+        print('Plotting heatmaps3D ('+hm_name+')')
+
+        title = 'Test'
+        cmap = 'turbo'
+        heatmap = np.array([[0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
+                    [2.4, 0.0, 4.0, 1.0, 2.7, 0.0, 0.0],
+                    [1.1, 2.4, 0.8, 4.3, 1.9, 4.4, 0.0],
+                    [0.6, 0.0, 0.3, 0.0, 3.1, 0.0, 0.0],
+                    [0.7, 1.7, 0.6, 2.6, 2.2, 6.2, 0.0],
+                    [1.3, 1.2, 0.0, 0.0, 0.0, 3.2, 5.1],
+                    [0.1, 2.0, 0.0, 1.4, 0.0, 1.9, 6.3]])
+        
+        # Make figure
+        self.plot_win = PlotWindow(title= 'Plot test', parent = self)
+        ax = self.plot_win.figure.add_subplot(111)
+        b = sns.heatmap(heatmap, cmap=cmap, ax=ax)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+
+        #draw new graph
+        self.plot_win.canvas.draw()
+        
+        # # y_labels = sorted(list(kspl_data['y_axis']))
+        # y_text = 'Centreline Position'# ['+kspl_data['name'].title()+']'
+            
+        # x_pos = ax.get_xticks()
+        # # x_lab = ax.get_xticklabels()
+        # x_pos_new = np.linspace(x_pos[0], x_pos[-1], 19)
+        # x_lab_new = np.arange(-180,200,20)
+        # ax.set_xticks(x_pos_new) 
+        # ax.set_xticklabels(x_lab_new, rotation=30)
+        
+        # y_pos = ax.get_yticks()
+        # # y_lab = ax.get_yticklabels()
+        # y_pos_new = np.linspace(y_pos[0], y_pos[-1], 11)
+        # # y_lab_new = np.linspace(y_labels[0],y_labels[1],11)
+        # # y_lab_new = [format(y,'.2f') for y in y_lab_new]
+        # ax.set_yticks(y_pos_new) 
+        # # ax.set_yticklabels(y_lab_new, rotation=0)
+        
+        # plt.ylabel(y_text, fontsize=10)
+        # # plt.ylabel('Centreline position '+y_text+'\n', fontsize=10)
+        # # ax.xlabel('Angle (\N{DEGREE SIGN}) [Dorsal >> Right >> Ventral >> Left >> Dorsal]', fontsize=10)
+        # plt.xlabel('Angle (\N{DEGREE SIGN})', fontsize=10)
+        # plt.title(title, fontsize = 15)
+
+        self.plot_win.exec()
+
+
     def plot_segm_sect(self, btn):
         #btn = cut1_segm1 / cut1_sect1
 
@@ -7153,6 +7213,28 @@ class MainWindow(QMainWindow):
 		# 	print('Window closed')
 		# else:
 		# 	event.ignore()
+
+class PlotWindow(QDialog):
+
+    def __init__(self, title:str, parent=None):
+        super().__init__(parent)
+        uic.loadUi('src/gui/ui/plot_screen.ui', self)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.output = None
+
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+
+        self.layout = QVBoxLayout()
+        self.graph_widget.setLayout(self.layout)
+        self.layout.addWidget(self.canvas)
+
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.hLayout.addWidget(self.toolbar)
+        self.show()
+
 
 #%% Other classes GUI related - ########################################################
 class MyToggle(QtWidgets.QPushButton):

@@ -29,6 +29,7 @@ class mH_Config():
         self.path_mHImages = Path(self.path_o).parent.parent.parent / 'images'
         self.dev = True
         self.dev_plots = False
+        self.dev_hm3d2d = True
 
 mH_config = mH_Config()
 

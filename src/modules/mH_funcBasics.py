@@ -58,14 +58,16 @@ def alert(sound:str):
             sound_on = True
     else: 
         sound_on = False
-
-    if sound_on: 
-        path_parentSounds = Path(path_fcBasics).parent.parent.parent
-        sound_mp3= sound +'.mp3'
-        path = path_parentSounds / 'sounds' / sound_mp3
-        playsound(str(path))
-        if sound == 'error_beep': 
-            print('EEERROR')
+    try: 
+        if sound_on: 
+            path_parentSounds = Path(path_fcBasics).parent.parent.parent
+            sound_mp3= sound +'.mp3'
+            path = path_parentSounds / 'sounds' / sound_mp3
+            playsound(str(path))
+            if sound == 'error_beep': 
+                print('EEERROR')
+    except playsound.PlaysoundException: 
+        pass
 
 #%% func - ask4input
 def ask4input(text:str, res:dict, type_response:type, keep=False):
@@ -136,7 +138,7 @@ def ask4input(text:str, res:dict, type_response:type, keep=False):
     # print('\n')
     return response
 
-#%% func - ask4inputList
+# func - ask4inputList
 def ask4inputList(text, res, res_all=True):
 
     alert('error_beep')
@@ -195,7 +197,7 @@ def input_range(response):
     except: 
         obj_num = 'error'
 
-#%% func - compare_dicts
+# func - compare_dicts
 def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=False):
     """Compare two dictionaries recursively to find non mathcing elements
     https://stackoverflow.com/questions/27265939/comparing-python-dictionaries-and-nested-dictionaries
@@ -262,8 +264,7 @@ def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=
     res = key_err + value_err + err
     return res
 
-
-#%% func - compare_nested_dicts
+# func - compare_nested_dicts
 def compare_nested_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
     
     res = compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="")

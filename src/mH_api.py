@@ -788,18 +788,19 @@ def run_heatmaps2D(controller, btn):
                             print('\n\n- Unlooping the heart chambers for '+ordered_kspl[div]['name']+'...')
                             print('div:', div, 'ordered_kspl[div]:', ordered_kspl[div])
                             print(array_name, short, hmitem)
+
                             if div == 'div2': 
                                 df_unloopedf = fcM.unloop_chamber(mesh = array_mesh.mesh, 
-                                                                    kspl_CLnew = kspl_CLnew,
-                                                                    kspl_vSurf = kspl_vSurf,
-                                                                    df_classPts = df_classPts,
-                                                                    labels = (hmitem, class_name),
-                                                                    gui_heatmaps2d = gui_heatmaps2d, 
-                                                                    kspl_data=ordered_kspl[div])
-                                
-                                fcM.heatmap_unlooped(organ = controller.organ, div = ordered_kspl[div], 
+                                                                kspl_CLnew = kspl_CLnew,
+                                                                kspl_vSurf = kspl_vSurf,
+                                                                df_classPts = df_classPts,
+                                                                labels = (hmitem, class_name),
+                                                                gui_heatmaps2d = gui_heatmaps2d, 
+                                                                kspl_data=ordered_kspl[div])
+                            
+                                fcM.heatmap_unlooped(organ = controller.organ, kspl_data = ordered_kspl[div], 
                                                     df_unloopedf = df_unloopedf, hmitem= hmitem,
-                                                    ch_cont = ch+'_'+contf, 
+                                                    ch = ch, cont = contf, 
                                                     gui_thball = controller.main_win.gui_thickness_ballooning)
 
         else: 

@@ -27,7 +27,14 @@ from skimage import measure
 import seaborn as sns
 import random
 import pandas as pd
+
+# import matplotlib
+# matplotlib.use('QtAgg')
 import matplotlib.pyplot as plt
+# from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+# from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
+# # from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
+# from matplotlib.figure import Figure
 
 #%% ##### - Other Imports - ##################################################
 from ..gui.config import mH_config
@@ -1977,9 +1984,6 @@ def order_segms(organ, kspl_CLnew, num_pts, cut):
 def unloop_chamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
                    gui_heatmaps2d, kspl_data):
 
-    spheres_zeroDeg = []
-    arr_vectZeroDeg = []
-
     if gui_heatmaps2d['plot']['plot_planes']: 
         plotevery = gui_heatmaps2d['plot']['every_planes']
         print('- Plotting every X number of planes:', plotevery)
@@ -1994,22 +1998,23 @@ def unloop_chamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
     matrix_unlooped[:,0:3] = mesh.points()
     matrix_unlooped[:,7] = param
 
-    # Get normals and centres of planes to cut heart (number of planes given as input+2)
-    no_planes = 50#gui_heatmaps2d['nPlanes']
+    # Get normals and centres of planes to cut heart
+    no_planes = gui_heatmaps2d['nPlanes']
     tol2use = gui_heatmaps2d['tol']
     kspl = kspl_data['kspl']
+    select_start = True
     pl_normals, pl_centres = get_plane_normals(no_planes = no_planes, spline_pts = kspl.points())
+
     # Give a number between 1-2 to each atrial plane, and between 0-1 to each ventricular plane
     top, bottom = kspl_data['y_axis']
-    plane_num = np.linspace(top, bottom,len(pl_normals))
+    plane_num = np.linspace(top, bottom, len(pl_normals))
     # Initialise index for HR centreline to identify chamber in which planes are cutting and flip plane values for initial segment
     if not kspl_data['invert_plane_num']:
         plane_num = plane_num[::-1]
         t2b = True
         print('aja ventricle 0')
         invert = True
-    else: 
-        index_guess = len(kspl_CLnew.points())-1
+    else:      
         print('aja atrium 0')
         t2b = False
         invert = True
@@ -2019,47 +2024,48 @@ def unloop_chamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
     print('Segment being unlooped:', chamber)
 
     # Iterate through planes
-    not_init = True; index_extCL = []; index_vSurf =[]
+    not_init = True; started = False
+    sph_pt_surfinal = vedo.Sphere(kspl_vSurf.points()[0], r=1, c='violet')
+
+    #Create empty lists to add objects every 20 planes
+    colors = ['orangered','gold', 'olive','lime', 'teal', 'aqua', 'dodgerblue', 'navy', 'indigo', 'purple', 'hotpink','chocolate']*10
+    list_planes = []; list_CL_sph = []; list_vSurf_sph = []; list_prev_sph = []; 
+    arr_zero_deg = []; sph_left = []; sph_right = []; ii = 0
     for i, normal, centre in zip(count(), pl_normals, pl_centres):
         print('\n>-Plane num:', i, 'normal:', normal)
         # Initialise variables for each chamber
         if t2b: 
             normal = -normal
-            print('aja ventricle 1')
-            print('new_normal:', normal)
 
         # A. Get cut plane info
         #   Info Plane (Plane orientation/normal representation)
         arr_vectPlCut = vedo.Arrow(centre, centre+normal*10, s = 0.1, c='orange')
         
         # B. Cut high resolution centreline with plane and define chamber
-        plane_cut = vedo.Plane(pos=centre, normal=normal, s=(300,300)).color('medium orchid')
-        ksplCL_cut_all = kspl_CLnew.clone().cutWithMesh(plane_cut, invert=invert).lw(5).color('tomato')
-        ksplCL_cut_split = ksplCL_cut_all.split()
-        print('ksplCL_cut_split:', ksplCL_cut_split)
-        if len(ksplCL_cut_split) == 1: 
-            ksplCL_cut = ksplCL_cut_split[0].lw(8).color('darkblue')
-        else: 
-            for kspl in ksplCL_cut_split:
-                #Find the CL piece that has the last point 
-                if any((kspl.points()[:]==pt_out).all(axis=1)):
-                    print('kspl found!')
-                    ksplCL_cut = kspl.lw(8).color('gold')
-                    break
-
+        plane_cut = vedo.Plane(pos=centre, normal=normal, s=(300,300)).color('light slate gray').alpha(0.4)
+        
         # If the ventricle is the one being unlooped, then initialise index as length of the cut centreline
-        if t2b and i==0:
+        if i == 0:
+            ksplCL_cut_all = kspl_CLnew.clone().cutWithMesh(plane_cut, invert=invert).lw(5).color('tomato')
+            ksplCL_cut_split = ksplCL_cut_all.split()
+            print('ksplCL_cut_split:', ksplCL_cut_split)
+            if len(ksplCL_cut_split) == 1: 
+                ksplCL_cut = ksplCL_cut_split[0].lw(8).color('darkblue')
+            else: 
+                for kspl in ksplCL_cut_split:
+                    #Find the CL piece that has the last point 
+                    #Revisar para la auricula si el invert voltearlo? 
+                    if any((kspl.points()[:]==pt_out).all(axis=1)):
+                        print('kspl found!')
+                        ksplCL_cut = kspl.lw(8).color('gold')
+                        break
             index_guess= len(ksplCL_cut.points())
-            print('aja ventricle 2')
-        elif not t2b and i==0: 
-            index_guess= len(ksplCL_cut.points())
-            print('aja atrium 2')
 
-        # Find closest point of the high resolution centreline that has been cut by plane and is close to the previous pt_o
+        # Find closest point of the high resolution centreline that has been cut by plane and is close to the
+        #  previous pt_o (index_guess point)
         pt_out, index_guess = find_closest_pt2pl(normal, centre, kspl_CLnew, index_guess)
-        print('pt_out:', pt_out, '- index_guess:', index_guess)
-        sph_pt_out = vedo.Sphere(pt_out, r=3, c='turquoise')
-        index_extCL.append(index_guess)
+        # print('pt_out:', pt_out, '- index_guess:', index_guess)
+        sph_pt_out = vedo.Sphere(pt_out, r=2, c='turquoise')
 
         # C. Cut surface centreline (kspl_vSurf) with plane and identify 0 deg angle point
         #   Find point of surf_centreline cut by plane (ksplCL_vSurf_cut)
@@ -2068,63 +2074,79 @@ def unloop_chamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
         print('kspl_vSurf_cut_split:', kspl_vSurf_cut_split, ' - len:',len(kspl_vSurf_cut_split))
 
         if len(kspl_vSurf_cut_split) > 0: 
-            if len(kspl_vSurf_cut_split) == 1: 
-                kspl_vSurf_cut = kspl_vSurf_cut_split[0].lw(8).color('white')
-            else: 
-                for kspls in kspl_vSurf_cut_split: 
-                    if any((kspls.points()[:]==pt_surf).all(axis=1)): 
-                        print('ksplsurf found!')
-                        kspl_vSurf_cut = kspls.lw(8).color('cyan')
-                        break
-            last_pt_cut = kspl_vSurf_cut.points()[-1]
-            sph_pt_surf2 = vedo.Sphere(last_pt_cut, r=3, c='black')
-            
-            if t2b and not_init:
-                idx_surf = len(kspl_vSurf_cut.points())
-                not_init = False
-            elif not t2b and not_init: 
-                idx_surf = len(kspl_vSurf_cut.points())
-                not_init = False
-
-            pt_surf, idx_surf = find_closest_pt2pl(normal, centre, kspl_vSurf, idx_surf, tol=150)#350
-            print('pt_surf:', pt_surf, '- idx_surf:', idx_surf)
-            sph_pt_surf = vedo.Sphere(pt_surf, r=3, c='gold')
-
-            if findDist(pt_surf, last_pt_cut) > 1: 
-                print('Dist: ', findDist(pt_surf,last_pt_cut))
-                alert('bubble')
-                pts_in_plane = [pt_surf, last_pt_cut]
-                idx_in_plane = [idx_surf, len(kspl_vSurf_cut.points())]
-
-                objects = [mesh.alpha(0.05), plane_cut, kspl_CLnew, ksplCL_cut, sph_pt_out, kspl_vSurf, kspl_vSurf_cut, sph_pt_surf, sph_pt_surf2]
-                pt_selected, index_selected = select_sph_vSurf(pts_in_plane, idx_in_plane, objects)
-                
-                if index_selected == 'empty': 
-                    print('Skipping this one plane:', i)
+            if not_init: 
+                print('not init input')
+                if len(kspl_vSurf_cut_split) == 1: 
+                    kspl_vSurf_cut = kspl_vSurf_cut_split[0].lw(8).color('white')
                 else: 
-                    pt_surf = pt_selected
-                    idx_surf = index_selected
-                    sph_pt_surf = vedo.Sphere(pt_surf, r=3, c='darkviolet')
+                    for kspls in kspl_vSurf_cut_split: 
+                        if any((kspls.points()[:]==pt_surf).all(axis=1)): 
+                            print('ksplsurf found!')
+                            kspl_vSurf_cut = kspls.lw(8).color('cyan')
+                            break
+                last_pt_cut = kspl_vSurf_cut.points()[-1]
+                # print('last_pt_cut:', last_pt_cut)
+                # sph_pt_surf2 = vedo.Sphere(last_pt_cut, r=2, c='black')
+        
+                idx_surf = len(kspl_vSurf_cut.points())
+                not_init = False
 
-                    #Find the real idx_surf on the whole kspl_vSurf
-                    idx_surf = find_pt_idx_in_kspline(kspl_vSurf, pt_surf)
-            else: 
-                pass
+            pt_surf, idx_surf = find_closest_pt2pl(normal, centre, kspl_vSurf, idx_surf)
+            print('pt_surf:', pt_surf, '- idx_surf:', idx_surf)
+            sph_pt_surf = vedo.Sphere(pt_surf, r=2, c='gold')
 
-            index_vSurf.append(idx_surf)
-            print('Final plane:', i, '- pt_surf:', pt_surf, '- idx_surf:', idx_surf, )
+            # if findDist(pt_surf, last_pt_cut) > 1: 
+            #     print('Dist: ', findDist(pt_surf,last_pt_cut))
+            #     alert('bubble')
+            #     pts_in_plane = [pt_surf, last_pt_cut]
+            #     idx_in_plane = [idx_surf, len(kspl_vSurf_cut.points())]
+
+            #     objects = [mesh.alpha(0.05), plane_cut, kspl_CLnew, ksplCL_cut, sph_pt_out, kspl_vSurf, kspl_vSurf_cut, sph_pt_surf, sph_pt_surf2, sph_pt_surfinal]
+            #     pt_selected, index_selected = select_sph_vSurf(pts_in_plane, idx_in_plane, objects)
+                
+            #     if index_selected == 'empty': 
+            #         print('Skipping this one plane:', i)
+            #     else: 
+            #         pt_surf = pt_selected
+            #         idx_surf = index_selected
+            #         sph_pt_surf = vedo.Sphere(pt_surf, r=3, c='darkviolet')
+
+            #         #Find the real idx_surf on the whole kspl_vSurf
+            #         idx_surf = find_pt_idx_in_kspline(kspl_vSurf, pt_surf)
+            # else: 
+            # vp= vedo.Plotter(N=1, axes=13)
+            # vp.show(mesh.alpha(0.05), ksplCL_cut, kspl_vSurf_cut, kspl_CLnew, arr_vectPlCut, plane_cut, kspl_vSurf, sph_pt_out, sph_pt_surf, sph_pt_surf2, sph_pt_surfinal, at=0, interactive=True)
+            # # pass
+
+            if select_start and not started: 
+                pts_in_plane = [pt_surf]; idx_in_plane = [idx_surf]
+                objects = [mesh.alpha(0.05), plane_cut, kspl_CLnew, sph_pt_out, kspl_vSurf, sph_pt_surf, sph_pt_surfinal]
+                _, index_selected = select_sph_vSurf(pts_in_plane, idx_in_plane, objects)
+                if index_selected != 'empty': 
+                    print('Skipping this one plane:', i)
+                    started = True
+
+            if i % 20 == 0 and i != 0 and mH_config.dev_hm3d2d: 
+                list_planes.append(plane_cut.alpha(0.2).color(colors[ii])); list_CL_sph.append(sph_pt_out.color(colors[ii]))
+                list_vSurf_sph.append(sph_pt_surf.color(colors[ii])); list_prev_sph.append(sph_pt_surfinal)
+                ii+=1
+
+            print('Final plane:', i, '- pt_surf:', pt_surf, '- idx_surf:', idx_surf)
+            sph_pt_surfinal = vedo.Sphere(pt_surf, r=1, c='violet')
+
+            # if mH_config.dev_hm3d2d: 
+            #     vp= vedo.Plotter(N=1, axes=13)
+            #     vp.show(mesh.alpha(0.05), plane_cut, kspl_CLnew, kspl_vSurf, arr_vectPlCut, sph_pt_out, sph_pt_surf, at=0, interactive=True)
+    
         else: 
             idx_surf = None
             print('Not cut plane: ', i)
 
-        # vp= vedo.Plotter(N=1, axes=13)
-        # vp.show(mesh.alpha(0.05), ksplCL_cut, kspl_vSurf_cut, kspl_CLnew, arr_vectPlCut, plane_cut, kspl_vSurf, sph_pt_out, sph_pt_surf, sph_pt_surf2, at=0, interactive=True)
-
-        if idx_surf != None and isinstance(idx_surf, int):
-            spheres_zeroDeg.append(sph_pt_surf)
+        if idx_surf != None and isinstance(idx_surf, int) and started:
             # Vector from centre to cl_surface point being cut by plane
             v_zero = unit_vector(kspl_vSurf.points()[idx_surf] - centre)
-            arr_vectZeroDeg.append(vedo.Arrow(centre, kspl_vSurf.points()[idx_surf], s = 0.1, c='dodgerblue'))
+            if i % 20 == 0 and i != 0 and mH_config.dev_hm3d2d: 
+                arr_zero_deg.append(vedo.Arrow(centre, kspl_vSurf.points()[idx_surf], s = 0.1, c='dodgerblue'))
             # D. Get points of mesh at plane
             d_points = np.absolute(np.dot(np.subtract(matrix_unlooped[:,0:3],np.asarray(centre)),np.asarray(normal)))
             # Find the indexes of the points that have not been yet taken, are at the plane and are in the 
@@ -2160,7 +2182,7 @@ def unloop_chamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
 
             # Plot stuff every X planes
             if mH_config.dev_plots or gui_heatmaps2d['plot']['plot_planes']:
-                if i % plotevery == 0:
+                if i % plotevery == 0 and i != 0:
                     sphL = []; sphR = []
                     for num, pt in enumerate(ptsC):
                         if num % 20 == 0:
@@ -2174,10 +2196,21 @@ def unloop_chamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
                     sph_centre = vedo.Sphere(centre, r=2, c='red')
                     arr_centre2vzero = vedo.Arrow(centre, kspl_vSurf.points()[idx_surf], s = 0.1, c='light green')
                     vp= vedo.Plotter(N=1, axes=13)
-                    vp.show(mesh, sphL, sphR, plane_cut, arr_vectPlCut, kspl_CLnew, sph_pt_out, kspl_vSurf, kspl_vSurf_cut, sph_pt_surf, sph_centre, arr_centre2vzero, txt, at=0, interactive=True)
-
+                    vp.show(mesh, sphL, sphR, plane_cut, arr_vectPlCut, kspl_CLnew, sph_pt_out, kspl_vSurf, sph_pt_surf, sph_centre, arr_centre2vzero, txt, at=0, interactive=True)
+                
+            if i % 20 == 0 and i != 0 and mH_config.dev_hm3d2d:
+                for num, pt in enumerate(ptsC):
+                    if num % 20 == 0:
+                        if lORr[num] == 1:
+                            sph_left.append(vedo.Sphere(pt+centre, r=2, c=colors[ii-1]))
+                        else:
+                            sph_right.append(vedo.Sphere(pt+centre, r=2, c=colors[ii-1]).alpha(0.5))
         else: 
-            print('-Plane No.', i, ' - PASS!')
+            pass
+            # print('-Plane No.', i, ' - PASS!')
+
+    vp= vedo.Plotter(N=1, axes=13)
+    vp.show(mesh.alpha(0.05),  kspl_CLnew, kspl_vSurf, list_planes, list_CL_sph, list_vSurf_sph, list_prev_sph, sph_left, sph_right, at=0, interactive=True)
 
     df_unlooped = pd.DataFrame(matrix_unlooped, columns=['x','y','z','taken','z_plane','theta','radius',hmitem])
     df_unlooped = df_unlooped[df_unlooped['taken']==1]
@@ -2186,30 +2219,31 @@ def unloop_chamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
     df_unloopedf.astype({'taken': 'bool','z_plane':'float16','theta':'float16','radius':'float16', hmitem:'float16'}).dtypes
     print(df_unloopedf.sample(10))
 
+    # saveDF(filename = filename, df2save = heatmap, df_name = 'hm_'+sp_hm_name, dir2save = dir2savef)
+
     return df_unloopedf
       
-def heatmap_unlooped(organ, div, df_unloopedf, hmitem, ch_cont, gui_thball):
+def heatmap_unlooped(organ, kspl_data, df_unloopedf, hmitem, ch, cont, gui_thball):
     """
     Function to create heatmap of unlooped data, specifically of the columns given as input by the val2unloop variable.  
-
     """
 
     #Get all saving settings
     organ_name = organ.user_organName
-    title_df = organ_name+'_dfUnloop_'+hmitem+'_'+div['name']+'.csv'
-    title_hm = organ_name+'_hmUnloop_'+hmitem+'_'+div['name']+'.png'
+    title_df = organ_name+'_dfUnloop_'+hmitem+'_'+kspl_data['name']+'.csv'
+    title_hm = organ_name+'_hmUnloop_'+hmitem+'_'+kspl_data['name']+'.png'
     dir_df = organ.dir_res(dir='csv_all') / title_df
     dir_hm = organ.dir_res(dir='imgs_videos') / title_hm
     print(dir_df, '\n', dir_hm)
 
-    tissue_name = organ.mH_settings['setup']['name_chs'][ch_cont.split('_'[0])]
+    tissue_name = organ.mH_settings['setup']['name_chs'][ch]
     if 'th' in hmitem: 
         if 'i2e' in hmitem: 
-            title = organ_name +' - '+tissue_name.title()+' Thickness (int2ext) [um] - '+div['name'].title()
+            title = organ_name +' - '+tissue_name.title()+' Thickness (int2ext) [um] - '+kspl_data['name'].title()
         else: 
-            title = organ_name +' - '+tissue_name.title()+' Thickness (ext2int) [um] - '+div['name'].title()
+            title = organ_name +' - '+tissue_name.title()+' Thickness (ext2int) [um] - '+kspl_data['name'].title()
     else: 
-        title = organ_name +' - Myocardium ballooning [um] - '+div['name'].title()
+        title = organ_name +' - Myocardium ballooning [um] - '+kspl_data['name'].title()
     print('\t- title:', title)
 
     #Get all construction settings
@@ -2217,23 +2251,31 @@ def heatmap_unlooped(organ, div, df_unloopedf, hmitem, ch_cont, gui_thball):
     vmin = gui_thball[hmitem]['min_val']
     vmax = gui_thball[hmitem]['max_val']
 
-    print('\n- Creating heatmaps for '+hmitem+'_'+div['name'].title())
+    print('\n- Creating heatmaps for '+hmitem+'_'+kspl_data['name'].title())
     df_unloopedf.astype('float16').dtypes
     
     heatmap = pd.pivot_table(df_unloopedf, values= hmitem, columns = 'theta', index='z_plane', aggfunc=np.max)
     heatmap.astype('float16').dtypes
+    heatmap.to_csv(dir_df)
+    alert('clown')
+    print('done')
+    print('\n')
                     
     # Make figure
+    # fig = Figure(figsize=(16, 10))
+    # ax = fig.add_subplot()
     fig, ax = plt.subplots(figsize=(16, 10))
     ax = sns.heatmap(heatmap, cmap=cmap, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
     
     max_val = df_unloopedf.z_plane.max()
-    if max_val > 1.1: 
-        y_labels = [1,2]
-        y_text = '[Inflow tract >> Valve]'
-    else: # Ventricle
-        y_labels = [0,1]
-        y_text = '[Valve >> Outflow tract]'
+    # if max_val > 1.1: 
+    #     y_labels = [1,2]
+    #     # y_text = '[Inflow tract >> Valve]'
+    # else: # Ventricle
+    #     y_labels = [0,1]
+    #     # y_text = '[Valve >> Outflow tract]'
+    y_labels = sorted(list(kspl_data['y_axis']))
+    y_text = 'Centreline Position ['+kspl_data['name'].title()+']'
         
     x_pos = ax.get_xticks()
     # x_lab = ax.get_xticklabels()
@@ -2250,16 +2292,18 @@ def heatmap_unlooped(organ, div, df_unloopedf, hmitem, ch_cont, gui_thball):
     ax.set_yticks(y_pos_new) 
     ax.set_yticklabels(y_lab_new, rotation=0)
     
-    plt.ylabel('Centreline position '+y_text+'\n', fontsize=10)
-    plt.xlabel('Angle (\N{DEGREE SIGN}) [Dorsal >> Right >> Ventral >> Left >> Dorsal]', fontsize=10)
+    plt.ylabel(y_text, fontsize=10)
+    # plt.ylabel('Centreline position '+y_text+'\n', fontsize=10)
+    # ax.xlabel('Angle (\N{DEGREE SIGN}) [Dorsal >> Right >> Ventral >> Left >> Dorsal]', fontsize=10)
+    plt.xlabel('Angle (\N{DEGREE SIGN})', fontsize=10)
     plt.title(title, fontsize = 15)
 
     plt.savefig(dir_hm, dpi=300, bbox_inches='tight', transparent=True)
-    plt.show()
+    # plt.show()
 
     # saveDF(filename = organ_name, df2save = heatmap, df_name = 'hm_'+sp_hm_name, dir2save = dir2savef)
     # print('\t- Saved hm_'+sp_hm_name)
-    alert('wohoo')
+    alert('woohoo')
     
 
 def select_sph_vSurf(pts_in_plane, idx_in_plane, objects): 
@@ -2399,7 +2443,9 @@ def find_closest_pt_guess(pts_cut, pts, index_guess):
 
     return pt_out, num_pt
 
-def find_closest_pt2pl(normal, centre, kspl_cut, index_guess, tol=20): 
+def find_closest_pt2pl(normal, centre, kspl_cut, index_guess): 
+    tol = len(kspl_cut.points())//25
+    # print('tol:', tol, ' - index_guess:',index_guess, type(tol), type(index_guess))
     values = []
     for point in kspl_cut.points():
         diff_points = point - centre
@@ -2415,7 +2461,7 @@ def find_closest_pt2pl(normal, centre, kspl_cut, index_guess, tol=20):
     else: 
         cutb = index_guess+tol
 
-    print(cuta, index_guess, cutb)
+    # print(cuta, index_guess, cutb)
     values_cut = values[cuta:cutb]
     # print('min(values):', min(values_cut))
     num_pt = values.index(min(values_cut))
