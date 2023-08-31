@@ -27,6 +27,7 @@ from skimage import measure
 import seaborn as sns
 import random
 import pandas as pd
+import pickle as pl
 
 # import matplotlib
 # matplotlib.use('QtAgg')
@@ -1981,7 +1982,7 @@ def order_segms(organ, kspl_CLnew, num_pts, cut):
                 break
     return ordered_segm
 
-def unloop_chamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
+def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
                    gui_heatmaps2d, kspl_data):
 
     if gui_heatmaps2d['plot']['plot_planes']: 
@@ -2214,28 +2215,43 @@ def unloop_chamber(mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
 
     df_unlooped = pd.DataFrame(matrix_unlooped, columns=['x','y','z','taken','z_plane','theta','radius',hmitem])
     df_unlooped = df_unlooped[df_unlooped['taken']==1]
-    print(df_unlooped.sample(10))
     df_unloopedf = df_unlooped.drop(['x', 'y','z'], axis=1)
     df_unloopedf.astype({'taken': 'bool','z_plane':'float16','theta':'float16','radius':'float16', hmitem:'float16'}).dtypes
     print(df_unloopedf.sample(10))
 
-    # saveDF(filename = filename, df2save = heatmap, df_name = 'hm_'+sp_hm_name, dir2save = dir2savef)
+    organ_name = organ.user_organName
+    title_df = organ_name+'_dfUnloop_'+hmitem+'_'+kspl_data['name']+'.csv'
+    dir_df = organ.dir_res(dir='csv_all') / title_df
+    df_unloopedf.to_csv(dir_df)
 
     return df_unloopedf
       
-def heatmap_unlooped(organ, kspl_data, df_unloopedf, hmitem, ch, cont, gui_thball):
+def heatmap_unlooped(organ, kspl_data, df_unloopedf, hmitem, ch, gui_thball):
     """
     Function to create heatmap of unlooped data, specifically of the columns given as input by the val2unloop variable.  
     """
+    print('hmitem/val:', hmitem)
+    print(df_unloopedf.sample(10))
 
     #Get all saving settings
     organ_name = organ.user_organName
-    title_df = organ_name+'_dfUnloop_'+hmitem+'_'+kspl_data['name']+'.csv'
+    title_df = organ_name+'_hmUnloop_'+hmitem+'_'+kspl_data['name']+'.csv'
     title_hm = organ_name+'_hmUnloop_'+hmitem+'_'+kspl_data['name']+'.png'
+    # title_hm_pl = organ_name+'_hmUnloop_'+hmitem+'_'+kspl_data['name']+'.pickle'
     dir_df = organ.dir_res(dir='csv_all') / title_df
     dir_hm = organ.dir_res(dir='imgs_videos') / title_hm
+    # dir_hm_pl = organ.dir_res(dir='imgs_videos') / title_hm_pl
     print(dir_df, '\n', dir_hm)
 
+    print('\n- Creating heatmaps for '+hmitem+'_'+kspl_data['name'].title())
+    df_unloopedf = df_unloopedf.drop(['taken'], axis=1)
+    df_unloopedf.astype('float16').dtypes
+    
+    heatmap = pd.pivot_table(df_unloopedf, values= hmitem, columns = 'theta', index='z_plane', aggfunc=np.max)
+    heatmap.astype('float16').dtypes
+    print(heatmap.sample(10))
+
+    #Create the figure
     tissue_name = organ.mH_settings['setup']['name_chs'][ch]
     if 'th' in hmitem: 
         if 'i2e' in hmitem: 
@@ -2244,67 +2260,42 @@ def heatmap_unlooped(organ, kspl_data, df_unloopedf, hmitem, ch, cont, gui_thbal
             title = organ_name +' - '+tissue_name.title()+' Thickness (ext2int) [um] - '+kspl_data['name'].title()
     else: 
         title = organ_name +' - Myocardium ballooning [um] - '+kspl_data['name'].title()
-    print('\t- title:', title)
+    print('- title:', title)
 
     #Get all construction settings
     cmap = gui_thball[hmitem]['colormap']
     vmin = gui_thball[hmitem]['min_val']
     vmax = gui_thball[hmitem]['max_val']
 
-    print('\n- Creating heatmaps for '+hmitem+'_'+kspl_data['name'].title())
-    df_unloopedf.astype('float16').dtypes
-    
-    heatmap = pd.pivot_table(df_unloopedf, values= hmitem, columns = 'theta', index='z_plane', aggfunc=np.max)
-    heatmap.astype('float16').dtypes
-    heatmap.to_csv(dir_df)
-    alert('clown')
-    print('done')
-    print('\n')
-                    
     # Make figure
-    # fig = Figure(figsize=(16, 10))
-    # ax = fig.add_subplot()
     fig, ax = plt.subplots(figsize=(16, 10))
-    ax = sns.heatmap(heatmap, cmap=cmap, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
-    
-    max_val = df_unloopedf.z_plane.max()
-    # if max_val > 1.1: 
-    #     y_labels = [1,2]
-    #     # y_text = '[Inflow tract >> Valve]'
-    # else: # Ventricle
-    #     y_labels = [0,1]
-    #     # y_text = '[Valve >> Outflow tract]'
-    y_labels = sorted(list(kspl_data['y_axis']))
-    y_text = 'Centreline Position ['+kspl_data['name'].title()+']'
-        
+    b = sns.heatmap(heatmap, cmap=cmap, vmin = vmin, vmax = vmax, ax=ax)
+
     x_pos = ax.get_xticks()
-    # x_lab = ax.get_xticklabels()
     x_pos_new = np.linspace(x_pos[0], x_pos[-1], 19)
     x_lab_new = np.arange(-180,200,20)
     ax.set_xticks(x_pos_new) 
     ax.set_xticklabels(x_lab_new, rotation=30)
     
     y_pos = ax.get_yticks()
-    # y_lab = ax.get_yticklabels()
     y_pos_new = np.linspace(y_pos[0], y_pos[-1], 11)
+    y_labels = sorted(list(kspl_data['y_axis']))
     y_lab_new = np.linspace(y_labels[0],y_labels[1],11)
     y_lab_new = [format(y,'.2f') for y in y_lab_new]
     ax.set_yticks(y_pos_new) 
     ax.set_yticklabels(y_lab_new, rotation=0)
     
+    y_text = 'Centreline Position ['+kspl_data['name'].title()+']'
     plt.ylabel(y_text, fontsize=10)
-    # plt.ylabel('Centreline position '+y_text+'\n', fontsize=10)
-    # ax.xlabel('Angle (\N{DEGREE SIGN}) [Dorsal >> Right >> Ventral >> Left >> Dorsal]', fontsize=10)
     plt.xlabel('Angle (\N{DEGREE SIGN})', fontsize=10)
     plt.title(title, fontsize = 15)
 
+    #Save figure and heatmap dataframe
     plt.savefig(dir_hm, dpi=300, bbox_inches='tight', transparent=True)
-    # plt.show()
-
-    # saveDF(filename = organ_name, df2save = heatmap, df_name = 'hm_'+sp_hm_name, dir2save = dir2savef)
-    # print('\t- Saved hm_'+sp_hm_name)
-    alert('woohoo')
-    
+    alert('bubble')
+    alert('clown')
+    heatmap.to_csv(dir_df)
+    alert('countdown')
 
 def select_sph_vSurf(pts_in_plane, idx_in_plane, objects): 
     

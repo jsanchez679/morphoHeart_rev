@@ -790,7 +790,8 @@ def run_heatmaps2D(controller, btn):
                             print(array_name, short, hmitem)
 
                             if div == 'div2': 
-                                df_unloopedf = fcM.unloop_chamber(mesh = array_mesh.mesh, 
+                                df_unloopedf = fcM.unloop_chamber(organ = controller.organ,
+                                                                mesh = array_mesh.mesh, 
                                                                 kspl_CLnew = kspl_CLnew,
                                                                 kspl_vSurf = kspl_vSurf,
                                                                 df_classPts = df_classPts,
@@ -799,82 +800,22 @@ def run_heatmaps2D(controller, btn):
                                                                 kspl_data=ordered_kspl[div])
                             
                                 fcM.heatmap_unlooped(organ = controller.organ, kspl_data = ordered_kspl[div], 
-                                                    df_unloopedf = df_unloopedf, hmitem= hmitem,
-                                                    ch = ch, cont = contf, 
-                                                    gui_thball = controller.main_win.gui_thickness_ballooning)
+                                                        df_unloopedf = df_unloopedf, hmitem= hmitem, ch = ch,
+                                                        gui_thball = controller.main_win.gui_thickness_ballooning)
+                            
+                #Enable buttons to plot heatmaps
+                plot_btn = controller.main_win.hm_btns[hmitem]['plot2d']
+                plot_btn.setEnabled(True)
+
+            print('\nEND Heatmaps')
+            print('organ.mH_settings:', controller.organ.mH_settings)
+            print('organ.workflow:', workflow)
 
         else: 
             controller.main_win.win_msg('*Set the 2D Heatmap settings first to be able to run this process')
     else: 
         controller.main_win.win_msg('*To extract the 2D Heatmaps make sure you have run the  -Keep Largest-  section, extracted the Centreline and created the 3D Heatmap.')
 
-
-#------------------------------------------
-                    # fcM.plotPtClassif(m_whole, pts_whole, [pts_classAnV])#, pts_classDnV, pts_classLnR])
-
-
-                    # for segm in obj_segm.keys(): 
-                    #     # obj_segm[segm].__dict__ = {'parent_mesh': <src.modules.mH_classes_new.Mesh_mH object at 0x000001CFDCB50CA0>, 
-                    #     #                            'sub_name': 'segm1', 
-                    #     #                            'sub_name_all': 'Cut1_ch1_tiss_segm1', 
-                    #     #                            'cut': 'Cut1', 
-                    #     #                            'sub_mesh_type': 'Segment', 
-                    #     #                            'keep_largest': False, 
-                    #     #                            'sub_legend': 'myocardium_tiss_atrium', 
-                    #     #                            'color': (247, 113, 137), 
-                    #     #                            'alpha': 0.05, 
-                    #     #                            'rotateZ_90': True, 
-                    #     #                            'imChannel': <src.modules.mH_classes_new.ImChannel object at 0x000001CFE07D67F0>, 
-                    #     #                            'mesh_type': 'tiss', 
-                    #     #                            'resolution': [0.22832596445005057, 0.22832596445005057, 0.75], 
-                    #     #                            'sub_user_name': 'atrium'}
-                    #     print(obj_segm[segm].__dict__)
-                    #     subm = obj_segm[segm].get_segm_mesh()
-                    #     pts_subm = subm.points()
-                    #     title_pts = obj_segm[segm].sub_name_all+'.npy'
-                    #     dir_pts = whole_mesh.parent_organ.dir_res(dir='csv_all') / title_pts
-                    #     np.save(dir_pts, pts_subm)
-
-                    # pts_subm = whole_mesh.mesh.points()
-                    # title_pts = 'whole.npy'
-                    # dir_pts = whole_mesh.parent_organ.dir_res(dir='csv_all') / title_pts
-                    # np.save(dir_pts, pts_subm)
-                        
-                   
-                    
-
-
-
-
-
-    # for hmitem in hm2d_set:
-    #     short, ch_info = hmitem.split('[') #short = th_i2e, th_e2i, ball
-    #     ch_info = ch_info[:-1]
-    #     if 'th' in short: 
-    #         _, th_val = short.split('_')
-    #         ch, cont = ch_info.split('-')
-    #         mesh_tiss = controller.organ.obj_meshes[ch+'_tiss'].legend
-    #         print('\n>> Extracting thickness information for '+mesh_tiss+'... \nNOTE: it takes about 5min to process each mesh... just be patient :) ')
-    #         controller.main_win.win_msg('Extracting thickness information for '+mesh_tiss+'... NOTE: it takes about 5min to process each mesh... just be patient :)')
-    #         setup = controller.main_win.gui_thickness_ballooning[hmitem]
-    #         fcM.get_thickness(organ = controller.organ, name = (ch, cont), 
-    #                             thck_dict = thck_values[th_val], 
-    #                             setup = setup)
-
-    #     else: # if 'ball' in short
-    #         ch_cont, cl_info = ch_info.split('(')
-    #         ch, cont = ch_cont.split('-')
-
-    #         cl_info = cl_info[:-1].split('.')[1]
-    #         cl_ch, cl_cont = cl_info.split('-')
-    #         mesh2ball = controller.organ.obj_meshes[ch+'_'+cont].legend
-    #         print('\n>> Extracting ballooning information for '+mesh2ball+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
-    #         controller.main_win.win_msg('Extracting ballooning information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
-    #         setup = controller.main_win.gui_thickness_ballooning[hmitem]
-
-    #         fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
-    #                             name_cl = (cl_ch, cl_cont), setup = setup)
-            
 def run_segments(controller, btn): 
 
     workflow = controller.organ.workflow['morphoHeart']

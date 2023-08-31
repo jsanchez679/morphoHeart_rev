@@ -1,0 +1,536 @@
+(base) C:\>conda create --name mH_gui python=3.9
+Collecting package metadata (current_repodata.json): done
+Solving environment: done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 22.11.1
+  latest version: 23.7.3
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+Or to minimize the number of packages updated during conda update use
+
+     conda install conda=23.7.3
+
+
+
+## Package Plan ##
+
+  environment location: D:\Applications\Miniconda\envs\mH_gui
+
+  added / updated specs:
+    - python=3.9
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    libsqlite-3.43.0           |       hcfcfb64_0         827 KB  conda-forge
+    libzlib-1.2.13             |       hcfcfb64_5          54 KB  conda-forge
+    pip-23.2.1                 |     pyhd8ed1ab_0         1.3 MB  conda-forge
+    python-3.9.18              |h4de0772_0_cpython        16.1 MB  conda-forge
+    setuptools-68.1.2          |     pyhd8ed1ab_0         451 KB  conda-forge
+    tzdata-2023c               |       h71feb2d_0         115 KB  conda-forge
+    vc-14.3                    |      h64f974e_17          17 KB  conda-forge
+    vc14_runtime-14.36.32532   |      hfdfe4a8_17         723 KB  conda-forge
+    vs2015_runtime-14.36.32532 |      h05e6639_17          17 KB  conda-forge
+    wheel-0.41.2               |     pyhd8ed1ab_0          56 KB  conda-forge
+    ------------------------------------------------------------
+                                           Total:        19.6 MB
+
+The following NEW packages will be INSTALLED:
+
+  bzip2              conda-forge/win-64::bzip2-1.0.8-h8ffe710_4
+  ca-certificates    conda-forge/win-64::ca-certificates-2023.7.22-h56e8100_0
+  libffi             conda-forge/win-64::libffi-3.4.2-h8ffe710_5
+  libsqlite          conda-forge/win-64::libsqlite-3.43.0-hcfcfb64_0
+  libzlib            conda-forge/win-64::libzlib-1.2.13-hcfcfb64_5
+  openssl            conda-forge/win-64::openssl-3.1.2-hcfcfb64_0
+  pip                conda-forge/noarch::pip-23.2.1-pyhd8ed1ab_0
+  python             conda-forge/win-64::python-3.9.18-h4de0772_0_cpython
+  setuptools         conda-forge/noarch::setuptools-68.1.2-pyhd8ed1ab_0
+  tk                 conda-forge/win-64::tk-8.6.12-h8ffe710_0
+  tzdata             conda-forge/noarch::tzdata-2023c-h71feb2d_0
+  ucrt               conda-forge/win-64::ucrt-10.0.22621.0-h57928b3_0
+  vc                 conda-forge/win-64::vc-14.3-h64f974e_17
+  vc14_runtime       conda-forge/win-64::vc14_runtime-14.36.32532-hfdfe4a8_17
+  vs2015_runtime     conda-forge/win-64::vs2015_runtime-14.36.32532-h05e6639_17
+  wheel              conda-forge/noarch::wheel-0.41.2-pyhd8ed1ab_0
+  xz                 conda-forge/win-64::xz-5.2.6-h8d14728_0
+
+
+Proceed ([y]/n)? y
+
+
+Downloading and Extracting Packages
+
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done
+#
+# To activate this environment, use
+#
+#     $ conda activate mH_gui
+#
+# To deactivate an active environment, use
+#
+#     $ conda deactivate
+
+
+(base) C:\>conda activate mH_gui
+
+(mH_gui) C:\>conda config --add channels conda-forge
+Warning: 'conda-forge' already in 'channels' list, moving to the top
+
+(mH_gui) C:\>conda config --set channel_priority strict
+
+(mH_gui) C:\>conda install vmtk
+Collecting package metadata (current_repodata.json): done
+Solving environment: failed with initial frozen solve. Retrying with flexible solve.
+Solving environment: failed with repodata from current_repodata.json, will retry with next repodata source.
+Collecting package metadata (repodata.json): done
+Solving environment: done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 22.11.1
+  latest version: 23.7.3
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+Or to minimize the number of packages updated during conda update use
+
+     conda install conda=23.7.3
+
+
+
+## Package Plan ##
+
+  environment location: D:\Applications\Miniconda\envs\mH_gui
+
+  added / updated specs:
+    - vmtk
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    curl-8.1.2                 |       h68f0423_0         137 KB  conda-forge
+    eigen-3.4.0                |       h91493d7_0         1.0 MB  conda-forge
+    expat-2.5.0                |       h63175ca_1         221 KB  conda-forge
+    fftw-3.3.10                |nompi_h38027f0_108         1.3 MB  conda-forge
+    glib-2.76.4                |       h12be248_0         488 KB  conda-forge
+    glib-tools-2.76.4          |       h12be248_0         142 KB  conda-forge
+    gst-plugins-base-1.22.5    |       h001b923_0         1.9 MB  conda-forge
+    gstreamer-1.22.5           |       hb4038d2_0         1.9 MB  conda-forge
+    intel-openmp-2023.2.0      |   h57928b3_49496         2.4 MB  conda-forge
+    joblib-1.3.2               |     pyhd8ed1ab_0         216 KB  conda-forge
+    libblas-3.9.0              |     17_win64_mkl         3.5 MB  conda-forge
+    libcblas-3.9.0             |     17_win64_mkl         3.5 MB  conda-forge
+    libclang-15.0.7            |default_h77d9078_3         144 KB  conda-forge
+    libclang13-15.0.7          |default_h77d9078_3        20.9 MB  conda-forge
+    libcurl-8.1.2              |       h68f0423_0         306 KB  conda-forge
+    libexpat-2.5.0             |       h63175ca_1         135 KB  conda-forge
+    libglib-2.76.4             |       he8f3873_0         2.5 MB  conda-forge
+    libhwloc-2.9.1             |       h51c2c0f_0         2.4 MB  conda-forge
+    liblapack-3.9.0            |     17_win64_mkl         3.5 MB  conda-forge
+    libssh2-1.11.0             |       h7dfc565_0         261 KB  conda-forge
+    libxml2-2.10.4             |       hc3477c8_0         1.7 MB  conda-forge
+    libzip-1.10.1              |       h1d365fa_0         144 KB  conda-forge
+    llvm-16.0.3                |       h38bddbe_1          53 KB  conda-forge
+    loguru-0.7.0               |   py39hcbf5309_0          92 KB  conda-forge
+    numpy-1.25.2               |   py39h816b6a6_0         5.8 MB  conda-forge
+    pugixml-1.11.4             |       h63175ca_1         109 KB  conda-forge
+    sqlite-3.43.0              |       hcfcfb64_0         830 KB  conda-forge
+    tbb-2021.9.0               |       h91493d7_0         151 KB  conda-forge
+    tbb-devel-2021.9.0         |       h91493d7_0        1005 KB  conda-forge
+    utfcpp-3.2.4               |       h57928b3_0          13 KB  conda-forge
+    vmtk-1.5.0                 |  py39hcda1aa6_11         2.4 MB  conda-forge
+    zlib-1.2.13                |       hcfcfb64_5         105 KB  conda-forge
+    zstd-1.5.5                 |       h12be248_0         335 KB  conda-forge
+    ------------------------------------------------------------
+                                           Total:        59.5 MB
+
+The following NEW packages will be INSTALLED:
+
+  aom                conda-forge/win-64::aom-3.5.0-h63175ca_0
+  cached-property    conda-forge/noarch::cached-property-1.5.2-hd8ed1ab_1
+  cached_property    conda-forge/noarch::cached_property-1.5.2-pyha770c72_1
+  colorama           conda-forge/noarch::colorama-0.4.6-pyhd8ed1ab_0
+  curl               conda-forge/win-64::curl-8.1.2-h68f0423_0
+  double-conversion  conda-forge/win-64::double-conversion-3.2.0-h63175ca_1
+  eigen              conda-forge/win-64::eigen-3.4.0-h91493d7_0
+  expat              conda-forge/win-64::expat-2.5.0-h63175ca_1
+  ffmpeg             conda-forge/win-64::ffmpeg-4.4.2-gpl_h5b1d025_112
+  fftw               conda-forge/win-64::fftw-3.3.10-nompi_h38027f0_108
+  font-ttf-dejavu-s~ conda-forge/noarch::font-ttf-dejavu-sans-mono-2.37-hab24e00_0
+  font-ttf-inconsol~ conda-forge/noarch::font-ttf-inconsolata-3.000-h77eed37_0
+  font-ttf-source-c~ conda-forge/noarch::font-ttf-source-code-pro-2.038-h77eed37_0
+  font-ttf-ubuntu    conda-forge/noarch::font-ttf-ubuntu-0.83-hab24e00_0
+  fontconfig         conda-forge/win-64::fontconfig-2.14.2-hbde0cde_0
+  fonts-conda-ecosy~ conda-forge/noarch::fonts-conda-ecosystem-1-0
+  fonts-conda-forge  conda-forge/noarch::fonts-conda-forge-1-0
+  freetype           conda-forge/win-64::freetype-2.12.1-h546665d_1
+  future             conda-forge/noarch::future-0.18.3-pyhd8ed1ab_0
+  gettext            conda-forge/win-64::gettext-0.21.1-h5728263_0
+  gl2ps              conda-forge/win-64::gl2ps-1.4.2-h0597ee9_0
+  glew               conda-forge/win-64::glew-2.1.0-h39d44d4_2
+  glib               conda-forge/win-64::glib-2.76.4-h12be248_0
+  glib-tools         conda-forge/win-64::glib-tools-2.76.4-h12be248_0
+  gst-plugins-base   conda-forge/win-64::gst-plugins-base-1.22.5-h001b923_0
+  gstreamer          conda-forge/win-64::gstreamer-1.22.5-hb4038d2_0
+  h5py               conda-forge/win-64::h5py-3.8.0-nompi_py39hbc6f334_100
+  hdf4               conda-forge/win-64::hdf4-4.2.15-h1b1b6ef_5
+  hdf5               conda-forge/win-64::hdf5-1.12.2-nompi_h57737ce_101
+  icu                conda-forge/win-64::icu-70.1-h0e60522_0
+  intel-openmp       conda-forge/win-64::intel-openmp-2023.2.0-h57928b3_49496
+  joblib             conda-forge/noarch::joblib-1.3.2-pyhd8ed1ab_0
+  jpeg               conda-forge/win-64::jpeg-9e-hcfcfb64_3
+  jsoncpp            conda-forge/win-64::jsoncpp-1.9.5-h2d74725_1
+  krb5               conda-forge/win-64::krb5-1.20.1-heb0366b_0
+  lerc               conda-forge/win-64::lerc-4.0.0-h63175ca_0
+  libaec             conda-forge/win-64::libaec-1.0.6-h63175ca_1
+  libblas            conda-forge/win-64::libblas-3.9.0-17_win64_mkl
+  libcblas           conda-forge/win-64::libcblas-3.9.0-17_win64_mkl
+  libclang           conda-forge/win-64::libclang-15.0.7-default_h77d9078_3
+  libclang13         conda-forge/win-64::libclang13-15.0.7-default_h77d9078_3
+  libcurl            conda-forge/win-64::libcurl-8.1.2-h68f0423_0
+  libdeflate         conda-forge/win-64::libdeflate-1.14-hcfcfb64_0
+  libexpat           conda-forge/win-64::libexpat-2.5.0-h63175ca_1
+  libglib            conda-forge/win-64::libglib-2.76.4-he8f3873_0
+  libhwloc           conda-forge/win-64::libhwloc-2.9.1-h51c2c0f_0
+  libiconv           conda-forge/win-64::libiconv-1.17-h8ffe710_0
+  libitk             conda-forge/win-64::libitk-5.2.1-h6e1890f_6
+  liblapack          conda-forge/win-64::liblapack-3.9.0-17_win64_mkl
+  libnetcdf          conda-forge/win-64::libnetcdf-4.8.1-nompi_h8c042bf_106
+  libogg             conda-forge/win-64::libogg-1.3.4-h8ffe710_1
+  libpng             conda-forge/win-64::libpng-1.6.39-h19919ed_0
+  libssh2            conda-forge/win-64::libssh2-1.11.0-h7dfc565_0
+  libtheora          conda-forge/win-64::libtheora-1.1.1-h8d14728_1005
+  libtiff            conda-forge/win-64::libtiff-4.4.0-hc4f729c_5
+  libvorbis          conda-forge/win-64::libvorbis-1.3.7-h0e60522_0
+  libxml2            conda-forge/win-64::libxml2-2.10.4-hc3477c8_0
+  libzip             conda-forge/win-64::libzip-1.10.1-h1d365fa_0
+  llvm               conda-forge/win-64::llvm-16.0.3-h38bddbe_1
+  loguru             conda-forge/win-64::loguru-0.7.0-py39hcbf5309_0
+  lz4-c              conda-forge/win-64::lz4-c-1.9.4-hcfcfb64_0
+  mkl                conda-forge/win-64::mkl-2022.1.0-h6a75c08_874
+  numpy              conda-forge/win-64::numpy-1.25.2-py39h816b6a6_0
+  openh264           conda-forge/win-64::openh264-2.3.1-h63175ca_2
+  pcre2              conda-forge/win-64::pcre2-10.40-h17e33f8_0
+  proj               conda-forge/win-64::proj-9.0.1-h1cfcee9_1
+  pthreads-win32     conda-forge/win-64::pthreads-win32-2.9.1-hfa6e2cd_3
+  pugixml            conda-forge/win-64::pugixml-1.11.4-h63175ca_1
+  python_abi         conda-forge/win-64::python_abi-3.9-3_cp39
+  qt-main            conda-forge/win-64::qt-main-5.15.8-h720456b_6
+  sqlite             conda-forge/win-64::sqlite-3.43.0-hcfcfb64_0
+  svt-av1            conda-forge/win-64::svt-av1-1.4.1-h63175ca_0
+  tbb                conda-forge/win-64::tbb-2021.9.0-h91493d7_0
+  tbb-devel          conda-forge/win-64::tbb-devel-2021.9.0-h91493d7_0
+  utfcpp             conda-forge/win-64::utfcpp-3.2.4-h57928b3_0
+  vmtk               conda-forge/win-64::vmtk-1.5.0-py39hcda1aa6_11
+  vtk                conda-forge/win-64::vtk-9.1.0-qt_py39hca7f291_215
+  win32_setctime     conda-forge/noarch::win32_setctime-1.1.0-pyhd8ed1ab_0
+  x264               conda-forge/win-64::x264-1!164.3095-h8ffe710_2
+  x265               conda-forge/win-64::x265-3.5-h2d74725_3
+  zlib               conda-forge/win-64::zlib-1.2.13-hcfcfb64_5
+  zstd               conda-forge/win-64::zstd-1.5.5-h12be248_0
+
+
+Proceed ([y]/n)? y
+
+
+Downloading and Extracting Packages
+
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done
+
+
+(mH_gui) C:\>pip install vedo==2023.4.3
+Collecting vedo==2023.4.3
+  Using cached vedo-2023.4.3-py3-none-any.whl
+Requirement already satisfied: vtk in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from vedo==2023.4.3) (-PKG-VERSION)
+Requirement already satisfied: numpy in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from vedo==2023.4.3) (1.25.2)
+Collecting Deprecated (from vedo==2023.4.3)
+  Obtaining dependency information for Deprecated from https://files.pythonhosted.org/packages/20/8d/778b7d51b981a96554f29136cd59ca7880bf58094338085bcf2a979a0e6a/Deprecated-1.2.14-py2.py3-none-any.whl.metadata
+  Downloading Deprecated-1.2.14-py2.py3-none-any.whl.metadata (5.4 kB)
+Collecting Pygments (from vedo==2023.4.3)
+  Obtaining dependency information for Pygments from https://files.pythonhosted.org/packages/43/88/29adf0b44ba6ac85045e63734ae0997d3c58d8b1a91c914d240828d0d73d/Pygments-2.16.1-py3-none-any.whl.metadata
+  Downloading Pygments-2.16.1-py3-none-any.whl.metadata (2.5 kB)
+Collecting wrapt<2,>=1.10 (from Deprecated->vedo==2023.4.3)
+  Downloading wrapt-1.15.0-cp39-cp39-win_amd64.whl (36 kB)
+Downloading Deprecated-1.2.14-py2.py3-none-any.whl (9.6 kB)
+Downloading Pygments-2.16.1-py3-none-any.whl (1.2 MB)
+   ---------------------------------------- 1.2/1.2 MB 18.3 MB/s eta 0:00:00
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: wrapt, Pygments, Deprecated, vedo
+Successfully installed Deprecated-1.2.14 Pygments-2.16.1 vedo-2023.4.3 wrapt-1.15.0
+
+
+
+(mH_gui) C:\>pip install matplotlib==3.3.3
+Collecting matplotlib==3.3.3
+  Using cached matplotlib-3.3.3-cp39-cp39-win_amd64.whl (8.5 MB)
+Collecting cycler>=0.10 (from matplotlib==3.3.3)
+  Using cached cycler-0.11.0-py3-none-any.whl (6.4 kB)
+Collecting kiwisolver>=1.0.1 (from matplotlib==3.3.3)
+  Obtaining dependency information for kiwisolver>=1.0.1 from https://files.pythonhosted.org/packages/ca/c1/1f986c8119c0c57c2bd71d1941da23332c38ee2c90117e46dff4358b70f7/kiwisolver-1.4.5-cp39-cp39-win_amd64.whl.metadata
+  Downloading kiwisolver-1.4.5-cp39-cp39-win_amd64.whl.metadata (6.5 kB)
+Requirement already satisfied: numpy>=1.15 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from matplotlib==3.3.3) (1.25.2)
+Collecting pillow>=6.2.0 (from matplotlib==3.3.3)
+  Obtaining dependency information for pillow>=6.2.0 from https://files.pythonhosted.org/packages/8f/b8/1bf1012eee3059d150194d1fab148f553f3df42cf412e4e6656c772afad9/Pillow-10.0.0-cp39-cp39-win_amd64.whl.metadata
+  Downloading Pillow-10.0.0-cp39-cp39-win_amd64.whl.metadata (9.6 kB)
+Collecting pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.3 (from matplotlib==3.3.3)
+  Obtaining dependency information for pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.3 from https://files.pythonhosted.org/packages/39/92/8486ede85fcc088f1b3dba4ce92dd29d126fd96b0008ea213167940a2475/pyparsing-3.1.1-py3-none-any.whl.metadata
+  Downloading pyparsing-3.1.1-py3-none-any.whl.metadata (5.1 kB)
+Collecting python-dateutil>=2.1 (from matplotlib==3.3.3)
+  Using cached python_dateutil-2.8.2-py2.py3-none-any.whl (247 kB)
+Collecting six>=1.5 (from python-dateutil>=2.1->matplotlib==3.3.3)
+  Using cached six-1.16.0-py2.py3-none-any.whl (11 kB)
+Downloading kiwisolver-1.4.5-cp39-cp39-win_amd64.whl (56 kB)
+   ---------------------------------------- 56.2/56.2 kB 1.5 MB/s eta 0:00:00
+Downloading Pillow-10.0.0-cp39-cp39-win_amd64.whl (2.5 MB)
+   ---------------------------------------- 2.5/2.5 MB 16.0 MB/s eta 0:00:00
+Downloading pyparsing-3.1.1-py3-none-any.whl (103 kB)
+   ---------------------------------------- 103.1/103.1 kB 6.2 MB/s eta 0:00:00
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: six, pyparsing, pillow, kiwisolver, cycler, python-dateutil, matplotlib
+Successfully installed cycler-0.11.0 kiwisolver-1.4.5 matplotlib-3.3.3 pillow-10.0.0 pyparsing-3.1.1 python-dateutil-2.8.2 six-1.16.0
+
+
+
+(mH_gui) C:\>pip install seaborn==0.11.0
+Collecting seaborn==0.11.0
+  Using cached seaborn-0.11.0-py3-none-any.whl (283 kB)
+Requirement already satisfied: numpy>=1.15 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from seaborn==0.11.0) (1.25.2)
+Collecting scipy>=1.0 (from seaborn==0.11.0)
+  Obtaining dependency information for scipy>=1.0 from https://files.pythonhosted.org/packages/e9/20/2d0561ab54d857365926c5b53538369a7b8d6ccbffaca509305b074028cd/scipy-1.11.2-cp39-cp39-win_amd64.whl.metadata
+  Downloading scipy-1.11.2-cp39-cp39-win_amd64.whl.metadata (59 kB)
+     ---------------------------------------- 59.1/59.1 kB 775.6 kB/s eta 0:00:00
+Collecting pandas>=0.23 (from seaborn==0.11.0)
+  Obtaining dependency information for pandas>=0.23 from https://files.pythonhosted.org/packages/b9/42/78b0e183e545de3cc8d04fdb7a40d39d456a45823fae66d2ec9f4ccc190d/pandas-2.1.0-cp39-cp39-win_amd64.whl.metadata
+  Downloading pandas-2.1.0-cp39-cp39-win_amd64.whl.metadata (18 kB)
+Requirement already satisfied: matplotlib>=2.2 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from seaborn==0.11.0) (3.3.3)
+Requirement already satisfied: cycler>=0.10 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from matplotlib>=2.2->seaborn==0.11.0) (0.11.0)
+Requirement already satisfied: kiwisolver>=1.0.1 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from matplotlib>=2.2->seaborn==0.11.0) (1.4.5)
+Requirement already satisfied: pillow>=6.2.0 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from matplotlib>=2.2->seaborn==0.11.0) (10.0.0)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.3 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from matplotlib>=2.2->seaborn==0.11.0) (3.1.1)
+Requirement already satisfied: python-dateutil>=2.1 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from matplotlib>=2.2->seaborn==0.11.0) (2.8.2)
+Collecting pytz>=2020.1 (from pandas>=0.23->seaborn==0.11.0)
+  Downloading pytz-2023.3-py2.py3-none-any.whl (502 kB)
+     ---------------------------------------- 502.3/502.3 kB 15.9 MB/s eta 0:00:00
+Collecting tzdata>=2022.1 (from pandas>=0.23->seaborn==0.11.0)
+  Downloading tzdata-2023.3-py2.py3-none-any.whl (341 kB)
+     ---------------------------------------- 341.8/341.8 kB 10.4 MB/s eta 0:00:00
+Requirement already satisfied: six>=1.5 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from python-dateutil>=2.1->matplotlib>=2.2->seaborn==0.11.0) (1.16.0)
+Downloading pandas-2.1.0-cp39-cp39-win_amd64.whl (11.2 MB)
+   ---------------------------------------- 11.2/11.2 MB 50.3 MB/s eta 0:00:00
+Downloading scipy-1.11.2-cp39-cp39-win_amd64.whl (44.1 MB)
+   ---------------------------------------- 44.1/44.1 MB 23.3 MB/s eta 0:00:00
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: pytz, tzdata, scipy, pandas, seaborn
+Successfully installed pandas-2.1.0 pytz-2023.3 scipy-1.11.2 seaborn-0.11.0 tzdata-2023.3
+
+
+
+(mH_gui) C:\>pip install scikit-image==0.19.3
+Collecting scikit-image==0.19.3
+  Using cached scikit_image-0.19.3-cp39-cp39-win_amd64.whl (12.1 MB)
+Requirement already satisfied: numpy>=1.17.0 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from scikit-image==0.19.3) (1.25.2)
+Requirement already satisfied: scipy>=1.4.1 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from scikit-image==0.19.3) (1.11.2)
+Collecting networkx>=2.2 (from scikit-image==0.19.3)
+  Using cached networkx-3.1-py3-none-any.whl (2.1 MB)
+Requirement already satisfied: pillow!=7.1.0,!=7.1.1,!=8.3.0,>=6.1.0 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from scikit-image==0.19.3) (10.0.0)
+Collecting imageio>=2.4.1 (from scikit-image==0.19.3)
+  Obtaining dependency information for imageio>=2.4.1 from https://files.pythonhosted.org/packages/7b/88/59411e1a652ac3338d348901ffa5a73daf1f67fcb3f97d750237d4fa0821/imageio-2.31.2-py3-none-any.whl.metadata
+  Using cached imageio-2.31.2-py3-none-any.whl.metadata (4.7 kB)
+Collecting tifffile>=2019.7.26 (from scikit-image==0.19.3)
+  Obtaining dependency information for tifffile>=2019.7.26 from https://files.pythonhosted.org/packages/12/3e/89513f44a10c625121b7d5bc54390d7ac7f2c92a19755c052888febf9730/tifffile-2023.8.30-py3-none-any.whl.metadata
+  Using cached tifffile-2023.8.30-py3-none-any.whl.metadata (30 kB)
+Collecting PyWavelets>=1.1.1 (from scikit-image==0.19.3)
+  Using cached PyWavelets-1.4.1-cp39-cp39-win_amd64.whl (4.2 MB)
+Collecting packaging>=20.0 (from scikit-image==0.19.3)
+  Downloading packaging-23.1-py3-none-any.whl (48 kB)
+     ---------------------------------------- 48.9/48.9 kB 613.7 kB/s eta 0:00:00
+Using cached imageio-2.31.2-py3-none-any.whl (313 kB)
+Using cached tifffile-2023.8.30-py3-none-any.whl (221 kB)
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: tifffile, PyWavelets, packaging, networkx, imageio, scikit-image
+Successfully installed PyWavelets-1.4.1 imageio-2.31.2 networkx-3.1 packaging-23.1 scikit-image-0.19.3 tifffile-2023.8.30
+
+
+
+(mH_gui) C:\>pip install pandas==1.5.3
+Collecting pandas==1.5.3
+  Using cached pandas-1.5.3-cp39-cp39-win_amd64.whl (10.9 MB)
+Requirement already satisfied: python-dateutil>=2.8.1 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from pandas==1.5.3) (2.8.2)
+Requirement already satisfied: pytz>=2020.1 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from pandas==1.5.3) (2023.3)
+Requirement already satisfied: numpy>=1.20.3 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from pandas==1.5.3) (1.25.2)
+Requirement already satisfied: six>=1.5 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from python-dateutil>=2.8.1->pandas==1.5.3) (1.16.0)
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: pandas
+  Attempting uninstall: pandas
+    Found existing installation: pandas 2.1.0
+    Uninstalling pandas-2.1.0:
+      Successfully uninstalled pandas-2.1.0
+Successfully installed pandas-1.5.3
+
+
+
+(mH_gui) C:\>pip install flatdict==4.0.1
+Collecting flatdict==4.0.1
+  Using cached flatdict-4.0.1-py3-none-any.whl
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: flatdict
+Successfully installed flatdict-4.0.1
+
+
+
+(mH_gui) C:\>pip install PyQt6
+Collecting PyQt6
+  Obtaining dependency information for PyQt6 from https://files.pythonhosted.org/packages/0e/83/b5f0d005bb7d5bae034edadcb62dc70f9a1c242ed49eb333850136dc0b5c/PyQt6-6.5.2-cp37-abi3-win_amd64.whl.metadata
+  Downloading PyQt6-6.5.2-cp37-abi3-win_amd64.whl.metadata (2.2 kB)
+Collecting PyQt6-sip<14,>=13.4 (from PyQt6)
+  Obtaining dependency information for PyQt6-sip<14,>=13.4 from https://files.pythonhosted.org/packages/1d/7f/227c4a38b4f9c5d44bc994dc8a024f73d01d3bcf0c1c6bb31412e640d396/PyQt6_sip-13.5.2-cp39-cp39-win_amd64.whl.metadata
+  Downloading PyQt6_sip-13.5.2-cp39-cp39-win_amd64.whl.metadata (524 bytes)
+Collecting PyQt6-Qt6>=6.5.0 (from PyQt6)
+  Obtaining dependency information for PyQt6-Qt6>=6.5.0 from https://files.pythonhosted.org/packages/a6/79/4a1683e57e9be1d9fa7e5fabe6ac6f485f63b01f07e6ae2f45fa94ed1420/PyQt6_Qt6-6.5.2-py3-none-win_amd64.whl.metadata
+  Downloading PyQt6_Qt6-6.5.2-py3-none-win_amd64.whl.metadata (551 bytes)
+Downloading PyQt6-6.5.2-cp37-abi3-win_amd64.whl (6.5 MB)
+   ---------------------------------------- 6.5/6.5 MB 19.7 MB/s eta 0:00:00
+Downloading PyQt6_Qt6-6.5.2-py3-none-win_amd64.whl (59.3 MB)
+   ---------------------------------------- 59.3/59.3 MB 19.2 MB/s eta 0:00:00
+Downloading PyQt6_sip-13.5.2-cp39-cp39-win_amd64.whl (72 kB)
+   ---------------------------------------- 73.0/73.0 kB 3.9 MB/s eta 0:00:00
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: PyQt6-Qt6, PyQt6-sip, PyQt6
+Successfully installed PyQt6-6.5.2 PyQt6-Qt6-6.5.2 PyQt6-sip-13.5.2
+
+
+(mH_gui) C:\>pip install PyQt-tools
+Collecting PyQt-tools
+  Downloading pyqt_tools-1.0.0-py3-none-any.whl (4.9 kB)
+Collecting guiqwt (from PyQt-tools)
+  Obtaining dependency information for guiqwt from https://files.pythonhosted.org/packages/a5/bd/c7e4b20c3117e2c3dddd54b23597d46cbba9ccd1deadcedde70b00314f13/guiqwt-4.4.1-cp39-cp39-win_amd64.whl.metadata
+  Downloading guiqwt-4.4.1-cp39-cp39-win_amd64.whl.metadata (2.9 kB)
+Requirement already satisfied: numpy in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from PyQt-tools) (1.25.2)
+Collecting PyQt5 (from PyQt-tools)
+  Using cached PyQt5-5.15.9-cp37-abi3-win_amd64.whl (6.8 MB)
+Requirement already satisfied: SciPy>=0.7 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from guiqwt->PyQt-tools) (1.11.2)
+Collecting guidata>=3.0.1 (from guiqwt->PyQt-tools)
+  Obtaining dependency information for guidata>=3.0.1 from https://files.pythonhosted.org/packages/56/11/5dfd6c2019b9ba1fa3aaaa5898b8bb9a643830e1eb72c43274851e0ec205/guidata-3.0.4-py3-none-any.whl.metadata
+  Downloading guidata-3.0.4-py3-none-any.whl.metadata (6.8 kB)
+Collecting PythonQwt>=0.10 (from guiqwt->PyQt-tools)
+  Downloading PythonQwt-0.10.2-py2.py3-none-any.whl (869 kB)
+     ---------------------------------------- 869.4/869.4 kB 9.1 MB/s eta 0:00:00
+Requirement already satisfied: Pillow in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from guiqwt->PyQt-tools) (10.0.0)
+Collecting QtPy>=1.3 (from guiqwt->PyQt-tools)
+  Obtaining dependency information for QtPy>=1.3 from https://files.pythonhosted.org/packages/be/a1/13bdd2f6237379744c52cec33d417a5819a07455d880e3c5f517c13a0f21/QtPy-2.4.0-py3-none-any.whl.metadata
+  Downloading QtPy-2.4.0-py3-none-any.whl.metadata (12 kB)
+Collecting PyQt5-sip<13,>=12.11 (from PyQt5->PyQt-tools)
+  Obtaining dependency information for PyQt5-sip<13,>=12.11 from https://files.pythonhosted.org/packages/77/04/8513bcf02a02f40575d9639bb09c38ed6a366ac46c4dfd92edde1b922e76/PyQt5_sip-12.12.2-cp39-cp39-win_amd64.whl.metadata
+  Downloading PyQt5_sip-12.12.2-cp39-cp39-win_amd64.whl.metadata (524 bytes)
+Collecting PyQt5-Qt5>=5.15.2 (from PyQt5->PyQt-tools)
+  Using cached PyQt5_Qt5-5.15.2-py3-none-win_amd64.whl (50.1 MB)
+Requirement already satisfied: h5py>=3.0 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from guidata>=3.0.1->guiqwt->PyQt-tools) (3.8.0)
+Collecting requests (from guidata>=3.0.1->guiqwt->PyQt-tools)
+  Obtaining dependency information for requests from https://files.pythonhosted.org/packages/70/8e/0e2d847013cb52cd35b38c009bb167a1a26b2ce6cd6965bf26b47bc0bf44/requests-2.31.0-py3-none-any.whl.metadata
+  Downloading requests-2.31.0-py3-none-any.whl.metadata (4.6 kB)
+Collecting tomli (from guidata>=3.0.1->guiqwt->PyQt-tools)
+  Downloading tomli-2.0.1-py3-none-any.whl (12 kB)
+Requirement already satisfied: packaging in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from QtPy>=1.3->guiqwt->PyQt-tools) (23.1)
+Collecting charset-normalizer<4,>=2 (from requests->guidata>=3.0.1->guiqwt->PyQt-tools)
+  Obtaining dependency information for charset-normalizer<4,>=2 from https://files.pythonhosted.org/packages/cb/dd/dce14328e6abe0f475e606131298b4c8f628abd62a4e6f27fdfa496b9efe/charset_normalizer-3.2.0-cp39-cp39-win_amd64.whl.metadata
+  Downloading charset_normalizer-3.2.0-cp39-cp39-win_amd64.whl.metadata (31 kB)
+Collecting idna<4,>=2.5 (from requests->guidata>=3.0.1->guiqwt->PyQt-tools)
+  Downloading idna-3.4-py3-none-any.whl (61 kB)
+     ---------------------------------------- 61.5/61.5 kB 3.4 MB/s eta 0:00:00
+Collecting urllib3<3,>=1.21.1 (from requests->guidata>=3.0.1->guiqwt->PyQt-tools)
+  Obtaining dependency information for urllib3<3,>=1.21.1 from https://files.pythonhosted.org/packages/9b/81/62fd61001fa4b9d0df6e31d47ff49cfa9de4af03adecf339c7bc30656b37/urllib3-2.0.4-py3-none-any.whl.metadata
+  Downloading urllib3-2.0.4-py3-none-any.whl.metadata (6.6 kB)
+Collecting certifi>=2017.4.17 (from requests->guidata>=3.0.1->guiqwt->PyQt-tools)
+  Obtaining dependency information for certifi>=2017.4.17 from https://files.pythonhosted.org/packages/4c/dd/2234eab22353ffc7d94e8d13177aaa050113286e93e7b40eae01fbf7c3d9/certifi-2023.7.22-py3-none-any.whl.metadata
+  Downloading certifi-2023.7.22-py3-none-any.whl.metadata (2.2 kB)
+Downloading guiqwt-4.4.1-cp39-cp39-win_amd64.whl (4.3 MB)
+   ---------------------------------------- 4.3/4.3 MB 17.2 MB/s eta 0:00:00
+Downloading guidata-3.0.4-py3-none-any.whl (711 kB)
+   ---------------------------------------- 711.6/711.6 kB 22.6 MB/s eta 0:00:00
+Downloading PyQt5_sip-12.12.2-cp39-cp39-win_amd64.whl (78 kB)
+   ---------------------------------------- 78.4/78.4 kB 2.2 MB/s eta 0:00:00
+Downloading QtPy-2.4.0-py3-none-any.whl (93 kB)
+   ---------------------------------------- 93.4/93.4 kB 5.2 MB/s eta 0:00:00
+Downloading requests-2.31.0-py3-none-any.whl (62 kB)
+   ---------------------------------------- 62.6/62.6 kB 3.3 MB/s eta 0:00:00
+Downloading certifi-2023.7.22-py3-none-any.whl (158 kB)
+   ---------------------------------------- 158.3/158.3 kB 4.8 MB/s eta 0:00:00
+Downloading charset_normalizer-3.2.0-cp39-cp39-win_amd64.whl (96 kB)
+   ---------------------------------------- 96.9/96.9 kB 5.4 MB/s eta 0:00:00
+Downloading urllib3-2.0.4-py3-none-any.whl (123 kB)
+   ---------------------------------------- 123.9/123.9 kB 7.1 MB/s eta 0:00:00
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: PyQt5-Qt5, urllib3, tomli, QtPy, PyQt5-sip, idna, charset-normalizer, certifi, requests, PythonQwt, PyQt5, guidata, guiqwt, PyQt-tools
+Successfully installed PyQt-tools-1.0.0 PyQt5-5.15.9 PyQt5-Qt5-5.15.2 PyQt5-sip-12.12.2 PythonQwt-0.10.2 QtPy-2.4.0 certifi-2023.7.22 charset-normalizer-3.2.0 guidata-3.0.4 guiqwt-4.4.1 idna-3.4 requests-2.31.0 tomli-2.0.1 urllib3-2.0.4
+
+
+
+(mH_gui) C:\>pip install qtwidgets
+Collecting qtwidgets
+  Using cached qtwidgets-1.1-py3-none-any.whl
+Collecting markdown (from qtwidgets)
+  Obtaining dependency information for markdown from https://files.pythonhosted.org/packages/1a/b5/228c1cdcfe138f1a8e01ab1b54284c8b83735476cb22b6ba251656ed13ad/Markdown-3.4.4-py3-none-any.whl.metadata
+  Downloading Markdown-3.4.4-py3-none-any.whl.metadata (6.9 kB)
+Collecting importlib-metadata>=4.4 (from markdown->qtwidgets)
+  Obtaining dependency information for importlib-metadata>=4.4 from https://files.pythonhosted.org/packages/cc/37/db7ba97e676af155f5fcb1a35466f446eadc9104e25b83366e8088c9c926/importlib_metadata-6.8.0-py3-none-any.whl.metadata
+  Downloading importlib_metadata-6.8.0-py3-none-any.whl.metadata (5.1 kB)
+Collecting zipp>=0.5 (from importlib-metadata>=4.4->markdown->qtwidgets)
+  Obtaining dependency information for zipp>=0.5 from https://files.pythonhosted.org/packages/8c/08/d3006317aefe25ea79d3b76c9650afabaf6d63d1c8443b236e7405447503/zipp-3.16.2-py3-none-any.whl.metadata
+  Downloading zipp-3.16.2-py3-none-any.whl.metadata (3.7 kB)
+Downloading Markdown-3.4.4-py3-none-any.whl (94 kB)
+   ---------------------------------------- 94.2/94.2 kB 1.8 MB/s eta 0:00:00
+Downloading importlib_metadata-6.8.0-py3-none-any.whl (22 kB)
+Downloading zipp-3.16.2-py3-none-any.whl (7.2 kB)
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: zipp, importlib-metadata, markdown, qtwidgets
+Successfully installed importlib-metadata-6.8.0 markdown-3.4.4 qtwidgets-1.1 zipp-3.16.2
+
+
+(mH_gui) C:\>pip install pyqtgraph
+Collecting pyqtgraph
+  Using cached pyqtgraph-0.13.3-py3-none-any.whl (960 kB)
+Requirement already satisfied: numpy>=1.20.0 in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from pyqtgraph) (1.25.2)
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: pyqtgraph
+Successfully installed pyqtgraph-0.13.3
+
+
+
+(mH_gui) C:\>pip install PySide2
+Collecting PySide2
+  Using cached PySide2-5.15.2.1-5.15.2-cp35.cp36.cp37.cp38.cp39.cp310-none-win_amd64.whl (137.4 MB)
+Collecting shiboken2==5.15.2.1 (from PySide2)
+  Using cached shiboken2-5.15.2.1-5.15.2-cp35.cp36.cp37.cp38.cp39.cp310-none-win_amd64.whl (2.3 MB)
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: shiboken2, PySide2
+Successfully installed PySide2-5.15.2.1 shiboken2-5.15.2.1
+
+
+(mH_gui) C:\>pip install playsound==1.2.2
+Collecting playsound==1.2.2
+  Using cached playsound-1.2.2-py2.py3-none-any.whl (6.0 kB)
+DEPRECATION: vtk -PKG-VERSION has a non-standard version number. pip 23.3 will enforce this behaviour change. A possible replacement is to upgrade to a newer version of vtk or contact the author to suggest that they release a version with a conforming version number. Discussion can be found at https://github.com/pypa/pip/issues/12063
+Installing collected packages: playsound
+Successfully installed playsound-1.2.2
+
+
+
+
+
+

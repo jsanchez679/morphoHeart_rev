@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileD
                               QDialogButtonBox, QMessageBox, QHeaderView, QStyle)
 from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush
 from qtwidgets import Toggle, AnimatedToggle
-import qtawesome as qta
+# import qtawesome as qta
 from pathlib import Path
 import flatdict
 # import os
@@ -32,12 +32,18 @@ from typing import Union
 import vedo 
 import numpy as np
 import pandas as pd
+import pickle as pl
 
 import matplotlib
-matplotlib.use('QtAgg')
+# matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
+# from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+# from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
+
+# from matplotlib.backends.backend_qt5agg import (
+#     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+
+
 # from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
@@ -6895,10 +6901,13 @@ class MainWindow(QMainWindow):
         btn_num = int(btn[-1])-1
         hm_all = list(self.hm_btns.keys())
         hm_name = hm_all[btn_num]
+        self.win_msg('Plotting heatmaps2D ('+hm_name+')')
+        print('Plotting heatmaps2D ('+hm_name+')')
         short, ch_info = hm_name.split('[')
+        ch, _ = ch_info[:-1].split('-')
         self.win_msg('Plotting heatmaps3D ('+hm_name+')')
-        print('Plotting heatmaps3D ('+hm_name+')')
 
+        #Test
         title = 'Test'
         cmap = 'turbo'
         heatmap = np.array([[0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
@@ -6910,39 +6919,77 @@ class MainWindow(QMainWindow):
                     [0.1, 2.0, 0.0, 1.4, 0.0, 1.9, 6.3]])
         
         # Make figure
-        self.plot_win = PlotWindow(title= 'Plot test', parent = self)
+        self.plot_win = PlotWindow(title= 'Plot test', width = 16, height= 10, dpi = 300, parent = self)
         ax = self.plot_win.figure.add_subplot(111)
         b = sns.heatmap(heatmap, cmap=cmap, ax=ax)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+        self.plot_win.figure.tight_layout()
+        print('aaa')
 
         #draw new graph
         self.plot_win.canvas.draw()
+        self.plot_win.exec()
+
+        #Final version
+        # organ_name = self.organ.user_organName
+        # title_df = organ_name+'_dfUnloop_'+hm_name+'_'+self.ordered_kspl['div2']['name']+'.csv'
+        # dir_df = self.organ.dir_res(dir='csv_all') / title_df
+        # print(dir_df)
+
+        # df_unloopedf = pd.read_csv(dir_df)
+        # df_unloopedf = df_unloopedf.drop(['taken'], axis=1)
+        # df_unloopedf.astype('float16').dtypes  
+        # print(df_unloopedf.sample(10))
+
+        # heatmap = pd.pivot_table(df_unloopedf, values= hm_name, columns = 'theta', index='z_plane', aggfunc=np.max)
+        # heatmap.astype('float16').dtypes
+        # print(heatmap.sample(10))
+        # alert('woohoo')
+        # tissue_name = self.organ.mH_settings['setup']['name_chs'][ch]
+
+        # # for div in self.ordered_kspl['div']:
+        # if 'th' in hm_name: 
+        #     if 'i2e' in hm_name: 
+        #         title = organ_name +' - '+tissue_name.title()+' Thickness (int2ext) [um] - '+self.ordered_kspl['div2']['name'].title()
+        #     else: 
+        #         title = organ_name +' - '+tissue_name.title()+' Thickness (ext2int) [um] - '+self.ordered_kspl['div2']['name'].title()
+        # else: 
+        #     title = organ_name +' - Myocardium ballooning [um] - '+self.ordered_kspl['div1']['name'].title()
+        # print('\t- title:', title)
+
+        # #Get all construction settings
+        # gui_thball = self.gui_thickness_ballooning
+        # cmap = gui_thball[hm_name]['colormap']
+        # vmin = gui_thball[hm_name]['min_val']
+        # vmax = gui_thball[hm_name]['max_val']
+
+        # print('\n- Creating heatmaps for '+hm_name+'_'+self.ordered_kspl['div1']['name'].title())
         
-        # # y_labels = sorted(list(kspl_data['y_axis']))
+        # # Make figure
+        # self.plot_win = PlotWindow(title= 'Plot test', width = 16, height = 10, dpi = 300, parent = self)
+        # ax = self.plot_win.figure.add_subplot(111)
+        # b = sns.heatmap(heatmap, cmap=cmap, ax=ax, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+        # self.plot_win.figure.tight_layout()
+        # print('aaa')
+
         # y_text = 'Centreline Position'# ['+kspl_data['name'].title()+']'
             
         # x_pos = ax.get_xticks()
-        # # x_lab = ax.get_xticklabels()
         # x_pos_new = np.linspace(x_pos[0], x_pos[-1], 19)
         # x_lab_new = np.arange(-180,200,20)
         # ax.set_xticks(x_pos_new) 
         # ax.set_xticklabels(x_lab_new, rotation=30)
         
         # y_pos = ax.get_yticks()
-        # # y_lab = ax.get_yticklabels()
         # y_pos_new = np.linspace(y_pos[0], y_pos[-1], 11)
-        # # y_lab_new = np.linspace(y_labels[0],y_labels[1],11)
-        # # y_lab_new = [format(y,'.2f') for y in y_lab_new]
         # ax.set_yticks(y_pos_new) 
-        # # ax.set_yticklabels(y_lab_new, rotation=0)
         
         # plt.ylabel(y_text, fontsize=10)
-        # # plt.ylabel('Centreline position '+y_text+'\n', fontsize=10)
-        # # ax.xlabel('Angle (\N{DEGREE SIGN}) [Dorsal >> Right >> Ventral >> Left >> Dorsal]', fontsize=10)
         # plt.xlabel('Angle (\N{DEGREE SIGN})', fontsize=10)
         # plt.title(title, fontsize = 15)
 
-        self.plot_win.exec()
-
+        # #draw new graph
+        # self.plot_win.canvas.draw()
+        # self.plot_win.exec()
 
     def plot_segm_sect(self, btn):
         #btn = cut1_segm1 / cut1_sect1
@@ -7216,23 +7263,29 @@ class MainWindow(QMainWindow):
 
 class PlotWindow(QDialog):
 
-    def __init__(self, title:str, parent=None):
+    def __init__(self, title:str, width:int, height:int, dpi:int, parent=None):
         super().__init__(parent)
+
+        # #Class imports
+        # from matplotlib.backends.qt_compat import QtCore, QtWidgets
+        # from matplotlib.backends.backend_qt5agg import (
+        #     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+        
         uic.loadUi('src/gui/ui/plot_screen.ui', self)
         self.setWindowTitle(title)
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
         self.output = None
-
-        self.figure = plt.figure()
+        
+        self.figure = Figure(figsize=(width, height), dpi=dpi)
         self.canvas = FigureCanvas(self.figure)
 
         self.layout = QVBoxLayout()
         self.graph_widget.setLayout(self.layout)
         self.layout.addWidget(self.canvas)
 
-        self.toolbar = NavigationToolbar(self.canvas, self)
-        self.hLayout.addWidget(self.toolbar)
+        # self.toolbar = NavigationToolbar(self.canvas, self)
+        # self.hLayout.addWidget(self.toolbar)
         self.show()
 
 

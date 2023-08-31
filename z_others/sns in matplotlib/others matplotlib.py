@@ -1,7 +1,12 @@
 
+#%%
 import sys
 import matplotlib
 matplotlib.use('QtAgg')
+import pandas as pd
+from pathlib import Path
+import seaborn as sns
+import numpy as np
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
@@ -23,7 +28,87 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         sc = MplCanvas(self, width=5, height=4, dpi=100)
-        sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
+
+        # dir_df = Path('D:\Documents JSP\Dropbox\Dropbox_Juliana\PhD_Thesis\Data_ongoing\LS_ongoing\A_LS_Analysis\im_morphoHeart2\R_testing4 - Before ThBall - Copy\R_testing4\LS52_F02\csv_all\LS52_F02_dfUnloop_th_i2e[ch1-tiss]_atrium.csv')
+        dir_df = Path('D:\Documents JSP\Dropbox\Dropbox_Juliana\PhD_Thesis\Data_ongoing\LS_ongoing\A_LS_Analysis\im_morphoHeart\LS52_F02_V_SR_1029_2A\Results_LS52_F02_V_SR_1029\csv_all\LS52_F02_V_SR_1029_hm_unloopAtr_MyocTh.csv')
+        print(dir_df)
+        heatmap = pd.read_csv(dir_df)  
+        print(heatmap.sample(10))
+
+        b = sns.heatmap(heatmap, cmap='turbo', ax=sc.axes)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+        x_pos = sc.axes.get_xticks()
+        x_pos_new = np.linspace(x_pos[0], x_pos[-1], 19)
+        x_lab_new = np.arange(-180,200,20)
+        sc.axes.set_xticks(x_pos_new) 
+
+        y_pos = sc.axes.get_yticks()
+        y_pos_new = np.linspace(y_pos[0], y_pos[-1], 11)
+        sc.axes.set_yticks(y_pos_new) 
+
+        # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
+        toolbar = NavigationToolbar(sc, self)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(toolbar)
+        layout.addWidget(sc)
+
+        # Create a placeholder widget to hold our toolbar and canvas.
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
+
+        self.show()
+
+
+app = QtWidgets.QApplication(sys.argv)
+w = MainWindow()
+app.exec()
+
+#%%
+import sys
+import matplotlib
+matplotlib.use('QtAgg')
+import pandas as pd
+from pathlib import Path
+import seaborn as sns
+import numpy as np
+
+from PyQt6 import QtCore, QtGui, QtWidgets
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
+
+
+class MplCanvas(FigureCanvasQTAgg):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super(MplCanvas, self).__init__(fig)
+
+
+class MainWindow(QtWidgets.QMainWindow):
+
+    def __init__(self, *args, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
+
+        sc = MplCanvas(self, width=5, height=4, dpi=100)
+
+        # dir_df = Path('D:\Documents JSP\Dropbox\Dropbox_Juliana\PhD_Thesis\Data_ongoing\LS_ongoing\A_LS_Analysis\im_morphoHeart2\R_testing4 - Before ThBall - Copy\R_testing4\LS52_F02\csv_all\LS52_F02_dfUnloop_th_i2e[ch1-tiss]_atrium.csv')
+        dir_df = Path('D:\Documents JSP\Dropbox\Dropbox_Juliana\PhD_Thesis\Data_ongoing\LS_ongoing\A_LS_Analysis\im_morphoHeart\LS52_F02_V_SR_1029_2A\Results_LS52_F02_V_SR_1029\csv_all\LS52_F02_V_SR_1029_hm_unloopAtr_MyocTh.csv')
+        print(dir_df)
+        heatmap = pd.read_csv(dir_df)  
+        print(heatmap.sample(10))
+
+        b = sns.heatmap(heatmap, cmap='turbo', ax=sc.axes)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+        x_pos = sc.axes.get_xticks()
+        x_pos_new = np.linspace(x_pos[0], x_pos[-1], 19)
+        x_lab_new = np.arange(-180,200,20)
+        sc.axes.set_xticks(x_pos_new) 
+
+        y_pos = sc.axes.get_yticks()
+        y_pos_new = np.linspace(y_pos[0], y_pos[-1], 11)
+        sc.axes.set_yticks(y_pos_new) 
 
         # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
         toolbar = NavigationToolbar(sc, self)

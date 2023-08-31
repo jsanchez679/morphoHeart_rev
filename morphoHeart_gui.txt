@@ -1,19 +1,25 @@
 (base) C:\>conda create --name morphoHeart_gui python=3.9
 (base) C:\>conda activate morphoHeart_gui
+
 (morphoHeart_gui) C:\>conda config --add channels conda-forge
 (morphoHeart_gui) C:\>conda config --set channel_priority strict
 (morphoHeart_gui) C:\>conda install vmtk
 (morphoHeart_gui) C:\>pip install vedo==2023.4.3
-(morphoHeart_gui) C:\>pip install playsound==1.2.2
-(morphoHeart_gui) C:\>conda install scikit-image==0.19.3
-(morphoHeart_gui) C:\>conda install pandas==1.5.3
-(morphoHeart_gui) C:\>conda install flatdict==4.0.1
+
+(morphoHeart_gui) C:\>pip install matplotlib==3.7.1
+(morphoHeart_gui) C:\>pip install seaborn==0.11.0 / 0.12.2
+(morphoHeart_gui) C:\>pip install scikit-image==0.19.3
+(morphoHeart_gui) C:\>pip install pandas==1.5.3
+(morphoHeart_gui) C:\>pip install flatdict==4.0.1
+
 (morphoHeart_gui) C:\>pip install PyQt6
 (morphoHeart_gui) C:\>pip install PyQt-tools
 (morphoHeart_gui) C:\>pip install qtwidgets
-(morphoHeart_gui) C:\>pip install PySide2
 (morphoHeart_gui) C:\>pip install pyqtgraph
-(morphoHeart_gui) C:\>pip install seaborn
+(morphoHeart_gui) C:\>pip install PySide2
+
+(morphoHeart_gui) C:\>pip install playsound==1.2.2
+
 
 VEDO CHANGES (shapes.py - line 1191)
         xspline = vtk.vtkKochanekSpline() #vtk.vtkmodules.vtkCommonComputationalGeometry.vtkKochanekSpline()
