@@ -789,8 +789,8 @@ def run_heatmaps2D(controller, btn):
                             print('div:', div, 'ordered_kspl[div]:', ordered_kspl[div])
                             print(array_name, short, hmitem)
 
-                            if div == 'div2': 
-                                df_unloopedf = fcM.unloop_chamber(organ = controller.organ,
+                            # if div == 'div2': 
+                            df_unloopedf = fcM.unloop_chamber(organ = controller.organ,
                                                                 mesh = array_mesh.mesh, 
                                                                 kspl_CLnew = kspl_CLnew,
                                                                 kspl_vSurf = kspl_vSurf,
@@ -799,7 +799,7 @@ def run_heatmaps2D(controller, btn):
                                                                 gui_heatmaps2d = gui_heatmaps2d, 
                                                                 kspl_data=ordered_kspl[div])
                             
-                                fcM.heatmap_unlooped(organ = controller.organ, kspl_data = ordered_kspl[div], 
+                            fcM.heatmap_unlooped(organ = controller.organ, kspl_data = ordered_kspl[div], 
                                                         df_unloopedf = df_unloopedf, hmitem= hmitem, ch = ch,
                                                         gui_thball = controller.main_win.gui_thickness_ballooning)
                             

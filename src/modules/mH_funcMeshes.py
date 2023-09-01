@@ -1982,8 +1982,8 @@ def order_segms(organ, kspl_CLnew, num_pts, cut):
                 break
     return ordered_segm
 
-def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
-                   gui_heatmaps2d, kspl_data):
+def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
+                                df_classPts, labels, gui_heatmaps2d, kspl_data):
 
     if gui_heatmaps2d['plot']['plot_planes']: 
         plotevery = gui_heatmaps2d['plot']['every_planes']
@@ -2004,7 +2004,9 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf, df_classPts, labels,
     tol2use = gui_heatmaps2d['tol']
     kspl = kspl_data['kspl']
     select_start = True
-    pl_normals, pl_centres = get_plane_normals(no_planes = no_planes, spline_pts = kspl.points())
+    # pl_normals, pl_centres = get_plane_normals(no_planes = no_planes, spline_pts = kspl.points())
+    pl_normals, pl_centres = get_plane_normals_to_proj_kspl(organ = organ, no_planes = no_planes, 
+                                                            kspl = kspl, gui_heatmaps2d = gui_heatmaps2d)
 
     # Give a number between 1-2 to each atrial plane, and between 0-1 to each ventricular plane
     top, bottom = kspl_data['y_axis']
@@ -2237,10 +2239,8 @@ def heatmap_unlooped(organ, kspl_data, df_unloopedf, hmitem, ch, gui_thball):
     organ_name = organ.user_organName
     title_df = organ_name+'_hmUnloop_'+hmitem+'_'+kspl_data['name']+'.csv'
     title_hm = organ_name+'_hmUnloop_'+hmitem+'_'+kspl_data['name']+'.png'
-    # title_hm_pl = organ_name+'_hmUnloop_'+hmitem+'_'+kspl_data['name']+'.pickle'
     dir_df = organ.dir_res(dir='csv_all') / title_df
     dir_hm = organ.dir_res(dir='imgs_videos') / title_hm
-    # dir_hm_pl = organ.dir_res(dir='imgs_videos') / title_hm_pl
     print(dir_df, '\n', dir_hm)
 
     print('\n- Creating heatmaps for '+hmitem+'_'+kspl_data['name'].title())
@@ -2296,6 +2296,21 @@ def heatmap_unlooped(organ, kspl_data, df_unloopedf, hmitem, ch, gui_thball):
     alert('clown')
     heatmap.to_csv(dir_df)
     alert('countdown')
+
+def get_unlooped_heatmap(organ, hmitem, kspl_data, gui_thball): 
+
+    organ_name = organ.user_organName
+    title_df = organ_name+'_dfUnloop_'+hmitem+'_'+kspl_data['name']+'.csv'
+    dir_df = organ.dir_res(dir='csv_all') / title_df
+
+    df_unloopedf= pd.read_csv(str(dir_df))
+    df_unloopedf = df_unloopedf.drop(['taken'], axis=1)
+    df_unloopedf.astype('float16').dtypes
+
+    heatmap = pd.pivot_table(df_unloopedf, values= hmitem, columns = 'theta', index='z_plane', aggfunc=np.max)
+    heatmap.astype('float16').dtypes
+
+    return heatmap
 
 def select_sph_vSurf(pts_in_plane, idx_in_plane, objects): 
     
@@ -2376,7 +2391,6 @@ def find_pt_idx_in_kspline(kspl, pt_in):
 
     return idx
      
-
 def get_plane_normal2pt (pt_num, points):
     """
     Funtion that gets a plane normal to a point in a spline
@@ -2492,34 +2506,65 @@ def get_plane_normals(no_planes, spline_pts):
 
     return normals, pt_centre
 
-# def is_pt_in_plane(normal, centre, point, tol=0.001):
-#     # print('tol:',tol)
-#     diff_points = point - centre
-#     # print('dot:',np.dot(diff_points,normal))
-#     if abs(np.dot(diff_points,normal)) < tol:
-#         return True
-#     else: 
-#         return False
+def get_plane_normals_other_centres(no_planes, proj_pts, kspl_pts):
+    """
+    Function that returns a list with normal vectors to create cutting planes. 
+    Note: the input spline is checked in the inverse order, from last to first point
 
-# def find_sph_pt_uniq(pts_in_plane, kspl_vSurf, index_vSurf_cut = 0):
-    
-#     indexes_min_dist = []
-#     dists = cdist(pts_in_plane, kspl_vSurf.points())
-#     print('shape:', dists.shape)
-#     min_dists = np.amin(dists, axis=1)
-#     for x in range(pts_in_plane.shape[0]):
-#         where = np.where(dists[x,:] == min_dists[x])
-#         indexes_min_dist.append(where[0][0])
-#     print('indexes_min_dist:', indexes_min_dist)
-#     diff_indexes = abs(np.array(indexes_min_dist) - index_vSurf_cut)
-#     print('diff_indexes:', diff_indexes)
-#     ind_min_diff_indexes = np.where(diff_indexes == np.min(diff_indexes))[0][0]
-#     index_vSurf_cut = indexes_min_dist[ind_min_diff_indexes]
-#     print('index_vSurf_cut_out:', index_vSurf_cut, '- type:', type(index_vSurf_cut))
-#     pt_uniq = kspl_vSurf.points()[index_vSurf_cut]
-#     sph_pt_uniq = vedo.Sphere(pos=pt_uniq, r=3,c='hotpink')
-    
-#     return sph_pt_uniq, index_vSurf_cut 
+    Parameters
+    ----------
+    no_planes : int
+        Number of planes that will be used to get transverse sections of heart
+    spline_pts : list of coordinates
+        List of centreline coordinates
+
+    Returns
+    -------
+    normals : list of list of floats
+        list of List with the x,y,z coordinates of each of the planes' normal
+    pt_centre : list of list of floats
+        list of List with the x,y,z coordinates of each of the planes' centre
+
+    """
+
+    normals = []
+    pt_centre = []
+    every = len(proj_pts)//no_planes
+    list_index = list(range(len(proj_pts)-2,1,-every))
+    for i in list_index:
+        pt_centre.append(kspl_pts[i])
+        normal = proj_pts[i-1]-proj_pts[i]
+        normals.append(normal)
+
+    return normals, pt_centre
+
+def get_plane_normals_to_proj_kspl(organ, no_planes, kspl, gui_heatmaps2d):
+
+    #Get cube's face centre
+    cube_name = gui_heatmaps2d['axis_lab']
+    cube2use = getattr(organ, cube_name.lower()+'_cube')
+    orient_cube = cube2use['cube']
+    cube_face = int(gui_heatmaps2d['direction']['plane_no'])
+    ext_plane = gui_heatmaps2d['direction']['plane_normal']
+
+    cell_centre = orient_cube.cell_centers()[int(cube_face)]
+
+    plane_ext = vedo.Plane(pos = cell_centre, normal = ext_plane)
+    proj_kspl = kspl.clone().project_on_plane(plane=plane_ext).lw(3).color('black')
+
+    plt = vedo.Plotter(N=2, axes=1)
+    plt.show(orient_cube, proj_kspl, at=0)
+    plt.show(kspl, proj_kspl, plane_ext, at=1, interactive=True)
+
+    print('len(kspl.points()):', len(kspl.points()))
+    print('len(proj_kspl.points()):', len(proj_kspl.points()))
+
+    pl_normals, pl_centres = get_plane_normals_other_centres(no_planes = no_planes, 
+                                                             proj_pts = proj_kspl.points(), 
+                                                             kspl_pts = kspl.points())
+    print(pl_normals)
+
+    return pl_normals, pl_centres
    
 #%% - Plotting functions
 def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350, azimuth = 0, elevation = 0):

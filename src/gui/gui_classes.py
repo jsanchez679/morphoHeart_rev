@@ -35,17 +35,17 @@ import pandas as pd
 import pickle as pl
 
 import matplotlib
-# matplotlib.use('Qt5Agg')
+print(matplotlib.__version__)
+matplotlib.use('QtAgg')
 import matplotlib.pyplot as plt
-# from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-# from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
+# from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
 
 # from matplotlib.backends.backend_qt5agg import (
 #     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 
-
-# from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
 
 #%% morphoHeart Imports - ##################################################
 # from .src.modules.mH_funcBasics import get_by_path
@@ -3990,7 +3990,7 @@ class MainWindow(QMainWindow):
                 play.setEnabled(False)
                 hm_plot.setEnabled(False)
                 play2d.setEnabled(False)
-                # hm_plot2.setEnabled(False)
+                hm_plot2.setEnabled(False)
 
                 nn +=1
                 
@@ -6898,13 +6898,19 @@ class MainWindow(QMainWindow):
     def plot_heatmap2d(self, btn): 
         print('Plotting heatmap2d: ', btn)
 
-        btn_num = int(btn[-1])-1
+        btn_num = int(btn)-1
         hm_all = list(self.hm_btns.keys())
         hm_name = hm_all[btn_num]
         self.win_msg('Plotting heatmaps2D ('+hm_name+')')
         print('Plotting heatmaps2D ('+hm_name+')')
         short, ch_info = hm_name.split('[')
-        ch, _ = ch_info[:-1].split('-')
+        if 'th' in hm_name: 
+            ch, _ = ch_info[:-1].split('-')
+        else: 
+            ch_cont, cl_info = ch_info.split('(CL.')
+            ch, cont = ch_cont.split('-')
+            from_cl, from_cl_type = cl_info[:-2].split('-')
+
         self.win_msg('Plotting heatmaps3D ('+hm_name+')')
 
         #Test
@@ -6918,16 +6924,118 @@ class MainWindow(QMainWindow):
                     [1.3, 1.2, 0.0, 0.0, 0.0, 3.2, 5.1],
                     [0.1, 2.0, 0.0, 1.4, 0.0, 1.9, 6.3]])
         
-        # Make figure
-        self.plot_win = PlotWindow(title= 'Plot test', width = 16, height= 10, dpi = 300, parent = self)
-        ax = self.plot_win.figure.add_subplot(111)
-        b = sns.heatmap(heatmap, cmap=cmap, ax=ax)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
-        self.plot_win.figure.tight_layout()
-        print('aaa')
+        #Get all construction settings
+        gui_thball = self.gui_thickness_ballooning
+        cmap = gui_thball[hm_name]['colormap']
+        vmin = gui_thball[hm_name]['min_val']
+        vmax = gui_thball[hm_name]['max_val']
 
-        #draw new graph
-        self.plot_win.canvas.draw()
+        organ_name = self.organ.user_organName
+        tissue_name = self.organ.mH_settings['setup']['name_chs'][ch]
+        if 'th' in hm_name: 
+            if 'i2e' in hm_name: 
+                title = organ_name +' - '+tissue_name.title()+' Thickness (int2ext) [um]'
+            else: 
+                title = organ_name +' - '+tissue_name.title()+' Thickness (ext2int) [um]'
+        else: 
+            title = organ_name +' - Myocardium ballooning [um]'
+        print('- title:', title)
+
+        # Make figure
+        self.plot_win = PlotWindow(title= title, width = 8, height= 5, dpi = 300, parent = self)
+        self.plot_win.lab_title.setText(title)
+
+        if 'div1' in self.ordered_kspl.keys(): 
+            print(self.ordered_kspl['div1']['name'])
+            #Get heatmap specific for that segm
+            # heatmap1, title1 = fcM.get_unlooped_heatmap(self.organ, hm_name, self.ordered_kspl['div1'])
+            ax1 = self.plot_win.figure_div1.add_subplot(111)
+            b1 = sns.heatmap(heatmap, cmap=cmap, ax=ax1)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+            self.plot_win.figure_div1.tight_layout()
+            self.plot_win.canvas_div1.draw()
+            self.plot_win.lab_div1.setText('Plot '+self.ordered_kspl['div1']['name']+': ')
+        
+        else: 
+            self.plot_win.toolbar_div1.setVisible(False)
+            self.plot_win.graph_widget_div1.setVisible(False)
+            self.plot_win.lab_div1.setVisible(False)
+
+        if 'div2' in self.ordered_kspl.keys(): 
+            print(self.ordered_kspl['div2']['name'])
+            #Get heatmap specific for that segm
+            #heatmap = 
+            ax2 = self.plot_win.figure_div2.add_subplot(111)
+            b2 = sns.heatmap(heatmap, cmap=cmap, ax=ax2)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+            self.plot_win.figure_div2.tight_layout()
+            self.plot_win.canvas_div2.draw()
+            self.plot_win.lab_div2.setText('Plot '+self.ordered_kspl['div2']['name']+': ')
+        
+        else: 
+            self.plot_win.toolbar_div2.setVisible(False)
+            self.plot_win.graph_widget_div2.setVisible(False)
+            self.plot_win.lab_div2.setVisible(False)
+
+        if 'div3' in self.ordered_kspl.keys(): 
+            print(self.ordered_kspl['div3']['name'])
+            #Get heatmap specific for that segm
+            #heatmap = 
+            ax3 = self.plot_win.figure_div3.add_subplot(111)
+            b3 = sns.heatmap(heatmap, cmap=cmap, ax=ax3)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+            self.plot_win.figure_div3.tight_layout()
+            self.plot_win.canvas_div3.draw()
+            self.plot_win.lab_div3.setText('Plot '+self.ordered_kspl['div3']['name']+': ')
+        
+        else: 
+            self.plot_win.toolbar_div3.setVisible(False)
+            self.plot_win.graph_widget_div3.setVisible(False)
+            self.plot_win.lab_div3.setVisible(False)
+
+        if 'div4' in self.ordered_kspl.keys(): 
+            print(self.ordered_kspl['div4']['name'])
+            #Get heatmap specific for that segm
+            #heatmap = 
+            ax4 = self.plot_win.figure_div4.add_subplot(111)
+            b4 = sns.heatmap(heatmap, cmap=cmap, ax=ax4)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+            self.plot_win.figure_div4.tight_layout()
+            self.plot_win.canvas_div4.draw()
+            self.plot_win.lab_div4.setText('Plot '+self.ordered_kspl['div4']['name']+': ')
+        
+        else: 
+            self.plot_win.toolbar_div4.setVisible(False)
+            self.plot_win.graph_widget_div4.setVisible(False)
+            self.plot_win.lab_div4.setVisible(False)
+        
+        if 'div5' in self.ordered_kspl.keys(): 
+            print(self.ordered_kspl['div5']['name'])
+            #Get heatmap specific for that segm
+            #heatmap = 
+            ax5 = self.plot_win.figure_div5.add_subplot(111)
+            b5 = sns.heatmap(heatmap, cmap=cmap, ax=ax5)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+            self.plot_win.figure_div5.tight_layout()
+            self.plot_win.canvas_div5.draw()
+            self.plot_win.lab_div5.setText('Plot '+self.ordered_kspl['div5']['name']+': ')
+        
+        else: 
+            self.plot_win.toolbar_div5.setVisible(False)
+            self.plot_win.graph_widget_div5.setVisible(False)
+            self.plot_win.lab_div5.setVisible(False)
+
         self.plot_win.exec()
+
+        # self.plot_win = PlotWindow(title= 'Plot test', width = 16, height= 10, dpi = 300, parent = self)
+        # ax_top = self.plot_win.figure_top.add_subplot(111)
+        # b_top = sns.heatmap(heatmap, cmap=cmap, ax=ax_top)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+        # self.plot_win.figure_top.tight_layout()
+        # print('aaa')
+
+        # ax_bot = self.plot_win.figure_bot.add_subplot(111)
+        # b_bot = sns.heatmap(heatmap, cmap=cmap, ax=ax_bot)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+        # self.plot_win.figure_bot.tight_layout()
+
+        # #draw new graph
+        # self.plot_win.canvas_top.draw()
+        # self.plot_win.canvas_bot.draw()
+        # self.plot_win.exec()
 
         #Final version
         # organ_name = self.organ.user_organName
@@ -7277,15 +7385,71 @@ class PlotWindow(QDialog):
         self.setWindowIcon(QIcon(mH_icon))
         self.output = None
         
-        self.figure = Figure(figsize=(width, height), dpi=dpi)
-        self.canvas = FigureCanvas(self.figure)
+        #Div1
+        #   Canvas 
+        self.figure_div1 = Figure(figsize=(width, height), dpi=dpi)
+        self.canvas_div1 = FigureCanvas(self.figure_div1)
 
-        self.layout = QVBoxLayout()
-        self.graph_widget.setLayout(self.layout)
-        self.layout.addWidget(self.canvas)
+        self.layout_div1 = QVBoxLayout()
+        self.graph_widget_div1.setLayout(self.layout_div1)
+        self.layout_div1.addWidget(self.canvas_div1)
 
-        # self.toolbar = NavigationToolbar(self.canvas, self)
-        # self.hLayout.addWidget(self.toolbar)
+       #    Toolbars
+        self.toolbar_div1 = NavigationToolbar(self.canvas_div1, self)
+        self.hLayout_div1.addWidget(self.toolbar_div1)
+
+        #Div2
+        #   Canvas 
+        self.figure_div2 = Figure(figsize=(width, height), dpi=dpi)
+        self.canvas_div2 = FigureCanvas(self.figure_div2)
+
+        self.layout_div2 = QVBoxLayout()
+        self.graph_widget_div2.setLayout(self.layout_div2)
+        self.layout_div2.addWidget(self.canvas_div2)
+
+       #    Toolbars
+        self.toolbar_div2 = NavigationToolbar(self.canvas_div2, self)
+        self.hLayout_div2.addWidget(self.toolbar_div2)
+
+        #Div3
+        #   Canvas 
+        self.figure_div3 = Figure(figsize=(width, height), dpi=dpi)
+        self.canvas_div3 = FigureCanvas(self.figure_div3)
+
+        self.layout_div3 = QVBoxLayout()
+        self.graph_widget_div3.setLayout(self.layout_div3)
+        self.layout_div3.addWidget(self.canvas_div3)
+
+       #    Toolbars
+        self.toolbar_div3 = NavigationToolbar(self.canvas_div3, self)
+        self.hLayout_div3.addWidget(self.toolbar_div3)
+
+        #Div4
+        #   Canvas 
+        self.figure_div4 = Figure(figsize=(width, height), dpi=dpi)
+        self.canvas_div4 = FigureCanvas(self.figure_div4)
+
+        self.layout_div4 = QVBoxLayout()
+        self.graph_widget_div4.setLayout(self.layout_div4)
+        self.layout_div4.addWidget(self.canvas_div4)
+
+       #    Toolbars
+        self.toolbar_div4 = NavigationToolbar(self.canvas_div4, self)
+        self.hLayout_div4.addWidget(self.toolbar_div4)
+
+        #Div5
+        #   Canvas 
+        self.figure_div5 = Figure(figsize=(width, height), dpi=dpi)
+        self.canvas_div5 = FigureCanvas(self.figure_div5)
+
+        self.layout_div5 = QVBoxLayout()
+        self.graph_widget_div5.setLayout(self.layout_div5)
+        self.layout_div5.addWidget(self.canvas_div5)
+
+       #    Toolbars
+        self.toolbar_div5 = NavigationToolbar(self.canvas_div5, self)
+        self.hLayout_div5.addWidget(self.toolbar_div5)
+
         self.show()
 
 
