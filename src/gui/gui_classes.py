@@ -52,7 +52,7 @@ from matplotlib.figure import Figure
 # from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set, alert
 from ..modules.mH_funcContours import checkWfCloseCont, ImChannel
-from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut
+from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
 
@@ -2836,8 +2836,7 @@ class LoadProj(QDialog):
 
         if btn != None: 
             btn.setChecked(False)
-
-    
+ 
     def fill_proj_info(self, proj):
 
         self.lineEdit_proj_name.setText(proj.info['user_projName'])
@@ -5000,6 +4999,7 @@ class MainWindow(QMainWindow):
         wf_info = self.organ.mH_settings['wf_info']
         at_least_one = False
         error_load = False
+        done_all = []
         if 'heatmaps' in wf_info.keys():
             print('wf_info[heatmaps]:', wf_info['heatmaps'])
 
@@ -5034,8 +5034,18 @@ class MainWindow(QMainWindow):
                     self.hm_btns[item]['play'].setChecked(True)
                     self.hm_btns[item]['play'].setEnabled(True)
                     self.hm_btns[item]['plot'].setEnabled(True)
-                    if getattr(self, 'd3d2_'+str(nn)).isChecked() and 'heatmaps2D' in wf_info['heatmaps'].keys():
-                        self.hm_btns[item]['play2d'].setEnabled(True)
+                    if getattr(self, 'd3d2_'+str(nn)).isChecked():
+                        if 'heatmaps2D' in wf_info['heatmaps'].keys():
+                            self.hm_btns[item]['play2d'].setEnabled(True)
+                            if 'hm2d_dirs' in wf_info['heatmaps'][item].keys(): 
+                                self.hm_btns[item]['plot2d'].setEnabled(True)
+                                done_all.append(True)
+                            else: 
+                                done_all.append(False)
+                        else: 
+                            done_all.append(False)
+                    else: 
+                        pass
                     at_least_one = True
                 else: 
                     # print('not done')
@@ -5051,18 +5061,29 @@ class MainWindow(QMainWindow):
                             self.hm_btns[item]['play'].setEnabled(True)
 
             if 'hm3Dto2D' in self.organ.mH_settings['measure'].keys():
-                try:
+                try: 
+                    self.improve_hm2D.setChecked(wf_info['heatmaps']['heatmaps2D']['use_segms'])
+                    self.segm_use_hm2D.setCurrentText(wf_info['heatmaps']['heatmaps2D']['segms'])
+                    self.update_div(self.organ)
+                    for div in wf_info['heatmaps']['heatmaps2D']['div']: 
+                        invert = wf_info['heatmaps']['heatmaps2D']['div'][div]['invert_plane_num']
+                        print('qqqq: ',div, invert, self.segm_dir_names)
+                        if invert: 
+                            btn_div = getattr(self, 'dir_'+div)
+                            btn_div.setChecked(True)
+                            self.change_segm_dir(div = div)  
+
+                    self.sect_nPoints_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nPoints'])
+                    self.sect_nRes_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nRes'])
+
                     axis = wf_info['heatmaps']['heatmaps2D']['axis_lab'].lower()
+                    getattr(self, 'radio_'+axis+'_hm2d').setChecked(True)
                     direction = wf_info['heatmaps']['heatmaps2D']['direction']
                     setattr(self, 'extend_dir_hm2d', direction)
-                    getattr(self, 'radio_'+axis+'_hm2d').setChecked(True)
                     getattr(self, 'sect_dir_hm2d').setText('Face No.'+str(direction['plane_no']))
                     set_btn = getattr(self, 'set_hm2d')
                     set_btn.setChecked(True)
-                    self.improve_hm2D.setChecked(wf_info['heatmaps']['heatmaps2D']['use_segms'])
-                    self.segm_use_hm2D.setCurrentText(wf_info['heatmaps']['heatmaps2D']['segms'])
-                    self.sect_nPoints_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nPoints'])
-                    self.sect_nRes_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nRes'])
+                    
                     self.sect_nPlanes_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['nPlanes'])
                     self.sect_tol_hm2d.setValue(wf_info['heatmaps']['heatmaps2D']['tol'])
                     self.plot_planes.setChecked(wf_info['heatmaps']['heatmaps2D']['plot']['plot_planes'])
@@ -5071,7 +5092,6 @@ class MainWindow(QMainWindow):
                     self.win_msg('Unable to load 2D Heatmap settings, please reset them.')
                     error_load = True
             
-            done_all = []
             for proc_n in ['D-Thickness_int>ext','D-Thickness_ext>int','D-Ballooning']:
                 done_all.append(get_by_path(wf, [proc_n, 'Status']) == 'DONE')
 
@@ -5090,7 +5110,7 @@ class MainWindow(QMainWindow):
             self.set_thickness(init=True)
             if 'heatmaps2D' in wf_info['heatmaps'].keys():
                 self.set_thickness2D(init=True)
-            self.update_div(self.organ)
+            
             
         else: 
             pass
@@ -5387,7 +5407,10 @@ class MainWindow(QMainWindow):
                 self.gui_thickness_ballooning['heatmaps2D']['div'][div]['invert_plane_num'] = False
             except: 
                 pass
-        print('self.gui_thickness_ballooning:',self.gui_thickness_ballooning)
+        try: 
+            print('self.gui_thickness_ballooning:',self.gui_thickness_ballooning)
+        except: 
+            pass
 
     def set_colormap(self, name):
         value = getattr(self, 'colormap'+name).currentText()
@@ -6911,7 +6934,13 @@ class MainWindow(QMainWindow):
             ch, cont = ch_cont.split('-')
             from_cl, from_cl_type = cl_info[:-2].split('-')
 
-        self.win_msg('Plotting heatmaps3D ('+hm_name+')')
+        gui_thball = self.gui_thickness_ballooning[hm_name]
+        dirs_df = gui_thball['hm2d_dirs']
+        cmap = gui_thball['colormap']
+        vmin = gui_thball['min_val']
+        vmax = gui_thball['max_val']
+
+        print(dirs_df)
 
         #Test
         title = 'Test'
@@ -6925,11 +6954,7 @@ class MainWindow(QMainWindow):
                     [0.1, 2.0, 0.0, 1.4, 0.0, 1.9, 6.3]])
         
         #Get all construction settings
-        gui_thball = self.gui_thickness_ballooning
-        cmap = gui_thball[hm_name]['colormap']
-        vmin = gui_thball[hm_name]['min_val']
-        vmax = gui_thball[hm_name]['max_val']
-
+        #Plot Title
         organ_name = self.organ.user_organName
         tissue_name = self.organ.mH_settings['setup']['name_chs'][ch]
         if 'th' in hm_name: 
@@ -6942,16 +6967,45 @@ class MainWindow(QMainWindow):
         print('- title:', title)
 
         # Make figure
-        self.plot_win = PlotWindow(title= title, width = 8, height= 5, dpi = 300, parent = self)
+        self.plot_win = PlotWindow(title= title, width = 8, height= 8, dpi = 300, parent = self)
         self.plot_win.lab_title.setText(title)
-
-        if 'div1' in self.ordered_kspl.keys(): 
+        fontsize = 2; labelsize = 10; width = 1.0; length = 4.0
+        if 'div1' in dirs_df.keys(): 
             print(self.ordered_kspl['div1']['name'])
             #Get heatmap specific for that segm
-            # heatmap1, title1 = fcM.get_unlooped_heatmap(self.organ, hm_name, self.ordered_kspl['div1'])
+            dir_df = self.organ.dir_res(dir='csv_all') / dirs_df['div1']
+            heatmap1 = get_unlooped_heatmap(hm_name, dir_df)
             ax1 = self.plot_win.figure_div1.add_subplot(111)
-            b1 = sns.heatmap(heatmap, cmap=cmap, ax=ax1)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
-            self.plot_win.figure_div1.tight_layout()
+            c1 = ax1.pcolor(heatmap1, cmap=cmap,vmin=vmin, vmax=vmax)
+            cb1 = self.plot_win.figure_div1.colorbar(c1, ax=ax1)
+            cb1.outline.set_visible(False)
+            cb1.ax.tick_params(labelsize=fontsize)
+            ax1.invert_yaxis()
+            ax1.tick_params(left = False, right = False , labelleft = False ,
+                labelbottom = False, bottom = False)
+            
+            # x_pos = ax1.get_xticks()
+            # x_pos_new = np.linspace(x_pos[0], x_pos[-1], 7)
+            # x_lab_new = np.arange(-180,200,60)
+            # ax1.set_xticks(x_pos_new) 
+            # ax1.set_xticklabels(x_lab_new, rotation=30, fontsize=fontsize)#, fontname='Arial')
+            # ax1.xaxis.set_tick_params(labelsize=fontsize, labelcolor='#696969', direction='out', which='major')
+            # ax1.xaxis.set_tick_params(width=width)
+            # print('params:', ax1.xaxis.get_tick_params(which='major'))
+
+            # y_pos = ax1.get_yticks()
+            # ylabels=np.linspace(heatmap1.index.min(), heatmap1.index.max(), len(y_pos)).round(2)
+            # ax1.set_yticks(ticks=y_pos, labels=ylabels)
+            # ax1.set_yticklabels(ylabels, rotation=0, fontsize=fontsize)#, fontname='Arial')
+            # ax1.yaxis.set_tick_params(labelsize=fontsize, width = width, length = length, 
+            #                           labelrotation = 0, labelcolor='#696969', direction='out', which='major')
+            # print('params:', ax1.yaxis.get_tick_params(which='major'))
+            # print('ylabels:', ylabels)
+
+            for pos in ['top', 'right', 'bottom', 'left']:
+                ax1.spines[pos].set_visible(False)
+
+            self.plot_win.figure_div1.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
             self.plot_win.canvas_div1.draw()
             self.plot_win.lab_div1.setText('Plot '+self.ordered_kspl['div1']['name']+': ')
         
@@ -6960,12 +7014,41 @@ class MainWindow(QMainWindow):
             self.plot_win.graph_widget_div1.setVisible(False)
             self.plot_win.lab_div1.setVisible(False)
 
-        if 'div2' in self.ordered_kspl.keys(): 
+        if 'div2' in dirs_df.keys(): 
             print(self.ordered_kspl['div2']['name'])
             #Get heatmap specific for that segm
-            #heatmap = 
+            dir_df = self.organ.dir_res(dir='csv_all') / dirs_df['div2']
+            heatmap2 = get_unlooped_heatmap(hm_name, dir_df)
             ax2 = self.plot_win.figure_div2.add_subplot(111)
-            b2 = sns.heatmap(heatmap, cmap=cmap, ax=ax2)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
+            c2 = ax2.pcolor(heatmap2, cmap=cmap,vmin=vmin, vmax=vmax)
+            cb2 = self.plot_win.figure_div1.colorbar(c2, ax=ax2)
+            cb2.outline.set_visible(False)
+            cb2.ax.tick_params(labelsize=fontsize)
+            ax2.invert_yaxis()
+            ax2.tick_params(left = False, right = False , labelleft = False ,
+                labelbottom = False, bottom = False)
+
+            # x_pos = ax2.get_xticks()
+            # x_pos_new = np.linspace(x_pos[0], x_pos[-1], 7)
+            # x_lab_new = np.arange(-180,200,60)
+            # ax2.set_xticks(x_pos_new) 
+            # ax2.set_xticklabels(x_lab_new, rotation=30, fontsize=fontsize)#, fontname='Arial')
+            # ax2.xaxis.set_tick_params(labelsize=fontsize, labelcolor='#696969', direction='out', which='major')
+            # ax2.xaxis.set_tick_params(width=width)
+            # print('params:', ax2.xaxis.get_tick_params(which='major'))
+
+            # y_pos = ax2.get_yticks()
+            # ylabels=np.linspace(heatmap2.index.min(), heatmap2.index.max(), len(y_pos)).round(2)
+            # ax2.set_yticks(ticks=y_pos, labels=ylabels)
+            # ax2.set_yticklabels(ylabels, rotation=0, fontsize=fontsize)#, fontname='Arial')
+            # ax2.yaxis.set_tick_params(labelsize=fontsize, width = width, length = length, 
+            #                           labelrotation = 0, labelcolor='#696969', direction='out', which='major')
+            # print('params:', ax1.yaxis.get_tick_params(which='major'))
+            # print('ylabels:', ylabels)
+            
+            for pos in ['top', 'right', 'bottom', 'left']:
+                ax2.spines[pos].set_visible(False)
+
             self.plot_win.figure_div2.tight_layout()
             self.plot_win.canvas_div2.draw()
             self.plot_win.lab_div2.setText('Plot '+self.ordered_kspl['div2']['name']+': ')
@@ -6975,7 +7058,7 @@ class MainWindow(QMainWindow):
             self.plot_win.graph_widget_div2.setVisible(False)
             self.plot_win.lab_div2.setVisible(False)
 
-        if 'div3' in self.ordered_kspl.keys(): 
+        if 'div3' in dirs_df.keys(): 
             print(self.ordered_kspl['div3']['name'])
             #Get heatmap specific for that segm
             #heatmap = 
@@ -6990,7 +7073,7 @@ class MainWindow(QMainWindow):
             self.plot_win.graph_widget_div3.setVisible(False)
             self.plot_win.lab_div3.setVisible(False)
 
-        if 'div4' in self.ordered_kspl.keys(): 
+        if 'div4' in dirs_df.keys(): 
             print(self.ordered_kspl['div4']['name'])
             #Get heatmap specific for that segm
             #heatmap = 
@@ -7005,7 +7088,7 @@ class MainWindow(QMainWindow):
             self.plot_win.graph_widget_div4.setVisible(False)
             self.plot_win.lab_div4.setVisible(False)
         
-        if 'div5' in self.ordered_kspl.keys(): 
+        if 'div5' in dirs_df.keys(): 
             print(self.ordered_kspl['div5']['name'])
             #Get heatmap specific for that segm
             #heatmap = 
@@ -7373,12 +7456,6 @@ class PlotWindow(QDialog):
 
     def __init__(self, title:str, width:int, height:int, dpi:int, parent=None):
         super().__init__(parent)
-
-        # #Class imports
-        # from matplotlib.backends.qt_compat import QtCore, QtWidgets
-        # from matplotlib.backends.backend_qt5agg import (
-        #     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-        
         uic.loadUi('src/gui/ui/plot_screen.ui', self)
         self.setWindowTitle(title)
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
@@ -7494,74 +7571,6 @@ class MyToggle(QtWidgets.QPushButton):
         font.setBold(True)
         font.setPointSize(10)
         painter.setFont(font)
-
-class MyTreeItem(QtWidgets.QWidget): #to delete
-    def __init__(self, subproc, parent=None):
-        super().__init__(parent)
-
-        layout = QtWidgets.QHBoxLayout(self)
-        # keep only the default margin on the left
-        layout.setContentsMargins(-1, 0, 0, 0)
-        self.label = QtWidgets.QLabel()
-        self.label.setText(subproc)
-
-        # verticalSpacer = QSpacerItem(20, 40)#, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        
-        self.status = QtWidgets.QLabel()
-        self.status.setStyleSheet("QLabel {background-color:rgb(255, 255, 0); border-width: 2px; border-style: outset; border-color: rgb(0,0, 0);}")
-        self.status.resize(18, 18)
-        self.status.setMaximumWidth(20)
-
-        layout.addWidget(self.label)
-        # layout.addItem(verticalSpacer)
-        layout.addWidget(self.status)
-        layout.addStretch()
-        self.setMaximumWidth(200)
-
-class MyPandasTable(QAbstractTableModel): #to delete
-    def __init__(self, data, parent=None):
-        super().__init__(parent)
-        self._data = data
-    
-    # def __init__(self, data):
-    #     super(TableModel, self).__init__()
-    #     self._data = data
-
-    def rowCount(self, index): 
-        return self._data.shape[0]
-    
-    def columnCount(self, index): 
-        return self._data.shape[1]
-    
-    def data(self, index, role):
-        value = self._data.iloc[index.row(), index.column()]
-        if role == Qt.ItemDataRole.DisplayRole:
-            if isinstance(value, float):
-                # Render float to 2 dp
-                return "%.2f" % value
-            if isinstance(value, str):
-                # Render strings with quotes
-                return '"%s"' % value
-            return value
-        
-        if role == Qt.ItemDataRole.TextAlignmentRole:
-            # value = self._data[index.row()][index.column()]
-            # Align right, vertical middle.
-            return Qt.AlignmentFlag.AlignVCenter + Qt.AlignmentFlag.AlignHCenter
-        
-        if role == Qt.ItemDataRole.ForegroundRole:
-            # value = self._data[index.row()][index.column()]
-            if isinstance(value, str):
-                return QColor('blue')
-        
-    def headerData(self, section, orientation, role):
-        # section is the index of the column/row.
-        if role == Qt.ItemDataRole.DisplayRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return str(self._data.columns[section])
-
-            if orientation == Qt.Orientation.Vertical:
-                return str(self._data.index[section])
 
 #%% SOUNDS - ########################################################
 # Sound functions

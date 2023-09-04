@@ -1700,46 +1700,59 @@ def classify_heart_pts(m_whole, obj_segm, data):
 
     """
     pts_whole = m_whole.points()
-
-    index_segm_all = []
     pts_classAnV = np.empty(len(pts_whole), dtype='object')
-    pts_classAnV[:] = 'other'
-    names = []
-    for segm in obj_segm.keys(): 
-        # Classify AnV
-        print('Classifying points for '+segm)
-        subm = obj_segm[segm].get_segm_mesh()
-        no_segm, name = segm.split(':')
-        names.append(name)
-        pts_segm = subm.points()
 
-        #Classify
-        av = pts_whole.view([('', pts_whole.dtype)] * pts_whole.shape[1]).ravel()
-        cv = pts_segm.view([('', pts_segm.dtype)] * pts_segm.shape[1]).ravel()
-        d_isin = np.isin(av,cv)
-        index_segm = np.where(d_isin == True)[0]
-        print('length original index_segm: ',len(index_segm))
-        if len(index_segm_all) >0: 
-            for indx in index_segm_all: 
-                print(indx)
-                intersect = np.intersect1d(index_segm, indx)
-                if len(intersect)!= 0:
-                    index_segm = np.setdiff1d(index_segm, intersect)
-                    print('length final index_segm: ',len(index_segm))
-        else: 
-            pass
-    
-        index_segm_all.append(index_segm)
+    if obj_segm != []: 
+        pts_classAnV[:] = 'other'
+        index_segm_all = []
+        names = []
+        for segm in obj_segm.keys(): 
+            # Classify AnV
+            print('Classifying points for '+segm)
+            subm = obj_segm[segm].get_segm_mesh()
+            no_segm, name = segm.split(':')
+            names.append(name)
+            pts_segm = subm.points()
+
+            #Classify
+            av = pts_whole.view([('', pts_whole.dtype)] * pts_whole.shape[1]).ravel()
+            cv = pts_segm.view([('', pts_segm.dtype)] * pts_segm.shape[1]).ravel()
+            d_isin = np.isin(av,cv)
+            index_segm = np.where(d_isin == True)[0]
+            print('length original index_segm: ',len(index_segm))
+            if len(index_segm_all) >0: 
+                for indx in index_segm_all: 
+                    print(indx)
+                    intersect = np.intersect1d(index_segm, indx)
+                    if len(intersect)!= 0:
+                        index_segm = np.setdiff1d(index_segm, intersect)
+                        print('length final index_segm: ',len(index_segm))
+            else: 
+                pass
         
-        pts_classAnV[index_segm] = segm
-        unique = np.unique(pts_classAnV)
-        print('unique:', unique)
+            index_segm_all.append(index_segm)
+            
+            pts_classAnV[index_segm] = segm
+            unique = np.unique(pts_classAnV)
+            print('unique:', unique)
+        
+        class_name = '-'.join(names)
+        cols = [class_name]+list(data.keys())
+        df_classPts = pd.DataFrame(columns=cols)
+        df_classPts[class_name] = pts_classAnV
+        print('len(df_classPts):', len(df_classPts))
+
+        if mH_config.dev_plots: 
+            plot_classif_pts(m_whole, pts_whole, list(obj_segm.keys()), pts_classAnV)
     
-    class_name = '-'.join(names)
-    cols = [class_name]+list(data.keys())
-    df_classPts = pd.DataFrame(columns=cols)
-    df_classPts[class_name] = pts_classAnV
-    print('len(df_classPts):', len(df_classPts))
+    else: 
+        class_name = 'whole'
+        cols = [class_name]+list(data.keys())
+        df_classPts = pd.DataFrame(columns=cols)
+        pts_classAnV[:] = 'whole'
+        df_classPts[class_name] = pts_classAnV
+        print('len(df_classPts):', len(df_classPts))
+
     for key, item in data.items():
         print(len(item))
         df_classPts[key] = item
@@ -1747,9 +1760,6 @@ def classify_heart_pts(m_whole, obj_segm, data):
     print("- All Done - points have been classified!\n- Sample of classified points")
     print(df_classPts.sample(10))
     alert('whistle')
-    
-    if mH_config.dev_plots: 
-        plot_classif_pts(m_whole, pts_whole, list(obj_segm.keys()), pts_classAnV)
 
     return df_classPts, class_name
 
@@ -1883,7 +1893,7 @@ def get_extCL_highRes(organ, mesh, kspl_ext):
 def kspl_chamber_cut(organ, mesh, kspl_CLnew, segm_cuts_info, cut, ordered_segm={}, init=False): 
     
     num_pts = {}; spheres = []; kspls_segm = {}; list_num_pts = []
-    for n, disc in enumerate(segm_cuts_info.keys()): 
+    for disc in segm_cuts_info.keys(): 
         
         cut_info = segm_cuts_info[disc]
         disc_o = vedo.Cylinder(pos = cut_info['pl_centre'],r = cut_info['radius'], height = cut_info['height'], 
@@ -1903,8 +1913,6 @@ def kspl_chamber_cut(organ, mesh, kspl_CLnew, segm_cuts_info, cut, ordered_segm=
         sph_f = vedo.Sphere(pos = kspl_CLnew.points()[-1], r=4, c='cyan')
         spheres.append(sph_cut)
 
-    # print('Final num_pts after adding all cuts:', num_pts)
-    # print('ordered_segm (input): ', ordered_segm)
     if init: 
         ordered_segm = order_segms(organ, kspl_CLnew, list_num_pts, cut)
         print('ordered_segm:', ordered_segm)
@@ -1913,13 +1921,13 @@ def kspl_chamber_cut(organ, mesh, kspl_CLnew, segm_cuts_info, cut, ordered_segm=
         kspl_list = []
         ordered_kspl = order_segms(organ, kspl_CLnew, list_num_pts, cut)
         print('ordered_kspl (new):', ordered_kspl)
+
         #Create a kspline for each segm
         nn = 0
         for div in ordered_segm.keys():
             ordered_segm[div].pop('num_pts_range', None)
             ordered_segm[div]['num_pts_range'] = ordered_kspl[div]['num_pts_range']
             numa, numb = ordered_segm[div]['num_pts_range']
-            # print(div, numa, numb)
 
             if ordered_segm[div]['invert_plane_num']:
                 invert = True
@@ -1943,7 +1951,7 @@ def kspl_chamber_cut(organ, mesh, kspl_CLnew, segm_cuts_info, cut, ordered_segm=
     
         if mH_config.dev_plots: 
             vp = vedo.Plotter(N=1, axes=4)
-            vp.show(kspl_CLnew, kspl_list, sph_cut, sph_o, sph_f, disc, mesh, at = 0, interactive = True)
+            vp.show(kspl_CLnew, kspl_list, sph_cut, sph_o, sph_f, disc_o, mesh, at = 0, interactive = True)
         print('ordered_segm (not init):', ordered_segm)
 
     return ordered_segm
@@ -1956,7 +1964,6 @@ def order_segms(organ, kspl_CLnew, num_pts, cut):
     for sub in ext_subsgm.keys(): 
         ext_m = ext_subsgm[sub].get_segm_mesh()
         ext_meshes[sub] = ext_m
-    # print('ext_meshes:', ext_meshes)
 
     num_pts.append(0); num_pts.append(kspl_CLnew.NPoints())
     num_pts = sorted(num_pts)
@@ -1964,21 +1971,17 @@ def order_segms(organ, kspl_CLnew, num_pts, cut):
     ordered_segm = {}
     for n, numa in enumerate(num_pts[:-1]):
         numb = num_pts[n+1]
-        # print(numa, numb)
         num_btw = (numb-numa)//2+numa
-        # print(num_btw)
         kspl_pt = kspl_CLnew.points()[num_btw]
         
         for m_ext in ext_meshes.keys(): 
             if ext_meshes[m_ext].is_inside(kspl_pt):
-                # print('segm:', m_ext)
                 ordered_segm['div'+str(n+1)] = {'num_pts_range': (numa, numb),
                                                 'segm': m_ext, 
                                                 'name': names[m_ext],
                                                 'y_axis': (n+1, n),
                                                 'kspl': None, 
-                                                'invert_plane_num': None}#, 
-                                                # 'index_guess': None}
+                                                'invert_plane_num': None}
                 break
     return ordered_segm
 
@@ -2073,8 +2076,13 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
         # C. Cut surface centreline (kspl_vSurf) with plane and identify 0 deg angle point
         #   Find point of surf_centreline cut by plane (ksplCL_vSurf_cut)
         kspl_vSurf_cut_all = kspl_vSurf.clone().cutWithMesh(plane_cut, invert=invert).lw(5).color('magenta')
-        kspl_vSurf_cut_split = kspl_vSurf_cut_all.split()
-        print('kspl_vSurf_cut_split:', kspl_vSurf_cut_split, ' - len:',len(kspl_vSurf_cut_split))
+        print(type(kspl_vSurf_cut_all))
+        try: 
+            kspl_vSurf_cut_split = kspl_vSurf_cut_all.split()
+            print('kspl_vSurf_cut_split:', kspl_vSurf_cut_split, ' - len:',len(kspl_vSurf_cut_split))
+        except: 
+            print('except trying to cut kspl_vSurf')
+            kspl_vSurf_cut_split = []
 
         if len(kspl_vSurf_cut_split) > 0: 
             if not_init: 
@@ -2143,8 +2151,9 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
     
         else: 
             idx_surf = None
-            print('Not cut plane: ', i)
+            print('No-cut plane: ', i)
 
+        #D. Having all the points, not cut mesh 
         if idx_surf != None and isinstance(idx_surf, int) and started:
             # Vector from centre to cl_surface point being cut by plane
             v_zero = unit_vector(kspl_vSurf.points()[idx_surf] - centre)
@@ -2226,7 +2235,7 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
     dir_df = organ.dir_res(dir='csv_all') / title_df
     df_unloopedf.to_csv(dir_df)
 
-    return df_unloopedf
+    return df_unloopedf, title_df
       
 def heatmap_unlooped(organ, kspl_data, df_unloopedf, hmitem, ch, gui_thball):
     """
@@ -2269,42 +2278,56 @@ def heatmap_unlooped(organ, kspl_data, df_unloopedf, hmitem, ch, gui_thball):
 
     # Make figure
     fig, ax = plt.subplots(figsize=(16, 10))
-    b = sns.heatmap(heatmap, cmap=cmap, vmin = vmin, vmax = vmax, ax=ax)
+    c = ax.pcolor(heatmap, cmap=cmap, vmin = vmin, vmax = vmax)
+    cb = fig.colorbar(c, ax=ax)
+    cb.outline.set_visible(False)
+    cb.ax.tick_params(labelsize=10)
+    ax.invert_yaxis()
+    # b = sns.heatmap(heatmap, cmap=cmap, vmin = vmin, vmax = vmax, ax=ax)
 
+    # set the xticks
     x_pos = ax.get_xticks()
     x_pos_new = np.linspace(x_pos[0], x_pos[-1], 19)
     x_lab_new = np.arange(-180,200,20)
     ax.set_xticks(x_pos_new) 
-    ax.set_xticklabels(x_lab_new, rotation=30)
+    ax.set_xticklabels(x_lab_new, rotation=30, fontsize=10)#, fontname='Arial')
     
+    xlabels=np.linspace(heatmap.columns.min(), heatmap.columns.max(), len(x_pos)).round(3)
+    print('xlabels:', xlabels)
+
+    # set the yticks
     y_pos = ax.get_yticks()
-    y_pos_new = np.linspace(y_pos[0], y_pos[-1], 11)
-    y_labels = sorted(list(kspl_data['y_axis']))
-    y_lab_new = np.linspace(y_labels[0],y_labels[1],11)
-    y_lab_new = [format(y,'.2f') for y in y_lab_new]
-    ax.set_yticks(y_pos_new) 
-    ax.set_yticklabels(y_lab_new, rotation=0)
+    # y_pos_new = np.linspace(y_pos[0], y_pos[-1], 11)
+    # y_labels = sorted(list(kspl_data['y_axis']))
+    # y_lab_new = np.linspace(y_labels[0],y_labels[1],11)
+    # y_lab_new = [format(y,'.2f') for y in y_lab_new]
+    # ax.set_yticks(y_pos_new) 
+    # ax.set_yticklabels(y_lab_new, rotation=0, fontsize=10)#, fontname='Arial')
+
+    ylabels=np.linspace(heatmap.index.min(), heatmap.index.max(), len(y_pos)).round(2)
+    ax.set_yticks(ticks=y_pos, labels=ylabels)
+    ax.set_yticklabels(ylabels, rotation=0, fontsize=10)#, fontname='Arial')
+    print('ylabels:', ylabels)
     
     y_text = 'Centreline Position ['+kspl_data['name'].title()+']'
     plt.ylabel(y_text, fontsize=10)
     plt.xlabel('Angle (\N{DEGREE SIGN})', fontsize=10)
-    plt.title(title, fontsize = 15)
+    plt.title(title, fontsize = 12)
+
+    for pos in ['top', 'right', 'bottom', 'left']:
+        ax.spines[pos].set_visible(False)
 
     #Save figure and heatmap dataframe
     plt.savefig(dir_hm, dpi=300, bbox_inches='tight', transparent=True)
-    alert('bubble')
     alert('clown')
-    heatmap.to_csv(dir_df)
-    alert('countdown')
 
-def get_unlooped_heatmap(organ, hmitem, kspl_data, gui_thball): 
 
-    organ_name = organ.user_organName
-    title_df = organ_name+'_dfUnloop_'+hmitem+'_'+kspl_data['name']+'.csv'
-    dir_df = organ.dir_res(dir='csv_all') / title_df
+def get_unlooped_heatmap(hmitem, dir_df): 
 
     df_unloopedf= pd.read_csv(str(dir_df))
+    print(df_unloopedf.sample(10))
     df_unloopedf = df_unloopedf.drop(['taken'], axis=1)
+    print(df_unloopedf.sample(10))
     df_unloopedf.astype('float16').dtypes
 
     heatmap = pd.pivot_table(df_unloopedf, values= hmitem, columns = 'theta', index='z_plane', aggfunc=np.max)
@@ -2552,9 +2575,9 @@ def get_plane_normals_to_proj_kspl(organ, no_planes, kspl, gui_heatmaps2d):
     plane_ext = vedo.Plane(pos = cell_centre, normal = ext_plane)
     proj_kspl = kspl.clone().project_on_plane(plane=plane_ext).lw(3).color('black')
 
-    plt = vedo.Plotter(N=2, axes=1)
-    plt.show(orient_cube, proj_kspl, at=0)
-    plt.show(kspl, proj_kspl, plane_ext, at=1, interactive=True)
+    # plt = vedo.Plotter(N=2, axes=1)
+    # plt.show(orient_cube, proj_kspl, at=0)
+    # plt.show(kspl, proj_kspl, plane_ext, at=1, interactive=True)
 
     print('len(kspl.points()):', len(kspl.points()))
     print('len(proj_kspl.points()):', len(proj_kspl.points()))

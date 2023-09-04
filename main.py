@@ -11,6 +11,10 @@ import sys
 # from PyQt6 import uic
 from PyQt6 import QtWidgets#, QtCore
 # from pathlib import Path
+# import os
+# conda_env = os.environ['CONDA_DEFAULT_ENV']
+# print(conda_env)
+
 
 #%% morphoHeart Imports - ##################################################
 from src.gui.config import mH_config 

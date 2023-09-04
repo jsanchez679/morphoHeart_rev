@@ -706,24 +706,27 @@ def run_heatmaps2D(controller, btn):
                     if 'i2e' in short: 
                         n_type = 'intTOext'
                         cont = 'ext'
-                    elif 'e2i' in short: 
+                    else:# 'e2i' in short: 
                         n_type = 'extTOint'
                         cont = 'int'
                     array_name = 'thck('+n_type+')'
                 else: 
-                    ch_cont, cl_info = ch_info.split('(')
+                    # hm2d_set: ['ball[ch1-int(CL.ch1-int)]']
+                    ch_cont, cl_info = ch_info.split('(CL.')
                     ch, contf = ch_cont.split('-')
-                    n_type = 'AAA'
-                    array_name = 'AAA'
-                    cont = 'aaa'
-                
+                    from_cl, from_cl_type = cl_info.split('-')
+                    array_name = 'ballCL('+from_cl+'_'+from_cl_type
+                    cont = contf
+
+                print('array_name:', array_name)
                 #Get whole mesh and heatmap3d data
                 whole_mesh = controller.organ.obj_meshes[ch+'_'+contf]
                 array_mesh = controller.organ.obj_meshes[ch+'_'+cont]
                 
                 #Get data from heatmap 3D - LS52_F02_ch1_tiss_CMthck(intTOext)
-                title = str(whole_mesh.dirs['arrays'][array_name])+'.npy'
                 print(whole_mesh.dirs['arrays'])
+                
+                title = str(whole_mesh.dirs['arrays'][array_name])+'.npy'
                 dir_npy = whole_mesh.parent_organ.dir_res(dir='csv_all') / title
                 npy_array = np.load(dir_npy)
                 print(short+'> whole_mesh: '+ch+'_'+contf+' -- array_mesh: '+ch+'_'+cont+' - loaded_npy:', dir_npy)
@@ -735,12 +738,10 @@ def run_heatmaps2D(controller, btn):
                 # KSpline on surface
                 ext_plane = controller.main_win.gui_thickness_ballooning['heatmaps2D']['direction']['plane_normal']
                 kspl_vSurf = fcM.get_extCL_on_surf(mesh = array_mesh.mesh, kspl_ext = kspl_ext, direction = ext_plane)
-                print('len(kspl_vSurf.points()):',len(kspl_vSurf.points()))
 
                 # Create new extended and cut kspline with higher resolution
                 kspl_CLnew = fcM.get_extCL_highRes(organ = controller.organ, mesh = array_mesh.mesh, 
                                                 kspl_ext = kspl_ext) 
-                print('len(kspl_CLnew.points()):',len(kspl_CLnew.points()))
                 
                 #If the user wants to use the segments to aid heatmap unlooping....
                 if gui_heatmaps2d['use_segms']: 
@@ -758,51 +759,67 @@ def run_heatmaps2D(controller, btn):
                             print('segm_name:', segm_name)
                             obj_segm[key] = controller.organ.obj_subm[segm_name]
                         else: 
-                            print('The segments for this tissue have not been obtained yet! ('+controller.main_win.gui_thickness_ballooning['heatmaps2D']['segms']+')')
-                            break
+                            controller.main_win.win_msg('*The segments for this tissue ('+ch+'_'+cont+") have not been obtained yet! Please create this tissue's segments to be able to run this process.") 
+                            print('*The segments for this tissue have not been obtained yet! ('+controller.main_win.gui_thickness_ballooning['heatmaps2D']['segms']+')')
+                            # return
+                        
                     print('len(obj_segm):', len(obj_segm), obj_segm)
 
+                    data = {hmitem: npy_array}
                     if len(obj_segm) != segm_setup['no_segments']: 
                         #Use the whole tissue to create 2D heatmap
                         print('Use the whole tissue to create 2D heatmap')
-
+                        df_classPts, class_name = fcM.classify_heart_pts(array_mesh.mesh, obj_segm=[], data=data)
+                        # Create kspline for whole tissue
+                        print('controller.main_win.ordered_kspl:',controller.main_win.ordered_kspl)
+                        ordered_kspl = copy.deepcopy(controller.organ.mH_settings['wf_info']['heatmaps']['heatmaps2D']['div'])
+                        print(ordered_kspl)
+                        # ordered_kspl = fcM.kspl_chamber_cut(organ = controller.organ, 
+                        #                                     mesh = array_mesh.mesh, 
+                        #                                     kspl_CLnew = kspl_CLnew, 
+                        #                                     segm_cuts_info=segm_cuts_info, 
+                        #                                     cut=cut2use, ordered_segm=ordered_kspl)
+                                                            
                     else: 
                         # Classify points
-                        print('Classify points')
-                        data = {hmitem: npy_array}
+                        print('Classify points into segments')
                         df_classPts, class_name = fcM.classify_heart_pts(array_mesh.mesh, obj_segm, data)
 
                         # Create kspline for each segment
                         print('controller.main_win.ordered_kspl:',controller.main_win.ordered_kspl)
-                        ordered_kspl = controller.organ.mH_settings['wf_info']['heatmaps']['heatmaps2D']['div']
+                        ordered_kspl = copy.deepcopy(controller.organ.mH_settings['wf_info']['heatmaps']['heatmaps2D']['div'])
                         ordered_kspl = fcM.kspl_chamber_cut(organ = controller.organ, 
                                                             mesh = array_mesh.mesh, 
                                                             kspl_CLnew = kspl_CLnew, 
                                                             segm_cuts_info=segm_cuts_info, 
                                                             cut=cut2use, ordered_segm=ordered_kspl)
-
+                        print('ordered_kspl:',ordered_kspl)
                         order_segm_upside = list(ordered_kspl.keys())
                         order_segm_upside.reverse()
 
+                        dirs = {}
                         for div in order_segm_upside: 
                             print('\n\n- Unlooping the heart chambers for '+ordered_kspl[div]['name']+'...')
                             print('div:', div, 'ordered_kspl[div]:', ordered_kspl[div])
                             print(array_name, short, hmitem)
-
-                            # if div == 'div2': 
-                            df_unloopedf = fcM.unloop_chamber(organ = controller.organ,
-                                                                mesh = array_mesh.mesh, 
-                                                                kspl_CLnew = kspl_CLnew,
-                                                                kspl_vSurf = kspl_vSurf,
-                                                                df_classPts = df_classPts,
-                                                                labels = (hmitem, class_name),
-                                                                gui_heatmaps2d = gui_heatmaps2d, 
-                                                                kspl_data=ordered_kspl[div])
-                            
+                            print('ABC0:', controller.main_win.gui_thickness_ballooning)
+                            df_unloopedf, title_df = fcM.unloop_chamber(organ = controller.organ,
+                                                                        mesh = array_mesh.mesh, 
+                                                                        kspl_CLnew = kspl_CLnew,
+                                                                        kspl_vSurf = kspl_vSurf,
+                                                                        df_classPts = df_classPts,
+                                                                        labels = (hmitem, class_name),
+                                                                        gui_heatmaps2d = gui_heatmaps2d, 
+                                                                        kspl_data=ordered_kspl[div])
+                            print('ABC1:', controller.main_win.gui_thickness_ballooning)
+                            dirs[div] = Path(title_df)
                             fcM.heatmap_unlooped(organ = controller.organ, kspl_data = ordered_kspl[div], 
                                                         df_unloopedf = df_unloopedf, hmitem= hmitem, ch = ch,
                                                         gui_thball = controller.main_win.gui_thickness_ballooning)
-                            
+                            print('ABC2:', controller.main_win.gui_thickness_ballooning)
+                        #Update dirs to check if things have been made
+                        controller.main_win.gui_thickness_ballooning[hmitem]['hm2d_dirs'] = dirs
+                                
                 #Enable buttons to plot heatmaps
                 plot_btn = controller.main_win.hm_btns[hmitem]['plot2d']
                 plot_btn.setEnabled(True)
@@ -810,6 +827,8 @@ def run_heatmaps2D(controller, btn):
             print('\nEND Heatmaps')
             print('organ.mH_settings:', controller.organ.mH_settings)
             print('organ.workflow:', workflow)
+
+            # controller.main_win.set_thickness2D()
 
         else: 
             controller.main_win.win_msg('*Set the 2D Heatmap settings first to be able to run this process')

@@ -6,10 +6,11 @@
 (morphoHeart_gui) C:\>conda install vmtk
 (morphoHeart_gui) C:\>pip install vedo==2023.4.3
 
-(morphoHeart_gui) C:\>pip install matplotlib==3.7.1
-(morphoHeart_gui) C:\>pip install seaborn==0.11.0 / 0.12.2
+(morphoHeart_gui) C:\>pip install seaborn==0.11.0
+(morphoHeart_gui) C:\>pip install matplotlib==3.7.2 (was installed with seaborn)
+
 (morphoHeart_gui) C:\>pip install scikit-image==0.19.3
-(morphoHeart_gui) C:\>pip install pandas==1.5.3
+(morphoHeart_gui) C:\>pip install pandas==1.5.3 (was installed with seaborn)
 (morphoHeart_gui) C:\>pip install flatdict==4.0.1
 
 (morphoHeart_gui) C:\>pip install PyQt6
@@ -19,6 +20,8 @@
 (morphoHeart_gui) C:\>pip install PySide2
 
 (morphoHeart_gui) C:\>pip install playsound==1.2.2
+
+??? pip install ipykernel (gets installed in vscode when the code is run)
 
 
 VEDO CHANGES (shapes.py - line 1191)
