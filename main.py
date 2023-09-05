@@ -364,6 +364,64 @@ class Controller:
         self.main_win.cut2_play_sect11.clicked.connect(lambda: self.run_sections(btn='Cut2_11'))
         self.main_win.cut2_play_sect12.clicked.connect(lambda: self.run_sections(btn='Cut2_12'))
 
+        # SEGMENTS-SECTIONS
+        # self.main_win.segm_sect_play.clicked.connect(lambda: self.run_segm_sect())
+        #sCut1 - Cut1
+        self.main_win.scut1_cut1_play_sect1.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_1'))
+        self.main_win.scut1_cut1_play_sect2.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_2'))
+        self.main_win.scut1_cut1_play_sect3.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_3'))
+        self.main_win.scut1_cut1_play_sect4.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_4'))
+        self.main_win.scut1_cut1_play_sect5.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_5'))
+        self.main_win.scut1_cut1_play_sect6.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_6'))
+        self.main_win.scut1_cut1_play_sect7.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_7'))
+        self.main_win.scut1_cut1_play_sect8.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_8'))
+        self.main_win.scut1_cut1_play_sect9.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_9'))
+        self.main_win.scut1_cut1_play_sect10.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_10'))
+        self.main_win.scut1_cut1_play_sect11.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_11'))
+        self.main_win.scut1_cut1_play_sect12.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut1_12'))
+
+        #sCut1 - Cut2
+        self.main_win.scut1_cut2_play_sect1.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_1'))
+        self.main_win.scut1_cut2_play_sect2.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_2'))
+        self.main_win.scut1_cut2_play_sect3.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_3'))
+        self.main_win.scut1_cut2_play_sect4.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_4'))
+        self.main_win.scut1_cut2_play_sect5.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_5'))
+        self.main_win.scut1_cut2_play_sect6.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_6'))
+        self.main_win.scut1_cut2_play_sect7.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_7'))
+        self.main_win.scut1_cut2_play_sect8.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_8'))
+        self.main_win.scut1_cut2_play_sect9.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_9'))
+        self.main_win.scut1_cut2_play_sect10.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_10'))
+        self.main_win.scut1_cut2_play_sect11.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_11'))
+        self.main_win.scut1_cut2_play_sect12.clicked.connect(lambda: self.run_segm_sect(btn='sCut1_o_Cut2_12'))
+
+        #sCut2 - Cut1
+        self.main_win.scut2_cut1_play_sect1.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_1'))
+        self.main_win.scut2_cut1_play_sect2.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_2'))
+        self.main_win.scut2_cut1_play_sect3.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_3'))
+        self.main_win.scut2_cut1_play_sect4.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_4'))
+        self.main_win.scut2_cut1_play_sect5.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_5'))
+        self.main_win.scut2_cut1_play_sect6.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_6'))
+        self.main_win.scut2_cut1_play_sect7.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_7'))
+        self.main_win.scut2_cut1_play_sect8.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_8'))
+        self.main_win.scut2_cut1_play_sect9.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_9'))
+        self.main_win.scut2_cut1_play_sect10.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_10'))
+        self.main_win.scut2_cut1_play_sect11.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_11'))
+        self.main_win.scut2_cut1_play_sect12.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut1_12'))
+
+        #sCut2 - Cut2
+        self.main_win.scut2_cut2_play_sect1.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_1'))
+        self.main_win.scut2_cut2_play_sect2.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_2'))
+        self.main_win.scut2_cut2_play_sect3.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_3'))
+        self.main_win.scut2_cut2_play_sect4.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_4'))
+        self.main_win.scut2_cut2_play_sect5.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_5'))
+        self.main_win.scut2_cut2_play_sect6.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_6'))
+        self.main_win.scut2_cut2_play_sect7.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_7'))
+        self.main_win.scut2_cut2_play_sect8.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_8'))
+        self.main_win.scut2_cut2_play_sect9.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_9'))
+        self.main_win.scut2_cut2_play_sect10.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_10'))
+        self.main_win.scut2_cut2_play_sect11.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_11'))
+        self.main_win.scut2_cut2_play_sect12.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_12'))
+
     #Functions related to API  
     # Project Related  
     def set_proj_meas_param(self):
@@ -576,6 +634,10 @@ class Controller:
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
     
+    def run_segm_sect(self, btn=None): 
+        mA.run_segm_sect(controller=self, btn=btn)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
 def main():
     app = QtWidgets.QApplication(sys.argv)

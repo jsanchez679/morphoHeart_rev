@@ -3000,16 +3000,12 @@ class Mesh_mH():
         else: 
             invert = False
         print('name:', name, '- invert:', invert)
-            
+        
         submesh = SubMesh(parent_mesh = self, sub_mesh_type='Section', 
                           name = name, cut = cut, user_name = sect_info['name_sections'][name],
                           color = color, alpha = alpha)#,
         
         submesh.s3_invert = invert
-        # name2save = self.parent_organ.user_organName + '_mask_sect.npy'
-        # submesh.s3_mask_dir = self.parent_organ.dir_res(dir='s3_numpy') / name2save
-        
-        # segments_info = self.parent_organ.mH_settings['general_info']['sections']
         submesh.sub_user_name = sect_info['name_sections'][submesh.sub_name]
         self.parent_organ.add_submesh(submesh)
         
@@ -3086,17 +3082,22 @@ class SubMesh():
         
         self.parent_mesh = parent_mesh
         self.sub_name = name # ch_cont_segm/sect
-        self.sub_name_all = cut+'_'+parent_mesh.name+'_'+name
-        self.cut = cut
         self.sub_mesh_type = sub_mesh_type # Section, Segment
         self.keep_largest = False#keep_largest
         
-        parent_organ = self.parent_mesh.parent_organ
-        
+        if sub_mesh_type != 'Segment-Section': 
+            self.cut = cut
+            self.sub_name_all = cut+'_'+parent_mesh.name+'_'+name
+            parent_organ = self.parent_mesh.parent_organ 
+        else: 
+            # self.cut = 
+            # self.sub_name_all = cut+'_'+parent_mesh.name+'_'+name
+            # parent_organ = self.parent_mesh.parent_organ 
+            pass
+ 
         if self.sub_name_all not in parent_organ.submeshes.keys():
             print('>> New submesh - ', self.sub_name_all)
             # new = True
-            self.sub_name = name # ch_cont_segm/sect
             self.sub_legend = parent_mesh.legend + '_' + user_name # e.g. myoc_ext_atrium
             self.color = color
             self.alpha = alpha
@@ -3120,6 +3121,10 @@ class SubMesh():
                 if attr in submesh_dict.keys():
                     value = submesh_dict[attr]
                     setattr(self, attr, value)
+
+            
+
+            pass
                     
     def get_sect_mesh(self):
         
@@ -3163,6 +3168,35 @@ class SubMesh():
             
         return segm_mesh
     
+    
+    def create_segm_sect(self, segm_sect, cuts, color, alpha=0.05): 
+        seg_cut, reg_cut = cuts.split('_o_')
+        seg_name, reg_name = segm_sect.split('_')
+        segm_info = self.parent_mesh.parent_organ.mH_settings['setup']['segm'][seg_cut]
+        sect_info = self.parent_mesh.parent_organ.mH_settings['setup']['sect'][reg_cut]
+        if reg_name == 'sect1':
+            invert = True
+        else: 
+            invert = False
+        print('seg_name:', seg_name, 'reg_name:', reg_name, '- invert:', invert)
+
+        cut = 's'+seg_cut+'_'+reg_cut
+        user_name = segm_info['name_segments'][seg_name]+'_'+sect_info['name_sections'][reg_name]
+        print(cut, user_name)
+        # submesh = SubMesh(parent_mesh = self, sub_mesh_type='Segment-Section', 
+        #                   name = segm_sect, cut = cut, user_name = user_name,
+        #                   color = color, alpha = alpha)#,
+        # print(submesh.__dict__)
+        # submesh.s3_invert = invert
+        # submesh.sub_user_name = segm_info['name_segments'][seg_name]+'_'+sect_info['name_sections'][reg_name]
+        # self.parent_organ.add_submesh(submesh)
+
+        # return submesh
+    
+    def get_segm_sect_mesh(self): 
+        pass
+
+
     def set_alpha(self, mesh_alpha):      
         self.alpha = mesh_alpha
         #Update settings
@@ -3374,15 +3408,15 @@ def slc_plot (slc, im_cyl, im, myIm, directory, name):
 def create_submesh(masked_s3, resolution, keep_largest:bool, rotateZ_90:bool):
     
     verts, faces, _, _ = measure.marching_cubes(masked_s3, spacing=resolution, method='lewiner')
-    print('aaaa')
+    # print('aaaa')
     # Create meshes
     mesh = vedo.Mesh([verts, faces])
-    print('bbbb')
+    # print('bbbb')
     if keep_largest:
         mesh = mesh.extract_largest_region()
     if rotateZ_90:
         mesh.rotate_z(-90)
-    print('cccc')
+    # print('cccc')
     alert('woohoo')
     
     return mesh

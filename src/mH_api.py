@@ -679,8 +679,7 @@ def run_heatmaps3D(controller, btn):
         controller.main_win.win_msg('*To extract the thickness meshes make sure you have at least run the  -Keep Largest-  section.')
 
 def run_heatmaps2D(controller, btn):
-    # controller.main_win.win_msg('!This section of code is under development... you will be able to use it soon!')
-    # alert('bubble')
+
     if controller.main_win.keeplargest_play.isChecked():
         if controller.main_win.thickness2D_set.isChecked():  
             workflow = controller.organ.workflow['morphoHeart']
@@ -741,7 +740,7 @@ def run_heatmaps2D(controller, btn):
 
                 # Create new extended and cut kspline with higher resolution
                 kspl_CLnew = fcM.get_extCL_highRes(organ = controller.organ, mesh = array_mesh.mesh, 
-                                                kspl_ext = kspl_ext) 
+                                                    kspl_ext = kspl_ext) 
                 
                 #If the user wants to use the segments to aid heatmap unlooping....
                 if gui_heatmaps2d['use_segms']: 
@@ -761,25 +760,29 @@ def run_heatmaps2D(controller, btn):
                         else: 
                             controller.main_win.win_msg('*The segments for this tissue ('+ch+'_'+cont+") have not been obtained yet! Please create this tissue's segments to be able to run this process.") 
                             print('*The segments for this tissue have not been obtained yet! ('+controller.main_win.gui_thickness_ballooning['heatmaps2D']['segms']+')')
-                            # return
+                            return
                         
                     print('len(obj_segm):', len(obj_segm), obj_segm)
 
                     data = {hmitem: npy_array}
+                    #Use the whole tissue to create 2D heatmap
                     if len(obj_segm) != segm_setup['no_segments']: 
-                        #Use the whole tissue to create 2D heatmap
-                        print('Use the whole tissue to create 2D heatmap')
-                        df_classPts, class_name = fcM.classify_heart_pts(array_mesh.mesh, obj_segm=[], data=data)
-                        # Create kspline for whole tissue
-                        print('controller.main_win.ordered_kspl:',controller.main_win.ordered_kspl)
-                        ordered_kspl = copy.deepcopy(controller.organ.mH_settings['wf_info']['heatmaps']['heatmaps2D']['div'])
-                        print(ordered_kspl)
-                        # ordered_kspl = fcM.kspl_chamber_cut(organ = controller.organ, 
-                        #                                     mesh = array_mesh.mesh, 
-                        #                                     kspl_CLnew = kspl_CLnew, 
-                        #                                     segm_cuts_info=segm_cuts_info, 
-                        #                                     cut=cut2use, ordered_segm=ordered_kspl)
-                                                            
+                        controller.main_win.win_msg('*The number of segments saved for this tissue ('+ch+'_'+cont+") is different than the number of segments expected. Please re-run segment creation for this tissue to be able to run this process.") 
+                        print('*The number of segments saved for this tissue ('+ch+'_'+cont+") is different than the number of segments expected. Please re-run segment creation for this tissue to be able to run this process.")
+                        return
+                    
+                        # print('Use the whole tissue to create 2D heatmap')
+                        # df_classPts, class_name = fcM.classify_heart_pts(array_mesh.mesh, obj_segm=[], data=data)
+                        # # Create kspline for whole tissue
+                        # ordered_kspl = {'div1': {'segm': 'NA', 
+                        #                          'name': 'whole', 
+                        #                          'y_axis': (1, 0), 
+                        #                          'invert_plane_num': True, 
+                        #                          'kspl': kspl_CLnew, 
+                        #                          'num_pts_range': (0, kspl_CLnew.NPoints())}}
+                        # print('ordered_kspl (whole):',ordered_kspl)
+                        # order_segm_upside = ordered_kspl
+
                     else: 
                         # Classify points
                         print('Classify points into segments')
@@ -793,32 +796,47 @@ def run_heatmaps2D(controller, btn):
                                                             kspl_CLnew = kspl_CLnew, 
                                                             segm_cuts_info=segm_cuts_info, 
                                                             cut=cut2use, ordered_segm=ordered_kspl)
-                        print('ordered_kspl:',ordered_kspl)
+                        print('ordered_kspl (segm):',ordered_kspl)
                         order_segm_upside = list(ordered_kspl.keys())
                         order_segm_upside.reverse()
+                
+                #If the user wants to unloop the whole tissue without segments aid....
+                else:
+                    data = {hmitem: npy_array} 
+                    #Use the whole tissue to create 2D heatmap
+                    print('Use the whole tissue to create 2D heatmap')
+                    df_classPts, class_name = fcM.classify_heart_pts(array_mesh.mesh, obj_segm=[], data=data)
+                    # Create kspline for whole tissue
+                    ordered_kspl = copy.deepcopy(controller.organ.mH_settings['wf_info']['heatmaps']['heatmaps2D']['div'])
+                    print(ordered_kspl)
+                    kspl_CLnewf = vedo.KSpline(kspl_CLnew.points()[::-1], res = 600).lw(5).color('deeppink').legend('HighResCL')
+                    ordered_kspl['div1']['kspl'] = kspl_CLnewf
+                    ordered_kspl['div1']['num_pts_range'] = (0, kspl_CLnewf.NPoints())
+                    print('ordered_kspl (whole):',ordered_kspl)
+                    order_segm_upside = ordered_kspl
 
-                        dirs = {}
-                        for div in order_segm_upside: 
-                            print('\n\n- Unlooping the heart chambers for '+ordered_kspl[div]['name']+'...')
-                            print('div:', div, 'ordered_kspl[div]:', ordered_kspl[div])
-                            print(array_name, short, hmitem)
-                            print('ABC0:', controller.main_win.gui_thickness_ballooning)
-                            df_unloopedf, title_df = fcM.unloop_chamber(organ = controller.organ,
-                                                                        mesh = array_mesh.mesh, 
-                                                                        kspl_CLnew = kspl_CLnew,
-                                                                        kspl_vSurf = kspl_vSurf,
-                                                                        df_classPts = df_classPts,
-                                                                        labels = (hmitem, class_name),
-                                                                        gui_heatmaps2d = gui_heatmaps2d, 
-                                                                        kspl_data=ordered_kspl[div])
-                            print('ABC1:', controller.main_win.gui_thickness_ballooning)
-                            dirs[div] = Path(title_df)
-                            fcM.heatmap_unlooped(organ = controller.organ, kspl_data = ordered_kspl[div], 
-                                                        df_unloopedf = df_unloopedf, hmitem= hmitem, ch = ch,
-                                                        gui_thball = controller.main_win.gui_thickness_ballooning)
-                            print('ABC2:', controller.main_win.gui_thickness_ballooning)
-                        #Update dirs to check if things have been made
-                        controller.main_win.gui_thickness_ballooning[hmitem]['hm2d_dirs'] = dirs
+                ##################################################################################################
+                # Now Unloop the chambers (or not if whole) and get heatmap
+                dirs = {}
+                for div in order_segm_upside: 
+                    print('\n\n- Unlooping the heart chambers for '+ordered_kspl[div]['name']+'...')
+                    # print('div:', div, 'ordered_kspl[div]:', ordered_kspl[div])
+                    # print(array_name, short, hmitem)
+                    df_unloopedf, title_df = fcM.unloop_chamber(organ = controller.organ,
+                                                                mesh = array_mesh.mesh, 
+                                                                kspl_CLnew = kspl_CLnew,
+                                                                kspl_vSurf = kspl_vSurf,
+                                                                df_classPts = df_classPts,
+                                                                labels = (hmitem, class_name),
+                                                                gui_heatmaps2d = gui_heatmaps2d, 
+                                                                kspl_data=ordered_kspl[div])
+                    dirs[div] = Path(title_df)
+                    fcM.heatmap_unlooped(organ = controller.organ, kspl_data = ordered_kspl[div], 
+                                                df_unloopedf = df_unloopedf, hmitem= hmitem, ch = ch,
+                                                gui_thball = controller.main_win.gui_thickness_ballooning)
+                    
+                    #Update dirs to check if things have been made
+                    controller.main_win.gui_thickness_ballooning[hmitem]['hm2d_dirs'] = dirs
                                 
                 #Enable buttons to plot heatmaps
                 plot_btn = controller.main_win.hm_btns[hmitem]['plot2d']
@@ -827,8 +845,6 @@ def run_heatmaps2D(controller, btn):
             print('\nEND Heatmaps')
             print('organ.mH_settings:', controller.organ.mH_settings)
             print('organ.workflow:', workflow)
-
-            # controller.main_win.set_thickness2D()
 
         else: 
             controller.main_win.win_msg('*Set the 2D Heatmap settings first to be able to run this process')
@@ -870,7 +886,7 @@ def run_segments(controller, btn):
                         'nPoints' : nPoints}
     else: 
         cl_spheres = None
-    print('cl_spheres: ', cl_spheres)
+    # print('cl_spheres: ', cl_spheres)
     print('organ.obj_temp:', controller.organ.obj_temp)
 
     #Loop through all the tissues that are going to be segmented
@@ -948,14 +964,23 @@ def run_segments(controller, btn):
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
-
         #Fill-up results table
         controller.main_win.fill_results()
-
         #Check button 
         controller.main_win.segm_btns[segm]['play'].setChecked(True)
+        #Check segm-sections
+        if hasattr(controller.main_win, 'segm_sect_btns'):
+            btn_final = 'NA'
+            for btn_ss in controller.main_win.segm_sect_btns:
+                if 's'+cut.title() in btn_ss and ch_cont in btn_ss:
+                    btn_final = btn_ss
+                    break
+            if btn_final != 'NA': 
+                reg_cut = btn_final.split(':')[0].split('_o_')[1]
+                reg_btn = reg_cut+':'+ch_cont
+                if controller.main_win.sect_btns[reg_btn]['plot'].isEnabled(): 
+                    controller.main_win.segm_sect_btns[btn_final]['play'].setEnabled(True)
         
-
     # Update organ workflow and GUI Status
     flat_semg_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Segments']))
     all_done = []
@@ -1198,27 +1223,48 @@ def run_sections(controller, btn):
             # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
 
             # -> Create cube of ribbon and mask one side
+            print('Creating cube sections for masking ('+cut.title()+')')
+            controller.main_win.win_msg('Creating cube sections for masking ('+cut.title()+')')
             mask_cube_split, s3_filledCubes = fcM.get_cube_clRibbon(organ = controller.organ,
-                                                            cut = cut,  
-                                                                s3_filledCube = s3_filledCube,
-                                                                res = mesh_cl.resolution,  
-                                                                pl_normal = ext_plane)
+                                                                    cut = cut,  
+                                                                    s3_filledCube = s3_filledCube,
+                                                                    res = mesh_cl.resolution,  
+                                                                    pl_normal = ext_plane)
             
             # obj = [(mask_cube_split[0], mask_cube_split[1], test_rib, mesh_cl.mesh)]
             # txt = [(0, controller.organ.user_organName)]
             # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
-
+            
             #Select the side of the ribbon that corresponds to section 1
             selected_side = fcM.select_ribMask(controller.organ, cut, mask_cube_split, mesh_cl.mesh)
-            fcM.save_ribMask_side(organ = controller.organ, 
-                                cut = cut, 
-                                selected_side=selected_side, 
-                                s3_filledCubes = s3_filledCubes)
             
+            if selected_side['name'] == 'NS': 
+                name_sect1 = controller.organ.mH_settings['setup']['sect'][cut.title()]['name_sections']['sect1']
+                title = name_sect1.title()+' section not selected!' 
+                msg = 'Select the mesh that corresponds to Section No.1 ('+name_sect1.upper()+'):'
+                items = {0: {'opt':'dark blue mesh (A)'}, 1: {'opt':'light blue mesh (B)'}}
+                prompt = Prompt_ok_cancel_radio(title, msg, items, parent=controller.main_win)
+                prompt.exec()
+                print('output:', prompt.output, '\n')  
+                if prompt.output[0] == 0: 
+                    selected_side = {'name': 'Filled CLRibbon SideA'}
+                else: #prompt.output[0] == 1: 
+                    selected_side = {'name': 'Filled CLRibbon SideB'}
+
+            else: 
+                pass
+            print('final selected_mesh:', selected_side)
+
+            fcM.save_ribMask_side(organ = controller.organ, 
+                                    cut = cut, 
+                                    selected_side=selected_side, 
+                                    s3_filledCubes = s3_filledCubes)
+                
             #Enable plot button for centreline extension
             cl_ext_btn = getattr(controller.main_win, 'cl_ext_'+cut.lower()).setEnabled(True)
         
         #Cut input tissue into sections
+        print(type(mesh2cut))
         meshes_sect = fcM.get_sections(controller.organ, mesh2cut, cut, 
                                         sect_names, palette, win=controller.main_win)
         
@@ -1237,6 +1283,19 @@ def run_sections(controller, btn):
 
         #Fill-up results table
         controller.main_win.fill_results()
+
+        #Check segm-sections
+        if hasattr(controller.main_win, 'segm_sect_btns'):
+            btn_final = 'NA'
+            for btn_ss in controller.main_win.segm_sect_btns:
+                if '_o_'+cut.title() in btn_ss and ch_cont in btn_ss:
+                    btn_final = btn_ss
+                    break
+            if btn_final != 'NA': 
+                seg_cut = btn_final.split('_o_')[0][1:]
+                seg_btn = seg_cut+':'+ch_cont
+                if controller.main_win.segm_btns[seg_btn]['plot'].isEnabled(): 
+                    controller.main_win.segm_sect_btns[btn_final]['play'].setEnabled(True)
     
     # Update organ workflow and GUI Status
     flat_sect_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Sections']))
@@ -1254,6 +1313,83 @@ def run_sections(controller, btn):
     else: 
         pass
     controller.main_win.update_status(workflow, proc_wft, controller.main_win.sections_status)
+
+def run_segm_sect(controller, btn): 
+    workflow = controller.organ.workflow['morphoHeart']
+    segm_sect_list = list(controller.main_win.segm_sect_btns.keys())
+    if btn != None: 
+        scuto, rcut_num = btn.split('_o_')
+        scut = scuto[1:]
+        rcut, num = rcut_num.split('_')
+        for key in segm_sect_list: 
+            ch_cont = key.split(':')[1]
+            seg_cut = key.split('_o_')[0][1:]
+            reg_cut = key.split(':')[0].split('_o_')[1]
+            num_key = controller.main_win.segm_sect_btns[key]['num']
+            if seg_cut == scut and reg_cut == rcut and int(num_key) == int(num): 
+                segmsect2cut = key
+                break
+        segm_sect_set = [segmsect2cut] 
+    else: 
+        segm_sect_set = segm_sect_list
+    print('segm_sect_set:',segm_sect_set)
+
+    #Loop through all the tissues that are going to be sectioned
+    for segm_sect in segm_sect_set: 
+        ch_cont = segm_sect.split(':')[1]
+        ch, cont = ch_cont.split('_')
+        seg_cut = segm_sect.split('_o_')[0][1:]
+        reg_cut = segm_sect.split(':')[0].split('_o_')[1]
+        print(ch, cont, seg_cut, reg_cut)
+
+        #Extract info for cut
+        colors_all = controller.organ.mH_settings['setup']['segm-sect']['s'+seg_cut][reg_cut]['colors']
+        segm_names = controller.organ.mH_settings['setup']['segm'][seg_cut]['name_segments']
+        sect_names = controller.organ.mH_settings['setup']['sect'][reg_cut]['name_sections']
+        print(colors_all, '\n', segm_names, '\n', sect_names)
+
+        #Get mesh to cut 
+        # try: 
+        #     meshes = controller.main_win.segm_btns[seg_cut+':'+ch_cont]['meshes']
+        #     print('Meshes from try!')
+        # except: 
+        #     print('Meshes from except!')
+        #     # Do a for to load all the segments of that mesh
+        #     meshes = {}
+        #     for subm in segm_names.keys():
+        #         submesh_name = seg_cut.title()+'_'+ch+'_'+cont+'_'+subm
+        #         submesh = controller.organ.obj_subm[submesh_name]
+        #         meshes[subm] = submesh.get_segm_mesh()
+
+        #Get mask to use
+        sect_settings = controller.organ.mH_settings['wf_info']['sections']
+        if 'mask_name' in sect_settings[reg_cut.title()].keys(): 
+            #Add mask_name as attribute to organ in case it is not
+            mask_name = sect_settings[reg_cut.title()]['mask_name']
+            if not hasattr(controller.organ, 'mask_sect_'+reg_cut.lower()): 
+                setattr(controller.organ, 'mask_sect_'+reg_cut.lower(), mask_name)
+        else: 
+            print('error no mask? ')
+
+        # Cut input tissue into sections
+        for segm in segm_names.keys(): 
+            print('Dividing into sections '+segm)
+            # mesh2cut = meshes[segm]
+            obj_segm = controller.organ.obj_subm[seg_cut+'_'+ch_cont+'_'+segm]
+            palette_dict = {}
+            for key in colors_all.keys():
+                if segm in key:
+                    palette_dict[key] = colors_all[key]
+            palette = [palette_dict[key] for key in palette_dict.keys()]
+            meshes_sect = fcM.get_segm_sects(controller.organ, 
+                                                obj_segm = obj_segm, 
+                                                cuts = (seg_cut, reg_cut), 
+                                                segm = segm, 
+                                                names = (segm_names, sect_names), 
+                                                palette=palette,
+                                                win=controller.main_win)
+
+    
 
 def run_measure(controller): 
     if controller.main_win.keeplargest_play.isChecked(): 

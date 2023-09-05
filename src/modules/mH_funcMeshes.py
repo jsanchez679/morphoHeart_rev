@@ -10,6 +10,7 @@ import os
 from datetime import datetime
 from pathlib import Path, WindowsPath, PurePath
 import vedo
+print('vedo:', vedo.__version__)
 import numpy as np
 import math
 # from textwrap import wrap
@@ -28,6 +29,8 @@ import seaborn as sns
 import random
 import pandas as pd
 import pickle as pl
+import vtk
+vtk.vtkObject.GlobalWarningDisplayOff()
 
 # import matplotlib
 # matplotlib.use('QtAgg')
@@ -993,12 +996,12 @@ def get_distance_to(mesh_to, mesh_from, from_name, range, color_map='turbo'):#
 def s3_to_mesh(s3, res, name:str, color='cyan', rotateZ_90=True):
 
     verts, faces, _, _ = measure.marching_cubes(s3, spacing=res, method='lewiner')
-    alert('frog')
+    
     mesh = vedo.Mesh([verts, faces])
     if rotateZ_90: 
         mesh.rotateZ(-90).wireframe(True)
     mesh = mesh.extract_largest_region()
-    alert('clown')
+    alert('frog')
     mesh.color(color).alpha(1).wireframe().legend(name)
 
     return mesh
@@ -1314,7 +1317,7 @@ def get_stack_clRibbon(organ, mesh_cl, nPoints, nRes, pl_normal, clRib_type):
         s3_rib[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 1
         # Create filled cube just to one side of cl
         s3_filledCube[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 0
-        alert('clown')
+    alert('clown')
         
     # Create volume of extended centreline mask
     test_rib = s3_to_mesh(s3_rib, res=res, name='Extended CL', color='darkmagenta')
@@ -1454,7 +1457,7 @@ def select_ribMask(organ, cut, mask_cube_split, mesh_cl):
     msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
     selected_mesh = {'name': 'NS'}
     
-    txA = 'Instructions '+cut.title()+': Select the mesh that corresponds to Section No.1 ('+name_sect1.upper()+').\nClose the window when you are done.'
+    txA = 'Instructions '+cut.title()+': Select the mesh that corresponds to Section No.1 ('+name_sect1.upper()+').\nClose the window when you are done.\nNote: If the selection is not working you will be prompted with a message to select the mesh after closing the window,\n just remember the color of the mesh corresponding to the '+name_sect1.upper()+' side.'
     txt0 = vedo.Text2D(txA, c=txt_color, font=txt_font, s=txt_size)
     
     vpt = vedo.Plotter(axes=1)
@@ -1494,14 +1497,10 @@ def get_sections(organ, mesh, cut, sect_names, palette, win):
     #Create submeshes of the input mesh 
     meshes_sect = {}
     for n, sect, color in zip(count(), sect_names, palette):
+        print(mesh, cut, sect, color)
         subsct, final_sect_mesh = create_subsection(organ, mesh, cut, 
                                                     sect, color)
-        # save_submesh(organ, subsct, final_sect_mesh, win)
         meshes_sect[sect] = final_sect_mesh
-
-        subsct = mesh.create_section(name = sect, cut = cut, color = color)
-        sub_mesh = subsct.get_sect_mesh()
-        
     print('\n\n FINAL! mH_settings[measure]: ', organ.mH_settings['measure'], '\n\n')
 
     print('wf_info (sect)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'sections']))
@@ -1529,6 +1528,53 @@ def create_subsection(organ, mesh, cut, sect, color):
     organ.update_mHworkflow(process = proc_wft, update = 'DONE')
 
     return subsct, final_sect_mesh
+
+def get_segm_sects(organ, obj_segm, cuts, segm, names, palette, win):
+    
+    seg_cut, reg_cut = cuts
+    segm_names, sect_names = names
+    #Create submeshes of the input mesh 
+    meshes_segm_sect = {}
+    for n, sect, color in zip(count(), sect_names, palette):
+        segm_sect = segm+'_'+sect
+        cutsf = seg_cut+'_o_'+reg_cut
+        print(segm_sect, cutsf)
+        # subsct, final_segm_sect_mesh = 
+        create_sub_segm_sect(organ, obj_segm, segm, 
+                                                    cutsf, segm_sect, color)
+        #segm = segment that is being cut 'segm1
+        #cutsf = segm cut _o_ reg cut
+        #reg_cut = sections cut that is being made (Cut1/Cut2)
+        #sect = the section that is being created (sect1/sect2)
+        #color = color assigned to that section
+        # meshes_segm_sect[sect] = final_segm_sect_mesh
+        
+    # print('\n\n FINAL! mH_settings[measure]: ', organ.mH_settings['measure'], '\n\n')
+
+    # print('wf_info (sect)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'sections']))
+    # print('organ.submeshes:', organ.submeshes)
+
+    # return meshes_sect
+
+def create_sub_segm_sect(organ, obj_segm, segm, cuts, segm_sect, color): 
+    #Create submesh - section
+    subsct = obj_segm.create_segm_sect(segm_sect = segm_sect, cuts = cuts, color = color)
+    # print(subsct.__dict__)
+    # final_sect_mesh = subsct.get_sect_mesh()
+    # final_sect_mesh.color(color).alpha(0.1).legend(subsct.sub_legend)
+    # subsct.color = color
+    # #Add submesh to organ
+    # organ.add_submesh(subsct)
+    #Get segm measurements
+    # measurements = organ.mH_settings['setup']['segm']['measure']
+    # measure_submesh(organ, subsct, final_sect_mesh, measurements)
+
+    # Update organ workflow
+    # cut, ch, cont, sect = subsct.sub_name_all.split('_')
+    # proc_wft = ['MeshesProc', 'E-Sections', cut, ch, cont, 'Status']
+    # organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+
+    # return subsct, final_sect_mesh
     
 #General SubMeshes
 def save_submesh(organ, submesh, mesh, win, ext='.vtk'):
@@ -2001,9 +2047,20 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
     matrix_unlooped = np.zeros((len(mesh.points()),8))
     matrix_unlooped[:,0:3] = mesh.points()
     matrix_unlooped[:,7] = param
+    
+    #Segment being unlooped
+    if kspl_data['segm'] != 'NA': 
+        chamber = kspl_data['segm']+':'+kspl_data['name']
+        multip = 1
+    else: 
+        chamber = kspl_data['name']
+        multip = 2
+
+    print('Segment being unlooped:', chamber)
 
     # Get normals and centres of planes to cut heart
-    no_planes = gui_heatmaps2d['nPlanes']
+    no_planes = gui_heatmaps2d['nPlanes']*multip
+    print('no_planes:', no_planes)
     tol2use = gui_heatmaps2d['tol']
     kspl = kspl_data['kspl']
     select_start = True
@@ -2024,10 +2081,6 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
         print('aja atrium 0')
         t2b = False
         invert = True
-
-    #Segment being unlooped
-    chamber = kspl_data['segm']+':'+kspl_data['name']
-    print('Segment being unlooped:', chamber)
 
     # Iterate through planes
     not_init = True; started = False
@@ -2095,7 +2148,7 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
                             print('ksplsurf found!')
                             kspl_vSurf_cut = kspls.lw(8).color('cyan')
                             break
-                last_pt_cut = kspl_vSurf_cut.points()[-1]
+                # last_pt_cut = kspl_vSurf_cut.points()[-1]
                 # print('last_pt_cut:', last_pt_cut)
                 # sph_pt_surf2 = vedo.Sphere(last_pt_cut, r=2, c='black')
         
@@ -2325,13 +2378,13 @@ def heatmap_unlooped(organ, kspl_data, df_unloopedf, hmitem, ch, gui_thball):
 def get_unlooped_heatmap(hmitem, dir_df): 
 
     df_unloopedf= pd.read_csv(str(dir_df))
-    print(df_unloopedf.sample(10))
+    # print(df_unloopedf.sample(10))
     df_unloopedf = df_unloopedf.drop(['taken'], axis=1)
     print(df_unloopedf.sample(10))
     df_unloopedf.astype('float16').dtypes
 
     heatmap = pd.pivot_table(df_unloopedf, values= hmitem, columns = 'theta', index='z_plane', aggfunc=np.max)
-    heatmap.astype('float16').dtypes
+    # heatmap.astype('float16').dtypes
 
     return heatmap
 
@@ -2552,7 +2605,8 @@ def get_plane_normals_other_centres(no_planes, proj_pts, kspl_pts):
 
     normals = []
     pt_centre = []
-    every = len(proj_pts)//no_planes
+    every = (len(proj_pts)+2)//no_planes
+    print(every)
     list_index = list(range(len(proj_pts)-2,1,-every))
     for i in list_index:
         pt_centre.append(kspl_pts[i])
@@ -2575,17 +2629,12 @@ def get_plane_normals_to_proj_kspl(organ, no_planes, kspl, gui_heatmaps2d):
     plane_ext = vedo.Plane(pos = cell_centre, normal = ext_plane)
     proj_kspl = kspl.clone().project_on_plane(plane=plane_ext).lw(3).color('black')
 
-    # plt = vedo.Plotter(N=2, axes=1)
-    # plt.show(orient_cube, proj_kspl, at=0)
-    # plt.show(kspl, proj_kspl, plane_ext, at=1, interactive=True)
-
-    print('len(kspl.points()):', len(kspl.points()))
-    print('len(proj_kspl.points()):', len(proj_kspl.points()))
+    # print('len(kspl.points()):', len(kspl.points()))
+    # print('len(proj_kspl.points()):', len(proj_kspl.points()))
 
     pl_normals, pl_centres = get_plane_normals_other_centres(no_planes = no_planes, 
                                                              proj_pts = proj_kspl.points(), 
                                                              kspl_pts = kspl.points())
-    print(pl_normals)
 
     return pl_normals, pl_centres
    
@@ -2925,8 +2974,8 @@ def modify_disc(filename, txt, mesh, option,
     xval = sorted([xmin-0.3*x_size,xmax+0.3*x_size])
     yval = sorted([ymin-0.3*y_size,ymax+0.3*y_size])
     zval = sorted([zmin-0.3*z_size,zmax+0.3*z_size])
-    
-    if def_pl['pl_centre'] == []:
+
+    if len(def_pl['pl_centre']) == 0:
         centre = (x_size/2+xmin, ymin, z_size/2+zmin)
     else: 
         centre = def_pl['pl_centre']

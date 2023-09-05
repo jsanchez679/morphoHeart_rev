@@ -35,17 +35,15 @@ import pandas as pd
 import pickle as pl
 
 import matplotlib
-print(matplotlib.__version__)
+print('matplotlib:',matplotlib.__version__)
 matplotlib.use('QtAgg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
-# from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
-# from matplotlib.backends.backend_qt5agg import (
-#     FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-
+#Palettes
+#https://matplotlib.org/stable/tutorials/colors/colormaps.html
 
 #%% morphoHeart Imports - ##################################################
 # from .src.modules.mH_funcBasics import get_by_path
@@ -4107,7 +4105,7 @@ class MainWindow(QMainWindow):
 
         segm_setup = self.organ.mH_settings['setup']['segm']
         no_cuts = [key for key in segm_setup.keys() if 'Cut' in key]
-        palette =  palette_rbg("husl", 10)
+        palette =  palette_rbg("plasma", 10)
         self.segm_btns = {}
         
         for optcut in ['1','2']:
@@ -4413,7 +4411,7 @@ class MainWindow(QMainWindow):
         # no_cuts_sect = [key for key in sect_setup.keys() if 'Cut' in key]
         self.segm_sect_btns = {}
 
-        palettes = ['Accent', 'Dark2','Paired', 'Set1']
+        palettes = ['Accent', 'Dark2', 'Paired', 'Set1']
         print('SETTINGSS:', segm_sect_setup, '\n', segm_setup, '\n', sect_setup)
 
         nun = 0
@@ -4618,7 +4616,7 @@ class MainWindow(QMainWindow):
                         getattr(self, 'lab_'+ptype+str(bb)).setVisible(False)
                         getattr(self, 'tiss_cont_'+ptype+str(bb)).setVisible(False)
                         getattr(self, 'value_'+ptype+str(bb)).setVisible(False)
-                else: #ptype == '
+                else: 
                     print('other?')
         
         at_least_one = False
@@ -5110,8 +5108,6 @@ class MainWindow(QMainWindow):
             self.set_thickness(init=True)
             if 'heatmaps2D' in wf_info['heatmaps'].keys():
                 self.set_thickness2D(init=True)
-            
-            
         else: 
             pass
 
@@ -5233,14 +5229,41 @@ class MainWindow(QMainWindow):
             pass
   
     def user_segm_sect(self): 
-        pass
-    
+        
+        for btn in self.segm_sect_btns: 
+            ch_cont = btn.split(':')[1]
+            seg_cut = btn.split('_o_')[0][1:]
+            seg_btn = seg_cut+':'+ch_cont
+            reg_cut = btn.split(':')[0].split('_o_')[1]
+            reg_btn = reg_cut+':'+ch_cont
+            if self.segm_btns[seg_btn]['plot'].isEnabled() and self.sect_btns[reg_btn]['plot'].isEnabled(): 
+                self.segm_sect_btns[btn]['play'].setEnabled(True)
+
     def user_user_params(self): 
 
-        print('self.gui_key_user_params: ', self.gui_key_user_params)
         wf_info = self.organ.mH_settings['wf_info']
         if 'user_params' in wf_info.keys(): 
-            print('wf_info[user_params]:', wf_info['user_params'])
+            # print('wf_info[user_params]:', wf_info['user_params'])
+            for key in wf_info['user_params']: 
+                all_done = []
+                for param in wf_info['user_params'][key]: 
+                    # print(key, param)
+                    for obj in wf_info['user_params'][key][param]: 
+                        # print(key, param, obj)
+                        if 'value' in wf_info['user_params'][key][param][obj].keys():
+                            value = wf_info['user_params'][key][param][obj]['value']
+                            nn = wf_info['user_params'][key][param][obj]['num']
+                            # print(nn, value)
+                            if key == 'categorical': 
+                                getattr(self, 'value_'+key+str(nn)).setCurrentText(value)
+                            else:# key == 'continuous' or key == 'descriptive': 
+                                getattr(self, 'value_'+key+str(nn)).setText(value)
+                            all_done.append(True)
+                        else: 
+                            all_done.append(False)
+                        # print('all_done:',all_done)
+                if all(all_done): 
+                    getattr(self, key+'_set').setChecked(True)
 
     #Functions specific to gui functionality
     def open_section(self, name): 
@@ -5823,8 +5846,11 @@ class MainWindow(QMainWindow):
         cB = getattr(self, 'improve_hm2D')
         if cB.isChecked():
             getattr(self, 'segm_use_hm2D').setEnabled(True)
+            self.thickness2D_set.setChecked(False)
         else: 
+            self.segm_use_hm2D.setCurrentText('----')
             getattr(self, 'segm_use_hm2D').setEnabled(False)
+            self.thickness2D_set.setChecked(False)
 
     def plot_plane_cuts(self):
         cB = getattr(self, 'plot_planes')
@@ -6745,13 +6771,15 @@ class MainWindow(QMainWindow):
                 gui_user_params_loaded = self.organ.mH_settings['wf_info']['user_params']
                 self.gui_user_params, changed = update_gui_set(loaded = gui_user_params_loaded, 
                                                                 current = current_gui_user_params)
-                # if changed: 
-                #     # # self.win_msg("If you want to plot2D with the new settings remember to re-run  -Channel from the negative space extraction-  section!")
-                #     # self.update_status(None, 're-run', self.gui_user_params_loaded, override=True)
     
             set_btn = getattr(self, ptype+'_set')
             set_btn.setChecked(True)
             print('self.gui_user_params: ', self.gui_user_params)
+
+            # Update mH_settings
+            proc_set = ['wf_info']
+            update = self.gui_user_params
+            self.organ.update_settings(proc_set, update, 'mH', add='user_params')
 
         else: 
             return
@@ -6905,8 +6933,11 @@ class MainWindow(QMainWindow):
 
     def set_scalebar(self, mesh, name, proc, title):
         if self.gui_thickness_ballooning[name]['default']: 
-            min_val = self.organ.mH_settings['measure'][proc]['range_o']['min_val']
-            max_val = self.organ.mH_settings['measure'][proc]['range_o']['max_val']
+            _, name_ch_cont = name.split('[')
+            ch, cont = name_ch_cont[:-1].split('-')
+            namef = ch+'_'+cont+'_whole'
+            min_val = self.organ.mH_settings['measure'][proc][namef]['range_o']['min_val']
+            max_val = self.organ.mH_settings['measure'][proc][namef]['range_o']['max_val']
         else: 
             min_val = self.gui_thickness_ballooning[name]['min_val']
             max_val = self.gui_thickness_ballooning[name]['max_val']
@@ -6940,11 +6971,11 @@ class MainWindow(QMainWindow):
         vmin = gui_thball['min_val']
         vmax = gui_thball['max_val']
 
-        print(dirs_df)
+        print(dirs_df, cmap, vmin, vmax)
 
         #Test
         title = 'Test'
-        cmap = 'turbo'
+        # cmap = 'turbo'
         heatmap = np.array([[0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
                     [2.4, 0.0, 4.0, 1.0, 2.7, 0.0, 0.0],
                     [1.1, 2.4, 0.8, 4.3, 1.9, 4.4, 0.0],
@@ -6971,7 +7002,11 @@ class MainWindow(QMainWindow):
         self.plot_win.lab_title.setText(title)
         fontsize = 2; labelsize = 10; width = 1.0; length = 4.0
         if 'div1' in dirs_df.keys(): 
-            print(self.ordered_kspl['div1']['name'])
+            if 'whole' in str(dirs_df['div1']): 
+                name = ''
+            else: 
+                name = self.ordered_kspl['div1']['name']
+            print('name:', name)
             #Get heatmap specific for that segm
             dir_df = self.organ.dir_res(dir='csv_all') / dirs_df['div1']
             heatmap1 = get_unlooped_heatmap(hm_name, dir_df)
@@ -7007,7 +7042,7 @@ class MainWindow(QMainWindow):
 
             self.plot_win.figure_div1.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
             self.plot_win.canvas_div1.draw()
-            self.plot_win.lab_div1.setText('Plot '+self.ordered_kspl['div1']['name']+': ')
+            self.plot_win.lab_div1.setText('Plot '+name+': ')
         
         else: 
             self.plot_win.toolbar_div1.setVisible(False)
@@ -7233,7 +7268,6 @@ class MainWindow(QMainWindow):
                 if 'segm' in subm: 
                     meshes[subm] = submesh.get_segm_mesh()
                 else: #'sect' in segm
-                    print('do this part of the code!')
                     meshes[subm] = submesh.get_sect_mesh()
 
         for mesh in meshes.keys(): 

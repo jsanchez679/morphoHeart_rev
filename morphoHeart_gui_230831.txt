@@ -254,7 +254,7 @@ Verifying transaction: done
 Executing transaction: done
 
 
-(mH_gui) C:\>pip install vedo==2023.4.3
+(mH_gui) C:\>pip install vedo==2023.4.4
 Collecting vedo==2023.4.3
   Using cached vedo-2023.4.3-py3-none-any.whl
 Requirement already satisfied: vtk in d:\applications\miniconda\envs\mh_gui\lib\site-packages (from vedo==2023.4.3) (-PKG-VERSION)
