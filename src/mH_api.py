@@ -959,6 +959,7 @@ def run_segments(controller, btn):
 
         #Save meshes temporarily within segment buttons
         controller.main_win.segm_btns[segm]['meshes'] = meshes_segm
+        print(controller.main_win.segm_btns)
         print('meshes_segm: ',meshes_segm)
         print(controller.main_win.segm_btns[segm])
 
@@ -1270,6 +1271,7 @@ def run_sections(controller, btn):
         
         #Save meshes temporarily within section buttons
         controller.main_win.sect_btns[sect]['meshes'] = meshes_sect
+        print(controller.main_win.sect_btns)
         print('meshes_sect: ',meshes_sect)
         print(controller.main_win.sect_btns[sect])
 
@@ -1348,19 +1350,6 @@ def run_segm_sect(controller, btn):
         sect_names = controller.organ.mH_settings['setup']['sect'][reg_cut]['name_sections']
         print(colors_all, '\n', segm_names, '\n', sect_names)
 
-        #Get mesh to cut 
-        # try: 
-        #     meshes = controller.main_win.segm_btns[seg_cut+':'+ch_cont]['meshes']
-        #     print('Meshes from try!')
-        # except: 
-        #     print('Meshes from except!')
-        #     # Do a for to load all the segments of that mesh
-        #     meshes = {}
-        #     for subm in segm_names.keys():
-        #         submesh_name = seg_cut.title()+'_'+ch+'_'+cont+'_'+subm
-        #         submesh = controller.organ.obj_subm[submesh_name]
-        #         meshes[subm] = submesh.get_segm_mesh()
-
         #Get mask to use
         sect_settings = controller.organ.mH_settings['wf_info']['sections']
         if 'mask_name' in sect_settings[reg_cut.title()].keys(): 
@@ -1372,24 +1361,46 @@ def run_segm_sect(controller, btn):
             print('error no mask? ')
 
         # Cut input tissue into sections
-        for segm in segm_names.keys(): 
-            print('Dividing into sections '+segm)
-            # mesh2cut = meshes[segm]
-            obj_segm = controller.organ.obj_subm[seg_cut+'_'+ch_cont+'_'+segm]
-            palette_dict = {}
-            for key in colors_all.keys():
-                if segm in key:
-                    palette_dict[key] = colors_all[key]
-            palette = [palette_dict[key] for key in palette_dict.keys()]
-            meshes_sect = fcM.get_segm_sects(controller.organ, 
-                                                obj_segm = obj_segm, 
+        meshes_segm_sect = fcM.get_segm_sects(controller.organ, 
+                                                ch_cont = ch_cont, 
                                                 cuts = (seg_cut, reg_cut), 
-                                                segm = segm, 
                                                 names = (segm_names, sect_names), 
-                                                palette=palette,
+                                                palette=colors_all,
                                                 win=controller.main_win)
+        
+        #Save meshes temporarily within section buttons
+        controller.main_win.segm_sect_btns[segm_sect]['meshes'] = meshes_segm_sect
+        print('meshes_segm_sect: ',meshes_segm_sect)
+        print(controller.main_win.segm_sect_btns[segm_sect])
 
-    
+        #Enable Plot Buttons
+        btn = controller.main_win.segm_sect_btns[segm_sect]['plot']
+        btn.setEnabled(True)
+        print('wf:', controller.organ.workflow['morphoHeart']['MeshesProc'])
+
+        #Update progress in main_win
+        controller.main_win.update_workflow_progress()
+
+        #Fill-up results table
+        controller.main_win.fill_results()
+
+        # Update organ workflow and GUI Status
+        flat_sect_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Segments_Sections']))
+        all_done = []
+        for key in flat_sect_wf.keys(): 
+            key_split = key.split(':')
+            if len(key_split) > 1: 
+                all_done.append(flat_sect_wf[key])
+
+        proc_wft = ['MeshesProc', 'E-Segments_Sections', 'Status']
+        if all(flag == 'DONE' for flag in all_done): 
+            controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+        elif any(flag == 'DONE' for flag in all_done): 
+            controller.organ.update_mHworkflow(process = proc_wft, update = 'Initialised')
+        else: 
+            pass
+        controller.main_win.update_status(workflow, proc_wft, controller.main_win.segm_sect_status)
+
 
 def run_measure(controller): 
     if controller.main_win.keeplargest_play.isChecked(): 

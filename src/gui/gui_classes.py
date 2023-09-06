@@ -4504,57 +4504,57 @@ class MainWindow(QMainWindow):
         print('mH-colors:', self.organ.mH_settings['setup']['segm-sect'])
 
         #Plot buttons
-        self.scut1_cut1_plot_sect1.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect1'))
-        self.scut1_cut1_plot_sect2.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect2'))
-        self.scut1_cut1_plot_sect3.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect3'))
-        self.scut1_cut1_plot_sect4.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect4'))
-        self.scut1_cut1_plot_sect5.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect5'))
-        self.scut1_cut1_plot_sect6.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect6'))
-        self.scut1_cut1_plot_sect7.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect7'))
-        self.scut1_cut1_plot_sect8.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect8'))
-        self.scut1_cut1_plot_sect9.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect9'))
-        self.scut1_cut1_plot_sect10.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect10'))
-        self.scut1_cut1_plot_sect11.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect11'))
-        self.scut1_cut1_plot_sect12.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut1_plot_sect12'))
+        self.scut1_cut1_plot_sect1.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect1'))
+        self.scut1_cut1_plot_sect2.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect2'))
+        self.scut1_cut1_plot_sect3.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect3'))
+        self.scut1_cut1_plot_sect4.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect4'))
+        self.scut1_cut1_plot_sect5.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect5'))
+        self.scut1_cut1_plot_sect6.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect6'))
+        self.scut1_cut1_plot_sect7.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect7'))
+        self.scut1_cut1_plot_sect8.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect8'))
+        self.scut1_cut1_plot_sect9.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect9'))
+        self.scut1_cut1_plot_sect10.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect10'))
+        self.scut1_cut1_plot_sect11.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect11'))
+        self.scut1_cut1_plot_sect12.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut1_plot_sect12'))
 
-        self.scut1_cut2_plot_sect1.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect1'))
-        self.scut1_cut2_plot_sect2.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect2'))
-        self.scut1_cut2_plot_sect3.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect3'))
-        self.scut1_cut2_plot_sect4.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect4'))
-        self.scut1_cut2_plot_sect5.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect5'))
-        self.scut1_cut2_plot_sect6.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect6'))
-        self.scut1_cut2_plot_sect7.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect7'))
-        self.scut1_cut2_plot_sect8.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect8'))
-        self.scut1_cut2_plot_sect9.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect9'))
-        self.scut1_cut2_plot_sect10.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect10'))
-        self.scut1_cut2_plot_sect11.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect11'))
-        self.scut1_cut2_plot_sect12.clicked.connect(lambda: self.plot_segm_section(btn='scut1_cut2_plot_sect12'))
+        self.scut1_cut2_plot_sect1.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect1'))
+        self.scut1_cut2_plot_sect2.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect2'))
+        self.scut1_cut2_plot_sect3.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect3'))
+        self.scut1_cut2_plot_sect4.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect4'))
+        self.scut1_cut2_plot_sect5.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect5'))
+        self.scut1_cut2_plot_sect6.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect6'))
+        self.scut1_cut2_plot_sect7.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect7'))
+        self.scut1_cut2_plot_sect8.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect8'))
+        self.scut1_cut2_plot_sect9.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect9'))
+        self.scut1_cut2_plot_sect10.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect10'))
+        self.scut1_cut2_plot_sect11.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect11'))
+        self.scut1_cut2_plot_sect12.clicked.connect(lambda: self.plot_segm_sect(btn='scut1_cut2_plot_sect12'))
 
-        self.scut2_cut1_plot_sect1.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect1'))
-        self.scut2_cut1_plot_sect2.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect2'))
-        self.scut2_cut1_plot_sect3.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect3'))
-        self.scut2_cut1_plot_sect4.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect4'))
-        self.scut2_cut1_plot_sect5.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect5'))
-        self.scut2_cut1_plot_sect6.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect6'))
-        self.scut2_cut1_plot_sect7.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect7'))
-        self.scut2_cut1_plot_sect8.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect8'))
-        self.scut2_cut1_plot_sect9.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect9'))
-        self.scut2_cut1_plot_sect10.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect10'))
-        self.scut2_cut1_plot_sect11.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect11'))
-        self.scut2_cut1_plot_sect12.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut1_plot_sect12'))
+        self.scut2_cut1_plot_sect1.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect1'))
+        self.scut2_cut1_plot_sect2.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect2'))
+        self.scut2_cut1_plot_sect3.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect3'))
+        self.scut2_cut1_plot_sect4.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect4'))
+        self.scut2_cut1_plot_sect5.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect5'))
+        self.scut2_cut1_plot_sect6.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect6'))
+        self.scut2_cut1_plot_sect7.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect7'))
+        self.scut2_cut1_plot_sect8.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect8'))
+        self.scut2_cut1_plot_sect9.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect9'))
+        self.scut2_cut1_plot_sect10.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect10'))
+        self.scut2_cut1_plot_sect11.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect11'))
+        self.scut2_cut1_plot_sect12.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut1_plot_sect12'))
 
-        self.scut2_cut2_plot_sect1.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect1'))
-        self.scut2_cut2_plot_sect2.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect2'))
-        self.scut2_cut2_plot_sect3.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect3'))
-        self.scut2_cut2_plot_sect4.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect4'))
-        self.scut2_cut2_plot_sect5.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect5'))
-        self.scut2_cut2_plot_sect6.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect6'))
-        self.scut2_cut2_plot_sect7.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect7'))
-        self.scut2_cut2_plot_sect8.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect8'))
-        self.scut2_cut2_plot_sect9.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect9'))
-        self.scut2_cut2_plot_sect10.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect10'))
-        self.scut2_cut2_plot_sect11.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect11'))
-        self.scut2_cut2_plot_sect12.clicked.connect(lambda: self.plot_segm_section(btn='scut2_cut2_plot_sect12'))
+        self.scut2_cut2_plot_sect1.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect1'))
+        self.scut2_cut2_plot_sect2.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect2'))
+        self.scut2_cut2_plot_sect3.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect3'))
+        self.scut2_cut2_plot_sect4.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect4'))
+        self.scut2_cut2_plot_sect5.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect5'))
+        self.scut2_cut2_plot_sect6.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect6'))
+        self.scut2_cut2_plot_sect7.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect7'))
+        self.scut2_cut2_plot_sect8.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect8'))
+        self.scut2_cut2_plot_sect9.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect9'))
+        self.scut2_cut2_plot_sect10.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect10'))
+        self.scut2_cut2_plot_sect11.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect11'))
+        self.scut2_cut2_plot_sect12.clicked.connect(lambda: self.plot_segm_sect(btn='scut2_cut2_plot_sect12'))
 
         #Initialise with user settings, if they exist!
         self.user_segm_sect()
@@ -7218,32 +7218,50 @@ class MainWindow(QMainWindow):
         # self.plot_win.exec()
 
     def plot_segm_sect(self, btn):
-        #btn = cut1_segm1 / cut1_sect1
+        #btn = cut1_segm1 / cut1_sect1 / 'scut1_cut1_plot_sect1'
 
         #Get button number
-        cut, subname = btn.split('_')
-        if 'segm' in subname: 
-            num = subname.split('segm')[1]
-            txt = [(0, self.organ.user_organName + ' - Segment division')]
-            list_btns = self.segm_btns
-            colors = self.organ.mH_settings['setup']['segm'][cut.title()]['colors']
-            name = 'segments'
-            short = 'segm'
-        else: #sect
+        if 'scut' in btn: 
+            scut, rcut, _, subname = btn.split('_')
             num = subname.split('sect')[1]
-            txt = [(0, self.organ.user_organName + ' - Region division')]
-            list_btns = self.sect_btns
-            colors = self.organ.mH_settings['setup']['sect'][cut.title()]['colors']
-            name = 'sections'
-            short = 'sect'
+            txt = [(0, self.organ.user_organName + ' - Segment-Section division')]
+            list_btns = self.segm_sect_btns
+            colors = self.organ.mH_settings['setup']['segm-sect']['sCut'+scut[-1]][rcut.title()]['colors']
+            name = 'Segment-Section'
+            short = 'segm-sect'
+            key_list =  list(list_btns.keys())
+            for key in key_list: 
+                ch_cont = key.split(':')[1]
+                seg_cut = key.split('_o_')[0][1:]
+                reg_cut = key.split(':')[0].split('_o_')[1]
+                num_key = self.segm_sect_btns[key]['num']
+                if seg_cut == 'Cut'+scut[-1] and reg_cut == rcut.title() and int(num_key) == int(num): 
+                    key2cut = key
+                    break
+        else: 
+            cut, subname = btn.split('_')
+            if 'segm' in subname: 
+                num = subname.split('segm')[1]
+                txt = [(0, self.organ.user_organName + ' - Segment division')]
+                list_btns = self.segm_btns
+                colors = self.organ.mH_settings['setup']['segm'][cut.title()]['colors']
+                name = 'segments'
+                short = 'segm'
+            else:# 'sect' in subname: 
+                num = subname.split('sect')[1]
+                txt = [(0, self.organ.user_organName + ' - Region division')]
+                list_btns = self.sect_btns
+                colors = self.organ.mH_settings['setup']['sect'][cut.title()]['colors']
+                name = 'sections'
+                short = 'sect'
 
-        key_list = list(list_btns.keys())
-        for key in key_list: 
-            cut_key = key.split(':')[0]
-            num_key = list_btns[key]['num']
-            if cut_key == cut.title() and int(num_key) == int(num): 
-                key2cut = key # Cut1:ch1_ext
-                break
+            key_list = list(list_btns.keys())
+            for key in key_list: 
+                cut_key = key.split(':')[0]
+                num_key = list_btns[key]['num']
+                if cut_key == cut.title() and int(num_key) == int(num): 
+                    key2cut = key # Cut1:ch1_ext
+                    break
 
         self.win_msg('Plotting '+name+' ('+key2cut+')')
         print('Plotting '+name+' ('+key2cut+')')
@@ -7256,34 +7274,56 @@ class MainWindow(QMainWindow):
             print('Meshes from try!')
         except: 
             print('Meshes from except!')
-            #Get submesh from organ
-            cut, subm_info = key2cut.split(':')
-            ch, cont = subm_info.split('_') #Cut1_ch1_ext_segm1
-            # Do a for to load all the segments of that mesh
-            meshes = {}
-            print(cut, ch, cont)
-            for subm in self.organ.mH_settings['setup'][short][cut]['name_'+name].keys():
-                submesh_name = cut.title()+'_'+ch+'_'+cont+'_'+subm
-                submesh = self.organ.obj_subm[submesh_name]
-                if 'segm' in subm: 
-                    meshes[subm] = submesh.get_segm_mesh()
-                else: #'sect' in segm
-                    meshes[subm] = submesh.get_sect_mesh()
-
-        for mesh in meshes.keys(): 
-            if isinstance(meshes[mesh], vedo.Mesh):
-                color = colors[mesh]
-                mesh = meshes[mesh]
-                mesh.color(color)
-                obj_meshes.append(mesh)
+            if 'scut' in btn: 
+                print('aja!')
+                segm_names = self.organ.mH_settings['setup']['segm']['Cut'+scut[-1]]['name_segments']
+                sect_names = self.organ.mH_settings['setup']['sect'][rcut.title()]['name_sections']
+                ch_cont = key2cut.split(':')[1]
+                for sect in sect_names: 
+                    meshes[sect] = {}
+                    for segm in segm_names: 
+                        submesh_name = 'sCut'+scut[-1]+'_'+rcut.title()+'_'+ch_cont+'_'+segm+'_'+sect
+                        print(submesh_name)
+                        submesh = self.organ.obj_subm[submesh_name]
+                        meshes[sect][segm] = submesh.get_sect_segm_mesh(seg_cut ='Cut'+scut[-1])
             else: 
-                pass
+                #Get submesh from organ
+                cut, subm_info = key2cut.split(':')
+                ch, cont = subm_info.split('_') #Cut1_ch1_ext_segm1
+                # Do a for to load all the segments of that mesh
+                meshes = {}
+                print(cut, ch, cont)
+                for subm in self.organ.mH_settings['setup'][short][cut]['name_'+name].keys():
+                    submesh_name = cut.title()+'_'+ch+'_'+cont+'_'+subm
+                    submesh = self.organ.obj_subm[submesh_name]
+                    if 'segm' in subm: 
+                        meshes[subm] = submesh.get_segm_mesh()
+                    else: #'sect' in segm
+                        meshes[subm] = submesh.get_sect_mesh()
+
+        if 'scut' in btn: 
+            flat_meshes = flatdict.FlatDict(meshes)
+            for mesh in flat_meshes.keys(): 
+                r_cut, s_cut = mesh.split(':') 
+                if isinstance(flat_meshes[mesh], vedo.Mesh):
+                    color = colors[s_cut+'_'+r_cut]
+                    mesh = flat_meshes[mesh]
+                    mesh.color(color)
+                    obj_meshes.append(mesh)
+                else: 
+                    pass
+        else: 
+            for mesh in meshes.keys(): 
+                if isinstance(meshes[mesh], vedo.Mesh):
+                    color = colors[mesh]
+                    mesh = meshes[mesh]
+                    mesh.color(color)
+                    obj_meshes.append(mesh)
+                else: 
+                    pass
 
         obj = [tuple(obj_meshes)]
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
-
-    def plot_segm_section(self, btn): 
-        print('plotting..', btn)
 
     def plot_orient(self, name): 
 

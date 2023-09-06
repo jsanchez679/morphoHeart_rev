@@ -30,6 +30,7 @@ import random
 import pandas as pd
 import pickle as pl
 import vtk
+#Following: https://stackoverflow.com/questions/23573707/disable-or-catch-vtk-warnings-in-vtkoutputwindow-when-embedding-mayavi
 vtk.vtkObject.GlobalWarningDisplayOff()
 
 # import matplotlib
@@ -1120,7 +1121,7 @@ def create_disc_mask(organ, cut, h_min = 0.1125):
 def segm_ext_ext(organ, mesh, cut, segm_names, palette, win):
 
     #Mask the s3_stack to create segments
-    cut_masked = mesh.mask_segments(cut = cut, palette = palette)
+    cut_masked = mesh.mask_segments(cut = cut)
     #Create a dictionary containing the information of the classified segments 
     dict_segm, colors = organ.dict_segments(cut, palette)
     #Ask user to classify the segments using the interactive plot
@@ -1135,8 +1136,9 @@ def segm_ext_ext(organ, mesh, cut, segm_names, palette, win):
         sp_dict_segm = dict_segm[segm]
         # subsgm: instance of class Submesh
         # final_segm_mesh: instance of mesh (vedo)
-        subsgm, final_segm_mesh = create_subsegment(organ, mesh, cut, cut_masked,
-                                                segm, sp_dict_segm, color)
+        subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
+        final_segm_mesh = create_subsegment(organ, subsgm, cut, cut_masked,
+                                                'segm', sp_dict_segm, color)
         save_submesh(organ, subsgm, final_segm_mesh, win)
         final_subsgm[segm]=subsgm
         meshes_segm[segm] = final_segm_mesh
@@ -1155,9 +1157,9 @@ def segm_ext_ext(organ, mesh, cut, segm_names, palette, win):
 def get_segments(organ, mesh, cut, segm_names, palette, ext_subsgm, win): 
         
     #Mask the s3_stack to create segments
-    cut_masked = mesh.mask_segments(cut = cut, palette = palette)
+    cut_masked = mesh.mask_segments(cut = cut)
     #Create a dictionary containing the information of the classified segments 
-    dict_segm, _ = organ.dict_segments(cut, palette, other=False)
+    dict_segm = organ.dict_segments(cut, other=False)
 
     #Create submeshes of the input mesh 
     meshes_segm = {}
@@ -1166,8 +1168,10 @@ def get_segments(organ, mesh, cut, segm_names, palette, ext_subsgm, win):
                                                     dict_segm = dict_segm[segm],
                                                     ext_sub = ext_subsgm[segm])
         print('dict_segm after classif: ', sp_dict_segm)
-        subsgm, final_segm_mesh = create_subsegment(organ, mesh, cut, cut_masked, 
-                                                    segm, sp_dict_segm, color)
+        #Create submesh - segment
+        subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
+        final_segm_mesh = create_subsegment(organ, subsgm, cut, cut_masked, 
+                                                    'segm', sp_dict_segm, color)
         save_submesh(organ, subsgm, final_segm_mesh, win)
         meshes_segm[segm] = final_segm_mesh
         
@@ -1514,8 +1518,6 @@ def create_subsection(organ, mesh, cut, sect, color):
     subsct = mesh.create_section(name = sect, cut = cut, color = color)
     print(subsct.__dict__)
     final_sect_mesh = subsct.get_sect_mesh()
-    final_sect_mesh.color(color).alpha(0.1).legend(subsct.sub_legend)
-    subsct.color = color
     #Add submesh to organ
     organ.add_submesh(subsct)
     #Get segm measurements
@@ -1529,52 +1531,92 @@ def create_subsection(organ, mesh, cut, sect, color):
 
     return subsct, final_sect_mesh
 
-def get_segm_sects(organ, obj_segm, cuts, segm, names, palette, win):
+def get_segm_sects(organ, ch_cont, cuts, names, palette, win):
     
-    seg_cut, reg_cut = cuts
+    ch, cont = ch_cont.split('_')
+    seg_cut, _ = cuts
+    # cutsf = 's'+seg_cut+'_'+reg_cut
     segm_names, sect_names = names
+
+    #Get the segment's method 
+    method = organ.mH_settings['wf_info']['segments']['setup'][seg_cut]['ch_info'][ch][cont]
+    if method in ['ext-ext', 'cut_with_ext-ext', 'cut_with_other_ext-ext']: 
+        try:
+            ext_subsgm = organ.ext_subsgm
+            print('try ext_subsgm')
+        except: 
+            ext_subsgm = organ.get_ext_subsgm(seg_cut[1:])
+            print('except ext_subsgm')
+        print('ext_subsgm: ',ext_subsgm)
+    else: 
+        print('This needs to be coded!')
+
     #Create submeshes of the input mesh 
     meshes_segm_sect = {}
-    for n, sect, color in zip(count(), sect_names, palette):
-        segm_sect = segm+'_'+sect
-        cutsf = seg_cut+'_o_'+reg_cut
-        print(segm_sect, cutsf)
-        # subsct, final_segm_sect_mesh = 
-        create_sub_segm_sect(organ, obj_segm, segm, 
-                                                    cutsf, segm_sect, color)
-        #segm = segment that is being cut 'segm1
-        #cutsf = segm cut _o_ reg cut
-        #reg_cut = sections cut that is being made (Cut1/Cut2)
-        #sect = the section that is being created (sect1/sect2)
-        #color = color assigned to that section
-        # meshes_segm_sect[sect] = final_segm_sect_mesh
+    meshes_final = []
+    for sect in sect_names:
+        palette_dict = {}
+        for key in palette.keys():
+            if sect in key:
+                new_key = key.split('_')[0]
+                palette_dict[new_key] = palette[key]
+        print('palette_dict', palette_dict)
+        meshes_segm_sect[sect] = {}
+        # palette_sect = [palette_dict[key] for key in palette_dict.keys()]
+        for segm in segm_names: 
+            segm_sect = segm+'_'+sect
+            color = palette[segm+'_'+sect]
+            print('Dividing into Segment-Section Intersections '+segm_sect)
+            final_segm_sect_mesh = create_sub_segm_sect(organ, cuts, ch_cont, 
+                                                        segm, sect, 
+                                                        color, palette_dict, 
+                                                        ext_subsgm)
+            meshes_segm_sect[sect][segm] = final_segm_sect_mesh
+
+            print('organ.submeshes:',organ.submeshes.keys())
+            meshes_final.append(final_segm_sect_mesh)
+
+    # vp = vedo.Plotter(N=1, axes=4)
+    # vp.show(meshes_final, at = 0, interactive = True)
         
-    # print('\n\n FINAL! mH_settings[measure]: ', organ.mH_settings['measure'], '\n\n')
+    print('\n\n FINAL! mH_settings[measure]: ', organ.mH_settings['measure'], '\n\n')
+    print('organ.submeshes:', organ.submeshes)
+    alert('woohoo')
 
-    # print('wf_info (sect)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'sections']))
-    # print('organ.submeshes:', organ.submeshes)
+    return meshes_segm_sect
 
-    # return meshes_sect
+def create_sub_segm_sect(organ, cuts, ch_cont, segm, sect, color, palette_dict, ext_subsgm): 
 
-def create_sub_segm_sect(organ, obj_segm, segm, cuts, segm_sect, color): 
-    #Create submesh - section
-    subsct = obj_segm.create_segm_sect(segm_sect = segm_sect, cuts = cuts, color = color)
-    # print(subsct.__dict__)
-    # final_sect_mesh = subsct.get_sect_mesh()
-    # final_sect_mesh.color(color).alpha(0.1).legend(subsct.sub_legend)
-    # subsct.color = color
-    # #Add submesh to organ
-    # organ.add_submesh(subsct)
-    #Get segm measurements
-    # measurements = organ.mH_settings['setup']['segm']['measure']
-    # measure_submesh(organ, subsct, final_sect_mesh, measurements)
+    seg_cut, reg_cut = cuts
+    cutsf = 's'+seg_cut+'_'+reg_cut
+    #Extract segment
+    segm_sect = segm+'_'+sect
+    obj_segm = organ.obj_subm[seg_cut+'_'+ch_cont+'_'+segm]
+    #Create subsegm_subsect
+    submesh = obj_segm.create_segm_sect(segm_sect = segm_sect, cuts = cutsf, color = color)
 
+    #SECTION/REGION
+    #Get the section mask containing only this section
+    sect_mask = submesh.get_sect_mesh(output='mask')
+    #SEGMENT
+    #Mask the segments providing as input the masked section
+    cut_masked = submesh.mask_segments(cut = seg_cut, s3 = sect_mask)
+    #Create a dictionary containing the information of the classified segments 
+    dict_segm = organ.dict_segments(seg_cut, other=False)
+    #Classify the resulting segments using ext mesh
+    sp_dict_segm = classify_segments_from_ext(meshes = cut_masked, 
+                                                dict_segm = dict_segm[segm],
+                                                ext_sub = ext_subsgm[segm])
+    print('dict_segm after classif: ', sp_dict_segm)
+    final_segm_sect_mesh = create_subsegment(organ, submesh, seg_cut, cut_masked, 
+                                            'segm-sect', sp_dict_segm, color)
+    
     # Update organ workflow
-    # cut, ch, cont, sect = subsct.sub_name_all.split('_')
-    # proc_wft = ['MeshesProc', 'E-Sections', cut, ch, cont, 'Status']
-    # organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+    ch, cont = ch_cont.split('_')
+    proc_wft = ['MeshesProc', 'E-Segments_Sections', 's'+seg_cut, reg_cut, ch, cont, 'Status']
+    organ.update_mHworkflow(process = proc_wft, update = 'DONE')
 
-    # return subsct, final_sect_mesh
+    return final_segm_sect_mesh
     
 #General SubMeshes
 def save_submesh(organ, submesh, mesh, win, ext='.vtk'):
@@ -1597,8 +1639,10 @@ def measure_submesh(organ, submesh, mesh, measurements):
 
     if submesh.sub_mesh_type == 'Segment': 
         name = 'segm'
-    else: 
+    elif submesh.sub_mesh_type == 'Section': 
         name = 'sect'
+    else: 
+        name = 'segm-sect'
 
     if measurements['Vol']: 
         vol = mesh.volume()
@@ -1611,14 +1655,12 @@ def measure_submesh(organ, submesh, mesh, measurements):
             #Do the ellipsoid!
             pass
     
-def create_subsegment(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):#
+def create_subsegment(organ, subsgm, cut, cut_masked, stype, sp_dict_segm, color):#
     
-    #Create submesh - segment
-    subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
     #Assign meshes and measure them
     list_meshes = sp_dict_segm['meshes_number']
     #Get segm measurements
-    measurements = organ.mH_settings['setup']['segm']['measure']
+    measurements = organ.mH_settings['setup'][stype]['measure']
     #Find meshes and add them to the mesh
     mesh_segm = []; 
     print('len(cut_masked) -'+subsgm.sub_name_all+': ', len(cut_masked))
@@ -1641,13 +1683,15 @@ def create_subsegment(organ, mesh, cut, cut_masked, segm, sp_dict_segm, color):#
         measure_submesh(organ, subsgm, final_segm_mesh, measurements)
     
         # Update organ workflow
-        cut, ch, cont, segm = subsgm.sub_name_all.split('_')
-        proc_wft = ['MeshesProc', 'E-Segments', cut, ch, cont, 'Status']
-        organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+        if stype == 'segm': 
+            cut, ch, cont, segm = subsgm.sub_name_all.split('_')
+            proc_wft = ['MeshesProc', 'E-Segments', cut, ch, cont, 'Status']
+            organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+        else: 
+            pass
 
-    # subsgm: instance of class submesh
     # final_segm_mesh: instance of mesh (vedo)
-    return subsgm, final_segm_mesh
+    return final_segm_mesh
 
 #%% - Measuring functions
 def measure_centreline(organ, nPoints):

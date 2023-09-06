@@ -1117,7 +1117,11 @@ class Organ():
             #New to submesh
             self.submeshes[submesh.sub_name_all]['sub_name'] = submesh.sub_name
             self.submeshes[submesh.sub_name_all]['sub_name_all'] = submesh.sub_name_all
-            self.submeshes[submesh.sub_name_all]['parent_mesh'] = submesh.parent_mesh.name
+            if submesh.sub_mesh_type != 'Segment-Section': 
+                self.submeshes[submesh.sub_name_all]['parent_mesh'] = submesh.parent_mesh.name
+            else: 
+                self.submeshes[submesh.sub_name_all]['parent_mesh'] = submesh.parent_mesh.parent_mesh.name
+
             self.submeshes[submesh.sub_name_all]['sub_mesh_type'] = submesh.sub_mesh_type
             self.submeshes[submesh.sub_name_all]['sub_legend'] = submesh.sub_legend
             self.submeshes[submesh.sub_name_all]['sub_user_name'] = submesh.sub_user_name
@@ -1128,10 +1132,16 @@ class Organ():
             self.submeshes[submesh.sub_name_all]['keep_largest'] = submesh.keep_largest
             self.submeshes[submesh.sub_name_all]['rotateZ_90'] = submesh.rotateZ_90
             #Inherited from parent_mesh
-            self.submeshes[submesh.sub_name_all]['parent_mesh'] = {}
-            self.submeshes[submesh.sub_name_all]['parent_mesh']['legend'] = submesh.parent_mesh.legend
-            self.submeshes[submesh.sub_name_all]['parent_mesh']['name'] = submesh.parent_mesh.name
-            self.submeshes[submesh.sub_name_all]['parent_mesh']['imChannel'] = submesh.parent_mesh.imChannel.channel_no
+            if submesh.sub_mesh_type != 'Segment-Section': 
+                self.submeshes[submesh.sub_name_all]['parent_mesh'] = {}
+                self.submeshes[submesh.sub_name_all]['parent_mesh']['legend'] = submesh.parent_mesh.legend
+                self.submeshes[submesh.sub_name_all]['parent_mesh']['name'] = submesh.parent_mesh.name
+                self.submeshes[submesh.sub_name_all]['parent_mesh']['imChannel'] = submesh.parent_mesh.imChannel.channel_no
+            else: 
+                self.submeshes[submesh.sub_name_all]['parent_mesh'] = {}
+                self.submeshes[submesh.sub_name_all]['parent_mesh']['legend'] = submesh.parent_mesh.parent_mesh.legend
+                self.submeshes[submesh.sub_name_all]['parent_mesh']['name'] = submesh.parent_mesh.parent_mesh.name
+                self.submeshes[submesh.sub_name_all]['parent_mesh']['imChannel'] = submesh.parent_mesh.parent_mesh.imChannel.channel_no
             #Add to obj_submesh
             self.obj_subm[submesh.sub_name_all] = submesh
         else: #Just updating things that could change
@@ -1142,7 +1152,7 @@ class Organ():
             #Add to obj_submesh
             self.obj_subm[submesh.sub_name_all] = submesh
 
-        if submesh.sub_mesh_type == 'Section':
+        if submesh.sub_mesh_type == 'Section' or submesh.sub_mesh_type == 'Segment-Section':
             self.submeshes[submesh.sub_name_all]['s3_invert'] = submesh.s3_invert
         elif submesh.sub_mesh_type == 'Segment':
             if hasattr(submesh, 'dict_segm'):
@@ -1393,7 +1403,7 @@ class Organ():
 
         return self.ext_subsgm
     
-    def dict_segments(self, cut, palette, other=True):
+    def dict_segments(self, cut, palette = None, other=True):
     
         segments_info = self.mH_settings['setup']['segm'][cut]
         # no_segm = segments_info['no_segments']
@@ -1412,10 +1422,18 @@ class Organ():
             dict_segm[segm] = {}
             dict_segm[segm]['user_name'] = segments_info['name_segments'][segm]
             dict_segm[segm]['meshes_number'] = []
-
-            colors[segm] = palette[n]
+            if palette != None: 
+                try: 
+                    colors[segm] = palette[segm]
+                    print('try colors - dict_segments')
+                except:
+                    print('except colors - dict_segments')
+                    colors[segm] = palette[n]
         
-        return dict_segm, colors
+        if palette != None: 
+            return dict_segm, colors
+        else: 
+            return dict_segm
 
     def check_method(self, method:str):
         if method in self.parent_project.mH_methods:
@@ -3011,7 +3029,7 @@ class Mesh_mH():
         
         return submesh
         
-    def mask_segments(self, cut, palette):
+    def mask_segments(self, cut):
           
         # Get segments info
         no_discs = self.parent_organ.mH_settings['setup']['segm'][cut]['no_cuts_4segments']
@@ -3052,13 +3070,13 @@ class Mesh_mH():
             cut_masked_rot = cut_masked
         else: 
             cut_masked_rot = []
-            for n, mesh, color in zip(count(), cut_masked, palette):
+            for n, mesh in enumerate(cut_masked):
                 if self.rotateZ_90:
-                    cut_masked_rot.append(mesh.rotate_z(-90).alpha(0.1).color(color).legend('No.'+str(n)))
+                    cut_masked_rot.append(mesh.rotate_z(-90).alpha(0.1).legend('No.'+str(n)))
                 else:
-                    cut_masked_rot.append(mesh.alpha(0.1).color(color).legend('No.'+str(n)))
+                    cut_masked_rot.append(mesh.alpha(0.1).legend('No.'+str(n)))
 
-        print('Rotated final segments (vedo.Mesh):', cut_masked_rot)
+        print('Rotated final segments (vedo.Mesh):', len(cut_masked_rot))
         return cut_masked_rot
         
     def create_segment(self, name, cut, color):
@@ -3077,24 +3095,21 @@ class Mesh_mH():
     
 class SubMesh():
     
-    def __init__(self, parent_mesh: Mesh_mH, sub_mesh_type:str, name: str,
+    def __init__(self, parent_mesh, sub_mesh_type:str, name: str,
                  cut:str, user_name='', color='gold', alpha=0.05):
         
         self.parent_mesh = parent_mesh
         self.sub_name = name # ch_cont_segm/sect
-        self.sub_mesh_type = sub_mesh_type # Section, Segment
+        self.sub_mesh_type = sub_mesh_type # Section, Segment or Segment-Section
         self.keep_largest = False#keep_largest
+        self.cut = cut
+
+        if sub_mesh_type == 'Segment-Section': 
+            parent_mesh = self.parent_mesh.parent_mesh #grandparent_mesh
+            
+        self.sub_name_all = cut+'_'+parent_mesh.name+'_'+name
+        parent_organ = parent_mesh.parent_organ 
         
-        if sub_mesh_type != 'Segment-Section': 
-            self.cut = cut
-            self.sub_name_all = cut+'_'+parent_mesh.name+'_'+name
-            parent_organ = self.parent_mesh.parent_organ 
-        else: 
-            # self.cut = 
-            # self.sub_name_all = cut+'_'+parent_mesh.name+'_'+name
-            # parent_organ = self.parent_mesh.parent_organ 
-            pass
- 
         if self.sub_name_all not in parent_organ.submeshes.keys():
             print('>> New submesh - ', self.sub_name_all)
             # new = True
@@ -3114,24 +3129,22 @@ class SubMesh():
             self.color = submesh_dict['color']
             self.alpha = submesh_dict['alpha']
             self.rotateZ_90 = submesh_dict['rotateZ_90']
-            self.imChannel = parent_mesh.imChannel
-            self.mesh_type = parent_mesh.mesh_type
-            self.resolution = submesh_dict['resolution']
             for attr in ['s3_invert', 's3_mask_dir', 'dict_segm', 'sub_user_name']:
                 if attr in submesh_dict.keys():
                     value = submesh_dict[attr]
                     setattr(self, attr, value)
-
-            
-
-            pass
                     
-    def get_sect_mesh(self):
+    def get_sect_mesh(self, output='mesh'):
         
         print('>>>> get_sect_mesh: ',self.sub_name_all)
-        cut = self.cut
-        mask_name = self.parent_mesh.parent_organ.mH_settings['wf_info']['sections'][cut.title()]['mask_name']#getattr(self.parent_mesh.parent_organ, 'mask_sect_'+cut.lower())
-        mask_dir = self.parent_mesh.parent_organ.dir_res(dir ='s3_numpy') / mask_name
+        if self.sub_mesh_type != 'Segment-Section': 
+            cut = self.cut
+        else: 
+            cut = self.cut.split('_')[1:][0]
+        print('cut:', cut)
+
+        mask_name = self.imChannel.parent_organ.mH_settings['wf_info']['sections'][cut.title()]['mask_name']#getattr(self.parent_mesh.parent_organ, 'mask_sect_'+cut.lower())
+        mask_dir = self.imChannel.parent_organ.dir_res(dir ='s3_numpy') / mask_name
 
         s3_mask = np.load(str(mask_dir))
         s3_mask = s3_mask.astype('bool')
@@ -3148,12 +3161,18 @@ class SubMesh():
         masked_s3 = s3.copy()
     
         masked_s3[maskF] = 0
-        mesh = create_submesh(masked_s3, self.resolution, self.keep_largest, self.rotateZ_90)
-        mesh.legend(self.sub_legend).wireframe()
-        mesh.alpha(self.alpha)
-        mesh.color(self.color)
-
-        return mesh
+        if output == 'mask':
+            return masked_s3
+        elif output == 'mesh':
+            mesh = create_submesh(masked_s3, self.resolution, self.keep_largest, self.rotateZ_90)
+            mesh.legend(self.sub_legend).wireframe()
+            mesh.alpha(self.alpha)
+            mesh.color(self.color)
+            return mesh
+        else: 
+            print('what?')
+            alert('error_beep')
+            return None
 
     def get_segm_mesh(self):
         
@@ -3168,11 +3187,46 @@ class SubMesh():
             
         return segm_mesh
     
+    def get_sect_segm_mesh(self, seg_cut): 
+        
+        #SECTION/REGION
+        segm, sect = self.sub_name.split('_')
+        #Get the section mask containing only this section
+        sect_mask = self.get_sect_mesh(output='mask')
+        #SEGMENT
+        #Mask the segments providing as input the masked section
+        cut_masked = self.mask_segments(cut = seg_cut, s3 = sect_mask)
+        #Create a dictionary containing the information of the classified segments 
+        #Heree!!!
+        dict_segm = self.imChannel.parent_organ.dict_segments(seg_cut, other=False)
+        ch, cont = self.parent_mesh.name.split('_')
+        method = self.imChannel.parent_organ.mH_settings['wf_info']['segments']['setup'][seg_cut]['ch_info'][ch][cont]
+        if method in ['ext-ext', 'cut_with_ext-ext', 'cut_with_other_ext-ext']: 
+            try:
+                ext_subsgm = self.imChannel.parent_organ.ext_subsgm
+                print('try ext_subsgm')
+            except: 
+                ext_subsgm = self.imChannel.parent_organ.get_ext_subsgm(seg_cut[1:])
+                print('except ext_subsgm')
+            print('ext_subsgm: ',ext_subsgm)
+
+            #Classify the resulting segments using ext mesh
+            sp_dict_segm = classify_segments_from_ext(meshes = cut_masked, 
+                                                        dict_segm = dict_segm[segm],
+                                                        ext_sub = ext_subsgm[segm])
+            print('dict_segm after classif: ', sp_dict_segm)
+            segm_sect_mesh = create_subsegment(self.imChannel.parent_organ, self, seg_cut, cut_masked, 
+                                                    'segm-sect', sp_dict_segm, self.color)
+        else: 
+            segm_sect_mesh = None
+            print('This needs to be coded!')
+
+        return segm_sect_mesh
     
     def create_segm_sect(self, segm_sect, cuts, color, alpha=0.05): 
-        seg_cut, reg_cut = cuts.split('_o_')
+        seg_cut, reg_cut = cuts.split('_')
         seg_name, reg_name = segm_sect.split('_')
-        segm_info = self.parent_mesh.parent_organ.mH_settings['setup']['segm'][seg_cut]
+        segm_info = self.parent_mesh.parent_organ.mH_settings['setup']['segm'][seg_cut[1:]]
         sect_info = self.parent_mesh.parent_organ.mH_settings['setup']['sect'][reg_cut]
         if reg_name == 'sect1':
             invert = True
@@ -3180,22 +3234,66 @@ class SubMesh():
             invert = False
         print('seg_name:', seg_name, 'reg_name:', reg_name, '- invert:', invert)
 
-        cut = 's'+seg_cut+'_'+reg_cut
         user_name = segm_info['name_segments'][seg_name]+'_'+sect_info['name_sections'][reg_name]
-        print(cut, user_name)
-        # submesh = SubMesh(parent_mesh = self, sub_mesh_type='Segment-Section', 
-        #                   name = segm_sect, cut = cut, user_name = user_name,
-        #                   color = color, alpha = alpha)#,
-        # print(submesh.__dict__)
-        # submesh.s3_invert = invert
-        # submesh.sub_user_name = segm_info['name_segments'][seg_name]+'_'+sect_info['name_sections'][reg_name]
-        # self.parent_organ.add_submesh(submesh)
+        print('cuts:', cuts, 'user_name:', user_name)
+        submesh = SubMesh(parent_mesh = self, sub_mesh_type='Segment-Section', 
+                          name = segm_sect, cut = cuts, user_name = user_name,
+                          color = color, alpha = alpha)#,
+        print(submesh.__dict__)
+        submesh.s3_invert = invert
+        submesh.sub_user_name = segm_info['name_segments'][seg_name]+'_'+sect_info['name_sections'][reg_name]
+        submesh.imChannel.parent_organ.add_submesh(submesh)
 
-        # return submesh
+        return submesh
+    
+    def mask_segments(self, cut, s3):
+          
+        # Get segments info
+        no_discs = self.imChannel.parent_organ.mH_settings['setup']['segm'][cut]['no_cuts_4segments']
+        no_segm =  self.imChannel.parent_organ.mH_settings['setup']['segm'][cut]['no_segments']
+
+        # Mask im_channel
+        im_ch = self.imChannel
+        masked_s3 = s3.copy()
+        
+        for nn in range(no_discs):
+            # print('nn: ', nn)
+            name_s3 = self.imChannel.parent_organ.user_organName+'_mask_'+cut+'_DiscNo'+str(nn)+'.npy'
+            s3_dir = self.imChannel.parent_organ.dir_res(dir='s3_numpy') / name_s3
+            s3_mask = np.load(str(s3_dir))
+            s3_mask = s3_mask.astype('bool')
+            directory = self.imChannel.parent_organ.dir_res('imgs_videos')
+            name = self.imChannel.channel_no+'_'+self.mesh_type
+            masked_s3 = mask_disc(self.imChannel.parent_organ.info['shape_s3'], masked_s3, s3_mask, directory, name)
+
+        if 'NS' not in im_ch.channel_no: 
+            max_depth = 1000
+        else: 
+            max_depth = 2000
+        print('max_depth: ', max_depth)
+        
+        masked_mesh = create_submesh(masked_s3, self.resolution, keep_largest=False, 
+                                     rotateZ_90=self.rotateZ_90)
+        cut_masked = masked_mesh.split(maxdepth=max_depth)
+        print('> Meshes making up tissue: ', len(cut_masked))
+        alert('frog')
+        if len(cut_masked) < no_segm: 
+            obj = cut_masked
+            plot_grid(obj=obj, txt=[], axes=5, sc_side=max(self.imChannel.parent_organ.get_maj_bounds()))
+            cut_masked_rot = cut_masked
+        else: 
+            cut_masked_rot = []
+            for n, mesh in enumerate(cut_masked):
+                if self.rotateZ_90:
+                    cut_masked_rot.append(mesh.rotate_z(-90).alpha(0.1).legend('No.'+str(n)))
+                else:
+                    cut_masked_rot.append(mesh.alpha(0.1).legend('No.'+str(n)))
+
+        print('Rotated final segments (vedo.Mesh):', len(cut_masked_rot))
+        return cut_masked_rot
     
     def get_segm_sect_mesh(self): 
         pass
-
 
     def set_alpha(self, mesh_alpha):      
         self.alpha = mesh_alpha

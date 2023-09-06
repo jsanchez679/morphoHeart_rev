@@ -323,30 +323,6 @@ def update_gui_set(loaded:dict, current:dict):
     print('Loaded_f: ',final_dict)
 
     return final_dict, changed
-            
-    # flat_loaded = flatdict.FlatDict(loaded)
-    # flat_current = flatdict.FlatDict(current)
-    # current_keys = flat_current.keys()
-
-
-    # for key in flat_current.keys():
-    #     print('\n\n ------------ Validating Keys ------------ ')
-    #     try: 
-    #         if type(flat_current[key]) == type(flat_loaded[key]) and flat_current[key] != flat_loaded[key]:
-    #             print('Key changed:', key, '- from loaded:', flat_loaded[key], '- to current:', flat_current[key])
-    #             flat_loaded[key] = flat_current[key]
-    #         elif type(flat_current[key]) == type(flat_loaded[key]) and flat_current[key] == flat_loaded[key]: 
-    #             pass
-    #         else: 
-    #             print('-> Different types - key', key, ' - loaded:', flat_loaded[key], '- current:', flat_current[key])
-    #     except: 
-    #         print('-Unable to update key: ',key)
-    #         try: 
-    #             print('-> Values - loaded:', flat_loaded[key], '- current:', flat_current[key])
-    #         except: 
-    #             print('-> Values - loaded:', key, '- current:', key)
-
-    return flat_loaded.as_dict()
         
 #%% func - get_by_path
 def get_by_path(root_dict, items):
