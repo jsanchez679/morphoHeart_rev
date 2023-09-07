@@ -971,17 +971,28 @@ class Organ():
 
         self.obj_subm = {}
         for subm in submeshes_dict.keys():
-            cut, ch, cont, sub = subm.split('_')
-            mesh = self.obj_meshes[ch+'_'+cont]
-            if 'segm' in sub: 
-                #Get mesh to create submesh
+            if 'sCut' not in subm: 
+                cut, ch, cont, sub = subm.split('_')
+                mesh = self.obj_meshes[ch+'_'+cont]
+                if 'segm' in sub: 
+                    #Get mesh to create submesh
+                    color = submeshes_dict[subm]['color']
+                    submesh = mesh.create_segment(name = sub, cut = cut, color =color)
+                    self.obj_subm[subm] = submesh
+                else: #'sect' in sub: 
+                    color = submeshes_dict[subm]['color']
+                    submesh = mesh.create_section(name = sub, cut = cut, color =color)
+                    self.obj_subm[subm] = submesh
+            else: 
+                seg_cut, reg_cut, ch, cont, segm, sect = subm.split('_')
+                obj_segm = self.obj_subm[seg_cut[1:]+'_'+ch+'_'+cont+'_'+segm]
+                #Create subsegm_subsect
+                segm_sect = segm+'_'+sect
+                cutsf = seg_cut+'_'+reg_cut
                 color = submeshes_dict[subm]['color']
-                submesh = mesh.create_segment(name = sub, cut = cut, color =color)
+                submesh = obj_segm.create_segm_sect(segm_sect = segm_sect, cuts = cutsf, color = color)
                 self.obj_subm[subm] = submesh
-            else: #'sect' in sub: 
-                color = submeshes_dict[subm]['color']
-                submesh = mesh.create_section(name = sub, cut = cut, color =color)
-                self.obj_subm[subm] = submesh
+
         
     def create_folders(self):#
         dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'centreline', 'settings']
@@ -1125,6 +1136,7 @@ class Organ():
             self.submeshes[submesh.sub_name_all]['sub_mesh_type'] = submesh.sub_mesh_type
             self.submeshes[submesh.sub_name_all]['sub_legend'] = submesh.sub_legend
             self.submeshes[submesh.sub_name_all]['sub_user_name'] = submesh.sub_user_name
+            self.submeshes[submesh.sub_name_all]['cut'] = submesh.cut
             #Mesh related
             self.submeshes[submesh.sub_name_all]['resolution'] = submesh.resolution
             self.submeshes[submesh.sub_name_all]['color'] = submesh.color
@@ -3117,13 +3129,14 @@ class SubMesh():
             self.color = color
             self.alpha = alpha
             self.rotateZ_90 = parent_mesh.rotateZ_90
-            self.imChannel = parent_mesh.imChannel
-            self.mesh_type = parent_mesh.mesh_type
-            self.resolution = parent_mesh.resolution
+            # self.imChannel = parent_mesh.imChannel
+            # self.mesh_type = parent_mesh.mesh_type
+            # self.resolution = parent_mesh.resolution
         else: 
             # new = False
             print('>> Recreating submesh - ', self.sub_name_all)
             #Get data from submesh dict
+            # self.imChannel = parent_mesh.imChannel
             submesh_dict = parent_organ.submeshes[self.sub_name_all]
             self.sub_legend = submesh_dict['sub_legend']
             self.color = submesh_dict['color']
@@ -3133,6 +3146,10 @@ class SubMesh():
                 if attr in submesh_dict.keys():
                     value = submesh_dict[attr]
                     setattr(self, attr, value)
+            
+        self.imChannel = parent_mesh.imChannel
+        self.mesh_type = parent_mesh.mesh_type
+        self.resolution = parent_mesh.resolution
                     
     def get_sect_mesh(self, output='mesh'):
         
@@ -3199,7 +3216,10 @@ class SubMesh():
         #Create a dictionary containing the information of the classified segments 
         #Heree!!!
         dict_segm = self.imChannel.parent_organ.dict_segments(seg_cut, other=False)
-        ch, cont = self.parent_mesh.name.split('_')
+        try: 
+            ch, cont = self.parent_mesh.name.split('_')
+        except: 
+            ch, cont = self.parent_mesh.parent_mesh.name.split('_')
         method = self.imChannel.parent_organ.mH_settings['wf_info']['segments']['setup'][seg_cut]['ch_info'][ch][cont]
         if method in ['ext-ext', 'cut_with_ext-ext', 'cut_with_other_ext-ext']: 
             try:

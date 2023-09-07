@@ -3497,7 +3497,7 @@ class MainWindow(QMainWindow):
             self.init_centreline()
         else: 
             self.centreline_all_widget.setVisible(False)
-        'Thickness/Ballooning'
+        #'Thickness/Ballooning'
         if len(self.organ.mH_settings['measure']['th_i2e'])+len(self.organ.mH_settings['measure']['th_e2i'])+len(self.organ.mH_settings['measure']['ball'])>0:
             self.init_thickness_ballooning()
         else: 
@@ -3515,7 +3515,6 @@ class MainWindow(QMainWindow):
         #Segments-Regions 
         if isinstance(self.organ.mH_settings['setup']['segm-sect'], dict):
             self.init_segm_sect()
-            print('aja, intit_segm_sect')
         else: 
             self.segm_sect_all_widget.setVisible(False)
         
@@ -5224,14 +5223,15 @@ class MainWindow(QMainWindow):
 
             #Run Set Function 
             self.set_sections(init=True)
-            
         else: 
             pass
   
     def user_segm_sect(self): 
         
+        wf = self.organ.workflow['morphoHeart']['MeshesProc']['E-Segments_Sections']
         for btn in self.segm_sect_btns: 
             ch_cont = btn.split(':')[1]
+            ch, cont = ch_cont.split('_')
             seg_cut = btn.split('_o_')[0][1:]
             seg_btn = seg_cut+':'+ch_cont
             reg_cut = btn.split(':')[0].split('_o_')[1]
@@ -5239,6 +5239,13 @@ class MainWindow(QMainWindow):
             if self.segm_btns[seg_btn]['plot'].isEnabled() and self.sect_btns[reg_btn]['plot'].isEnabled(): 
                 self.segm_sect_btns[btn]['play'].setEnabled(True)
 
+            if get_by_path(wf, ['s'+seg_cut, reg_cut, ch, cont, 'Status']) == 'DONE':
+                self.segm_sect_btns[btn]['plot'].setEnabled(True)
+                self.segm_sect_btns[btn]['play'].setChecked(True)
+
+            #Update Status in GUI
+            self.update_status(wf, ['Status'], self.sections_status)
+            
     def user_user_params(self): 
 
         wf_info = self.organ.mH_settings['wf_info']
@@ -5596,7 +5603,7 @@ class MainWindow(QMainWindow):
         self.update_workflow_progress()
 
     def update_workflow_progress(self): 
-        # print('self.workflow_keys:', self.workflow_keys)
+        print('self.workflow_keys:', self.workflow_keys)
         titles_inv = {'createMesh': 'A-Create3DMesh',
                        'setOrientation': 'A-Set_Orientation',
                        'trimMesh': 'B-TrimMesh',
@@ -5620,6 +5627,12 @@ class MainWindow(QMainWindow):
                     proc, orient = split_cs
                     proc_inv = titles_inv[proc]
                     final_key = proc_inv+':'+orient[:-1]
+                elif 'segm-sect' in cs: 
+                    proc, ch_info = split_cs
+                    seg_cut, reg_cut, ch, conto = ch_info.split('_')
+                    cont = conto[:-1]
+                    proc_inv = titles_inv[proc]
+                    final_key = proc_inv+':'+seg_cut+':'+reg_cut+':'+ch+':'+cont+':Status'
                 else: 
                     proc, ch_info = split_cs
                     proc_inv = titles_inv[proc]
@@ -5737,30 +5750,30 @@ class MainWindow(QMainWindow):
         df_index = df_index.drop(['index'], axis=1)
         df_melt = pd.melt(df_index, id_vars = ['Parameter'],  value_vars=cols, value_name='Value')
         df_melt = df_melt.rename(columns={"variable": "Tissue-Contour"})
-        df_meltf = df_melt.dropna()
+        df_melt = df_melt.dropna()
         mult_index= ['Parameter', 'Tissue-Contour']
-        df_multi = df_meltf.set_index(mult_index)
-
+        df_melt = df_melt.set_index(mult_index)
+        #Create a copy to modify
         df_new = df_multi.copy(deep=True)
-        key_cl = {'lin_length': 'Linear Length', 'looped_length': 'Looped Length'}
-        if 'CL' in vars:
-            dict_CL = {}
-            df_CL = df_multi.loc[[dict_names['CL']]]
-            for index, row in df_CL.iterrows():
-                # print(index, row['Value'])
-                if isinstance(row['Value'], dict): 
-                    merge = True
-                    df_new.drop(index, axis=0, inplace=True)
-                    for key, item in row['Value'].items():
-                        # print(key, item) 
-                        new_index = 'Centreline: '+key_cl[key]
-                        new_variable = index[1]
-                        dict_CL[(new_index, new_variable)] = item
 
+        #Add values from Centreline
+        if 'CL' in vars:
+            key_cl = {'lin_length': 'Linear Length', 'looped_length': 'Looped Length'}
+            dict_CL = {}
+            df_CL = df_melt.loc[[dict_names['CL']]]
+            for index, row in df_CL.iterrows():
+                if isinstance(row['Value'], dict): 
+                    row_cl = row['Value']
+                else: 
+                    row_cl = {'lin_length': None, 'looped_length': None}
+                df_new.drop(index, axis=0, inplace=True)
+                for key, item in row_cl.items():
+                    new_index = 'Centreline: '+key_cl[key]
+                    new_variable = index[1]
+                    dict_CL[(new_index, new_variable)] = item
             # print('dict_CL:',  dict_CL)
             if len(dict_CL) != 0: 
                 df_CL = pd.DataFrame(dict_CL, index =[0])
-                # print('df_CL:', df_CL)
                 df_CL_melt = pd.melt(df_CL, var_name=mult_index,value_name='Value')
                 df_CL_melt = df_CL_melt.set_index(mult_index)
                 df_final = pd.concat([df_new, df_CL_melt])
@@ -5768,7 +5781,102 @@ class MainWindow(QMainWindow):
             else: 
                 df_final = df_new.sort_values(by=['Parameter'])
 
-        # key_ellip = {'lin_length': 'Linear Length', 'looped_length': 'Looped Length'}
+        #Add values from Ellipsoids
+        if 'Ellip(segm)' in vars: 
+            key_ellip = {'ell_width': 'Width', 'ell_length': 'Length', 'ell_depth': 'Depth', 'ell_asphericity': 'Asphericity'}
+            dict_ellip = {}
+            df_ellip = df_melt.loc[['Ellipsoid: Segment']]
+            for index, row in df_ellip.iterrows():
+                if isinstance(row['Value'], dict): 
+                    row_ell = row['Value']
+                else: 
+                    row_ell = {'ell_width': True, 'ell_length': True, 'ell_depth': True, 'ell_asphericity': True}
+                df_final.drop(index, axis=0, inplace=True)
+                for key, item in row_ell.items():
+                    new_index = 'Ellipsoid: '+key_ellip[key]
+                    new_variable = index[1]
+                    dict_ellip[(new_index, new_variable)] = item
+
+            # print('dict_ellip:',  dict_ellip)
+            if len(dict_ellip) != 0: 
+                df_ellip = pd.DataFrame(dict_ellip, index =[0])
+                print('df_ellip:', df_ellip)
+                df_ellip_melt = pd.melt(df_ellip, var_name=mult_index,value_name='Value')
+                df_ellip_melt = df_ellip_melt.set_index(mult_index)
+                df_final = pd.concat([df_final, df_ellip_melt])
+                df_final = df_final.sort_values(by=['Parameter'])
+            else: 
+                df_final = df_new.sort_values(by=['Parameter'])
+
+        #Add values from Angles
+        if 'Angles(segm)' in vars: 
+            if isinstance(self.organ.mH_settings['setup']['segm'], dict):
+                segm_names = {}
+                for cut in [key for key in self.organ.mH_settings['setup']['segm'] if 'Cut' in key]:
+                    segm_names[cut] = [key for key in self.organ.mH_settings['setup']['segm'][cut]['name_segments'].keys()]
+            key_angles = {}
+            for cut in segm_names:
+                for segm in segm_names[cut]:
+                    segm_name = cut+'.'+segm+'_or'
+                    key_angles[segm_name] = cut+'.'+segm.title()+' Or.'
+            for n in range(len(segm_names[cut])-1):
+                print(n)
+                key_angles[cut+'.'+segm_names[cut][n]+'-'+segm_names[cut][n+1]] = cut+'.'+segm_names[cut][n].title()+'-'+segm_names[cut][n+1].title()
+
+            #Now modify the dataframe
+            for n, angle_name in enumerate(['Ang.Coronal']):#, 'Ang.Sagittal', 'Ang.Transverse']):
+                print(n, angle_name)
+                df_ang = df_melt.loc[['Angles: Segment']]
+                #Filter angles
+                cut_ch_cont = []
+                names_ang = [cut_segm for (_, cut_segm) in list(df_ang.index)]
+                cut_ch_cont = {}
+                for name in names_ang: 
+                    cut, ch, cont, num = name.split('_')
+                    if num == 'segm1': 
+                        if cut+'_'+ch not in cut_ch_cont.keys(): 
+                            cut_ch_cont[cut+'_'+ch] = [cont]
+                        else: 
+                            cut_ch_cont[cut+'_'+ch].append(cont)
+                keep_names = []
+                for cut_ch in cut_ch_cont.keys(): 
+                    for cont in ['ext', 'tiss', 'int']: 
+                        if cont in cut_ch_cont[cut_ch]: 
+                            keep_names.append(cut_ch+'_'+cont)
+                            break
+                index_list = []
+                for index, row in df_ang.iterrows():
+                    cuts, chs, conts, segms = index[1].split('_')
+                    if cuts+'_'+chs+'_'+conts in keep_names: 
+                        print('keep:', index[1])
+                        row_ang = {}
+                        index_list.append(index[1])
+                        for keya in key_angles.keys():
+                            row_ang[keya] = True
+                    else: 
+                        print('remove:', index[1])
+                    df_final.drop(index, axis=0, inplace=True)
+                    print(row_ang); 
+
+                print('index_list: ',index_list)
+                dict_angles = {}
+                for index in index_list: 
+                    for key, item in row_ang.items():
+                        # print(key, item) 
+                        new_index = angle_name+': '+key_angles[key]
+                        new_variable = index
+                        dict_angles[(new_index, new_variable)] = item
+
+                print('dict_angles:',  dict_angles)
+                if len(dict_angles) != 0: 
+                    df_angf = pd.DataFrame(dict_angles, index =[0])
+                    print('df_ang:', df_angf)
+                    df_ang_melt = pd.melt(df_angf, var_name=mult_index,value_name='Value')
+                    df_ang_melt = df_ang_melt.set_index(mult_index)
+                    df_final = pd.concat([df_final, df_ang_melt])
+                    df_final = df_final.sort_values(by=['Parameter'])
+                else: 
+                    df_final = df_new.sort_values(by=['Parameter'])
 
         #Change True Values to TBO
         values_updated = []
@@ -7267,13 +7375,15 @@ class MainWindow(QMainWindow):
         print('Plotting '+name+' ('+key2cut+')')
     
         obj_meshes = []
-        print('list_btns: ', list_btns)
+
+        # print('list_btns: ', list_btns)
         try: 
             #get submesh from list buttons if it was saved in there...
             meshes = list_btns[key2cut]['meshes']
             print('Meshes from try!')
         except: 
             print('Meshes from except!')
+            meshes = {}
             if 'scut' in btn: 
                 print('aja!')
                 segm_names = self.organ.mH_settings['setup']['segm']['Cut'+scut[-1]]['name_segments']
@@ -7291,7 +7401,6 @@ class MainWindow(QMainWindow):
                 cut, subm_info = key2cut.split(':')
                 ch, cont = subm_info.split('_') #Cut1_ch1_ext_segm1
                 # Do a for to load all the segments of that mesh
-                meshes = {}
                 print(cut, ch, cont)
                 for subm in self.organ.mH_settings['setup'][short][cut]['name_'+name].keys():
                     submesh_name = cut.title()+'_'+ch+'_'+cont+'_'+subm

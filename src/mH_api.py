@@ -1401,7 +1401,6 @@ def run_segm_sect(controller, btn):
             pass
         controller.main_win.update_status(workflow, proc_wft, controller.main_win.segm_sect_status)
 
-
 def run_measure(controller): 
     if controller.main_win.keeplargest_play.isChecked(): 
         organ = controller.organ
