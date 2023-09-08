@@ -2683,17 +2683,20 @@ def get_plane_normals_to_proj_kspl(organ, no_planes, kspl, gui_heatmaps2d):
     return pl_normals, pl_centres
    
 #%% - Plotting functions
-def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350, azimuth = 0, elevation = 0):
+def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350, azimuth = 0, elevation = 0, add_scale_cube=True):
     
     # Load logo
     path_logo = path_mHImages / 'logo-07.jpg'
     logo = vedo.Picture(str(path_logo))
     
     # Create ScaleCube
-    if isinstance(obj[0], tuple):
-        scale_cube = vedo.Cube(pos=obj[0][0].center_of_mass(), side=sc_side, c='white', alpha=0.01).legend('ScaleCube')
+    if add_scale_cube: 
+        if isinstance(obj[0], tuple):
+            scale_cube = vedo.Cube(pos=obj[0][0].center_of_mass(), side=sc_side, c='white', alpha=0.01).legend('ScaleCube')
+        else: 
+            scale_cube = vedo.Cube(pos=obj[0].center_of_mass(), side=sc_side, c='white', alpha=0.01).legend('ScaleCube')
     else: 
-        scale_cube = vedo.Cube(pos=obj[0].center_of_mass(), side=sc_side, c='white', alpha=0.01).legend('ScaleCube')
+        scale_cube = []
     
     # Set logo position
     if lg_pos =='top-left':

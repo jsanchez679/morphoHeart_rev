@@ -3388,7 +3388,7 @@ class MainWindow(QMainWindow):
         self.button_continue.clicked.connect(lambda: self.continue_next_tab())
         self.init_ch_progress()
 
-    #- Init Ch Progress Table
+    #>> Init Ch Progress Table
     def init_ch_progress(self): 
         im_chs = [key for key in self.channels.keys() if key != 'chNS']
         workflow = self.organ.workflow['morphoHeart']
@@ -4653,6 +4653,48 @@ class MainWindow(QMainWindow):
     def init_plot_results(self):
         self.plot_open.clicked.connect(lambda: self.open_section(name = 'plot')) 
         self.open_section(name='plot')
+        self.plot_meshes = {}
+        self.all_meshes = {}
+
+        self.fill_comboBox_all_meshes()
+
+        self.comboBox_all_meshes.addItems(list(self.all_meshes.keys()))
+        self.add_mesh.clicked.connect(lambda: self.add_mesh_to_plot())
+        self.set_plot.clicked.connect(lambda: self.set_plot_settings())
+        self.btn_plot.clicked.connect(lambda: self.create_user_plot())
+
+        self.alpha1.valueChanged.connect(lambda: self.update_plot('alpha', '1'))
+        self.alpha2.valueChanged.connect(lambda: self.update_plot('alpha', '2'))
+        self.alpha3.valueChanged.connect(lambda: self.update_plot('alpha', '3'))
+        self.alpha4.valueChanged.connect(lambda: self.update_plot('alpha', '4'))
+        self.alpha5.valueChanged.connect(lambda: self.update_plot('alpha', '5'))
+        self.alpha6.valueChanged.connect(lambda: self.update_plot('alpha', '6'))
+        self.alpha7.valueChanged.connect(lambda: self.update_plot('alpha', '7'))
+        self.alpha8.valueChanged.connect(lambda: self.update_plot('alpha', '8'))
+        self.alpha9.valueChanged.connect(lambda: self.update_plot('alpha', '9'))
+        self.alpha10.valueChanged.connect(lambda: self.update_plot('alpha', '10'))
+
+        self.plotno1.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '1'))
+        self.plotno2.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '2'))
+        self.plotno3.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '3'))
+        self.plotno4.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '4'))
+        self.plotno5.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '5'))
+        self.plotno6.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '6'))
+        self.plotno7.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '7'))
+        self.plotno8.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '8'))
+        self.plotno9.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '9'))
+        self.plotno10.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '10'))
+
+        self.del_mesh1.clicked.connect(lambda: self.update_plot('del', '1'))
+        self.del_mesh2.clicked.connect(lambda: self.update_plot('del', '2'))
+        self.del_mesh3.clicked.connect(lambda: self.update_plot('del', '3'))
+        self.del_mesh4.clicked.connect(lambda: self.update_plot('del', '4'))
+        self.del_mesh5.clicked.connect(lambda: self.update_plot('del', '5'))
+        self.del_mesh6.clicked.connect(lambda: self.update_plot('del', '6'))
+        self.del_mesh7.clicked.connect(lambda: self.update_plot('del', '7'))
+        self.del_mesh8.clicked.connect(lambda: self.update_plot('del', '8'))
+        self.del_mesh9.clicked.connect(lambda: self.update_plot('del', '9'))
+        self.del_mesh10.clicked.connect(lambda: self.update_plot('del', '10'))
 
     def init_workflow(self):
         #Setup workflow
@@ -5722,7 +5764,7 @@ class MainWindow(QMainWindow):
 
         measurements = self.organ.mH_settings['measure']
         df_index = pd.DataFrame.from_dict(measurements, orient='index')
-        # print('df_index', df_index)
+        #Drop variables that don't result in a single measurement
         vars2drop = ['th_e2i', 'th_i2e', 'ball', 'hm3Dto2D']
         vars = list(df_index.index)
         for var in vars: 
@@ -5754,7 +5796,7 @@ class MainWindow(QMainWindow):
         mult_index= ['Parameter', 'Tissue-Contour']
         df_melt = df_melt.set_index(mult_index)
         #Create a copy to modify
-        df_new = df_multi.copy(deep=True)
+        df_new = df_melt.copy(deep=True)
 
         #Add values from Centreline
         if 'CL' in vars:
@@ -5796,39 +5838,36 @@ class MainWindow(QMainWindow):
                     new_index = 'Ellipsoid: '+key_ellip[key]
                     new_variable = index[1]
                     dict_ellip[(new_index, new_variable)] = item
-
             # print('dict_ellip:',  dict_ellip)
             if len(dict_ellip) != 0: 
                 df_ellip = pd.DataFrame(dict_ellip, index =[0])
-                print('df_ellip:', df_ellip)
                 df_ellip_melt = pd.melt(df_ellip, var_name=mult_index,value_name='Value')
                 df_ellip_melt = df_ellip_melt.set_index(mult_index)
                 df_final = pd.concat([df_final, df_ellip_melt])
                 df_final = df_final.sort_values(by=['Parameter'])
             else: 
-                df_final = df_new.sort_values(by=['Parameter'])
+                df_final = df_final.sort_values(by=['Parameter'])
 
         #Add values from Angles
         if 'Angles(segm)' in vars: 
+            #Get segments names
             if isinstance(self.organ.mH_settings['setup']['segm'], dict):
                 segm_names = {}
                 for cut in [key for key in self.organ.mH_settings['setup']['segm'] if 'Cut' in key]:
                     segm_names[cut] = [key for key in self.organ.mH_settings['setup']['segm'][cut]['name_segments'].keys()]
+            #Create key names
             key_angles = {}
             for cut in segm_names:
                 for segm in segm_names[cut]:
                     segm_name = cut+'.'+segm+'_or'
                     key_angles[segm_name] = cut+'.'+segm.title()+' Or.'
             for n in range(len(segm_names[cut])-1):
-                print(n)
                 key_angles[cut+'.'+segm_names[cut][n]+'-'+segm_names[cut][n+1]] = cut+'.'+segm_names[cut][n].title()+'-'+segm_names[cut][n+1].title()
 
             #Now modify the dataframe
             for n, angle_name in enumerate(['Ang.Coronal']):#, 'Ang.Sagittal', 'Ang.Transverse']):
-                print(n, angle_name)
                 df_ang = df_melt.loc[['Angles: Segment']]
-                #Filter angles
-                cut_ch_cont = []
+                #Filter angles so that it only gets measured in the biggest mesh per ch_cont
                 names_ang = [cut_segm for (_, cut_segm) in list(df_ang.index)]
                 cut_ch_cont = {}
                 for name in names_ang: 
@@ -5848,40 +5887,32 @@ class MainWindow(QMainWindow):
                 for index, row in df_ang.iterrows():
                     cuts, chs, conts, segms = index[1].split('_')
                     if cuts+'_'+chs+'_'+conts in keep_names: 
-                        print('keep:', index[1])
                         row_ang = {}
                         index_list.append(index[1])
                         for keya in key_angles.keys():
                             row_ang[keya] = True
                     else: 
-                        print('remove:', index[1])
+                        pass
                     df_final.drop(index, axis=0, inplace=True)
-                    print(row_ang); 
-
-                print('index_list: ',index_list)
                 dict_angles = {}
                 for index in index_list: 
                     for key, item in row_ang.items():
-                        # print(key, item) 
                         new_index = angle_name+': '+key_angles[key]
                         new_variable = index
                         dict_angles[(new_index, new_variable)] = item
-
-                print('dict_angles:',  dict_angles)
+                # print('dict_angles:',  dict_angles)
                 if len(dict_angles) != 0: 
                     df_angf = pd.DataFrame(dict_angles, index =[0])
-                    print('df_ang:', df_angf)
                     df_ang_melt = pd.melt(df_angf, var_name=mult_index,value_name='Value')
                     df_ang_melt = df_ang_melt.set_index(mult_index)
                     df_final = pd.concat([df_final, df_ang_melt])
                     df_final = df_final.sort_values(by=['Parameter'])
                 else: 
-                    df_final = df_new.sort_values(by=['Parameter'])
+                    df_final = df_final.sort_values(by=['Parameter'])
 
         #Change True Values to TBO
         values_updated = []
         for index, row in df_final.iterrows(): 
-            # print(index, type(row['Value']))
             if isinstance(row['Value'], bool): 
                 values_updated.append('TBO')
             else: 
@@ -7520,6 +7551,179 @@ class MainWindow(QMainWindow):
         else: 
             return cl_ribbon, kspl_ext
 
+    def fill_comboBox_all_meshes(self): 
+
+        for mesh in self.organ.obj_meshes.keys(): 
+            mesh_name =self.organ.obj_meshes[mesh].legend
+            self.all_meshes[mesh_name] = {'obj_dir': 'obj_meshes', 
+                                            'obj_name': mesh}
+        for sub in self.organ.obj_subm.keys(): 
+            sub_name =self.organ.obj_subm[sub].sub_legend
+            self.all_meshes[sub_name] = {'obj_dir': 'obj_subm',
+                                            'obj_name': sub}
+    
+    def set_plot_settings(self): 
+
+        no_plots = self.spin_noPlots.value()
+        axes = int(self.combo_axes.currentText())
+        zoom = self.spin_zoom.value()
+        elev = self.spin_elev.value()
+        azim = self.spin_azim.value()
+        reorient = self.check_reorient.isChecked()
+
+        self.plot_settings = {'no_plots': no_plots, 
+                              'axes': axes, 
+                              'zoom': zoom, 
+                              'elev': elev, 
+                              'azim': azim, 
+                              'reorient': reorient}
+        
+        list_plots = list(range(1,no_plots+1,1))
+        list_plots_str = [str(item) for item in list_plots]
+        for nn in range(1,11,1): 
+            getattr(self, 'plotno'+str(nn)).clear()
+            getattr(self, 'plotno'+str(nn)).addItems(list_plots_str)
+        
+        print('self.plot_settings:', self.plot_settings)
+        self.add_mesh.setEnabled(True)
+        self.set_plot.setChecked(True)
+  
+    def add_mesh_to_plot(self): 
+        mesh2add = self.comboBox_all_meshes.currentText()
+        n_pos = len(self.plot_meshes)
+        if n_pos == 0: 
+            new_key = '0'
+        else: 
+            new_key = str(int(list(self.plot_meshes.keys())[-1])+1)
+        print('new_key:', new_key)
+        if n_pos+1 < 10: 
+            self.plot_meshes[new_key] = {'mesh': mesh2add, 
+                                            'alpha': 1.0, 
+                                            'plot_no': 1}
+            print('self.plot_meshes:', self.plot_meshes)
+            self.update_plot_list()
+        else: 
+            print('You cannot add plot more than 10 meshes. Delete another mesh to make space for anotherone')
+
+    def update_plot(self, key, num): 
+        keys_mesh = list(self.plot_meshes.keys())
+        if len(keys_mesh)>1: 
+            pos = keys_mesh[int(num)-1]
+            print('num:',num, 'pos:', pos)
+            print('bef:',self.plot_meshes)
+            if key == 'del': 
+                print('pos2del:', pos)
+                print('bef:',self.plot_meshes)
+
+                self.plot_meshes.pop(pos, None)
+                self.update_plot_list()
+            
+            if key == 'alpha': 
+                new_alpha = getattr(self, 'alpha'+num).value()
+                self.plot_meshes[pos]['alpha'] = new_alpha
+
+            if key == 'plot_no': 
+                new_plot_no = getattr(self, 'plotno'+num).currentText()
+                try: 
+                    self.plot_meshes[pos]['plot_no'] = new_plot_no
+                except: 
+                    pass
+            
+            print('aft:',self.plot_meshes)
+
+    def update_plot_list(self): 
+        keys_mesh = list(self.plot_meshes.keys())
+        print('keys_mesh:', keys_mesh)
+        nn = 0
+        for n_pos in range(1,11,1): 
+            mesh_name = getattr(self, 'mesh_no'+str(n_pos))
+            opacity = getattr(self,'alpha'+str(n_pos))
+            plot_no = getattr(self, 'plotno'+str(n_pos))
+            del_mesh = getattr(self, 'del_mesh'+str(n_pos))
+            if n_pos-1 < len(self.plot_meshes): 
+                mesh_data = self.plot_meshes[keys_mesh[nn]]
+                mesh_name.setEnabled(True)
+                mesh_name.setText(mesh_data['mesh'])
+                opacity.setValue(mesh_data['alpha'])
+                opacity.setEnabled(True)
+                plot_no.setCurrentText(str(mesh_data['plot_no']))
+                plot_no.setEnabled(True)
+                del_mesh.setEnabled(True)
+                nn+=1
+            else: 
+                mesh_name.setText('object name')
+                mesh_name.setEnabled(False)
+                opacity.setEnabled(False)
+                plot_no.setEnabled(False)
+                del_mesh.setEnabled(False)
+            
+    def create_user_plot(self): 
+        if len(self.plot_meshes) < 1: 
+            self.win_msg('*No meshes have been added to the table.')
+        else:
+            if self.check_scalecube.isChecked():
+                add_scale_cube = True
+            else: 
+                add_scale_cube = False
+
+            for plot in range(1,self.plot_settings['no_plots']+1,1): 
+                setattr(self, 'items_plot'+str(plot), [])
+
+            print('self.all_meshes:', self.all_meshes)
+            for num, item in self.plot_meshes.items(): 
+                # print('item:',  item)
+                method = self.all_meshes[item['mesh']]['obj_dir']
+                mesh_name = self.all_meshes[item['mesh']]['obj_name']
+                plot_no = item['plot_no']
+                if method == 'obj_meshes': 
+                    mesh2add = self.organ.obj_meshes[mesh_name].mesh.clone()
+                elif method == 'obj_subm': 
+                    submesh = self.organ.obj_subm[mesh_name]
+                    print('mesh_name:',mesh_name)
+                    #try to see if the mesh is already saved in the self.segm_btns
+                    if 'sCut' in mesh_name: 
+                        # self.segm_sect_btns
+                        seg_cut = mesh_name[1:5]
+                        mesh2add = submesh.get_sect_segm_mesh(seg_cut = seg_cut)
+                    else: 
+                        if 'segm' in mesh_name: 
+                            # self.segm_btns
+                            mesh2add = submesh.get_segm_mesh()
+                        else: #'sect' in segm
+                            # # self.sect_btns
+                            # try: #Cut1_ch1_ext_segm2
+                            #     cut, ch, cont, segm = mesh_name.split('_')
+                            #     key2cut = cut+':'+ch+'_'+cont
+                            #     print(self.sect_btns[key2cut])
+
+                            #     mesh = self.sect_btns[key2cut]
+                            # except: 
+                            mesh2add = submesh.get_sect_mesh()
+
+                #Update alpha and add it to the list
+                mesh2add.alpha(item['alpha'])
+                getattr(self, 'items_plot'+str(plot_no)).append(mesh2add)
+            
+            obj = []
+            for plot in range(1,self.plot_settings['no_plots']+1,1): 
+                tuple_list = tuple(getattr(self, 'items_plot'+str(plot)))
+                obj.append(tuple_list)
+                delattr(self, 'items_plot'+str(plot))
+            print('obj:', obj)
+
+            axes = self.plot_settings['axes']
+            zoom = self.plot_settings['zoom']
+            elev = self.plot_settings['elev']
+            azim = self.plot_settings['azim']
+            txt = [(0, self.organ.user_organName)]
+
+            plot_grid(obj=obj, txt=txt, axes=axes, sc_side=max(self.organ.get_maj_bounds()), 
+                       zoom=zoom, azimuth = azim, elevation =elev, add_scale_cube=add_scale_cube)
+            
+
+        self.btn_plot.setChecked(False)
+            
+    
     #Help functions
     def help(self, process): 
         print('User clicked help '+process)
@@ -7537,7 +7741,10 @@ class MainWindow(QMainWindow):
         ext = self.cB_extension.currentText()
         filename = self.organ.folder+'_results'+ext
         df_dir = self.organ.dir_res() / filename
-        df_final.to_csv(df_dir, index=True) 
+        if ext == '.csv': 
+            df_final.to_csv(df_dir, index=True) 
+        elif ext == '.xlsx':
+            df_final.to_excel(df_dir) 
         alert('countdown') 
         self.win_msg('Results file  -'+ filename + '  was succesfully saved!')
 
