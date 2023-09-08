@@ -20,6 +20,7 @@
 (morphoHeart_gui) C:\>pip install PySide2
 
 (morphoHeart_gui) C:\>pip install playsound==1.2.2
+pip install openpyxl
 
 ??? pip install ipykernel (gets installed in vscode when the code is run)
 
