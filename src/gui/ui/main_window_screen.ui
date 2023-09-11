@@ -2038,7 +2038,7 @@ QScrollBar::handle:vertical:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-3104</y>
+                <y>-2739</y>
                 <width>632</width>
                 <height>5616</height>
                </rect>
@@ -44438,7 +44438,7 @@ QScrollBar::handle:horizontal:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-222</y>
+                <y>0</y>
                 <width>525</width>
                 <height>744</height>
                </rect>
@@ -47599,6 +47599,9 @@ QComboBox QAbstractItemView {
 }
 </string>
                        </property>
+                       <property name="currentText">
+                        <string>13</string>
+                       </property>
                        <property name="maxVisibleItems">
                         <number>13</number>
                        </property>
@@ -47749,8 +47752,11 @@ QComboBox QAbstractItemView {
                        <property name="alignment">
                         <set>Qt::AlignCenter</set>
                        </property>
+                       <property name="minimum">
+                        <number>-180</number>
+                       </property>
                        <property name="maximum">
-                        <number>90</number>
+                        <number>180</number>
                        </property>
                        <property name="singleStep">
                         <number>5</number>
@@ -47790,8 +47796,11 @@ QComboBox QAbstractItemView {
                        <property name="alignment">
                         <set>Qt::AlignCenter</set>
                        </property>
+                       <property name="minimum">
+                        <number>-180</number>
+                       </property>
                        <property name="maximum">
-                        <number>360</number>
+                        <number>180</number>
                        </property>
                        <property name="singleStep">
                         <number>10</number>
@@ -47817,6 +47826,38 @@ QComboBox QAbstractItemView {
                        </property>
                        <property name="text">
                         <string>Reorient?</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="5" column="1">
+                      <widget class="QLabel" name="label_25">
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="0">
+                      <widget class="QLabel" name="label_12">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>22</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>22</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                       </property>
+                       <property name="text">
+                        <string/>
                        </property>
                       </widget>
                      </item>
@@ -47869,26 +47910,6 @@ color: rgb(234, 234, 234);
                        </property>
                        <property name="checkable">
                         <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="6" column="0">
-                      <widget class="QLabel" name="label_12">
-                       <property name="styleSheet">
-                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="5" column="1">
-                      <widget class="QLabel" name="label_25">
-                       <property name="styleSheet">
-                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                       </property>
-                       <property name="text">
-                        <string/>
                        </property>
                       </widget>
                      </item>
@@ -48035,7 +48056,7 @@ QScrollBar::handle:horizontal:hover {
                       <property name="geometry">
                        <rect>
                         <x>0</x>
-                        <y>-159</y>
+                        <y>0</y>
                         <width>351</width>
                         <height>293</height>
                        </rect>
@@ -48149,13 +48170,13 @@ QScrollBar::handle:horizontal:hover {
                              <set>Qt::AlignCenter</set>
                             </property>
                             <property name="minimum">
-                             <double>0.050000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="maximum">
                              <double>1.000000000000000</double>
                             </property>
                             <property name="singleStep">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="value">
                              <double>1.000000000000000</double>
@@ -48385,13 +48406,13 @@ QComboBox QAbstractItemView {
                              <set>Qt::AlignCenter</set>
                             </property>
                             <property name="minimum">
-                             <double>0.050000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="maximum">
                              <double>1.000000000000000</double>
                             </property>
                             <property name="singleStep">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="value">
                              <double>1.000000000000000</double>
@@ -48558,13 +48579,13 @@ QComboBox QAbstractItemView {
                              <set>Qt::AlignCenter</set>
                             </property>
                             <property name="minimum">
-                             <double>0.050000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="maximum">
                              <double>1.000000000000000</double>
                             </property>
                             <property name="singleStep">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="value">
                              <double>1.000000000000000</double>
@@ -48620,13 +48641,13 @@ QComboBox QAbstractItemView {
                              <set>Qt::AlignCenter</set>
                             </property>
                             <property name="minimum">
-                             <double>0.050000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="maximum">
                              <double>1.000000000000000</double>
                             </property>
                             <property name="singleStep">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="value">
                              <double>1.000000000000000</double>
@@ -48699,13 +48720,13 @@ QComboBox QAbstractItemView {
                              <set>Qt::AlignCenter</set>
                             </property>
                             <property name="minimum">
-                             <double>0.050000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="maximum">
                              <double>1.000000000000000</double>
                             </property>
                             <property name="singleStep">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="value">
                              <double>1.000000000000000</double>
@@ -48872,13 +48893,13 @@ QComboBox QAbstractItemView {
                              <set>Qt::AlignCenter</set>
                             </property>
                             <property name="minimum">
-                             <double>0.050000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="maximum">
                              <double>1.000000000000000</double>
                             </property>
                             <property name="singleStep">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="value">
                              <double>1.000000000000000</double>
@@ -48906,13 +48927,13 @@ QComboBox QAbstractItemView {
                              <set>Qt::AlignCenter</set>
                             </property>
                             <property name="minimum">
-                             <double>0.050000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="maximum">
                              <double>1.000000000000000</double>
                             </property>
                             <property name="singleStep">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="value">
                              <double>1.000000000000000</double>
@@ -48985,13 +49006,13 @@ QComboBox QAbstractItemView {
                              <set>Qt::AlignCenter</set>
                             </property>
                             <property name="minimum">
-                             <double>0.050000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="maximum">
                              <double>1.000000000000000</double>
                             </property>
                             <property name="singleStep">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="value">
                              <double>1.000000000000000</double>
@@ -49091,7 +49112,7 @@ QComboBox QAbstractItemView {
                           <item row="0" column="3">
                            <widget class="QLabel" name="label_15">
                             <property name="styleSheet">
-                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                             <string notr="true">font: 75 bold 10pt &quot;Calibri Light&quot;;</string>
                             </property>
                             <property name="text">
                              <string>Plot #</string>
@@ -49110,7 +49131,7 @@ QComboBox QAbstractItemView {
                              </size>
                             </property>
                             <property name="styleSheet">
-                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                             <string notr="true">font: 75 bold 10pt &quot;Calibri Light&quot;;</string>
                             </property>
                             <property name="text">
                              <string>Opacity</string>
@@ -49169,13 +49190,13 @@ QComboBox QAbstractItemView {
                              <set>Qt::AlignCenter</set>
                             </property>
                             <property name="minimum">
-                             <double>0.050000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="maximum">
                              <double>1.000000000000000</double>
                             </property>
                             <property name="singleStep">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="value">
                              <double>1.000000000000000</double>
@@ -49248,13 +49269,13 @@ QComboBox QAbstractItemView {
                              <set>Qt::AlignCenter</set>
                             </property>
                             <property name="minimum">
-                             <double>0.050000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="maximum">
                              <double>1.000000000000000</double>
                             </property>
                             <property name="singleStep">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
                             </property>
                             <property name="value">
                              <double>1.000000000000000</double>
@@ -49270,7 +49291,7 @@ QComboBox QAbstractItemView {
                              </size>
                             </property>
                             <property name="styleSheet">
-                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                             <string notr="true">font: 75 bold 10pt &quot;Calibri Light&quot;;</string>
                             </property>
                             <property name="text">
                              <string>Object Name</string>
@@ -49794,88 +49815,27 @@ border-color:  rgb(255, 0, 0)}
                      </widget>
                     </widget>
                    </item>
-                  </layout>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_182">
-                <item>
-                 <spacer name="horizontalSpacer_16">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item alignment="Qt::AlignRight">
-                 <widget class="QCheckBox" name="check_scalecube">
-                  <property name="styleSheet">
-                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                  </property>
-                  <property name="text">
-                   <string>Scale Cube</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="q_sections_2">
-                  <property name="minimumSize">
-                   <size>
-                    <width>18</width>
-                    <height>18</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>18</width>
-                    <height>18</height>
-                   </size>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                  </property>
-                  <property name="text">
-                   <string>?</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="btn_plot">
-                  <property name="minimumSize">
-                   <size>
-                    <width>80</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>80</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="autoFillBackground">
-                   <bool>false</bool>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">QPushButton{border-radius:10px;
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_271">
+                     <item>
+                      <widget class="QPushButton" name="plot_clear_All">
+                       <property name="minimumSize">
+                        <size>
+                         <width>80</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>80</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="autoFillBackground">
+                        <bool>false</bool>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton{border-radius:10px;
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
@@ -49900,16 +49860,132 @@ background-color: rgb(107, 0, 80);
 border-color: rgb(76, 0, 57);
 color: rgb(234, 234, 234);
 }</string>
-                  </property>
-                  <property name="text">
-                   <string>Plot</string>
-                  </property>
-                  <property name="checkable">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+                       </property>
+                       <property name="text">
+                        <string>Clear all</string>
+                       </property>
+                       <property name="checkable">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_32">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                     <item>
+                      <widget class="QCheckBox" name="check_scalecube_plot">
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                       </property>
+                       <property name="text">
+                        <string>Scale Cube</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="q_sections_3">
+                       <property name="minimumSize">
+                        <size>
+                         <width>18</width>
+                         <height>18</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>18</width>
+                         <height>18</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                       </property>
+                       <property name="text">
+                        <string>?</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="btn_user_plot">
+                       <property name="minimumSize">
+                        <size>
+                         <width>80</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>80</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="autoFillBackground">
+                        <bool>false</bool>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                       </property>
+                       <property name="text">
+                        <string>Plot</string>
+                       </property>
+                       <property name="checkable">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_182"/>
               </item>
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_183">

@@ -120,8 +120,8 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):#
             win.win_msg(' Channel '+ch[-1]+' meshes were successfully created!')
 
             #Enable button for plot
-            plot_btn = getattr(win, 'keeplargest_plot_'+ch)
-            plot_btn.setEnabled(True)
+            getattr(win, 'keeplargest_plot_'+ch).setEnabled(True)
+            getattr(win, 'summary_whole_plot_'+ch).setEnabled(True)
         else: 
             win.win_msg('*fcM.s32Meshes!')
             alert('error_beep')
@@ -180,8 +180,8 @@ def clean_ch(organ, gui_clean, win, plot_settings=(False,None)):#
         win.win_msg('Contours of channel '+ch[-1]+' were successfully cleaned!')
 
         #Enable button for plot
-        plot_btn = getattr(win, 'cleanup_plot_'+ch)
-        plot_btn.setEnabled(True)
+        getattr(win, 'cleanup_plot_'+ch).setEnabled(True)
+        getattr(win, 'summary_whole_plot_'+ch).setEnabled(True)
 
     #Update Status in GUI
     win.update_status(workflow, process, win.cleanup_status)
@@ -240,8 +240,8 @@ def trim_top_bottom_S3s(organ, meshes, no_cut, cuts_out, win):#
         win.win_msg(' Channel '+im_ch.channel_no[-1]+' meshes were successfully trimmed!')
 
         #Enable button for plot
-        plot_btn = getattr(win, 'trimming_plot_'+im_ch.channel_no)
-        plot_btn.setEnabled(True)
+        getattr(win, 'trimming_plot_'+im_ch.channel_no).setEnabled(True)
+        getattr(win, 'summary_whole_plot_'+im_ch.channel_no).setEnabled(True)
 
     # Update organ workflow
     organ.update_mHworkflow(proc_ms_all, 'DONE')
@@ -1127,7 +1127,7 @@ def segm_ext_ext(organ, mesh, cut, segm_names, palette, win):
     #Ask user to classify the segments using the interactive plot
     dict_segm = classify_segments(meshes=cut_masked, dict_segm=dict_segm, 
                                   colors_dict=colors)
-    print('dict_segm after classification:', dict_segm)
+    # print('dict_segm after classification:', dict_segm)
 
     meshes_segm = {}; final_subsgm = {}; ext_subsgm_names = {}
     #Create submeshes for the input mesh
@@ -2073,6 +2073,22 @@ def order_segms(organ, kspl_CLnew, num_pts, cut):
                                                 'kspl': None, 
                                                 'invert_plane_num': None}
                 break
+        
+        if 'div'+str(n+1) not in ordered_segm.keys(): 
+            numb = num_pts[n+1]
+            num_btw = numb-30
+            kspl_pt = kspl_CLnew.points()[num_btw]
+
+            for m_ext in ext_meshes.keys(): 
+                if ext_meshes[m_ext].is_inside(kspl_pt):
+                    ordered_segm['div'+str(n+1)] = {'num_pts_range': (numa, numb),
+                                                    'segm': m_ext, 
+                                                    'name': names[m_ext],
+                                                    'y_axis': (n+1, n),
+                                                    'kspl': None, 
+                                                    'invert_plane_num': None}
+                    break
+
     return ordered_segm
 
 def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
@@ -2891,7 +2907,7 @@ def get_plane_pos(filename, txt, meshes, settings, option,
 
     box_size = max(x_size, y_size, z_size)
 
-    if def_pl['pl_centre'] == []:
+    if len(def_pl['pl_centre']) != 3:
         centre = (x_size/2+xmin, ymin, z_size/2+zmin)
     else: 
         centre = def_pl['pl_centre']

@@ -44,8 +44,8 @@ print(x_pos)
 # ax.set_xticks(ticks=x_pos, labels=xlabels)
 
 
-x_pos_new = np.linspace(x_pos[0], x_pos[-1], 19)
-x_lab_new = np.arange(-180,200,20)
+x_pos_new = np.linspace(x_pos[0], x_pos[-1], 13)
+x_lab_new = np.arange(-180,200,30)
 ax.set_xticks(x_pos_new) 
 ax.set_xticklabels(x_lab_new, rotation=30, fontsize=6)#, fontname='Arial')
 
@@ -62,7 +62,7 @@ print(ylabels)
 
 # # ax.set_yticks(ticks=y_pos_new, labels = y_lab_new)
 # yticks = ax.get_yticks()
-ax.set_yticks(ticks=y_pos, labels=np.linspace(heatmap.index.min(), heatmap.index.max(), len(y_pos)).round(3))
+# ax.set_yticks(ticks=y_pos, labels=np.linspace(heatmap.index.min(), heatmap.index.max(), len(y_pos)).round(3))
 
 
 y_pos = ax.get_yticks()

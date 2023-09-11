@@ -124,17 +124,14 @@ def run_keeplargest(controller):
         controller.main_win.update_status(None, 'DONE', controller.main_win.keeplargest_status, override = True)
 
         #Enable button for plot all
-        plot_all = getattr(controller.main_win, 'keeplargest_plot')
-        plot_all.setEnabled(True)
+        getattr(controller.main_win, 'keeplargest_plot').setEnabled(True)
 
         #Toggle button
-        select_btn = getattr(controller.main_win, 'keeplargest_play')
-        select_btn.setChecked(True)
+        getattr(controller.main_win, 'keeplargest_play').setChecked(True)
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
         
-    
     else: 
         title = 'Channels not closed / Contours not selected!'
         msg = 'You are not done closing/selecting the contours of the input channels! \nPlease go back to  -mH: Segment Channels-  Tab and continue processing the channels before running the processes in this tab'
@@ -160,12 +157,10 @@ def run_cleanup(controller):
                     win=controller.main_win, plot_settings=plot_settings)
 
         #Enable button for plot all
-        plot_all = getattr(controller.main_win, 'clean_plot')
-        plot_all.setEnabled(True)
+        getattr(controller.main_win, 'clean_plot').setEnabled(True)
 
         #Toggle button
-        select_btn = getattr(controller.main_win, 'cleanup_play')
-        select_btn.setChecked(True)
+        getattr(controller.main_win, 'cleanup_play').setChecked(True)
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
@@ -185,12 +180,10 @@ def run_trimming(controller):
                                 win = controller.main_win)
         
         #Enable button for plot all
-        plot_all = getattr(controller.main_win, 'trimming_plot')
-        plot_all.setEnabled(True)
+        getattr(controller.main_win, 'trimming_plot').setEnabled(True)
 
         #Toggle button
-        select_btn = getattr(controller.main_win, 'trimming_play')
-        select_btn.setChecked(True)
+        getattr(controller.main_win, 'trimming_play').setChecked(True)
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
@@ -345,8 +338,7 @@ def run_chNS(controller):
                         plot_settings = plot_settings)
 
         #Toggle button
-        select_btn = getattr(controller.main_win, 'chNS_play')
-        select_btn.setChecked(True)
+        getattr(controller.main_win, 'chNS_play').setChecked(True)
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
@@ -367,12 +359,10 @@ def run_centreline_clean(controller):
         print('obj_temp: ', controller.organ.obj_temp)
 
         #Enable button for ML
-        plot_btn = getattr(controller.main_win, 'centreline_ML_play')
-        plot_btn.setEnabled(True)
+        getattr(controller.main_win, 'centreline_ML_play').setEnabled(True)
 
         #Toggle button
-        select_btn = getattr(controller.main_win, 'centreline_clean_play')
-        select_btn.setChecked(True)
+        getattr(controller.main_win, 'centreline_clean_play').setChecked(True)
 
         #Update Status in GUI
         process = process =  ['MeshesProc','C-Centreline','Status']
@@ -408,12 +398,10 @@ def run_centreline_ML(controller):
                 controller.main_win.update_status(None, 'DONE', status_sq, override=True)
 
                 #Enable button for vmtk
-                plot_btn = getattr(controller.main_win, 'centreline_vmtk_play')
-                plot_btn.setEnabled(True)
+                getattr(controller.main_win, 'centreline_vmtk_play').setEnabled(True)
 
                 #Toggle button
-                select_btn = getattr(controller.main_win, 'centreline_ML_play')
-                select_btn.setChecked(True)
+                getattr(controller.main_win, 'centreline_ML_play').setChecked(True)
 
                 #Update progress in main_win
                 controller.main_win.update_workflow_progress()
@@ -443,12 +431,10 @@ def run_centreline_vmtk(controller):
                     voronoi=voronoi)
         
         #Enable button for select
-        plot_btn = getattr(controller.main_win, 'centreline_select')
-        plot_btn.setEnabled(True)
+        getattr(controller.main_win, 'centreline_select').setEnabled(True)
 
         #Toggle button
-        select_btn = getattr(controller.main_win, 'centreline_vmtk_play')
-        select_btn.setChecked(True)
+        getattr(controller.main_win, 'centreline_vmtk_play').setChecked(True)
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
@@ -488,8 +474,7 @@ def run_centreline_select(controller):
             controller.organ.update_settings(process = proc_set, update = update, mH='mH')
 
             #Add text to Opt Centreline
-            opt_txt = getattr(controller.main_win, 'opt_cl'+str(nn+1))
-            opt_txt.setText(prompt.output[1])
+            getattr(controller.main_win, 'opt_cl'+str(nn+1)).setText(prompt.output[1])
             
             #Add centreline to organ
             cl_final = dict_clOpt[cl_selected]['kspl']
@@ -502,8 +487,7 @@ def run_centreline_select(controller):
             controller.main_win.update_status(workflow, proc_wft, status_sq)
 
             #Enable button for plot cl
-            plot_btn = getattr(controller.main_win, 'cl_plot'+str(nn+1))
-            plot_btn.setEnabled(True)
+            getattr(controller.main_win, 'cl_plot'+str(nn+1)).setEnabled(True)
 
             #Update progress in main_win
             controller.main_win.update_workflow_progress()
@@ -519,8 +503,7 @@ def run_centreline_select(controller):
                                         controller.main_win.centreline_status)
 
         #Toggle button
-        select_btn = getattr(controller.main_win, 'centreline_select')
-        select_btn.setChecked(True)
+        getattr(controller.main_win, 'centreline_select').setChecked(True)
 
         #Check if user selected measuring centreline length
         cl_measurements = controller.organ.mH_settings['setup']['params']['2']['measure']
@@ -607,8 +590,7 @@ def run_heatmaps3D(controller, btn):
                                     name_cl = (cl_ch, cl_cont), setup = setup)
 
             #Enable buttons to plot heatmaps
-            plot_btn = controller.main_win.hm_btns[hmitem]['plot']
-            plot_btn.setEnabled(True)
+            controller.main_win.hm_btns[hmitem]['plot'].setEnabled(True)
             hm2d_btn = controller.main_win.hm_btns[hmitem]['play2d']
             num = controller.main_win.hm_btns[hmitem]['num']
             d3d2_btn = getattr(controller.main_win, 'd3d2_'+str(num))
@@ -668,8 +650,9 @@ def run_heatmaps3D(controller, btn):
                 
         #Toggle button
         if toggle: 
-            select_btn = getattr(controller.main_win, 'heatmaps3D_play')
-            select_btn.setChecked(True)
+            getattr(controller.main_win, 'heatmaps3D_play').setChecked(True)
+        else: 
+            getattr(controller.main_win, 'heatmaps3D_play').setChecked(False)
 
         print('\nEND Heatmaps')
         print('organ.mH_settings:', controller.organ.mH_settings)
@@ -923,8 +906,7 @@ def run_segments(controller, btn):
             controller.organ.ext_subsgm = ext_subsgm
 
             #Enable Plot Buttons
-            btn = controller.main_win.segm_btns[segm]['plot']
-            btn.setEnabled(True)
+            controller.main_win.segm_btns[segm]['plot'].setEnabled(True)
             print('wf:', controller.organ.workflow['morphoHeart']['MeshesProc'])
 
             #Enable play buttons of meshes with other methods

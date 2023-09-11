@@ -805,7 +805,7 @@ class CreateNewProj(QDialog):
             self.mC_methods = None
     
         #Disable all fields from Gral Project Settings
-        self.win_msg('New project  "'+self.proj_name+'" has been created! Continue by setting the channel information.')
+        self.win_msg('New project  "'+self.proj_name+'" has been created! Continue by setting the channels and analysis pipeline.')
         self.gral_proj_settings.setDisabled(True)
         if self.checked_analysis['morphoHeart']:
             self.tabWidget.setCurrentIndex(0)
@@ -4104,7 +4104,7 @@ class MainWindow(QMainWindow):
 
         segm_setup = self.organ.mH_settings['setup']['segm']
         no_cuts = [key for key in segm_setup.keys() if 'Cut' in key]
-        palette =  palette_rbg("plasma", 10)
+        palette =  palette_rbg("tab10", 10)
         self.segm_btns = {}
         
         for optcut in ['1','2']:
@@ -4653,7 +4653,7 @@ class MainWindow(QMainWindow):
     def init_plot_results(self):
         self.plot_open.clicked.connect(lambda: self.open_section(name = 'plot')) 
         self.open_section(name='plot')
-        self.plot_meshes = {}
+        self.plot_meshes_user = {}
         self.all_meshes = {}
 
         self.fill_comboBox_all_meshes()
@@ -4661,7 +4661,8 @@ class MainWindow(QMainWindow):
         self.comboBox_all_meshes.addItems(list(self.all_meshes.keys()))
         self.add_mesh.clicked.connect(lambda: self.add_mesh_to_plot())
         self.set_plot.clicked.connect(lambda: self.set_plot_settings())
-        self.btn_plot.clicked.connect(lambda: self.create_user_plot())
+        self.btn_user_plot.clicked.connect(lambda: self.create_user_plot())
+        self.plot_clear_All.clicked.connect(lambda: self.update_plot('del', 'all'))
 
         self.alpha1.valueChanged.connect(lambda: self.update_plot('alpha', '1'))
         self.alpha2.valueChanged.connect(lambda: self.update_plot('alpha', '2'))
@@ -4910,9 +4911,8 @@ class MainWindow(QMainWindow):
             if 'NS' not in ch: 
                 for cont in ['int', 'tiss', 'ext']: 
                     alpha_spin = getattr(self, 'alpha_'+ch+'_'+cont+'f')
-                    try: 
-                        alpha_val = self.organ.mH_settings['setup']['alpha'][ch][cont]
-                    except: 
+                    alpha_val = self.organ.mH_settings['setup']['alpha'][ch][cont]
+                    if alpha_val == {}:
                         alpha_val = 0.05
                     alpha_spin.setValue(alpha_val)
 
@@ -6626,7 +6626,13 @@ class MainWindow(QMainWindow):
             improve_hm2d = getattr(self, 'improve_hm2D').isChecked()
             gui_hm2D['use_segms'] = improve_hm2d
             if improve_hm2d: 
-                gui_hm2D['segms'] = getattr(self, 'segm_use_hm2D').currentText()
+                segm2use = getattr(self, 'segm_use_hm2D').currentText()
+                if segm2use == '----': 
+                    self.win_msg('* Select the segments that you want to use to aid the heatmap unrolling to continue setting 2D Heatmap settings.')
+                    self.thickness2D_set.setChecked(False)
+                    return None, None
+                else: 
+                    gui_hm2D['segms'] = segm2use
             else: 
                 gui_hm2D['segms'] = '----'
 
@@ -7427,6 +7433,8 @@ class MainWindow(QMainWindow):
                         print(submesh_name)
                         submesh = self.organ.obj_subm[submesh_name]
                         meshes[sect][segm] = submesh.get_sect_segm_mesh(seg_cut ='Cut'+scut[-1])
+                list_btns[key2cut]['meshes'] = meshes
+
             else: 
                 #Get submesh from organ
                 cut, subm_info = key2cut.split(':')
@@ -7440,6 +7448,7 @@ class MainWindow(QMainWindow):
                         meshes[subm] = submesh.get_segm_mesh()
                     else: #'sect' in segm
                         meshes[subm] = submesh.get_sect_mesh()
+                list_btns[key2cut]['meshes'] = meshes
 
         if 'scut' in btn: 
             flat_meshes = flatdict.FlatDict(meshes)
@@ -7557,10 +7566,13 @@ class MainWindow(QMainWindow):
             mesh_name =self.organ.obj_meshes[mesh].legend
             self.all_meshes[mesh_name] = {'obj_dir': 'obj_meshes', 
                                             'obj_name': mesh}
-        for sub in self.organ.obj_subm.keys(): 
-            sub_name =self.organ.obj_subm[sub].sub_legend
-            self.all_meshes[sub_name] = {'obj_dir': 'obj_subm',
-                                            'obj_name': sub}
+        try: 
+            for sub in self.organ.obj_subm.keys(): 
+                sub_name =self.organ.obj_subm[sub].sub_legend
+                self.all_meshes[sub_name] = {'obj_dir': 'obj_subm',
+                                                'obj_name': sub}
+        except: 
+            self.organ.obj_subm = {}
     
     def set_plot_settings(self): 
 
@@ -7590,58 +7602,61 @@ class MainWindow(QMainWindow):
   
     def add_mesh_to_plot(self): 
         mesh2add = self.comboBox_all_meshes.currentText()
-        n_pos = len(self.plot_meshes)
+        n_pos = len(self.plot_meshes_user)
         if n_pos == 0: 
             new_key = '0'
         else: 
-            new_key = str(int(list(self.plot_meshes.keys())[-1])+1)
-        print('new_key:', new_key)
+            new_key = str(int(list(self.plot_meshes_user.keys())[-1])+1)
+        # print('new_key:', new_key)
         if n_pos+1 < 10: 
-            self.plot_meshes[new_key] = {'mesh': mesh2add, 
+            self.plot_meshes_user[new_key] = {'mesh': mesh2add, 
                                             'alpha': 1.0, 
                                             'plot_no': 1}
-            print('self.plot_meshes:', self.plot_meshes)
+            # print('self.plot_meshes_user:', self.plot_meshes_user)
             self.update_plot_list()
         else: 
             print('You cannot add plot more than 10 meshes. Delete another mesh to make space for anotherone')
 
     def update_plot(self, key, num): 
-        keys_mesh = list(self.plot_meshes.keys())
-        if len(keys_mesh)>1: 
-            pos = keys_mesh[int(num)-1]
-            print('num:',num, 'pos:', pos)
-            print('bef:',self.plot_meshes)
-            if key == 'del': 
-                print('pos2del:', pos)
-                print('bef:',self.plot_meshes)
-
-                self.plot_meshes.pop(pos, None)
+        keys_mesh = list(self.plot_meshes_user.keys())
+        if len(keys_mesh)>0: 
+            if key == 'del' and num == 'all': 
+                self.plot_meshes_user = {}
                 self.update_plot_list()
-            
-            if key == 'alpha': 
-                new_alpha = getattr(self, 'alpha'+num).value()
-                self.plot_meshes[pos]['alpha'] = new_alpha
+            else: 
+                pos = keys_mesh[int(num)-1]
+                # print('num:',num, 'pos:', pos)
+                # print('bef:',self.plot_meshes_user)
+                if key == 'del': 
+                    print('pos2del:', pos)
+                    print('bef:',self.plot_meshes_user)
+                    self.plot_meshes_user.pop(pos, None)
+                    self.update_plot_list()
+                
+                if key == 'alpha': 
+                    new_alpha = getattr(self, 'alpha'+num).value()
+                    self.plot_meshes_user[pos]['alpha'] = new_alpha
 
-            if key == 'plot_no': 
-                new_plot_no = getattr(self, 'plotno'+num).currentText()
-                try: 
-                    self.plot_meshes[pos]['plot_no'] = new_plot_no
-                except: 
-                    pass
-            
-            print('aft:',self.plot_meshes)
+                if key == 'plot_no': 
+                    new_plot_no = getattr(self, 'plotno'+num).currentText()
+                    try: 
+                        self.plot_meshes_user[pos]['plot_no'] = new_plot_no
+                    except: 
+                        pass
+                
+                print('aft:',self.plot_meshes_user)
 
     def update_plot_list(self): 
-        keys_mesh = list(self.plot_meshes.keys())
-        print('keys_mesh:', keys_mesh)
+        keys_mesh = list(self.plot_meshes_user.keys())
+        # print('keys_mesh:', keys_mesh)
         nn = 0
         for n_pos in range(1,11,1): 
             mesh_name = getattr(self, 'mesh_no'+str(n_pos))
             opacity = getattr(self,'alpha'+str(n_pos))
             plot_no = getattr(self, 'plotno'+str(n_pos))
             del_mesh = getattr(self, 'del_mesh'+str(n_pos))
-            if n_pos-1 < len(self.plot_meshes): 
-                mesh_data = self.plot_meshes[keys_mesh[nn]]
+            if n_pos-1 < len(self.plot_meshes_user): 
+                mesh_data = self.plot_meshes_user[keys_mesh[nn]]
                 mesh_name.setEnabled(True)
                 mesh_name.setText(mesh_data['mesh'])
                 opacity.setValue(mesh_data['alpha'])
@@ -7658,10 +7673,10 @@ class MainWindow(QMainWindow):
                 del_mesh.setEnabled(False)
             
     def create_user_plot(self): 
-        if len(self.plot_meshes) < 1: 
+        if len(self.plot_meshes_user) < 1: 
             self.win_msg('*No meshes have been added to the table.')
         else:
-            if self.check_scalecube.isChecked():
+            if self.check_scalecube_plot.isChecked():
                 add_scale_cube = True
             else: 
                 add_scale_cube = False
@@ -7669,8 +7684,9 @@ class MainWindow(QMainWindow):
             for plot in range(1,self.plot_settings['no_plots']+1,1): 
                 setattr(self, 'items_plot'+str(plot), [])
 
-            print('self.all_meshes:', self.all_meshes)
-            for num, item in self.plot_meshes.items(): 
+            # print('self.all_meshes:', self.all_meshes)
+            # print('self.plot_meshes_user:', self.plot_meshes_user)
+            for num, item in self.plot_meshes_user.items(): 
                 # print('item:',  item)
                 method = self.all_meshes[item['mesh']]['obj_dir']
                 mesh_name = self.all_meshes[item['mesh']]['obj_name']
@@ -7680,25 +7696,29 @@ class MainWindow(QMainWindow):
                 elif method == 'obj_subm': 
                     submesh = self.organ.obj_subm[mesh_name]
                     print('mesh_name:',mesh_name)
-                    #try to see if the mesh is already saved in the self.segm_btns
                     if 'sCut' in mesh_name: 
-                        # self.segm_sect_btns
-                        seg_cut = mesh_name[1:5]
-                        mesh2add = submesh.get_sect_segm_mesh(seg_cut = seg_cut)
+                        scut, rcut, ch, cont, segm, sect = mesh_name.split('_')
+                        name_btn = scut+'_o_'+rcut+':'+ch+'_'+cont
+                        if 'meshes' in self.segm_sect_btns[name_btn].keys(): 
+                            mesh2add = self.segm_sect_btns[name_btn]['meshes'][sect][segm]
+                        else: 
+                            seg_cut = mesh_name[1:5]
+                            mesh2add = submesh.get_sect_segm_mesh(seg_cut = seg_cut)
                     else: 
                         if 'segm' in mesh_name: 
-                            # self.segm_btns
-                            mesh2add = submesh.get_segm_mesh()
+                            scut, ch, cont, segm = mesh_name.split('_')
+                            name_btn = scut+':'+ch+'_'+cont
+                            if 'meshes' in self.segm_btns[name_btn].keys(): 
+                                mesh2add = self.segm_btns[name_btn]['meshes'][segm]
+                            else: 
+                                mesh2add = submesh.get_segm_mesh()
                         else: #'sect' in segm
-                            # # self.sect_btns
-                            # try: #Cut1_ch1_ext_segm2
-                            #     cut, ch, cont, segm = mesh_name.split('_')
-                            #     key2cut = cut+':'+ch+'_'+cont
-                            #     print(self.sect_btns[key2cut])
-
-                            #     mesh = self.sect_btns[key2cut]
-                            # except: 
-                            mesh2add = submesh.get_sect_mesh()
+                            rcut, ch, cont, sect = mesh_name.split('_')
+                            name_btn = rcut+':'+ch+'_'+cont
+                            if 'meshes' in self.sect_btns[name_btn].keys(): 
+                                mesh2add = self.sect_btns[name_btn]['meshes'][sect]
+                            else: 
+                                mesh2add = submesh.get_sect_mesh()
 
                 #Update alpha and add it to the list
                 mesh2add.alpha(item['alpha'])
@@ -7721,9 +7741,8 @@ class MainWindow(QMainWindow):
                        zoom=zoom, azimuth = azim, elevation =elev, add_scale_cube=add_scale_cube)
             
 
-        self.btn_plot.setChecked(False)
-            
-    
+        self.btn_user_plot.setChecked(False)
+
     #Help functions
     def help(self, process): 
         print('User clicked help '+process)

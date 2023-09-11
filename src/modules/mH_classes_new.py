@@ -759,6 +759,7 @@ class Organ():
                 self.meshes = {}
                 self.submeshes = {}
                 self.obj_meshes = {}
+                self.obj_subm = {}
                 self.objects = {'KSplines': {}, 'Spheres': {}}
                 self.obj_temp = {}
                 if 'C-Centreline' in self.parent_project.mH_methods:
@@ -993,7 +994,6 @@ class Organ():
                 submesh = obj_segm.create_segm_sect(segm_sect = segm_sect, cuts = cutsf, color = color)
                 self.obj_subm[subm] = submesh
 
-        
     def create_folders(self):#
         dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'centreline', 'settings']
         organ_folder = self.user_organName
