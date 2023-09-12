@@ -15,9 +15,9 @@ class MyWidget(QWidget):
         # reg_ex = QRegularExpression("[+]?((\d+(\.\d*)?)|(\.\d+))([^a-d,f-z,A-D,F-Z][+-]?\d+)?")
         # reg_ex = QRegularExpression('^[0-9](-[1-9])*$')
         # reg_ex = QRegularExpression('(\d+(?:-\d+)?)((?:(?:,)(\d+(?:-\d+)?))*)')
-        # reg_ex = QRegularExpression('[+]?((\d+(\.\d*)?)|(\.\d+))')
+        reg_ex = QRegularExpression('[+]?((\d+(\.\d*)?)|(\.\d+))')
         # reg_ex = QRegularExpression('.*')
-        reg_ex = QRegularExpression(r"\d{1,3}")
+        # reg_ex = QRegularExpression(r"\d{1,3}")
         input_validator = QRegularExpressionValidator(reg_ex, self.le_input)
         self.le_input.setValidator(input_validator)
 

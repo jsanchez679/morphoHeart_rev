@@ -10,7 +10,7 @@
 (morphoHeart_gui) C:\>pip install matplotlib==3.7.2 (was installed with seaborn)
 
 (morphoHeart_gui) C:\>pip install scikit-image==0.19.3
-(morphoHeart_gui) C:\>pip install pandas==1.5.3 (was installed with seaborn)
+(morphoHeart_gui) C:\>pip install pandas==2.1.0 (was installed with seaborn)
 (morphoHeart_gui) C:\>pip install flatdict==4.0.1
 
 (morphoHeart_gui) C:\>pip install PyQt6

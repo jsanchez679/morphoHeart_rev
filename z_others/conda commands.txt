@@ -20,3 +20,6 @@ conda list --name <env_name>
 #Remove an environment
 conda env remove -n <env_name>
 conda remove --name <env_name>--all
+
+#Lists all env with directories
+conda env list 

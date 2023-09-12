@@ -6,7 +6,7 @@ Version: Feb 13, 2023
 
 """
 #%% ##### - Imports - ########################################################
-
+from skimage import measure, io
 
 #%% ##### - Other Imports - ##################################################
 from .mH_funcBasics import ask4input, ask4inputList, get_by_path, alert
@@ -68,6 +68,28 @@ def selectContours(organ, im_ch, win):
     win.win_msg('Contour masks for channel '+str(im_ch.channel_no[-1])+ ' have been successfully created!')
     win.update_ch_progress() 
 
+
+
+# Functions related to contours
+def get_contours(myIm, min_contour_length, level):
+    """
+    Function that gets and returns the contours of a particular slice (slcNum)
+    """
+    # Create an empty array to save all the contours of each slice individually
+    arr_contour_slc = []
+    # Find all the contours of the image
+    contours = measure.find_contours(myIm, level, 'high', 'high')
+    # Variable to save the number of contours found
+    num_contour = 0
+    # Go through all the contours
+    for n, contour in enumerate(contours):
+        # Get only the contours made up of more than the designated number of points
+        if len(contour)>min_contour_length:
+            # Append contour to the array
+            arr_contour_slc.append(contour)
+            num_contour += 1
+
+    return arr_contour_slc, num_contour
 
 #%% Module loaded
 print('morphoHeart! - Loaded funcContours')

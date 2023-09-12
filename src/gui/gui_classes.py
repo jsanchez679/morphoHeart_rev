@@ -41,6 +41,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
+import matplotlib.gridspec as gridspec
 
 #Palettes
 #https://matplotlib.org/stable/tutorials/colors/colormaps.html
@@ -49,7 +50,7 @@ from matplotlib.figure import Figure
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set, alert
-from ..modules.mH_funcContours import checkWfCloseCont, ImChannel
+from ..modules.mH_funcContours import checkWfCloseCont, ImChannel, get_contours
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
@@ -3221,7 +3222,7 @@ class MainWindow(QMainWindow):
         # self.init_plot_tab()
         self.win_msg('Organ "'+organ.info['user_organName']+'" was successfully loaded!')
 
-        #Activate first tab
+        #Activate tab depending on process running
         if self.organ.analysis['morphoHeart']:
             done_segmentation = []
             workflow = self.organ.workflow['morphoHeart']['ImProc']
@@ -3338,6 +3339,7 @@ class MainWindow(QMainWindow):
         print('Setting up Segmentation Tab')
         self.channels = self.organ.mH_settings['setup']['name_chs'] # {'ch1': 'myocardium', 'ch2': 'endocardium', 'chNS': 'cardiac jelly'}
         num = 0
+        self.plot_grid_settings = {}
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             ch_tab = getattr(self, 'tab_chs')
             if ch not in self.channels.keys(): 
@@ -3345,18 +3347,61 @@ class MainWindow(QMainWindow):
             else: 
                 tab_num = ch[-1]
                 ch_tab.setTabText(num, 'Ch'+tab_num+': '+self.channels[ch])
+                self.plot_grid_settings[ch] = {}
                 if ch == 'ch1': 
                     self.init_segm_ch(ch)
             num +=1
+        
+        #Connect buttons
+        #>> Grid settings
+        self.sB_cols_ch1.valueChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
+        self.sB_rows_ch1.valueChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
+        self.level_ch1.textChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
+        self.min_cont_length_ch1.textChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
 
+        # self.sB_cols_ch2.valueChanged.connect(lambda: self.get_plot_settings(ch='ch2'))
+        # self.sB_rows_ch2.valueChanged.connect(lambda: self.get_plot_settings(ch='ch2'))
+        # self.level_ch2.textChaged.connect(lambda: self.get_plot_settings(ch='ch2'))
+        # self.min_cont_length_ch2.textChaged.connect(lambda: self.get_plot_settings(ch='ch2'))
+
+        # self.sB_cols_ch3.valueChanged.connect(lambda: self.get_plot_settings(ch='ch3'))
+        # self.sB_rows_ch3.valueChanged.connect(lambda: self.get_plot_settings(ch='ch3'))
+        # self.level_ch3.textChaged.connect(lambda: self.get_plot_settings(ch='ch3'))
+        # self.min_cont_length_ch3.textChaged.connect(lambda: self.get_plot_settings(ch='ch3'))
+
+        # self.sB_cols_ch4.valueChanged.connect(lambda: self.get_plot_settings(ch='ch4'))
+        # self.sB_rows_ch4.valueChanged.connect(lambda: self.get_plot_settings(ch='ch4'))
+        # self.level_ch4.textChaged.connect(lambda: self.get_plot_settings(ch='ch4'))
+        # self.min_cont_length_ch4.textChaged.connect(lambda: self.get_plot_settings(ch='ch4'))
+
+        #>> Plot
+        self.plot_all_slices_with_contours_ch1.clicked.connect(lambda: self.plot_all_slices(ch = 'ch1'))
+        # self.plot_all_slices_with_contours_ch2.clicked.connect(lambda: self.plot_all_slices(ch = 'ch2'))
+        # self.plot_all_slices_with_contours_ch3.clicked.connect(lambda: self.plot_all_slices(ch = 'ch3'))
+        # self.plot_all_slices_with_contours_ch4.clicked.connect(lambda: self.plot_all_slices(ch = 'ch4'))
+
+        #Initialise the Plot Widget and Scroll
+        self.init_plot_widget()
         # self.button_continue.clicked.connect(lambda: self.continue_next_tab())
         self.init_ch_progress()
 
     def init_segm_ch(self, ch): 
-        num_slices = self.organ.imChannels[ch]['shape'][0]
-        getattr(self, 'total_slices_'+ch).setText(str(num_slices))
+
+        #Plot grid settings
+        level = getattr(self, 'level_'+ch)
+        reg_ex = QRegularExpression(r"\d{1,3}+\.\d") #3 digit number with decimal
+        level_validator = QRegularExpressionValidator(reg_ex, level)
+        level.setValidator(level_validator)
 
         reg_ex = QRegularExpression(r"\d{1,3}") #3 digit number
+        min_contour_length = getattr(self, 'min_cont_length_'+ch)
+        min_length_validator = QRegularExpressionValidator(reg_ex, min_contour_length)
+        min_contour_length.setValidator(min_length_validator)
+
+        self.get_plot_settings(ch)
+
+        num_slices = self.organ.imChannels[ch]['shape'][0]
+        getattr(self, 'total_slices_'+ch).setText(str(num_slices))
 
         start_num = getattr(self, 'start_autom_'+ch)
         start_validator = QRegularExpressionValidator(reg_ex, start_num)
@@ -3365,6 +3410,46 @@ class MainWindow(QMainWindow):
         end_num = getattr(self, 'end_autom_'+ch)
         end_validator = QRegularExpressionValidator(reg_ex, end_num)
         end_num.setValidator(end_validator)
+    
+    def get_plot_settings(self, ch): 
+        level = getattr(self, 'level_'+ch)
+        level_val = float(level.text())
+        min_contour_length = getattr(self, 'min_cont_length_'+ch)
+        min_contour_length_val = int(min_contour_length.text())
+        n_rows = getattr(self, 'sB_cols_'+ch)
+        n_rows_val = int(n_rows.text())
+        n_cols = getattr(self, 'sB_rows_'+ch)
+        n_cols_val = int(n_cols.text())
+
+        self.plot_grid_settings[ch] = {'level': level_val, 
+                                       'min_contour_length': min_contour_length_val, 
+                                       'n_rows': n_rows_val, 
+                                       'n_cols': n_cols_val}
+        print('self.plot_grid_settings:', self.plot_grid_settings)
+
+    def init_plot_widget(self): 
+
+        print('initialised plot_widget')
+        #Central plot
+        self.figure = Figure(layout="constrained", dpi=300)#figsize=(20, 20), dpi=300)
+        self.canvas_plot = FigureCanvas(self.figure)
+
+        self.layout_plot = QVBoxLayout()
+        self.image_widget.setLayout(self.layout_plot)
+        self.layout_plot.addWidget(self.canvas_plot)
+
+        self.im_thumbnails = {}
+        # random data
+        import random
+        data = [random.random() for i in range(10)]
+        # clearing old figure
+        self.figure.clear()
+        # create an axis
+        ax = self.figure.add_subplot(111)
+        # plot data
+        ax.plot(data, '*-')
+        # refresh canvas
+        self.canvas_plot.draw()
 
     #>> Init Ch Progress Table
     def init_ch_progress(self): 
@@ -6936,11 +7021,78 @@ class MainWindow(QMainWindow):
         return gui_user_params
     
     #Plot 2D functions
-    def plot_all_slices(self): 
-        pass
+    def plot_all_slices(self, ch): 
 
-    def plot_slc_range(self):
-        pass
+        im_ch = self.organ.obj_imChannels[ch]
+        im = im_ch.im_proc()
+        no_slices = im.shape[0]
+        slcs_per_im = int(self.plot_grid_settings[ch]['n_rows'])*int(self.plot_grid_settings[ch]['n_cols'])
+        slices = list(range(0,no_slices+1,slcs_per_im))
+        level = self.plot_grid_settings[ch]['level']
+        min_contour_length = self.plot_grid_settings[ch]['min_contour_length']
+        n_rows = int(self.plot_grid_settings[ch]['n_rows'])
+        n_cols = int(self.plot_grid_settings[ch]['n_cols'])
+
+        for nn in range(len(slices[:-1])):
+            if nn < 2:
+                slc_tuple = (slices[nn], slices[nn+1])
+                print(nn, slc_tuple )
+                self.plot_slc_range(stack = im, slices_plot = slc_tuple, 
+                                    text = 'Contours', slcs_per_im = slcs_per_im, 
+                                    n_rows = n_rows, n_cols = n_cols,
+                                    level = level, min_contour_length = min_contour_length)
+        
+        getattr(self, 'plot_all_slices_with_contours_'+ch).setChecked(False)
+
+        self.figure.clear()
+        self.figure = self.im_thumbnails['0']
+        self.canvas_plot.draw()
+
+    def plot_slc_range(self, stack, slices_plot, text, slcs_per_im, n_rows, n_cols, 
+                       level, min_contour_length):
+        
+        slc_plot_list = list(range(slices_plot[0], slices_plot[1]))
+        n_im = len(slc_plot_list)
+
+        #Plot
+        slcs_per_im = n_rows*n_cols
+        #Initialise this as a figure not self.figure, 
+        #save the figure in the im_thumn and then assign it to the self.figure? 
+        #find a way to copy figure exacly and save it in im_thmb
+        fig11 = self.figure# plt.figure(figsize=(w_fig11, h_fig11), constrained_layout=False)
+        fig11.clear()
+
+        # Gridspec inside gridspec
+        gs = gridspec.GridSpec(n_cols, n_rows, figure=fig11,
+                                height_ratios=[1]*n_cols,
+                                width_ratios=[1]*n_rows,
+                                hspace=0.01, wspace=0.01, 
+                                left=0.05, right=0.95, bottom=0.05, top=0.95)
+
+        for im in range(n_im):
+            #Get Image and Label
+            slc = slc_plot_list[im]
+            myIm = stack[slc][:][:]
+            contours, numCont = get_contours(myIm, min_contour_length = min_contour_length, 
+                                                level = level)
+            # Plot
+            ax = fig11.add_subplot(gs[im])#grid[im])
+            ax.imshow(myIm, cmap=plt.cm.gray)
+            ax.set_xticks([])
+            ax.set_yticks([])
+            for n, contour in enumerate(contours):
+                ax.plot(contour[:, 1], contour[:, 0], linewidth=0.15)
+            ax.set_title("Slc "+str(slc), fontsize=3, pad=0.1)
+
+        self.fig_title.setText(text +": Contours for slices ("+ str(slices_plot[0])+'-'+str(slices_plot[1]-1)+')')
+        self.canvas_plot.draw()
+        self.add_thumbnail(self.figure)
+    
+    def add_thumbnail(self, figure): 
+        
+        n_len = str(len(self.im_thumbnails))
+        self.im_thumbnails[n_len] = figure
+        print('self.im_thumbnails:',self.im_thumbnails)
     
     def plot_heatmap2d(self, btn): 
         print('Plotting heatmap2d: ', btn)
