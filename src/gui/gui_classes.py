@@ -3223,7 +3223,20 @@ class MainWindow(QMainWindow):
 
         #Activate first tab
         if self.organ.analysis['morphoHeart']:
-            self.tabWidget.setCurrentIndex(0)
+            done_segmentation = []
+            workflow = self.organ.workflow['morphoHeart']['ImProc']
+            for ch in self.channels.keys():
+                if 'NS' not in ch: 
+                    done = get_by_path(workflow, [ch, 'C-SelectCont', 'Status'])
+                    done_segmentation.append(done)
+            
+            print('done_segmentation:',done_segmentation)
+            if all(flag == 'DONE' for flag in done_segmentation): 
+                self.tabWidget.setCurrentIndex(1)
+            else: 
+                self.tabWidget.setCurrentIndex(0)
+                self.tabWidget.setCurrentIndex(1)
+                self.tabWidget.setCurrentIndex(0)
         else: 
             if self.organ.analysis['morphoCell']:
                 self.tabWidget.setCurrentIndex(2)
@@ -3233,57 +3246,6 @@ class MainWindow(QMainWindow):
         # Theme 
         self.theme = self.cB_theme.currentText()
         self.on_cB_theme_currentIndexChanged(0)
-
-        self.pushButton.clicked.connect(lambda: self.update_proj_organ())
-        self.btn_settings.clicked.connect(lambda: self.show_mH_settings())
-        self.btn_measurements.clicked.connect(lambda: self.show_measurements())
-        self.btn_workflow.clicked.connect(lambda: self.show_workflow())
-        self.btn_wf_info.clicked.connect(lambda: self.show_wf_info())
-
-        if not mH_config.dev: 
-            self.pushButton.setVisible(False)
-            self.btn_settings.setVisible(False)
-            self.btn_measurements.setVisible(False)
-            self.btn_workflow.setVisible(False)
-            self.btn_wf_info.setVisible(False)
-
-    def update_proj_organ(self):
-        self.proj.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
-        self.organ.mH_settings['measure']['hm3Dto2D'] = {'ch1_int': True}
-        print(self.proj.mH_settings['measure'])
-        print(self.organ.mH_settings['measure'])
-
-        workflow_proj = self.proj.workflow['morphoHeart']['MeshesProc']['C-Centreline']
-        workflow_organ = self.organ.workflow['morphoHeart']['MeshesProc']['C-Centreline']
-        item_centreline = [tuple(item.split('_')) for item in self.organ.mH_settings['measure']['CL'].keys()]
-        for workflow in [workflow_proj, workflow_organ]:
-            for item in item_centreline:
-                ch, cont, _ = item
-                print(ch,cont)
-                if ch not in workflow['SimplifyMesh'].keys(): 
-                    workflow['SimplifyMesh'][ch] = {}
-                    workflow['vmtk_CL'][ch] = {}
-                    workflow['buildCL'][ch] = {}
-                workflow['SimplifyMesh'][ch][cont] = {'Status': 'NI'}
-                workflow['vmtk_CL'][ch][cont] = {'Status': 'NI'}
-                workflow['buildCL'][ch][cont] = {'Status': 'NI'}
-        
-        print(self.proj.workflow['morphoHeart'])
-        print(self.organ.workflow['morphoHeart'])
-
-        # pass
-
-    def show_mH_settings(self):
-        print('------- MH_SETTINGS -------\n',self.organ.mH_settings)
-    
-    def show_measurements(self):
-        print('------- MEASUREMENTS -------\n',self.organ.mH_settings['measure'])
-
-    def show_workflow(self):
-        print('------- WORKFLOW -------\n',self.organ.workflow)
-
-    def show_wf_info(self):
-        print('------- WF_INFO -------\n',self.organ.mH_settings['wf_info'])
 
     @pyqtSlot(int)
     def on_cB_theme_currentIndexChanged(self, theme):
@@ -3383,10 +3345,26 @@ class MainWindow(QMainWindow):
             else: 
                 tab_num = ch[-1]
                 ch_tab.setTabText(num, 'Ch'+tab_num+': '+self.channels[ch])
+                if ch == 'ch1': 
+                    self.init_segm_ch(ch)
             num +=1
 
-        self.button_continue.clicked.connect(lambda: self.continue_next_tab())
+        # self.button_continue.clicked.connect(lambda: self.continue_next_tab())
         self.init_ch_progress()
+
+    def init_segm_ch(self, ch): 
+        num_slices = self.organ.imChannels[ch]['shape'][0]
+        getattr(self, 'total_slices_'+ch).setText(str(num_slices))
+
+        reg_ex = QRegularExpression(r"\d{1,3}") #3 digit number
+
+        start_num = getattr(self, 'start_autom_'+ch)
+        start_validator = QRegularExpressionValidator(reg_ex, start_num)
+        start_num.setValidator(start_validator)
+
+        end_num = getattr(self, 'end_autom_'+ch)
+        end_validator = QRegularExpressionValidator(reg_ex, end_num)
+        end_num.setValidator(end_validator)
 
     #>> Init Ch Progress Table
     def init_ch_progress(self): 
@@ -4657,12 +4635,12 @@ class MainWindow(QMainWindow):
         self.all_meshes = {}
 
         self.fill_comboBox_all_meshes()
-
-        self.comboBox_all_meshes.addItems(list(self.all_meshes.keys()))
+        
         self.add_mesh.clicked.connect(lambda: self.add_mesh_to_plot())
         self.set_plot.clicked.connect(lambda: self.set_plot_settings())
         self.btn_user_plot.clicked.connect(lambda: self.create_user_plot())
         self.plot_clear_All.clicked.connect(lambda: self.update_plot('del', 'all'))
+        self.combo_axes.setCurrentText('13')
 
         self.alpha1.valueChanged.connect(lambda: self.update_plot('alpha', '1'))
         self.alpha2.valueChanged.connect(lambda: self.update_plot('alpha', '2'))
@@ -4911,8 +4889,11 @@ class MainWindow(QMainWindow):
             if 'NS' not in ch: 
                 for cont in ['int', 'tiss', 'ext']: 
                     alpha_spin = getattr(self, 'alpha_'+ch+'_'+cont+'f')
-                    alpha_val = self.organ.mH_settings['setup']['alpha'][ch][cont]
-                    if alpha_val == {}:
+                    try: 
+                        alpha_val = self.organ.mH_settings['setup']['alpha'][ch][cont]
+                        if alpha_val == {}:
+                            alpha_val = 0.05
+                    except: 
                         alpha_val = 0.05
                     alpha_spin.setValue(alpha_val)
 
@@ -6954,146 +6935,13 @@ class MainWindow(QMainWindow):
 
         return gui_user_params
     
-    #Plot functions
-    def plot_meshes(self, ch, chNS=False):
-        self.win_msg('Plotting meshes ('+ch+')')
-        print('Plotting meshes ('+ch+')')
+    #Plot 2D functions
+    def plot_all_slices(self): 
+        pass
 
-        txt = [(0, self.organ.user_organName)]
-        obj = []
-        if ch != 'all': 
-            for cont in ['int', 'tiss', 'ext']: 
-                obj.append(self.organ.obj_meshes[ch+'_'+cont].mesh)
-        else: 
-            print('self.channels:', self.channels)
-            if not chNS:
-                im_chs = [ch for ch in self.channels if ch != 'chNS']
-            else: 
-                im_chs = self.channels
-            
-            for ch in im_chs: 
-                for cont in ['ext', 'tiss', 'int']: 
-                    obj.append(self.organ.obj_meshes[ch+'_'+cont].mesh)
+    def plot_slc_range(self):
+        pass
     
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
-
-    def plot_tempObj(self, proc, sub, btn):
-        self.win_msg('Plotting meshes ('+proc+'-'+sub+')')
-        print('Plotting tempObj ('+proc+'-'+sub+')')
-        txt = [(0, self.organ.user_organName)]
-        obj = []
-        if proc == 'CL': 
-            #Get button number
-            btn_num = int(btn[-1])-1
-            #Get centreline for that position
-            cl_to_extract = list(self.organ.mH_settings['measure']['CL'].keys())
-            cl_name = cl_to_extract[btn_num]
-            ch, cont, _ = cl_name.split('_')
-            mesh = self.organ.obj_meshes[ch+'_'+cont]
-
-            if sub == 'SimplifyMesh': 
-                # First see if obj_temp is loaded with the info needed
-                if self.organ.obj_temp['centreline'][sub][ch+'_'+cont]['mesh'] != None: 
-                    m4clf = self.organ.obj_temp['centreline'][sub][ch+'_'+cont]
-                else: 
-                    # Load objects
-                    obj_temp = self.organ.load_objTemp(proc = 'centreline', key = 'SimplifyMesh', 
-                                                    ch_cont = ch+'_'+cont, obj_temp = self.organ.obj_temp)
-                    m4clf = obj_temp['centreline'][sub][ch+'_'+cont]
-            
-                item = []
-                for key in m4clf: 
-                    if isinstance(m4clf[key], dict):
-                        for kk in m4clf[key].keys():
-                            item.append(m4clf[key][kk])
-                    else: 
-                        item.append(m4clf[key])
-                obj.append(tuple(item))
-            else: 
-                nPoints = self.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
-                mesh = self.organ.obj_meshes[ch+'_'+cont].mesh
-                cl_final = self.organ.obj_meshes[ch+'_'+cont].get_centreline(nPoints=nPoints)
-                obj = [(mesh, cl_final)]
-
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
-
-    def plot_heatmap3d(self, btn):
-        from ..modules.mH_funcMeshes import sphs_in_spline
-
-        txt = [(0, self.organ.user_organName)]
-        #Get button number
-        btn_num = int(btn[-1])-1
-        hm_all = list(self.hm_btns.keys())
-        hm_name = hm_all[btn_num]
-        short, ch_info = hm_name.split('[')
-        self.win_msg('Plotting heatmaps3D ('+hm_name+')')
-        print('Plotting heatmaps3D ('+hm_name+')')
-
-        if 'th' in short: 
-            ch, cont = ch_info.split('-')
-            _, th_val = short.split('_')
-            if th_val == 'i2e': #int>ext': 
-                mesh_to = self.organ.obj_meshes[ch+'_ext']
-                mesh_from = self.organ.obj_meshes[ch+'_int'].mesh
-                mtype = 'thck(intTOext)'
-                short = 'th_i2e'
-                from_name = 'int>ext'
-            else:# n_type == 'ext>int': 
-                mesh_to = self.organ.obj_meshes[ch+'_int']
-                mesh_from = self.organ.obj_meshes[ch+'_ext'].mesh
-                mtype = 'thck(extTOint)'
-                short = 'th_e2i'
-                from_name = 'ext>int'
-            mesh_tiss = self.organ.obj_meshes[ch+'_tiss'].mesh
-            mesh_thck = self.organ.obj_meshes[ch+'_tiss'].mesh_meas[mtype]
-
-            print('mesh_to.legend:', mesh_to.legend)
-            title = mesh_to.legend+'\nThickness [um]\n('+from_name+')'
-            mesh_thck = self.set_scalebar(mesh=mesh_thck, name = hm_name, proc = short, title = title)
-
-            txt = [(0, self.organ.user_organName +' - Thickness Measurement Setup')]
-            obj = [(mesh_from, mesh_to.mesh), (mesh_tiss), (mesh_thck)]
-
-        else: #'ball' in short
-            ch_cont, cl_info = ch_info.split('(CL.')
-            ch, cont = ch_cont.split('-')
-            from_cl, from_cl_type = cl_info[:-2].split('-')
-            # short = 'ball'
-            
-            #Get meshes
-            mesh2ball = self.organ.obj_meshes[ch+'_'+cont]
-            cl4ball = self.organ.obj_meshes[from_cl+'_'+from_cl_type].get_centreline()
-            sph4ball = sphs_in_spline(kspl=cl4ball,every=0.6)
-            sph4ball.legend('sphs_ball').alpha(0.1)
-            m_type = 'ballCL('+from_cl+'_'+from_cl_type+')'
-            mesh_ball = mesh2ball.mesh_meas[m_type]
-
-            title = mesh2ball.legend+'\nBallooning [um]\nCL('+from_cl+'_'+from_cl_type+')'
-            mesh_ball = self.set_scalebar(mesh=mesh_ball, name = hm_name, proc = short, title = title)
-
-            txt = [(0, self.organ.user_organName +' - Ballooning Measurement Setup')]
-            obj = [(mesh2ball.mesh, cl4ball, sph4ball), (mesh_ball, cl4ball, sph4ball)]
-
-        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
-
-    def set_scalebar(self, mesh, name, proc, title):
-        if self.gui_thickness_ballooning[name]['default']: 
-            _, name_ch_cont = name.split('[')
-            ch, cont = name_ch_cont[:-1].split('-')
-            namef = ch+'_'+cont+'_whole'
-            min_val = self.organ.mH_settings['measure'][proc][namef]['range_o']['min_val']
-            max_val = self.organ.mH_settings['measure'][proc][namef]['range_o']['max_val']
-        else: 
-            min_val = self.gui_thickness_ballooning[name]['min_val']
-            max_val = self.gui_thickness_ballooning[name]['max_val']
-        color_map = self.gui_thickness_ballooning[name]['colormap']
-
-        mesh.cmap(color_map)
-        mesh.add_scalarbar(title=title, pos=(0.7, 0.05))
-        mesh.mapper().SetScalarRange(min_val,max_val)
-
-        return mesh
-
     def plot_heatmap2d(self, btn): 
         print('Plotting heatmap2d: ', btn)
 
@@ -7362,6 +7210,146 @@ class MainWindow(QMainWindow):
         # self.plot_win.canvas.draw()
         # self.plot_win.exec()
 
+    #Plot 3D functions
+    def plot_meshes(self, ch, chNS=False):
+        self.win_msg('Plotting meshes ('+ch+')')
+        print('Plotting meshes ('+ch+')')
+
+        txt = [(0, self.organ.user_organName)]
+        obj = []
+        if ch != 'all': 
+            for cont in ['int', 'tiss', 'ext']: 
+                obj.append(self.organ.obj_meshes[ch+'_'+cont].mesh)
+        else: 
+            print('self.channels:', self.channels)
+            if not chNS:
+                im_chs = [ch for ch in self.channels if ch != 'chNS']
+            else: 
+                im_chs = self.channels
+            
+            for ch in im_chs: 
+                for cont in ['ext', 'tiss', 'int']: 
+                    obj.append(self.organ.obj_meshes[ch+'_'+cont].mesh)
+    
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
+
+    def plot_tempObj(self, proc, sub, btn):
+        self.win_msg('Plotting meshes ('+proc+'-'+sub+')')
+        print('Plotting tempObj ('+proc+'-'+sub+')')
+        txt = [(0, self.organ.user_organName)]
+        obj = []
+        if proc == 'CL': 
+            #Get button number
+            btn_num = int(btn[-1])-1
+            #Get centreline for that position
+            cl_to_extract = list(self.organ.mH_settings['measure']['CL'].keys())
+            cl_name = cl_to_extract[btn_num]
+            ch, cont, _ = cl_name.split('_')
+            mesh = self.organ.obj_meshes[ch+'_'+cont]
+
+            if sub == 'SimplifyMesh': 
+                # First see if obj_temp is loaded with the info needed
+                if self.organ.obj_temp['centreline'][sub][ch+'_'+cont]['mesh'] != None: 
+                    m4clf = self.organ.obj_temp['centreline'][sub][ch+'_'+cont]
+                else: 
+                    # Load objects
+                    obj_temp = self.organ.load_objTemp(proc = 'centreline', key = 'SimplifyMesh', 
+                                                    ch_cont = ch+'_'+cont, obj_temp = self.organ.obj_temp)
+                    m4clf = obj_temp['centreline'][sub][ch+'_'+cont]
+            
+                item = []
+                for key in m4clf: 
+                    if isinstance(m4clf[key], dict):
+                        for kk in m4clf[key].keys():
+                            item.append(m4clf[key][kk])
+                    else: 
+                        item.append(m4clf[key])
+                obj.append(tuple(item))
+            else: 
+                nPoints = self.organ.mH_settings['wf_info']['centreline']['buildCL']['nPoints']
+                mesh = self.organ.obj_meshes[ch+'_'+cont].mesh
+                cl_final = self.organ.obj_meshes[ch+'_'+cont].get_centreline(nPoints=nPoints)
+                obj = [(mesh, cl_final)]
+
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
+
+    def plot_heatmap3d(self, btn):
+        from ..modules.mH_funcMeshes import sphs_in_spline
+
+        txt = [(0, self.organ.user_organName)]
+        #Get button number
+        btn_num = int(btn[-1])-1
+        hm_all = list(self.hm_btns.keys())
+        hm_name = hm_all[btn_num]
+        short, ch_info = hm_name.split('[')
+        self.win_msg('Plotting heatmaps3D ('+hm_name+')')
+        print('Plotting heatmaps3D ('+hm_name+')')
+
+        if 'th' in short: 
+            ch, cont = ch_info.split('-')
+            _, th_val = short.split('_')
+            if th_val == 'i2e': #int>ext': 
+                mesh_to = self.organ.obj_meshes[ch+'_ext']
+                mesh_from = self.organ.obj_meshes[ch+'_int'].mesh
+                mtype = 'thck(intTOext)'
+                short = 'th_i2e'
+                from_name = 'int>ext'
+            else:# n_type == 'ext>int': 
+                mesh_to = self.organ.obj_meshes[ch+'_int']
+                mesh_from = self.organ.obj_meshes[ch+'_ext'].mesh
+                mtype = 'thck(extTOint)'
+                short = 'th_e2i'
+                from_name = 'ext>int'
+            mesh_tiss = self.organ.obj_meshes[ch+'_tiss'].mesh
+            mesh_thck = self.organ.obj_meshes[ch+'_tiss'].mesh_meas[mtype]
+
+            print('mesh_to.legend:', mesh_to.legend)
+            title = mesh_to.legend+'\nThickness [um]\n('+from_name+')'
+            mesh_thck = self.set_scalebar(mesh=mesh_thck, name = hm_name, proc = short, title = title)
+
+            txt = [(0, self.organ.user_organName +' - Thickness Measurement Setup')]
+            obj = [(mesh_from, mesh_to.mesh), (mesh_tiss), (mesh_thck)]
+
+        else: #'ball' in short
+            ch_cont, cl_info = ch_info.split('(CL.')
+            ch, cont = ch_cont.split('-')
+            from_cl, from_cl_type = cl_info[:-2].split('-')
+            # short = 'ball'
+            
+            #Get meshes
+            mesh2ball = self.organ.obj_meshes[ch+'_'+cont]
+            cl4ball = self.organ.obj_meshes[from_cl+'_'+from_cl_type].get_centreline()
+            sph4ball = sphs_in_spline(kspl=cl4ball,every=0.6)
+            sph4ball.legend('sphs_ball').alpha(0.1)
+            m_type = 'ballCL('+from_cl+'_'+from_cl_type+')'
+            mesh_ball = mesh2ball.mesh_meas[m_type]
+
+            title = mesh2ball.legend+'\nBallooning [um]\nCL('+from_cl+'_'+from_cl_type+')'
+            mesh_ball = self.set_scalebar(mesh=mesh_ball, name = hm_name, proc = short, title = title)
+
+            txt = [(0, self.organ.user_organName +' - Ballooning Measurement Setup')]
+            obj = [(mesh2ball.mesh, cl4ball, sph4ball), (mesh_ball, cl4ball, sph4ball)]
+
+        plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
+
+    def set_scalebar(self, mesh, name, proc, title):
+        if self.gui_thickness_ballooning[name]['default']: 
+            _, name_ch_cont = name.split('[')
+            ch, cont = name_ch_cont[:-1].split('-')
+            namef = ch+'_'+cont+'_whole'
+            min_val = self.organ.mH_settings['measure'][proc][namef]['range_o']['min_val']
+            max_val = self.organ.mH_settings['measure'][proc][namef]['range_o']['max_val']
+        else: 
+            min_val = self.gui_thickness_ballooning[name]['min_val']
+            max_val = self.gui_thickness_ballooning[name]['max_val']
+        color_map = self.gui_thickness_ballooning[name]['colormap']
+
+        mesh.cmap(color_map)
+        mesh.add_scalarbar(title=title, pos=(0.7, 0.05))
+        mesh.mapper().SetScalarRange(min_val,max_val)
+
+        return mesh
+
     def plot_segm_sect(self, btn):
         #btn = cut1_segm1 / cut1_sect1 / 'scut1_cut1_plot_sect1'
 
@@ -7563,9 +7551,38 @@ class MainWindow(QMainWindow):
     def fill_comboBox_all_meshes(self): 
 
         for mesh in self.organ.obj_meshes.keys(): 
-            mesh_name =self.organ.obj_meshes[mesh].legend
+            mesh_obj =self.organ.obj_meshes[mesh]
+            mesh_name = mesh_obj.legend
             self.all_meshes[mesh_name] = {'obj_dir': 'obj_meshes', 
                                             'obj_name': mesh}
+            if hasattr(mesh_obj, 'mesh_meas'): 
+                for m_meas in mesh_obj.mesh_meas: 
+                    print('mesh_name:',mesh_name, 'm_meas:', m_meas)
+                    sp = m_meas.split('(')[1]
+                    if 'thck' in m_meas: 
+                        meas_name = 'Thickness ('+sp
+                        if 'intTOext' in m_meas: 
+                            proc = 'th_i2e'
+                            title = mesh_name+'\nThickness [um]\n(int>ext)'
+                        else: 
+                            proc = 'th_e2i'
+                            title = mesh_name+'\nThickness [um]\n(ext>int)'
+                        ch, cont = mesh.split('_')
+                        name = proc+'['+ch+'-'+cont+']'
+                    else: 
+                        meas_name = 'Ballooning (CL:'+sp
+                        proc = 'ball'
+                        ch, cont = mesh.split('_')
+                        cl_ch, cl_cont = sp.split('_')
+                        name = proc+'['+ch+'-'+cont+'(CL.'+cl_ch+'-'+cl_cont+']'
+                        title = mesh_name+'\nBallooning [um]\nCL('+cl_ch+'_'+cl_cont
+
+                    self.all_meshes[mesh_name+': '+meas_name] = {'obj_dir': 'mesh_meas', 
+                                                                'obj_name': mesh,
+                                                                'mtype': m_meas, 
+                                                                'name': name, 
+                                                                'proc': proc, 
+                                                                'title': title}
         try: 
             for sub in self.organ.obj_subm.keys(): 
                 sub_name =self.organ.obj_subm[sub].sub_legend
@@ -7573,7 +7590,10 @@ class MainWindow(QMainWindow):
                                                 'obj_name': sub}
         except: 
             self.organ.obj_subm = {}
-    
+        
+        print('self.all_meshes:', self.all_meshes)
+        self.comboBox_all_meshes.addItems(list(self.all_meshes.keys()))
+        
     def set_plot_settings(self): 
 
         no_plots = self.spin_noPlots.value()
@@ -7719,6 +7739,14 @@ class MainWindow(QMainWindow):
                                 mesh2add = self.sect_btns[name_btn]['meshes'][sect]
                             else: 
                                 mesh2add = submesh.get_sect_mesh()
+                else: #method == 'mesh_meas':
+                    print(item)
+                    mtype = self.all_meshes[item['mesh']]['mtype']
+                    mesh2add = self.organ.obj_meshes[mesh_name].mesh_meas[mtype].clone()
+                    name = self.all_meshes[item['mesh']]['name']
+                    proc = self.all_meshes[item['mesh']]['proc']
+                    title = self.all_meshes[item['mesh']]['title']
+                    mesh2add = self.set_scalebar(mesh=mesh2add, name = name, proc = proc, title = title)
 
                 #Update alpha and add it to the list
                 mesh2add.alpha(item['alpha'])
@@ -7768,26 +7796,6 @@ class MainWindow(QMainWindow):
         self.win_msg('Results file  -'+ filename + '  was succesfully saved!')
 
     #Functions for all tabs
-    def continue_next_tab(self): #A delete bit
-        if self.tabWidget.currentIndex() == 0: 
-            #check the status of all channels 
-            channels = [ch for ch in self.channels if ch != 'chNS']
-            ch_status = []
-            for ch in channels: 
-                ch_status.append(self.organ.workflow['morphoHeart']['ImProc'][ch]['Status'])
-
-            if all(ch_status):
-                self.tabWidget.setCurrentIndex(1)
-        
-        elif self.tabWidget.currentIndex() == 1:
-            print('develop') 
-        
-        elif self.tabWidget.currentIndex() == 2:
-            print('develop')
-
-        else: #self.tabWidget.currentIndex() == 3: 
-            print('develop') 
-
     def init_morphoCell_tab(self): 
         print('Setting up morphoCell Tab')
 

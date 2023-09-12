@@ -10,6 +10,12 @@
     <height>977</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>20</width>
+    <height>0</height>
+   </size>
+  </property>
   <property name="maximumSize">
    <size>
     <width>16777215</width>
@@ -23,7 +29,7 @@
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QMainWindow{background-color: rgb(255, 255, 255);}</string>
+   <string notr="true">background-color: rgb(255, 255, 255);</string>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonIconOnly</enum>
@@ -990,7 +996,7 @@ background-color: rgb(255, 255, 255);</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="usesScrollButtons">
        <bool>false</bool>
@@ -1028,6 +1034,25 @@ background-color: rgb(255, 255, 255);</string>
               <height>16777215</height>
              </size>
             </property>
+            <property name="styleSheet">
+             <string notr="true">QWidget{background-color: rgb(255, 255, 255);}
+
+QScrollBar:vertical {
+	background-color: rgb(255, 255, 255);
+  	width: 12px;
+}
+
+QScrollBar::handle:vertical {
+	background-color: rgb(162, 0, 122);
+	min-height: 30px;
+	border-radius: 6px;
+}
+
+QScrollBar::handle:vertical:hover {
+	background-color:rgb(0, 0, 0);
+}
+</string>
+            </property>
             <property name="frameShadow">
              <enum>QFrame::Plain</enum>
             </property>
@@ -1040,7 +1065,7 @@ background-color: rgb(255, 255, 255);</string>
                <x>0</x>
                <y>0</y>
                <width>398</width>
-               <height>238</height>
+               <height>515</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_33">
@@ -1118,6 +1143,841 @@ color: rgb(234, 234, 234);
                   <string>Channel 1</string>
                  </attribute>
                  <layout class="QVBoxLayout" name="verticalLayout_22">
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_272">
+                    <item>
+                     <spacer name="horizontalSpacer_16">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <layout class="QHBoxLayout" name="horizontalLayout_276">
+                      <item>
+                       <widget class="QLabel" name="level_lab_ch1">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>60</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>60</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                        </property>
+                        <property name="text">
+                         <string>Level:</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLineEdit" name="level_ch1">
+                        <property name="minimumSize">
+                         <size>
+                          <width>60</width>
+                          <height>0</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                        </property>
+                        <property name="text">
+                         <string>0.5</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                        <property name="readOnly">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="q_level">
+                        <property name="minimumSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>18</width>
+                          <height>18</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                        </property>
+                        <property name="text">
+                         <string>?</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="plot_all_slices_with_contours_ch1">
+                      <property name="minimumSize">
+                       <size>
+                        <width>180</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>180</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                      <property name="mouseTracking">
+                       <bool>true</bool>
+                      </property>
+                      <property name="focusPolicy">
+                       <enum>Qt::ClickFocus</enum>
+                      </property>
+                      <property name="autoFillBackground">
+                       <bool>false</bool>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                      </property>
+                      <property name="text">
+                       <string> Plot all Slices with Contours</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <widget class="QFrame" name="mask_all_ch1_widget">
+                    <property name="frameShape">
+                     <enum>QFrame::StyledPanel</enum>
+                    </property>
+                    <property name="frameShadow">
+                     <enum>QFrame::Raised</enum>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_77">
+                     <property name="leftMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>0</number>
+                     </property>
+                     <item>
+                      <layout class="QHBoxLayout" name="keeplargest_heading_4">
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <widget class="QLabel" name="mask_ch1_title_2">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Mask Stack</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="mask_ch1_open_2">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+
+background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>o</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QLabel" name="mask_ch1_status_2">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">background-color:rgb(255, 255, 0);
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0,0, 0);</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                     <item>
+                      <widget class="QWidget" name="autom_close_ch1_widget_3" native="true">
+                       <property name="styleSheet">
+                        <string notr="true"/>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_78">
+                        <property name="leftMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>3</number>
+                        </property>
+                        <item>
+                         <layout class="QHBoxLayout" name="horizontalLayout_275">
+                          <item>
+                           <widget class="QPushButton" name="q_mask_ch1_2">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                            </property>
+                            <property name="text">
+                             <string>?</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <spacer name="horizontalSpacer_39">
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>40</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="mask_ch1_play">
+                            <property name="minimumSize">
+                             <size>
+                              <width>25</width>
+                              <height>25</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>25</width>
+                              <height>25</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:12px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="keeplargest_heading_2">
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="QLabel" name="autom_close_ch1_title">
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;</string>
+                      </property>
+                      <property name="text">
+                       <string>Automatically Close Contours</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="autom_close_ch1_open">
+                      <property name="minimumSize">
+                       <size>
+                        <width>18</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>18</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                      <property name="autoFillBackground">
+                       <bool>false</bool>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+
+background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+                      </property>
+                      <property name="text">
+                       <string>o</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="autom_close_ch1_status">
+                      <property name="minimumSize">
+                       <size>
+                        <width>18</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>18</width>
+                        <height>18</height>
+                       </size>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">background-color:rgb(255, 255, 0);
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0,0, 0);</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <widget class="QWidget" name="autom_close_ch1_widget" native="true">
+                    <property name="styleSheet">
+                     <string notr="true"/>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_73">
+                     <property name="leftMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>3</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>3</number>
+                     </property>
+                     <item>
+                      <layout class="QFormLayout" name="formLayout_2">
+                       <item row="1" column="0">
+                        <widget class="QLabel" name="start_autom_label_ch1">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>150</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>120</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Start from slice (inclusive):</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="2" column="0">
+                        <widget class="QLabel" name="end_autom_label_ch1">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>150</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>120</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>End at slice (inclusive):</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="total_slices_lab_ch1">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>150</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>120</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Total number of slices:</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="0" column="1">
+                        <widget class="QLineEdit" name="total_slices_ch1">
+                         <property name="minimumSize">
+                          <size>
+                           <width>60</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="readOnly">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="start_autom_ch1">
+                         <property name="styleSheet">
+                          <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="2" column="1">
+                        <widget class="QLineEdit" name="end_autom_ch1">
+                         <property name="styleSheet">
+                          <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                     <item>
+                      <layout class="QHBoxLayout" name="horizontalLayout_273">
+                       <item>
+                        <widget class="QPushButton" name="q_autom_close_ch1">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>?</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="autom_close_ch1_set">
+                         <property name="minimumSize">
+                          <size>
+                           <width>60</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>60</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>Set</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <spacer name="horizontalSpacer_33">
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>40</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                        </spacer>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="autom_close_ch1_play">
+                         <property name="minimumSize">
+                          <size>
+                           <width>25</width>
+                           <height>25</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>25</width>
+                           <height>25</height>
+                          </size>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+border-radius:12px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
                   <item alignment="Qt::AlignHCenter">
                    <widget class="QPushButton" name="ch1_closecont">
                     <property name="minimumSize">
@@ -1747,130 +2607,6 @@ QScrollBar::handle:vertical:hover {
                </column>
               </widget>
              </item>
-             <item>
-              <widget class="QGroupBox" name="groupBox_3">
-               <property name="title">
-                <string>Interpreter</string>
-               </property>
-               <layout class="QVBoxLayout" name="verticalLayout_35">
-                <property name="leftMargin">
-                 <number>6</number>
-                </property>
-                <property name="topMargin">
-                 <number>6</number>
-                </property>
-                <property name="rightMargin">
-                 <number>6</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>6</number>
-                </property>
-                <item>
-                 <widget class="QPlainTextEdit" name="outdisplay">
-                  <property name="styleSheet">
-                   <string notr="true">background-color: rgb(0, 0, 0);
-font: 25 10pt &quot;Calibri Light&quot;;
-color: rgb(255, 255, 255);</string>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                  <property name="plainText">
-                   <string>&gt;&gt;</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="lineEdit">
-                  <property name="styleSheet">
-                   <string notr="true">background-color: rgb(0, 0, 0);
-font: 25 10pt &quot;Calibri Light&quot;;
-color: rgb(255, 255, 255);
-border: 0px</string>
-                  </property>
-                  <property name="text">
-                   <string>&gt;</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_7">
-               <item>
-                <spacer name="horizontalSpacer_6">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item>
-                <widget class="QPushButton" name="button_continue">
-                 <property name="minimumSize">
-                  <size>
-                   <width>100</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>180</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                 <property name="mouseTracking">
-                  <bool>true</bool>
-                 </property>
-                 <property name="focusPolicy">
-                  <enum>Qt::ClickFocus</enum>
-                 </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
-                 </property>
-                 <property name="text">
-                  <string>Continue</string>
-                 </property>
-                 <property name="checkable">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
             </layout>
            </widget>
           </item>
@@ -1884,56 +2620,24 @@ color: rgb(234, 234, 234);
             <height>0</height>
            </size>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_32">
-           <item>
-            <widget class="QPushButton" name="pushButton">
-             <property name="text">
-              <string>PushButton</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btn_settings">
-             <property name="text">
-              <string>mH_settings</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btn_measurements">
-             <property name="text">
-              <string>measurements</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btn_workflow">
-             <property name="text">
-              <string>workflow</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btn_wf_info">
-             <property name="text">
-              <string>wf_info</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_8">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>684</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
+          <layout class="QVBoxLayout" name="verticalLayout_32"/>
+         </widget>
+        </item>
+        <item>
+         <widget class="QScrollArea" name="scrollArea_3">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_5">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>236</width>
+             <height>715</height>
+            </rect>
+           </property>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -2038,7 +2742,7 @@ QScrollBar::handle:vertical:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-2739</y>
+                <y>-83</y>
                 <width>632</width>
                 <height>5616</height>
                </rect>
@@ -47602,6 +48306,9 @@ QComboBox QAbstractItemView {
                        <property name="currentText">
                         <string>13</string>
                        </property>
+                       <property name="currentIndex">
+                        <number>12</number>
+                       </property>
                        <property name="maxVisibleItems">
                         <number>13</number>
                        </property>
@@ -48056,7 +48763,7 @@ QScrollBar::handle:horizontal:hover {
                       <property name="geometry">
                        <rect>
                         <x>0</x>
-                        <y>0</y>
+                        <y>-167</y>
                         <width>351</width>
                         <height>293</height>
                        </rect>
@@ -48095,7 +48802,7 @@ QScrollBar::handle:horizontal:hover {
                              <string>object name</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -48145,7 +48852,7 @@ QScrollBar::handle:horizontal:hover {
                              <string>object name</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -48308,7 +49015,7 @@ QComboBox QAbstractItemView {
                             </property>
                             <property name="minimumSize">
                              <size>
-                              <width>30</width>
+                              <width>20</width>
                               <height>0</height>
                              </size>
                             </property>
@@ -48437,7 +49144,7 @@ QComboBox QAbstractItemView {
                              <string>object name</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -48504,7 +49211,7 @@ QComboBox QAbstractItemView {
                              <string>object name</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -48526,7 +49233,7 @@ QComboBox QAbstractItemView {
                              <string>object name</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -48751,7 +49458,7 @@ QComboBox QAbstractItemView {
                              <string>object name</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -48773,7 +49480,7 @@ QComboBox QAbstractItemView {
                              <string>object name</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -48868,7 +49575,7 @@ QComboBox QAbstractItemView {
                              <string>object name</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -48947,7 +49654,7 @@ QComboBox QAbstractItemView {
                             </property>
                             <property name="minimumSize">
                              <size>
-                              <width>60</width>
+                              <width>40</width>
                               <height>0</height>
                              </size>
                             </property>
@@ -49347,7 +50054,7 @@ QComboBox QAbstractItemView {
                              <string>object name</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -49369,7 +50076,7 @@ QComboBox QAbstractItemView {
                              <string>object name</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>

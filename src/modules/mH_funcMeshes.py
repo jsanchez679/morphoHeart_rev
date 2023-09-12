@@ -1232,7 +1232,7 @@ def classify_segments(meshes, dict_segm, colors_dict):
     lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
                         width=leg_width/1.5, height=leg_height/1.5)
     
-    msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, bg='red', alpha=0.2)
+    msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
     vpt = vedo.Plotter(axes=5, bg='white')
     vpt.add_icon(logo, pos=(0.1,1), size=0.25)
     vpt.add_callback('mouse click', func)
@@ -1545,7 +1545,9 @@ def get_segm_sects(organ, ch_cont, cuts, names, palette, win):
             ext_subsgm = organ.ext_subsgm
             print('try ext_subsgm')
         except: 
-            ext_subsgm = organ.get_ext_subsgm(seg_cut[1:])
+            if seg_cut[0] == 's': 
+                seg_cut = seg_cut[1:]
+            ext_subsgm = organ.get_ext_subsgm(seg_cut)
             print('except ext_subsgm')
         print('ext_subsgm: ',ext_subsgm)
     else: 
@@ -2089,6 +2091,21 @@ def order_segms(organ, kspl_CLnew, num_pts, cut):
                                                     'invert_plane_num': None}
                     break
 
+        if 'div'+str(n+1) not in ordered_segm.keys(): 
+            numb = num_pts[n+1]
+            num_btw = numa+30
+            kspl_pt = kspl_CLnew.points()[num_btw]
+
+            for m_ext in ext_meshes.keys(): 
+                if ext_meshes[m_ext].is_inside(kspl_pt):
+                    ordered_segm['div'+str(n+1)] = {'num_pts_range': (numa, numb),
+                                                    'segm': m_ext, 
+                                                    'name': names[m_ext],
+                                                    'y_axis': (n+1, n),
+                                                    'kspl': None, 
+                                                    'invert_plane_num': None}
+                    break
+
     return ordered_segm
 
 def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
@@ -2317,7 +2334,7 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
                                 sphR.append(vedo.Sphere(pt+centre, r=2, c='gold'))
 
                     text = '>> Unlooping the heart (chamber: '+chamber+') - Plane No: '+str(i)+'/'+str(no_planes+2)
-                    txt = vedo.Text2D(text, c=txt_color, font=txt_font)
+                    txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
                     sph_centre = vedo.Sphere(centre, r=2, c='red')
                     arr_centre2vzero = vedo.Arrow(centre, kspl_vSurf.points()[idx_surf], s = 0.1, c='light green')
                     vp= vedo.Plotter(N=1, axes=13)
@@ -2434,7 +2451,6 @@ def heatmap_unlooped(organ, kspl_data, df_unloopedf, hmitem, ch, gui_thball):
     plt.savefig(dir_hm, dpi=300, bbox_inches='tight', transparent=True)
     alert('clown')
 
-
 def get_unlooped_heatmap(hmitem, dir_df): 
 
     df_unloopedf= pd.read_csv(str(dir_df))
@@ -2470,8 +2486,8 @@ def select_sph_vSurf(pts_in_plane, idx_in_plane, objects):
             msg.text("You clicked: Sphere "+evt.actor.name)
     silcont = [None]
     
-    msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, bg='red', alpha=0.2)
-    txt_sel = vedo.Text2D('> Select best point cutting plane... The last sphere selected will be the chosen one', c=txt_color, font=txt_font)
+    msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
+    txt_sel = vedo.Text2D('> Instructions: Click on the yellow sphere on the plane from which you would like to\nstart unlooping the 3D heatmap. To advance in plane number close this window without \nselecting the sphere and a new plot with the next plane will appear.', c=txt_color, font=txt_font, s=txt_size)
     plt = vedo.Plotter(axes=1)
     plt.addCallback('mouse click', select_sph_in_plane)
     plt.show(objects, sphs_in_plane, txt_sel, msg, zoom=1.2)

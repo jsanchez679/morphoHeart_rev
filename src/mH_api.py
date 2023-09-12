@@ -61,6 +61,7 @@ def close_cont(controller, ch_name):
             proceed = True
         else: 
             proceed = False
+            
     elif check_proc == 'Initialised': 
         proceed = True
         print('Processing had been initialised!')
@@ -131,6 +132,9 @@ def run_keeplargest(controller):
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
+
+        #Add meshes to plot_user
+        controller.main_win.fill_comboBox_all_meshes()
         
     else: 
         title = 'Channels not closed / Contours not selected!'
@@ -165,6 +169,9 @@ def run_cleanup(controller):
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
 
+        #Add meshes to plot_user
+        controller.main_win.fill_comboBox_all_meshes()
+
     else: 
         controller.main_win.win_msg('*To clean-up the tissues make sure you have at least run the  -Keep Largest-  section.')
             
@@ -187,6 +194,9 @@ def run_trimming(controller):
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
+
+        #Add meshes to plot_user
+        controller.main_win.fill_comboBox_all_meshes()
 
     else: 
         controller.main_win.win_msg('*To trim the tissues make sure you have at least run the  -Keep Largest-  section.')
@@ -342,6 +352,9 @@ def run_chNS(controller):
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
+
+        #Add meshes to plot_user
+        controller.main_win.fill_comboBox_all_meshes()
 
     else: 
         controller.main_win.win_msg('*To extract the channel from the negative space make sure you have at least run the  -Keep Largest-  section.')
@@ -657,6 +670,9 @@ def run_heatmaps3D(controller, btn):
         print('\nEND Heatmaps')
         print('organ.mH_settings:', controller.organ.mH_settings)
         print('organ.workflow:', workflow)
+
+        #Add meshes to plot_user
+        controller.main_win.fill_comboBox_all_meshes()
 
     else: 
         controller.main_win.win_msg('*To extract the thickness meshes make sure you have at least run the  -Keep Largest-  section.')
@@ -981,6 +997,9 @@ def run_segments(controller, btn):
         pass
     controller.main_win.update_status(workflow, proc_wft, controller.main_win.segments_status)
 
+    #Add meshes to plot_user
+    controller.main_win.fill_comboBox_all_meshes()
+
     print('organ.obj_temp:', controller.organ.obj_temp)
 
 def get_segm_discs(organ, cut, ch, cont, cl_spheres, win): 
@@ -1298,6 +1317,9 @@ def run_sections(controller, btn):
         pass
     controller.main_win.update_status(workflow, proc_wft, controller.main_win.sections_status)
 
+    #Add meshes to plot_user
+    controller.main_win.fill_comboBox_all_meshes()
+
 def run_segm_sect(controller, btn): 
     workflow = controller.organ.workflow['morphoHeart']
     segm_sect_list = list(controller.main_win.segm_sect_btns.keys())
@@ -1360,28 +1382,31 @@ def run_segm_sect(controller, btn):
         btn.setEnabled(True)
         print('wf:', controller.organ.workflow['morphoHeart']['MeshesProc'])
 
-        #Update progress in main_win
-        controller.main_win.update_workflow_progress()
+    #Update progress in main_win
+    controller.main_win.update_workflow_progress()
 
-        #Fill-up results table
-        controller.main_win.fill_results()
+    #Fill-up results table
+    controller.main_win.fill_results()
 
-        # Update organ workflow and GUI Status
-        flat_sect_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Segments_Sections']))
-        all_done = []
-        for key in flat_sect_wf.keys(): 
-            key_split = key.split(':')
-            if len(key_split) > 1: 
-                all_done.append(flat_sect_wf[key])
+    # Update organ workflow and GUI Status
+    flat_sect_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Segments_Sections']))
+    all_done = []
+    for key in flat_sect_wf.keys(): 
+        key_split = key.split(':')
+        if len(key_split) > 1: 
+            all_done.append(flat_sect_wf[key])
 
-        proc_wft = ['MeshesProc', 'E-Segments_Sections', 'Status']
-        if all(flag == 'DONE' for flag in all_done): 
-            controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
-        elif any(flag == 'DONE' for flag in all_done): 
-            controller.organ.update_mHworkflow(process = proc_wft, update = 'Initialised')
-        else: 
-            pass
-        controller.main_win.update_status(workflow, proc_wft, controller.main_win.segm_sect_status)
+    proc_wft = ['MeshesProc', 'E-Segments_Sections', 'Status']
+    if all(flag == 'DONE' for flag in all_done): 
+        controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+    elif any(flag == 'DONE' for flag in all_done): 
+        controller.organ.update_mHworkflow(process = proc_wft, update = 'Initialised')
+    else: 
+        pass
+    controller.main_win.update_status(workflow, proc_wft, controller.main_win.segm_sect_status)
+    
+    #Add meshes to plot_user
+    controller.main_win.fill_comboBox_all_meshes()
 
 def run_measure(controller): 
     if controller.main_win.keeplargest_play.isChecked(): 
