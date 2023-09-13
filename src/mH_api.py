@@ -61,7 +61,7 @@ def close_cont(controller, ch_name):
             proceed = True
         else: 
             proceed = False
-            
+
     elif check_proc == 'Initialised': 
         proceed = True
         print('Processing had been initialised!')
@@ -758,6 +758,7 @@ def run_heatmaps2D(controller, btn):
                             obj_segm[key] = controller.organ.obj_subm[segm_name]
                         else: 
                             controller.main_win.win_msg('*The segments for this tissue ('+ch+'_'+cont+") have not been obtained yet! Please create this tissue's segments to be able to run this process.") 
+                            controller.main_win.hm_btns[hmitem]['play2d'].setChecked(False)
                             print('*The segments for this tissue have not been obtained yet! ('+controller.main_win.gui_thickness_ballooning['heatmaps2D']['segms']+')')
                             return
                         
@@ -769,18 +770,6 @@ def run_heatmaps2D(controller, btn):
                         controller.main_win.win_msg('*The number of segments saved for this tissue ('+ch+'_'+cont+") is different than the number of segments expected. Please re-run segment creation for this tissue to be able to run this process.") 
                         print('*The number of segments saved for this tissue ('+ch+'_'+cont+") is different than the number of segments expected. Please re-run segment creation for this tissue to be able to run this process.")
                         return
-                    
-                        # print('Use the whole tissue to create 2D heatmap')
-                        # df_classPts, class_name = fcM.classify_heart_pts(array_mesh.mesh, obj_segm=[], data=data)
-                        # # Create kspline for whole tissue
-                        # ordered_kspl = {'div1': {'segm': 'NA', 
-                        #                          'name': 'whole', 
-                        #                          'y_axis': (1, 0), 
-                        #                          'invert_plane_num': True, 
-                        #                          'kspl': kspl_CLnew, 
-                        #                          'num_pts_range': (0, kspl_CLnew.NPoints())}}
-                        # print('ordered_kspl (whole):',ordered_kspl)
-                        # order_segm_upside = ordered_kspl
 
                     else: 
                         # Classify points

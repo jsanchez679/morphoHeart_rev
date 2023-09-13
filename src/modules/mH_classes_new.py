@@ -70,6 +70,8 @@ class NumpyArrayEncoder(json.JSONEncoder):
             return obj.tolist()
         elif isinstance(obj, pathlib.WindowsPath):
             return str(obj)
+        elif isinstance(obj, pd.DataFrame): 
+            return obj.to_json()
         else:
             print('type object: ', type(obj))
             return super(NumpyArrayEncoder, self).default(obj)
@@ -351,6 +353,7 @@ class Project():
     
             # Find the meas_param that include the extraction of a centreline
             item_centreline = [tuple(item.split('_')) for item in mH_param2meas['CL'].keys()]
+
             # Find the meas_param that include the extraction of mH_segments
             if 'Vol(segm)' in mH_param2meas:
                 segm_vol = [item for item in mH_param2meas['Vol(segm)'].keys()]
@@ -581,6 +584,9 @@ class Project():
             dict_mH['ImProc'] = dict_ImProc
             dict_mH['MeshesProc'] = dict_MeshesProc
             print('dict_mH:', dict_mH)
+
+            #Create new mH_settings['measure'] where to add data
+            self.create_df_res()
         
         if self.analysis['morphoCell']:
             pass
@@ -589,6 +595,169 @@ class Project():
         workflow['morphoCell'] = dict_cell
         self.workflow = workflow
         # print('self.workflow:',self.workflow)
+    
+    def create_df_res(self): 
+        mH_params = self.mH_settings['setup']['params']
+        for num in mH_params: 
+            if mH_params[num]['s'] == 'CL': 
+                break
+        cl_dict = mH_params[num]['measure']
+
+        measurements = self.mH_settings['measure']
+        for param in measurements: 
+            if 'CL' in param: 
+                for key in measurements[param]: 
+                    measurements[param][key] = cl_dict
+            if 'Ellip' in param: 
+                for key in measurements[param]: 
+                    measurements[param][key] = {'ell_width': True, 'ell_length': True, 'ell_depth': True, 'ell_asphericity': True}
+
+        dict_names = {}
+        for pp in mH_params:
+            var = mH_params[pp]
+            dict_names[var['s']] = var['l']
+        dict_names['Ellip'] = 'Ellipsoid'
+        dict_names['Angles'] = 'Angles'
+
+        df_index = pd.DataFrame.from_dict(measurements, orient='index')
+        #Drop variables that don't result in a single measurement
+        vars2drop = ['th_e2i', 'th_i2e', 'ball', 'hm3Dto2D']
+        vars = list(df_index.index)
+        for var in vars: 
+            if var in vars2drop: 
+                df_index = df_index.drop(var)
+        cols = list(df_index.columns)
+
+        #Add column with actual names of variables
+        var_names = []
+        for index, row in df_index.iterrows(): 
+            try: 
+                var_names.append(dict_names[index])
+            except: 
+                var, typpe = index.split('(')
+                print(typpe)
+                if typpe == 'segm)': 
+                    name = 'Segment'
+                elif typpe == 'segm-sect)': 
+                    name = 'Segm-Reg'
+                else: 
+                    name = 'Region'
+                var_names.append(dict_names[var]+': '+name)
+
+        df_index['Parameter'] = var_names
+        df_index = df_index.reset_index()
+        df_index = df_index.drop(['index'], axis=1)
+        df_melt = pd.melt(df_index, id_vars = ['Parameter'],  value_vars=cols, value_name='Value')
+        df_melt = df_melt.rename(columns={"variable": "Tissue-Contour"})
+        df_melt = df_melt.dropna()
+        mult_index= ['Parameter', 'Tissue-Contour']
+        df_melt = df_melt.set_index(mult_index)
+        #Create a copy to modify
+        df_final = df_melt.copy(deep=True)
+
+        if 'CL' in vars:
+            key_cl = {'linear_length': 'Linear Length', 'looped_length': 'Looped Length'}
+            dict_CL = {}
+            df_CL = df_melt.loc[[dict_names['CL']]]
+            for index, row in df_CL.iterrows():
+                row_cl = row['Value']
+                df_final.drop(index, axis=0, inplace=True)
+                for key, item in row_cl.items():
+                    new_index = 'Centreline: '+key_cl[key]
+                    new_variable = index[1]
+                    dict_CL[(new_index, new_variable)] = item
+
+            # print('dict_CL:',  dict_CL)
+            if len(dict_CL) != 0: 
+                df_CL = pd.DataFrame(dict_CL, index =[0])
+                df_CL_melt = pd.melt(df_CL, var_name=mult_index,value_name='Value')
+                df_CL_melt = df_CL_melt.set_index(mult_index)
+                df_final = pd.concat([df_final, df_CL_melt])
+                df_final = df_final.sort_values(by=['Parameter'])
+            else: 
+                df_final = df_final.sort_values(by=['Parameter'])
+
+        #Add values from Ellipsoids
+        if 'Ellip(segm)' in vars: 
+            key_ellip = {'ell_width': 'Width', 'ell_length': 'Length', 'ell_depth': 'Depth', 'ell_asphericity': 'Asphericity'}
+            dict_ellip = {}
+            df_ellip = df_melt.loc[['Ellipsoid: Segment']]
+            for index, row in df_ellip.iterrows():
+                row_ell = row['Value']
+                df_final.drop(index, axis=0, inplace=True)
+                for key, item in row_ell.items():
+                    new_index = 'Ellipsoid: '+key_ellip[key]
+                    new_variable = index[1]
+                    dict_ellip[(new_index, new_variable)] = item
+            # print('dict_ellip:',  dict_ellip)
+            if len(dict_ellip) != 0: 
+                df_ellip = pd.DataFrame(dict_ellip, index =[0])
+                df_ellip_melt = pd.melt(df_ellip, var_name=mult_index,value_name='Value')
+                df_ellip_melt = df_ellip_melt.set_index(mult_index)
+                df_final = pd.concat([df_final, df_ellip_melt])
+                df_final = df_final.sort_values(by=['Parameter'])
+            else: 
+                df_final = df_final.sort_values(by=['Parameter'])
+
+        #Change True Values to TBO
+        values_updated = []
+        for index, row in df_final.iterrows(): 
+            if isinstance(row['Value'], bool): 
+                values_updated.append('TBO')
+            else: 
+                values_updated.append(row['Value'])
+        df_final['Value'] = values_updated
+
+        #Add column with better names
+        name_chs = self.mH_settings['setup']['name_chs']
+        if isinstance(self.mH_settings['setup']['segm'], dict):
+            name_segm = {}
+            for cut in [key for key in self.mH_settings['setup']['segm'] if 'Cut' in key]:
+                name_segm[cut] = self.mH_settings['setup']['segm'][cut]['name_segments']
+        if isinstance(self.mH_settings['setup']['sect'], dict):
+            name_sect = {}
+            for cut in [key for key in self.mH_settings['setup']['sect'] if 'Cut' in key]:
+                name_sect[cut] = self.mH_settings['setup']['sect'][cut]['name_sections']
+        name_cont = {'int': 'internal', 'tiss': 'tissue', 'ext': 'external'}
+
+        user_tiss_cont = []
+        for index, _ in df_final.iterrows(): 
+            param, tiss_cont = index
+            split_name = tiss_cont.split('_')
+            # print(split_name, len(split_name))
+            if len(split_name) == 1 and tiss_cont == 'roi': 
+                namef = 'Organ/ROI'
+            elif len(split_name) == 3: 
+                ch, cont, _ = split_name
+                namef = name_chs[ch]+ ' ('+name_cont[cont]+')'
+            elif len(split_name) == 4: 
+                # print('split_name:', split_name)
+                cut, ch, cont, subm = split_name
+                if 'segm' in subm: 
+                    namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_segm[cut][subm]+')'
+                else: 
+                    namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_sect[cut][subm]+')'
+                # print(namef)
+            elif len(split_name) == 6: #Intersections
+                # print('split_name:', split_name)
+                scut, rcut, ch, cont, segm, sect = split_name
+                namef = scut[1:]+'-'+rcut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_segm[scut[1:]][segm]+'-'+name_sect[rcut][sect]+')'
+            else: 
+                print(index, len(split_name))
+                namef = 'Check: '+tiss_cont
+            
+            # print(index, namef.title())
+            # nameff = namef.title()
+            user_tiss_cont.append(namef)
+        
+        df_final['User (Tissue-Contour)'] = user_tiss_cont
+        df_finalf = df_final.reset_index()
+        df_finalf = df_finalf.set_index(mult_index+['User (Tissue-Contour)'])
+
+        df_finalf = df_finalf.sort_values(['Parameter','Tissue-Contour'],
+                                                ascending = [True, True])
+        print(df_finalf)
+        self.mH_settings['df_res'] = df_finalf.reset_index()
 
     def save_project(self, temp_dir=None, alert_on=True):#
         #Create a new dictionary that contains all the settings
@@ -1546,6 +1715,8 @@ class Organ():
             pt[coord] = 0
         
         angle = find_angle_btw_pts(pts, ref_vectF)
+        if angle > 90: 
+            angle = angle - 90
         
         pos = cl_mesh.mesh.center_of_mass()
         side = max(self.get_maj_bounds())  
@@ -1587,7 +1758,7 @@ class Organ():
         vpt.add_icon(logo, pos=(0.1,1), size=0.25)
         vpt.add_callback("key press", vpt.on_key_press)
         vpt.add_callback("mouse click", vpt.select_cube_face)
-        vpt.show(cl_mesh.mesh, orient_cube_clear, txt0, at=0)
+        vpt.show(cl_mesh.mesh, linLine, orient_cube_clear, txt0, at=0)
         vpt.show(orient_cube, lb, vpt.msg, vpt.msg_face, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)
            
         print('vpt.planar_views:',vpt.planar_views)
@@ -2028,9 +2199,13 @@ class ImChannel(): #channel
     def s32Meshes(self, cont_type:str, keep_largest=None, rotateZ_90=None, new_set=False):
 
         mesh_prop = {'keep_largest': keep_largest, 'rotateZ_90': rotateZ_90}
-        mesh = Mesh_mH(imChannel = self, mesh_type = cont_type, 
-                       mesh_prop = mesh_prop, new_set = new_set)
-        print('!>> ',mesh.__dict__)
+        try: 
+            mesh = Mesh_mH(imChannel = self, mesh_type = cont_type, 
+                        mesh_prop = mesh_prop, new_set = new_set)
+            print('!>> ',mesh.__dict__)
+            return True
+        except RuntimeError: 
+            return False
     
     def createNewMeshes(self, cont_types:list, process:str, new_set = False): #to delete
         print('TO delete!')
@@ -2386,7 +2561,8 @@ class ContStack():
             self.s3_file = parent_organ.user_organName + '_s3_' + im_channel.channel_no + '_' + self.cont_type + '.npy'
         print('self.s3_file:', self.s3_file)
 
-        if self.cont_type not in self.im_channel.contStack.keys():
+        s3_file_dir =  parent_organ.dir_res(dir='s3_numpy') / self.s3_file 
+        if self.cont_type not in self.im_channel.contStack.keys() or not s3_file_dir.is_file():
             if im_channel.channel_no == 'chNS':
                 # TO DO! Add information about the masking process as attributes here!
                 plot_settings = layerDict['plot_settings']

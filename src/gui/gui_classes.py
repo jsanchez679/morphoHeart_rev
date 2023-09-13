@@ -940,6 +940,7 @@ class CreateNewProj(QDialog):
             if stype in list(self.mH_settings.keys()):
                 s_set.setVisible(True)
                 s_set.setEnabled(True)
+                getattr(self, 'button_set_'+stype).setEnabled(False)
                 return True
             else: 
                 s_set.setVisible(True)
@@ -1555,10 +1556,19 @@ class CreateNewProj(QDialog):
             for cut_a in cuts: 
                 cut_semg = segm_settings[cut_a]['ch_segments']
                 no_segm = segm_settings[cut_a]['no_segments']
-                for ch_a in cut_semg: 
-                    for cont_a in cut_semg[ch_a]:
-                        for segm in range(1,no_segm+1,1):
-                            selected_params[param_a+'(segm)'][cut_a+'_'+ch_a+'_'+cont_a+'_segm'+str(segm)] = True
+                if param_a not in ['Ellip', 'Angles']:
+                    for ch_a in cut_semg: 
+                        for cont_a in cut_semg[ch_a]:
+                            for segm in range(1,no_segm+1,1):
+                                    selected_params[param_a+'(segm)'][cut_a+'_'+ch_a+'_'+cont_a+'_segm'+str(segm)] = True
+                else: 
+                    for ch_a in cut_semg: 
+                        already_selected = False 
+                        for cont_a in ['ext', 'tiss', 'int']:
+                            if cont_a in cut_semg[ch_a] and not already_selected:
+                                for segm in range(1,no_segm+1,1):
+                                    selected_params[param_a+'(segm)'][cut_a+'_'+ch_a+'_'+cont_a+'_segm'+str(segm)] = True     
+                                    already_selected = True
 
         self.mH_user_params = selected_params
         self.mH_settings['segm'] = segm_settings
@@ -1772,6 +1782,13 @@ class CreateNewProj(QDialog):
         if self.checked('segm'): 
             if self.button_set_segm.isChecked():
                 valid.append(True)
+                # checked = self.validate_segm_hm2d()
+                # if checked:
+                #     valid.append(True)
+                # else: 
+                #     self.button_set_segm.setChecked(False)
+                #     error_txt = '*Confirm selection of segment cuts, re-set Segment settings and continue by creating the New Project.'
+                #     self.win_msg(error_txt, self.button_new_proj)
             else: 
                 error_txt = '*You need to set segments settings before creating the new project.'
                 self.win_msg(error_txt, self.button_new_proj)
@@ -1807,6 +1824,11 @@ class CreateNewProj(QDialog):
         else: 
             print('Something wrong; validate_set_all')
             return False
+    
+    # def validate_segm_hm2d(): 
+    #     #Prompt message
+    #     prompt = Prompt_ok_cancel
+
 
     # -- Functions Set Measurement Parameters
     def check_to_set_params(self): 
@@ -2403,7 +2425,12 @@ class SetMeasParam(QDialog):
                     selected_params[param_name][chf+'_'+contf+'_whole'] = is_checked
                     if is_checked: 
                         if param_name in ['th_i2e','th_e2i','ball']:
-                            hm_ticked.append(param_name+':'+chf+'_'+contf)
+                            if param_name == 'th_i2e': 
+                                hm_ticked.append(param_name+':'+chf+'_'+'ext')
+                            elif param_name == 'th_e2i': 
+                                hm_ticked.append(param_name+':'+chf+'_'+'int')
+                            else: 
+                                hm_ticked.append(param_name+':'+chf+'_'+contf)
             else: 
                 _,roi,param_num = cbox.split('_')
                 num_p = int(param_num.split('param')[1])
@@ -3133,21 +3160,28 @@ class Load_S3s(QDialog):
             for cont in ['int', 'tiss', 'ext']: 
                 text = getattr(self, 'check_'+ch+'_'+cont).text()
                 if text != 'Done':
-                    self.win_msg('*Please select the stack with closed contours for '+ch+'_'+cont+'!')
-                    self.button_add_channels.setChecked(False)
+                    self.win_msg('*Please select the stack with closed contours for '+ch+'_'+cont+'!', self.button_add_channels)
+                    # self.button_add_channels.setChecked(False)
                     return
                 else: 
                     im_ch = organ.obj_imChannels[ch]
                     file_name = getattr(self, 'npy_'+ch+'_'+cont)
-                    npy_stack = np.load(file_name)
-                    im_ch.create_chS3s(layerDict=npy_stack, win=self, cont_list=[cont])
-                    process = ['ImProc', ch, 'C-SelectCont','Status']
-                    
-                    #Update organ workflow
-                    organ.update_mHworkflow(process, update = 'DONE')
-                    all_done.append(True)
-                    nn += 1
-
+                    if Path(file_name).is_file(): 
+                        npy_stack = np.load(str(file_name))
+                        if isinstance(npy_stack, np.ndarray): 
+                            im_ch.create_chS3s(layerDict=npy_stack, win=self, cont_list=[cont])
+                            process = ['ImProc', ch, 'C-SelectCont','Status']
+                            #Update organ workflow
+                            organ.update_mHworkflow(process, update = 'DONE')
+                            all_done.append(True)
+                            nn += 1
+                        else: 
+                            self.win_msg('*Please select a valid file for '+ch+'_'+cont+' and try adding the closed stacks again!', self.button_add_channels)
+                            return
+                    else: 
+                        self.win_msg('*Please select a valid file for '+ch+'_'+cont+' and try adding the closed stacks again!', self.button_add_channels)
+                        return
+                        
             #Update organ workflow
             organ.update_mHworkflow(process_up, update = 'DONE')
 
@@ -3158,7 +3192,7 @@ class Load_S3s(QDialog):
                 #Update organ workflow
                 organ.update_mHworkflow(process_x, update = 'DONE-Loaded')
 
-        if all(all_done):
+        if all(flag == True for flag in all_done):
             parent_win.update_ch_progress()
             organ.save_organ()
             proj.add_organ(organ)
@@ -5143,6 +5177,7 @@ class MainWindow(QMainWindow):
                         if 'heatmaps2D' in wf_info['heatmaps'].keys():
                             self.hm_btns[item]['play2d'].setEnabled(True)
                             if 'hm2d_dirs' in wf_info['heatmaps'][item].keys(): 
+                                self.hm_btns[item]['play2d'].setChecked(True)
                                 self.hm_btns[item]['plot2d'].setEnabled(True)
                                 done_all.append(True)
                             else: 
@@ -5771,7 +5806,9 @@ class MainWindow(QMainWindow):
                 alert('error_beep')
 
     def fill_results(self): 
-        self.get_results_df()
+
+        # if not hasattr(self, 'df_res'): 
+        self.dir_res = self.organ.mH_settings['df_res']
 
         #Set row count
         self.tabW_results.setRowCount(len(self.df_res))
@@ -5783,6 +5820,11 @@ class MainWindow(QMainWindow):
                 valuef = "%.2f" % value
             elif isinstance(value, str): 
                 valuef = value
+            else: 
+                print('Weird value in df_res: ', type(value))
+                valuef = value
+                alert('error_beep')
+
 
             item_col0 = QTableWidgetItem(col0)
             self.tabW_results.setItem(row, 0, item_col0)
@@ -5873,7 +5915,7 @@ class MainWindow(QMainWindow):
                 if isinstance(row['Value'], dict): 
                     row_cl = row['Value']
                 else: 
-                    row_cl = {'lin_length': None, 'looped_length': None}
+                    row_cl = {'lin_length': True, 'looped_length': True}
                 df_new.drop(index, axis=0, inplace=True)
                 for key, item in row_cl.items():
                     new_index = 'Centreline: '+key_cl[key]
@@ -7619,6 +7661,10 @@ class MainWindow(QMainWindow):
         ext_ch = self.organ.get_ext_int_chs()
         if isinstance(ext_ch, str) and ext_ch == 'independent':
             ext_ch = self.organ.obj_imChannels[list(self.organ.obj_imChannels.keys())[0]]
+        
+        centreline = self.gui_orientation['roi']['centreline'].split('(')[1].split(')')[0]
+        ch, cont = centreline.split('_')
+        linLine = self.organ.obj_meshes[ch+'_'+cont].get_linLine(color='gold')
 
         mesh_ext = self.organ.obj_meshes[ext_ch.channel_no+'_tiss']
         cubes = getattr(self.organ, name+'_cube')
@@ -7628,12 +7674,11 @@ class MainWindow(QMainWindow):
         views = self.organ.mH_settings['setup']['orientation'][name].split(', ')
         colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
 
-        txt0 = vedo.Text2D(self.organ.user_organName+' - Reference cube and mesh to visualise planar views in '+name.title()+'...', c=txt_color, font=txt_font, s=txt_size)
         if name == 'roi': 
             namef = name.upper()
         else: 
             namef = name.title()
-
+        txt0 = vedo.Text2D(self.organ.user_organName+' - Reference cube and mesh to visualise planar views in '+namef+'...', c=txt_color, font=txt_font, s=txt_size)
         txt1 = vedo.Text2D('- Reference cube with coloured faces that represent planar views in '+namef+'...', c=txt_color, font=txt_font, s=txt_size)
         
         mks = []; sym = ['o']*len(views)
@@ -7647,7 +7692,7 @@ class MainWindow(QMainWindow):
 
         vp = vedo.Plotter(N=2, axes=1)
         vp.add_icon(logo, pos=(0.1,1), size=0.25)
-        vp.show(mesh_ext.mesh, orient_cube_clear,txt0, at=0)
+        vp.show(mesh_ext.mesh, linLine, orient_cube_clear,txt0, at=0)
         vp.show(orient_cube, lb, txt1, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)
 
     def plot_cl_ext(self, cut): 

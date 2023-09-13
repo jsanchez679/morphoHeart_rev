@@ -427,6 +427,10 @@ class Controller:
     def set_proj_meas_param(self):
         if self.meas_param_win.validate_params() == True: 
             self.meas_param_win.get_final_parameters(self)  
+            for stype in ['segm', 'sect']: 
+                ck_type = getattr(self.new_proj_win, 'tick_'+stype)
+                if ck_type.isChecked():
+                    getattr(self.new_proj_win, 'button_set_'+stype).setEnabled(True)
         else: 
             return 
         
@@ -460,7 +464,7 @@ class Controller:
             self.proj.save_project(temp_dir = temp_dir)
             self.new_proj_win.button_add_organ.setEnabled(True)
             print('\n>>> New Project: ',self.proj.__dict__.keys())
-            self.new_proj_win.win_msg("New project '"+self.new_proj_win.lineEdit_proj_name.text()+"' has been created and saved! Continue creating an organ as part of this project. ")
+            self.new_proj_win.win_msg("New project '"+self.new_proj_win.lineEdit_proj_name.text()+"' has been created and saved! Continue by creating an organ as part of this project. ")
     
     def load_proj(self):
         path_folder = QFileDialog.getExistingDirectory(self.load_proj_win, caption="Select the Project's directory")
@@ -528,7 +532,7 @@ class Controller:
 
                     self.organ = mHC.Organ(project=self.proj, organ_dict=organ_dict, new = True)
                     self.new_organ_win.lab_filled_organ_dir.setText(str(self.organ.dir_res()))
-                    print('\n>>> New Organ: ', self.organ.__dict__)
+                    # print('\n>>> New Organ: ', self.organ.__dict__)
                     self.proj.add_organ(self.organ)
                     self.organ.save_organ()
                     self.new_organ_win.win_msg('New organ "'+name+'" has been created as part of "'+self.proj.user_projName+'" project.')

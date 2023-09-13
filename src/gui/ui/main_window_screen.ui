@@ -996,7 +996,7 @@ background-color: rgb(255, 255, 255);</string>
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="usesScrollButtons">
        <bool>false</bool>
@@ -3179,7 +3179,7 @@ QScrollBar::handle:vertical:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-1018</y>
+                <y>-1832</y>
                 <width>632</width>
                 <height>5616</height>
                </rect>
@@ -17730,7 +17730,7 @@ border-color: rgb(115, 115, 115)}
                    </widget>
                   </item>
                   <item>
-                   <widget class="QFrame" name="heatmaps_all_widget">
+                   <widget class="QFrame" name="thickness_ballooning_all_widget">
                     <property name="enabled">
                      <bool>true</bool>
                     </property>

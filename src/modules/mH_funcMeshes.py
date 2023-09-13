@@ -97,19 +97,19 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):#
             win.win_msg('Creating meshes of Channel '+im_ch.channel_no[-1]+'! ('+str(aa+1)+'/3)')
             proc_cont_im = ['ImProc',im_ch.channel_no,'D-S3Create','Info', cont, 'Status']
             proc_cont_ms = ['MeshesProc','A-Create3DMesh', im_ch.channel_no, cont, 'Status']
-            try: 
-                im_ch.s32Meshes(cont_type=cont,
-                                keep_largest=gui_keep_largest[im_ch.channel_no][cont],
-                                rotateZ_90 = rotateZ_90, new_set = new_set)
+            mesh_created = im_ch.s32Meshes(cont_type=cont,
+                                            keep_largest=gui_keep_largest[im_ch.channel_no][cont],
+                                            rotateZ_90 = rotateZ_90, new_set = new_set)
+            if mesh_created: 
                 # Update organ workflow
                 organ.update_mHworkflow(proc_cont_im, 'DONE')
                 organ.update_mHworkflow(proc_cont_ms, 'DONE')
                 aa+=1
                 win.prog_bar_update(aa)
                 run = True
-            except RuntimeError:
-                win.win_msg('*Remember to update the meshes within the s3_numpy folder to the ones in which contours have been selected!')
-                alert('error_beep')
+            else: 
+                win.win_msg('*Remember to update the meshes within the s3_numpy folder to the ones in which contours have been selected!', win.keeplargest_play)
+                win.keeplargest_play.setChecked(False)
                 return
             
         if run: 
@@ -167,7 +167,7 @@ def clean_ch(organ, gui_clean, win, plot_settings=(False,None)):#
             organ.update_mHworkflow(proc_up, 'DONE')
         
             #Recreate Mesh       
-            ch_to_clean.s32Meshes(cont_type=cont, new_set=True)
+            _ = ch_to_clean.s32Meshes(cont_type=cont, new_set=True)
             aa+=1
             win.prog_bar_update(aa)
 
@@ -222,7 +222,7 @@ def trim_top_bottom_S3s(organ, meshes, no_cut, cuts_out, win):#
                 print('Cutting '+ch_name.title()+' (contour: '+cont+')...')
                 win.win_msg('Cutting '+ch_name.title()+' (contour: '+cont+')...')
                 im_ch.trimS3(cuts=cuts, cont=cont, cuts_out=cuts_out)
-                im_ch.s32Meshes(cont_type=cont, new_set=True)
+                _ = im_ch.s32Meshes(cont_type=cont, new_set=True)
 
                 # Update organ workflow
                 process = proc_im+['Info',cont,'Status']
@@ -2111,6 +2111,10 @@ def order_segms(organ, kspl_CLnew, num_pts, cut):
 def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
                                 df_classPts, labels, gui_heatmaps2d, kspl_data):
 
+    # Load logo
+    path_logo = path_mHImages / 'logo-07.jpg'
+    logo = vedo.Picture(str(path_logo))
+
     if gui_heatmaps2d['plot']['plot_planes']: 
         plotevery = gui_heatmaps2d['plot']['every_planes']
         print('- Plotting every X number of planes:', plotevery)
@@ -2333,11 +2337,12 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
                             else:
                                 sphR.append(vedo.Sphere(pt+centre, r=2, c='gold'))
 
-                    text = '>> Unlooping the heart (chamber: '+chamber+') - Plane No: '+str(i)+'/'+str(no_planes+2)
+                    text = '>> Unlooping the heart (segment: '+chamber+') - Plane No: '+str(i)+'/'+str(no_planes+2)
                     txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
                     sph_centre = vedo.Sphere(centre, r=2, c='red')
                     arr_centre2vzero = vedo.Arrow(centre, kspl_vSurf.points()[idx_surf], s = 0.1, c='light green')
                     vp= vedo.Plotter(N=1, axes=13)
+                    vp.add_icon(logo, pos=(0.1,1), size=0.25)
                     vp.show(mesh, sphL, sphR, plane_cut, arr_vectPlCut, kspl_CLnew, sph_pt_out, kspl_vSurf, sph_pt_surf, sph_centre, arr_centre2vzero, txt, at=0, interactive=True)
                 
             if i % 20 == 0 and i != 0 and mH_config.dev_hm3d2d:
@@ -2351,8 +2356,12 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
             pass
             # print('-Plane No.', i, ' - PASS!')
 
-    vp= vedo.Plotter(N=1, axes=13)
-    vp.show(mesh.alpha(0.05),  kspl_CLnew, kspl_vSurf, list_planes, list_CL_sph, list_vSurf_sph, list_prev_sph, sph_left, sph_right, at=0, interactive=True)
+    if mH_config.dev_plots or gui_heatmaps2d['plot']['plot_planes']:
+        text = '>> Unlooping the heart (segment: '+chamber+')'
+        txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
+        vp= vedo.Plotter(N=1, axes=13)
+        vp.add_icon(logo, pos=(0.1,1), size=0.25)
+        vp.show(mesh.alpha(0.05),  kspl_CLnew, kspl_vSurf, list_planes, list_CL_sph, list_vSurf_sph, list_prev_sph, sph_left, sph_right, at=0, interactive=True)
 
     df_unlooped = pd.DataFrame(matrix_unlooped, columns=['x','y','z','taken','z_plane','theta','radius',hmitem])
     df_unlooped = df_unlooped[df_unlooped['taken']==1]
@@ -2512,7 +2521,7 @@ def find_angle_btw_pts(pts1, pts2):
     mag_v1 = findDist(pts1[0],pts1[1])
     mag_v2 = findDist(pts2[0],pts2[1])
 
-    vect1 = pts1[1]-pts1[0]
+    vect1 = pts1[0]-pts1[1]
     vect2 = pts2[1]-pts2[0]
 
     dotProd = np.dot(vect1,vect2)
