@@ -45579,7 +45579,7 @@ QScrollBar::handle:horizontal:hover {
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-495</y>
+                <y>-596</y>
                 <width>525</width>
                 <height>744</height>
                </rect>

@@ -49,7 +49,7 @@ import matplotlib.gridspec as gridspec
 #%% morphoHeart Imports - ##################################################
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
-from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set, alert
+from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set, alert, df_reset_index, df_add_value
 from ..modules.mH_funcContours import checkWfCloseCont, ImChannel, get_contours
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
 from ..modules.mH_classes_new import Project, Organ
@@ -121,7 +121,6 @@ class Prompt_ok_cancel(QDialog):
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
         self.textEdit.setHtml(html_txt[0]+html_txt[1]+msg+html_txt[2])
-        # self.textEdit.setText(msg)
         self.output = None
 
         self.buttonBox.accepted.connect(lambda: self.accepted())
@@ -1304,11 +1303,23 @@ class CreateNewProj(QDialog):
         for cut in cuts_sel.keys(): 
             valid = []; error_txt = ''
             if cuts_sel[cut]:
-                for ch in ch_selected: 
-                    for cont in ['int', 'tiss', 'ext']: 
+                for ch in ch_selected:
+                    #Get relation
+                    ch_rel = self.mH_settings['chs_relation'][ch]
+                    ext_added = False 
+                    for cont in ['ext', 'tiss', 'int']: 
                         btn_name = 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont
                         # print(btn_name, getattr(self, btn_name).isChecked())
-                        dict_stype[btn_name] = getattr(self, btn_name).isChecked()
+                        if cont == 'ext': 
+                            ext_btn = getattr(self, btn_name).isChecked()
+                            if ext_btn:
+                                ext_added = True
+                            dict_stype[btn_name] = ext_btn
+                        else: 
+                            dict_stype[btn_name] = getattr(self, btn_name).isChecked()
+                    if not ext_added and ch_rel == 'external' or ch_rel == 'independent': 
+                        btn_name = 'cB_'+stype+'_'+cut+'_'+ch+'_ext'
+                        dict_stype[btn_name] = True
 
         setattr(self, 'dict_'+stype, dict_stype)
         # print(getattr(self, 'dict_'+stype))
@@ -1782,13 +1793,6 @@ class CreateNewProj(QDialog):
         if self.checked('segm'): 
             if self.button_set_segm.isChecked():
                 valid.append(True)
-                # checked = self.validate_segm_hm2d()
-                # if checked:
-                #     valid.append(True)
-                # else: 
-                #     self.button_set_segm.setChecked(False)
-                #     error_txt = '*Confirm selection of segment cuts, re-set Segment settings and continue by creating the New Project.'
-                #     self.win_msg(error_txt, self.button_new_proj)
             else: 
                 error_txt = '*You need to set segments settings before creating the new project.'
                 self.win_msg(error_txt, self.button_new_proj)
@@ -1800,7 +1804,7 @@ class CreateNewProj(QDialog):
             if all(not x for x in dict_CL):
                 error_txt = '*To create region divisions, at least one centreline needs to be created. Go back to  -Set Measurement Parameters-  and select at least one centreline.'
                 self.win_msg(error_txt, self.button_new_proj)
-                returnvalidate_set_all
+                return 
             elif self.button_set_sect.isChecked():
                 valid.append(True)
             else: 
@@ -1824,11 +1828,6 @@ class CreateNewProj(QDialog):
         else: 
             print('Something wrong; validate_set_all')
             return False
-    
-    # def validate_segm_hm2d(): 
-    #     #Prompt message
-    #     prompt = Prompt_ok_cancel
-
 
     # -- Functions Set Measurement Parameters
     def check_to_set_params(self): 
@@ -2413,7 +2412,7 @@ class SetMeasParam(QDialog):
         for numa in self.params: 
             selected_params[self.params[numa]['s']] = {}
 
-        hm_ticked = []
+        hm_ticked = {}
         for cbox in self.dict_meas:
             if 'roi' not in cbox:
                 _,chf,contf,param_num = cbox.split('_')
@@ -2425,12 +2424,15 @@ class SetMeasParam(QDialog):
                     selected_params[param_name][chf+'_'+contf+'_whole'] = is_checked
                     if is_checked: 
                         if param_name in ['th_i2e','th_e2i','ball']:
+                            if param_name not  in hm_ticked.keys(): 
+                                hm_ticked[param_name] = []
+                            hm_item = hm_ticked[param_name]
                             if param_name == 'th_i2e': 
-                                hm_ticked.append(param_name+':'+chf+'_'+'ext')
+                                hm_item.append(chf+'_'+'ext')
                             elif param_name == 'th_e2i': 
-                                hm_ticked.append(param_name+':'+chf+'_'+'int')
+                                hm_item.append(chf+'_'+'int')
                             else: 
-                                hm_ticked.append(param_name+':'+chf+'_'+contf)
+                                hm_item.append(chf+'_'+contf)
             else: 
                 _,roi,param_num = cbox.split('_')
                 num_p = int(param_num.split('param')[1])
@@ -2450,7 +2452,13 @@ class SetMeasParam(QDialog):
             from_cl_type = controller.mH_params[5]['measure'][opt]['from_cl_type']
             selected_params[param_name][to_mesh+'_'+to_mesh_type+'_('+from_cl+'_'+from_cl_type+')'] = True
         
-        controller.new_proj_win.text_hmselected.setText(', '.join(hm_ticked))
+        txt_hm = ''
+        for pram, chss in hm_ticked.items(): 
+            chs_txt = ','.join(chss)
+            txt_hm = txt_hm+pram+':'+chs_txt+' - '
+        print(txt_hm)
+        txt_hmf = html_style+html_beg+txt_hm[:-3]+html_end+html_end_end
+        controller.new_proj_win.text_hmselected.setHtml(txt_hmf)
 
         #Add heatmaps 3d to 2d
         selected_params['hm3Dto2D'] = {}
@@ -3474,16 +3482,16 @@ class MainWindow(QMainWindow):
 
         self.im_thumbnails = {}
         # random data
-        import random
-        data = [random.random() for i in range(10)]
-        # clearing old figure
-        self.figure.clear()
-        # create an axis
-        ax = self.figure.add_subplot(111)
-        # plot data
-        ax.plot(data, '*-')
-        # refresh canvas
-        self.canvas_plot.draw()
+        # import random
+        # data = [random.random() for i in range(10)]
+        # # clearing old figure
+        # self.figure.clear()
+        # # create an axis
+        # ax = self.figure.add_subplot(111)
+        # # plot data
+        # ax.plot(data, '*-')
+        # # refresh canvas
+        # self.canvas_plot.draw()
 
     #>> Init Ch Progress Table
     def init_ch_progress(self): 
@@ -4233,12 +4241,14 @@ class MainWindow(QMainWindow):
                         btn_color = getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn))
                         color_btn(btn = btn_color, color = color)
 
+                print('ch_segments', cutb, '-', self.organ.mH_settings['setup']['segm'][cutb]['ch_segments'])
                 #Add ch-cont combinations to list of cuts to make
                 ch_keys = sorted(list(self.organ.mH_settings['setup']['segm'][cutb]['ch_segments'].keys()))
                 nn = 1
                 for ch in ch_keys: 
                     cont_keys = sorted(self.organ.mH_settings['setup']['segm'][cutb]['ch_segments'][ch])
                     for cont in cont_keys:
+                        print(cutb, ch, cont)
                         getattr(self, cutl+'_chcont_segm'+str(nn)).setText(str(nn)+'. '+ch+'_'+cont)
                         getattr(self, cutl+'_play_segm'+str(nn)).setEnabled(False)
                         getattr(self, cutl+'_plot_segm'+str(nn)).setEnabled(False)
@@ -4743,6 +4753,9 @@ class MainWindow(QMainWindow):
         #Setup results
         self.fill_results()
         self.results_save.clicked.connect(lambda: self.save_results())
+
+        #Get variable names
+        self.get_var_names()
 
         #Init measure_status
         self.user_measure_whole()
@@ -5294,18 +5307,26 @@ class MainWindow(QMainWindow):
                 cut, ch_cont = name.split(':')
                 ch, cont = ch_cont.split('_')
                 num = self.segm_btns[name]['num']
-                if get_by_path(wf, [cut, ch, cont, 'Status']) == 'DONE':
-                    btn_play = self.segm_btns[name]['play']
-                    btn_play.setChecked(True)
-                    btn_plot = self.segm_btns[name]['plot']
-                    btn_plot.setEnabled(True)
+                try: 
+                    if get_by_path(wf, [cut, ch, cont, 'Status']) == 'DONE':
+                        btn_play = self.segm_btns[name]['play']
+                        btn_play.setChecked(True)
+                        btn_plot = self.segm_btns[name]['plot']
+                        btn_plot.setEnabled(True)
+                except: 
+                    print('Incomplete workflow? - ', cut, ch, cont)
+                    alert('connection')
                 if wf_info['segments']['setup'][cut]['ch_info'][ch][cont] == 'ext-ext':
                     #If ext-ext cut has been made then enable other buttons 
-                    if get_by_path(wf, [cut, ch, cont, 'Status']) == 'DONE':
-                        for sgmt in self.segm_btns.keys():
-                            if sgmt != name: 
-                                play_btn = self.segm_btns[sgmt]['play']
-                                play_btn.setEnabled(True)
+                    try: 
+                        if get_by_path(wf, [cut, ch, cont, 'Status']) == 'DONE':
+                            for sgmt in self.segm_btns.keys():
+                                if sgmt != name: 
+                                    play_btn = self.segm_btns[sgmt]['play']
+                                    play_btn.setEnabled(True)
+                    except:
+                        print('ditto')
+                        alert('bubble')
 
             #Update Status in GUI
             self.update_status(wf, ['Status'], self.segments_status)
@@ -5808,7 +5829,7 @@ class MainWindow(QMainWindow):
     def fill_results(self): 
 
         # if not hasattr(self, 'df_res'): 
-        self.dir_res = self.organ.mH_settings['df_res']
+        self.df_res = self.organ.mH_settings['df_res']
 
         #Set row count
         self.tabW_results.setRowCount(len(self.df_res))
@@ -5824,7 +5845,6 @@ class MainWindow(QMainWindow):
                 print('Weird value in df_res: ', type(value))
                 valuef = value
                 alert('error_beep')
-
 
             item_col0 = QTableWidgetItem(col0)
             self.tabW_results.setItem(row, 0, item_col0)
@@ -5859,6 +5879,11 @@ class MainWindow(QMainWindow):
         else: 
             self.update_status(None, 'DONE', self.measure_status, override=True)
             self.organ.measure_status = 'DONE'
+
+    def get_var_names(self): 
+
+        df_res = self.organ.mH_settings['df_res']
+        self.index_param = set([param for (param, _, _) in df_res.index])
 
     def get_results_df(self): 
         #Actual names
@@ -6822,7 +6847,7 @@ class MainWindow(QMainWindow):
                 if get_by_path(wf, proc) == 'DONE' and get_by_path(wf, proc4cl) == 'DONE' and 'heatmaps2D' in self.organ.mH_settings['wf_info']['heatmaps'].keys():
                     self.hm_btns[item]['play2d'].setEnabled(True)
                 else: 
-                    print('xxx not done')
+                    pass
 
         if hasattr(self, 'cl4hm'):
             ch4cl, cont4cl = self.cl4hm.split('_')
@@ -7043,7 +7068,17 @@ class MainWindow(QMainWindow):
         if len(self.gui_key_user_params[ptype]) > 0: 
             gui_user_params[ptype] = {}
             #Get values
+            df_res = df_reset_index(df=self.organ.mH_settings['df_res'], 
+                                        mult_index= ['Parameter', 'Tissue-Contour'])
+            user_param_names = self.organ.mH_settings['setup']['params']
+
             for param in self.gui_key_user_params[ptype].keys(): 
+                for up in user_param_names: 
+                    if user_param_names[up]['s'] == param: 
+                        break 
+                long_name = user_param_names[up]['l']
+                print(up, long_name)
+
                 gui_user_params[ptype][param] = {}
                 for item in self.gui_key_user_params[ptype][param].keys(): 
                     num = self.gui_key_user_params[ptype][param][item]['num']
@@ -7053,12 +7088,16 @@ class MainWindow(QMainWindow):
                     else: 
                         value = getattr(self, 'value_'+ptype+str(num)).text()
                     gui_user_params[ptype][param][item]['value'] = value
+                    df_res = df_add_value(df=df_res, index=(long_name, item), value=value)
+                    # self.organ.mH_settings['measure'][param][item] = value
 
-                self.organ.mH_settings['measure'][param][item] = value
 
         print('gui_user_params:', gui_user_params)
         print('self.gui_key_user_params:', self.gui_key_user_params)
-        self.fill_results()                    
+        #Fill-up results table
+        df_res = df_reset_index(df=df_res, mult_index= ['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
+        self.organ.mH_settings['df_res'] = df_res
+        self.fill_results()                   
 
         return gui_user_params
     
@@ -7827,7 +7866,7 @@ class MainWindow(QMainWindow):
         # print('new_key:', new_key)
         if n_pos+1 < 10: 
             self.plot_meshes_user[new_key] = {'mesh': mesh2add, 
-                                            'alpha': 1.0, 
+                                            'alpha': 0.1, 
                                             'plot_no': 1}
             # print('self.plot_meshes_user:', self.plot_meshes_user)
             self.update_plot_list()
@@ -8497,3 +8536,7 @@ play_bw, play_gw, play_gb, play_btn = play_colors
 error_style, note_style, msg_style = tE_styles
 roman_num ={'sect': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'], 
             'segm': ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']}
+html_style = '</style></head><body style=" font-family:"Calibri Light"; font-size:10pt; font-weight:24; font-style:normal;">'
+html_beg = '<p align="center" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">'
+html_end = '</p>'
+html_end_end = '</p></body></html>'

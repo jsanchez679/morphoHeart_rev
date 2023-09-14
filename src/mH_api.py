@@ -349,6 +349,7 @@ def run_chNS(controller):
 
         #Toggle button
         getattr(controller.main_win, 'chNS_play').setChecked(True)
+        getattr(controller.main_win, 'summary_whole_plot_chNS').setChecked(True)
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
@@ -523,6 +524,7 @@ def run_centreline_select(controller):
         cl_measure = [cl_measurements[key] for key in cl_measurements.keys()]
         if any(cl_measure): 
             fcM.measure_centreline(organ=controller.organ, nPoints=nPoints)
+            controller.main_win.fill_results()
 
         #If orientation is on_hold
         if controller.organ.on_hold: 
@@ -1402,23 +1404,29 @@ def run_measure(controller):
         organ = controller.organ
         measurements = organ.mH_settings['measure']
         all_done = []; whole_done = []; other_done = []
+        df_res = fcB.df_reset_index(df=organ.mH_settings['df_res'], 
+                                     mult_index= ['Parameter', 'Tissue-Contour'])
+        print(controller.main_win.index_param)
+        #{'Looping direction', 'Centreline: Linear Length', 'Ellipsoid: Depth', 
+        # 'Ellipsoid: Length', 'Ellipsoid: Asphericity', 'Volume: Segm-Reg', 'Volume: Segment', 
+        # 'Surface Area', 'Centreline: Looped Length', 'Embryo Notes', 'Aortic length', 
+        # 'Ellipsoid: Width', 'Volume: Region', 'Volume', 'Angles: Segment'}
+
         for param in measurements.keys():
-            print('param:', param )
-            print(measurements[param].keys())
             for item in measurements[param]:
                 if 'whole' in item: 
-                    print('item:', item)
                     ch, cont, _ = item.split('_')
                     try: 
                         mesh2meas = organ.obj_meshes[ch+'_'+cont]
                         mesh = mesh2meas.mesh
-                        print('mesh_name:', mesh2meas.name)
                         if param == 'Vol': 
                             vol = mesh.volume()
-                            organ.mH_settings['measure']['Vol'][mesh2meas.name+'_whole'] = vol
+                            df_res = fcB.df_add_value(df=df_res, index=('Volume', ch+'_'+cont+'_whole'), value=vol)
+                            # organ.mH_settings['measure']['Vol'][mesh2meas.name+'_whole'] = vol
                         if param == 'SA': 
                             area = mesh.area()
-                            organ.mH_settings['measure']['SA'][mesh2meas.name+'_whole'] = area
+                            df_res = fcB.df_add_value(df=df_res, index=('Surface Area', ch+'_'+cont+'_whole'), value=area)
+                            # organ.mH_settings['measure']['SA'][mesh2meas.name+'_whole'] = area
                         all_done.append(True); whole_done.append(True)
                     except: 
                         print('Ch-Cont: '+ch+'_'+cont+' not found!')
@@ -1446,6 +1454,8 @@ def run_measure(controller):
             controller.main_win.update_status(None, 'NI', controller.main_win.measure_status, override=True)
         
         #Fill-up results table
+        df_res = fcB.df_reset_index(df=df_res, mult_index= ['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
+        organ.mH_settings['df_res'] = df_res
         controller.main_win.fill_results()
     
     else: 

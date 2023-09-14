@@ -17,6 +17,7 @@ import operator
 from itertools import count
 import vedo as vedo
 import copy
+import pandas as pd
 # from typing import Union
 
 path_fcBasics = os.path.abspath(__file__)
@@ -196,6 +197,22 @@ def input_range(response):
         return obj_num
     except: 
         obj_num = 'error'
+
+def df_reset_index(df:pd.DataFrame, mult_index:list): 
+
+    df_new = df.reset_index()
+    # print(df_new.head(10))
+    df_new = df_new.set_index(mult_index)
+    # print(df_new.head(10), '\n', df_new.index)
+
+    return df_new
+
+def df_add_value(df:pd.DataFrame, index:tuple, value):
+
+    df.loc[index, 'Value'] = value
+    print('New value: ',df.loc[index, 'Value'])
+
+    return df
 
 # func - compare_dicts
 def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=False):

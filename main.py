@@ -107,15 +107,16 @@ class Controller:
         # prompt.exec()
         # print('prompt.output:', prompt.output)
 
-        disc_radius = 60; n =1; user_names = 'A/V'
-        items = {0: {'opt': 'no, I would like to define a new position for the disc'}, 
-                1: {'opt': 'yes, but I would like to redefine the disc radius', 'lineEdit': True, 'regEx': "int3d"}, 
-                2: {'opt': 'yes, I am happy with both, disc position and radius'}}
-        title = 'Happy with the defined Disc '+str(n)+'?'
-        msg = 'Are you happy with the position of the disc [radius: '+str(disc_radius)+'um] to cut tissue into segments  '+user_names+'?'
-        prompt = Prompt_ok_cancel_radio(title, msg, items, parent = self.welcome_win)
-        prompt.exec()
-        print(prompt.output)
+        # disc_radius = 60; n =1; user_names = 'A/V'
+        # items = {0: {'opt': 'no, I would like to define a new position for the disc'}, 
+        #         1: {'opt': 'yes, but I would like to redefine the disc radius', 'lineEdit': True, 'regEx': "int3d"}, 
+        #         2: {'opt': 'yes, I am happy with both, disc position and radius'}}
+        # title = 'Happy with the defined Disc '+str(n)+'?'
+        # msg = 'Are you happy with the position of the disc [radius: '+str(disc_radius)+'um] to cut tissue into segments  '+user_names+'?'
+        # prompt = Prompt_ok_cancel_radio(title, msg, items, parent = self.welcome_win)
+        # prompt.exec()
+        # print(prompt.output)
+        pass
 
     def show_create_new_proj(self):
         #Close welcome window
@@ -150,6 +151,7 @@ class Controller:
             error_txt = "*Make sure all the 'Set' Buttons are toggle/checked to continue."
             self.new_proj_win.win_msg(error_txt)
             print('Controller, show_meas_param: Something is wrong')
+            alert('bubble')
             return
 
     def show_load_proj(self): 
@@ -184,6 +186,7 @@ class Controller:
             self.load_proj_win.close()
         else: 
             print('Controller: show_new_organ: Other parent window?')
+            alert('bubble')
         print('Controller, show_new_organ > parent_win:', parent_win)
 
         #Create new organ window and show
@@ -228,15 +231,15 @@ class Controller:
                     error_txt = '*Please select one organ to analyse.'
                     self.load_proj_win.win_msg(error_txt)
                     print('Controller, show_main_window: Error in loading window')
+                    alert('bubble')
                 return
         else: 
             print('Controller, show_main_window: Other parent window?')
+            alert('bubble')
         print('Controller, show_main_window > parent_win:', parent_win)
 
         #Create Main Project Window and show
         if self.main_win == None:
-            # print('\nLoaded Project and Organ!\n >> Proj:', self.proj.__dict__.keys())
-            # print('>> Organ:', self.organ.__dict__.keys())
             self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
             self.init_main_win()
         self.main_win.show()
@@ -440,7 +443,6 @@ class Controller:
             temp_dir = self.new_proj_win.check_template()
 
             self.new_proj_win.button_new_proj.setChecked(True)
-            # self.new_proj_win.button_new_proj.setDisabled(True)
 
             proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text(), 
                         'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText(),
@@ -532,7 +534,7 @@ class Controller:
 
                     self.organ = mHC.Organ(project=self.proj, organ_dict=organ_dict, new = True)
                     self.new_organ_win.lab_filled_organ_dir.setText(str(self.organ.dir_res()))
-                    # print('\n>>> New Organ: ', self.organ.__dict__)
+
                     self.proj.add_organ(self.organ)
                     self.organ.save_organ()
                     self.new_organ_win.win_msg('New organ "'+name+'" has been created as part of "'+self.proj.user_projName+'" project.')

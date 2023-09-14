@@ -43,7 +43,7 @@ import matplotlib.pyplot as plt
 
 #%% ##### - Other Imports - ##################################################
 from ..gui.config import mH_config
-from .mH_funcBasics import ask4input, get_by_path, alert
+from .mH_funcBasics import ask4input, get_by_path, alert, df_reset_index, df_add_value
 
 # path_fcMeshes = os.path.abspath(__file__)
 path_mHImages = mH_config.path_mHImages
@@ -1636,27 +1636,7 @@ def save_submesh(organ, submesh, mesh, win, ext='.vtk'):
     print('>> Mesh '+mesh_name+' has been saved!')
     win.win_msg('Mesh '+mesh_name+' has been saved!')
     alert('countdown')        
-    
-def measure_submesh(organ, submesh, mesh, measurements): 
 
-    if submesh.sub_mesh_type == 'Segment': 
-        name = 'segm'
-    elif submesh.sub_mesh_type == 'Section': 
-        name = 'sect'
-    else: 
-        name = 'segm-sect'
-
-    if measurements['Vol']: 
-        vol = mesh.volume()
-        organ.mH_settings['measure']['Vol('+name+')'][submesh.sub_name_all] = vol
-    if measurements['SA']: 
-        area = mesh.area()
-        organ.mH_settings['measure']['SA('+name+')'][submesh.sub_name_all] = area
-    if name == 'segm': 
-        if measurements['Ellip']: 
-            #Do the ellipsoid!
-            pass
-    
 def create_subsegment(organ, subsgm, cut, cut_masked, stype, sp_dict_segm, color):#
     
     #Assign meshes and measure them
@@ -1701,23 +1681,30 @@ def measure_centreline(organ, nPoints):
     cl_measurements = organ.mH_settings['setup']['params']['2']['measure']
     cl_names = list(organ.mH_settings['measure']['CL'].keys())
     for name in cl_names: 
+        df_res = df_reset_index(df=organ.mH_settings['df_res'], 
+                                     mult_index= ['Parameter', 'Tissue-Contour'])
         cl_meas = {}
         ch, cont, segm = name.split('_')
         #Create linear line
         if cl_measurements['looped_length']: 
             cl_final = organ.obj_meshes[ch+'_'+cont].get_centreline(nPoints=nPoints)
             cl_length = cl_final.length()
+            df_res = df_add_value(df=df_res, index=('Centreline: Looped Length', ch+'_'+cont+'_whole'), value=cl_length)
             cl_meas['looped_length'] = cl_length
 
         #Create linear line
         if cl_measurements['linear_length']: 
             linLine = organ.obj_meshes[ch+'_'+cont].get_linLine()
             lin_length = linLine.length()
+            df_res = df_add_value(df=df_res, index=('Centreline: Linear Length', ch+'_'+cont+'_whole'), value=lin_length)
             cl_meas['lin_length'] = lin_length
             
             process = ['measure', 'CL', ch+'_'+cont+'_'+segm]
             organ.update_settings(process = process, update = cl_meas, mH='mH')
         
+        df_res = df_reset_index(df=df_res, mult_index= ['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
+        organ.mH_settings['df_res'] = df_res
+
         # Update organ workflow
         processes = [['MeshesProc', 'F-Measure', 'CL', ch, cont, segm],
                         ['MeshesProc', 'F-Measure','CL', ch, cont, segm],
@@ -1728,63 +1715,38 @@ def measure_centreline(organ, nPoints):
     print('organ.mH_settings', organ.mH_settings)
     print('organ.workflow', organ.workflow)
 
-def measure_volume(organ):
-    vol_names = [item for item in organ.parent_project.mH_param2meas if 'volume' in item]
-    for name in vol_names: 
-        # print(name)
-        ch = name[0]; cont = name[1]; segm = name[2]
-        # print(ch, cont, segm)
-        mesh_mH = organ.obj_meshes[ch+'_'+cont]
-        if segm == 'whole': 
-            volume = mesh_mH.get_volume()
-            
-        elif 'sect' in segm: 
-            print(segm)
-            if ch+'_'+cont+'_'+segm in organ.submeshes.keys():
-                sub_sect = organ.submeshes[ch+'_'+cont+'_'+segm]
-                subm = mesh_mH.create_section(name = segm, color = sub_sect['color'])
-                volume = subm.get_sect_mesh().volume()
-        else: 
-            print(segm)
-            if ch+'_'+cont+'_'+segm in organ.submeshes.keys():
-                sub_sect = organ.submeshes[ch+'_'+cont+'_'+segm]
-                subm = mesh_mH.create_segment(name = segm, color = sub_sect['color'])
-                volume = subm.get_segm_mesh().volume()
-            
-        process = ['measure', ch, cont, segm, 'volume']
-        organ.update_settings(process = process, 
-                              update = volume, mH='mH')
-        wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'volume']
-        organ.update_workflow(process=wf_proc, update='DONE')
-            
-def measure_area(organ):
-    area_names = [item for item in organ.parent_project.mH_param2meas if 'surf_area' in item]
-    for name in area_names: 
-        # print(name)
-        ch = name[0]; cont = name[1]; segm = name[2]
-        mesh_mH = organ.obj_meshes[ch+'_'+cont]
-        if segm == 'whole': 
-            area = mesh_mH.get_area()
-            
-        elif 'sect' in segm: 
-            print(segm)
-            if ch+'_'+cont+'_'+segm in organ.submeshes.keys():
-                sub_sect = organ.submeshes[ch+'_'+cont+'_'+segm]
-                subm = mesh_mH.create_section(name = segm, color = sub_sect['color'])
-                area = subm.get_mesh().area()
-        else: 
-            print(segm)
-            if ch+'_'+cont+'_'+segm in organ.submeshes.keys():
-                sub_sect = organ.submeshes[ch+'_'+cont+'_'+segm]
-                subm = mesh_mH.create_segment(name = segm, color = sub_sect['color'])
-                area = subm.get_segm_mesh().area()
-                
-        process = ['measure', ch, cont, segm, 'surf_area']
-        organ.update_settings(process = process, 
-                              update = area, mH='mH')
-        wf_proc = ['MeshesProc', 'F-Measure',ch, cont, segm, 'surf_area']
-        organ.update_workflow(process=wf_proc, update='DONE')
-            
+def measure_submesh(organ, submesh, mesh, measurements): 
+
+    df_res = df_reset_index(df=organ.mH_settings['df_res'], 
+                                     mult_index= ['Parameter', 'Tissue-Contour'])
+    
+    if submesh.sub_mesh_type == 'Segment': 
+        name = 'segm'
+        param_name = 'Segment'
+    elif submesh.sub_mesh_type == 'Section': 
+        name = 'sect'
+        param_name = 'Region'
+    else: 
+        name = 'segm-sect'
+        param_name = 'Segm-Reg'
+
+    if measurements['Vol']: 
+        vol = mesh.volume()
+        df_res = df_add_value(df=df_res, index=('Volume: '+param_name, submesh.sub_name_all), value=vol)
+        # organ.mH_settings['measure']['Vol('+name+')'][submesh.sub_name_all] = vol
+    if measurements['SA']: 
+        area = mesh.area()
+        df_res = df_add_value(df=df_res, index=('Surface Area: '+param_name, submesh.sub_name_all), value=area)
+        # organ.mH_settings['measure']['SA('+name+')'][submesh.sub_name_all] = area
+    if name == 'segm': 
+        if measurements['Ellip']: 
+            #Do the ellipsoid!
+            pass
+
+     #Fill-up results table
+    df_res = df_reset_index(df=df_res, mult_index= ['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
+    organ.mH_settings['df_res'] = df_res
+
 #%% Points classification
 def classify_heart_pts(m_whole, obj_segm, data):
     """
