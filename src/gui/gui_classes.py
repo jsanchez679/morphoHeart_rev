@@ -936,6 +936,7 @@ class CreateNewProj(QDialog):
         if ck_type.isChecked():
             if stype == 'chNS': 
                 self.ch_selected.append('chNS')
+                self.ch_selected = sorted(list(set(self.ch_selected)))
             if stype in list(self.mH_settings.keys()):
                 s_set.setVisible(True)
                 s_set.setEnabled(True)
@@ -1305,21 +1306,30 @@ class CreateNewProj(QDialog):
             if cuts_sel[cut]:
                 for ch in ch_selected:
                     #Get relation
-                    ch_rel = self.mH_settings['chs_relation'][ch]
-                    ext_added = False 
-                    for cont in ['ext', 'tiss', 'int']: 
-                        btn_name = 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont
-                        # print(btn_name, getattr(self, btn_name).isChecked())
-                        if cont == 'ext': 
-                            ext_btn = getattr(self, btn_name).isChecked()
-                            if ext_btn:
-                                ext_added = True
-                            dict_stype[btn_name] = ext_btn
+                    if stype == 'segm': 
+                        if ch != 'chNS':
+                            ch_rel = self.mH_settings['chs_relation'][ch]
+                            ext_added = False 
                         else: 
+                            ch_rel = 'other'
+                            ext_added = False
+
+                        for cont in ['ext', 'tiss', 'int']: 
+                            btn_name = 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont
+                            if cont == 'ext': 
+                                ext_btn = getattr(self, btn_name).isChecked()
+                                if ext_btn and ch != 'chNS':
+                                    ext_added = True
+                                dict_stype[btn_name] = ext_btn
+                            else: 
+                                dict_stype[btn_name] = getattr(self, btn_name).isChecked()
+                        if not ext_added and ch_rel == 'external' or ch_rel == 'independent': 
+                            btn_name = 'cB_'+stype+'_'+cut+'_'+ch+'_ext'
+                            dict_stype[btn_name] = True
+                    else: 
+                        for cont in ['ext', 'tiss', 'int']: 
+                            btn_name = 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont
                             dict_stype[btn_name] = getattr(self, btn_name).isChecked()
-                    if not ext_added and ch_rel == 'external' or ch_rel == 'independent': 
-                        btn_name = 'cB_'+stype+'_'+cut+'_'+ch+'_ext'
-                        dict_stype[btn_name] = True
 
         setattr(self, 'dict_'+stype, dict_stype)
         # print(getattr(self, 'dict_'+stype))
@@ -2456,7 +2466,7 @@ class SetMeasParam(QDialog):
         for pram, chss in hm_ticked.items(): 
             chs_txt = ','.join(chss)
             txt_hm = txt_hm+pram+':'+chs_txt+' - '
-        print(txt_hm)
+        # print(txt_hm)
         txt_hmf = html_style+html_beg+txt_hm[:-3]+html_end+html_end_end
         controller.new_proj_win.text_hmselected.setHtml(txt_hmf)
 

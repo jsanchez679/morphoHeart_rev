@@ -3608,7 +3608,7 @@ background-color: rgb(255, 255, 255);</string>
                               </widget>
                              </item>
                              <item row="6" column="0" alignment="Qt::AlignHCenter">
-                              <widget class="QLabel" name="kl_label_ch3">
+                              <widget class="QLabel" name="kl_label_ch4">
                                <property name="sizePolicy">
                                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                                  <horstretch>0</horstretch>
@@ -5018,7 +5018,7 @@ background-color:rgb(203, 203, 203);
                               </layout>
                              </item>
                              <item row="5" column="0" alignment="Qt::AlignHCenter">
-                              <widget class="QLabel" name="kl_label_ch4">
+                              <widget class="QLabel" name="kl_label_ch3">
                                <property name="sizePolicy">
                                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                                  <horstretch>0</horstretch>
