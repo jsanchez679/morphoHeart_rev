@@ -11,7 +11,7 @@ from pathlib import Path
 
 class mH_Config():
     def __init__(self):
-        self.version = '2.0.2'
+        self.version = '2.0.1'
         self.gui_sound = (True, 'All')
         self.theme = 'Light'
         self.heart_default = False
@@ -27,9 +27,9 @@ class mH_Config():
 
         self.path_o = os.path.abspath(__file__)
         self.path_mHImages = Path(self.path_o).parent.parent.parent / 'images'
-        self.dev = True
+        self.dev = False
         self.dev_plots = False
-        self.dev_hm3d2d = True
+        self.dev_hm3d2d = False
 
 mH_config = mH_Config()
 
