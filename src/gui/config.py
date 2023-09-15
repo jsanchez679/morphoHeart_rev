@@ -11,7 +11,7 @@ from pathlib import Path
 
 class mH_Config():
     def __init__(self):
-        self.version = '2.0.1'
+        self.version = '2.0.2'
         self.gui_sound = (True, 'All')
         self.theme = 'Light'
         self.heart_default = False

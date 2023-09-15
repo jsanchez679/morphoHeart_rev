@@ -1561,7 +1561,7 @@ class CreateNewProj(QDialog):
                 segm_settings[cut] = dict_cut
                 valid_all.append(True)
 
-        # print('valid_all:', valid_all)
+        print('segm_settings:', segm_settings)
         segm_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area, 'Ellip': meas_ellip, 'Angles': meas_angles}
         segm_settings['improve_hm2d'] = improve_hm2d
         
