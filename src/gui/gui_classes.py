@@ -1561,10 +1561,10 @@ class CreateNewProj(QDialog):
                 segm_settings[cut] = dict_cut
                 valid_all.append(True)
 
-        print('segm_settings:', segm_settings)
         segm_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area, 'Ellip': meas_ellip, 'Angles': meas_angles}
         segm_settings['improve_hm2d'] = improve_hm2d
-        
+        print('segm_settings:', segm_settings)
+
         #Add parameters to segments
         selected_params = self.mH_user_params 
         if selected_params == None: 
@@ -1654,6 +1654,7 @@ class CreateNewProj(QDialog):
                 valid_all.append(True)
 
         sect_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area}
+        print('sect_settings:', sect_settings)
 
         #Add parameters to segments
         selected_params = self.mH_user_params 
@@ -4470,6 +4471,7 @@ class MainWindow(QMainWindow):
         self.segm_sect_play.setStyleSheet(style_play)
         self.segm_sect_play.setEnabled(False)
         self.q_segm_sect.clicked.connect(lambda: self.help('segm_sect'))
+        self.update_segm_sect.clicked.connect(lambda: self.update_segm_sect_play())
         # self.segm_sect_set.clicked.connect(lambda: self.set_segm_sect())
 
         #sCut1_Cut1
@@ -5418,7 +5420,7 @@ class MainWindow(QMainWindow):
                 self.segm_sect_btns[btn]['play'].setChecked(True)
 
             #Update Status in GUI
-            self.update_status(wf, ['Status'], self.sections_status)
+            self.update_status(wf, ['Status'], self.segm_sect_status)
             
     def user_user_params(self): 
 
@@ -5634,6 +5636,24 @@ class MainWindow(QMainWindow):
             
             self.gui_thickness_ballooning[item]['colormap'] = value
             print('Updated colormap: ',self.gui_thickness_ballooning[item])
+
+    def update_segm_sect_play(self):
+
+        for btn_ss in self.segm_sect_btns:
+            ch_cont = btn_ss.split(':')[1]
+            seg_cut = btn_ss.split('_o_')[0][1:]
+            reg_cut = btn_ss.split(':')[0].split('_o_')[1]
+            #Get segment button
+            seg_btn = seg_cut+':'+ch_cont
+            segm_btn_enabled = self.segm_btns[seg_btn]['plot'].isEnabled()
+            #Get section button
+            reg_btn =  reg_cut+':'+ch_cont
+            reg_btn_enabled = self.sect_btns[reg_btn]['plot'].isEnabled()
+
+            if segm_btn_enabled and reg_btn_enabled:
+                self.segm_sect_btns[btn_ss]['play'].setEnabled(True)
+        
+        self.update_segm_sect.setChecked(False)
 
     def fill_workflow(self):
                 
@@ -5859,7 +5879,10 @@ class MainWindow(QMainWindow):
             item_col0 = QTableWidgetItem(col0)
             self.tabW_results.setItem(row, 0, item_col0)
             item_col0.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
-            item_col2 = QTableWidgetItem(col2)
+            try: 
+                item_col2 = QTableWidgetItem(col2)
+            except: 
+                item_col2 = QTableWidgetItem('col2')
             self.tabW_results.setItem(row, 1, item_col2)
             item_col2.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
             item_value = QTableWidgetItem(valuef)
@@ -8308,6 +8331,7 @@ def update_status(root_dict, items, fillcolor, override=False):
         print('other status unknown: ', fillcolor)
     
     color_btn(btn = fillcolor, color = color)
+    # print('items:', items, '- wf_status:', wf_status)
 
 # Button general functions
 def setup_play_btn(btn, win): 

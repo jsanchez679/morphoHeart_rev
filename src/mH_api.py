@@ -349,7 +349,7 @@ def run_chNS(controller):
 
         #Toggle button
         getattr(controller.main_win, 'chNS_play').setChecked(True)
-        getattr(controller.main_win, 'summary_whole_plot_chNS').setChecked(True)
+        getattr(controller.main_win, 'summary_whole_plot_chNS').setEnabled(True)
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
@@ -1274,10 +1274,10 @@ def run_sections(controller, btn):
 
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
-
         #Fill-up results table
         controller.main_win.fill_results()
-
+        #Check button 
+        controller.main_win.sect_btns[sect]['play'].setChecked(True)
         #Check segm-sections
         if hasattr(controller.main_win, 'segm_sect_btns'):
             btn_final = 'NA'

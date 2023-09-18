@@ -661,6 +661,8 @@ def main():
 if __name__ == '__main__':
     main()
 
+# pd.options.display.max_rows = 500
+
 #python pyuic6 -x name.ui -o name.py
 #C:\Users\bi1jsa\Desktop\pyqt6>D:\Applications\Miniconda\envs\mHpy39_qt\Scripts\pyuic6.exe -x C:\Users\bi1jsa\Desktop\pyqt6\test.ui -o C:\Users\bi1jsa\Desktop\pyqt6\test.py dragging and dropping all the files to get their path
 

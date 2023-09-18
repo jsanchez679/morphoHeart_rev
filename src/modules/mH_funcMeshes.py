@@ -1521,8 +1521,7 @@ def create_subsection(organ, mesh, cut, sect, color):
     #Add submesh to organ
     organ.add_submesh(subsct)
     #Get segm measurements
-    measurements = organ.mH_settings['setup']['segm']['measure']
-    measure_submesh(organ, subsct, final_sect_mesh, measurements)
+    measure_submesh(organ, subsct, final_sect_mesh)
 
     # Update organ workflow
     cut, ch, cont, sect = subsct.sub_name_all.split('_')
@@ -1641,8 +1640,6 @@ def create_subsegment(organ, subsgm, cut, cut_masked, stype, sp_dict_segm, color
     
     #Assign meshes and measure them
     list_meshes = sp_dict_segm['meshes_number']
-    #Get segm measurements
-    measurements = organ.mH_settings['setup'][stype]['measure']
     #Find meshes and add them to the mesh
     mesh_segm = []; 
     print('len(cut_masked) -'+subsgm.sub_name_all+': ', len(cut_masked))
@@ -1662,7 +1659,7 @@ def create_subsegment(organ, subsgm, cut, cut_masked, stype, sp_dict_segm, color
         #Add submesh to organ
         organ.add_submesh(subsgm)
         #Get measurements
-        measure_submesh(organ, subsgm, final_segm_mesh, measurements)
+        measure_submesh(organ, subsgm, final_segm_mesh)
     
         # Update organ workflow
         if stype == 'segm': 
@@ -1715,7 +1712,7 @@ def measure_centreline(organ, nPoints):
     print('organ.mH_settings', organ.mH_settings)
     print('organ.workflow', organ.workflow)
 
-def measure_submesh(organ, submesh, mesh, measurements): 
+def measure_submesh(organ, submesh, mesh): 
 
     df_res = df_reset_index(df=organ.mH_settings['df_res'], 
                                      mult_index= ['Parameter', 'Tissue-Contour'])
@@ -1730,6 +1727,8 @@ def measure_submesh(organ, submesh, mesh, measurements):
         name = 'segm-sect'
         param_name = 'Segm-Reg'
 
+    #Get measurements to acquire
+    measurements = organ.mH_settings['setup'][name]['measure']
     if measurements['Vol']: 
         vol = mesh.volume()
         df_res = df_add_value(df=df_res, index=('Volume: '+param_name, submesh.sub_name_all), value=vol)
@@ -2233,7 +2232,7 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
                     print('Skipping this one plane:', i)
                     started = True
 
-            if i % 20 == 0 and i != 0 and mH_config.dev_hm3d2d: 
+            if i % 20 == 0 and i != 0 and (mH_config.dev_hm3d2d or gui_heatmaps2d['plot']['plot_planes']): 
                 list_planes.append(plane_cut.alpha(0.2).color(colors[ii])); list_CL_sph.append(sph_pt_out.color(colors[ii]))
                 list_vSurf_sph.append(sph_pt_surf.color(colors[ii])); list_prev_sph.append(sph_pt_surfinal)
                 ii+=1
@@ -2307,7 +2306,7 @@ def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
                     vp.add_icon(logo, pos=(0.1,1), size=0.25)
                     vp.show(mesh, sphL, sphR, plane_cut, arr_vectPlCut, kspl_CLnew, sph_pt_out, kspl_vSurf, sph_pt_surf, sph_centre, arr_centre2vzero, txt, at=0, interactive=True)
                 
-            if i % 20 == 0 and i != 0 and mH_config.dev_hm3d2d:
+            if i % 20 == 0 and i != 0 and (mH_config.dev_hm3d2d or gui_heatmaps2d['plot']['plot_planes']):
                 for num, pt in enumerate(ptsC):
                     if num % 20 == 0:
                         if lORr[num] == 1:

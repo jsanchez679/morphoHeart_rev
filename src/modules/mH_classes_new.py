@@ -682,6 +682,7 @@ class Project():
 
         user_tiss_cont = []
         for index, _ in df_final.iterrows(): 
+            print(index)
             param, tiss_cont = index
             split_name = tiss_cont.split('_')
             if len(split_name) == 1 and tiss_cont == 'roi': 
