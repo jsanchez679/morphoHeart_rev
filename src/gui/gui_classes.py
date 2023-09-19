@@ -4532,6 +4532,7 @@ class MainWindow(QMainWindow):
         palettes = ['Accent', 'Dark2', 'Paired', 'Set1']
         print('SETTINGSS:', segm_sect_setup, '\n', segm_setup, '\n', sect_setup)
 
+        hide_all = False
         nun = 0
         for cut in ['Cut1', 'Cut2']: 
             scut = 's'+cut
@@ -4540,62 +4541,71 @@ class MainWindow(QMainWindow):
                 print('Aja -', scut, ' In ')
                 for rcut in ['Cut1', 'Cut2']:
                     if rcut in segm_sect_setup[scut].keys():
-                        n_sect = sect_setup[rcut]['no_sections']
-                        print('Aja -', rcut, ' In ')
-                        if 'colors' not in self.organ.mH_settings['setup']['segm-sect'][scut][rcut].keys():
-                            colors_initialised = False
-                            self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors'] = {}
+                        if len(segm_sect_setup[scut][rcut]['ch_segm_sect']) > 0: 
+                            n_sect = sect_setup[rcut]['no_sections']
+                            print('Aja -', rcut, ' In ')
+                            if 'colors' not in self.organ.mH_settings['setup']['segm-sect'][scut][rcut].keys():
+                                colors_initialised = False
+                                self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors'] = {}
+                            else: 
+                                colors_initialised = True
+
+                            lab_names_segm = getattr(self, 'names_'+scut+'_'+rcut+'_segm')
+                            bbsegm = set_qtextedit_text(lab_names_segm, segm_setup[cut]['name_segments'], 'segm')
+                            set_qtextedit_size(lab_names_segm, (100, (bbsegm+1)*25))
+
+                            lab_names_sect = getattr(self, 'names_'+scut+'_'+rcut+'_sect')
+                            bbsect = set_qtextedit_text(lab_names_sect, sect_setup[rcut]['name_sections'], 'sect')
+                            set_qtextedit_size(lab_names_sect, (100, (bbsect+1)*25))
+
+                            palette = palette_rbg(palettes[nun], 10); nun+=1
+                            num = 1
+                            for ns in range(1,6,1):#n_segm+1,1):
+                                for nr in range(1,3,1):#n_sect+1,1):
+                                    if ns > bbsegm+1: 
+                                        # label_sCut1_Cut1_segm1_sect1
+                                        getattr(self, 'label_'+scut+'_'+rcut+'_segm'+str(ns)+'_sect'+str(nr)).setVisible(False)
+                                        getattr(self, 'fillcolor_'+scut+'_'+rcut+'_segm'+str(ns)+'_sect'+str(nr)).setVisible(False)
+                                    else:
+                                        if not colors_initialised: 
+                                            color = palette[num-1]
+                                            self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors']['segm'+str(ns)+'_sect'+str(nr)] = color
+                                        else: 
+                                            color = self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors']['segm'+str(ns)+'_sect'+str(nr)]
+                                        btn_color = getattr(self, 'fillcolor_'+scut+'_'+rcut+'_segm'+str(ns)+'_sect'+str(nr))
+                                        print('color:', color)
+                                        color_btn(btn = btn_color, color = color)
+                                    num+=1
+
+                            ch_conts = sorted(self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['ch_segm_sect'])
+                            mm = 1
+                            for ch_cont in ch_conts: 
+                                #scut1_cut1_chcont_sect1
+                                getattr(self, scut.lower()+'_'+rcut.lower()+'_chcont_sect'+str(mm)).setText(str(mm)+'. '+ch_cont)
+                                #scut1_cut1_play_sect1
+                                getattr(self, scut.lower()+'_'+rcut.lower()+'_play_sect'+str(mm)).setEnabled(False)
+                                #scut1_cut1_plot_sect1
+                                getattr(self,  scut.lower()+'_'+rcut.lower()+'_plot_sect'+str(mm)).setEnabled(False)
+                                self.segm_sect_btns[scut+'_o_'+rcut+':'+ch_cont] = {'num': str(mm), 
+                                                                                'play': getattr(self, scut.lower()+'_'+rcut.lower()+'_play_sect'+str(mm)),
+                                                                                'plot': getattr(self, scut.lower()+'_'+rcut.lower()+'_plot_sect'+str(mm))}
+                                mm+=1
+                            #Make invisible the rest of the items
+                            for el in range(mm,13,1):
+                                getattr(self, scut.lower()+'_'+rcut.lower()+'_chcont_sect'+str(el)).setVisible(False)
+                                getattr(self, scut.lower()+'_'+rcut.lower()+'_play_sect'+str(el)).setVisible(False)
+                                getattr(self, scut.lower()+'_'+rcut.lower()+'_plot_sect'+str(el)).setVisible(False)
                         else: 
-                            colors_initialised = True
-
-                        lab_names_segm = getattr(self, 'names_'+scut+'_'+rcut+'_segm')
-                        bbsegm = set_qtextedit_text(lab_names_segm, segm_setup[cut]['name_segments'], 'segm')
-                        set_qtextedit_size(lab_names_segm, (100, (bbsegm+1)*25))
-
-                        lab_names_sect = getattr(self, 'names_'+scut+'_'+rcut+'_sect')
-                        bbsect = set_qtextedit_text(lab_names_sect, sect_setup[rcut]['name_sections'], 'sect')
-                        set_qtextedit_size(lab_names_sect, (100, (bbsect+1)*25))
-
-                        palette = palette_rbg(palettes[nun], 10); nun+=1
-                        num = 1
-                        for ns in range(1,6,1):#n_segm+1,1):
-                            for nr in range(1,3,1):#n_sect+1,1):
-                                if ns > bbsegm+1: 
-                                    # label_sCut1_Cut1_segm1_sect1
-                                    getattr(self, 'label_'+scut+'_'+rcut+'_segm'+str(ns)+'_sect'+str(nr)).setVisible(False)
-                                    getattr(self, 'fillcolor_'+scut+'_'+rcut+'_segm'+str(ns)+'_sect'+str(nr)).setVisible(False)
-                                else:
-                                    if not colors_initialised: 
-                                        color = palette[num-1]
-                                        self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors']['segm'+str(ns)+'_sect'+str(nr)] = color
-                                    else: 
-                                        color = self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors']['segm'+str(ns)+'_sect'+str(nr)]
-                                    btn_color = getattr(self, 'fillcolor_'+scut+'_'+rcut+'_segm'+str(ns)+'_sect'+str(nr))
-                                    print('color:', color)
-                                    color_btn(btn = btn_color, color = color)
-                                num+=1
-
-                        ch_conts = sorted(self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['ch_segm_sect'])
-                        mm = 1
-                        for ch_cont in ch_conts: 
-                            #scut1_cut1_chcont_sect1
-                            getattr(self, scut.lower()+'_'+rcut.lower()+'_chcont_sect'+str(mm)).setText(str(mm)+'. '+ch_cont)
-                            #scut1_cut1_play_sect1
-                            getattr(self, scut.lower()+'_'+rcut.lower()+'_play_sect'+str(mm)).setEnabled(False)
-                            #scut1_cut1_plot_sect1
-                            getattr(self,  scut.lower()+'_'+rcut.lower()+'_plot_sect'+str(mm)).setEnabled(False)
-                            self.segm_sect_btns[scut+'_o_'+rcut+':'+ch_cont] = {'num': str(mm), 
-                                                                            'play': getattr(self, scut.lower()+'_'+rcut.lower()+'_play_sect'+str(mm)),
-                                                                            'plot': getattr(self, scut.lower()+'_'+rcut.lower()+'_plot_sect'+str(mm))}
-                            mm+=1
-                        #Make invisible the rest of the items
-                        for el in range(mm,13,1):
-                            getattr(self, scut.lower()+'_'+rcut.lower()+'_chcont_sect'+str(el)).setVisible(False)
-                            getattr(self, scut.lower()+'_'+rcut.lower()+'_play_sect'+str(el)).setVisible(False)
-                            getattr(self, scut.lower()+'_'+rcut.lower()+'_plot_sect'+str(el)).setVisible(False)
-
+                            print('Aja -', rcut, ' Out 0')
+                            getattr(self, 'names_'+scut+'_'+rcut+'_segm').setVisible(False)
+                            getattr(self, 'names_'+scut+'_'+rcut+'_sect').setVisible(False)
+                            getattr(self, 'wcolor_'+scut+'_'+rcut).setVisible(False)
+                            getattr(self, 'wbuttons_'+scut+'_'+rcut).setVisible(False)
+                            getattr(self, 'segm_sect_line_'+scut+'_1').setVisible(False)
+                            getattr(self, 'segm_sect_line_'+scut+'_2').setVisible(False)
+                            getattr(self, 'segm_sect_line_'+scut+'_3').setVisible(False)
                     else: 
-                        print('Aja -', rcut, ' Out ')
+                        print('Aja -', rcut, ' Out 1')
                         getattr(self, 'names_'+scut+'_'+rcut+'_segm').setVisible(False)
                         getattr(self, 'names_'+scut+'_'+rcut+'_sect').setVisible(False)
                         getattr(self, 'wcolor_'+scut+'_'+rcut).setVisible(False)
@@ -4603,8 +4613,12 @@ class MainWindow(QMainWindow):
                         getattr(self, 'segm_sect_line_'+scut+'_1').setVisible(False)
                         getattr(self, 'segm_sect_line_'+scut+'_2').setVisible(False)
                         getattr(self, 'segm_sect_line_'+scut+'_3').setVisible(False)
+                        getattr(self, 'segm_sect_line_sCut1_sCut2_1').setVisible(False)
+                        getattr(self, 'segm_sect_line_sCut1_sCut2_2').setVisible(False)
+                        getattr(self, 'segm_sect_line_sCut1_sCut2_3').setVisible(False)
+                        getattr(self, 'segm_sect_line_sCut1_sCut2_4').setVisible(False)
             else: 
-                print('-', scut, ' Out ')
+                print('-', scut, ' Out 2')
                 getattr(self, 'segm_sect_line_sCut1_sCut2_1').setVisible(False)
                 getattr(self, 'segm_sect_line_sCut1_sCut2_2').setVisible(False)
                 getattr(self, 'segm_sect_line_sCut1_sCut2_3').setVisible(False)

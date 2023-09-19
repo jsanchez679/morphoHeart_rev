@@ -283,8 +283,7 @@ def get_stack_orientation(organ, gui_orientation, win):#
     organ.update_settings(proc_set, update, 'mH', add='orientation')
 
     #Enable button for plot
-    plot_btn = getattr(win, 'stack_orient_plot')
-    plot_btn.setEnabled(True)
+    getattr(win, 'stack_orient_plot').setEnabled(True)
 
     print('\nEND Stack Orientation')
     print('organ.mH_settings:', organ.mH_settings)
@@ -336,6 +335,10 @@ def get_roi_orientation(organ, gui_orientation:dict, win):#
         else: 
             proc_set = ['wf_info']
             update = gui_orientation
+        
+        #Enable button for plot
+        getattr(win, 'roi_orient_plot').setEnabled(True)
+        
     else: 
         proc_set = ['wf_info']
         update = gui_orientation
