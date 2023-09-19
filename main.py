@@ -20,9 +20,9 @@ from PyQt6 import QtWidgets#, QtCore
 from src.gui.config import mH_config 
 from src.gui.gui_classes import *
 from src.modules import mH_classes_new as mHC
-from src.modules import mH_funcBasics as fcB
-from src.modules import mH_funcContours as fcC
-from src.modules import mH_funcMeshes as fcM
+# from src.modules import mH_funcBasics as fcB
+# from src.modules import mH_funcContours as fcC
+# from src.modules import mH_funcMeshes as fcM
 from src import mH_api as mA
 
 #%% API

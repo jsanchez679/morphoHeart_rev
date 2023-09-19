@@ -3433,6 +3433,18 @@ class MainWindow(QMainWindow):
         # self.plot_all_slices_with_contours_ch3.clicked.connect(lambda: self.plot_all_slices(ch = 'ch3'))
         # self.plot_all_slices_with_contours_ch4.clicked.connect(lambda: self.plot_all_slices(ch = 'ch4'))
 
+        #>> Mask 
+        self.mask_ch1_play.setStyleSheet(style_play)
+        # self.mask_ch2_play.setStyleSheet(style_play)
+        # self.mask_ch3_play.setStyleSheet(style_play)
+        # self.mask_ch4_play.setStyleSheet(style_play)
+
+        self.autom_close_ch1_play.setStyleSheet(style_play)
+        # self.autom_close_ch2_play.setStyleSheet(style_play)
+        # self.autom_close_ch3_play.setStyleSheet(style_play)
+        # self.autom_close_ch4_play.setStyleSheet(style_play)
+
+        
         #Initialise the Plot Widget and Scroll
         self.init_plot_widget()
         # self.button_continue.clicked.connect(lambda: self.continue_next_tab())
@@ -3491,85 +3503,119 @@ class MainWindow(QMainWindow):
         self.image_widget.setLayout(self.layout_plot)
         self.layout_plot.addWidget(self.canvas_plot)
 
+        self.layout_scroll = QVBoxLayout()
+        self.scroll_images.setLayout(self.layout_scroll)
+
         self.im_thumbnails = {}
-        # random data
-        # import random
-        # data = [random.random() for i in range(10)]
-        # # clearing old figure
-        # self.figure.clear()
-        # # create an axis
-        # ax = self.figure.add_subplot(111)
-        # # plot data
-        # ax.plot(data, '*-')
-        # # refresh canvas
-        # self.canvas_plot.draw()
+        self.scroll_buttons = {}
 
-    #>> Init Ch Progress Table
-    def init_ch_progress(self): 
-        im_chs = [key for key in self.channels.keys() if key != 'chNS']
-        workflow = self.organ.workflow['morphoHeart']
-        self.tabW_progress_ch.setRowCount(len(im_chs))
-        big_im_chs = [ch.title() for ch in im_chs]
-        self.tabW_progress_ch.setVerticalHeaderLabels(big_im_chs)
-        self.proc_keys = {'Ch':'gen','A-MaskChannel':'mask', 
-                            'A-Autom':'autom','B-Manual': 'manual', 
-                            'C-CloseInOut': 'trim', 'C-SelectCont': 'select'}
-        cS = []
-        #Adding channels to table
-        row = 0
-        for ch in im_chs:
-            col = 0        
-            for proc in self.proc_keys.keys():
-                #Create Layout
-                widget   = QWidget() 
-                hL = QtWidgets.QHBoxLayout(widget)
-                color_status = QtWidgets.QLineEdit()
-                color_status.setEnabled(True)
-                color_status.setMinimumSize(QtCore.QSize(15, 15))
-                color_status.setMaximumSize(QtCore.QSize(15, 15))
-                color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
-                color_status.setReadOnly(True)
-                hL.addWidget(color_status)
-                hL.setContentsMargins(0, 0, 0, 0)
-                self.tabW_progress_ch.setCellWidget(row, col, widget)
-                cS_name = 'cS_'+ch+'_'+self.proc_keys[proc]
-                setattr(self, cS_name, color_status)
-                cS.append(cS_name)
-                col+=1
-            row +=1                
+        #Init scroll style buttons
+        self.scroll_style = 'QPushButton{\nborder-width: 0.5px;\nborder-style: outset;\nborder-color: rgb(66, 66, 66);\nbackground-color: rgb(211, 211, 211);\ncolor: rgb(39, 39, 39);\nfont: 10pt "Calibri Light";}\n\nQPushButton:hover{\nbackground-color: rgb(57, 57, 57);\nborder-color: #672146;\ncolor: rgb(255, 255, 255);\n}\n'
 
-        headerc = self.tabW_progress_ch.horizontalHeader()  
-        for col in range(len(self.proc_keys)):   
-            headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
-            # header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-            # header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        
-        headerr = self.tabW_progress_ch.verticalHeader()  
-        for row in range(len(im_chs)):   
-            headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
+    #Plot 2D functions (segmentation tab)
+    def plot_all_slices(self, ch): 
+
+        #Get stack
+        im_ch = self.organ.obj_imChannels[ch]
+        im = im_ch.im_proc()
+        #Get settings to plot
+        no_slices = im.shape[0]
+        slcs_per_im = int(self.plot_grid_settings[ch]['n_rows'])*int(self.plot_grid_settings[ch]['n_cols'])
+        slices = list(range(0,no_slices+1,slcs_per_im))
+        level = self.plot_grid_settings[ch]['level']
+        min_contour_length = self.plot_grid_settings[ch]['min_contour_length']
+        n_rows = int(self.plot_grid_settings[ch]['n_rows'])
+        n_cols = int(self.plot_grid_settings[ch]['n_cols'])
+
+        if slices[-1] != no_slices-1: 
+            slices.append(no_slices-1)
+
+        for nn in range(len(slices[:-1])):
+            slc_tuple = (slices[nn], slices[nn+1])
+            print(nn, slc_tuple)
+            params = {'stack': im, 'slices_plot': slc_tuple, 
+                        'text': 'Contours', 'slcs_per_im': slcs_per_im, 
+                        'n_rows': n_rows, 'n_cols': n_cols,
+                        'level': level, 'min_contour_length': min_contour_length}
+            self.add_thumbnail(function ='plot_slc_range', params = params, 
+                               name = 'Slcs('+str(slc_tuple[0]+1)+','+str(slc_tuple[1]-1+1)+')')
+            if nn == len(slices)-2: 
+                self.plot_slc_range(params)
             
-        self.tabW_progress_ch.resizeColumnsToContents()
-        self.tabW_progress_ch.resizeRowsToContents()
-        self.segm_status = cS
-        self.update_ch_progress()
+        getattr(self, 'plot_all_slices_with_contours_'+ch).setChecked(False)
 
-    def update_ch_progress(self): 
-        workflow = self.organ.workflow['morphoHeart']
-        for cs in self.segm_status: 
-            cS = getattr(self, cs)
-            _, ch, proc = cs.split('_')
-            if 'gen' in cs: 
-                items = ['ImProc',ch,'Status']
-            else: 
-                for key in self.proc_keys:
-                    if self.proc_keys[key] == proc:
-                        keyf = key
-                        break
-                if 'autom' in cs or 'manual' in cs or 'trim' in cs:
-                    items = ['ImProc',ch,'B-CloseCont','Steps', keyf,'Status']
-                elif 'mask' in cs or 'select' in cs:
-                    items = ['ImProc',ch,keyf,'Status']
-            update_status(workflow, items, cS)         
+    def plot_slc_range(self, params):
+
+        stack = params['stack']
+        slices_plot = params['slices_plot']
+        text = params['text']
+        slcs_per_im = params['slcs_per_im']
+        n_rows = params['n_rows']
+        n_cols  = params['n_cols']
+        level = params['level']
+        min_contour_length = params['min_contour_length']
+        
+        slc_plot_list = list(range(slices_plot[0], slices_plot[1]))
+        print('slc_plot_list:',slc_plot_list)
+        n_im = len(slc_plot_list)
+
+        #Plot
+        slcs_per_im = n_rows*n_cols
+        fig11 = self.figure
+        fig11.clear()
+
+        # Gridspec inside gridspec
+        gs = gridspec.GridSpec(n_cols, n_rows, figure=fig11,
+                                height_ratios=[1]*n_cols,
+                                width_ratios=[1]*n_rows,
+                                hspace=0.01, wspace=0.01, 
+                                left=0.05, right=0.95, bottom=0.05, top=0.95)
+
+        for im in range(n_im):
+            #Get Image and Label
+            slc = slc_plot_list[im]
+            myIm = stack[slc][:][:]
+            contours, numCont = get_contours(myIm, min_contour_length = min_contour_length, 
+                                                level = level)
+            # Plot
+            ax = fig11.add_subplot(gs[im])#grid[im])
+            ax.imshow(myIm, cmap=plt.cm.gray)
+            ax.set_xticks([])
+            ax.set_yticks([])
+            for n, contour in enumerate(contours):
+                ax.plot(contour[:, 1], contour[:, 0], linewidth=0.15)
+            ax.set_title("Slc "+str(slc+1), fontsize=3, pad=0.1)
+
+        self.fig_title.setText(text +": Contours for slices ("+ str(slices_plot[0]+1)+'-'+str(slices_plot[1]-1+1)+')')
+        self.canvas_plot.draw()
+    
+    def add_thumbnail(self, function, params, name): 
+
+        num = str(len(self.im_thumbnails))
+        self.im_thumbnails[num] = {'function': function, 
+                                    'params': params}
+
+        button = QPushButton(num)
+        button.setText(str(name))
+        button.setObjectName('ScrollBtn'+ num)
+        button.setStyleSheet(self.scroll_style)
+        button.resize(120, 50)
+        self.layout_scroll.addWidget(button)
+        button.clicked.connect(lambda: self.scroll_im_selected())
+        self.scroll_buttons[num] = button
+        button.show()
+
+    def scroll_im_selected(self): 
+        sending_button = self.sender()
+        btn_clicked = str(sending_button.objectName())
+        btn_name = btn_clicked.split('ScrollBtn')[1]
+        print('Clicked!', btn_clicked, '-', btn_name)
+        
+        funct = self.im_thumbnails[btn_name]['function']
+        params = self.im_thumbnails[btn_name]['params']
+
+        if funct == 'plot_slc_range': 
+            self.plot_slc_range(params=params)
 
     #- Init PROCESS AND ANALYSE Tab
     def init_pandq_tab(self): 
@@ -5669,6 +5715,74 @@ class MainWindow(QMainWindow):
         
         self.update_segm_sect.setChecked(False)
 
+    #Workflow functions   
+    #>> Init Ch Progress Table
+    def init_ch_progress(self): 
+        im_chs = [key for key in self.channels.keys() if key != 'chNS']
+        workflow = self.organ.workflow['morphoHeart']
+        self.tabW_progress_ch.setRowCount(len(im_chs))
+        big_im_chs = [ch.title() for ch in im_chs]
+        self.tabW_progress_ch.setVerticalHeaderLabels(big_im_chs)
+        self.proc_keys = {'Ch':'gen','A-MaskChannel':'mask', 
+                            'A-Autom':'autom','B-Manual': 'manual', 
+                            'C-CloseInOut': 'trim', 'C-SelectCont': 'select'}
+        cS = []
+        #Adding channels to table
+        row = 0
+        for ch in im_chs:
+            col = 0        
+            for proc in self.proc_keys.keys():
+                #Create Layout
+                widget   = QWidget() 
+                hL = QtWidgets.QHBoxLayout(widget)
+                color_status = QtWidgets.QLineEdit()
+                color_status.setEnabled(True)
+                color_status.setMinimumSize(QtCore.QSize(15, 15))
+                color_status.setMaximumSize(QtCore.QSize(15, 15))
+                color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
+                color_status.setReadOnly(True)
+                hL.addWidget(color_status)
+                hL.setContentsMargins(0, 0, 0, 0)
+                self.tabW_progress_ch.setCellWidget(row, col, widget)
+                cS_name = 'cS_'+ch+'_'+self.proc_keys[proc]
+                setattr(self, cS_name, color_status)
+                cS.append(cS_name)
+                col+=1
+            row +=1                
+
+        headerc = self.tabW_progress_ch.horizontalHeader()  
+        for col in range(len(self.proc_keys)):   
+            headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+            # header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+            # header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        
+        headerr = self.tabW_progress_ch.verticalHeader()  
+        for row in range(len(im_chs)):   
+            headerr.setSectionResizeMode(row, QHeaderView.ResizeMode.Stretch)
+            
+        self.tabW_progress_ch.resizeColumnsToContents()
+        self.tabW_progress_ch.resizeRowsToContents()
+        self.segm_status = cS
+        self.update_ch_progress()
+
+    def update_ch_progress(self): 
+        workflow = self.organ.workflow['morphoHeart']
+        for cs in self.segm_status: 
+            cS = getattr(self, cs)
+            _, ch, proc = cs.split('_')
+            if 'gen' in cs: 
+                items = ['ImProc',ch,'Status']
+            else: 
+                for key in self.proc_keys:
+                    if self.proc_keys[key] == proc:
+                        keyf = key
+                        break
+                if 'autom' in cs or 'manual' in cs or 'trim' in cs:
+                    items = ['ImProc',ch,'B-CloseCont','Steps', keyf,'Status']
+                elif 'mask' in cs or 'select' in cs:
+                    items = ['ImProc',ch,keyf,'Status']
+            update_status(workflow, items, cS)       
+    
     def fill_workflow(self):
                 
         flat_wf = flatdict.FlatDict(self.organ.workflow['morphoHeart']['MeshesProc'])
@@ -5870,6 +5984,7 @@ class MainWindow(QMainWindow):
                 print('---False:', final_key)
                 alert('error_beep')
 
+    #Results functions
     def fill_results(self): 
 
         # if not hasattr(self, 'df_res'): 
@@ -5932,225 +6047,229 @@ class MainWindow(QMainWindow):
         df_res = self.organ.mH_settings['df_res']
         self.index_param = set([param for (param, _, _) in df_res.index])
 
-    def get_results_df(self): 
-        #Actual names
-        params = self.organ.mH_settings['setup']['params']
-        dict_names = {}
-        for pp in params:
-            var = params[pp]
-            dict_names[var['s']] = var['l']
-        dict_names['Ellip'] = 'Ellipsoid'
-        dict_names['Angles'] = 'Angles'
+    def get_results_df(self): #to delete
+        alert('bubble')
+        print('get_results_df')
 
-        measurements = self.organ.mH_settings['measure']
-        df_index = pd.DataFrame.from_dict(measurements, orient='index')
-        #Drop variables that don't result in a single measurement
-        vars2drop = ['th_e2i', 'th_i2e', 'ball', 'hm3Dto2D']
-        vars = list(df_index.index)
-        for var in vars: 
-            if var in vars2drop: 
-                df_index = df_index.drop(var)
-        cols = list(df_index.columns)
+        # #Actual names
+        # params = self.organ.mH_settings['setup']['params']
+        # dict_names = {}
+        # for pp in params:
+        #     var = params[pp]
+        #     dict_names[var['s']] = var['l']
+        # dict_names['Ellip'] = 'Ellipsoid'
+        # dict_names['Angles'] = 'Angles'
 
-        #Add column with actual names of variables
-        var_names = []
-        for index, row in df_index.iterrows(): 
-            try: 
-                var_names.append(dict_names[index])
-            except: 
-                var, typpe = index.split('(')
-                if typpe == 'segm)': 
-                    name = 'Segment'
-                elif typpe == 'segm-sect)': 
-                    name = 'Segm-Reg'
-                else: 
-                    name == 'Region'
-                var_names.append(dict_names[var]+': '+name)
+        # measurements = self.organ.mH_settings['measure']
+        # df_index = pd.DataFrame.from_dict(measurements, orient='index')
+        # #Drop variables that don't result in a single measurement
+        # vars2drop = ['th_e2i', 'th_i2e', 'ball', 'hm3Dto2D']
+        # vars = list(df_index.index)
+        # for var in vars: 
+        #     if var in vars2drop: 
+        #         df_index = df_index.drop(var)
+        # cols = list(df_index.columns)
 
-        df_index['Parameter'] = var_names
-        df_index = df_index.reset_index()
-        df_index = df_index.drop(['index'], axis=1)
-        df_melt = pd.melt(df_index, id_vars = ['Parameter'],  value_vars=cols, value_name='Value')
-        df_melt = df_melt.rename(columns={"variable": "Tissue-Contour"})
-        df_melt = df_melt.dropna()
-        mult_index= ['Parameter', 'Tissue-Contour']
-        df_melt = df_melt.set_index(mult_index)
-        #Create a copy to modify
-        df_new = df_melt.copy(deep=True)
+        # #Add column with actual names of variables
+        # var_names = []
+        # for index, row in df_index.iterrows(): 
+        #     try: 
+        #         var_names.append(dict_names[index])
+        #     except: 
+        #         var, typpe = index.split('(')
+        #         if typpe == 'segm)': 
+        #             name = 'Segment'
+        #         elif typpe == 'segm-sect)': 
+        #             name = 'Segm-Reg'
+        #         else: 
+        #             name == 'Region'
+        #         var_names.append(dict_names[var]+': '+name)
 
-        #Add values from Centreline
-        if 'CL' in vars:
-            key_cl = {'lin_length': 'Linear Length', 'looped_length': 'Looped Length'}
-            dict_CL = {}
-            df_CL = df_melt.loc[[dict_names['CL']]]
-            for index, row in df_CL.iterrows():
-                if isinstance(row['Value'], dict): 
-                    row_cl = row['Value']
-                else: 
-                    row_cl = {'lin_length': True, 'looped_length': True}
-                df_new.drop(index, axis=0, inplace=True)
-                for key, item in row_cl.items():
-                    new_index = 'Centreline: '+key_cl[key]
-                    new_variable = index[1]
-                    dict_CL[(new_index, new_variable)] = item
-            # print('dict_CL:',  dict_CL)
-            if len(dict_CL) != 0: 
-                df_CL = pd.DataFrame(dict_CL, index =[0])
-                df_CL_melt = pd.melt(df_CL, var_name=mult_index,value_name='Value')
-                df_CL_melt = df_CL_melt.set_index(mult_index)
-                df_final = pd.concat([df_new, df_CL_melt])
-                df_final = df_final.sort_values(by=['Parameter'])
-            else: 
-                df_final = df_new.sort_values(by=['Parameter'])
+        # df_index['Parameter'] = var_names
+        # df_index = df_index.reset_index()
+        # df_index = df_index.drop(['index'], axis=1)
+        # df_melt = pd.melt(df_index, id_vars = ['Parameter'],  value_vars=cols, value_name='Value')
+        # df_melt = df_melt.rename(columns={"variable": "Tissue-Contour"})
+        # df_melt = df_melt.dropna()
+        # mult_index= ['Parameter', 'Tissue-Contour']
+        # df_melt = df_melt.set_index(mult_index)
+        # #Create a copy to modify
+        # df_new = df_melt.copy(deep=True)
 
-        #Add values from Ellipsoids
-        if 'Ellip(segm)' in vars: 
-            key_ellip = {'ell_width': 'Width', 'ell_length': 'Length', 'ell_depth': 'Depth', 'ell_asphericity': 'Asphericity'}
-            dict_ellip = {}
-            df_ellip = df_melt.loc[['Ellipsoid: Segment']]
-            for index, row in df_ellip.iterrows():
-                if isinstance(row['Value'], dict): 
-                    row_ell = row['Value']
-                else: 
-                    row_ell = {'ell_width': True, 'ell_length': True, 'ell_depth': True, 'ell_asphericity': True}
-                df_final.drop(index, axis=0, inplace=True)
-                for key, item in row_ell.items():
-                    new_index = 'Ellipsoid: '+key_ellip[key]
-                    new_variable = index[1]
-                    dict_ellip[(new_index, new_variable)] = item
-            # print('dict_ellip:',  dict_ellip)
-            if len(dict_ellip) != 0: 
-                df_ellip = pd.DataFrame(dict_ellip, index =[0])
-                df_ellip_melt = pd.melt(df_ellip, var_name=mult_index,value_name='Value')
-                df_ellip_melt = df_ellip_melt.set_index(mult_index)
-                df_final = pd.concat([df_final, df_ellip_melt])
-                df_final = df_final.sort_values(by=['Parameter'])
-            else: 
-                df_final = df_final.sort_values(by=['Parameter'])
+        # #Add values from Centreline
+        # if 'CL' in vars:
+        #     key_cl = {'lin_length': 'Linear Length', 'looped_length': 'Looped Length'}
+        #     dict_CL = {}
+        #     df_CL = df_melt.loc[[dict_names['CL']]]
+        #     for index, row in df_CL.iterrows():
+        #         if isinstance(row['Value'], dict): 
+        #             row_cl = row['Value']
+        #         else: 
+        #             row_cl = {'lin_length': True, 'looped_length': True}
+        #         df_new.drop(index, axis=0, inplace=True)
+        #         for key, item in row_cl.items():
+        #             new_index = 'Centreline: '+key_cl[key]
+        #             new_variable = index[1]
+        #             dict_CL[(new_index, new_variable)] = item
+        #     # print('dict_CL:',  dict_CL)
+        #     if len(dict_CL) != 0: 
+        #         df_CL = pd.DataFrame(dict_CL, index =[0])
+        #         df_CL_melt = pd.melt(df_CL, var_name=mult_index,value_name='Value')
+        #         df_CL_melt = df_CL_melt.set_index(mult_index)
+        #         df_final = pd.concat([df_new, df_CL_melt])
+        #         df_final = df_final.sort_values(by=['Parameter'])
+        #     else: 
+        #         df_final = df_new.sort_values(by=['Parameter'])
 
-        #Add values from Angles
-        if 'Angles(segm)' in vars: 
-            #Get segments names
-            if isinstance(self.organ.mH_settings['setup']['segm'], dict):
-                segm_names = {}
-                for cut in [key for key in self.organ.mH_settings['setup']['segm'] if 'Cut' in key]:
-                    segm_names[cut] = [key for key in self.organ.mH_settings['setup']['segm'][cut]['name_segments'].keys()]
-            #Create key names
-            key_angles = {}
-            for cut in segm_names:
-                for segm in segm_names[cut]:
-                    segm_name = cut+'.'+segm+'_or'
-                    key_angles[segm_name] = cut+'.'+segm.title()+' Or.'
-            for n in range(len(segm_names[cut])-1):
-                key_angles[cut+'.'+segm_names[cut][n]+'-'+segm_names[cut][n+1]] = cut+'.'+segm_names[cut][n].title()+'-'+segm_names[cut][n+1].title()
+        # #Add values from Ellipsoids
+        # if 'Ellip(segm)' in vars: 
+        #     key_ellip = {'ell_width': 'Width', 'ell_length': 'Length', 'ell_depth': 'Depth', 'ell_asphericity': 'Asphericity'}
+        #     dict_ellip = {}
+        #     df_ellip = df_melt.loc[['Ellipsoid: Segment']]
+        #     for index, row in df_ellip.iterrows():
+        #         if isinstance(row['Value'], dict): 
+        #             row_ell = row['Value']
+        #         else: 
+        #             row_ell = {'ell_width': True, 'ell_length': True, 'ell_depth': True, 'ell_asphericity': True}
+        #         df_final.drop(index, axis=0, inplace=True)
+        #         for key, item in row_ell.items():
+        #             new_index = 'Ellipsoid: '+key_ellip[key]
+        #             new_variable = index[1]
+        #             dict_ellip[(new_index, new_variable)] = item
+        #     # print('dict_ellip:',  dict_ellip)
+        #     if len(dict_ellip) != 0: 
+        #         df_ellip = pd.DataFrame(dict_ellip, index =[0])
+        #         df_ellip_melt = pd.melt(df_ellip, var_name=mult_index,value_name='Value')
+        #         df_ellip_melt = df_ellip_melt.set_index(mult_index)
+        #         df_final = pd.concat([df_final, df_ellip_melt])
+        #         df_final = df_final.sort_values(by=['Parameter'])
+        #     else: 
+        #         df_final = df_final.sort_values(by=['Parameter'])
 
-            #Now modify the dataframe
-            for n, angle_name in enumerate(['Ang.Coronal']):#, 'Ang.Sagittal', 'Ang.Transverse']):
-                df_ang = df_melt.loc[['Angles: Segment']]
-                #Filter angles so that it only gets measured in the biggest mesh per ch_cont
-                names_ang = [cut_segm for (_, cut_segm) in list(df_ang.index)]
-                cut_ch_cont = {}
-                for name in names_ang: 
-                    cut, ch, cont, num = name.split('_')
-                    if num == 'segm1': 
-                        if cut+'_'+ch not in cut_ch_cont.keys(): 
-                            cut_ch_cont[cut+'_'+ch] = [cont]
-                        else: 
-                            cut_ch_cont[cut+'_'+ch].append(cont)
-                keep_names = []
-                for cut_ch in cut_ch_cont.keys(): 
-                    for cont in ['ext', 'tiss', 'int']: 
-                        if cont in cut_ch_cont[cut_ch]: 
-                            keep_names.append(cut_ch+'_'+cont)
-                            break
-                index_list = []
-                for index, row in df_ang.iterrows():
-                    cuts, chs, conts, segms = index[1].split('_')
-                    if cuts+'_'+chs+'_'+conts in keep_names: 
-                        row_ang = {}
-                        index_list.append(index[1])
-                        for keya in key_angles.keys():
-                            row_ang[keya] = True
-                    else: 
-                        pass
-                    df_final.drop(index, axis=0, inplace=True)
-                dict_angles = {}
-                for index in index_list: 
-                    for key, item in row_ang.items():
-                        new_index = angle_name+': '+key_angles[key]
-                        new_variable = index
-                        dict_angles[(new_index, new_variable)] = item
-                # print('dict_angles:',  dict_angles)
-                if len(dict_angles) != 0: 
-                    df_angf = pd.DataFrame(dict_angles, index =[0])
-                    df_ang_melt = pd.melt(df_angf, var_name=mult_index,value_name='Value')
-                    df_ang_melt = df_ang_melt.set_index(mult_index)
-                    df_final = pd.concat([df_final, df_ang_melt])
-                    df_final = df_final.sort_values(by=['Parameter'])
-                else: 
-                    df_final = df_final.sort_values(by=['Parameter'])
+        # #Add values from Angles
+        # if 'Angles(segm)' in vars: 
+        #     #Get segments names
+        #     if isinstance(self.organ.mH_settings['setup']['segm'], dict):
+        #         segm_names = {}
+        #         for cut in [key for key in self.organ.mH_settings['setup']['segm'] if 'Cut' in key]:
+        #             segm_names[cut] = [key for key in self.organ.mH_settings['setup']['segm'][cut]['name_segments'].keys()]
+        #     #Create key names
+        #     key_angles = {}
+        #     for cut in segm_names:
+        #         for segm in segm_names[cut]:
+        #             segm_name = cut+'.'+segm+'_or'
+        #             key_angles[segm_name] = cut+'.'+segm.title()+' Or.'
+        #     for n in range(len(segm_names[cut])-1):
+        #         key_angles[cut+'.'+segm_names[cut][n]+'-'+segm_names[cut][n+1]] = cut+'.'+segm_names[cut][n].title()+'-'+segm_names[cut][n+1].title()
 
-        #Change True Values to TBO
-        values_updated = []
-        for index, row in df_final.iterrows(): 
-            if isinstance(row['Value'], bool): 
-                values_updated.append('TBO')
-            else: 
-                values_updated.append(row['Value'])
+        #     #Now modify the dataframe
+        #     for n, angle_name in enumerate(['Ang.Coronal']):#, 'Ang.Sagittal', 'Ang.Transverse']):
+        #         df_ang = df_melt.loc[['Angles: Segment']]
+        #         #Filter angles so that it only gets measured in the biggest mesh per ch_cont
+        #         names_ang = [cut_segm for (_, cut_segm) in list(df_ang.index)]
+        #         cut_ch_cont = {}
+        #         for name in names_ang: 
+        #             cut, ch, cont, num = name.split('_')
+        #             if num == 'segm1': 
+        #                 if cut+'_'+ch not in cut_ch_cont.keys(): 
+        #                     cut_ch_cont[cut+'_'+ch] = [cont]
+        #                 else: 
+        #                     cut_ch_cont[cut+'_'+ch].append(cont)
+        #         keep_names = []
+        #         for cut_ch in cut_ch_cont.keys(): 
+        #             for cont in ['ext', 'tiss', 'int']: 
+        #                 if cont in cut_ch_cont[cut_ch]: 
+        #                     keep_names.append(cut_ch+'_'+cont)
+        #                     break
+        #         index_list = []
+        #         for index, row in df_ang.iterrows():
+        #             cuts, chs, conts, segms = index[1].split('_')
+        #             if cuts+'_'+chs+'_'+conts in keep_names: 
+        #                 row_ang = {}
+        #                 index_list.append(index[1])
+        #                 for keya in key_angles.keys():
+        #                     row_ang[keya] = True
+        #             else: 
+        #                 pass
+        #             df_final.drop(index, axis=0, inplace=True)
+        #         dict_angles = {}
+        #         for index in index_list: 
+        #             for key, item in row_ang.items():
+        #                 new_index = angle_name+': '+key_angles[key]
+        #                 new_variable = index
+        #                 dict_angles[(new_index, new_variable)] = item
+        #         # print('dict_angles:',  dict_angles)
+        #         if len(dict_angles) != 0: 
+        #             df_angf = pd.DataFrame(dict_angles, index =[0])
+        #             df_ang_melt = pd.melt(df_angf, var_name=mult_index,value_name='Value')
+        #             df_ang_melt = df_ang_melt.set_index(mult_index)
+        #             df_final = pd.concat([df_final, df_ang_melt])
+        #             df_final = df_final.sort_values(by=['Parameter'])
+        #         else: 
+        #             df_final = df_final.sort_values(by=['Parameter'])
 
-        #Add column with better names
-        user_tiss_cont = []
-        name_chs = self.organ.mH_settings['setup']['name_chs']
-        if isinstance(self.organ.mH_settings['setup']['segm'], dict):
-            name_segm = {}
-            for cut in [key for key in self.organ.mH_settings['setup']['segm'] if 'Cut' in key]:
-                name_segm[cut] = self.organ.mH_settings['setup']['segm'][cut]['name_segments']
-        if isinstance(self.organ.mH_settings['setup']['sect'], dict):
-            name_sect = {}
-            for cut in [key for key in self.organ.mH_settings['setup']['sect'] if 'Cut' in key]:
-                name_sect[cut] = self.organ.mH_settings['setup']['sect'][cut]['name_sections']
-        name_cont = {'int': 'internal', 'tiss': 'tissue', 'ext': 'external'}
+        # #Change True Values to TBO
+        # values_updated = []
+        # for index, row in df_final.iterrows(): 
+        #     if isinstance(row['Value'], bool): 
+        #         values_updated.append('TBO')
+        #     else: 
+        #         values_updated.append(row['Value'])
 
-        for index, _ in df_final.iterrows(): 
-            param, tiss_cont = index
-            split_name = tiss_cont.split('_')
-            # print(split_name, len(split_name))
-            if len(split_name) == 1 and tiss_cont == 'roi': 
-                namef = 'Organ/ROI'
-            elif len(split_name) == 3: 
-                ch, cont, _ = split_name
-                namef = name_chs[ch]+ ' ('+name_cont[cont]+')'
-            elif len(split_name) == 4: 
-                # print('split_name:', split_name)
-                cut, ch, cont, subm = split_name
-                if 'segm' in subm: 
-                    namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_segm[cut][subm]+')'
-                else: 
-                    namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_sect[cut][subm]+')'
-                # print(namef)
-            elif len(split_name) == 6: #Intersections
-                # print('split_name:', split_name)
-                scut, rcut, ch, cont, segm, sect = split_name
-                namef = scut[1:]+'-'+rcut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_segm[scut[1:]][segm]+'-'+name_sect[rcut][sect]+')'
-            else: 
-                print(index, len(split_name))
-                namef = 'Check: '+tiss_cont
+        # #Add column with better names
+        # user_tiss_cont = []
+        # name_chs = self.organ.mH_settings['setup']['name_chs']
+        # if isinstance(self.organ.mH_settings['setup']['segm'], dict):
+        #     name_segm = {}
+        #     for cut in [key for key in self.organ.mH_settings['setup']['segm'] if 'Cut' in key]:
+        #         name_segm[cut] = self.organ.mH_settings['setup']['segm'][cut]['name_segments']
+        # if isinstance(self.organ.mH_settings['setup']['sect'], dict):
+        #     name_sect = {}
+        #     for cut in [key for key in self.organ.mH_settings['setup']['sect'] if 'Cut' in key]:
+        #         name_sect[cut] = self.organ.mH_settings['setup']['sect'][cut]['name_sections']
+        # name_cont = {'int': 'internal', 'tiss': 'tissue', 'ext': 'external'}
+
+        # for index, _ in df_final.iterrows(): 
+        #     param, tiss_cont = index
+        #     split_name = tiss_cont.split('_')
+        #     # print(split_name, len(split_name))
+        #     if len(split_name) == 1 and tiss_cont == 'roi': 
+        #         namef = 'Organ/ROI'
+        #     elif len(split_name) == 3: 
+        #         ch, cont, _ = split_name
+        #         namef = name_chs[ch]+ ' ('+name_cont[cont]+')'
+        #     elif len(split_name) == 4: 
+        #         # print('split_name:', split_name)
+        #         cut, ch, cont, subm = split_name
+        #         if 'segm' in subm: 
+        #             namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_segm[cut][subm]+')'
+        #         else: 
+        #             namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_sect[cut][subm]+')'
+        #         # print(namef)
+        #     elif len(split_name) == 6: #Intersections
+        #         # print('split_name:', split_name)
+        #         scut, rcut, ch, cont, segm, sect = split_name
+        #         namef = scut[1:]+'-'+rcut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_segm[scut[1:]][segm]+'-'+name_sect[rcut][sect]+')'
+        #     else: 
+        #         print(index, len(split_name))
+        #         namef = 'Check: '+tiss_cont
             
-            # print(index, namef.title())
-            nameff = namef.title()
-            user_tiss_cont.append(nameff)
+        #     # print(index, namef.title())
+        #     nameff = namef.title()
+        #     user_tiss_cont.append(nameff)
 
-        df_final['Value'] = values_updated
-        df_final['User (Tissue-Contour)'] = user_tiss_cont
-        df_finalf = df_final.reset_index()
-        df_finalf = df_finalf.set_index(mult_index+['User (Tissue-Contour)'])
+        # df_final['Value'] = values_updated
+        # df_final['User (Tissue-Contour)'] = user_tiss_cont
+        # df_finalf = df_final.reset_index()
+        # df_finalf = df_finalf.set_index(mult_index+['User (Tissue-Contour)'])
 
-        df_finalf = df_finalf.sort_values(['Parameter','Tissue-Contour'],
-                                                ascending = [True, True])
+        # df_finalf = df_finalf.sort_values(['Parameter','Tissue-Contour'],
+        #                                         ascending = [True, True])
         
-        print('df_finalf: ', df_finalf)
-        self.df_res = df_finalf
+        # print('df_finalf: ', df_finalf)
+        # self.df_res = df_finalf
             
+    #Other analysis tab
     def n_slices(self, process):
         cB = getattr(self, process+'_plot2d')
         if cB.isChecked():
@@ -7148,80 +7267,7 @@ class MainWindow(QMainWindow):
 
         return gui_user_params
     
-    #Plot 2D functions
-    def plot_all_slices(self, ch): 
-
-        im_ch = self.organ.obj_imChannels[ch]
-        im = im_ch.im_proc()
-        no_slices = im.shape[0]
-        slcs_per_im = int(self.plot_grid_settings[ch]['n_rows'])*int(self.plot_grid_settings[ch]['n_cols'])
-        slices = list(range(0,no_slices+1,slcs_per_im))
-        level = self.plot_grid_settings[ch]['level']
-        min_contour_length = self.plot_grid_settings[ch]['min_contour_length']
-        n_rows = int(self.plot_grid_settings[ch]['n_rows'])
-        n_cols = int(self.plot_grid_settings[ch]['n_cols'])
-
-        for nn in range(len(slices[:-1])):
-            if nn < 2:
-                slc_tuple = (slices[nn], slices[nn+1])
-                print(nn, slc_tuple )
-                self.plot_slc_range(stack = im, slices_plot = slc_tuple, 
-                                    text = 'Contours', slcs_per_im = slcs_per_im, 
-                                    n_rows = n_rows, n_cols = n_cols,
-                                    level = level, min_contour_length = min_contour_length)
-        
-        getattr(self, 'plot_all_slices_with_contours_'+ch).setChecked(False)
-
-        self.figure.clear()
-        self.figure = self.im_thumbnails['0']
-        self.canvas_plot.draw()
-
-    def plot_slc_range(self, stack, slices_plot, text, slcs_per_im, n_rows, n_cols, 
-                       level, min_contour_length):
-        
-        slc_plot_list = list(range(slices_plot[0], slices_plot[1]))
-        n_im = len(slc_plot_list)
-
-        #Plot
-        slcs_per_im = n_rows*n_cols
-        #Initialise this as a figure not self.figure, 
-        #save the figure in the im_thumn and then assign it to the self.figure? 
-        #find a way to copy figure exacly and save it in im_thmb
-        fig11 = self.figure# plt.figure(figsize=(w_fig11, h_fig11), constrained_layout=False)
-        fig11.clear()
-
-        # Gridspec inside gridspec
-        gs = gridspec.GridSpec(n_cols, n_rows, figure=fig11,
-                                height_ratios=[1]*n_cols,
-                                width_ratios=[1]*n_rows,
-                                hspace=0.01, wspace=0.01, 
-                                left=0.05, right=0.95, bottom=0.05, top=0.95)
-
-        for im in range(n_im):
-            #Get Image and Label
-            slc = slc_plot_list[im]
-            myIm = stack[slc][:][:]
-            contours, numCont = get_contours(myIm, min_contour_length = min_contour_length, 
-                                                level = level)
-            # Plot
-            ax = fig11.add_subplot(gs[im])#grid[im])
-            ax.imshow(myIm, cmap=plt.cm.gray)
-            ax.set_xticks([])
-            ax.set_yticks([])
-            for n, contour in enumerate(contours):
-                ax.plot(contour[:, 1], contour[:, 0], linewidth=0.15)
-            ax.set_title("Slc "+str(slc), fontsize=3, pad=0.1)
-
-        self.fig_title.setText(text +": Contours for slices ("+ str(slices_plot[0])+'-'+str(slices_plot[1]-1)+')')
-        self.canvas_plot.draw()
-        self.add_thumbnail(self.figure)
-    
-    def add_thumbnail(self, figure): 
-        
-        n_len = str(len(self.im_thumbnails))
-        self.im_thumbnails[n_len] = figure
-        print('self.im_thumbnails:',self.im_thumbnails)
-    
+    #Plot 2D functions (Heatmaps 2D)    
     def plot_heatmap2d(self, btn): 
         print('Plotting heatmap2d: ', btn)
 
