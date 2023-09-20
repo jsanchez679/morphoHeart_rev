@@ -18,6 +18,7 @@ from itertools import count
 import vedo as vedo
 import copy
 import pandas as pd
+import seaborn as sns
 # from typing import Union
 
 path_fcBasics = os.path.abspath(__file__)
@@ -67,7 +68,8 @@ def alert(sound:str):
             playsound(str(path))
             if sound == 'error_beep': 
                 print('EEERROR')
-    except playsound.PlaysoundException: 
+    except:# playsound.PlaysoundException: 
+        print('sound not played: ', sound)
         pass
 
 #%% func - ask4input
@@ -465,6 +467,21 @@ def nested_dict(n, type):
         return NestedDict(type)
     else:
         return NestedDict(lambda: nested_dict(n-1, type))
+    
+# Color palette as RGB
+def palette_rbg(name:str, num:int, rgb=True):
+    rgb_colors = []
+    palette =  sns.color_palette(name, num)
+    if rgb: 
+        for color in palette:
+            tup = []
+            for value in color:
+                tup.append(round(value*255))
+            rgb_colors.append(tuple(tup))
+    else: 
+        rgb_colors = palette
+
+    return rgb_colors
 
 #https://stackoverflow.com/questions/30648317/programmatically-accessing-arbitrarily-deeply-nested-values-in-a-dictionary
 #https://stackoverflow.com/questions/13687924/setting-a-value-in-a-nested-python-dictionary-given-a-list-of-indices-and-value

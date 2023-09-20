@@ -252,19 +252,37 @@ class Controller:
         
     def init_main_win(self): 
 
-        #Segmentation Tab
-        # - Buttons inside channels
-        self.main_win.ch1_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch1'))
-        self.main_win.ch1_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch1'))
-        self.main_win.ch2_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch2'))
-        self.main_win.ch2_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch2'))
-        self.main_win.ch3_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch3'))
-        self.main_win.ch3_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch3'))
-        self.main_win.ch4_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch4'))
-        self.main_win.ch4_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch4'))
+        self.init_segmentation_tab()
+        self.init_morphoHeart_tab()
 
+    def init_segmentation_tab(self): 
+        #Segmentation Tab
         self.main_win.all_closed.clicked.connect(lambda: self.show_load_closed_stacks())
 
+        # - Buttons inside channels
+        # Mask
+        self.main_win.mask_ch1_play.clicked.connect(lambda: self.mask_ch('ch1'))
+        # self.main_win.mask_ch2_play.clicked.connect(lambda: self.mask_ch('ch2'))
+        # self.main_win.mask_ch3_play.clicked.connect(lambda: self.mask_ch('ch3'))
+        # self.main_win.mask_ch4_play.clicked.connect(lambda: self.mask_ch('ch4'))
+
+        # Autom Closure Contours
+        self.main_win.autom_close_ch1_play.clicked.connect(lambda: self.autom_close_contours('ch1'))
+        # self.main_win.autom_close_ch2_play.clicked.connect(lambda: self.autom_close_contours('ch2'))
+        # self.main_win.autom_close_ch3_play.clicked.connect(lambda: self.autom_close_contours('ch3'))
+        # self.main_win.autom_close_ch4_play.clicked.connect(lambda: self.autom_close_contours('ch4'))
+
+
+        self.main_win.ch1_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch1'))
+        self.main_win.ch1_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch1'))
+        # self.main_win.ch2_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch2'))
+        # self.main_win.ch2_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch2'))
+        # self.main_win.ch3_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch3'))
+        # self.main_win.ch3_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch3'))
+        # self.main_win.ch4_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch4'))
+        # self.main_win.ch4_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch4'))
+
+    def init_morphoHeart_tab(self): 
         #Process and Analyse Tab
         self.main_win.keeplargest_play.clicked.connect(lambda: self.run_keeplargest())
         self.main_win.cleanup_play.clicked.connect(lambda: self.run_cleanup())
@@ -560,6 +578,12 @@ class Controller:
         print('self.organ.submeshes: ', self.organ.submeshes)
 
     #Channels related
+    def mask_ch(self, ch_name): 
+        mA.mask_channel(controller=self, ch_name=ch_name)
+
+    def autom_close_contours(self, ch_name):
+        mA.autom_close_contours(controller=self, ch_name=ch_name)
+
     def close_cont(self, ch_name):
         mA.close_cont(controller=self, ch_name=ch_name)
 
