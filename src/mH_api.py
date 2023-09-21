@@ -21,29 +21,69 @@ from .gui.gui_classes import *
 #Here, check if process was already run,  
 # update settings (wf_info) and create prompts and toggle buttons
 def mask_channel(controller, ch_name): 
-    print('Masking '+ch_name+'!')
+    # Workflow process
+    workflow = controller.rgan.workflow['morphoHeart']
+    process = ['ImProc', ch_name, 'A-MaskChannel','Status']
+    #Initial message
+    controller.main_win.win_msg('Masking Channel '+str(ch_name[-1])+'!')
+    #Get channel
     im_ch = controller.organ.obj_imChannels[ch_name]
     controller.main_win.win_msg('Masking Channel '+str(ch_name[-1]))
+    #Mask channel
     im_ch.maskIm()
-    controller.main_win.win_msg('Channel '+str(ch_name[-1])+' has been masked!')
-    
+    #Update Status in GUI and in CH Progress 
+    status_btn = getattr(controller.main_win, 'mask_'+ch_name+'_status')
+    controller.main_win.update_status(workflow, process, status_btn)
+    controller.main_win.update_ch_progress()
+    #Toggle button
     getattr(controller.main_win, 'mask_'+ch_name+'_play').setChecked(True)
+    #Win msg 
+    controller.main_win.win_msg('Channel '+str(ch_name[-1])+' has been masked!')
 
 def autom_close_contours(controller, ch_name): 
 
+    # # Workflow process
+    workflow = controller.organ.workflow['morphoHeart']
+    process = ['ImProc', ch_name, 'B-CloseCont','Steps','A-Autom','Status']
+    #Initial message    
+    controller.main_win.win_msg('Automatic Closure of Contours has started for Channel '+str(ch_name[-1])+'!')
     #Get channel
     im_ch = controller.organ.obj_imChannels[ch_name]
-    stack = im_ch.im_proc()
-    controller.main_win.gui
+    # Automatically Close Contours
+    im_ch.closeContours_autom(gui_param = controller.main_win.gui_autom_close_contours[ch_name], 
+                              gui_plot = controller.main_win.plot_contours_settings[ch_name], 
+                              win = controller.main_win)
 
-    gui_autom_close_contours = controller.main_win.gui_autom_close_contours[ch_name]
-    #Create initial stack
-    stack_closed = fcC.create_initial_closed_stack(myStack = stack, gui_param = gui_autom_close_contours)
-    stack_closed = fcC.autom_close_contours(myStack = stack, ch = ch_name, new_stack = stack_closed,
-                                            gui_param = gui_autom_close_contours,
-                                            gui_plot = controller.main_win.plot_contours_settings[ch_name], 
-                                            win = controller.main_win,)
+    #Update Status in GUI and in CH Progress 
+    status_btn = getattr(controller.main_win, 'autom_close_'+ch_name+'_status')
+    controller.main_win.update_status(workflow, process, status_btn)
+    controller.main_win.update_ch_progress()
+    #Toggle button
+    getattr(controller.main_win, 'autom_close_'+ch_name+'_play').setChecked(True)
+    #Win msg 
+    controller.main_win.win_msg('Contours of Channel '+str(ch_name[-1])+' have been automatically closed!')
+    alert('woohoo')
 
+def manual_close_contours(controller, ch_name):
+    # Workflow process
+    workflow = controller.organ.workflow['morphoHeart']
+    process = ['ImProc', ch_name, 'B-CloseCont','Steps','A-Manual','Status']
+    #Initial message    
+    controller.main_win.win_msg('Manually closing contours for Channel '+str(ch_name[-1])+'!')
+    #Get channel
+    im_ch = controller.organ.obj_imChannels[ch_name]
+    #Close contours manually
+    stack_closed = im_ch.closeContours_manual(gui_param = controller.main_win.gui_manual_close_contours[ch_name])
+    
+    #Update Status in GUI and in CH Progress 
+    status_btn = getattr(controller.main_win, 'manual_close_'+ch_name+'_status')
+    controller.main_win.update_status(workflow, process, status_btn)
+    controller.main_win.update_ch_progress()
+    #Toggle button
+    getattr(controller.main_win, 'manual_close_'+ch_name+'_play').setChecked(True)
+    #Win msg 
+    controller.main_win.win_msg('Contours of Channel '+str(ch_name[-1])+' have been manually closed!')
+    alert('woohoo')
 
 def close_cont(controller, ch_name):
     #Check workflow status

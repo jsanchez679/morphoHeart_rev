@@ -1713,6 +1713,9 @@ color: rgb(100, 100, 100);</string>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                     </property>
+                    <property name="indent">
+                     <number>2</number>
+                    </property>
                    </widget>
                   </item>
                   <item>
@@ -1838,6 +1841,9 @@ color: rgb(100, 100, 100);</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                    <property name="indent">
+                     <number>2</number>
                     </property>
                    </widget>
                   </item>
@@ -2034,6 +2040,9 @@ color: rgb(100, 100, 100);</string>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                     </property>
+                    <property name="indent">
+                     <number>2</number>
+                    </property>
                    </widget>
                   </item>
                   <item>
@@ -2159,6 +2168,9 @@ color: rgb(100, 100, 100);</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                    <property name="indent">
+                     <number>2</number>
                     </property>
                    </widget>
                   </item>
@@ -2355,6 +2367,9 @@ color: rgb(100, 100, 100);</string>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                     </property>
+                    <property name="indent">
+                     <number>2</number>
+                    </property>
                    </widget>
                   </item>
                   <item>
@@ -2480,6 +2495,9 @@ color: rgb(100, 100, 100);</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                    <property name="indent">
+                     <number>2</number>
                     </property>
                    </widget>
                   </item>
@@ -2676,6 +2694,9 @@ color: rgb(100, 100, 100);</string>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                     </property>
+                    <property name="indent">
+                     <number>2</number>
+                    </property>
                    </widget>
                   </item>
                   <item>
@@ -2801,6 +2822,9 @@ color: rgb(100, 100, 100);</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                    <property name="indent">
+                     <number>2</number>
                     </property>
                    </widget>
                   </item>

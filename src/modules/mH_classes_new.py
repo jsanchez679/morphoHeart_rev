@@ -1902,40 +1902,36 @@ class ImChannel(): #channel
             print('For some reason self.shape != im_mask.shape!')
             alert('bubble')
 
-    def closeContours_auto(self):
+    def closeContours_auto(self, gui_param, gui_plot, win):
+        from .mH_funcContours import autom_close_contours
         # Workflow process
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc', self.channel_no, 'B-CloseCont','Steps','A-Autom','Status']
-       
         # Load image
         im_proc = self.im_proc()
-        
+
         #Process
         print('\n---- Closing Contours Auto! ----')
-        
+        #> Create initial stack
+        # im_proc = create_initial_closed_stack(myStack=im_proc, gui_param=gui_param)
+        #> Close contours Automatically
+        im_proc = autom_close_contours(stack = im_proc, ch = self.channel_no,
+                                        gui_param = gui_param, gui_plot = gui_plot, win = win)
+        #> Save Channel
+        self.save_channel(im_proc=im_proc)
+
+        #Update organ imChannels
+        self.parent_organ.add_channel(self)
+        #Update channel process
+        self.process.append('ClosedCont-Auto')
         #Update organ workflow
         self.parent_organ.update_mHworkflow(process, update = 'DONE')
-
         process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
         if get_by_path(workflow, process_up) == 'NI':
             self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
-        
-        #Update channel process
-        self.process.append('ClosedCont-Auto')
-        
-        #Update organ imChannels
-        self.parent_organ.add_channel(self)
-        # self.parent_organ.save_organ()
-        
         process_up2 = ['ImProc','Status']
         if get_by_path(workflow, process_up2) == 'NI':
             self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-            
-        #Update
-        # 'B-CloseCont':{'Status': 'NI',
-        #                 'Steps':{'A-Autom': {'Status': 'NI'},
-        #                                     # 'Range': None, 
-        #                                     # 'Range_completed': None}, 
         
     def closeContours_manual(self):
         # Workflow process
@@ -3290,8 +3286,10 @@ class SubMesh():
                 ext_subsgm = self.imChannel.parent_organ.ext_subsgm
                 print('try ext_subsgm')
             except: 
-                ext_subsgm = self.imChannel.parent_organ.get_ext_subsgm(seg_cut[1:])
-                print('except ext_subsgm')
+                if 's' in seg_cut: 
+                    seg_cut = seg_cut[1:]
+                ext_subsgm = self.imChannel.parent_organ.get_ext_subsgm(seg_cut)
+            print('except ext_subsgm')
             print('ext_subsgm: ',ext_subsgm)
 
             #Classify the resulting segments using ext mesh
