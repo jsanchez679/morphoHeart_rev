@@ -59,8 +59,10 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
     """
 
     level = gui_plot['level']
-    slc_first = gui_param['start_slc']-1
-    slc_last = gui_param['end_slc']-1
+    slc_first = gui_param['start_slc']
+    slc_first_py = slc_first-1 #Transformed to python
+    slc_last = gui_param['end_slc']
+    slc_last_py = slc_last-1#Transformed to python
     plot2d = gui_param['plot2d']
     n_slices = gui_param['n_slices']
     min_contour_len = gui_param['min_contour_len']
@@ -75,9 +77,10 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
     win.prog_bar_range(0, slc_last-slc_first)
     win.win_msg('Automatically closing contours ('+ch+', No. slices to close: '+str(slc_last-slc_first)+' )')
 
-    for index, slc in enumerate(range(slc_first, slc_last)):
+    for index, slc_py in enumerate(range(slc_first_py, slc_last_py)):
 
-        myIm = stack[slc][:][:]
+        slc = slc_py+1 #Transformed user format
+        myIm = stack[slc_py][:][:]
         # Get the contours of slice
         contours = get_contours(myIm, min_contour_length = min_contour_len, level = level)
         # Sort the contours by length (bigger to smaller)
@@ -97,7 +100,6 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
         filt_cont, filt_props = filter_contours(contours, props, min_int = min_int, mean_int = mean_int)
         # Plot filtered contours
         if plot2d and (index % n_slices == 0):
-            print("\n------------- Channel "+str(ch)+" / Slice "+str(slc)+" -------------")
             params_props = {'myIm': myIm, 'ch': ch, 'slc':slc, 
                             'cont_sort': filt_cont, 'win':win}
             plot_props(params_props)
@@ -115,22 +117,22 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
         # if plotshow:
         #     print('\n-> FINAL CONTOURS')
         if plot2d and (index % n_slices == 0):
-            print("\n------------- Channel "+str(ch)+" / Slice "+str(slc)+" -------------")
             params_props = {'myIm': myIm, 'ch': ch, 'slc':slc, 
                             'cont_sort': new_contours, 'win':win}
             plot_props(params_props)
             win.add_thumbnail(function='fcC.plot_props', params = params_props, 
-                              name='Final Cont. Slc'+str(slc+1))
-        new_stack[slc][:][:] = myIm_closedCont
+                              name='Final Cont. Slc'+str(slc))
+        new_stack[slc_py][:][:] = myIm_closedCont
 
         #Update Bar
-        win.prog_bar_update(value = slc-slc_first)
-        print('slc-slc_first:',slc-slc_first)
+        win.prog_bar_update(value = slc_py-slc_first_py)
+        print('slc_py-slc_first_py:',slc_py-slc_first_py)
     
     win.prog_bar_update(value = 100)
     return new_stack
 
 def manual_close_contours(stack_closed, stack_o, stack_m, slices, n_rows, chStr, exit_code, level):
+
     """
     Function used to manually close the contours of the stack
 
@@ -218,7 +220,126 @@ def manual_close_contours(stack_closed, stack_o, stack_m, slices, n_rows, chStr,
 
     return stack_closed, last_slc, exit_code
 
-#%% func - closeContours()
+def manuallyCloseContoursTuple (slc_list, stack_closed, stack_o, stack_m, chStr, exit_code, level):
+    """
+    Function used to manually close the contours of the slices in the slc_list given as input
+
+    Parameters
+    ----------
+    slc_list : list of int
+        List of slices to be processed/checked.
+    stack_closed : numpy array
+        Input closed stack.
+    stack_o : numpy array
+        Copy of closed stack.
+    stack_m : numpy array
+        Copy of original masked stack to process.
+    chStr : str
+        Text indicating channel being processed ('ch0': myocardium/ 'ch1': endocardium).
+    exit_code : boolean
+        True if user wants to exit code, else False.
+    level : float 
+        Value along which to find contours in the array. Parameter for skimage.measure.find_contours
+
+    Returns
+    -------
+    exit_code : boolean
+        True if user wants to exit code, else False.
+    slc : int
+        Slice number being processed.
+    last_slc : int
+        Last processed slice
+    stack_closed : numpy array
+        Resulting closed stack.
+
+    """
+    select_process = 'esc'
+    if len(slc_list) > 0: 
+        for slc in slc_list:
+            if exit_code:
+                print('- EXIT! - slc: '+ str(slc)+' - Process: '+ select_process)
+                break
+    
+            print("- Processing contours - slice ", str(slc))
+            # Get image
+    
+            myIm = stack_closed[slc][:][:]
+            # Get contours for that slice
+            _ = getContExpCont_plt (myIm, slc, chStr, minLenContour=100, figSize=10, level = level)
+            myIm_closed = myIm
+    
+            # closeContours per slice
+            k_size = 60
+            myIm_closed, done_close  = closeContoursSlc(myIm_closed, slc, chStr, k_size, k_size, level)
+            if done_close == 'esc': #done_close in ['esc', 'n', 'N']
+                last_slc = slc
+                exit_code = True
+                break
+    
+            last_slc = slc
+            add_step = ['', '1']
+            while not exit_code and done_close in add_step:   #exit_code == False:
+                list_close = ['3', '4', '5']
+                crop_size = [(120,120), (50,50), (100,300)]
+                print('\n - Additional processes for - Slc '+str(slc)+':')
+                print('   -[1]:draw black/clean slice\t\t-[2]:draw white')
+                print('   -[3]:close (120x120)\t\t\t\t-[4]:close (50x50)')
+                print('   -[5]:close (300x100)\t\t\t\t-[6]:close (user input size)')
+                print('   -[7]:reset slice (to original after automatic contour closure)')
+                print('   -[8]:reset slice (to original image - just masked)')
+                print('   -[9/ ]:save (slice done!)\t\t-[esc]:exit')
+                select_process = str(input('> Select: ')).lower()
+    
+                if select_process == 'esc':
+                    done = select_process
+                    last_slc = slc;
+                    exit_code = True
+                    break
+                # Draw contour black/Clean contours
+                elif select_process == '1':
+                    myIm_closed, done = close_draw(myIm_closed, slc, chStr, 'black', level)
+                # Draw contour white
+                elif select_process == '2':
+                    myIm_closed, done = close_draw(myIm_closed, slc, chStr, 'white', level)
+                # Close contours
+                elif select_process in list_close:
+                    index_selected = list_close.index(select_process)
+                    myIm_closed, done = closeContoursSlc(myIm_closed, slc, chStr, crop_size[index_selected][0], crop_size[index_selected][1], level)
+                elif select_process == '6':
+                    input_size = ask4input('Enter the rectangle size to crop and close contours separated by a comma - x,y -: ', str)
+                    x_size, y_size = input_size.split(',')
+                    myIm_closed, done = closeContoursSlc(myIm_closed, slc, chStr, int(y_size), int(x_size), level)
+                # Done
+                elif select_process == '9' or select_process == '':
+                    done = 'OK'
+                    stack_closed[slc][:][:] = myIm_closed
+                    last_slc = slc
+                    break
+                #Reset slc
+                elif select_process == '7':
+                    myIm_closed = stack_o[slc][:][:]
+                    done = 'reset_o_OK'
+                    _ = getContExpCont_plt (myIm_closed, slc, chStr, 250, 10, level, True)
+                    
+                elif select_process == '8':
+                    myIm_closed = stack_m[slc][:][:]
+                    done = 'reset_m_OK'
+                    _ = getContExpCont_plt (myIm_closed, slc, chStr, 250, 10, level, True)
+                    
+                else:
+                    print('Error: Wrong input. Select only from the given options')
+    
+                if done == 'esc':
+                    last_slc = slc
+                    exit_code = True
+                    break
+    else: 
+        exit_code = False
+        last_slc = 0
+        slc = 0
+
+    return exit_code, slc, last_slc, stack_closed
+
 def closeContours(organ, ch_name:str, close_done:dict, win):
 
     if close_done['A-MaskChannel'] != 'DONE':
@@ -250,7 +371,6 @@ def closeContours(organ, ch_name:str, close_done:dict, win):
     #     win.win_msg('The top and bottom contours of channel '+str(ch_name[-1])+ 'have been succesfully closed!')
     # win.update_ch_progress() 
 
-#%% func - checkWfCloseCont
 def checkWfCloseCont(workflow, ch_name):
     #Check if masking is part of the workflow
     if get_by_path(workflow, ['ImProc', ch_name, 'A-MaskChannel','Status']) != 'N/A': 
@@ -264,7 +384,6 @@ def checkWfCloseCont(workflow, ch_name):
     
     return close_done
 
-#%% func - selectContours
 def selectContours(organ, im_ch, win):
     
     layerDict = im_ch.selectContours()
@@ -502,8 +621,142 @@ def auto_draw_close_contours(myIm, data_Connect):
 
     return myIm
 
+# Interactive functions
+def getSlices (slc_tuple, text):
+    """
+    Funtion that returns a list with the slice numbers to be processed/checked.
+
+    Parameters
+    ----------
+    slc_tuple : tuple of int
+        Tuple defining the initial and final slice.
+    text : str
+        Additional text given as input to print corresponding to the process being performed.
+
+    Returns
+    -------
+    slc_list : list of int
+        List of slices to be processed/checked.
+    slc_end : int
+        Last slice of the tuple.
+
+    """
+
+    slc_list = []
+    input_slc = ask4input('Select the slices '+text+' from -('+str(slc_tuple[0])+','+str(slc_tuple[1]-1)+')- \n\t\t(e.g. to close slices 5, 9, 10, and 11 type: 5,9-11)/[all/ ]:all/[N/n]:none): ', str)
+    if input_slc == 'all' or input_slc == '':
+        slc_list = list(range(slc_tuple[0],slc_tuple[1],1))
+        # print(slc_list)
+    elif input_slc in ['n', 'N']:
+        slc_list = []
+    else:
+        slc_list = []
+        comma_split = input_slc.split(',')
+
+        for string in comma_split:
+            if '-' in string:
+                minus_split = string.split('-')
+                #print(minus_split)
+                for n in list(range(int(minus_split[0]),int(minus_split[1])+1,1)):
+                    #print(n)
+                    slc_list.append(n)
+            elif string == '':
+                pass
+            else:
+                slc_list.append(int(string))
+
+    slc_end = slc_tuple[1]
+
+    return slc_list, slc_end
 
 #Draw functions
+def getClicks (clicks, myIm, scale, text):
+    """
+    Function to get clicks of prompted image slice.
+
+    Parameters
+    ----------
+    clicks : list of tuples with coordinates (clicks)
+        Initialised list of clicks coordinates.
+    myIm : numpy array
+        Imaged being processed
+    scale : float
+        Number that scales the image to be prompted.
+    text : str
+        Title of prompted window with image indicating the process being performed (cleaning/closing/etc...).
+
+    Returns
+    -------
+    clicks : list of tuples with coordinates (clicks)
+        Final list of clicks coordinates.
+
+    """
+
+    print("- Getting clicks... Press ENTER when done")
+
+    window_width = int(myIm.shape[1] * scale)
+    window_height = int(myIm.shape[0] * scale)
+
+    def on_mouse(event, x, y, flags, params):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            #print ('\r    Seed: ' + str(y) + ', ' + str(x), myIm[y,x])
+            clicks.append((y,x))
+
+    cv2.namedWindow(text, cv2.WINDOW_NORMAL)#,cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(text, window_width, window_height)
+    cv2.setMouseCallback(text, on_mouse, 0, )
+    cv2.imshow(text, myIm)
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+
+    return clicks
+
+def close_draw (myIm_closed, slc, chStr, color_draw, level, plot_show = True):
+    """
+    Function that collects clicks positions given by the user and connects them using a white or black line given as
+    input by 'color_draw' parameter
+
+    Parameters
+    ----------
+    myIm_closed : numpy array
+        Image to close drawing
+    slc : int
+        Slice number being processed.
+    chStr : str
+        Text indicating channel being processed ('ch0': myocardium/ 'ch1': endocardium).
+    color_draw : str
+        Color used when drawing line between clicks ('b'/'black': black, 'w'/'white': white)
+    level : float 
+        Value along which to find contours in the array. Parameter for skimage.measure.find_contours
+    plot_show : boolean, optional
+        True to show plot, else False. The default is True.
+
+    Returns
+    -------
+    myIm_closed : numpy array
+        Closed/cleaned image
+    done_draw : boolean
+        True if drawing is done, else False.
+
+    """
+
+    while True:
+        #Get clicks of positions to close contours
+        clicks = getClicks([], myIm_closed, scale=1, text='DRAWING SLICE ('+color_draw+')')
+        # Draw white/black line following the clicked pattern
+        myIm_closed = drawLine(clicks, myIm_closed, color_draw)
+        _ = getContExpCont_plt (myIm_closed, slc, chStr, 250, 10, level, plot_show)
+
+        if plot_show:
+            print("- Are you done drawing ("+color_draw+") the contours for this - slice "+ str(slc)+"?: ")
+            done_draw = str(input('>  - [0]:no/[1/ ]:yes!/[esc]:exit >>>>> ')).lower()
+            if done_draw == '1' or done_draw == 'esc' or done_draw == '':
+                break
+        else:
+            done_draw = ''
+            break
+
+    return myIm_closed, done_draw
 
 #Plot contour functions
 def plot_props(params):
@@ -558,7 +811,7 @@ def plot_props(params):
         #         color=palette[num], fontsize=2, weight = 'semibold')
         ax.set_axis_off()
 
-    win.fig_title.setText("Channel "+str(ch)+" / Slice "+str(slc+1))
+    win.fig_title.setText("Channel "+str(ch[-1])+" / Slice "+str(slc))
 
     # Grid where subplots of each contour will be placed
     all_grid = outer_grid[1].subgridspec(rows, cols, wspace=0, hspace=0)
@@ -574,6 +827,46 @@ def plot_props(params):
 
     win.canvas_plot.draw()
 
+def plot_contours_slc(params):
+    """
+    # getContExpCont_plt
+    Function that gets and returns the contours of a particular slice (slcNum) plotting the image with an overlay
+    of the contours
+    """
+
+    myIm = params['myIm']
+    slc = params['slc']
+    ch = params['ch']
+    level = params['level']
+    min_contour_length = params['min_contour_length']
+    win = params['win']
+
+    # Create an empty array to save all the contours of each slice individually
+    arr_contours = []
+    #Find all the contours of the image
+    contours = measure.find_contours(myIm, level, 'high', 'high')
+
+    # Display the image and plot an overlay of all contours found that have
+    # more than min_contour_length points
+    fig11 = win.figure
+    fig11.clear()
+    ax = fig11.add_subplot(111)
+    ax.imshow(myIm, cmap=plt.cm.gray)
+
+    # Go through all the contours
+    for index, contour in enumerate(contours):
+        # Get only the contours made up of more than the designated number of points
+        if len(contour)>min_contour_length:
+            # Append contour to the array
+            arr_contours.append(contour)
+            # plot the contour
+            ax.plot(contour[:, 1], contour[:, 0], linewidth=0.3, color = palette[index])
+
+    win.fig_title.setText("Channel "+str(ch[-1])+" / Slice "+str(slc))
+    ax.set_axis_off()
+    win.canvas_plot.draw()
+
+    return arr_contours
 
 palette =  palette_rbg('bright', 30, False)*20
 #%% Module loaded

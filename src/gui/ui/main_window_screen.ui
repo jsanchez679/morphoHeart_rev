@@ -1069,7 +1069,7 @@ QScrollBar::handle:vertical:hover {
                 <property name="geometry">
                  <rect>
                   <x>0</x>
-                  <y>0</y>
+                  <y>-47</y>
                   <width>386</width>
                   <height>718</height>
                  </rect>
@@ -1589,7 +1589,7 @@ QSlider::handle:horizontal:hover {
                                <number>500</number>
                               </property>
                               <property name="singleStep">
-                               <number>10</number>
+                               <number>1</number>
                               </property>
                               <property name="pageStep">
                                <number>50</number>
@@ -1644,7 +1644,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                                <set>Qt::AlignCenter</set>
                               </property>
                               <property name="readOnly">
-                               <bool>true</bool>
+                               <bool>false</bool>
                               </property>
                              </widget>
                             </item>
@@ -1686,13 +1686,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>250</number>
+                               <number>2505</number>
                               </property>
                               <property name="singleStep">
                                <number>1</number>
                               </property>
                               <property name="pageStep">
-                               <number>50</number>
+                               <number>250</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -1747,7 +1747,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                                <set>Qt::AlignCenter</set>
                               </property>
                               <property name="readOnly">
-                               <bool>true</bool>
+                               <bool>false</bool>
                               </property>
                              </widget>
                             </item>
@@ -1973,6 +1973,9 @@ font-family: &quot;Calibri Light&quot;;
 QLineEdit:focus { border: 1px solid #eb6fbd;}
 					</string>
                             </property>
+                            <property name="text">
+                             <string>100</string>
+                            </property>
                             <property name="alignment">
                              <set>Qt::AlignCenter</set>
                             </property>
@@ -1981,7 +1984,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                           <item>
                            <widget class="QPushButton" name="plot_slice_with_contours_ch1">
                             <property name="enabled">
-                             <bool>true</bool>
+                             <bool>false</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -2032,7 +2035,7 @@ background-color:rgb(203, 203, 203);
                           <item>
                            <widget class="QPushButton" name="plot_all_slices_with_contours_ch1">
                             <property name="enabled">
-                             <bool>true</bool>
+                             <bool>false</bool>
                             </property>
                             <property name="minimumSize">
                              <size>
@@ -3227,7 +3230,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                           <item row="5" column="0">
                            <layout class="QHBoxLayout" name="horizontalLayout_276">
                             <item alignment="Qt::AlignRight">
-                             <widget class="QCheckBox" name="autom_ch1_plot2d_4">
+                             <widget class="QCheckBox" name="automt_ch1_plot2d">
                               <property name="enabled">
                                <bool>true</bool>
                               </property>
@@ -3274,7 +3277,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                           <item row="5" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_297">
                             <item>
-                             <widget class="QLabel" name="autom_ch1_lab1_4">
+                             <widget class="QLabel" name="automt_ch1_lab1">
                               <property name="enabled">
                                <bool>false</bool>
                               </property>
@@ -3303,7 +3306,7 @@ background-color: rgb(255, 255, 255);</string>
                              </widget>
                             </item>
                             <item>
-                             <widget class="QSpinBox" name="autom_ch1_n_slices_4">
+                             <widget class="QSpinBox" name="automt_ch1_n_slices">
                               <property name="enabled">
                                <bool>false</bool>
                               </property>
@@ -3341,7 +3344,7 @@ background-color: rgb(255, 255, 255);</string>
                              </widget>
                             </item>
                             <item>
-                             <widget class="QLabel" name="autom_ch1_lab2_4">
+                             <widget class="QLabel" name="automt_ch1_lab2">
                               <property name="enabled">
                                <bool>false</bool>
                               </property>
@@ -4343,321 +4346,112 @@ color: rgb(67, 67, 67)</string>
            </item>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_76">
-             <item alignment="Qt::AlignHCenter">
-              <widget class="QFrame" name="frame_functions">
-               <property name="minimumSize">
-                <size>
-                 <width>150</width>
-                 <height>0</height>
-                </size>
+             <item>
+              <layout class="QHBoxLayout" name="plots_panel_heading">
+               <property name="spacing">
+                <number>0</number>
                </property>
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::Panel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <layout class="QVBoxLayout" name="verticalLayout_79">
+               <item>
+                <widget class="QLabel" name="plots_panel_label">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>18</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>18</height>
+                  </size>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;</string>
+                 </property>
+                 <property name="text">
+                  <string>Plots Panel</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="plots_panel_open">
+                 <property name="minimumSize">
+                  <size>
+                   <width>18</width>
+                   <height>18</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>18</width>
+                   <height>18</height>
+                  </size>
+                 </property>
+                 <property name="autoFillBackground">
+                  <bool>false</bool>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+
+background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+                 </property>
+                 <property name="text">
+                  <string>o</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QWidget" name="plots_panel_widget" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_80">
                 <property name="leftMargin">
-                 <number>3</number>
+                 <number>0</number>
                 </property>
                 <property name="topMargin">
                  <number>3</number>
                 </property>
                 <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
                  <number>3</number>
                 </property>
-                <item>
-                 <layout class="QHBoxLayout" name="keeplargest_heading_3">
-                  <property name="spacing">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="title_functions">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>18</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>18</height>
-                     </size>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">background-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);
-font: 25 10pt &quot;Calibri Light&quot;;</string>
-                    </property>
-                    <property name="text">
-                     <string>Close Functions</string>
-                    </property>
-                    <property name="alignment">
-                     <set>Qt::AlignCenter</set>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="draw_white">
+                <item alignment="Qt::AlignHCenter">
+                 <widget class="QScrollArea" name="scroll_images">
                   <property name="minimumSize">
                    <size>
-                    <width>120</width>
-                    <height>20</height>
+                    <width>150</width>
+                    <height>0</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>16777215</width>
-                    <height>20</height>
+                    <width>150</width>
+                    <height>16777215</height>
                    </size>
-                  </property>
-                  <property name="mouseTracking">
-                   <bool>true</bool>
-                  </property>
-                  <property name="focusPolicy">
-                   <enum>Qt::ClickFocus</enum>
-                  </property>
-                  <property name="autoFillBackground">
-                   <bool>false</bool>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
-                  </property>
-                  <property name="text">
-                   <string>Draw white</string>
-                  </property>
-                  <property name="checkable">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="draw_black">
-                  <property name="minimumSize">
-                   <size>
-                    <width>120</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>16777215</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="mouseTracking">
-                   <bool>true</bool>
-                  </property>
-                  <property name="focusPolicy">
-                   <enum>Qt::ClickFocus</enum>
-                  </property>
-                  <property name="autoFillBackground">
-                   <bool>false</bool>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
-                  </property>
-                  <property name="text">
-                   <string>Draw black</string>
-                  </property>
-                  <property name="checkable">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="draw_45x45">
-                  <property name="minimumSize">
-                   <size>
-                    <width>120</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>16777215</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="mouseTracking">
-                   <bool>true</bool>
-                  </property>
-                  <property name="focusPolicy">
-                   <enum>Qt::ClickFocus</enum>
-                  </property>
-                  <property name="autoFillBackground">
-                   <bool>false</bool>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
-                  </property>
-                  <property name="text">
-                   <string>Close 45x45</string>
-                  </property>
-                  <property name="checkable">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="draw_reset">
-                  <property name="minimumSize">
-                   <size>
-                    <width>120</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>16777215</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="mouseTracking">
-                   <bool>true</bool>
-                  </property>
-                  <property name="focusPolicy">
-                   <enum>Qt::ClickFocus</enum>
-                  </property>
-                  <property name="autoFillBackground">
-                   <bool>false</bool>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
-                  </property>
-                  <property name="text">
-                   <string>Reset</string>
-                  </property>
-                  <property name="checkable">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item alignment="Qt::AlignHCenter">
-              <widget class="QScrollArea" name="scroll_images">
-               <property name="minimumSize">
-                <size>
-                 <width>150</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QWidget{background-color: rgb(255, 255, 255);}
+                   <string notr="true">QWidget{background-color: rgb(255, 255, 255);}
 
 QScrollBar:vertical {
 	background-color: rgb(255, 255, 255);
@@ -4674,54 +4468,54 @@ QScrollBar::handle:vertical:hover {
 	background-color:rgb(0, 0, 0);
 }
 </string>
-               </property>
-               <property name="verticalScrollBarPolicy">
-                <enum>Qt::ScrollBarAsNeeded</enum>
-               </property>
-               <property name="widgetResizable">
-                <bool>true</bool>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-               <widget class="QWidget" name="scrollAreaWidgetContents_5">
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>148</width>
-                  <height>531</height>
-                 </rect>
-                </property>
-                <layout class="QVBoxLayout" name="verticalLayout_80"/>
-               </widget>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="clear_scroll">
-               <property name="minimumSize">
-                <size>
-                 <width>120</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="mouseTracking">
-                <bool>true</bool>
-               </property>
-               <property name="focusPolicy">
-                <enum>Qt::ClickFocus</enum>
-               </property>
-               <property name="autoFillBackground">
-                <bool>false</bool>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton{border-radius:10px;
+                  </property>
+                  <property name="verticalScrollBarPolicy">
+                   <enum>Qt::ScrollBarAsNeeded</enum>
+                  </property>
+                  <property name="widgetResizable">
+                   <bool>true</bool>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <widget class="QWidget" name="scrollAreaWidgetContents_5">
+                   <property name="geometry">
+                    <rect>
+                     <x>0</x>
+                     <y>0</y>
+                     <width>148</width>
+                     <height>235</height>
+                    </rect>
+                   </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_86"/>
+                  </widget>
+                 </widget>
+                </item>
+                <item alignment="Qt::AlignHCenter">
+                 <widget class="QPushButton" name="clear_scroll">
+                  <property name="minimumSize">
+                   <size>
+                    <width>120</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>120</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="mouseTracking">
+                   <bool>true</bool>
+                  </property>
+                  <property name="focusPolicy">
+                   <enum>Qt::ClickFocus</enum>
+                  </property>
+                  <property name="autoFillBackground">
+                   <bool>false</bool>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton{border-radius:10px;
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
@@ -4741,13 +4535,420 @@ border-color: rgb(158, 158, 158);
 color: rgb(125, 125, 125);
 }
 </string>
+                  </property>
+                  <property name="text">
+                   <string>Clear</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="close_contours_heading">
+               <property name="spacing">
+                <number>0</number>
                </property>
-               <property name="text">
-                <string>Clear</string>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
+               <item>
+                <widget class="QLabel" name="close_contours_label">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>18</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>18</height>
+                  </size>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;</string>
+                 </property>
+                 <property name="text">
+                  <string>Close Contour Func.</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="close_contours_open">
+                 <property name="minimumSize">
+                  <size>
+                   <width>18</width>
+                   <height>18</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>18</width>
+                   <height>18</height>
+                  </size>
+                 </property>
+                 <property name="autoFillBackground">
+                  <bool>false</bool>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+
+background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+                 </property>
+                 <property name="text">
+                  <string>o</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QWidget" name="close_contours_widget" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_79">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>3</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>3</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="widget_interpreter" native="true">
+                  <layout class="QVBoxLayout" name="verticalLayout_84">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>2</number>
+                   </property>
+                   <item alignment="Qt::AlignHCenter">
+                    <widget class="QPlainTextEdit" name="outdisplay">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>100</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>150</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">background-color: rgb(0, 0, 0);
+font: 25 10pt &quot;Calibri Light&quot;;
+color: rgb(255, 255, 255);</string>
+                     </property>
+                     <property name="readOnly">
+                      <bool>true</bool>
+                     </property>
+                     <property name="plainText">
+                      <string>&gt;&gt; 
+</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item alignment="Qt::AlignHCenter">
+                    <widget class="QPlainTextEdit" name="inputdisplay">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>150</width>
+                       <height>45</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">background-color: rgb(0, 0, 0);
+font: 25 10pt &quot;Calibri Light&quot;;
+color: rgb(255, 255, 255);</string>
+                     </property>
+                     <property name="readOnly">
+                      <bool>true</bool>
+                     </property>
+                     <property name="plainText">
+                      <string>&gt;</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QWidget" name="widget_buttons" native="true">
+                  <layout class="QVBoxLayout" name="verticalLayout_85">
+                   <item>
+                    <widget class="QPushButton" name="draw_white">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="mouseTracking">
+                      <bool>true</bool>
+                     </property>
+                     <property name="focusPolicy">
+                      <enum>Qt::ClickFocus</enum>
+                     </property>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                     </property>
+                     <property name="text">
+                      <string>Draw white</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="draw_black">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="mouseTracking">
+                      <bool>true</bool>
+                     </property>
+                     <property name="focusPolicy">
+                      <enum>Qt::ClickFocus</enum>
+                     </property>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                     </property>
+                     <property name="text">
+                      <string>Draw black</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="draw_45x45">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="mouseTracking">
+                      <bool>true</bool>
+                     </property>
+                     <property name="focusPolicy">
+                      <enum>Qt::ClickFocus</enum>
+                     </property>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                     </property>
+                     <property name="text">
+                      <string>Close 45x45</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="draw_reset">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="mouseTracking">
+                      <bool>true</bool>
+                     </property>
+                     <property name="focusPolicy">
+                      <enum>Qt::ClickFocus</enum>
+                     </property>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                     </property>
+                     <property name="text">
+                      <string>Reset</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>
@@ -4854,7 +5055,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>0</y>
+                   <y>-1934</y>
                    <width>632</width>
                    <height>5616</height>
                   </rect>

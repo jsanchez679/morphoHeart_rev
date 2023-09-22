@@ -51,7 +51,7 @@ plt.rcParams['figure.constrained_layout.use'] = True
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set, alert, df_reset_index, df_add_value, palette_rbg
-from ..modules.mH_funcContours import checkWfCloseCont, ImChannel, get_contours, plot_props
+from ..modules.mH_funcContours import checkWfCloseCont, ImChannel, get_contours, plot_props, plot_contours_slc
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
@@ -3421,21 +3421,79 @@ class MainWindow(QMainWindow):
                     num_slices = self.organ.imChannels[ch]['shape'][0]
                     getattr(self, 'total_stack_slices_'+ch).setText(str(num_slices))
                     self.init_segm_ch(ch)
+                    eg_slc = num_slices//2
+                    getattr(self, 'eg_slice_'+ch).setText(str(eg_slc))
+
             num +=1
 
         self.already_closed_s3s.stateChanged.connect(lambda: self.enable_load_s3s())
         self.enable_load_s3s()
         #Initialise settings for plotting channels
-        # self.init_grid_plot()
+        self.init_grid_plot()
         # #Initialise mask process
-        # self.init_mask()
+        self.init_mask()
         # #Initialise Automatic Closure of Contours
-        # self.init_autom_close_contours()
+        self.init_autom_close_contours()
 
         # #Initialise the Plot Widget and Scroll
-        # self.init_plot_widget()
+        self.init_plot_widget()
         # self.button_continue.clicked.connect(lambda: self.continue_next_tab())
         self.init_ch_progress()
+    
+    #>> Initialise all modules of Process and Analyse
+    def init_segm_ch(self, ch): 
+
+        #Regular expressions
+        reg_ex_dec = QRegularExpression(r"\d{1,3}+\.\d") #3 digit number with decimal
+        reg_ex = QRegularExpression(r"\d{1,3}") #3 digit number
+        reg_ex_5 = QRegularExpression(r"\d{1,5}") #3 digit number
+
+        #PLOT GRID SETTINGS
+        #Level
+        level = getattr(self, 'level_'+ch+'_value')
+        level_validator = QRegularExpressionValidator(reg_ex_dec, level)
+        level.setValidator(level_validator)
+        
+        #Min contour length
+        min_contour_length = getattr(self, 'min_cont_length_'+ch+'_value')
+        min_length_validator = QRegularExpressionValidator(reg_ex, min_contour_length)
+        min_contour_length.setValidator(min_length_validator)
+
+        #Eg Slice
+        eg_slice = getattr(self, 'eg_slice_'+ch)
+        eg_slice_validator = QRegularExpressionValidator(reg_ex, eg_slice)
+        eg_slice.setValidator(eg_slice_validator)
+
+        #AUTOMATICALLY CLOSE CONTOURS
+        #Start slice
+        start_num = getattr(self, 'start_autom_'+ch)
+        start_validator = QRegularExpressionValidator(reg_ex, start_num)
+        start_num.setValidator(start_validator)
+
+        #End slice
+        end_num = getattr(self, 'end_autom_'+ch)
+        end_validator = QRegularExpressionValidator(reg_ex, end_num)
+        end_num.setValidator(end_validator)
+
+        #Min conour length
+        auto_min_cont = getattr(self, 'autom_min_cont_length_'+ch+'_value')
+        auto_min_cont_validator = QRegularExpressionValidator(reg_ex, auto_min_cont)
+        auto_min_cont.setValidator(auto_min_cont_validator)
+
+        #Min intensity
+        auto_min_int = getattr(self, 'autom_min_intensity_'+ch+'_value')
+        auto_min_int_validator = QRegularExpressionValidator(reg_ex_5, auto_min_int)
+        auto_min_int.setValidator(auto_min_int_validator)
+
+        #Mean intensity
+        auto_mean_int = getattr(self, 'autom_mean_intensity_'+ch+'_value')
+        auto_mean_int_validator = QRegularExpressionValidator(reg_ex_5, auto_mean_int)
+        auto_mean_int.setValidator(auto_mean_int_validator)
+
+        #Min distance
+        auto_min_dist = getattr(self, 'autom_min_distance_'+ch+'_value')
+        auto_min_dist_validator = QRegularExpressionValidator(reg_ex, auto_min_dist)
+        auto_min_dist.setValidator(auto_min_dist_validator)
         
     def enable_load_s3s(self): 
         if self.already_closed_s3s.isChecked(): 
@@ -3448,16 +3506,19 @@ class MainWindow(QMainWindow):
     def init_grid_plot(self): 
         #Connect buttons
         #>> Grid settings
+        #Rows and cols
         self.sB_cols_ch1.valueChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
         self.sB_rows_ch1.valueChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
-        self.level_ch1_slider
-        self.level_ch1_value.textChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
-        self.min_cont_length_ch1_slider
-        self.min_cont_length_ch1_value.textChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
+
+        self.level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('level_ch1', 'slider', info = 'ch1', divider = 10))
+        self.level_ch1_value.textChanged.connect(lambda: self.slider_changed('level_ch1', 'value', info = 'ch1', divider = 10))
+        
+        self.min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch1', 'slider', info ='ch1'))
+        self.min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch1', 'value', info ='ch1'))
 
         #Q
-        self.q_level_ch1
-        self.q_min_cont_length_ch1
+        self.q_level_ch1.clicked.connect(lambda: self.help('level'))
+        self.q_min_cont_length_ch1.clicked.connect(lambda: self.help('level'))
 
         #>> Plot
         self.plot_all_slices_with_contours_ch1.clicked.connect(lambda: self.plot_all_slices(ch = 'ch1'))
@@ -3465,11 +3526,22 @@ class MainWindow(QMainWindow):
         # self.plot_all_slices_with_contours_ch3.clicked.connect(lambda: self.plot_all_slices(ch = 'ch3'))
         # self.plot_all_slices_with_contours_ch4.clicked.connect(lambda: self.plot_all_slices(ch = 'ch4'))
 
+        self.plot_slice_with_contours_ch1.clicked.connect(lambda: self.plot_slice(ch='ch1'))
+        # self.plot_slice_with_contours_ch2.clicked.connect(lambda: self.plot_slice(ch='ch2'))
+        # self.plot_slice_with_contours_ch3.clicked.connect(lambda: self.plot_slice(ch='ch3'))
+        # self.plot_slice_with_contours_ch4.clicked.connect(lambda: self.plot_slice(ch='ch4'))
+
         # - Open
         self.plot_slices_ch1_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch1'))
         # self.plot_slices_ch2_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch2'))
         # self.plot_slices_ch3_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch3'))
         # self.plot_slices_ch4_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch4'))
+
+        #Set
+        self.set_plot_cont_settings_ch1.clicked.connect(lambda: self.set_plot_contour_settings('ch1', check=True))
+        # self.set_plot_cont_settings_ch2.clicked.connect(lambda: self.set_plot_contour_settings('ch2', check=True))
+        # self.set_plot_cont_settings_ch3.clicked.connect(lambda: self.set_plot_contour_settings('ch3', check=True))
+        # self.set_plot_cont_settings_ch4.clicked.connect(lambda: self.set_plot_contour_settings('ch4', check=True))
 
     def init_mask(self): 
         
@@ -3522,10 +3594,10 @@ class MainWindow(QMainWindow):
         # self.autom_close_ch4_set.clicked.connect(lambda: self.set_autom_close_contours('ch4'))
 
         # - Plot 2D
-        self.autom_ch1_plot2d.stateChanged.connect(lambda: self.n_slices('autom_ch1'))
-        # self.autom_ch2_plot2d.stateChanged.connect(lambda: self.n_slices('autom_ch2'))
-        # self.autom_ch3_plot2d.stateChanged.connect(lambda: self.n_slices('autom_ch3'))
-        # self.autom_ch4_plot2d.stateChanged.connect(lambda: self.n_slices('autom_ch4'))
+        self.automt_ch1_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch1'))
+        # self.automt_ch2_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch2'))
+        # self.automt_ch3_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch3'))
+        # self.automt_ch4_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch4'))
 
         #Sliders
         self.autom_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch1','slider'))
@@ -3542,32 +3614,7 @@ class MainWindow(QMainWindow):
     
 
 
-    #>> Initialise all modules of Process and Analyse
-    def init_segm_ch(self, ch): 
-
-        #PLOT GRID SETTINGS
-        #Level
-        level = getattr(self, 'level_'+ch+'_value')
-        reg_ex = QRegularExpression(r"\d{1,3}+\.\d") #3 digit number with decimal
-        level_validator = QRegularExpressionValidator(reg_ex, level)
-        level.setValidator(level_validator)
-
-        #Min contour length
-        reg_ex = QRegularExpression(r"\d{1,3}") #3 digit number
-        min_contour_length = getattr(self, 'min_cont_length_'+ch+'_value')
-        min_length_validator = QRegularExpressionValidator(reg_ex, min_contour_length)
-        min_contour_length.setValidator(min_length_validator)
-
-        # self.get_plot_settings(ch)
-
     
-        start_num = getattr(self, 'start_autom_'+ch)
-        start_validator = QRegularExpressionValidator(reg_ex, start_num)
-        start_num.setValidator(start_validator)
-
-        end_num = getattr(self, 'end_autom_'+ch)
-        end_validator = QRegularExpressionValidator(reg_ex, end_num)
-        end_num.setValidator(end_validator)
 
     def init_plot_widget(self): 
 
@@ -3593,13 +3640,18 @@ class MainWindow(QMainWindow):
         #Init scroll style buttons
         self.scroll_style = 'QPushButton{\nborder-width: 0.5px;\nborder-style: outset;\nborder-color: rgb(66, 66, 66);\nbackground-color: rgb(211, 211, 211);\ncolor: rgb(39, 39, 39);\nfont: 10pt "Calibri Light";}\n\nQPushButton:hover{\nbackground-color: rgb(57, 57, 57);\nborder-color: #672146;\ncolor: rgb(255, 255, 255);\n}\n'
 
+        #Button to clear
         self.clear_scroll.clicked.connect(lambda: self.clear_thumbnails())
 
-    def get_plot_settings(self, ch):
+        #Open
+        self.plots_panel_open.clicked.connect(lambda: self.open_section(name='plots_panel'))
+        self.close_contours_open.clicked.connect(lambda: self.open_section(name='close_contours'))
+
+    def set_plot_contour_settings(self, ch, check=False):
 
         level = getattr(self, 'level_'+ch+'_value')
         level_val = float(level.text())
-        min_contour_length = getattr(self, 'min_cont_length_'+ch)
+        min_contour_length = getattr(self, 'min_cont_length_'+ch+'_value')
         min_contour_length_val = int(min_contour_length.text())
         n_rows = getattr(self, 'sB_cols_'+ch)
         n_rows_val = int(n_rows.value())
@@ -3610,11 +3662,15 @@ class MainWindow(QMainWindow):
                                             'min_contour_length': min_contour_length_val, 
                                             'n_rows': n_rows_val, 
                                             'n_cols': n_cols_val}
-        print('self.plot_contours_settings:', self.plot_contours_settings)
 
         proc_set = ['wf_info']
         update = self.plot_contours_settings
         self.organ.update_settings(proc_set, update, 'mH', add='plot_contours_settings')
+
+        if check: 
+            getattr(self, 'set_plot_cont_settings_'+ch).setChecked(True)
+            getattr(self, 'plot_slice_with_contours_'+ch).setEnabled(True)
+            getattr(self, 'plot_all_slices_with_contours_'+ch).setEnabled(True)
 
     #Functions to fill sections according to user's selections
     def set_autom_close_contours(self, ch_name): 
@@ -3638,9 +3694,6 @@ class MainWindow(QMainWindow):
 
     def gui_autom_contours_n(self, ch_name): 
          
-        level = getattr(self, 'level_'+ch)
-        level_val = float(level.text())
-        total_slcs = int(getattr(self, 'total_slices_'+ch_name).text())
         start_slc = int(getattr(self, 'start_autom_'+ch_name).text())
         end_slc = int(getattr(self, 'end_autom_'+ch_name).text())
         plot2d = getattr(self, 'autom_'+ch_name+'_plot2d').isChecked()
@@ -3650,41 +3703,52 @@ class MainWindow(QMainWindow):
         mean_int = int(getattr(self, 'autom_mean_intensity_'+ch_name).text())
         min_dist = int(getattr(self, 'autom_min_distance_'+ch_name).text())
 
-        gui_autom_close_contours = {ch_name:{'total_slcs': total_slcs,
-                                             'start_slc': start_slc, 
+        gui_autom_close_contours = {ch_name:{'start_slc': start_slc, 
                                              'end_slc': end_slc, 
-                                             'plot2d': plot2d, 
-                                             'n_slices': n_slices, 
                                              'min_contour_len': min_contour_len, 
                                              'min_int': min_int, 
                                              'mean_int': mean_int, 
-                                             'min_dist': min_dist}}
+                                             'min_dist': min_dist,
+                                             'plot2d': plot2d, 
+                                             'n_slices': n_slices}}
         
         print('gui_autom_close_contours: ', gui_autom_close_contours)
 
         return gui_autom_close_contours
 
     #Specific functions 
-    def slider_changed(self, wdg_name, wdg_type):
+    def slider_changed(self, wdg_name, wdg_type, info=None, divider = 1):
         if 'slider' == wdg_type: 
             #Get value from slider
             value = getattr(self, wdg_name+'_slider').value()
             wdg_txt = getattr(self, wdg_name+'_value')
-            wdg_txt.setText(str(value))
+            if divider == 1:
+                wdg_txt.setText(str(value))
+            else: 
+                wdg_txt.setText(str(value/divider))
+
         else: #'value' == wdg_type: 
             #Get value from text
             value = getattr(self, wdg_name+'_value').text()
+            slider = getattr(self, wdg_name+'_slider')
+            if float(value) < slider.minimum(): 
+                value = slider.minimum()
+            elif float(value) > slider.maximum():
+                value = slider.maximum()
             wdg_txt = getattr(self, wdg_name+'_slider')
-            wdg_txt.setValue(int(value))
+            wdg_txt.setValue(float(value)*divider)
+
+        if info != None: 
+            self.set_plot_contour_settings(ch=info)
             
     #Plot 2D functions (segmentation tab)
     def plot_all_slices(self, ch): 
 
         #Get stack
         im_ch = self.organ.obj_imChannels[ch]
-        im = im_ch.im_proc()
+        stack = im_ch.im_proc()
         #Get settings to plot
-        no_slices = im.shape[0]
+        no_slices = stack.shape[0]
         slcs_per_im = int(self.plot_contours_settings[ch]['n_rows'])*int(self.plot_contours_settings[ch]['n_cols'])
         slices = list(range(0,no_slices+1,slcs_per_im))
         level = self.plot_contours_settings[ch]['level']
@@ -3697,13 +3761,12 @@ class MainWindow(QMainWindow):
 
         for nn in range(len(slices[:-1])):
             slc_tuple = (slices[nn], slices[nn+1])
-            print(nn, slc_tuple)
-            params = {'stack': im, 'slices_plot': slc_tuple, 
+            params = {'stack': stack, 'slices_plot': slc_tuple, 
                         'text': 'Contours', 'slcs_per_im': slcs_per_im, 
                         'n_rows': n_rows, 'n_cols': n_cols,
                         'level': level, 'min_contour_length': min_contour_length}
             self.add_thumbnail(function ='plot_slc_range', params = params, 
-                               name = 'Slcs('+str(slc_tuple[0]+1)+','+str(slc_tuple[1]-1+1)+')')
+                               name = 'Cont.Slcs '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1]-1+1)+'')
             if nn == len(slices)-2: 
                 self.plot_slc_range(params)
             
@@ -3754,6 +3817,26 @@ class MainWindow(QMainWindow):
         self.fig_title.setText(text +": Contours for slices ("+ str(slices_plot[0]+1)+'-'+str(slices_plot[1]-1+1)+')')
         self.canvas_plot.draw()
     
+    def plot_slice(self, ch): 
+
+        #Get stack
+        im_ch = self.organ.obj_imChannels[ch]
+        stack = im_ch.im_proc()
+        #Get slice
+        slc = int(getattr(self, 'eg_slice_'+ch).text())
+        slc_py = slc-1
+        myIm = stack[slc_py][:][:]
+        #Get params 
+        level = self.plot_contours_settings[ch]['level']
+        min_contour_length = self.plot_contours_settings[ch]['min_contour_length']
+
+        params = {'myIm': myIm, 'slc': slc, 'ch': ch, 
+                  'level': level, 'min_contour_length': min_contour_length, 'win': self}
+        self.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
+                            name = 'Cont Slc '+str(slc))
+        plot_contours_slc(params)
+
+    #Imgae thumbnails
     def add_thumbnail(self, function, params, name): 
 
         num = str(len(self.im_thumbnails))
@@ -3788,6 +3871,8 @@ class MainWindow(QMainWindow):
             self.plot_slc_range(params=params)
         elif funct == 'fcC.plot_props': 
             plot_props(params = params)
+        elif funct == 'fcC.plot_contours_slc':
+            plot_contours_slc(params = params)
 
     def clear_thumbnails(self):
         # delete thumbnails
