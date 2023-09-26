@@ -273,8 +273,8 @@ class Controller:
         # self.main_win.autom_close_ch4_play.clicked.connect(lambda: self.autom_close_contours('ch4'))
 
 
-        self.main_win.ch1_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch1'))
-        self.main_win.ch1_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch1'))
+        # self.main_win.ch1_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch1'))
+        # self.main_win.ch1_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch1'))
         # self.main_win.ch2_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch2'))
         # self.main_win.ch2_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch2'))
         # self.main_win.ch3_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch3'))
@@ -580,9 +580,13 @@ class Controller:
     #Channels related
     def mask_ch(self, ch_name): 
         mA.mask_channel(controller=self, ch_name=ch_name)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     def autom_close_contours(self, ch_name):
         mA.autom_close_contours(controller=self, ch_name=ch_name)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     def close_cont(self, ch_name):
         mA.close_cont(controller=self, ch_name=ch_name)

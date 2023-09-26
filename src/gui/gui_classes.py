@@ -3398,7 +3398,6 @@ class MainWindow(QMainWindow):
     def init_segment_tab(self): 
 
         print('Setting up Segmentation Tab')
-        
         self.channels = self.organ.mH_settings['setup']['name_chs'] # {'ch1': 'myocardium', 'ch2': 'endocardium', 'chNS': 'cardiac jelly'}
         img_dirs = self.organ.img_dirs
 
@@ -3419,6 +3418,7 @@ class MainWindow(QMainWindow):
                     text_dir.setText(str(path_dir))
                     #Number of slices
                     num_slices = self.organ.imChannels[ch]['shape'][0]
+                    setattr(self, 'num_slices_'+ch, num_slices)
                     getattr(self, 'total_stack_slices_'+ch).setText(str(num_slices))
                     self.init_segm_ch(ch)
                     eg_slc = num_slices//2
@@ -3494,6 +3494,9 @@ class MainWindow(QMainWindow):
         auto_min_dist = getattr(self, 'autom_min_distance_'+ch+'_value')
         auto_min_dist_validator = QRegularExpressionValidator(reg_ex, auto_min_dist)
         auto_min_dist.setValidator(auto_min_dist_validator)
+
+        #Initialise with user settings, if they exist!
+        self.user_plot_contour_settings(ch)
         
     def enable_load_s3s(self): 
         if self.already_closed_s3s.isChecked(): 
@@ -3543,8 +3546,11 @@ class MainWindow(QMainWindow):
         # self.set_plot_cont_settings_ch3.clicked.connect(lambda: self.set_plot_contour_settings('ch3', check=True))
         # self.set_plot_cont_settings_ch4.clicked.connect(lambda: self.set_plot_contour_settings('ch4', check=True))
 
-    def init_mask(self): 
+        self.close_contours_open.setChecked(True)
+        self.open_section(name = 'close_contours')
         
+    def init_mask(self): 
+
         mask_info = self.organ.mH_settings['setup']['mask_ch']
         img_dirs = self.organ.img_dirs
         print('mask_info:',mask_info)
@@ -3556,6 +3562,8 @@ class MainWindow(QMainWindow):
                     text_dir = getattr(self, 'mask_'+ch+'_dir')
                     path_dir = img_dirs[ch]['mask']['dir'].name
                     text_dir.setText(str(path_dir))
+                    #Initialise with user settings, if they exist!
+                    self.user_mask(ch_name = ch)
                 else: 
                     widg_all.setVisible(False)
             else: 
@@ -3574,7 +3582,6 @@ class MainWindow(QMainWindow):
         # self.mask_ch4_open.clicked.connect(lambda: self.open_section(name='mask_ch4'))
 
     def init_autom_close_contours(self): 
-        
         # - Open
         self.autom_close_ch1_open.clicked.connect(lambda: self.open_section(name='autom_close_ch1'))
         # self.autom_close_ch2_open.clicked.connect(lambda: self.open_section(name='autom_close_ch2'))
@@ -3599,6 +3606,17 @@ class MainWindow(QMainWindow):
         # self.automt_ch3_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch3'))
         # self.automt_ch4_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch4'))
 
+        # Start or end slice changed
+        self.start_autom_ch1.textChanged.connect(lambda: self.slices_changed('ch1', 'autom_close'))
+        # self.start_autom_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'autom_close'))
+        # self.start_autom_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'autom_close'))
+        # self.start_autom_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'autom_close'))
+
+        self.end_autom_ch1.textChanged.connect(lambda: self.slices_changed('ch1', 'autom_close'))
+        # self.end_autom_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'autom_close'))
+        # self.end_autom_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'autom_close'))
+        # self.end_autom_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'autom_close'))
+
         #Sliders
         self.autom_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch1','slider'))
         # self.autom_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('ch2','autom_min_cont_length_ch2_slider'))
@@ -3610,11 +3628,18 @@ class MainWindow(QMainWindow):
         # self.autom_min_cont_length_ch2_slider.textChanged.connect(lambda: self.slider_changed('ch2','autom_min_cont_length_ch2_slider'))
         # self.autom_min_cont_length_ch3_slider.textChanged.connect(lambda: self.slider_changed('ch3','autom_min_cont_length_ch3_slider'))
         # self.autom_min_cont_length_ch4_slider.textChanged.connect(lambda: self.slider_changed('ch4','autom_min_cont_length_ch4_slider'))
-       
-    
 
+        #Initialise with user settings, if they exist!
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
+            if ch in self.channels.keys(): 
+                self.user_autom_close_contours(ch_name=ch)
 
-    
+    def init_manual_close_contours(self): 
+        
+
+        #Interpreter
+        self.outdisplay.setMaximumBlockCount(blockcount)
+        self.outdisplay.setReadOnly(True)
 
     def init_plot_widget(self): 
 
@@ -3647,18 +3672,19 @@ class MainWindow(QMainWindow):
         self.plots_panel_open.clicked.connect(lambda: self.open_section(name='plots_panel'))
         self.close_contours_open.clicked.connect(lambda: self.open_section(name='close_contours'))
 
-    def set_plot_contour_settings(self, ch, check=False):
+    #Functions to fill sections according to user's selections
+    def set_plot_contour_settings(self, ch_name, check=False):
 
-        level = getattr(self, 'level_'+ch+'_value')
+        level = getattr(self, 'level_'+ch_name+'_value')
         level_val = float(level.text())
-        min_contour_length = getattr(self, 'min_cont_length_'+ch+'_value')
+        min_contour_length = getattr(self, 'min_cont_length_'+ch_name+'_value')
         min_contour_length_val = int(min_contour_length.text())
-        n_rows = getattr(self, 'sB_cols_'+ch)
+        n_rows = getattr(self, 'sB_rows_'+ch_name)
         n_rows_val = int(n_rows.value())
-        n_cols = getattr(self, 'sB_rows_'+ch)
+        n_cols = getattr(self, 'sB_cols_'+ch_name)
         n_cols_val = int(n_cols.value())
 
-        self.plot_contours_settings[ch] = {'level': level_val, 
+        self.plot_contours_settings[ch_name] = {'level': level_val, 
                                             'min_contour_length': min_contour_length_val, 
                                             'n_rows': n_rows_val, 
                                             'n_cols': n_cols_val}
@@ -3666,55 +3692,133 @@ class MainWindow(QMainWindow):
         proc_set = ['wf_info']
         update = self.plot_contours_settings
         self.organ.update_settings(proc_set, update, 'mH', add='plot_contours_settings')
+        print('self.plot_contours_settings:',self.plot_contours_settings)
 
         if check: 
-            getattr(self, 'set_plot_cont_settings_'+ch).setChecked(True)
-            getattr(self, 'plot_slice_with_contours_'+ch).setEnabled(True)
-            getattr(self, 'plot_all_slices_with_contours_'+ch).setEnabled(True)
-
-    #Functions to fill sections according to user's selections
+            getattr(self, 'set_plot_cont_settings_'+ch_name).setChecked(True)
+            getattr(self, 'plot_slice_with_contours_'+ch_name).setEnabled(True)
+            getattr(self, 'plot_all_slices_with_contours_'+ch_name).setEnabled(True)
+    
     def set_autom_close_contours(self, ch_name): 
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_autom_contours = self.gui_autom_contours_n(ch_name)
-        if 'autom_close_contours' not in wf_info.keys():
-            self.gui_autom_close_contours = current_gui_autom_contours
-        else: 
-            gui_autom_contours_loaded = self.organ.mH_settings['wf_info']['autom_close_contours']
-            self.gui_autom_close_contours, changed  = update_gui_set(loaded = gui_autom_contours_loaded, 
-                                                                current = current_gui_autom_contours)
-            
-        getattr(self, 'autom_close_'+ch_name+'_set').setChecked(True)
-        print('self.gui_autom_close_contours:',self.gui_autom_close_contours)
-        getattr(self, 'autom_close_'+ch_name+'_play').setEnabled(True)
+        if current_gui_autom_contours != None: 
+            if 'autom_close_contours' not in wf_info.keys():
+                self.gui_autom_close_contours = current_gui_autom_contours
+            else: 
+                gui_autom_contours_loaded = self.organ.mH_settings['wf_info']['autom_close_contours']
+                self.gui_autom_close_contours, changed  = update_gui_set(loaded = gui_autom_contours_loaded, 
+                                                                    current = current_gui_autom_contours)
+                
+            getattr(self, 'autom_close_'+ch_name+'_set').setChecked(True)
+            print('self.gui_autom_close_contours:',self.gui_autom_close_contours)
+            getattr(self, 'autom_close_'+ch_name+'_play').setEnabled(True)
 
-        # Update mH_settings
-        proc_set = ['wf_info']
-        update = self.gui_autom_close_contours
-        self.organ.update_settings(proc_set, update, 'mH', add='autom_close_contours')
+            # Update mH_settings
+            proc_set = ['wf_info']
+            update = self.gui_autom_close_contours
+            self.organ.update_settings(proc_set, update, 'mH', add='autom_close_contours')
+        else: 
+            getattr(self, 'autom_close_'+ch_name+'_set').setChecked(False)
 
     def gui_autom_contours_n(self, ch_name): 
-         
-        start_slc = int(getattr(self, 'start_autom_'+ch_name).text())
-        end_slc = int(getattr(self, 'end_autom_'+ch_name).text())
-        plot2d = getattr(self, 'autom_'+ch_name+'_plot2d').isChecked()
-        n_slices = getattr(self, 'autom_'+ch_name+'_n_slices').value()
-        min_contour_len = int(getattr(self, 'autom_min_cont_length_'+ch_name+'_value').text())
-        min_int = int(getattr(self, 'autom_min_intensity_'+ch_name).text())
-        mean_int = int(getattr(self, 'autom_mean_intensity_'+ch_name).text())
-        min_dist = int(getattr(self, 'autom_min_distance_'+ch_name).text())
-
-        gui_autom_close_contours = {ch_name:{'start_slc': start_slc, 
-                                             'end_slc': end_slc, 
-                                             'min_contour_len': min_contour_len, 
-                                             'min_int': min_int, 
-                                             'mean_int': mean_int, 
-                                             'min_dist': min_dist,
-                                             'plot2d': plot2d, 
-                                             'n_slices': n_slices}}
         
-        print('gui_autom_close_contours: ', gui_autom_close_contours)
+        start_slc = getattr(self, 'start_autom_'+ch_name).text()
+        end_slc = getattr(self, 'end_autom_'+ch_name).text()
+        if start_slc == '' or end_slc == '': 
+            self.win_msg('*Please set the slice range in which you want to run the automatic closure of the contours.')
+            return None
+        elif int(start_slc) > getattr(self, 'num_slices_'+ch_name)-1:
+            num_slices = str(getattr(self, 'num_slices_'+ch_name))
+            self.win_msg('*The starting slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.')
+            return None
+        elif int(end_slc) > getattr(self, 'num_slices_'+ch_name)-1:
+            num_slices = str(getattr(self, 'num_slices_'+ch_name))
+            self.win_msg('*The ending slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.')
+            return None
+        elif int(start_slc) >= int(end_slc):
+            self.win_msg('*The ending slice needs to be less than the starting slice. Check to continue.')
+            return None
+        else: 
+            plot2d = getattr(self, 'automt_'+ch_name+'_plot2d').isChecked() #automt_ch1_plot2d
+            n_slices = getattr(self, 'automt_'+ch_name+'_n_slices').value()
+            min_contour_len = int(getattr(self, 'autom_min_cont_length_'+ch_name+'_value').text())
+            min_int = int(getattr(self, 'autom_min_intensity_'+ch_name+'_value').text())
+            mean_int = int(getattr(self, 'autom_mean_intensity_'+ch_name+'_value').text())
+            min_dist = int(getattr(self, 'autom_min_distance_'+ch_name+'_value').text())
 
-        return gui_autom_close_contours
+            gui_autom_close_contours = {ch_name:{'start_slc': int(start_slc)-1, 
+                                                'end_slc': int(end_slc)-1, 
+                                                'min_contour_len': min_contour_len, 
+                                                'min_int': min_int, 
+                                                'mean_int': mean_int, 
+                                                'min_dist': min_dist,
+                                                'plot2d': plot2d, 
+                                                'n_slices': n_slices}}
+            
+            print('gui_autom_close_contours: ', gui_autom_close_contours)
+            return gui_autom_close_contours
+
+    def user_plot_contour_settings(self, ch_name): 
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'plot_contours_settings' in wf_info.keys():
+            if ch_name in wf_info['plot_contours_settings'].keys() and len(wf_info['plot_contours_settings'][ch_name])>0:
+                level = wf_info['plot_contours_settings'][ch_name]['level']
+                getattr(self, 'level_'+ch_name+'_value').setText(str(level))
+                self.slider_changed('level_'+ch_name, 'value', divider = 10)
+                min_contour_length =  wf_info['plot_contours_settings'][ch_name]['min_contour_length']
+                getattr(self, 'min_cont_length_'+ch_name+'_value').setText(str(min_contour_length))
+                self.slider_changed('min_cont_length_'+ch_name, 'value')
+                n_rows = wf_info['plot_contours_settings'][ch_name]['n_rows']
+                getattr(self, 'sB_rows_'+ch_name).setValue(n_rows)
+                n_cols = wf_info['plot_contours_settings'][ch_name]['n_cols']
+                getattr(self, 'sB_cols_'+ch_name).setValue(n_cols)
+                self.set_plot_contour_settings(ch_name=ch_name, check=True)
+             
+    def user_mask(self, ch_name):
+        wf_info = self.organ.mH_settings['wf_info']
+        workflow = self.organ.workflow['morphoHeart']['ImProc'][ch_name]['A-MaskChannel']
+        status = getattr(self, 'mask_'+ch_name+'_status')
+        self.update_status(workflow, ['Status'], status)
+
+        if workflow['Status'] == 'DONE': 
+            getattr(self, 'mask_'+ch_name+'_open').setChecked(True)
+            self.open_section(name = 'mask_'+ch_name)
+
+    def user_autom_close_contours(self, ch_name): 
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'autom_close_contours' in wf_info.keys():
+            if ch_name in wf_info['autom_close_contours'].keys() and len(wf_info['autom_close_contours'][ch_name])>0:
+                start_slc = wf_info['autom_close_contours'][ch_name]['start_slc']+1
+                getattr(self, 'start_autom_'+ch_name).setText(str(start_slc))
+                end_slc =  wf_info['autom_close_contours'][ch_name]['end_slc']+1
+                getattr(self, 'end_autom_'+ch_name).setText(str(end_slc))
+                min_contour_len = wf_info['autom_close_contours'][ch_name]['min_contour_len']
+                getattr(self, 'autom_min_cont_length_'+ch_name+'_value').setText(str(min_contour_len))
+                self.slider_changed('autom_min_cont_length_'+ch_name, 'value')
+                min_int = wf_info['autom_close_contours'][ch_name]['min_int'] 
+                getattr(self, 'autom_min_intensity_'+ch_name+'_value').setText(str(min_int))
+                self.slider_changed('autom_min_intensity_'+ch_name, 'value')
+                mean_int = wf_info['autom_close_contours'][ch_name]['mean_int'] 
+                getattr(self, 'autom_mean_intensity_'+ch_name+'_value').setText(str(mean_int))
+                self.slider_changed('autom_mean_intensity_'+ch_name, 'value')
+                min_dist = wf_info['autom_close_contours'][ch_name]['min_dist']
+                getattr(self, 'autom_min_distance_'+ch_name+'_value').setText(str(min_dist))
+                self.slider_changed('autom_min_distance_'+ch_name, 'value')
+                plot2d = wf_info['autom_close_contours'][ch_name]['plot2d']
+                getattr(self, 'automt_'+ch_name+'_plot2d').setChecked(plot2d)
+                n_slices = wf_info['autom_close_contours'][ch_name]['n_slices']
+                getattr(self, 'automt_'+ch_name+'_n_slices').setValue(int(n_slices))
+
+                workflow = self.organ.workflow['morphoHeart']['ImProc'][ch_name][ 'B-CloseCont']['Steps']['A-Autom']
+                status = getattr(self, 'autom_close_'+ch_name+'_status')
+                self.update_status(workflow, ['Status'], status)
+
+                if workflow['Status'] == 'DONE': 
+                    getattr(self, 'autom_close_'+ch_name+'_open').setChecked(True)
+                    self.open_section(name = 'mask_'+ch_name)
+
+                self.set_autom_close_contours(ch_name=ch_name)
 
     #Specific functions 
     def slider_changed(self, wdg_name, wdg_type, info=None, divider = 1):
@@ -3731,33 +3835,54 @@ class MainWindow(QMainWindow):
             #Get value from text
             value = getattr(self, wdg_name+'_value').text()
             slider = getattr(self, wdg_name+'_slider')
-            if float(value) < slider.minimum(): 
-                value = slider.minimum()
-            elif float(value) > slider.maximum():
-                value = slider.maximum()
+            if divider == 1: 
+                if float(value) < slider.minimum(): 
+                    value = slider.minimum()
+                elif float(value) > slider.maximum():
+                    value = slider.maximum()
+            else: 
+                if float(value) < (slider.minimum()/divider): 
+                    value = slider.minimum()
+                elif float(value) > (slider.maximum()/divider):
+                    value = slider.maximum()
             wdg_txt = getattr(self, wdg_name+'_slider')
             wdg_txt.setValue(float(value)*divider)
 
         if info != None: 
-            self.set_plot_contour_settings(ch=info)
-            
+            self.set_plot_contour_settings(ch_name=info)
+
+    def slices_changed(self, ch_name, process): 
+        #Untoggle button
+        getattr(self, process+'_'+ch_name+'_set').setChecked(False)
+        getattr(self, process+'_'+ch_name+'_play').setEnabled(False)  
+
     #Plot 2D functions (segmentation tab)
-    def plot_all_slices(self, ch): 
+    def plot_all_slices(self, ch, slice_range='all'): 
 
         #Get stack
         im_ch = self.organ.obj_imChannels[ch]
         stack = im_ch.im_proc()
-        #Get settings to plot
-        no_slices = stack.shape[0]
         slcs_per_im = int(self.plot_contours_settings[ch]['n_rows'])*int(self.plot_contours_settings[ch]['n_cols'])
-        slices = list(range(0,no_slices+1,slcs_per_im))
+        #Get settings to plot
+        if slice_range == 'all': 
+            no_slices = stack.shape[0]
+            slices = list(range(0,no_slices+1,slcs_per_im))
+        else: 
+            slc_first, slc_last = slice_range
+            no_slices = slc_last-slc_first
+            slices = list(range(slc_first,slc_last+1,slcs_per_im))
+
         level = self.plot_contours_settings[ch]['level']
         min_contour_length = self.plot_contours_settings[ch]['min_contour_length']
         n_rows = int(self.plot_contours_settings[ch]['n_rows'])
         n_cols = int(self.plot_contours_settings[ch]['n_cols'])
 
-        if slices[-1] != no_slices-1: 
-            slices.append(no_slices-1)
+        if slice_range == 'all': 
+            if slices[-1] != no_slices-1: 
+                slices.append(no_slices-1)
+        else: 
+            if slices[-1] != slc_last+1:
+                slices.append(slc_last+1)
 
         for nn in range(len(slices[:-1])):
             slc_tuple = (slices[nn], slices[nn+1])
@@ -3766,13 +3891,14 @@ class MainWindow(QMainWindow):
                         'n_rows': n_rows, 'n_cols': n_cols,
                         'level': level, 'min_contour_length': min_contour_length}
             self.add_thumbnail(function ='plot_slc_range', params = params, 
-                               name = 'Cont.Slcs '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1]-1+1)+'')
+                               name = 'Cont Slcs '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1]-1+1)+'')
             if nn == len(slices)-2: 
                 self.plot_slc_range(params)
             
         getattr(self, 'plot_all_slices_with_contours_'+ch).setChecked(False)
 
     def plot_slc_range(self, params):
+        # plotSlcsRange
 
         stack = params['stack']
         slices_plot = params['slices_plot']
@@ -3793,9 +3919,9 @@ class MainWindow(QMainWindow):
         fig11.clear()
 
         # Gridspec inside gridspec
-        gs = gridspec.GridSpec(n_cols, n_rows, figure=fig11,
-                                height_ratios=[1]*n_cols,
-                                width_ratios=[1]*n_rows,
+        gs = gridspec.GridSpec(n_rows, n_cols, figure=fig11,
+                                height_ratios=[1]*n_rows,
+                                width_ratios=[1]*n_cols,
                                 hspace=0.01, wspace=0.01, 
                                 left=0.05, right=0.95, bottom=0.05, top=0.95)
 
@@ -3814,7 +3940,7 @@ class MainWindow(QMainWindow):
                 ax.plot(contour[:, 1], contour[:, 0], linewidth=0.15)
             ax.set_title("Slc "+str(slc+1), fontsize=3, pad=0.1)
 
-        self.fig_title.setText(text +": Contours for slices ("+ str(slices_plot[0]+1)+'-'+str(slices_plot[1]-1+1)+')')
+        self.fig_title.setText(text +": Contours for slices "+ str(slices_plot[0]+1)+'-'+str(slices_plot[1]-1+1))
         self.canvas_plot.draw()
     
     def plot_slice(self, ch): 
@@ -3836,7 +3962,7 @@ class MainWindow(QMainWindow):
                             name = 'Cont Slc '+str(slc))
         plot_contours_slc(params)
 
-    #Imgae thumbnails
+    #Image thumbnails
     def add_thumbnail(self, function, params, name): 
 
         num = str(len(self.im_thumbnails))
@@ -3885,6 +4011,16 @@ class MainWindow(QMainWindow):
         for i in range(self.layout_scroll.count()): 
             print(i)
         print('Done cleaning thumbnails')
+
+    #Text prompts in the interpreter
+    def print_in_interpreter(): 
+
+        #Open module
+        self.close_contours_open.setChecked(False)
+        self.open_section(name = 'close_contours')
+
+    
+        pass
 
     #- Init PROCESS AND ANALYSE Tab
     def init_pandq_tab(self): 

@@ -1795,7 +1795,7 @@ class ImChannel(): #channel
         organ.mH_settings['setup']['keep_largest'][ch_name] = {}
         organ.mH_settings['setup']['alpha'][ch_name] = {}
 
-        self.save_channel(im_proc=self.im_proc())
+        self.save_channel(im_proc=self.im_proc(new=True))
         organ.add_channel(imChannel=self)
         # organ.save_organ()
         
@@ -1806,13 +1806,13 @@ class ImChannel(): #channel
             alert('error_beep')
         return im
     
-    def im_proc(self, new=True):#
+    def im_proc(self, new=False):#
         if new: 
             im_proc =  np.copy(self.im())  
         else: 
             if hasattr(self, 'dir_stckproc'):
                 dir_stck = self.parent_organ.dir_res(dir='s3_numpy') / self.dir_stckproc
-                im_proc = io.imread(str(dir_stck))#self.dir_stckproc))
+                im_proc = np.load(str(dir_stck))#self.dir_stckproc))
                 if not isinstance(im_proc, np.ndarray):
                     print('>> Error: morphoHeart was unable to load processed tiff.\n>> Directory: ',str(dir_stck))
                     alert('error_beep')
@@ -1869,7 +1869,7 @@ class ImChannel(): #channel
         process = ['ImProc', self.channel_no, 'A-MaskChannel','Status']
 
         #Load images
-        im_o = np.copy(self.im())
+        im_o = np.copy(self.im_proc())
         im_mask = io.imread(str(self.dir_mk))
         #Process
         print('\n---- Masking! ----')
@@ -1877,8 +1877,7 @@ class ImChannel(): #channel
             #Check the dimensions of the mask with those of the image
             im_o[im_mask == False] = 0
             self.masked = True
-            self.save_channel(im_proc=im_o)
-            
+
             #Update organ workflow
             self.parent_organ.update_mHworkflow(process, update = 'DONE')
             
@@ -1898,6 +1897,9 @@ class ImChannel(): #channel
             if get_by_path(workflow, process_up2) == 'NI':
                 self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
             
+            #Save channel
+            self.save_channel(im_proc=im_o)
+            
         else: 
             print('For some reason self.shape != im_mask.shape!')
             alert('bubble')
@@ -1912,18 +1914,17 @@ class ImChannel(): #channel
 
         #Process
         print('\n---- Closing Contours Auto! ----')
-        #> Create initial stack
-        # im_proc = create_initial_closed_stack(myStack=im_proc, gui_param=gui_param)
         #> Close contours Automatically
         im_proc = autom_close_contours(stack = im_proc, ch = self.channel_no,
                                         gui_param = gui_param, gui_plot = gui_plot, win = win)
-        #> Save Channel
-        self.save_channel(im_proc=im_proc)
 
         #Update organ imChannels
         self.parent_organ.add_channel(self)
         #Update channel process
-        self.process.append('ClosedCont-Auto')
+        slc_first_py = gui_param['start_slc']
+        slc_last_py = gui_param['end_slc']
+        self.process.append('ClosedCont-Auto - Slc'+str(slc_first_py)+'-'+str(slc_last_py))
+
         #Update organ workflow
         self.parent_organ.update_mHworkflow(process, update = 'DONE')
         process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
@@ -1932,8 +1933,12 @@ class ImChannel(): #channel
         process_up2 = ['ImProc','Status']
         if get_by_path(workflow, process_up2) == 'NI':
             self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
+
+        #Save channel
+        self.save_channel(im_proc=im_proc)
         
-    def closeContours_manual(self):
+    def closeContours_manual(self, gui_param, gui_plot):
+        from .mH_funcContours import manual_close_contours
         # Workflow process
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc', self.channel_no, 'B-CloseCont','Steps','B-Manual','Status']
@@ -1943,7 +1948,8 @@ class ImChannel(): #channel
         
         #Process
         print('\n---- Closing Contours Manually! ----')
-        
+        im_proc = manual_close_contours(stack = im_proc, ch = self.channel_no,
+                                        gui_param = gui_param, gui_plot = gui_plot, win = win)
                 
         #Update organ workflow
         self.parent_organ.update_mHworkflow(process, update = 'DONE')
@@ -1952,7 +1958,6 @@ class ImChannel(): #channel
         if get_by_path(workflow, process_up) == 'NI':
             self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
         
-
         #Update channel process
         self.process.append('ClosedCont-Manual')
                 
@@ -1963,6 +1968,9 @@ class ImChannel(): #channel
         process_up2 = ['ImProc','Status']
         if get_by_path(workflow, process_up2) == 'NI':
             self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
+        
+        #Save channel
+        self.save_channel(im_proc=im_proc)
         
         #Update
         # 'B-CloseCont':{'Status': 'NI',

@@ -22,36 +22,6 @@ from .mH_classes_new import ImChannel
 from ..gui.config import mH_config
 
 #%% - morphoHeart A functions
-# def create_initial_closed_stack (stack, gui_param):
-#     """
-#     Funtion that initialises the closed stack between the slice range given as input by the user
-
-#     Parameters
-#     ----------
-#     stack : numpy array
-#         Stack being processed.
-#     slices : tuple
-#         start_slice, end_slice
-
-#     Returns
-#     -------
-#     stack_closed : numpy array
-#         Resulting closed stack.
-
-#     """
-#     slc_first = gui_param['start_slc']-1
-#     slc_last = gui_param['end_slc']-1
-#     stack_closed = np.zeros_like(stack, dtype='uint16')
-
-#     if slc_first > 0:
-#         for slc in range(0,slc_first):
-#             stack_closed[slc,:,:] = stack[slc,:,:]
-#     if slc_last < len(stack):
-#         for slc in range(slc_last,len(stack)):
-#             stack_closed[slc,:,:] = stack[slc,:,:]
-
-#     return stack_closed
-
 def autom_close_contours(stack, ch, gui_param, gui_plot, win):
     """
     Funtion that automatically closes the contours of the input slice between the range given by 'slices'
@@ -59,10 +29,10 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
     """
 
     level = gui_plot['level']
-    slc_first = gui_param['start_slc']
-    slc_first_py = slc_first-1 #Transformed to python
-    slc_last = gui_param['end_slc']
-    slc_last_py = slc_last-1#Transformed to python
+    slc_first_py = gui_param['start_slc']
+    slc_first = slc_first_py+1
+    slc_last_py = gui_param['end_slc']
+    slc_last = slc_last_py+1
     plot2d = gui_param['plot2d']
     n_slices = gui_param['n_slices']
     min_contour_len = gui_param['min_contour_len']
@@ -74,8 +44,8 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
     new_stack = copy.deepcopy(stack)
 
     print('\n')
-    win.prog_bar_range(0, slc_last-slc_first)
-    win.win_msg('Automatically closing contours ('+ch+', No. slices to close: '+str(slc_last-slc_first)+' )')
+    win.prog_bar_range(0, slc_last_py-slc_first_py)
+    win.win_msg('Automatically closing contours ('+ch+', No. slices to close: '+str(slc_last-slc_first)+')')
 
     for index, slc_py in enumerate(range(slc_first_py, slc_last_py)):
 
@@ -90,21 +60,21 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
         # Plot contours
         if plot2d and (index % n_slices == 0):
             print("\n------------- Channel "+str(ch)+" / Slice "+str(slc)+" -------------")
-            params_props = {'myIm': myIm, 'ch': ch, 'slc':slc, 
+            params_props = {'myIm': copy.deepcopy(myIm), 'ch': ch, 'slc':slc, 
                             'cont_sort': contours, 'win':win}
             plot_props(params_props)
             win.add_thumbnail(function='fcC.plot_props', params = params_props, 
-                              name='Cont. Slc'+str(slc+1))
+                              name='Orig. Cont Slc'+str(slc))
 
         # Select only the contours that have a max intensity greater than min_int
         filt_cont, filt_props = filter_contours(contours, props, min_int = min_int, mean_int = mean_int)
         # Plot filtered contours
-        if plot2d and (index % n_slices == 0):
-            params_props = {'myIm': myIm, 'ch': ch, 'slc':slc, 
-                            'cont_sort': filt_cont, 'win':win}
-            plot_props(params_props)
-            win.add_thumbnail(function='fcC.plot_props', params = params_props, 
-                              name='Filt Cont. Slc'+str(slc+1))
+        # if plot2d and (index % n_slices == 0):
+        #     params_props = {'myIm': myIm, 'ch': ch, 'slc':slc, 
+        #                     'cont_sort': filt_cont, 'win':win}
+        #     plot_props(params_props)
+        #     win.add_thumbnail(function='fcC.plot_props', params = params_props, 
+        #                       name='Filt Cont Slc'+str(slc))
             
         # Find distance between all contours and save information of those whose are at a distance less than minDist
         data_connect = dist_btw_allCont(contours = filt_cont, user_min_dist = min_dist)
@@ -117,7 +87,7 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
         # if plotshow:
         #     print('\n-> FINAL CONTOURS')
         if plot2d and (index % n_slices == 0):
-            params_props = {'myIm': myIm, 'ch': ch, 'slc':slc, 
+            params_props = {'myIm': copy.deepcopy(myIm_closedCont), 'ch': ch, 'slc':slc, 
                             'cont_sort': new_contours, 'win':win}
             plot_props(params_props)
             win.add_thumbnail(function='fcC.plot_props', params = params_props, 
@@ -126,61 +96,60 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
 
         #Update Bar
         win.prog_bar_update(value = slc_py-slc_first_py)
-        print('slc_py-slc_first_py:',slc_py-slc_first_py)
     
-    win.prog_bar_update(value = 100)
+    win.prog_bar_update(value = slc_last-slc_first)
+    
+    #Plot slice range
+    win.plot_all_slices(ch = ch, slice_range = (slc_first_py, slc_last_py))
+
     return new_stack
 
-def manual_close_contours(stack_closed, stack_o, stack_m, slices, n_rows, chStr, exit_code, level):
+def manual_close_contours(stack, ch, gui_param, gui_plot, win):
+                        #   stack_closed, stack_o, stack_m, ):
 
     """
     Function used to manually close the contours of the stack
 
-    Parameters
-    ----------
-    stack_closed : numpy array
-        Input closed stack.
-    stack_o : numpy array
-        Copy of closed stack.
-    stack_m : numpy array
-        Copy of original masked stack to process.
-    slices : tuple
-        start_slice, end_slice
-    n_rows : int
-        Number of rows in subplot.
-    chStr : str
-        Text indicating channel being processed ('ch0': myocardium/ 'ch1': endocardium).
-    exit_code : boolean
-        True if user wants to exit code, else False.
-    level : float 
-        Value along which to find contours in the array. Parameter for skimage.measure.find_contours
-
-    Returns
-    -------
-    stack_closed : numpy array
-        Resulting closed stack.
-    last_slc :  int
-        Last processed slice
-    exit_code : boolean
-        True if user wants to exit code, else False.
-
     """
-    print('\n- Closing manually slices: ',slices[0], '-',slices[1]-1)
 
-    exit_code = False
-    slcs_per_im = n_rows*4
+    # manual_close_contours(stack = im_proc, ch = self.channel_no, 
+    #                                     gui_param = gui_param, gui_plot = gui_plot, win = win)
+    
+    level = gui_plot['level']
+    slc_first_py = gui_param['start_slc']
+    slc_first = slc_first_py+1
+    slc_last_py = gui_param['end_slc']
+    slc_last = slc_last_py+1
+    no_slices = slc_last_py-slc_first_py
 
-    slices_first = list(range(slices[0],slices[1]+1,slcs_per_im))
-    slices_last =  list(range(slices[0]+slcs_per_im,slices[1]+1,slcs_per_im))
+    n_rows = int(gui_plot['n_rows'])
+    n_cols = int(gui_plot['n_cols'])
+    slcs_per_im = n_rows*n_cols
+    slices = list(range(slc_first_py,slc_last_py+1,slcs_per_im))
 
-    if slices_last != slices[-1]:
-        slices_last.append(slices[-1])
+    min_contour_len = gui_param['min_contour_len']
+    min_int = gui_param['min_int']
+    mean_int = gui_param['mean_int']
+    min_dist = gui_param['min_dist']
 
-    # print('slices_first:', shape(slices_first))
+    win.prog_bar_range(0, slc_last_py-slc_first_py)
+    win.win_msg('Manually closing contours ('+ch+', No. slices to close: '+str(slc_last-slc_first)+')')
 
-    for i in range(len(slices_first)):#shape(slices_first)[0]):
-        slc_tuple = (slices_first[i], slices_last[i])
-        plotSlcsRange(stack_closed, slc_tuple, 'INITIAL', slcs_per_im, level)
+    if slices[-1] != slc_last+1:
+        slices.append(slc_last+1)
+
+    for nn in range(len(slices[:-1])):
+        # plotSlcsRange(stack_closed, slc_tuple, 'INITIAL', slcs_per_im, level)
+        slc_tuple = (slices[nn], slices[nn+1])
+        params = {'stack': stack, 'slices_plot': slc_tuple, 
+                    'text': 'Contours', 'slcs_per_im': slcs_per_im, 
+                    'n_rows': n_rows, 'n_cols': n_cols,
+                    'level': level, 'min_contour_length': min_contour_len}
+        win.add_thumbnail(function ='plot_slc_range', params = params, 
+                               name = 'Cont Slcs '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1]-1+1)+'')
+        win.plot_slc_range(params)
+
+        
         slc_list, slc_end = getSlices(slc_tuple, 'you would like to close')
         # print('AJA - slc_list:', slc_list)
 
@@ -780,12 +749,14 @@ def plot_props(params):
     rows = num_contours // cols
     if num_contours%cols != 0:
         rows = rows + 1
-
+    if rows == 0: 
+        rows = 1
+    # print('rows:', rows)
     fig11 = win.figure#plt.figure(figsize=(cols*imSize+colorImSize, rows*imSize), constrained_layout=True)
     fig11.clear()
     
     # gridspec inside gridspec
-    outer_grid = fig11.add_gridspec(nrows=1,ncols=2, width_ratios=[1,2])
+    outer_grid = fig11.add_gridspec(nrows=1, ncols=2, width_ratios=[1,2])
     outer_grid.update(left=0.1,right=0.9,top=0.95,bottom=0.05,wspace=0,hspace=0)
     # Grid where color image will be placed
     color_grid = outer_grid[0].subgridspec(nrows=1, ncols=1, wspace=0, hspace=0)

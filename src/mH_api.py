@@ -22,7 +22,7 @@ from .gui.gui_classes import *
 # update settings (wf_info) and create prompts and toggle buttons
 def mask_channel(controller, ch_name): 
     # Workflow process
-    workflow = controller.rgan.workflow['morphoHeart']
+    workflow = controller.organ.workflow['morphoHeart']
     process = ['ImProc', ch_name, 'A-MaskChannel','Status']
     #Initial message
     controller.main_win.win_msg('Masking Channel '+str(ch_name[-1])+'!')
@@ -50,7 +50,7 @@ def autom_close_contours(controller, ch_name):
     #Get channel
     im_ch = controller.organ.obj_imChannels[ch_name]
     # Automatically Close Contours
-    im_ch.closeContours_autom(gui_param = controller.main_win.gui_autom_close_contours[ch_name], 
+    im_ch.closeContours_auto(gui_param = controller.main_win.gui_autom_close_contours[ch_name], 
                               gui_plot = controller.main_win.plot_contours_settings[ch_name], 
                               win = controller.main_win)
 
@@ -73,7 +73,7 @@ def manual_close_contours(controller, ch_name):
     #Get channel
     im_ch = controller.organ.obj_imChannels[ch_name]
     #Close contours manually
-    stack_closed = im_ch.closeContours_manual(gui_param = controller.main_win.gui_manual_close_contours[ch_name])
+    im_ch.closeContours_manual(gui_param = controller.main_win.gui_manual_close_contours[ch_name])
     
     #Update Status in GUI and in CH Progress 
     status_btn = getattr(controller.main_win, 'manual_close_'+ch_name+'_status')
