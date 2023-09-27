@@ -35,6 +35,7 @@ class Controller:
         self.new_organ_win = None
         self.main_win = None
         self.load_s3s = None
+        self.proj_settings_win = None
 
     def show_welcome(self):
         #Close previous windows if existent
@@ -250,8 +251,14 @@ class Controller:
         else: 
             self.load_s3s.show()
         
-    def init_main_win(self): 
+    def show_proj_settings(self, parent_win:str):
+        if self.proj_settings_win == None:
+            self.proj_settings_win = ProjSettings(proj = self.proj) 
+        self.proj_settings_win.show()
 
+    def init_main_win(self): 
+        
+        self.main_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win='main_win'))
         self.init_segmentation_tab()
         self.init_morphoHeart_tab()
 
@@ -272,6 +279,11 @@ class Controller:
         # self.main_win.autom_close_ch3_play.clicked.connect(lambda: self.autom_close_contours('ch3'))
         # self.main_win.autom_close_ch4_play.clicked.connect(lambda: self.autom_close_contours('ch4'))
 
+        #Manual Closure Contours
+        self.main_win.manual_close_ch1_play.clicked.connect(lambda: self.manual_close_contours('ch1'))
+        # self.main_win.manual_close_ch2_play.clicked.connect(lambda: self.manual_close_contours('ch2'))
+        # self.main_win.manual_close_ch3_play.clicked.connect(lambda: self.manual_close_contours('ch3'))
+        # self.main_win.manual_close_ch4_play.clicked.connect(lambda: self.manual_close_contours('ch4'))
 
         # self.main_win.ch1_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch1'))
         # self.main_win.ch1_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch1'))
@@ -577,7 +589,7 @@ class Controller:
         print('self.organ.mH_settings[wf_info]: ',self.organ.mH_settings['wf_info'])
         print('self.organ.submeshes: ', self.organ.submeshes)
 
-    #Channels related
+    #Channel segmentation related
     def mask_ch(self, ch_name): 
         mA.mask_channel(controller=self, ch_name=ch_name)
         if not mH_config.dev:
@@ -588,12 +600,18 @@ class Controller:
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 
+    def manual_close_contours(self, ch_name):
+        mA.manual_close_contours(controller=self, ch_name=ch_name)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
+    
     def close_cont(self, ch_name):
         mA.close_cont(controller=self, ch_name=ch_name)
 
     def select_cont(self, ch_name):
         mA.select_cont(controller=self, ch_name=ch_name)
 
+    #Analysis related
     def run_keeplargest(self):
         mA.run_keeplargest(controller=self)
         if not mH_config.dev:

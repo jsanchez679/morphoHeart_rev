@@ -181,18 +181,18 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
            <widget class="QPushButton" name="q_orient">
             <property name="minimumSize">
              <size>
-              <width>15</width>
-              <height>15</height>
+              <width>18</width>
+              <height>18</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>15</width>
-              <height>15</height>
+              <width>18</width>
+              <height>18</height>
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">QPushButton{border-radius:7px;
+             <string notr="true">QPushButton{border-radius:9px;
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);

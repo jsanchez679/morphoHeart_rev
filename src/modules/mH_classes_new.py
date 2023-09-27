@@ -1926,7 +1926,8 @@ class ImChannel(): #channel
         self.process.append('ClosedCont-Auto - Slc'+str(slc_first_py)+'-'+str(slc_last_py))
 
         #Update organ workflow
-        self.parent_organ.update_mHworkflow(process, update = 'DONE')
+        self.parent_organ.update_mHworkflow(process, update = 'Initialised')
+        getattr(win, 'autom_close_'+self.channel_no+'_done').setEnabled(True)
         process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
         if get_by_path(workflow, process_up) == 'NI':
             self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
@@ -1937,7 +1938,7 @@ class ImChannel(): #channel
         #Save channel
         self.save_channel(im_proc=im_proc)
         
-    def closeContours_manual(self, gui_param, gui_plot):
+    def closeContours_manual(self, gui_param, gui_plot, win):
         from .mH_funcContours import manual_close_contours
         # Workflow process
         workflow = self.parent_organ.workflow['morphoHeart']
@@ -1950,33 +1951,26 @@ class ImChannel(): #channel
         print('\n---- Closing Contours Manually! ----')
         im_proc = manual_close_contours(stack = im_proc, ch = self.channel_no,
                                         gui_param = gui_param, gui_plot = gui_plot, win = win)
-                
-        #Update organ workflow
-        self.parent_organ.update_mHworkflow(process, update = 'DONE')
         
-        process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
-        if get_by_path(workflow, process_up) == 'NI':
-            self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
+        # #Update organ imChannels
+        # self.parent_organ.add_channel(self)
+        # #Update channel process
+        # slc_first_py = gui_param['start_slc']
+        # slc_last_py = gui_param['end_slc']
+        # self.process.append('ClosedCont-Manual - Slc'+str(slc_first_py)+'-'+str(slc_last_py))
+
+        # #Update organ workflow
+        # self.parent_organ.update_mHworkflow(process, update = 'Initialised')
+        # getattr(win, 'manual_close_'+self.channel_no+'_done').setEnabled(True)
+        # process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
+        # if get_by_path(workflow, process_up) == 'NI':
+        #     self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
+        # process_up2 = ['ImProc','Status']
+        # if get_by_path(workflow, process_up2) == 'NI':
+        #     self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
         
-        #Update channel process
-        self.process.append('ClosedCont-Manual')
-                
-        #Update organ imChannels
-        self.parent_organ.add_channel(self)
-        # self.parent_organ.save_organ()
-        
-        process_up2 = ['ImProc','Status']
-        if get_by_path(workflow, process_up2) == 'NI':
-            self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-        
-        #Save channel
-        self.save_channel(im_proc=im_proc)
-        
-        #Update
-        # 'B-CloseCont':{'Status': 'NI',
-        #                         'B-Manual': {'Status': 'NI'},
-        #                                     # 'Range': None, 
-        #                                     # 'Range_completed': None}, 
+        # #Save channel
+        # self.save_channel(im_proc=im_proc)
             
     def closeInfOutf(self):
         # Workflow process

@@ -15,6 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 plt.rcParams['figure.constrained_layout.use'] = True
+from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
 #%% ##### - Other Imports - ##################################################
 from .mH_funcBasics import ask4input, ask4inputList, get_by_path, alert, palette_rbg
@@ -105,17 +106,12 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
     return new_stack
 
 def manual_close_contours(stack, ch, gui_param, gui_plot, win):
-                        #   stack_closed, stack_o, stack_m, ):
 
     """
     Function used to manually close the contours of the stack
 
     """
-
-    # manual_close_contours(stack = im_proc, ch = self.channel_no, 
-    #                                     gui_param = gui_param, gui_plot = gui_plot, win = win)
-    
-    level = gui_plot['level']
+    level = gui_param['level']
     slc_first_py = gui_param['start_slc']
     slc_first = slc_first_py+1
     slc_last_py = gui_param['end_slc']
@@ -126,17 +122,13 @@ def manual_close_contours(stack, ch, gui_param, gui_plot, win):
     n_cols = int(gui_plot['n_cols'])
     slcs_per_im = n_rows*n_cols
     slices = list(range(slc_first_py,slc_last_py+1,slcs_per_im))
+    if slices[-1] != slc_last_py+1:
+        slices.append(slc_last_py+1)
 
     min_contour_len = gui_param['min_contour_len']
-    min_int = gui_param['min_int']
-    mean_int = gui_param['mean_int']
-    min_dist = gui_param['min_dist']
 
     win.prog_bar_range(0, slc_last_py-slc_first_py)
     win.win_msg('Manually closing contours ('+ch+', No. slices to close: '+str(slc_last-slc_first)+')')
-
-    if slices[-1] != slc_last+1:
-        slices.append(slc_last+1)
 
     for nn in range(len(slices[:-1])):
         # plotSlcsRange(stack_closed, slc_tuple, 'INITIAL', slcs_per_im, level)
@@ -146,48 +138,57 @@ def manual_close_contours(stack, ch, gui_param, gui_plot, win):
                     'n_rows': n_rows, 'n_cols': n_cols,
                     'level': level, 'min_contour_length': min_contour_len}
         win.add_thumbnail(function ='plot_slc_range', params = params, 
-                               name = 'Cont Slcs '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1]-1+1)+'')
+                            name = 'Cont Slcs '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1]-1+1)+'')
         win.plot_slc_range(params)
 
+        win.setup_get_slices_thread(slc_tuple, win)
+        # while win.worker.status != 'DONE': 
+        #     pass
+
+        # print('Now it is DONE!')
         
-        slc_list, slc_end = getSlices(slc_tuple, 'you would like to close')
+
+        # # Open interpreter
+        # getattr(win, 'close_contours_open').setChecked(False)
+        # win.open_section(name = 'close_contours')
+        # slc_list, slc_end = get_slices(slc_tuple, win)
         # print('AJA - slc_list:', slc_list)
 
-        while len(slc_list) != 0:
-            exit_code, slc_end, last_slc, stack_closed = manuallyCloseContoursTuple (slc_list, stack_closed, stack_o, 
-                                                                                     stack_m, chStr, exit_code, level)
+    #     while len(slc_list) != 0:
+    #         exit_code, slc_end, last_slc, stack_closed = manuallyCloseContoursTuple (slc_list, stack_closed, stack_o, 
+    #                                                                                  stack_m, chStr, exit_code, level)
 
-            if exit_code:
-                alert('error',1)
-                print("\n- Exit script - last slice ", last_slc)
-                break
+    #         if exit_code:
+    #             alert('error',1)
+    #             print("\n- Exit script - last slice ", last_slc)
+    #             break
 
-            plotSlcsRange(stack_closed, slc_tuple, 'CHECKING (after having closed)', slcs_per_im, level)
-            q_done = str(input('> Are you done CLOSING the contours for this - tuple ('+ str(slc_tuple[0])+','+str(slc_tuple[1]-1)+')?: \n - [0]:no/[1/ ]:yes! >>>>> ')).lower()
-            if q_done == '1' or q_done == '':
-                # print('slc list: ', slc_list)
-                break
-            #     if i == len(slices_first)-1:
-            #         q_not_done_all = str(input('> Do you want to close any other slices? [0]:no/[1/ ]:yes! >>>>> '))
-            #         if q_not_done_all == '1' or q_not_done_all == '': 
-            #             slc_list, slc_end = getSlices((0,stack_closed.shape[0]), 'you would like to close')
-            #         else: 
-            #             exit_code = True
-            #             break
-            #     else: 
-            #         break
-            elif q_done == '0':
-                slc_list, slc_end = getSlices(slc_tuple, 'you would like to close')
+    #         plotSlcsRange(stack_closed, slc_tuple, 'CHECKING (after having closed)', slcs_per_im, level)
+    #         q_done = str(input('> Are you done CLOSING the contours for this - tuple ('+ str(slc_tuple[0])+','+str(slc_tuple[1]-1)+')?: \n - [0]:no/[1/ ]:yes! >>>>> ')).lower()
+    #         if q_done == '1' or q_done == '':
+    #             # print('slc list: ', slc_list)
+    #             break
+    #         #     if i == len(slices_first)-1:
+    #         #         q_not_done_all = str(input('> Do you want to close any other slices? [0]:no/[1/ ]:yes! >>>>> '))
+    #         #         if q_not_done_all == '1' or q_not_done_all == '': 
+    #         #             slc_list, slc_end = getSlices((0,stack_closed.shape[0]), 'you would like to close')
+    #         #         else: 
+    #         #             exit_code = True
+    #         #             break
+    #         #     else: 
+    #         #         break
+    #         elif q_done == '0':
+    #             slc_list, slc_end = getSlices(slc_tuple, 'you would like to close')
             
-        if exit_code:
-            break
+    #     if exit_code:
+    #         break
 
-    if slc_end == slices[1]:
-        last_slc = slices[1]
+    # if slc_end == slices[1]:
+    #     last_slc = slices[1]
         # alert('wohoo',1)
         # print("- All Done - Contours have been manually closed!")
 
-    return stack_closed, last_slc, exit_code
+    # return stack_closed, last_slc, exit_code
 
 def manuallyCloseContoursTuple (slc_list, stack_closed, stack_o, stack_m, chStr, exit_code, level):
     """
@@ -591,52 +592,40 @@ def auto_draw_close_contours(myIm, data_Connect):
     return myIm
 
 # Interactive functions
-def getSlices (slc_tuple, text):
+def get_slices(slc_tuple, win):
     """
     Funtion that returns a list with the slice numbers to be processed/checked.
-
-    Parameters
-    ----------
-    slc_tuple : tuple of int
-        Tuple defining the initial and final slice.
-    text : str
-        Additional text given as input to print corresponding to the process being performed.
-
-    Returns
-    -------
-    slc_list : list of int
-        List of slices to be processed/checked.
-    slc_end : int
-        Last slice of the tuple.
-
     """
 
     slc_list = []
-    input_slc = ask4input('Select the slices '+text+' from -('+str(slc_tuple[0])+','+str(slc_tuple[1]-1)+')- \n\t\t(e.g. to close slices 5, 9, 10, and 11 type: 5,9-11)/[all/ ]:all/[N/n]:none): ', str)
-    if input_slc == 'all' or input_slc == '':
-        slc_list = list(range(slc_tuple[0],slc_tuple[1],1))
-        # print(slc_list)
-    elif input_slc in ['n', 'N']:
-        slc_list = []
-    else:
-        slc_list = []
-        comma_split = input_slc.split(',')
+    q_text = 'Select the slices you would like to close from -('+str(slc_tuple[0])+','+str(slc_tuple[1]-1)+')- \n(e.g. to close slices 5, 9, 10, and 11 type: 5,9-11), [all/ ]:all, [N/n]:none)'
+    options = ['int', 'all','', 'N', 'n']
+    win.emit_question(q_text, options)
 
-        for string in comma_split:
-            if '-' in string:
-                minus_split = string.split('-')
-                #print(minus_split)
-                for n in list(range(int(minus_split[0]),int(minus_split[1])+1,1)):
-                    #print(n)
-                    slc_list.append(n)
-            elif string == '':
-                pass
-            else:
-                slc_list.append(int(string))
+    # if input_slc == 'all' or input_slc == '':
+    #     slc_list = list(range(slc_tuple[0],slc_tuple[1],1))
+    #     # print(slc_list)
+    # elif input_slc in ['n', 'N']:
+    #     slc_list = []
+    # else:
+    #     slc_list = []
+    #     comma_split = input_slc.split(',')
 
-    slc_end = slc_tuple[1]
+    #     for string in comma_split:
+    #         if '-' in string:
+    #             minus_split = string.split('-')
+    #             #print(minus_split)
+    #             for n in list(range(int(minus_split[0]),int(minus_split[1])+1,1)):
+    #                 #print(n)
+    #                 slc_list.append(n)
+    #         elif string == '':
+    #             pass
+    #         else:
+    #             slc_list.append(int(string))
 
-    return slc_list, slc_end
+    # slc_end = slc_tuple[1]
+
+    # return slc_list, slc_end
 
 #Draw functions
 def getClicks (clicks, myIm, scale, text):

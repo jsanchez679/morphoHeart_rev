@@ -53,11 +53,6 @@ def autom_close_contours(controller, ch_name):
     im_ch.closeContours_auto(gui_param = controller.main_win.gui_autom_close_contours[ch_name], 
                               gui_plot = controller.main_win.plot_contours_settings[ch_name], 
                               win = controller.main_win)
-
-    #Update Status in GUI and in CH Progress 
-    status_btn = getattr(controller.main_win, 'autom_close_'+ch_name+'_status')
-    controller.main_win.update_status(workflow, process, status_btn)
-    controller.main_win.update_ch_progress()
     #Toggle button
     getattr(controller.main_win, 'autom_close_'+ch_name+'_play').setChecked(True)
     #Win msg 
@@ -65,25 +60,44 @@ def autom_close_contours(controller, ch_name):
     alert('woohoo')
 
 def manual_close_contours(controller, ch_name):
+
     # Workflow process
     workflow = controller.organ.workflow['morphoHeart']
     process = ['ImProc', ch_name, 'B-CloseCont','Steps','A-Manual','Status']
     #Initial message    
     controller.main_win.win_msg('Manually closing contours for Channel '+str(ch_name[-1])+'!')
+    #Close contours manually
+    controller.main_win.running_process = 'manual'
+    #Open Section
+    getattr(controller.main_win, 'close_contours_open').setChecked(False)
+    controller.main_win.open_section(name = 'close_contours')
+
     #Get channel
     im_ch = controller.organ.obj_imChannels[ch_name]
-    #Close contours manually
-    im_ch.closeContours_manual(gui_param = controller.main_win.gui_manual_close_contours[ch_name])
-    
-    #Update Status in GUI and in CH Progress 
-    status_btn = getattr(controller.main_win, 'manual_close_'+ch_name+'_status')
-    controller.main_win.update_status(workflow, process, status_btn)
-    controller.main_win.update_ch_progress()
-    #Toggle button
-    getattr(controller.main_win, 'manual_close_'+ch_name+'_play').setChecked(True)
-    #Win msg 
-    controller.main_win.win_msg('Contours of Channel '+str(ch_name[-1])+' have been manually closed!')
-    alert('woohoo')
+    # Load image
+    im_proc = im_ch.im_proc()
+    im_proc = fcC.manual_close_contours(stack = im_proc, ch = ch_name,
+                                        gui_param = controller.main_win.gui_manual_close_contours[ch_name], 
+                                        gui_plot = controller.main_win.plot_contours_settings[ch_name], 
+                                        win = controller.main_win)
+
+    # #Setting up thread to run close contours
+    # controller.main_win.setup_manual_close_thread(im_ch = im_ch, 
+    #                                               gui_param = controller.main_win.gui_manual_close_contours[ch_name],
+    #                                               gui_plot = controller.main_win.plot_contours_settings[ch_name],
+    #                                               win = controller.main_win)
+
+    # im_ch.closeContours_manual(gui_param = controller.main_win.gui_manual_close_contours[ch_name],
+    #                            gui_plot = controller.main_win.plot_contours_settings[ch_name],
+    #                            win = controller.main_win)
+    # #Toggle button
+    # getattr(controller.main_win, 'manual_close_'+ch_name+'_play').setChecked(True)
+    # #Win msg 
+    # controller.main_win.win_msg('Contours of Channel '+str(ch_name[-1])+' have been manually closed!')
+    # alert('woohoo')
+    # #Update running process
+    # controller.main_win.running_process = None
+    # controller.main_win.options = []
 
 def close_cont(controller, ch_name):
     #Check workflow status
@@ -178,6 +192,7 @@ def select_cont(controller, ch_name):
     select_btn = getattr(controller.main_win, ch_name+'_selectcont')
     select_btn.setChecked(True)
 
+#ANALYSIS TAB
 def run_keeplargest(controller):
     workflow = controller.organ.workflow
     #Check channels have already been created: 

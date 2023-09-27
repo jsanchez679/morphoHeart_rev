@@ -10,12 +10,13 @@ Version: Apr 26, 2023
 # import sys
 from PyQt6 import uic
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtCore import pyqtSlot, QDate, Qt, QRegularExpression, QRect, QSize, QAbstractTableModel
+from PyQt6.QtCore import (pyqtSlot, QDate, Qt, QRegularExpression, QRect, QSize, QAbstractTableModel, QEvent,
+                            QObject, QThread, pyqtSignal)
 from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileDialog, QTabWidget,
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
                               QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem, QSpacerItem, QSizePolicy, 
                               QDialogButtonBox, QMessageBox, QHeaderView, QStyle)
-from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush
+from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush, QTextCharFormat
 from qtwidgets import Toggle, AnimatedToggle
 # import qtawesome as qta
 from pathlib import Path
@@ -3242,6 +3243,171 @@ class Load_S3s(QDialog):
         if btn != None: 
             btn.setChecked(False)
 
+class ProjSettings(QDialog): 
+    def __init__(self, proj, parent=None):
+        super().__init__()
+        self.proj_name = ''
+        self.proj_dir_parent = ''
+        uic.loadUi('src/gui/ui/project_settings_screen.ui', self)
+        self.setWindowTitle('Project Settings...')
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+
+        self.proj = proj
+        print(proj.__dict__)
+
+        #Initialise window sections
+        self.init_gral_proj()
+        #Initialise Tabs for morphoHeart Analysis and morphoCell
+        for n, tab, process in zip(count(), ['tab_mHeart', 'tab_mCell'], ['morphoHeart', 'morphoCell']):
+            ch_tab = getattr(self, 'tabWidget')
+            ch_tab.setTabVisible(n, self.proj.analysis[process])
+
+        # #- morphoHeart
+        if self.proj.analysis['morphoHeart']: 
+            #Orientation
+            self.init_orient_group()
+            #Channels
+            self.init_chs_group()
+            #ChNS
+            if isinstance(self.proj.mH_settings['setup']['chNS'], dict):
+                if self.proj.mH_settings['setup']['chNS']['layer_btw_chs']:
+                    self.init_chNS_group()
+                else: 
+                    print('Initialisong chNS - dict but no layer_btw_chs?')
+                    alert('bubble')
+            else:
+                self.set_chNS.setVisible(False)
+                self.tick_chNS.setChecked(False)
+                print('Dissapear chNS')
+            #Segments
+            if isinstance(self.proj.mH_settings['setup']['segm'], dict):
+                self.init_segments_group()
+            else: 
+                self.set_segm.setVisible(False)
+                self.tick_segm.setChecked(False)
+            #Regions
+            if isinstance(self.proj.mH_settings['setup']['sect'], dict):
+                self.init_sections_group()
+            else: 
+                self.set_sect.setVisible(False)
+                self.tick_sect.setChecked(False)
+            #Segments-Regions 
+            if isinstance(self.proj.mH_settings['setup']['segm-sect'], dict):
+                self.init_segm_sect_group()
+            else: 
+                self.set_segm_sect.setVisible(False)
+                self.tick_segm_sect.setChecked(False)
+
+        # #- morphoCell
+        if self.proj.analysis['morphoCell']: 
+            pass
+            # self.init_mCell_tab()
+
+    def init_gral_proj(self): 
+        proj_name = self.proj.info['user_projName']
+        self.lineEdit_proj_name.setText(proj_name)
+        proj_notes = self.proj.info['user_projNotes']
+        self.textEdit_ref_notes.setText(proj_notes)
+        date = self.proj.info['date_created']
+        date_qt = QDate.fromString(date, "yyyy-MM-dd")
+        self.dateEdit.setDate(date_qt)
+
+        heart_def = self.proj.info['heart_default']
+        self.heart_analysis.setChecked(heart_def)
+        proj_dir = self.proj.info['dir_proj']
+        self.lab_filled_proj_dir.setText(str(proj_dir))
+
+        an_mH = self.proj.analysis['morphoHeart']
+        self.checkBox_mH.setChecked(an_mH)
+        an_mC = self.proj.analysis['morphoCell']
+        self.checkBox_mC.setChecked(an_mC)
+        an_mP = self.proj.analysis['morphoPlot']
+        self.checkBox_mP.setChecked(an_mP)
+
+    def init_orient_group(self): 
+        sp_set = self.proj.mH_settings['setup']['orientation']
+        self.cB_stack_orient.setText(sp_set['stack'])
+        self.cB_roi_orient.setText(sp_set['roi'])
+
+    def init_chs_group(self): 
+        sp_set = self.proj.mH_settings['setup']
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']: 
+            if ch in sp_set['name_chs'].keys():
+                getattr(self, 'tick_'+ch).setChecked(True)
+                getattr(self, ch+'_username').setText(sp_set['name_chs'][ch])
+                getattr(self, ch+'_mask').setChecked(sp_set['mask_ch'][ch])
+                getattr(self,'cB_'+ch).setText(sp_set['chs_relation'][ch]+' layer')
+            else: 
+                getattr(self, 'tick_'+ch).setVisible(False)
+                getattr(self, ch+'_username').setVisible(False)
+                getattr(self, ch+'_mask').setVisible(False)
+                getattr(self,'cB_'+ch).setVisible(False)
+                getattr(self, 'fillcolor_'+ch+'_int').setVisible(False)
+                getattr(self, 'fillcolor_'+ch+'_ext').setVisible(False)
+                getattr(self, 'fillcolor_'+ch+'_tiss').setVisible(False)
+
+    def init_chNS_group(self): 
+        sp_set = self.proj.mH_settings['setup']['chNS']
+        self.tick_chNS.setChecked(True)
+        self.chNS_username.setText(sp_set['user_nsChName'])
+        self.ext_chNS.setText(sp_set['ch_ext'][0])
+        self.ext_contNS.setText(sp_set['ch_ext'][1]+'ernal')
+        self.int_chNS.setText(sp_set['ch_int'][0])
+        self.int_contNS.setText(sp_set['ch_int'][1]+'ernal')
+        self.chNS_operation.setText(sp_set['operation'])
+
+    def init_segments_group(self):
+        sp_set = self.proj.mH_settings['setup']['segm']
+        self.tick_segm.setChecked(True)
+        for cut in ['Cut1', 'Cut2']: 
+            if cut in sp_set.keys(): 
+                sp_cut = sp_set[cut]
+                num = cut[-1]
+                getattr(self, 'tick_segm'+num).setChecked(True)
+                getattr(self, 'sB_no_segm'+num).setText(str(sp_cut['no_segments']))
+                getattr(self, 'cB_obj_segm'+num).setText(sp_cut['obj_segm'])
+                getattr(self, 'sB_segm_noObj'+num).setText(str(sp_cut['no_cuts_4segments']))
+                names = []
+                for key in sp_cut['name_segments']:
+                    names.append(sp_cut['name_segments'][key])
+                getattr(self, 'names_segm'+num).setText(', '.join(names))
+
+                for ch in sp_cut['ch_segments']:
+                    for cont in sp_cut['ch_segments'][ch]:
+                        getattr(self, 'cB_segm_'+cut+'_'+ch+'_'+cont).setChecked(True)
+
+            else: 
+                getattr(self, 'tick_segm'+num).setVisible(False)
+                getattr(self, 'sB_no_segm'+num).setVisible(False)
+                getattr(self, 'cB_obj_segm'+num).setVisible(False)
+                getattr(self, 'sB_segm_noObj'+num).setVisible(False)
+
+                for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
+                    for cont in ['int', 'tiss', 'ext']:
+                        getattr(self, 'cB_segm_'+cut+'_'+ch+'_'+cont).setVisible(False)
+
+            for chh in ['ch1', 'ch2', 'ch3', 'ch4']: 
+                if chh not in self.proj.mH_settings['setup']['name_chs'].keys(): 
+                    getattr(self, 'label_segm_'+chh).setVisible(False)
+                    for contt in ['int', 'tiss', 'ext']:
+                        getattr(self, 'label_segm_'+chh+'_'+contt).setVisible(False)
+                        getattr(self, 'cB_segm_'+cut+'_'+chh+'_'+contt).setVisible(False)
+
+        self.cB_volume_segm.setChecked(sp_set['measure']['Vol'])
+        self.cB_area_segm.setChecked(sp_set['measure']['SA'])
+        self.cB_ellip_segm.setChecked(sp_set['measure']['Ellip'])
+        self.cB_angles_segm.setChecked(sp_set['measure']['Angles'])
+        self.improve_hm2D.setChecked(sp_set['improve_hm2d'])
+
+    def init_sections_group(self):
+        sp_set = self.proj.mH_settings['setup']['sect']
+        self.tick_sect.setChecked(True)
+
+    def init_segm_sect_group(self):
+        sp_set = self.proj.mH_settings['setup']['segm-sect']
+        self.tick_segm_sect.setChecked(True)
+    
 class MainWindow(QMainWindow):
 
     def __init__(self, proj, organ):
@@ -3430,10 +3596,13 @@ class MainWindow(QMainWindow):
         self.enable_load_s3s()
         #Initialise settings for plotting channels
         self.init_grid_plot()
-        # #Initialise mask process
+        #Initialise mask process
         self.init_mask()
-        # #Initialise Automatic Closure of Contours
+        #Initialise Automatic Closure of Contours
         self.init_autom_close_contours()
+        #Initialise Manual Closure of Contours
+        self.init_manual_close_contours()
+
 
         # #Initialise the Plot Widget and Scroll
         self.init_plot_widget()
@@ -3511,17 +3680,45 @@ class MainWindow(QMainWindow):
         #>> Grid settings
         #Rows and cols
         self.sB_cols_ch1.valueChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
+        # self.sB_cols_ch2.valueChanged.connect(lambda: self.get_plot_settings(ch='ch2'))
+        # self.sB_cols_ch3.valueChanged.connect(lambda: self.get_plot_settings(ch='ch3'))
+        # self.sB_cols_ch4.valueChanged.connect(lambda: self.get_plot_settings(ch='ch4'))
+
         self.sB_rows_ch1.valueChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
+        # self.sB_rows_ch2.valueChanged.connect(lambda: self.get_plot_settings(ch='ch2'))
+        # self.sB_rows_ch3.valueChanged.connect(lambda: self.get_plot_settings(ch='ch3'))
+        # self.sB_rows_ch4.valueChanged.connect(lambda: self.get_plot_settings(ch='ch4'))
 
         self.level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('level_ch1', 'slider', info = 'ch1', divider = 10))
+        # self.level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('level_ch2', 'slider', info = 'ch2', divider = 10))
+        # self.level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('level_ch3', 'slider', info = 'ch3', divider = 10))
+        # self.level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('level_ch4', 'slider', info = 'ch4', divider = 10))
+
         self.level_ch1_value.textChanged.connect(lambda: self.slider_changed('level_ch1', 'value', info = 'ch1', divider = 10))
+        # self.level_ch2_value.textChanged.connect(lambda: self.slider_changed('level_ch2', 'value', info = 'ch2', divider = 10))
+        # self.level_ch3_value.textChanged.connect(lambda: self.slider_changed('level_ch3', 'value', info = 'ch3', divider = 10))
+        # self.level_ch4_value.textChanged.connect(lambda: self.slider_changed('level_ch4', 'value', info = 'ch4', divider = 10))
         
         self.min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch1', 'slider', info ='ch1'))
+        # self.min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch2', 'slider', info ='ch2'))
+        # self.min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch3', 'slider', info ='ch3'))
+        # self.min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch4', 'slider', info ='ch4'))
+
         self.min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch1', 'value', info ='ch1'))
+        # self.min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch2', 'value', info ='ch2'))
+        # self.min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch3', 'value', info ='ch3'))
+        # self.min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch4', 'value', info ='ch4'))
 
         #Q
         self.q_level_ch1.clicked.connect(lambda: self.help('level'))
-        self.q_min_cont_length_ch1.clicked.connect(lambda: self.help('level'))
+        # self.q_level_ch2.clicked.connect(lambda: self.help('level'))
+        # self.q_level_ch3.clicked.connect(lambda: self.help('level'))
+        # self.q_level_ch4.clicked.connect(lambda: self.help('level'))
+
+        self.q_min_cont_length_ch1.clicked.connect(lambda: self.help('min_contour_length'))
+        # self.q_min_cont_length_ch2.clicked.connect(lambda: self.help('min_contour_length'))
+        # self.q_min_cont_length_ch3.clicked.connect(lambda: self.help('min_contour_length'))
+        # self.q_min_cont_length_ch4.clicked.connect(lambda: self.help('min_contour_length'))
 
         #>> Plot
         self.plot_all_slices_with_contours_ch1.clicked.connect(lambda: self.plot_all_slices(ch = 'ch1'))
@@ -3629,6 +3826,9 @@ class MainWindow(QMainWindow):
         # self.autom_min_cont_length_ch3_slider.textChanged.connect(lambda: self.slider_changed('ch3','autom_min_cont_length_ch3_slider'))
         # self.autom_min_cont_length_ch4_slider.textChanged.connect(lambda: self.slider_changed('ch4','autom_min_cont_length_ch4_slider'))
 
+        # DONE
+        self.autom_close_ch1_done.clicked.connect(lambda: self.user_done('autom_close', 'ch1'))
+
         #Initialise with user settings, if they exist!
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
@@ -3636,10 +3836,79 @@ class MainWindow(QMainWindow):
 
     def init_manual_close_contours(self): 
         
+         # - Open
+        self.manual_close_ch1_open.clicked.connect(lambda: self.open_section(name='manual_close_ch1'))
+        # self.manual_close_ch2_open.clicked.connect(lambda: self.open_section(name='manual_close_ch2'))
+        # self.manual_close_ch3_open.clicked.connect(lambda: self.open_section(name='manual_close_ch3'))
+        # self.manual_close_ch4_open.clicked.connect(lambda: self.open_section(name='manual_close_ch4'))
+
+        # - Play
+        self.manual_close_ch1_play.setStyleSheet(style_play)
+        # self.manual_close_ch2_play.setStyleSheet(style_play)
+        # self.manual_close_ch3_play.setStyleSheet(style_play)
+        # self.manual_close_ch4_play.setStyleSheet(style_play)
+
+        # - Set
+        self.manual_close_ch1_set.clicked.connect(lambda: self.set_manual_close_contours('ch1'))
+        # self.manual_close_ch2_set.clicked.connect(lambda: self.set_manual_close_contours('ch2'))
+        # self.manual_close_ch3_set.clicked.connect(lambda: self.set_manual_close_contours('ch3'))
+        # self.manual_close_ch4_set.clicked.connect(lambda: self.set_manual_close_contours('ch4'))
+
+        # Start or end slice changed
+        self.start_manual_ch1.textChanged.connect(lambda: self.slices_changed('ch1', 'manual_close'))
+        # self.start_manual_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'manual_close'))
+        # self.start_manual_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'manual_close'))
+        # self.start_manual_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'manual_close'))
+
+        self.end_manual_ch1.textChanged.connect(lambda: self.slices_changed('ch1', 'manual_close'))
+        # self.end_manual_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'manual_close'))
+        # self.end_manual_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'manual_close'))
+        # self.end_manual_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'manual_close'))
+
+        #Sliders
+        self.manual_level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch1', 'slider', divider = 10))
+
+
+        self.manual_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch1','slider'))
+        # self.manual_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch2','slider'))
+        # self.manual_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch3','slider'))
+        # self.manual_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch4','slider'))
+    
+        #Text
+        self.manual_level_ch1_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch1', 'value', divider = 10))
+        # self.manual_level_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch2', 'value', divider = 10))
+        # self.manual_level_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch3', 'value', divider = 10))
+        # self.manual_level_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch4', 'value', divider = 10))
+
+        self.manual_min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch1','value'))
+        # self.manual_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch2','value'))
+        # self.manual_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch3','value'))
+        # self.manual_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch4','value'))
+      
+        #Initialise with user settings, if they exist!
+        # for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
+        #     if ch in self.channels.keys(): 
+        #         self.user_manual_close_contours(ch_name=ch)
 
         #Interpreter
-        self.outdisplay.setMaximumBlockCount(blockcount)
-        self.outdisplay.setReadOnly(True)
+        #Console
+        self.prompt_key = '> '
+        self.buffer = []
+
+        #Input
+        self.inpfmt = self.outdisplay.currentCharFormat()
+        #Question 
+        self.qfmt = QTextCharFormat(self.inpfmt)
+        self.qfmt.setForeground(QBrush(QColor(0, 255, 0)))
+        #Output
+        self.outfmt = QTextCharFormat(self.inpfmt)
+        self.outfmt.setForeground(QBrush(QColor(0, 255, 255)))
+        #Error
+        self.errfmt = QTextCharFormat(self.inpfmt)
+        self.errfmt.setForeground(QBrush(QColor(255, 0, 0)))
+
+        #LineEdit
+        self.inpedit.returnPressed.connect(lambda: self.returnkey())
 
     def init_plot_widget(self): 
 
@@ -3672,7 +3941,152 @@ class MainWindow(QMainWindow):
         self.plots_panel_open.clicked.connect(lambda: self.open_section(name='plots_panel'))
         self.close_contours_open.clicked.connect(lambda: self.open_section(name='close_contours'))
 
-    #Functions to fill sections according to user's selections
+    #Interpreter functions
+    def eventFilter(self, source, event): 
+        if source == self.inpedit and event.type() == QEvent.Type.KeyPress: 
+            if event.key() == int(Qt.Key.Key_Return) or event.key() == int(Qt.Key.Key_Enter):
+                self.returnkey()
+        return super().eventFilter(source, event)
+
+    def returnkey(self): 
+        text = self.inpedit.text().rstrip()
+        self.emit_text(text)
+        self.inpedit.setText('')
+        print('self.buffer:', self.buffer)
+
+    def emit_text(self, text):
+        valid = self.validate_input(text)
+        if valid: 
+            self.outdisplay.setCurrentCharFormat(self.outfmt)
+            self.outdisplay.appendPlainText(self.prompt_key+ text.rstrip())
+            self.buffer.append(text.rstrip())
+        else: 
+            self.outdisplay.setCurrentCharFormat(self.errfmt)
+            self.outdisplay.appendPlainText(self.prompt_key+'Error: '+text.rstrip())
+            self.buffer.append('Error')
+
+    def validate_input(self, text): 
+        if self.running_process == 'manual': 
+            print(text)
+
+    def emit_question(self, text, options): 
+        self.outdisplay.setCurrentCharFormat(self.qfmt)
+        self.outdisplay.appendPlainText(self.prompt_key+ text.rstrip())
+        self.options = options
+    
+    def report_progress(self, n):
+        # self.stepLabel.setText(f"Long-Running Step: {n}")
+        self.outdisplay.appendPlainText('Long-Running Step:'+str(n))
+
+    def process_done(self): 
+        self.win_msg('Process DONE')
+    
+    @pyqtSlot()
+    def enableButton(self):
+        self.run_input.setEnabled(True)
+
+    @pyqtSlot()    
+    def done(self):
+        self.worker.status = 'DONE'
+        self.run_input.setEnabled(False)
+
+    def setup_get_slices_thread(self, slc_tuple, win):
+        self.thread = QThread()
+        self.worker = Worker_GetSlices(slc_tuple, win)
+        self.worker.moveToThread(self.thread)
+
+        self.thread.started.connect(self.worker.firstWork)
+        self.run_input.clicked.connect(self.worker.secondWork)
+        self.worker.wait_for_input.connect(self.enableButton)
+        self.worker.done.connect(self.done)
+
+        # Start thread
+        self.thread.start() 
+
+    # Interactive functions
+    # def get_slices(self, slc_tuple):
+    #     """
+    #     Funtion that returns a list with the slice numbers to be processed/checked.
+    #     """
+    #     slc_list = []
+    #     q_text = 'Select the slices you would like to close from -('+str(slc_tuple[0])+','+str(slc_tuple[1]-1)+')- \n(e.g. to close slices 5, 9, 10, and 11 type: 5,9-11), [all/ ]:all, [N/n]:none)'
+    #     options = ['int', 'all','', 'N', 'n']
+    #     self.emit_question(q_text, options)
+
+    #     # Step 2: Create a QThread object
+    #     self.thread = QThread()
+    #     # Step 3: Create a worker object
+    #     self.worker_thread = Worker_Thread()
+    #     # Step 4: Move worker to the thread
+    #     self.worker_thread.moveToThread(self.thread)
+    #     # Step 5: Connect signals and slots
+    #     self.thread.started.connect(self.worker_thread.run)
+    #     self.worker_thread.finished.connect(self.thread.quit)
+    #     self.worker_thread.finished.connect(self.worker_thread.deleteLater)
+    #     self.thread.finished.connect(self.thread.deleteLater)
+    #     self.worker_thread.progress.connect(self.report_progress)
+    #     # Step 6: Start the thread
+    #     self.thread.start()
+
+    #     # Final resets
+    #     self.thread.finished.connect(
+    #         lambda: self.process_done()
+    #     )
+        # self.thread.finished.connect(
+        #     lambda: self.stepLabel.setText("Long-Running Step: 0")
+        # )
+
+        # if input_slc == 'all' or input_slc == '':
+        #     slc_list = list(range(slc_tuple[0],slc_tuple[1],1))
+        #     # print(slc_list)
+        # elif input_slc in ['n', 'N']:
+        #     slc_list = []
+        # else:
+        #     slc_list = []
+        #     comma_split = input_slc.split(',')
+
+        #     for string in comma_split:
+        #         if '-' in string:
+        #             minus_split = string.split('-')
+        #             #print(minus_split)
+        #             for n in list(range(int(minus_split[0]),int(minus_split[1])+1,1)):
+        #                 #print(n)
+        #                 slc_list.append(n)
+        #         elif string == '':
+        #             pass
+        #         else:
+        #             slc_list.append(int(string))
+
+        # slc_end = slc_tuple[1]
+
+        # return slc_list, slc_end
+
+
+
+    #Done function
+    def user_done(self, process, ch_name): 
+        workflow = self.organ.workflow['morphoHeart']
+        btn = getattr(self, process+'_'+ch_name+'_done')
+        status = getattr(self,process+'_'+ch_name+'_status' )
+
+        if process == 'autom_close': 
+            sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','A-Autom','Status']
+           
+        elif process == 'manual_close': 
+            sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','B-Manual','Status']
+
+        if btn.isChecked(): 
+            self.organ.update_mHworkflow(sp_process, update = 'DONE')
+        else: 
+            self.organ.update_mHworkflow(sp_process, update = 'Initialised')
+
+        #Update Status in GUI and in CH Progress 
+        self.update_status(workflow, sp_process, status)
+        self.update_ch_progress()
+
+        print(sp_process, ':', get_by_path(workflow, sp_process))
+        
+    #Set functions 
     def set_plot_contour_settings(self, ch_name, check=False):
 
         level = getattr(self, 'level_'+ch_name+'_value')
@@ -3759,6 +4173,59 @@ class MainWindow(QMainWindow):
             print('gui_autom_close_contours: ', gui_autom_close_contours)
             return gui_autom_close_contours
 
+    def set_manual_close_contours(self, ch_name): 
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_manual_contours = self.gui_manual_contours_n(ch_name)
+        if current_gui_manual_contours != None: 
+            if 'manual_close_contours' not in wf_info.keys():
+                self.gui_manual_close_contours = current_gui_manual_contours
+            else: 
+                gui_manual_contours_loaded = self.organ.mH_settings['wf_info']['manual_close_contours']
+                self.gui_manual_close_contours, changed  = update_gui_set(loaded = gui_manual_contours_loaded, 
+                                                                    current = current_gui_manual_contours)
+                
+            getattr(self, 'manual_close_'+ch_name+'_set').setChecked(True)
+            print('self.gui_manual_close_contours:',self.gui_manual_close_contours)
+            getattr(self, 'manual_close_'+ch_name+'_play').setEnabled(True)
+
+            # Update mH_settings
+            proc_set = ['wf_info']
+            update = self.gui_manual_close_contours
+            self.organ.update_settings(proc_set, update, 'mH', add='manual_close_contours')
+        else: 
+            getattr(self, 'manual_close_'+ch_name+'_set').setChecked(False)
+
+    def gui_manual_contours_n(self, ch_name): 
+
+        start_slc = getattr(self, 'start_manual_'+ch_name).text()
+        end_slc = getattr(self, 'end_manual_'+ch_name).text()
+        if start_slc == '' or end_slc == '': 
+            self.win_msg('*Please set the slice range in which you want to run the manual closure of the contours.')
+            return None
+        elif int(start_slc) > getattr(self, 'num_slices_'+ch_name)-1:
+            num_slices = str(getattr(self, 'num_slices_'+ch_name))
+            self.win_msg('*The starting slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.')
+            return None
+        elif int(end_slc) > getattr(self, 'num_slices_'+ch_name)-1:
+            num_slices = str(getattr(self, 'num_slices_'+ch_name))
+            self.win_msg('*The ending slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.')
+            return None
+        elif int(start_slc) >= int(end_slc):
+            self.win_msg('*The ending slice needs to be less than the starting slice. Check to continue.')
+            return None
+        else: 
+            min_contour_len = int(getattr(self, 'manual_min_cont_length_'+ch_name+'_value').text())
+            level = float(getattr(self, 'manual_level_'+ch_name+'_value').text())
+
+            gui_manual_close_contours = {ch_name:{'start_slc': int(start_slc)-1, 
+                                                'end_slc': int(end_slc)-1,
+                                                'level': level,  
+                                                'min_contour_len': min_contour_len}}
+            
+            print('gui_manual_close_contours: ', gui_manual_close_contours)
+            return gui_manual_close_contours
+
+    #Functions to fill sections according to user's selections
     def user_plot_contour_settings(self, ch_name): 
         wf_info = self.organ.mH_settings['wf_info']
         if 'plot_contours_settings' in wf_info.keys():
@@ -3784,6 +4251,7 @@ class MainWindow(QMainWindow):
         if workflow['Status'] == 'DONE': 
             getattr(self, 'mask_'+ch_name+'_open').setChecked(True)
             self.open_section(name = 'mask_'+ch_name)
+            getattr(self, 'mask_'+ch_name+'_play').setChecked(True)
 
     def user_autom_close_contours(self, ch_name): 
         wf_info = self.organ.mH_settings['wf_info']
@@ -3816,7 +4284,12 @@ class MainWindow(QMainWindow):
 
                 if workflow['Status'] == 'DONE': 
                     getattr(self, 'autom_close_'+ch_name+'_open').setChecked(True)
-                    self.open_section(name = 'mask_'+ch_name)
+                    self.open_section(name = 'autom_close_'+ch_name)
+                    getattr(self, 'autom_close_'+ch_name+'_play').setChecked(True)
+                    getattr(self, 'autom_close_'+ch_name+'_done').setEnabled(True)
+                    getattr(self, 'autom_close_'+ch_name+'_done').setChecked(True)
+                elif workflow['Status'] == 'Initialised':
+                    getattr(self, 'autom_close_'+ch_name+'_done').setEnabled(True)
 
                 self.set_autom_close_contours(ch_name=ch_name)
 
@@ -4012,16 +4485,7 @@ class MainWindow(QMainWindow):
             print(i)
         print('Done cleaning thumbnails')
 
-    #Text prompts in the interpreter
-    def print_in_interpreter(): 
-
-        #Open module
-        self.close_contours_open.setChecked(False)
-        self.open_section(name = 'close_contours')
-
-    
-        pass
-
+    ############################################################################################
     #- Init PROCESS AND ANALYSE Tab
     def init_pandq_tab(self): 
 
@@ -5912,8 +6376,7 @@ class MainWindow(QMainWindow):
                         # print('all_done:',all_done)
                 if all(all_done): 
                     getattr(self, key+'_set').setChecked(True)
-
-    #Set functions 
+    
     def set_keeplargest(self): 
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_keep_largest = self.gui_keep_largest_n()
@@ -8682,6 +9145,35 @@ class PlotWindow(QDialog):
 
         self.show()
 
+from time import sleep
+class Worker_GetSlices(QObject):
+    
+    wait_for_input = pyqtSignal()
+    done = pyqtSignal()
+
+    def __init__(self, slc_tuple, win,  parent = None):
+        super().__init__(parent)
+        self.status = 'Init'
+        self.slc_tuple = slc_tuple
+        self.win = win
+
+    @pyqtSlot()
+    def firstWork(self): # get slices
+        print('doing first work')
+        print('slc_tuple:', self.slc_tuple)
+        for n in range(1,6,1):
+            sleep(1)
+            print('n:', n)
+        print('first work done')
+        self.wait_for_input.emit()
+
+    @pyqtSlot()
+    def secondWork(self):
+        print('doing second work')
+        sleep(10)
+        print('second work done')
+        self.done.emit()
+        
 
 #%% Other classes GUI related - ########################################################
 class MyToggle(QtWidgets.QPushButton):
