@@ -167,11 +167,13 @@ class Controller:
         # -Go Back
         self.load_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
         # -Browse project
-        self.load_proj_win.button_browse_proj.clicked.connect(self.load_proj)
+        self.load_proj_win.button_browse_proj.clicked.connect(lambda: self.load_proj())
         # -Show New Organ Window 
         self.load_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='load_proj_win'))
         # -Go to main_window
         self.load_proj_win.go_to_main_window.clicked.connect(lambda: self.show_main_window(parent_win='load_proj_win'))
+        # -See proj settings
+        self.load_proj_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.load_proj_win))
 
     def show_new_organ(self, parent_win:str):
         #Identify parent and close it
@@ -202,6 +204,8 @@ class Controller:
         self.new_organ_win.button_create_new_organ.clicked.connect(lambda: self.new_organ())
         # -Go to main_window
         self.new_organ_win.go_to_main_window.clicked.connect(lambda: self.show_main_window(parent_win='new_organ_win'))
+        # -See proj settings
+        self.new_organ_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.new_organ_win))
 
     def show_parent(self, parent:str):
         parent_win = getattr(self, parent)
@@ -251,14 +255,15 @@ class Controller:
         else: 
             self.load_s3s.show()
         
-    def show_proj_settings(self, parent_win:str):
+    def show_proj_settings(self, parent_win):
         if self.proj_settings_win == None:
-            self.proj_settings_win = ProjSettings(proj = self.proj) 
+            self.proj_settings_win = ProjSettings(proj = self.proj, controller=self) 
         self.proj_settings_win.show()
+        getattr(parent_win, 'button_see_proj_settings').setChecked(False)
 
     def init_main_win(self): 
         
-        self.main_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win='main_win'))
+        self.main_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.main_win))
         self.init_segmentation_tab()
         self.init_morphoHeart_tab()
 
@@ -279,11 +284,17 @@ class Controller:
         # self.main_win.autom_close_ch3_play.clicked.connect(lambda: self.autom_close_contours('ch3'))
         # self.main_win.autom_close_ch4_play.clicked.connect(lambda: self.autom_close_contours('ch4'))
 
-        #Manual Closure Contours
+        # Manual Closure Contours
         self.main_win.manual_close_ch1_play.clicked.connect(lambda: self.manual_close_contours('ch1'))
         # self.main_win.manual_close_ch2_play.clicked.connect(lambda: self.manual_close_contours('ch2'))
         # self.main_win.manual_close_ch3_play.clicked.connect(lambda: self.manual_close_contours('ch3'))
         # self.main_win.manual_close_ch4_play.clicked.connect(lambda: self.manual_close_contours('ch4'))
+
+        # Run tuples
+        self.main_win.slc_tuple_ch1_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch1'))
+        # self.main_win.slc_tuple_ch2_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch2'))
+        # self.main_win.slc_tuple_ch3_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch3'))
+        # self.main_win.slc_tuple_ch4_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch4'))
 
         # self.main_win.ch1_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch1'))
         # self.main_win.ch1_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch1'))
@@ -517,6 +528,7 @@ class Controller:
             self.load_proj_win.tabW_select_organ.clear()
             self.load_proj_win.tabW_select_organ.setRowCount(0)
             self.load_proj_win.tabW_select_organ.setColumnCount(0)
+            self.load_proj_win.button_see_proj_settings.setEnabled(True)
         else: 
             self.load_proj_win.button_browse_proj.setChecked(False)
             self.load_proj_win.win_msg('*There is no settings file for a project within the selected directory. Please select a new directory.')

@@ -52,7 +52,7 @@ plt.rcParams['figure.constrained_layout.use'] = True
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set, alert, df_reset_index, df_add_value, palette_rbg
-from ..modules.mH_funcContours import checkWfCloseCont, ImChannel, get_contours, plot_props, plot_contours_slc
+from ..modules.mH_funcContours import checkWfCloseCont, ImChannel, get_contours, plot_props, close_draw
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
@@ -354,13 +354,14 @@ class Prompt_ok_cancel_checkbox(QDialog):
         self.close()
 
 class Prompt_user_input(QDialog):
-    def __init__(self, msg:str, title:str, info:Union[str, tuple], parent=None):
+    def __init__(self, msg:str, title:str, info:Union[str, tuple, list], parent=None):
         super().__init__()
         uic.loadUi('src/gui/ui/prompt_user_input.ui', self)
         self.setWindowTitle(title)
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
-        self.textEdit.setHtml(html_txt[0]+html_txt[1]+msg+html_txt[2])
+        text_out = set_qtextedit_lines(msg)
+        self.textEdit.setHtml(text_out)#html_txt[0]+html_txt[1]+msg+html_txt[2])
         self.output = None
 
         if title == 'Custom Orientation':
@@ -375,7 +376,6 @@ class Prompt_user_input(QDialog):
         elif title == 'Centreline point number to initialise Disc':
             reg_ex = QRegularExpression("\d{1,3}")
             self.buttonBox.clicked.connect(lambda: self.validate_number(parent, info))
-
         else: 
             reg_ex = QRegularExpression('.*')
 
@@ -3244,7 +3244,7 @@ class Load_S3s(QDialog):
             btn.setChecked(False)
 
 class ProjSettings(QDialog): 
-    def __init__(self, proj, parent=None):
+    def __init__(self, proj, controller, parent=None):
         super().__init__()
         self.proj_name = ''
         self.proj_dir_parent = ''
@@ -3254,6 +3254,7 @@ class ProjSettings(QDialog):
         self.setWindowIcon(QIcon(mH_icon))
 
         self.proj = proj
+        self.controller = controller
         print(proj.__dict__)
 
         #Initialise window sections
@@ -3303,7 +3304,7 @@ class ProjSettings(QDialog):
         if self.proj.analysis['morphoCell']: 
             pass
             # self.init_mCell_tab()
-
+    
     def init_gral_proj(self): 
         proj_name = self.proj.info['user_projName']
         self.lineEdit_proj_name.setText(proj_name)
@@ -3334,18 +3335,17 @@ class ProjSettings(QDialog):
         sp_set = self.proj.mH_settings['setup']
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']: 
             if ch in sp_set['name_chs'].keys():
-                getattr(self, 'tick_'+ch).setChecked(True)
-                getattr(self, ch+'_username').setText(sp_set['name_chs'][ch])
-                getattr(self, ch+'_mask').setChecked(sp_set['mask_ch'][ch])
-                getattr(self,'cB_'+ch).setText(sp_set['chs_relation'][ch]+' layer')
+                getattr(self, 'tick_'+ch+'_2').setChecked(True)
+                getattr(self, ch+'_username_2').setText(sp_set['name_chs'][ch])
+                getattr(self, ch+'_mask_2').setChecked(sp_set['mask_ch'][ch])
+                getattr(self,'cB_'+ch+'_2').setText(sp_set['chs_relation'][ch]+' layer')
             else: 
-                getattr(self, 'tick_'+ch).setVisible(False)
-                getattr(self, ch+'_username').setVisible(False)
-                getattr(self, ch+'_mask').setVisible(False)
-                getattr(self,'cB_'+ch).setVisible(False)
-                getattr(self, 'fillcolor_'+ch+'_int').setVisible(False)
-                getattr(self, 'fillcolor_'+ch+'_ext').setVisible(False)
-                getattr(self, 'fillcolor_'+ch+'_tiss').setVisible(False)
+                getattr(self, 'tick_'+ch+'_2').setVisible(False)
+                getattr(self, ch+'_username_2').setVisible(False)
+                getattr(self, ch+'_mask_2').setVisible(False)
+                getattr(self,'cB_'+ch+'_2').setVisible(False)
+        self.ck_chs_allcontained_2.setChecked(sp_set['all_contained'])
+        self.ck_chs_contained_2.setChecked(sp_set['one_contained'])
 
     def init_chNS_group(self): 
         sp_set = self.proj.mH_settings['setup']['chNS']
@@ -3361,9 +3361,9 @@ class ProjSettings(QDialog):
         sp_set = self.proj.mH_settings['setup']['segm']
         self.tick_segm.setChecked(True)
         for cut in ['Cut1', 'Cut2']: 
+            num = cut[-1]
             if cut in sp_set.keys(): 
                 sp_cut = sp_set[cut]
-                num = cut[-1]
                 getattr(self, 'tick_segm'+num).setChecked(True)
                 getattr(self, 'sB_no_segm'+num).setText(str(sp_cut['no_segments']))
                 getattr(self, 'cB_obj_segm'+num).setText(sp_cut['obj_segm'])
@@ -3404,10 +3404,87 @@ class ProjSettings(QDialog):
         sp_set = self.proj.mH_settings['setup']['sect']
         self.tick_sect.setChecked(True)
 
+        for cut in ['Cut1', 'Cut2']: 
+            num = cut[-1]
+            if cut in sp_set.keys(): 
+                sp_cut = sp_set[cut]
+                getattr(self, 'tick_sect'+num).setChecked(True)
+                getattr(self, 'cB_obj_sect'+num).setText(sp_cut['obj_sect'])
+                names = []
+                for key in sp_cut['name_sections']:
+                    names.append(sp_cut['name_sections'][key])
+                getattr(self, 'names_sect'+num).setText(', '.join(names))
+
+                for ch in sp_cut['ch_sections']:
+                    for cont in sp_cut['ch_sections'][ch]:
+                        getattr(self, 'cB_sect_'+cut+'_'+ch+'_'+cont).setChecked(True)
+
+            else: 
+                getattr(self, 'tick_sect'+num).setVisible(False)
+                getattr(self, 'cB_obj_sect'+num).setVisible(False)
+                getattr(self, 'names_sect'+num).setVisible(False)
+
+                for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
+                    for cont in ['int', 'tiss', 'ext']:
+                        getattr(self, 'cB_sect_'+cut+'_'+ch+'_'+cont).setVisible(False)
+
+            for chh in ['ch1', 'ch2', 'ch3', 'ch4']: 
+                if chh not in self.proj.mH_settings['setup']['name_chs'].keys(): 
+                    getattr(self, 'label_sect_'+chh).setVisible(False)
+                    for contt in ['int', 'tiss', 'ext']:
+                        getattr(self, 'label_sect_'+chh+'_'+contt).setVisible(False)
+                        getattr(self, 'cB_sect_'+cut+'_'+chh+'_'+contt).setVisible(False)
+
+        self.cB_volume_sect.setChecked(sp_set['measure']['Vol'])
+        self.cB_area_sect.setChecked(sp_set['measure']['SA'])
+
     def init_segm_sect_group(self):
         sp_set = self.proj.mH_settings['setup']['segm-sect']
         self.tick_segm_sect.setChecked(True)
+
+        for scut in ['sCut1', 'sCut2']: 
+            if scut in sp_set.keys(): 
+                for rcut in ['Cut1', 'Cut2']:
+                    if rcut in sp_set[scut].keys():
+                        for ch_cont in sp_set[scut][rcut]['ch_segm_sect']:
+                            ch, cont = ch_cont.split('_')
+                            getattr(self, 'cB_'+scut+'_'+rcut+'_'+ch+'_'+cont).setChecked(True)
+                    else: 
+                        getattr(self, 'lab_sect'+rcut[-1]).setVisible(False)   
+                        for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
+                            for cont in ['int', 'tiss', 'ext']: 
+                                getattr(self, 'cB_'+scut+'_'+rcut+'_'+ch+'_'+cont).setVisible(False)
+                        self.line_19.setVisible(False)
+            else: 
+                getattr(self, 'lab_segm'+scut[-1]).setVisible(False)   
+                self.line_18.setVisible(False)
+                self.line_19.setVisible(False)
+                self.line_20.setVisible(False)
+                self.line_21.setVisible(False)
+                for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
+                    getattr(self, 'label_'+scut+'_'+ch).setVisible(False)   
+                    for cont in ['int', 'tiss', 'ext']: 
+                        getattr(self, 'label_'+scut+'_'+ch+'_'+cont).setVisible(False)
+                        getattr(self, 'cB_'+scut+'_'+rcut+'_'+ch+'_'+cont).setVisible(False)
+
+        for chh in ['ch1', 'ch2', 'ch3', 'ch4']: 
+            if chh not in self.proj.mH_settings['setup']['name_chs'].keys(): 
+                for scut in ['sCut1', 'sCut2']: 
+                    getattr(self, 'label_'+scut+'_'+chh).setVisible(False)
+                    for rcut in ['Cut1', 'Cut2']:
+                        for contt in ['int', 'tiss', 'ext']:
+                            getattr(self, 'label_'+scut+'_'+chh+'_'+contt).setVisible(False)
+                            getattr(self,  'cB_'+scut+'_'+rcut+'_'+chh+'_'+contt).setVisible(False)
+
+        self.cB_volume_segm_sect.setChecked(sp_set['measure']['Vol'])
+        self.cB_area_segm_sect.setChecked(sp_set['measure']['SA'])
     
+    def closeEvent(self, event):
+        print('User pressed X: ProjSettings')
+        event.accept()
+        self.controller.proj_settings_win = None
+        # print('self.controller.proj_settings_win:',self.controller.proj_settings_win)
+
 class MainWindow(QMainWindow):
 
     def __init__(self, proj, organ):
@@ -3884,31 +3961,25 @@ class MainWindow(QMainWindow):
         # self.manual_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch2','value'))
         # self.manual_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch3','value'))
         # self.manual_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch4','value'))
-      
+
+        # Regex for slices
+        reg_ex = QRegularExpression("[0-9,-]+")
+        input_validator_ch1 = QRegularExpressionValidator(reg_ex, self.slices_to_close_ch1)
+        self.slices_to_close_ch1.setValidator(input_validator_ch1)
+        # input_validator_ch2 = QRegularExpressionValidator(reg_ex, self.slices_to_close_ch2)
+        # self.slices_to_close_ch2.setValidator(input_validator_ch2)
+        # input_validator_ch3 = QRegularExpressionValidator(reg_ex, self.slices_to_close_ch3)
+        # self.slices_to_close_ch3.setValidator(input_validator_ch3)
+        # input_validator_ch4 = QRegularExpressionValidator(reg_ex, self.slices_to_close_ch4)
+        # self.slices_to_close_ch4.setValidator(input_validator_ch4)
+
+        # Draw functions
+        self.draw_white.clicked.connect(lambda: close_draw())
+
         #Initialise with user settings, if they exist!
         # for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
         #     if ch in self.channels.keys(): 
-        #         self.user_manual_close_contours(ch_name=ch)
-
-        #Interpreter
-        #Console
-        self.prompt_key = '> '
-        self.buffer = []
-
-        #Input
-        self.inpfmt = self.outdisplay.currentCharFormat()
-        #Question 
-        self.qfmt = QTextCharFormat(self.inpfmt)
-        self.qfmt.setForeground(QBrush(QColor(0, 255, 0)))
-        #Output
-        self.outfmt = QTextCharFormat(self.inpfmt)
-        self.outfmt.setForeground(QBrush(QColor(0, 255, 255)))
-        #Error
-        self.errfmt = QTextCharFormat(self.inpfmt)
-        self.errfmt.setForeground(QBrush(QColor(255, 0, 0)))
-
-        #LineEdit
-        self.inpedit.returnPressed.connect(lambda: self.returnkey())
+        #         self.user_manual_close_contours(ch_name=ch) 
 
     def init_plot_widget(self): 
 
@@ -3941,128 +4012,6 @@ class MainWindow(QMainWindow):
         self.plots_panel_open.clicked.connect(lambda: self.open_section(name='plots_panel'))
         self.close_contours_open.clicked.connect(lambda: self.open_section(name='close_contours'))
 
-    #Interpreter functions
-    def eventFilter(self, source, event): 
-        if source == self.inpedit and event.type() == QEvent.Type.KeyPress: 
-            if event.key() == int(Qt.Key.Key_Return) or event.key() == int(Qt.Key.Key_Enter):
-                self.returnkey()
-        return super().eventFilter(source, event)
-
-    def returnkey(self): 
-        text = self.inpedit.text().rstrip()
-        self.emit_text(text)
-        self.inpedit.setText('')
-        print('self.buffer:', self.buffer)
-
-    def emit_text(self, text):
-        valid = self.validate_input(text)
-        if valid: 
-            self.outdisplay.setCurrentCharFormat(self.outfmt)
-            self.outdisplay.appendPlainText(self.prompt_key+ text.rstrip())
-            self.buffer.append(text.rstrip())
-        else: 
-            self.outdisplay.setCurrentCharFormat(self.errfmt)
-            self.outdisplay.appendPlainText(self.prompt_key+'Error: '+text.rstrip())
-            self.buffer.append('Error')
-
-    def validate_input(self, text): 
-        if self.running_process == 'manual': 
-            print(text)
-
-    def emit_question(self, text, options): 
-        self.outdisplay.setCurrentCharFormat(self.qfmt)
-        self.outdisplay.appendPlainText(self.prompt_key+ text.rstrip())
-        self.options = options
-    
-    def report_progress(self, n):
-        # self.stepLabel.setText(f"Long-Running Step: {n}")
-        self.outdisplay.appendPlainText('Long-Running Step:'+str(n))
-
-    def process_done(self): 
-        self.win_msg('Process DONE')
-    
-    @pyqtSlot()
-    def enableButton(self):
-        self.run_input.setEnabled(True)
-
-    @pyqtSlot()    
-    def done(self):
-        self.worker.status = 'DONE'
-        self.run_input.setEnabled(False)
-
-    def setup_get_slices_thread(self, slc_tuple, win):
-        self.thread = QThread()
-        self.worker = Worker_GetSlices(slc_tuple, win)
-        self.worker.moveToThread(self.thread)
-
-        self.thread.started.connect(self.worker.firstWork)
-        self.run_input.clicked.connect(self.worker.secondWork)
-        self.worker.wait_for_input.connect(self.enableButton)
-        self.worker.done.connect(self.done)
-
-        # Start thread
-        self.thread.start() 
-
-    # Interactive functions
-    # def get_slices(self, slc_tuple):
-    #     """
-    #     Funtion that returns a list with the slice numbers to be processed/checked.
-    #     """
-    #     slc_list = []
-    #     q_text = 'Select the slices you would like to close from -('+str(slc_tuple[0])+','+str(slc_tuple[1]-1)+')- \n(e.g. to close slices 5, 9, 10, and 11 type: 5,9-11), [all/ ]:all, [N/n]:none)'
-    #     options = ['int', 'all','', 'N', 'n']
-    #     self.emit_question(q_text, options)
-
-    #     # Step 2: Create a QThread object
-    #     self.thread = QThread()
-    #     # Step 3: Create a worker object
-    #     self.worker_thread = Worker_Thread()
-    #     # Step 4: Move worker to the thread
-    #     self.worker_thread.moveToThread(self.thread)
-    #     # Step 5: Connect signals and slots
-    #     self.thread.started.connect(self.worker_thread.run)
-    #     self.worker_thread.finished.connect(self.thread.quit)
-    #     self.worker_thread.finished.connect(self.worker_thread.deleteLater)
-    #     self.thread.finished.connect(self.thread.deleteLater)
-    #     self.worker_thread.progress.connect(self.report_progress)
-    #     # Step 6: Start the thread
-    #     self.thread.start()
-
-    #     # Final resets
-    #     self.thread.finished.connect(
-    #         lambda: self.process_done()
-    #     )
-        # self.thread.finished.connect(
-        #     lambda: self.stepLabel.setText("Long-Running Step: 0")
-        # )
-
-        # if input_slc == 'all' or input_slc == '':
-        #     slc_list = list(range(slc_tuple[0],slc_tuple[1],1))
-        #     # print(slc_list)
-        # elif input_slc in ['n', 'N']:
-        #     slc_list = []
-        # else:
-        #     slc_list = []
-        #     comma_split = input_slc.split(',')
-
-        #     for string in comma_split:
-        #         if '-' in string:
-        #             minus_split = string.split('-')
-        #             #print(minus_split)
-        #             for n in list(range(int(minus_split[0]),int(minus_split[1])+1,1)):
-        #                 #print(n)
-        #                 slc_list.append(n)
-        #         elif string == '':
-        #             pass
-        #         else:
-        #             slc_list.append(int(string))
-
-        # slc_end = slc_tuple[1]
-
-        # return slc_list, slc_end
-
-
-
     #Done function
     def user_done(self, process, ch_name): 
         workflow = self.organ.workflow['morphoHeart']
@@ -4071,18 +4020,23 @@ class MainWindow(QMainWindow):
 
         if process == 'autom_close': 
             sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','A-Autom','Status']
+            msg = 'Contours of Channel '+str(ch_name[-1])+' have been automatically closed!'
            
         elif process == 'manual_close': 
             sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','B-Manual','Status']
+            msg = 'Contours of Channel '+str(ch_name[-1])+' have been manually closed!'
+            self.running_process = None
 
         if btn.isChecked(): 
             self.organ.update_mHworkflow(sp_process, update = 'DONE')
         else: 
             self.organ.update_mHworkflow(sp_process, update = 'Initialised')
 
+        self.win_msg(msg)
         #Update Status in GUI and in CH Progress 
         self.update_status(workflow, sp_process, status)
         self.update_ch_progress()
+        alert('woohoo')
 
         print(sp_process, ':', get_by_path(workflow, sp_process))
         
@@ -4359,10 +4313,10 @@ class MainWindow(QMainWindow):
 
         for nn in range(len(slices[:-1])):
             slc_tuple = (slices[nn], slices[nn+1])
-            params = {'stack': stack, 'slices_plot': slc_tuple, 
-                        'text': 'Contours', 'slcs_per_im': slcs_per_im, 
-                        'n_rows': n_rows, 'n_cols': n_cols,
-                        'level': level, 'min_contour_length': min_contour_length}
+            stack_cut = copy.deepcopy(stack[slices[nn]:slices[nn+1]][:][:])
+            params = {'ch_name': ch, 'stack': stack_cut, 
+                      'slices_plot': slc_tuple, 'text': 'Contours', 
+                      'level': level, 'min_contour_length': min_contour_length}
             self.add_thumbnail(function ='plot_slc_range', params = params, 
                                name = 'Cont Slcs '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1]-1+1)+'')
             if nn == len(slices)-2: 
@@ -4373,14 +4327,16 @@ class MainWindow(QMainWindow):
     def plot_slc_range(self, params):
         # plotSlcsRange
 
+        ch_name = params['ch_name']
         stack = params['stack']
         slices_plot = params['slices_plot']
         text = params['text']
-        slcs_per_im = params['slcs_per_im']
-        n_rows = params['n_rows']
-        n_cols  = params['n_cols']
         level = params['level']
         min_contour_length = params['min_contour_length']
+
+        n_rows = self.plot_contours_settings[ch_name]['n_rows']
+        n_cols = self.plot_contours_settings[ch_name]['n_cols']
+        slcs_per_im = n_rows*n_cols
         
         slc_plot_list = list(range(slices_plot[0], slices_plot[1]))
         print('slc_plot_list:',slc_plot_list)
@@ -4401,7 +4357,8 @@ class MainWindow(QMainWindow):
         for im in range(n_im):
             #Get Image and Label
             slc = slc_plot_list[im]
-            myIm = stack[slc][:][:]
+            slc_im = slc_plot_list[im]-slc_plot_list[0]
+            myIm = stack[slc_im][:][:]
             contours = get_contours(myIm, min_contour_length = min_contour_length, 
                                                 level = level)
             # Plot
@@ -4416,6 +4373,46 @@ class MainWindow(QMainWindow):
         self.fig_title.setText(text +": Contours for slices "+ str(slices_plot[0]+1)+'-'+str(slices_plot[1]-1+1))
         self.canvas_plot.draw()
     
+    def plot_contours_slc(self, params):
+        """
+        # getContExpCont_plt
+        Function that gets and returns the contours of a particular slice (slcNum) plotting the image with an overlay
+        of the contours
+        """
+            
+        myIm = params['myIm']
+        slc = params['slc']
+        ch = params['ch']
+        level = params['level']
+        min_contour_length = params['min_contour_length']
+
+        # Create an empty array to save all the contours of each slice individually
+        arr_contours = []
+        #Find all the contours of the image
+        contours = measure.find_contours(myIm, level, 'high', 'high')
+
+        # Display the image and plot an overlay of all contours found that have
+        # more than min_contour_length points
+        fig11 = self.figure
+        fig11.clear()
+        ax = fig11.add_subplot(111)
+        ax.imshow(myIm, cmap=plt.cm.gray)
+
+        # Go through all the contours
+        for index, contour in enumerate(contours):
+            # Get only the contours made up of more than the designated number of points
+            if len(contour)>min_contour_length:
+                # Append contour to the array
+                arr_contours.append(contour)
+                # plot the contour
+                ax.plot(contour[:, 1], contour[:, 0], linewidth=0.3, color = palette[index])
+
+        self.fig_title.setText("Channel "+str(ch[-1])+" / Slice "+str(slc+1))
+        ax.set_axis_off()
+        self.canvas_plot.draw()
+
+        return arr_contours
+    
     def plot_slice(self, ch): 
 
         #Get stack
@@ -4424,17 +4421,16 @@ class MainWindow(QMainWindow):
         #Get slice
         slc = int(getattr(self, 'eg_slice_'+ch).text())
         slc_py = slc-1
-        myIm = stack[slc_py][:][:]
+        myIm = copy.deepcopy(stack[slc_py][:][:])
         #Get params 
         level = self.plot_contours_settings[ch]['level']
         min_contour_length = self.plot_contours_settings[ch]['min_contour_length']
-
         params = {'myIm': myIm, 'slc': slc, 'ch': ch, 
-                  'level': level, 'min_contour_length': min_contour_length, 'win': self}
+                  'level': level, 'min_contour_length': min_contour_length}
         self.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
                             name = 'Cont Slc '+str(slc))
-        plot_contours_slc(params)
-
+        self.plot_contours_slc(params)
+    
     #Image thumbnails
     def add_thumbnail(self, function, params, name): 
 
@@ -4471,7 +4467,7 @@ class MainWindow(QMainWindow):
         elif funct == 'fcC.plot_props': 
             plot_props(params = params)
         elif funct == 'fcC.plot_contours_slc':
-            plot_contours_slc(params = params)
+            self.plot_contours_slc(params = params)
 
     def clear_thumbnails(self):
         # delete thumbnails
@@ -9036,6 +9032,7 @@ class MainWindow(QMainWindow):
             print('Save All Cancelled')
 
     def closeEvent(self, event):
+        print('User pressed X')
         msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
         self.prompt = Prompt_save_all(msg, info=[self.organ, self.proj], parent=self)
         self.prompt.exec()
@@ -9059,14 +9056,6 @@ class MainWindow(QMainWindow):
         elif self.prompt.output == 'Cancel': 
             print('Save All Cancelled')
             event.ignore()
-
-        # reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the window?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-
-		# if reply == QMessageBox.Yes:
-		# 	event.accept()
-		# 	print('Window closed')
-		# else:
-		# 	event.ignore()
 
 class PlotWindow(QDialog):
 
@@ -9393,6 +9382,20 @@ def set_qtextedit_size(label, size):
     label.setMinimumSize(QtCore.QSize(w, h))
     label.setMaximumSize(QtCore.QSize(w, h))
 
+def set_qtextedit_lines(lines): 
+
+    style = '</style></head><body style=" font-family:"Calibri Light"; font-size:11pt; font-weight:24; font-style:normal;">'
+    beg = '<p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">'
+    end = '</p>'
+    end_end = '</p></body></html>'
+
+    text_out = ''
+    for line in lines.split('\n'):
+        text_out = text_out+beg+line
+        print(line)
+    text_out = text_out+end_end
+    return text_out
+
 def set_txts(): 
     #% Link to images
     mH_icon = 'images/logos_w_icon_2o5mm.png'#'images/cat-its-mouth-open.jpg'#
@@ -9521,3 +9524,5 @@ html_style = '</style></head><body style=" font-family:"Calibri Light"; font-siz
 html_beg = '<p align="center" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">'
 html_end = '</p>'
 html_end_end = '</p></body></html>'
+
+palette =  palette_rbg('bright', 30, False)*20

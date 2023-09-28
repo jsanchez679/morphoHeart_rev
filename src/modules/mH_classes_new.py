@@ -1944,13 +1944,13 @@ class ImChannel(): #channel
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc', self.channel_no, 'B-CloseCont','Steps','B-Manual','Status']
 
-        # Load image
-        im_proc = self.im_proc()
+        # # Load image
+        # im_proc = self.im_proc()
         
-        #Process
-        print('\n---- Closing Contours Manually! ----')
-        im_proc = manual_close_contours(stack = im_proc, ch = self.channel_no,
-                                        gui_param = gui_param, gui_plot = gui_plot, win = win)
+        # #Process
+        # print('\n---- Closing Contours Manually! ----')
+        # im_proc = manual_close_contours(stack = im_proc, ch = self.channel_no,
+        #                                 gui_param = gui_param, gui_plot = gui_plot, win = win)
         
         # #Update organ imChannels
         # self.parent_organ.add_channel(self)
