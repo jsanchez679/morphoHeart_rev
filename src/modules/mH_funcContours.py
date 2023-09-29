@@ -15,7 +15,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 plt.rcParams['figure.constrained_layout.use'] = True
-from PyQt6.QtCore import QObject, QThread, pyqtSignal
+# from PyQt6.QtCore import QObject, QThread, pyqtSignal
+import cv2
 
 #%% ##### - Other Imports - ##################################################
 from .mH_funcBasics import ask4input, ask4inputList, get_by_path, alert, palette_rbg
@@ -414,52 +415,79 @@ def get_slices(lineEdit, slc_tuple, win):
     return numbers
 
 #Draw functions
-def close_draw(myIm_closed, slc, chStr, color_draw, level, plot_show = True):
+def close_draw(color_draw, win): #_closed, slc, chStr, color_draw, level, plot_show = True):
     """
     Function that collects clicks positions given by the user and connects them using a white or black line given as
     input by 'color_draw' parameter
 
     """
-    myIm = win.myIm
+    slc_py = win.slc_py
+    slc_user = slc_py+1
+    ch_name = win.im_ch.channel_no
+    level = win.gui_manual_close_contours[ch_name]['level']
+    min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
 
-    while True:
-        #Get clicks of positions to close contours
-        clicks = getClicks([], myIm, scale=1, text='DRAWING SLICE ('+color_draw+')')
-        # Draw white/black line following the clicked pattern
-        myIm = drawLine(clicks, myIm, color_draw)
-        _ = getContExpCont_plt(myIm, slc, chStr, 250, 10, level, plot_show)
+    #Get clicks of positions to close contours
+    clicks = get_clicks([], win.myIm, scale=1, text='DRAWING SLICE ('+color_draw+')')
+    # Draw white/black line following the clicked pattern
+    win.myIm = draw_line(clicks, win.myIm, color_draw)
+    #Plot image with closed contours
+    params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
+                'level': level, 'min_contour_length': min_contour_len}
+    win.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
+                        name = 'Cont Slc '+str(slc_user))
+    win.plot_contours_slc(params)
 
-        if plot_show:
-            print("- Are you done drawing ("+color_draw+") the contours for this - slice "+ str(slc)+"?: ")
-            done_draw = str(input('>  - [0]:no/[1/ ]:yes!/[esc]:exit >>>>> ')).lower()
-            if done_draw == '1' or done_draw == 'esc' or done_draw == '':
-                break
-        else:
-            done_draw = ''
-            break
+def close_box(box, win):
+    """
+    Function that closes the contours of the input image using the cropNcloseCont function
+    """
 
-    return myIm_closed, done_draw
+    slc_py = win.slc_py
+    slc_user = slc_py+1
+    ch_name = win.im_ch.channel_no
+    level = win.gui_manual_close_contours[ch_name]['level']
+    min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
 
-def getClicks (clicks, myIm, scale, text):
+    clicks = get_clicks([], win.myIm, scale=1, text='CLOSING CONTOURS')
+    #Close contours and get Image
+    win.myIm = crop_n_close(clicks, win.myIm, box, level)
+    #Plot image with closed contours
+    params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
+                'level': level, 'min_contour_length': min_contour_len}
+    win.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
+                        name = 'Cont Slc '+str(slc_user))
+    win.plot_contours_slc(params)
+
+def reset_img(rtype, win): 
+
+    slc_py = win.slc_py
+    slc_user = slc_py+1
+    ch_name = win.im_ch.channel_no
+    level = win.gui_manual_close_contours[ch_name]['level']
+    min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
+    if rtype == 'autom': 
+        win.myIm = copy.deepcopy(win.im_proc_o[slc_py][:][:])
+    else: 
+        im_ch = win.organ.obj_imChannels[ch_name]
+        myIm = im_ch.im_proc()[slc_py][:][:]
+        if rtype == 'masked': 
+            myMask = io.imread(str(im_ch.dir_mk))[slc_py][:][:]
+            myIm[myMask == False] = 0
+            win.myIm = copy.deepcopy(myIm)
+        else: #rtype = 'raw'
+            win.myIm = copy.deepcopy(myIm)
+
+    #Plot image with closed contours
+    params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
+                'level': level, 'min_contour_length': min_contour_len}
+    win.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
+                        name = 'Cont Slc '+str(slc_user))
+    win.plot_contours_slc(params)
+
+def get_clicks (clicks, myIm, scale, text):
     """
     Function to get clicks of prompted image slice.
-
-    Parameters
-    ----------
-    clicks : list of tuples with coordinates (clicks)
-        Initialised list of clicks coordinates.
-    myIm : numpy array
-        Imaged being processed
-    scale : float
-        Number that scales the image to be prompted.
-    text : str
-        Title of prompted window with image indicating the process being performed (cleaning/closing/etc...).
-
-    Returns
-    -------
-    clicks : list of tuples with coordinates (clicks)
-        Final list of clicks coordinates.
-
     """
 
     print("- Getting clicks... Press ENTER when done")
@@ -471,7 +499,7 @@ def getClicks (clicks, myIm, scale, text):
         if event == cv2.EVENT_LBUTTONDOWN:
             #print ('\r    Seed: ' + str(y) + ', ' + str(x), myIm[y,x])
             clicks.append((y,x))
-
+    text = text+' - Getting clicks... Press ENTER when done'
     cv2.namedWindow(text, cv2.WINDOW_NORMAL)#,cv2.WINDOW_NORMAL)
     cv2.resizeWindow(text, window_width, window_height)
     cv2.setMouseCallback(text, on_mouse, 0, )
@@ -481,6 +509,79 @@ def getClicks (clicks, myIm, scale, text):
 
     return clicks
 
+def draw_line (clicks, myIm, color_draw):
+    """
+    Function that draws white or black line connecting all the clicks received as input
+    """
+
+    for num, click in enumerate(clicks):
+        if num < len(clicks)-1:
+            pt1x, pt1y = click
+            pt2x, pt2y = clicks[num+1]
+            rr, cc, val = line_aa(int(pt1x), int(pt1y),
+                                  int(pt2x), int(pt2y))
+            rr1, cc1, val1 = line_aa(int(pt1x)+1, int(pt1y),
+                                     int(pt2x)+1, int(pt2y))
+            rr2, cc2, val2 = line_aa(int(pt1x)-1, int(pt1y),
+                                     int(pt2x)-1, int(pt2y))
+            if color_draw == "white" or color_draw == "":
+                myIm[rr, cc] = val * 50000
+            elif color_draw == "1":
+                myIm[rr, cc] = 1
+                myIm[rr1, cc1] = 1
+                myIm[rr2, cc2] = 1
+            elif color_draw == "0":
+                myIm[rr, cc] = 0
+                myIm[rr1, cc1] = 0
+                myIm[rr2, cc2] = 0
+            else: #"black"
+                myIm[rr, cc] = val * 0
+                myIm[rr1, cc1] = val1 * 0
+                
+    return myIm
+
+def crop_n_close(clicks, myIm, box, level):
+    """
+    Function that crops a rectangular region of the input image centered by the click, gets the contours present in that
+    region and connects the two closest contours with a white line
+
+    """
+    kw, kh = box
+    wh = kw//2
+    ww = kh//2
+
+    for click in clicks:
+        y0, x0 = click
+
+        #Crop image in a square with center: click
+        ymin = y0-wh
+        xmin = x0-ww
+        if ymin < 0:
+            ymin = 0
+        if xmin < 0:
+            xmin = 0
+        imCrop = myIm[ymin:y0+wh,xmin:x0+ww]
+
+        #Get contours of the cropped image
+        contours_crop = measure.find_contours(imCrop, level, 'high', 'high')
+        #Organize contours in terms of number of points to get the two biggest
+        contours_crop = sorted(contours_crop, key = len, reverse=True)
+        
+        if len(contours_crop) > 1:
+            #Find euclidian distance beteen all points in contours
+            dist = cdist(contours_crop[0],contours_crop[1])
+            #Get indexes where distance is minimum (closest points)
+            index4min = np.where(dist == np.amin(dist))
+
+            index_ptCont0 = index4min[0][0]
+            ptCont0 = contours_crop[0][index_ptCont0]
+            index_ptCont1 = index4min[1][0]
+            ptCont1 = contours_crop[1][index_ptCont1]
+
+            rr, cc, val = line_aa(int(ptCont0[0]), int(ptCont0[1]), int(ptCont1[0]), int(ptCont1[1]))
+            imCrop[rr, cc] = val * 50000
+
+    return myIm
 
 #Plot contour functions
 def plot_props(params):

@@ -52,7 +52,7 @@ plt.rcParams['figure.constrained_layout.use'] = True
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set, alert, df_reset_index, df_add_value, palette_rbg
-from ..modules.mH_funcContours import checkWfCloseCont, ImChannel, get_contours, plot_props, close_draw
+from ..modules.mH_funcContours import checkWfCloseCont, ImChannel, get_contours, plot_props, close_draw, close_box, reset_img
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
@@ -3500,6 +3500,7 @@ class MainWindow(QMainWindow):
         
         self.proj = proj
         self.organ = organ
+        self.running_process = None
 
         #Menu options
         self.actionSave_Project_and_Organ.triggered.connect(self.save_project_and_organ_pressed)
@@ -3820,8 +3821,8 @@ class MainWindow(QMainWindow):
         # self.set_plot_cont_settings_ch3.clicked.connect(lambda: self.set_plot_contour_settings('ch3', check=True))
         # self.set_plot_cont_settings_ch4.clicked.connect(lambda: self.set_plot_contour_settings('ch4', check=True))
 
-        self.close_contours_open.setChecked(True)
-        self.open_section(name = 'close_contours')
+        self.functions_btns_open.setChecked(True)
+        self.open_section(name = 'functions_btns')
         
     def init_mask(self): 
 
@@ -3974,7 +3975,23 @@ class MainWindow(QMainWindow):
         # self.slices_to_close_ch4.setValidator(input_validator_ch4)
 
         # Draw functions
-        self.draw_white.clicked.connect(lambda: close_draw())
+        self.draw_white.clicked.connect(lambda: close_draw(color_draw='white', win=self))
+        self.draw_black.clicked.connect(lambda: close_draw(color_draw='black', win=self))
+        self.draw_50x50.clicked.connect(lambda: close_box(box=(50,50), win=self))
+        self.draw_120x120.clicked.connect(lambda: close_box(box=(120,120), win=self))
+        self.draw_300x100.clicked.connect(lambda: close_box(box=(300,100), win=self))
+        self.draw_reset.clicked.connect(lambda: reset_img(rtype='autom',win=self))
+        self.draw_reset_to_masked.clicked.connect(lambda: reset_img(rtype='masked',win=self))
+        self.draw_reset_to_raw.clicked.connect(lambda: reset_img(rtype='raw',win=self))
+        self.close_cont_btns_widget.setVisible(False)
+
+        # Save Channel
+        self.save_manually_closed_ch1.clicked.connect(lambda: self.save_closed_channel(ch='ch1', print_txt=True))
+        # self.save_manually_closed_ch2.clicked.connect(lambda: save_closed_channel(ch='ch2', print_txt=True))
+        # self.save_manually_closed_ch3.clicked.connect(lambda: save_closed_channel(ch='ch3', print_txt=True))
+        # self.save_manually_closed_ch4.clicked.connect(lambda: save_closed_channel(ch='ch4', print_txt=True))
+
+
 
         #Initialise with user settings, if they exist!
         # for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
@@ -4010,7 +4027,7 @@ class MainWindow(QMainWindow):
 
         #Open
         self.plots_panel_open.clicked.connect(lambda: self.open_section(name='plots_panel'))
-        self.close_contours_open.clicked.connect(lambda: self.open_section(name='close_contours'))
+        self.functions_btns_open.clicked.connect(lambda: self.open_section(name='functions_btns'))
 
     #Done function
     def user_done(self, process, ch_name): 
@@ -4177,6 +4194,7 @@ class MainWindow(QMainWindow):
                                                 'min_contour_len': min_contour_len}}
             
             print('gui_manual_close_contours: ', gui_manual_close_contours)
+
             return gui_manual_close_contours
 
     #Functions to fill sections according to user's selections
@@ -4288,7 +4306,12 @@ class MainWindow(QMainWindow):
 
         #Get stack
         im_ch = self.organ.obj_imChannels[ch]
-        stack = im_ch.im_proc()
+        try: 
+            stack = self.im_proc
+            print('Image from attr')
+        except: 
+            stack = im_ch.im_proc()
+            print('Image loaded')
         slcs_per_im = int(self.plot_contours_settings[ch]['n_rows'])*int(self.plot_contours_settings[ch]['n_cols'])
         #Get settings to plot
         if slice_range == 'all': 
@@ -4381,7 +4404,7 @@ class MainWindow(QMainWindow):
         """
             
         myIm = params['myIm']
-        slc = params['slc']
+        slc_user = params['slc_user']
         ch = params['ch']
         level = params['level']
         min_contour_length = params['min_contour_length']
@@ -4407,7 +4430,7 @@ class MainWindow(QMainWindow):
                 # plot the contour
                 ax.plot(contour[:, 1], contour[:, 0], linewidth=0.3, color = palette[index])
 
-        self.fig_title.setText("Channel "+str(ch[-1])+" / Slice "+str(slc+1))
+        self.fig_title.setText("Channel "+str(ch[-1])+" / Slice "+str(slc_user))
         ax.set_axis_off()
         self.canvas_plot.draw()
 
@@ -4417,18 +4440,23 @@ class MainWindow(QMainWindow):
 
         #Get stack
         im_ch = self.organ.obj_imChannels[ch]
-        stack = im_ch.im_proc()
+        try: 
+            stack = self.im_proc
+            print('Image from attr')
+        except: 
+            stack = im_ch.im_proc()
+            print('Image loaded')
         #Get slice
-        slc = int(getattr(self, 'eg_slice_'+ch).text())
-        slc_py = slc-1
+        slc_user = int(getattr(self, 'eg_slice_'+ch).text())
+        slc_py = slc_user-1
         myIm = copy.deepcopy(stack[slc_py][:][:])
         #Get params 
         level = self.plot_contours_settings[ch]['level']
         min_contour_length = self.plot_contours_settings[ch]['min_contour_length']
-        params = {'myIm': myIm, 'slc': slc, 'ch': ch, 
+        params = {'myIm': myIm, 'slc_user': slc_user, 'ch': ch, 
                   'level': level, 'min_contour_length': min_contour_length}
         self.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
-                            name = 'Cont Slc '+str(slc))
+                            name = 'Cont Slc '+str(slc_user))
         self.plot_contours_slc(params)
     
     #Image thumbnails
@@ -4448,6 +4476,8 @@ class MainWindow(QMainWindow):
         button.setSizePolicy(sizePolicy)
         button.setMinimumSize(QtCore.QSize(120, 20))
         button.setMaximumSize(QtCore.QSize(120, 20))
+        # self.scroll_images.setSliderPosition(100)
+        # print('scroll_images.sliderPosition():',scroll_images.sliderPosition())
 
         self.layout_scroll.addWidget(button)
         button.clicked.connect(lambda: self.scroll_im_selected())
@@ -8997,9 +9027,21 @@ class MainWindow(QMainWindow):
     def init_plot_tab(self): 
         print('Setting Plot Tab')
 
-    #Menu functions
+    #Menu functions / Saving functions
+    def save_closed_channel(self, ch, print_txt=False):
+        print('Save channel was pressed: ', ch)
+        im_ch = self.organ.obj_imChannels[ch]
+        im_ch.save_channel(im_proc=self.im_proc)
+        if print_txt: 
+            self.win_msg('Channel '+ch[-1]+' was succesfully saved!')
+
     def save_project_and_organ_pressed(self, alert_on=True):
         print('Save project and organ was pressed')
+        if self.running_process != None: 
+            process, ch = self.running_process
+            im_ch = self.organ.obj_imChannels[ch]
+            im_ch.save_channel(im_proc = self.im_proc, print_txt=True)
+
         self.organ.save_organ(alert_on)
         self.proj.add_organ(self.organ)
         self.proj.save_project(alert_on)
@@ -9013,14 +9055,7 @@ class MainWindow(QMainWindow):
         print('output:',self.prompt.output, '\n')
 
         if self.prompt.output == 'Save All': 
-            for item in [self.organ, self.proj]: 
-                if isinstance(item, Organ): 
-                    item.save_organ()
-                    self.win_msg('Organ '+ self.organ.user_organName +' was saved succesfully!')
-                elif isinstance(item, Project):
-                    item.save_project()
-                    self.win_msg('Project '+ self.proj.user_projName +' was saved succesfully!')
-    
+            self.save_project_and_organ_pressed()
             print('All saved!')
             self.close()
 

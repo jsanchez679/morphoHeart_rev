@@ -271,13 +271,6 @@ class Controller:
         #Segmentation Tab
         self.main_win.all_closed.clicked.connect(lambda: self.show_load_closed_stacks())
 
-        # - Buttons inside channels
-        # Mask
-        self.main_win.mask_ch1_play.clicked.connect(lambda: self.mask_ch('ch1'))
-        # self.main_win.mask_ch2_play.clicked.connect(lambda: self.mask_ch('ch2'))
-        # self.main_win.mask_ch3_play.clicked.connect(lambda: self.mask_ch('ch3'))
-        # self.main_win.mask_ch4_play.clicked.connect(lambda: self.mask_ch('ch4'))
-
         # Autom Closure Contours
         self.main_win.autom_close_ch1_play.clicked.connect(lambda: self.autom_close_contours('ch1'))
         # self.main_win.autom_close_ch2_play.clicked.connect(lambda: self.autom_close_contours('ch2'))
@@ -296,14 +289,26 @@ class Controller:
         # self.main_win.slc_tuple_ch3_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch3'))
         # self.main_win.slc_tuple_ch4_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch4'))
 
-        # self.main_win.ch1_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch1'))
-        # self.main_win.ch1_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch1'))
-        # self.main_win.ch2_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch2'))
-        # self.main_win.ch2_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch2'))
-        # self.main_win.ch3_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch3'))
-        # self.main_win.ch3_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch3'))
-        # self.main_win.ch4_closecont.clicked.connect(lambda: self.close_cont(ch_name= 'ch4'))
-        # self.main_win.ch4_selectcont.clicked.connect(lambda: self.select_cont(ch_name= 'ch4'))
+        # Slices and tuples
+        self.main_win.next_slice_ch1.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=True, controller = self, ch_name ='ch1'))
+        # self.main_win.next_slice_ch2.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=True, controller = self, ch_name ='ch2'))
+        # self.main_win.next_slice_ch3.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=True, controller = self, ch_name ='ch3'))
+        # self.main_win.next_slice_ch4.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=True, controller = self, ch_name ='ch4'))
+
+        self.main_win.prev_slice_ch1.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=False, controller = self, ch_name ='ch1'))
+        # self.main_win.prev_slice_ch2.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=False, controller = self, ch_name ='ch2'))
+        # self.main_win.prev_slice_ch3.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=False, controller = self, ch_name ='ch3'))
+        # self.main_win.prev_slice_ch4.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=False, controller = self, ch_name ='ch4'))
+
+        self.main_win.next_tuple_ch1.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=True, controller=self, ch_name='ch1'))
+        # self.main_win.next_tuple_ch2.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=True, controller=self, ch_name='ch2'))
+        # self.main_win.next_tuple_ch3.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=True, controller=self, ch_name='ch3'))
+        # self.main_win.next_tuple_ch4.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=True, controller=self, ch_name='ch4'))
+
+        self.main_win.prev_tuple_ch1.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch1'))
+        # self.main_win.prev_tuple_ch2.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch2'))
+        # self.main_win.prev_tuple_ch3.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch3'))
+        # self.main_win.prev_tuple_ch4.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch4'))
 
     def init_morphoHeart_tab(self): 
         #Process and Analyse Tab
@@ -617,12 +622,6 @@ class Controller:
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
     
-    def close_cont(self, ch_name):
-        mA.close_cont(controller=self, ch_name=ch_name)
-
-    def select_cont(self, ch_name):
-        mA.select_cont(controller=self, ch_name=ch_name)
-
     #Analysis related
     def run_keeplargest(self):
         mA.run_keeplargest(controller=self)
