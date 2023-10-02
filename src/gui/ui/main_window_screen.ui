@@ -1103,9 +1103,9 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-456</y>
+                      <y>-785</y>
                       <width>382</width>
-                      <height>955</height>
+                      <height>1284</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_23">
@@ -2027,15 +2027,14 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -2078,15 +2077,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -4258,6 +4256,15 @@ border-color: #672146
                               <height>20</height>
                              </size>
                             </property>
+                            <property name="toolTip">
+                             <string/>
+                            </property>
+                            <property name="accessibleName">
+                             <string/>
+                            </property>
+                            <property name="accessibleDescription">
+                             <string/>
+                            </property>
                             <property name="autoFillBackground">
                              <bool>false</bool>
                             </property>
@@ -4293,6 +4300,49 @@ color: rgb(234, 234, 234);
                             </property>
                             <property name="checkable">
                              <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QCheckBox" name="save_after_tuple_ch1">
+                            <property name="enabled">
+                             <bool>true</bool>
+                            </property>
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>140</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>140</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="layoutDirection">
+                             <enum>Qt::LeftToRight</enum>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Save after every tuple?</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                            <property name="checked">
+                             <bool>false</bool>
+                            </property>
+                            <property name="tristate">
+                             <bool>false</bool>
                             </property>
                            </widget>
                           </item>
@@ -4604,10 +4654,6 @@ QPushButton:hover{
 background-color: rgb(0, 227, 0); 
 border-color: rgb(115, 115, 115)}
 
-QPushButton:checked{
-background-color: rgb(0, 85, 0); 
-border-color: rgb(115, 115, 115)}
-
 QPushButton:disabled{
 background-color: rgb(179, 179, 179); 
 border-color: rgb(115, 115, 115)}
@@ -4654,6 +4700,9 @@ border-color: rgb(115, 115, 115)}
                                  <height>20</height>
                                 </size>
                                </property>
+                               <property name="toolTip">
+                                <string>Previous slice in list (Ctrl+P)</string>
+                               </property>
                                <property name="autoFillBackground">
                                 <bool>false</bool>
                                </property>
@@ -4677,6 +4726,9 @@ border-color: rgb(115, 115, 115)}
                                </property>
                                <property name="text">
                                 <string>&lt;</string>
+                               </property>
+                               <property name="shortcut">
+                                <string>Ctrl+P</string>
                                </property>
                                <property name="checkable">
                                 <bool>true</bool>
@@ -4710,6 +4762,12 @@ border-color: rgb(115, 115, 115)}
                                  <height>20</height>
                                 </size>
                                </property>
+                               <property name="toolTip">
+                                <string>Next slice in list (Ctrl+N)</string>
+                               </property>
+                               <property name="accessibleDescription">
+                                <string>aaa</string>
+                               </property>
                                <property name="autoFillBackground">
                                 <bool>false</bool>
                                </property>
@@ -4733,6 +4791,9 @@ border-color: rgb(115, 115, 115)}
                                </property>
                                <property name="text">
                                 <string>&gt;</string>
+                               </property>
+                               <property name="shortcut">
+                                <string>Ctrl+N</string>
                                </property>
                                <property name="checkable">
                                 <bool>true</bool>
@@ -4849,7 +4910,7 @@ border-color: rgb(115, 115, 115)}
                                </property>
                                <property name="minimumSize">
                                 <size>
-                                 <width>125</width>
+                                 <width>90</width>
                                  <height>20</height>
                                 </size>
                                </property>
@@ -4888,7 +4949,7 @@ color: rgb(234, 234, 234);
 }</string>
                                </property>
                                <property name="text">
-                                <string>Save Closed Channel</string>
+                                <string>Save Channel</string>
                                </property>
                                <property name="checkable">
                                 <bool>true</bool>
@@ -4910,6 +4971,1419 @@ color: rgb(234, 234, 234);
                              </item>
                              <item>
                               <widget class="QPushButton" name="manual_close_ch1_done">
+                               <property name="enabled">
+                                <bool>false</bool>
+                               </property>
+                               <property name="minimumSize">
+                                <size>
+                                 <width>60</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>60</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(0, 168, 123);
+border-color: rgb(0, 80, 59);
+color: rgb(234, 234, 234);
+}</string>
+                               </property>
+                               <property name="text">
+                                <string>DONE</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                            </layout>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item>
+                      <layout class="QHBoxLayout" name="inlets_settings_lab">
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <widget class="QLabel" name="inlets_close_ch1_title">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Close Contours in Inlets/Outlets</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="inlets_close_ch1_open">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+
+background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: #eb6fbd;
+border-color: #672146
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>o</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QLabel" name="inlets_close_ch1_status">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>18</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">background-color:rgb(255, 255, 0);
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0,0, 0);</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                     <item>
+                      <widget class="QWidget" name="inlets_close_ch1_widget" native="true">
+                       <property name="styleSheet">
+                        <string notr="true"/>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_83">
+                        <property name="leftMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>3</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>3</number>
+                        </property>
+                        <item>
+                         <layout class="QGridLayout" name="gridLayout_27">
+                          <item row="0" column="1">
+                           <widget class="QLineEdit" name="start_inlets_ch1">
+                            <property name="minimumSize">
+                             <size>
+                              <width>60</width>
+                              <height>0</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>60</width>
+                              <height>16777215</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="star_inlets_label_ch1">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>80</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>80</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>From Slice:</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="2">
+                           <widget class="QLabel" name="end_inlets_label_ch1">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>80</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>80</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Until Slice:</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="3">
+                           <widget class="QLineEdit" name="end_inlets_ch1">
+                            <property name="minimumSize">
+                             <size>
+                              <width>60</width>
+                              <height>0</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>60</width>
+                              <height>16777215</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </item>
+                        <item>
+                         <layout class="QGridLayout" name="gridLayout_28">
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="inlets_cs_lab_ch1">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>60</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 bold 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Contours Settings:</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="inlets_min_cont_length_lab_ch1">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Min. Contour Length:</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_300">
+                            <item>
+                             <widget class="QSlider" name="inlets_min_cont_length_ch1_slider">
+                              <property name="maximumSize">
+                               <size>
+                                <width>16777215</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QSlider::groove:horizontal {
+	color: rgb(52,59,72);
+}
+QSlider::groove:horizontal:hover {
+	color: rgb(0,0,0);
+}
+QSlider::handle:horizontal{
+	border: none; 
+	margin: 3px;
+	height: 8px;
+	width: 3px;
+	border-radius: 5px; 
+	background-color: rgb(70, 70, 70);
+}
+QSlider::handle:horizontal:hover {
+	border-color: rgb(0, 0, 0);
+	border: 1px;
+	background-color:rgb(162, 0, 122);
+}
+</string>
+                              </property>
+                              <property name="minimum">
+                               <number>50</number>
+                              </property>
+                              <property name="maximum">
+                               <number>500</number>
+                              </property>
+                              <property name="singleStep">
+                               <number>1</number>
+                              </property>
+                              <property name="pageStep">
+                               <number>50</number>
+                              </property>
+                              <property name="sliderPosition">
+                               <number>100</number>
+                              </property>
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="invertedAppearance">
+                               <bool>false</bool>
+                              </property>
+                              <property name="invertedControls">
+                               <bool>false</bool>
+                              </property>
+                              <property name="tickPosition">
+                               <enum>QSlider::TicksBelow</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>0</number>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLineEdit" name="inlets_min_cont_length_ch1_value">
+                              <property name="minimumSize">
+                               <size>
+                                <width>60</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>60</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                              </property>
+                              <property name="text">
+                               <string>100</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="readOnly">
+                               <bool>false</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="1" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_301">
+                            <item>
+                             <widget class="QSlider" name="inlets_level_ch1_slider">
+                              <property name="maximumSize">
+                               <size>
+                                <width>16777215</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QSlider::groove:horizontal {
+	color: rgb(52,59,72);
+}
+QSlider::groove:horizontal:hover {
+	color: rgb(0,0,0);
+}
+QSlider::handle:horizontal{
+	border: none; 
+	margin: 3px;
+	height: 8px;
+	width: 3px;
+	border-radius: 5px; 
+	background-color: rgb(70, 70, 70);
+}
+QSlider::handle:horizontal:hover {
+	border-color: rgb(0, 0, 0);
+	border: 1px;
+	background-color:rgb(162, 0, 122);
+}
+</string>
+                              </property>
+                              <property name="minimum">
+                               <number>5</number>
+                              </property>
+                              <property name="maximum">
+                               <number>2505</number>
+                              </property>
+                              <property name="singleStep">
+                               <number>1</number>
+                              </property>
+                              <property name="pageStep">
+                               <number>250</number>
+                              </property>
+                              <property name="value">
+                               <number>5</number>
+                              </property>
+                              <property name="sliderPosition">
+                               <number>5</number>
+                              </property>
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="invertedAppearance">
+                               <bool>false</bool>
+                              </property>
+                              <property name="invertedControls">
+                               <bool>false</bool>
+                              </property>
+                              <property name="tickPosition">
+                               <enum>QSlider::TicksBelow</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>0</number>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLineEdit" name="inlets_level_ch1_value">
+                              <property name="minimumSize">
+                               <size>
+                                <width>60</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>60</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                              </property>
+                              <property name="text">
+                               <string>0.5</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="readOnly">
+                               <bool>false</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="inlets_level_lab_ch1">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Level (find contours):</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="2">
+                           <widget class="QPushButton" name="q_inlets_level_ch1">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                            </property>
+                            <property name="text">
+                             <string>?</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="2">
+                           <widget class="QPushButton" name="q_inlets_min_cont_length_ch1">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                            </property>
+                            <property name="text">
+                             <string>?</string>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </item>
+                        <item>
+                         <layout class="QHBoxLayout" name="horizontalLayout_286">
+                          <item>
+                           <widget class="QPushButton" name="q_inlets_close_ch1">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                            </property>
+                            <property name="text">
+                             <string>?</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="inlets_close_ch1_set">
+                            <property name="minimumSize">
+                             <size>
+                              <width>60</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>60</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                            </property>
+                            <property name="text">
+                             <string>Set</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <spacer name="horizontalSpacer_41">
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>40</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="inlets_close_ch1_play">
+                            <property name="minimumSize">
+                             <size>
+                              <width>25</width>
+                              <height>25</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>25</width>
+                              <height>25</height>
+                             </size>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{
+border-radius:12px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:checked{
+background-color: rgb(0, 85, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </item>
+                        <item>
+                         <widget class="Line" name="line_2dhm_3">
+                          <property name="frameShadow">
+                           <enum>QFrame::Raised</enum>
+                          </property>
+                          <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QWidget" name="close_tuples_inlets_ch1_widget" native="true">
+                          <property name="enabled">
+                           <bool>false</bool>
+                          </property>
+                          <layout class="QVBoxLayout" name="verticalLayout_84">
+                           <property name="leftMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>3</number>
+                           </property>
+                           <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout_287">
+                             <item>
+                              <widget class="QLabel" name="closing_tuples_bigLabel_2">
+                               <property name="sizePolicy">
+                                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                 <horstretch>0</horstretch>
+                                 <verstretch>0</verstretch>
+                                </sizepolicy>
+                               </property>
+                               <property name="minimumSize">
+                                <size>
+                                 <width>0</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>16777215</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">font: 25 bold 10pt &quot;Calibri Light&quot;;</string>
+                               </property>
+                               <property name="text">
+                                <string>Closing Inlets by Tuples:</string>
+                               </property>
+                               <property name="alignment">
+                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <spacer name="horizontalSpacer_42">
+                               <property name="orientation">
+                                <enum>Qt::Horizontal</enum>
+                               </property>
+                               <property name="sizeHint" stdset="0">
+                                <size>
+                                 <width>40</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                              </spacer>
+                             </item>
+                             <item>
+                              <widget class="QPushButton" name="q_inlets_level_ch1_2">
+                               <property name="minimumSize">
+                                <size>
+                                 <width>18</width>
+                                 <height>18</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>18</width>
+                                 <height>18</height>
+                                </size>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                               </property>
+                               <property name="text">
+                                <string>?</string>
+                               </property>
+                              </widget>
+                             </item>
+                            </layout>
+                           </item>
+                           <item>
+                            <layout class="QGridLayout" name="gridLayout_29">
+                             <item row="0" column="0">
+                              <widget class="QLabel" name="tuple_analysed_inlets_lab">
+                               <property name="sizePolicy">
+                                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                 <horstretch>0</horstretch>
+                                 <verstretch>0</verstretch>
+                                </sizepolicy>
+                               </property>
+                               <property name="minimumSize">
+                                <size>
+                                 <width>90</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>90</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                               </property>
+                               <property name="text">
+                                <string>Tuple analysed: </string>
+                               </property>
+                               <property name="alignment">
+                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="1" column="0">
+                              <widget class="QLabel" name="slices_to_close_inlets_lab">
+                               <property name="sizePolicy">
+                                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                 <horstretch>0</horstretch>
+                                 <verstretch>0</verstretch>
+                                </sizepolicy>
+                               </property>
+                               <property name="minimumSize">
+                                <size>
+                                 <width>90</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>90</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                               </property>
+                               <property name="text">
+                                <string>Slices to close:</string>
+                               </property>
+                               <property name="alignment">
+                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="0" column="1">
+                              <widget class="QLabel" name="tuple_analysed_inlets_ch1">
+                               <property name="minimumSize">
+                                <size>
+                                 <width>140</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>16777215</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                               </property>
+                               <property name="text">
+                                <string>----</string>
+                               </property>
+                               <property name="alignment">
+                                <set>Qt::AlignCenter</set>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="1" column="1">
+                              <layout class="QHBoxLayout" name="horizontalLayout_288">
+                               <item>
+                                <widget class="QLineEdit" name="slices_to_close_inlets_ch1">
+                                 <property name="styleSheet">
+                                  <string notr="true">QLineEdit{
+font: 25 9pt &quot;Calibri Light&quot;;
+background-color: rgb(240, 240, 240);
+color: rgb(0, 0, 0);}
+
+QLineEdit:focus { border: 2px solid rgb(0, 191, 0);}
+					
+</string>
+                                 </property>
+                                 <property name="text">
+                                  <string/>
+                                 </property>
+                                </widget>
+                               </item>
+                               <item>
+                                <widget class="QPushButton" name="slc_tuple_inlets_ch1_play">
+                                 <property name="minimumSize">
+                                  <size>
+                                   <width>20</width>
+                                   <height>20</height>
+                                  </size>
+                                 </property>
+                                 <property name="maximumSize">
+                                  <size>
+                                   <width>20</width>
+                                   <height>20</height>
+                                  </size>
+                                 </property>
+                                 <property name="autoFillBackground">
+                                  <bool>false</bool>
+                                 </property>
+                                 <property name="styleSheet">
+                                  <string notr="true">QPushButton{
+border-radius:10px; 
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(66, 66, 66); 
+background-color:  rgb(0, 199, 0)}
+
+QPushButton:hover{
+background-color: rgb(0, 227, 0); 
+border-color: rgb(115, 115, 115)}
+
+QPushButton:disabled{
+background-color: rgb(179, 179, 179); 
+border-color: rgb(115, 115, 115)}
+</string>
+                                 </property>
+                                 <property name="text">
+                                  <string/>
+                                 </property>
+                                 <property name="checkable">
+                                  <bool>true</bool>
+                                 </property>
+                                </widget>
+                               </item>
+                              </layout>
+                             </item>
+                            </layout>
+                           </item>
+                           <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout_289">
+                             <item>
+                              <spacer name="horizontalSpacer_43">
+                               <property name="orientation">
+                                <enum>Qt::Horizontal</enum>
+                               </property>
+                               <property name="sizeHint" stdset="0">
+                                <size>
+                                 <width>40</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                              </spacer>
+                             </item>
+                             <item>
+                              <widget class="QPushButton" name="prev_slice_inlets_ch1">
+                               <property name="minimumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(170, 255, 127)}
+
+QPushButton:hover{
+background-color: rgb(0, 170, 0); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                               </property>
+                               <property name="text">
+                                <string>&lt;</string>
+                               </property>
+                               <property name="shortcut">
+                                <string>Ctrl+Left, Ctrl+P</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QLabel" name="label_31">
+                               <property name="styleSheet">
+                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                               </property>
+                               <property name="text">
+                                <string>Slice in list</string>
+                               </property>
+                               <property name="alignment">
+                                <set>Qt::AlignCenter</set>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QPushButton" name="next_slice_inlets_ch1">
+                               <property name="minimumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(170, 255, 127)}
+
+QPushButton:hover{
+background-color: rgb(0, 170, 0); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                               </property>
+                               <property name="text">
+                                <string>&gt;</string>
+                               </property>
+                               <property name="shortcut">
+                                <string>Ctrl+Right, Ctrl+N</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QPushButton" name="prev_tuple_inlets_ch1">
+                               <property name="minimumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(85, 170, 255)}
+
+QPushButton:hover{
+background-color: rgb(0, 105, 158); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                               </property>
+                               <property name="text">
+                                <string>&lt;&lt;</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QLabel" name="label_32">
+                               <property name="styleSheet">
+                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                               </property>
+                               <property name="text">
+                                <string>Tuple</string>
+                               </property>
+                               <property name="alignment">
+                                <set>Qt::AlignCenter</set>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QPushButton" name="next_tuple_inlets_ch1">
+                               <property name="minimumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(85, 170, 255)}
+
+QPushButton:hover{
+background-color: rgb(0, 105, 158); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                               </property>
+                               <property name="text">
+                                <string>&gt;&gt;</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                            </layout>
+                           </item>
+                           <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout_290">
+                             <item>
+                              <widget class="QPushButton" name="save_inlets_closed_ch1">
+                               <property name="enabled">
+                                <bool>false</bool>
+                               </property>
+                               <property name="minimumSize">
+                                <size>
+                                 <width>90</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>60</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color:rgb(0, 50, 37);
+background-color: rgb(0, 130, 93);
+color: rgb(255, 255, 255);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 168, 123);
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(0, 80, 59);
+border-color: rgb(0, 0, 0);
+color: rgb(234, 234, 234);
+}</string>
+                               </property>
+                               <property name="text">
+                                <string>Save Channel</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QCheckBox" name="save_after_tuple_inlets_ch1">
+                               <property name="enabled">
+                                <bool>false</bool>
+                               </property>
+                               <property name="sizePolicy">
+                                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                 <horstretch>0</horstretch>
+                                 <verstretch>0</verstretch>
+                                </sizepolicy>
+                               </property>
+                               <property name="minimumSize">
+                                <size>
+                                 <width>140</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>140</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="layoutDirection">
+                                <enum>Qt::LeftToRight</enum>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                               </property>
+                               <property name="text">
+                                <string>Save after every tuple?</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                               <property name="checked">
+                                <bool>false</bool>
+                               </property>
+                               <property name="tristate">
+                                <bool>false</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <spacer name="horizontalSpacer_44">
+                               <property name="orientation">
+                                <enum>Qt::Horizontal</enum>
+                               </property>
+                               <property name="sizeHint" stdset="0">
+                                <size>
+                                 <width>40</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                              </spacer>
+                             </item>
+                             <item>
+                              <widget class="QPushButton" name="inlets_close_ch1_done">
                                <property name="enabled">
                                 <bool>false</bool>
                                </property>
@@ -5659,7 +7133,7 @@ QScrollBar::handle:vertical:hover {
 color: rgb(67, 67, 67)</string>
                 </property>
                 <property name="text">
-                 <string>XXX</string>
+                 <string/>
                 </property>
                 <property name="frame">
                  <bool>false</bool>
@@ -5825,38 +7299,40 @@ QScrollBar::handle:vertical:hover {
                      <x>0</x>
                      <y>0</y>
                      <width>148</width>
-                     <height>406</height>
+                     <height>300</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_86"/>
                   </widget>
                  </widget>
                 </item>
-                <item alignment="Qt::AlignHCenter">
-                 <widget class="QPushButton" name="clear_scroll">
-                  <property name="minimumSize">
-                   <size>
-                    <width>120</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>120</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="mouseTracking">
-                   <bool>true</bool>
-                  </property>
-                  <property name="focusPolicy">
-                   <enum>Qt::ClickFocus</enum>
-                  </property>
-                  <property name="autoFillBackground">
-                   <bool>false</bool>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">QPushButton{border-radius:10px;
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_285">
+                  <item>
+                   <widget class="QPushButton" name="clear_scroll">
+                    <property name="minimumSize">
+                     <size>
+                      <width>60</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>60</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                    <property name="mouseTracking">
+                     <bool>true</bool>
+                    </property>
+                    <property name="focusPolicy">
+                     <enum>Qt::ClickFocus</enum>
+                    </property>
+                    <property name="autoFillBackground">
+                     <bool>false</bool>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{border-radius:10px;
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
@@ -5876,14 +7352,104 @@ border-color: rgb(158, 158, 158);
 color: rgb(125, 125, 125);
 }
 </string>
-                  </property>
-                  <property name="text">
-                   <string>Clear</string>
-                  </property>
-                  <property name="checkable">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
+                    </property>
+                    <property name="text">
+                     <string>Clear</string>
+                    </property>
+                    <property name="checkable">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="prev_thbn">
+                    <property name="minimumSize">
+                     <size>
+                      <width>20</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>20</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                    <property name="autoFillBackground">
+                     <bool>false</bool>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+background-color:  rgb(0, 255, 255);
+color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
+}
+
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
+}</string>
+                    </property>
+                    <property name="text">
+                     <string>&lt;</string>
+                    </property>
+                    <property name="checkable">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="next_thbn">
+                    <property name="minimumSize">
+                     <size>
+                      <width>20</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>20</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                    <property name="autoFillBackground">
+                     <bool>false</bool>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton{
+border-width: 1px;
+border-style: outset;
+border-color: rgb(0, 170, 255);
+background-color:  rgb(0, 255, 255);
+color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QPushButton:hover{
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
+}
+
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
+}</string>
+                    </property>
+                    <property name="text">
+                     <string>&gt;</string>
+                    </property>
+                    <property name="checkable">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
                 </item>
                </layout>
               </widget>
@@ -6043,13 +7609,19 @@ color: rgb(100, 100, 100);</string>
                  </layout>
                 </item>
                 <item>
-                 <widget class="QWidget" name="close_cont_btns_widget" native="true">
+                 <widget class="QWidget" name="close_draw_btns_widget" native="true">
                   <property name="enabled">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
-                  <layout class="QVBoxLayout" name="verticalLayout_85">
+                  <layout class="QVBoxLayout" name="verticalLayout_89">
+                   <property name="topMargin">
+                    <number>9</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
                    <item>
-                    <widget class="QPushButton" name="draw_black">
+                    <widget class="QPushButton" name="draw_in_black">
                      <property name="minimumSize">
                       <size>
                        <width>120</width>
@@ -6068,6 +7640,9 @@ color: rgb(100, 100, 100);</string>
                      <property name="focusPolicy">
                       <enum>Qt::ClickFocus</enum>
                      </property>
+                     <property name="toolTip">
+                      <string>Close manually drawing in black (Ctrl+B)</string>
+                     </property>
                      <property name="autoFillBackground">
                       <bool>false</bool>
                      </property>
@@ -6076,8 +7651,8 @@ color: rgb(100, 100, 100);</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
+background-color: rgb(91, 91, 91);
+color:rgb(255, 255, 255);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -6105,7 +7680,7 @@ color: rgb(125, 125, 125);
                     </widget>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="draw_white">
+                    <widget class="QPushButton" name="draw_in_white">
                      <property name="minimumSize">
                       <size>
                        <width>120</width>
@@ -6124,6 +7699,9 @@ color: rgb(125, 125, 125);
                      <property name="focusPolicy">
                       <enum>Qt::ClickFocus</enum>
                      </property>
+                     <property name="toolTip">
+                      <string>Close manually drawing in white (Ctrl+W)</string>
+                     </property>
                      <property name="autoFillBackground">
                       <bool>false</bool>
                      </property>
@@ -6132,8 +7710,8 @@ color: rgb(125, 125, 125);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
+background-color: rgb(91, 91, 91);
+color:rgb(255, 255, 255);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -6160,6 +7738,21 @@ color: rgb(125, 125, 125);
                      </property>
                     </widget>
                    </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QWidget" name="close_cont_btns_widget" native="true">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_85">
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
                    <item>
                     <widget class="QPushButton" name="draw_50x50">
                      <property name="minimumSize">
@@ -6179,6 +7772,9 @@ color: rgb(125, 125, 125);
                      </property>
                      <property name="focusPolicy">
                       <enum>Qt::ClickFocus</enum>
+                     </property>
+                     <property name="toolTip">
+                      <string>Close using 50px*50px window (Ctrl+5)</string>
                      </property>
                      <property name="autoFillBackground">
                       <bool>false</bool>
@@ -6236,6 +7832,9 @@ color: rgb(125, 125, 125);
                      <property name="focusPolicy">
                       <enum>Qt::ClickFocus</enum>
                      </property>
+                     <property name="toolTip">
+                      <string>Close using 120px*120px window (Ctrl+1)</string>
+                     </property>
                      <property name="autoFillBackground">
                       <bool>false</bool>
                      </property>
@@ -6292,6 +7891,9 @@ color: rgb(125, 125, 125);
                      <property name="focusPolicy">
                       <enum>Qt::ClickFocus</enum>
                      </property>
+                     <property name="toolTip">
+                      <string>Close using 300px*100px window (Ctrl+3)</string>
+                     </property>
                      <property name="autoFillBackground">
                       <bool>false</bool>
                      </property>
@@ -6328,6 +7930,236 @@ color: rgb(125, 125, 125);
                      </property>
                     </widget>
                    </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QWidget" name="close_infoutf_btns_widget" native="true">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_87">
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QPushButton" name="draw_convexHull">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="mouseTracking">
+                      <bool>true</bool>
+                     </property>
+                     <property name="focusPolicy">
+                      <enum>Qt::ClickFocus</enum>
+                     </property>
+                     <property name="toolTip">
+                      <string>Close using Convex Hull (Ctrl+H)</string>
+                     </property>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                     </property>
+                     <property name="text">
+                      <string>Convex Hull</string>
+                     </property>
+                     <property name="shortcut">
+                      <string>Ctrl+H</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="draw_150x450">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                     </property>
+                     <property name="text">
+                      <string>Close 150x450</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="draw_200x500">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                     </property>
+                     <property name="text">
+                      <string>Close 200x500</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="draw_50x200">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                     </property>
+                     <property name="text">
+                      <string>Close 50x200</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QWidget" name="close_reset_btns_widget" native="true">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_90">
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>9</number>
+                   </property>
                    <item>
                     <widget class="QPushButton" name="draw_reset">
                      <property name="minimumSize">
@@ -6348,6 +8180,9 @@ color: rgb(125, 125, 125);
                      <property name="focusPolicy">
                       <enum>Qt::ClickFocus</enum>
                      </property>
+                     <property name="toolTip">
+                      <string>Reset slice to resulting image after Automatically Closing Contours</string>
+                     </property>
                      <property name="autoFillBackground">
                       <bool>false</bool>
                      </property>
@@ -6356,8 +8191,8 @@ color: rgb(125, 125, 125);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
+background-color: rgb(91, 91, 91);
+color:rgb(255, 255, 255);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -6374,66 +8209,10 @@ color: rgb(125, 125, 125);
 </string>
                      </property>
                      <property name="text">
-                      <string>Reset (autom)</string>
+                      <string>Reset (Autom)</string>
                      </property>
                      <property name="shortcut">
-                      <string>Ctrl+R</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="draw_reset_to_masked">
-                     <property name="minimumSize">
-                      <size>
-                       <width>120</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="mouseTracking">
-                      <bool>true</bool>
-                     </property>
-                     <property name="focusPolicy">
-                      <enum>Qt::ClickFocus</enum>
-                     </property>
-                     <property name="autoFillBackground">
-                      <bool>false</bool>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-</string>
-                     </property>
-                     <property name="text">
-                      <string>Reset (masked)</string>
-                     </property>
-                     <property name="shortcut">
-                      <string>Ctrl+R</string>
+                      <string notr="true">Ctrl+R</string>
                      </property>
                      <property name="checkable">
                       <bool>true</bool>
@@ -6454,12 +8233,6 @@ color: rgb(125, 125, 125);
                        <height>20</height>
                       </size>
                      </property>
-                     <property name="mouseTracking">
-                      <bool>true</bool>
-                     </property>
-                     <property name="focusPolicy">
-                      <enum>Qt::ClickFocus</enum>
-                     </property>
                      <property name="autoFillBackground">
                       <bool>false</bool>
                      </property>
@@ -6468,8 +8241,8 @@ color: rgb(125, 125, 125);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
+background-color: rgb(91, 91, 91);
+color:rgb(255, 255, 255);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -6488,8 +8261,52 @@ color: rgb(125, 125, 125);
                      <property name="text">
                       <string>Reset (RAW)</string>
                      </property>
-                     <property name="shortcut">
-                      <string>Ctrl+R</string>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="draw_reset_to_masked">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(91, 91, 91);
+color:rgb(255, 255, 255);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                     </property>
+                     <property name="text">
+                      <string>Reset (Masked)</string>
                      </property>
                      <property name="checkable">
                       <bool>true</bool>
@@ -6606,7 +8423,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-2056</y>
+                   <y>0</y>
                    <width>632</width>
                    <height>5616</height>
                   </rect>
@@ -55170,7 +56987,7 @@ background-color: rgb(250, 250, 250);</string>
     </font>
    </property>
    <property name="shortcut">
-    <string/>
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionCreate_new_Project">
@@ -55197,19 +57014,8 @@ background-color: rgb(250, 250, 250);</string>
      <pointsize>9</pointsize>
     </font>
    </property>
-  </action>
-  <action name="actionCreate_new_organ_within_the_current_project">
-   <property name="text">
-    <string>Create new organ within the current project...</string>
-   </property>
-   <property name="font">
-    <font>
-     <family>Calibri Light</family>
-     <pointsize>9</pointsize>
-    </font>
-   </property>
    <property name="shortcut">
-    <string>Ctrl+N</string>
+    <string>Alt+Shift+O</string>
    </property>
   </action>
   <action name="actionClose">
@@ -55257,6 +57063,20 @@ background-color: rgb(250, 250, 250);</string>
      <family>Calibri Light</family>
      <pointsize>9</pointsize>
     </font>
+   </property>
+  </action>
+  <action name="actionCreate_new_organ_within_the_current_project">
+   <property name="text">
+    <string>Create new organ within the current project...</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Calibri Light</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+N</string>
    </property>
   </action>
  </widget>

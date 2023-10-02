@@ -387,6 +387,17 @@ def auto_draw_close_contours(myIm, data_Connect):
 
     return myIm
 
+def set_tuples(slc_first, slc_last, slcs_per_im): 
+
+    first_tuple = list(range(slc_first,slc_last+1,slcs_per_im))
+    if first_tuple[-1] != slc_last:
+        first_tuple.append(slc_last)
+    final_tuples = []
+    for nn in range(len(first_tuple[:-1])): 
+        final_tuples.append((first_tuple[nn], first_tuple[nn+1]))
+    print('final_tuples:', final_tuples)
+    return final_tuples
+
 # Interactive functions
 def get_slices(lineEdit, slc_tuple, win):
     """
@@ -421,69 +432,82 @@ def close_draw(color_draw, win): #_closed, slc, chStr, color_draw, level, plot_s
     input by 'color_draw' parameter
 
     """
-    slc_py = win.slc_py
-    slc_user = slc_py+1
-    ch_name = win.im_ch.channel_no
-    level = win.gui_manual_close_contours[ch_name]['level']
-    min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
+    if win.slc_py != None:
+        slc_py = win.slc_py
+        slc_user = slc_py+1
+        ch_name = win.im_ch.channel_no
+        level = win.gui_manual_close_contours[ch_name]['level']
+        min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
 
-    #Get clicks of positions to close contours
-    clicks = get_clicks([], win.myIm, scale=1, text='DRAWING SLICE ('+color_draw+')')
-    # Draw white/black line following the clicked pattern
-    win.myIm = draw_line(clicks, win.myIm, color_draw)
-    #Plot image with closed contours
-    params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
-                'level': level, 'min_contour_length': min_contour_len}
-    win.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
-                        name = 'Cont Slc '+str(slc_user))
-    win.plot_contours_slc(params)
+        #Get clicks of positions to close contours
+        clicks = get_clicks([], win.myIm, scale=1, text='DRAWING SLICE ('+color_draw+')')
+        # Draw white/black line following the clicked pattern
+        win.myIm = draw_line(clicks, win.myIm, color_draw)
+        #Plot image with closed contours
+        params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
+                    'level': level, 'min_contour_length': min_contour_len}
+        win.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
+                            name = 'Cont Slc '+str(slc_user))
+        win.plot_contours_slc(params)
+    else: 
+        win.win_msg('*Please enter the slices you would like to close from the current slice tuple ('+str(win.slc_tuple[0]+1)+'-'+str(win.slc_tuple[1])+')')
 
 def close_box(box, win):
     """
     Function that closes the contours of the input image using the cropNcloseCont function
     """
+    if win.slc_py != None:
+        slc_py = win.slc_py
+        slc_user = slc_py+1
+        ch_name = win.im_ch.channel_no
+        level = win.gui_manual_close_contours[ch_name]['level']
+        min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
 
-    slc_py = win.slc_py
-    slc_user = slc_py+1
-    ch_name = win.im_ch.channel_no
-    level = win.gui_manual_close_contours[ch_name]['level']
-    min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
-
-    clicks = get_clicks([], win.myIm, scale=1, text='CLOSING CONTOURS')
-    #Close contours and get Image
-    win.myIm = crop_n_close(clicks, win.myIm, box, level)
-    #Plot image with closed contours
-    params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
-                'level': level, 'min_contour_length': min_contour_len}
-    win.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
-                        name = 'Cont Slc '+str(slc_user))
-    win.plot_contours_slc(params)
+        clicks = get_clicks([], win.myIm, scale=1, text='CLOSING CONTOURS')
+        #Close contours and get Image
+        win.myIm = crop_n_close(clicks, win.myIm, box, level)
+        #Plot image with closed contours
+        params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
+                    'level': level, 'min_contour_length': min_contour_len}
+        win.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
+                            name = 'Cont Slc '+str(slc_user))
+        win.plot_contours_slc(params)
+    else: 
+        win.win_msg('*Please enter the slices you would like to close from the current slice tuple ('+str(win.slc_tuple[0]+1)+'-'+str(win.slc_tuple[1])+')')
 
 def reset_img(rtype, win): 
 
-    slc_py = win.slc_py
-    slc_user = slc_py+1
-    ch_name = win.im_ch.channel_no
-    level = win.gui_manual_close_contours[ch_name]['level']
-    min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
-    if rtype == 'autom': 
-        win.myIm = copy.deepcopy(win.im_proc_o[slc_py][:][:])
-    else: 
-        im_ch = win.organ.obj_imChannels[ch_name]
-        myIm = im_ch.im_proc()[slc_py][:][:]
-        if rtype == 'masked': 
-            myMask = io.imread(str(im_ch.dir_mk))[slc_py][:][:]
-            myIm[myMask == False] = 0
-            win.myIm = copy.deepcopy(myIm)
-        else: #rtype = 'raw'
-            win.myIm = copy.deepcopy(myIm)
+    if win.slc_py != None:
+        slc_py = win.slc_py
+        slc_user = slc_py+1
+        ch_name = win.im_ch.channel_no
+        level = win.gui_manual_close_contours[ch_name]['level']
+        min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
+        if rtype == 'autom': 
+            win.myIm = copy.deepcopy(win.im_proc_o[slc_py][:][:])
+        else: 
+            im_ch = win.organ.obj_imChannels[ch_name]
+            myIm = im_ch.im_proc()[slc_py][:][:]
+            if rtype == 'masked': 
+                if win.organ.mH_settings['setup']['mask_ch'][ch_name]: 
+                    myMask = io.imread(str(im_ch.dir_mk))[slc_py][:][:]
+                    myIm[myMask == False] = 0
+                    win.myIm = copy.deepcopy(myIm)
+                else: 
+                    win.myIm = copy.deepcopy(myIm)
+                    win.win_msg('*No mask for this channel ('+ch_name+'). Image was reset to RAW instead')
+            else: #rtype = 'raw'
+                win.myIm = copy.deepcopy(myIm)
 
-    #Plot image with closed contours
-    params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
-                'level': level, 'min_contour_length': min_contour_len}
-    win.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
-                        name = 'Cont Slc '+str(slc_user))
-    win.plot_contours_slc(params)
+        #Plot image with closed contours
+        params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
+                    'level': level, 'min_contour_length': min_contour_len}
+        win.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
+                            name = 'Cont Slc '+str(slc_user))
+        win.plot_contours_slc(params)
+    else: 
+        win.win_msg('*Please enter the slices you would like to close from the current slice tuple ('+str(win.slc_tuple[0]+1)+'-'+str(win.slc_tuple[1])+')')
+  
 
 def get_clicks (clicks, myIm, scale, text):
     """

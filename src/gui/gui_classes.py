@@ -3680,12 +3680,17 @@ class MainWindow(QMainWindow):
         self.init_autom_close_contours()
         #Initialise Manual Closure of Contours
         self.init_manual_close_contours()
-
+        #Initialise Close Inlets and Outlets
+        self.init_close_inlets()
 
         # #Initialise the Plot Widget and Scroll
         self.init_plot_widget()
         # self.button_continue.clicked.connect(lambda: self.continue_next_tab())
         self.init_ch_progress()
+
+        #Disable draw and reset buttons
+        self.close_draw_btns_widget.setEnabled(False)
+        self.close_reset_btns_widget.setEnabled(False)
     
     #>> Initialise all modules of Process and Analyse
     def init_segm_ch(self, ch): 
@@ -3741,6 +3746,48 @@ class MainWindow(QMainWindow):
         auto_min_dist = getattr(self, 'autom_min_distance_'+ch+'_value')
         auto_min_dist_validator = QRegularExpressionValidator(reg_ex, auto_min_dist)
         auto_min_dist.setValidator(auto_min_dist_validator)
+
+        #MANUALLY CLOSE CONTOURS
+        #Start slice
+        start_num_man = getattr(self, 'start_manual_'+ch)
+        start_validator_man = QRegularExpressionValidator(reg_ex, start_num_man)
+        start_num_man.setValidator(start_validator_man)
+
+        #End slice
+        end_num_man = getattr(self, 'end_manual_'+ch)
+        end_validator_man = QRegularExpressionValidator(reg_ex, end_num_man)
+        end_num_man.setValidator(end_validator_man)
+
+        #Level
+        level_man = getattr(self, 'manual_level_'+ch+'_value')
+        level_validator_man = QRegularExpressionValidator(reg_ex_dec, level_man)
+        level_man.setValidator(level_validator_man)
+        
+        #Min contour length
+        min_contour_length_man = getattr(self, 'manual_min_cont_length_'+ch+'_value')
+        min_length_validator_man = QRegularExpressionValidator(reg_ex, min_contour_length_man)
+        min_contour_length_man.setValidator(min_length_validator_man)
+
+        #CLOSE INLETS/OUTLETS CONTOURS
+        #Start slice
+        start_num_inlets = getattr(self, 'start_inlets_'+ch)
+        start_validator_inlets = QRegularExpressionValidator(reg_ex, start_num_inlets)
+        start_num_inlets.setValidator(start_validator_inlets)
+
+        #End slice
+        end_num_inlets = getattr(self, 'end_inlets_'+ch)
+        end_validator_inlets = QRegularExpressionValidator(reg_ex, end_num_inlets)
+        end_num_inlets.setValidator(end_validator_inlets)
+
+        #Level
+        level_inlets = getattr(self, 'inlets_level_'+ch+'_value')
+        level_validator_inlets = QRegularExpressionValidator(reg_ex_dec, level_inlets)
+        level_inlets.setValidator(level_validator_inlets)
+        
+        #Min contour length
+        min_contour_length_inlets = getattr(self, 'inlets_min_cont_length_'+ch+'_value')
+        min_length_validator_inlets = QRegularExpressionValidator(reg_ex, min_contour_length_inlets)
+        min_contour_length_inlets.setValidator(min_length_validator_inlets)
 
         #Initialise with user settings, if they exist!
         self.user_plot_contour_settings(ch)
@@ -3913,8 +3960,23 @@ class MainWindow(QMainWindow):
                 self.user_autom_close_contours(ch_name=ch)
 
     def init_manual_close_contours(self): 
+
+        #Prev and Next Slices/Tuples
+        self.prev_slice_ch1.setEnabled(False)
+        # self.prev_slice_ch2.setEnabled(False)
+        # self.prev_slice_ch3.setEnabled(False)
+        # self.prev_slice_ch4.setEnabled(False)
+
+        self.next_slice_ch1.setEnabled(False)
+        # self.next_slice_ch2.setEnabled(False)
+        # self.next_slice_ch3.setEnabled(False)
+        # self.next_slice_ch4.setEnabled(False)
+
+        #Hide and disable close cont buttons
+        self.close_cont_btns_widget.setVisible(False)
+        self.close_cont_btns_widget.setEnabled(False)
         
-         # - Open
+        # - Open
         self.manual_close_ch1_open.clicked.connect(lambda: self.open_section(name='manual_close_ch1'))
         # self.manual_close_ch2_open.clicked.connect(lambda: self.open_section(name='manual_close_ch2'))
         # self.manual_close_ch3_open.clicked.connect(lambda: self.open_section(name='manual_close_ch3'))
@@ -3945,7 +4007,9 @@ class MainWindow(QMainWindow):
 
         #Sliders
         self.manual_level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch1', 'slider', divider = 10))
-
+        # self.manual_level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch2', 'slider', divider = 10))
+        # self.manual_level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch3', 'slider', divider = 10))
+        # self.manual_level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch4', 'slider', divider = 10))
 
         self.manual_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch1','slider'))
         # self.manual_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch2','slider'))
@@ -3975,8 +4039,8 @@ class MainWindow(QMainWindow):
         # self.slices_to_close_ch4.setValidator(input_validator_ch4)
 
         # Draw functions
-        self.draw_white.clicked.connect(lambda: close_draw(color_draw='white', win=self))
-        self.draw_black.clicked.connect(lambda: close_draw(color_draw='black', win=self))
+        self.draw_in_white.clicked.connect(lambda: close_draw(color_draw='white', win=self))
+        self.draw_in_black.clicked.connect(lambda: close_draw(color_draw='black', win=self))
         self.draw_50x50.clicked.connect(lambda: close_box(box=(50,50), win=self))
         self.draw_120x120.clicked.connect(lambda: close_box(box=(120,120), win=self))
         self.draw_300x100.clicked.connect(lambda: close_box(box=(300,100), win=self))
@@ -3991,13 +4055,17 @@ class MainWindow(QMainWindow):
         # self.save_manually_closed_ch3.clicked.connect(lambda: save_closed_channel(ch='ch3', print_txt=True))
         # self.save_manually_closed_ch4.clicked.connect(lambda: save_closed_channel(ch='ch4', print_txt=True))
 
-
-
         #Initialise with user settings, if they exist!
-        # for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
-        #     if ch in self.channels.keys(): 
-        #         self.user_manual_close_contours(ch_name=ch) 
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
+            if ch in self.channels.keys(): 
+                self.user_manual_close_contours(ch_name=ch) 
 
+    def init_close_inlets(self): 
+
+        #Hide and disable close cont buttons
+        self.close_infoutf_btns_widget.setVisible(False)
+        self.close_infoutf_btns_widget.setEnabled(False)
+    
     def init_plot_widget(self): 
 
         print('initialised plot_widget')
@@ -4016,6 +4084,7 @@ class MainWindow(QMainWindow):
         self.scroll_images.setWidget(self.widget_scroll)
         self.scroll_images.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.scroll_images.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scroll_images.verticalScrollBar().rangeChanged.connect(self.scroll_to_bottom)
 
         self.im_thumbnails = {}
 
@@ -4024,6 +4093,9 @@ class MainWindow(QMainWindow):
 
         #Button to clear
         self.clear_scroll.clicked.connect(lambda: self.clear_thumbnails())
+        #Buttons prev and next thumbnail
+        self.prev_thbn.clicked.connect(lambda: self.prev_next_thumbnail(next=False))
+        self.next_thbn.clicked.connect(lambda: self.prev_next_thumbnail(next=True))
 
         #Open
         self.plots_panel_open.clicked.connect(lambda: self.open_section(name='plots_panel'))
@@ -4122,7 +4194,7 @@ class MainWindow(QMainWindow):
             self.win_msg('*The ending slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.')
             return None
         elif int(start_slc) >= int(end_slc):
-            self.win_msg('*The ending slice needs to be less than the starting slice. Check to continue.')
+            self.win_msg('*The starting slice needs to be less than the ending slice. Check to continue.')
             return None
         else: 
             plot2d = getattr(self, 'automt_'+ch_name+'_plot2d').isChecked() #automt_ch1_plot2d
@@ -4185,16 +4257,17 @@ class MainWindow(QMainWindow):
             self.win_msg('*The ending slice needs to be less than the starting slice. Check to continue.')
             return None
         else: 
+            save_after_tuple = getattr(self, 'save_after_tuple_'+ch_name).isChecked()
             min_contour_len = int(getattr(self, 'manual_min_cont_length_'+ch_name+'_value').text())
             level = float(getattr(self, 'manual_level_'+ch_name+'_value').text())
 
             gui_manual_close_contours = {ch_name:{'start_slc': int(start_slc)-1, 
                                                 'end_slc': int(end_slc)-1,
                                                 'level': level,  
-                                                'min_contour_len': min_contour_len}}
+                                                'min_contour_len': min_contour_len,
+                                                'save_after_tuple': save_after_tuple}}
             
             print('gui_manual_close_contours: ', gui_manual_close_contours)
-
             return gui_manual_close_contours
 
     #Functions to fill sections according to user's selections
@@ -4265,7 +4338,43 @@ class MainWindow(QMainWindow):
 
                 self.set_autom_close_contours(ch_name=ch_name)
 
+    def user_manual_close_contours(self, ch_name): 
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'manual_close_contours' in wf_info.keys():
+            if ch_name in wf_info['manual_close_contours'].keys() and len(wf_info['manual_close_contours'][ch_name])>0:
+                start_slc = wf_info['manual_close_contours'][ch_name]['start_slc']+1
+                getattr(self, 'start_manual_'+ch_name).setText(str(start_slc))
+                end_slc =  wf_info['manual_close_contours'][ch_name]['end_slc']+1
+                getattr(self, 'end_manual_'+ch_name).setText(str(end_slc))
+                min_contour_len = wf_info['manual_close_contours'][ch_name]['min_contour_len']
+                getattr(self, 'manual_min_cont_length_'+ch_name+'_value').setText(str(min_contour_len))
+                level = wf_info['manual_close_contours'][ch_name]['level']
+                getattr(self, 'manual_level_'+ch_name+'_value').setText(str(level))
+                try: 
+                    save_after_tuple = wf_info['manual_close_contours'][ch_name]['save_after_tuple']
+                    getattr(self, 'save_after_tuple_'+ch_name).setChecked(save_after_tuple)
+                except: 
+                    pass
+
+                workflow = self.organ.workflow['morphoHeart']['ImProc'][ch_name][ 'B-CloseCont']['Steps']['B-Manual']
+                status = getattr(self, 'manual_close_'+ch_name+'_status')
+                self.update_status(workflow, ['Status'], status)
+
+                if workflow['Status'] == 'DONE': 
+                    getattr(self, 'manual_close_'+ch_name+'_open').setChecked(True)
+                    self.open_section(name = 'manual_close_'+ch_name)
+                    getattr(self, 'manual_close_'+ch_name+'_play').setChecked(True)
+                    getattr(self, 'manual_close_'+ch_name+'_done').setEnabled(True)
+                    getattr(self, 'manual_close_'+ch_name+'_done').setChecked(True)
+                elif workflow['Status'] == 'Initialised':
+                    getattr(self, 'manual_close_'+ch_name+'_done').setEnabled(True)
+                    
+                self.set_manual_close_contours(ch_name=ch_name)
+
     #Specific functions 
+    def scroll_to_bottom(self): 
+        self.scroll_images.verticalScrollBar().setValue(self.scroll_images.verticalScrollBar().maximum())
+
     def slider_changed(self, wdg_name, wdg_type, info=None, divider = 1):
         if 'slider' == wdg_type: 
             #Get value from slider
@@ -4320,7 +4429,7 @@ class MainWindow(QMainWindow):
         else: 
             slc_first, slc_last = slice_range
             no_slices = slc_last-slc_first
-            slices = list(range(slc_first,slc_last+1,slcs_per_im))
+            slices = list(range(slc_first,slc_last,slcs_per_im))
 
         level = self.plot_contours_settings[ch]['level']
         min_contour_length = self.plot_contours_settings[ch]['min_contour_length']
@@ -4329,19 +4438,21 @@ class MainWindow(QMainWindow):
 
         if slice_range == 'all': 
             if slices[-1] != no_slices-1: 
-                slices.append(no_slices-1)
+                slices.append(no_slices)
         else: 
             if slices[-1] != slc_last+1:
-                slices.append(slc_last+1)
-
+                slices.append(slc_last)
+            
         for nn in range(len(slices[:-1])):
             slc_tuple = (slices[nn], slices[nn+1])
+            name = 'Cont Slcs '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1]+1-1)
+            # print('slc_tuple:', slc_tuple, 'name:', name)
             stack_cut = copy.deepcopy(stack[slices[nn]:slices[nn+1]][:][:])
             params = {'ch_name': ch, 'stack': stack_cut, 
                       'slices_plot': slc_tuple, 'text': 'Contours', 
                       'level': level, 'min_contour_length': min_contour_length}
             self.add_thumbnail(function ='plot_slc_range', params = params, 
-                               name = 'Cont Slcs '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1]-1+1)+'')
+                               name = name)
             if nn == len(slices)-2: 
                 self.plot_slc_range(params)
             
@@ -4390,10 +4501,10 @@ class MainWindow(QMainWindow):
             ax.set_xticks([])
             ax.set_yticks([])
             for n, contour in enumerate(contours):
-                ax.plot(contour[:, 1], contour[:, 0], linewidth=0.15)
+                ax.plot(contour[:, 1], contour[:, 0], linewidth=0.15, color = contours_palette[n])
             ax.set_title("Slc "+str(slc+1), fontsize=3, pad=0.1)
 
-        self.fig_title.setText(text +": Contours for slices "+ str(slices_plot[0]+1)+'-'+str(slices_plot[1]-1+1))
+        self.fig_title.setText(text +": Slices "+ str(slices_plot[0]+1)+'-'+str(slices_plot[1]-1+1))
         self.canvas_plot.draw()
     
     def plot_contours_slc(self, params):
@@ -4422,13 +4533,15 @@ class MainWindow(QMainWindow):
         ax.imshow(myIm, cmap=plt.cm.gray)
 
         # Go through all the contours
+        nn_col = 0
         for index, contour in enumerate(contours):
             # Get only the contours made up of more than the designated number of points
             if len(contour)>min_contour_length:
                 # Append contour to the array
                 arr_contours.append(contour)
                 # plot the contour
-                ax.plot(contour[:, 1], contour[:, 0], linewidth=0.3, color = palette[index])
+                ax.plot(contour[:, 1], contour[:, 0], linewidth=0.3, color = contours_palette[nn_col])
+                nn_col+=1
 
         self.fig_title.setText("Channel "+str(ch[-1])+" / Slice "+str(slc_user))
         ax.set_axis_off()
@@ -4481,7 +4594,36 @@ class MainWindow(QMainWindow):
 
         self.layout_scroll.addWidget(button)
         button.clicked.connect(lambda: self.scroll_im_selected())
+        self.current_thumbnail = num
         button.show()
+
+    def prev_next_thumbnail(self, next): 
+        if len(self.im_thumbnails)>0: 
+            if next: 
+                thumbnail_num = str(int(self.current_thumbnail)+1)
+                if thumbnail_num in self.im_thumbnails.keys():
+                    num = thumbnail_num
+                else:
+                    num = list(self.im_thumbnails.keys())[0]
+            else: 
+                thumbnail_num = str(int(self.current_thumbnail)-1)
+                if thumbnail_num in self.im_thumbnails.keys():
+                    num = thumbnail_num
+                else: 
+                    num = list(self.im_thumbnails.keys())[-1]
+            
+            funct = self.im_thumbnails[num]['function']
+            params = self.im_thumbnails[num]['params']
+
+            if funct == 'plot_slc_range': 
+                self.plot_slc_range(params=params)
+            elif funct == 'fcC.plot_props': 
+                plot_props(params = params)
+            elif funct == 'fcC.plot_contours_slc':
+                self.plot_contours_slc(params = params)
+
+            self.current_thumbnail = num
+            print('self.current_thumbnail:', self.current_thumbnail)
 
     def scroll_im_selected(self): 
         sending_button = self.sender()
@@ -4498,6 +4640,9 @@ class MainWindow(QMainWindow):
             plot_props(params = params)
         elif funct == 'fcC.plot_contours_slc':
             self.plot_contours_slc(params = params)
+
+        self.current_thumbnail = btn_name
+        print('self.current_thumbnail:', self.current_thumbnail)
 
     def clear_thumbnails(self):
         # delete thumbnails
@@ -9038,9 +9183,8 @@ class MainWindow(QMainWindow):
     def save_project_and_organ_pressed(self, alert_on=True):
         print('Save project and organ was pressed')
         if self.running_process != None: 
-            process, ch = self.running_process
-            im_ch = self.organ.obj_imChannels[ch]
-            im_ch.save_channel(im_proc = self.im_proc, print_txt=True)
+            process, ch = self.running_process.split('_')
+            self.save_closed_channel(ch=ch, print_txt=True)
 
         self.organ.save_organ(alert_on)
         self.proj.add_organ(self.organ)
@@ -9560,4 +9704,4 @@ html_beg = '<p align="center" style=" margin-top:12px; margin-bottom:12px; margi
 html_end = '</p>'
 html_end_end = '</p></body></html>'
 
-palette =  palette_rbg('bright', 30, False)*20
+contours_palette =  palette_rbg('bright', 30, False)*20

@@ -271,13 +271,19 @@ class Controller:
         #Segmentation Tab
         self.main_win.all_closed.clicked.connect(lambda: self.show_load_closed_stacks())
 
-        # Autom Closure Contours
+        #MASKING
+        self.main_win.mask_ch1_play.clicked.connect(lambda: self.mask_ch('ch1'))
+        # self.main_win.mask_ch2_play.clicked.connect(lambda: self.mask_ch('ch2'))
+        # self.main_win.mask_ch3_play.clicked.connect(lambda: self.mask_ch('ch3'))
+        # self.main_win.mask_ch4_play.clicked.connect(lambda: self.mask_ch('ch4'))
+
+        #AUTOMATICALLY CLOSE CONTOURS
         self.main_win.autom_close_ch1_play.clicked.connect(lambda: self.autom_close_contours('ch1'))
         # self.main_win.autom_close_ch2_play.clicked.connect(lambda: self.autom_close_contours('ch2'))
         # self.main_win.autom_close_ch3_play.clicked.connect(lambda: self.autom_close_contours('ch3'))
         # self.main_win.autom_close_ch4_play.clicked.connect(lambda: self.autom_close_contours('ch4'))
 
-        # Manual Closure Contours
+        #MANUALLY CLOSE CONTOURS
         self.main_win.manual_close_ch1_play.clicked.connect(lambda: self.manual_close_contours('ch1'))
         # self.main_win.manual_close_ch2_play.clicked.connect(lambda: self.manual_close_contours('ch2'))
         # self.main_win.manual_close_ch3_play.clicked.connect(lambda: self.manual_close_contours('ch3'))
@@ -309,6 +315,12 @@ class Controller:
         # self.main_win.prev_tuple_ch2.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch2'))
         # self.main_win.prev_tuple_ch3.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch3'))
         # self.main_win.prev_tuple_ch4.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch4'))
+
+        #CLOSE INLETS
+        self.main_win.inlets_close_ch1_play.clicked.connect(lambda: self.close_inlets('ch1'))
+        # self.main_win.inlets_close_ch2_play.clicked.connect(lambda: self.close_inlets('ch2'))
+        # self.main_win.inlets_close_ch3_play.clicked.connect(lambda: self.close_inlets('ch3'))
+        # self.main_win.inlets_close_ch4_play.clicked.connect(lambda: self.close_inlets('ch4'))
 
     def init_morphoHeart_tab(self): 
         #Process and Analyse Tab
@@ -619,6 +631,11 @@ class Controller:
 
     def manual_close_contours(self, ch_name):
         mA.manual_close_contours(controller=self, ch_name=ch_name)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
+    
+    def close_inlets(self, ch_name): 
+        mA.close_inlets(controller=self, ch_name=ch_name)
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
     

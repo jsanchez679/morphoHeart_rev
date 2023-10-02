@@ -73,7 +73,7 @@ def alert(sound:str):
         pass
 
 #%% func - ask4input
-def ask4input(text:str, res:dict, type_response:type, keep=False):
+def ask4input(text:str, res:dict, type_response:type, keep=False): # to delete
     """
     Function that ask for user input and transforms it into the expected type
 
@@ -200,6 +200,7 @@ def input_range(response):
     except: 
         obj_num = 'error'
 
+# Dataframes
 def df_reset_index(df:pd.DataFrame, mult_index:list): 
 
     df_new = df.reset_index()
@@ -216,7 +217,7 @@ def df_add_value(df:pd.DataFrame, index:tuple, value):
 
     return df
 
-# func - compare_dicts
+#Dictionaries
 def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=False):
     """Compare two dictionaries recursively to find non mathcing elements
     https://stackoverflow.com/questions/27265939/comparing-python-dictionaries-and-nested-dictionaries
@@ -343,28 +344,24 @@ def update_gui_set(loaded:dict, current:dict):
 
     return final_dict, changed
         
-#%% func - get_by_path
 def get_by_path(root_dict, items):
     """Access a nested object in root_dict by item sequence.
     by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
     """
     return reduce(operator.getitem, items, root_dict)
 
-#%% func - set_by_path
 def set_by_path(root_dict, items, value, add=False):
     """Set a value in a nested object in root_dict by item sequence.
     by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
     """    
     get_by_path(root_dict, items[:-1])[items[-1]] = value
 
-#%% func - del_by_path
 def del_by_path(root_dict, items):
     """Delete a key-value in a nested object in root_dict by item sequence.
     by Martijn Pieters (https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys)
     """
     del get_by_path(root_dict, items[:-1])[items[-1]]
 
-#%% func - make_Paths
 def make_Paths(load_dict):
     
     flat_dict = flatdict.FlatDict(copy.deepcopy(load_dict))
@@ -382,7 +379,6 @@ def make_Paths(load_dict):
     
     return load_dict
             
-#%% func - make_tuples
 def make_tuples(load_dict, tuple_keys): 
     flat_dict = flatdict.FlatDict(copy.deepcopy(load_dict))
     #Make all keys from input list into tuples
@@ -396,7 +392,6 @@ def make_tuples(load_dict, tuple_keys):
         
     return load_dict
 
-#%% func - check_gral_loading
 def check_gral_loading(proj, proj_name, dir_proj, organ=[], organ_name=''):
     
     from .mH_classes import Project, Organ
@@ -430,43 +425,6 @@ def check_gral_loading(proj, proj_name, dir_proj, organ=[], organ_name=''):
         del organ_new
         
     del proj_new
-    
-#%% func - load_npy_stack
-    # def load_npy_stack(organ:Organ, name:str):
-from collections import defaultdict        
-class NestedDict(defaultdict):
-
-    # def __getitem__(self,keytuple):
-    #     # if key is not a tuple then access as normal
-    #     if not isinstance(keytuple, tuple):
-    #         return super(NestedDict,self).__getitem__(keytuple)
-    #     d = self
-    #     for key in keytuple:
-    #         d = d[key]
-    #     return d
-    
-
-    def __getitem__(self, key):
-        if isinstance(key, list):
-            d = self
-            for i in key:
-                d = defaultdict.__getitem__(d, i)
-            return d
-        else:
-            return defaultdict.__getitem__(self, key)
-
-    def __setitem__(self, key, value):
-        if isinstance(key, list):
-            d = self[key[:-1]]
-            defaultdict.__setitem__(d, key[-1], value)
-        else:
-            defaultdict.__setitem__(self, key, value)
-
-def nested_dict(n, type):
-    if n == 1:
-        return NestedDict(type)
-    else:
-        return NestedDict(lambda: nested_dict(n-1, type))
     
 # Color palette as RGB
 def palette_rbg(name:str, num:int, rgb=True):

@@ -1869,7 +1869,7 @@ class ImChannel(): #channel
         process = ['ImProc', self.channel_no, 'A-MaskChannel','Status']
 
         #Load images
-        im_o = np.copy(self.im_proc())
+        im_o = np.copy(self.im_proc(new=True))
         im_mask = io.imread(str(self.dir_mk))
         #Process
         print('\n---- Masking! ----')

@@ -55,39 +55,48 @@ def autom_close_contours(controller, ch_name):
 
 def manual_close_contours(controller, ch_name):
 
-    #Initial message    
-    controller.main_win.win_msg('Manually closing contours for Channel '+str(ch_name[-1])+'!')
     #Close contours manually
     controller.main_win.running_process = 'manual_'+ch_name
-    #Open Section
-    controller.main_win.close_cont_btns_widget.setEnabled(True)
+    #Enable and make visible close cont buttons
     controller.main_win.close_cont_btns_widget.setVisible(True)
+    controller.main_win.close_cont_btns_widget.setEnabled(False)
+    #Open Buttons Section
     controller.main_win.functions_btns_open.setChecked(False)
     controller.main_win.open_section(name = 'functions_btns')
+    #Enable buttons in manually close subsection
+    getattr(controller.main_win, 'save_after_tuple_'+ch_name).setEnabled(True)
     getattr(controller.main_win, 'save_manually_closed_'+ch_name).setEnabled(True)
     getattr(controller.main_win, 'manual_close_'+ch_name+'_done').setEnabled(True)
-    #Get channel
+    #Get channel and save is as attribute
     im_ch = controller.organ.obj_imChannels[ch_name]
+    controller.main_win.im_ch = im_ch
     # Load stack and save them as attributes to use through the process of closing
     controller.main_win.im_proc = im_ch.im_proc()
     controller.main_win.im_proc_o = copy.deepcopy(im_ch.im_proc())
-    # Slices
+    controller.main_win.slc_py = None
+    controller.main_win.slc_list = None
+    # Get slices
     slc_first_py = controller.main_win.gui_manual_close_contours[ch_name]['start_slc']
     slc_last_py = controller.main_win.gui_manual_close_contours[ch_name]['end_slc']
-    # Plot settings
+    if slc_last_py+1 >= controller.main_win.im_proc.shape[0]:
+        pass
+    else:
+        slc_last_py = slc_last_py+1
+        print('Last slice added 1')
+    # Get Plot settings
     n_rows = int(controller.main_win.plot_contours_settings[ch_name]['n_rows'])
     n_cols = int(controller.main_win.plot_contours_settings[ch_name]['n_cols'])
     slcs_per_im = n_rows*n_cols
-    controller.main_win.manual_slices = list(range(slc_first_py,slc_last_py+1,slcs_per_im))
-    if controller.main_win.manual_slices[-1] != slc_last_py:
-        controller.main_win.manual_slices.append(slc_last_py)
+    #Get manual slices tuples
+    manual_slices = fcC.set_tuples(slc_first=slc_first_py, slc_last=slc_last_py, slcs_per_im=slcs_per_im)
+    controller.main_win.manual_slices = manual_slices# list(range(slc_first_py,slc_last_py+1,slcs_per_im))
     #Message
-    controller.main_win.win_msg('Manually closing contours ('+ch_name+', No. slices to close: '+str(slc_last_py-slc_first_py)+')')
+    controller.main_win.win_msg('Manually closing contours for Channel '+str(ch_name[-1])+'. No. slices to close: '+str(slc_last_py-slc_first_py)+')')
     #Toggle button
     getattr(controller.main_win, 'manual_close_'+ch_name+'_play').setChecked(True)
     #Plot initial tuple
-    controller.main_win.slc_tuple = (controller.main_win.manual_slices[0], controller.main_win.manual_slices[1])
-    plot_tuple_to_manually_close(controller, ch_name, controller.main_win.slc_tuple, controller.main_win.im_proc)
+    controller.main_win.slc_tuple = controller.main_win.manual_slices[0]
+    plot_tuple_to_manually_close(controller, ch_name, controller.main_win.slc_tuple, controller.main_win.im_proc, initial=True)
 
 def plot_tuple_to_manually_close(controller, ch_name, slc_tuple, im_proc, initial=True):
 
@@ -96,7 +105,7 @@ def plot_tuple_to_manually_close(controller, ch_name, slc_tuple, im_proc, initia
     min_contour_len = controller.main_win.gui_manual_close_contours[ch_name]['min_contour_len']
 
     # > Fill widget data
-    getattr(controller.main_win, 'tuple_analysed_'+ch_name).setText(str(slc_tuple[0]+1)+' - '+str(slc_tuple[1]+1-1))
+    getattr(controller.main_win, 'tuple_analysed_'+ch_name).setText(str(slc_tuple[0]+1)+' - '+str(slc_tuple[1]))
     stack_cut = copy.deepcopy(im_proc[slc_tuple[0]:slc_tuple[1]+1][:][:])
     params = {'ch_name': ch_name, 'stack': stack_cut, 
                 'slices_plot': slc_tuple, 'text': 'Contours', 
@@ -105,29 +114,37 @@ def plot_tuple_to_manually_close(controller, ch_name, slc_tuple, im_proc, initia
                         name = 'Cont Slcs '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1]-1+1)+'')
     controller.main_win.plot_slc_range(params)
 
+    #Reset sly_py
+    controller.main_win.slc_py = None
+    controller.main_win.closing_slc.setText('')
     if initial: 
+        #Enable buttons to close
+        controller.main_win.close_draw_btns_widget.setEnabled(True)
+        controller.main_win.close_cont_btns_widget.setEnabled(True)
+        controller.main_win.close_reset_btns_widget.setEnabled(True)
         #Enable widget
         getattr(controller.main_win, 'close_tuples_'+ch_name+'_widget').setEnabled(True)
-        controller.main_win.win_msg('!Channel '+ch_name[-1]+': Select the slices you would like to close from tuple '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1])+'. [Note: to close slices 5, 9, 10, and 11 type: "5,9-11"), to close all slices in tuple type: "all" or to close none of the slices in tuple type: "N" or "n"].')
+        controller.main_win.win_msg('!Channel '+ch_name[-1]+': Select the slices you would like to close from tuple '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1])+'. [e.g: to close slices 5, 9, 10, and 11 type: "5,9-11"]')
         lineEdit = getattr(controller.main_win, 'slices_to_close_'+ch_name)
         lineEdit.clear()
         lineEdit.setFocus()
     else: 
+        getattr(controller.main_win, 'prev_slice_'+ch_name).setEnabled(False)
+        getattr(controller.main_win, 'next_slice_'+ch_name).setEnabled(False)
         controller.main_win.win_msg('!Channel '+ch_name[-1]+': Are you done closing the contours in this tuple '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1])+'? If so, continue closing contours in the next tuple. If not, type down the slices you would like to close.')
 
 def close_slcs_tuple(controller, ch_name):
     main_win = controller.main_win
-    lineEdit = getattr(main_win, 'slices_to_close_'+ch_name)
-    main_win.slc_list = fcC.get_slices(lineEdit = lineEdit, 
+    main_win.slc_list = fcC.get_slices(lineEdit = getattr(main_win, 'slices_to_close_'+ch_name), 
                                                   slc_tuple=main_win.slc_tuple, 
                                                   win=main_win)
+    getattr(main_win, 'prev_slice_'+ch_name).setEnabled(True)
+    getattr(main_win, 'next_slice_'+ch_name).setEnabled(True)
+
     if len(main_win.slc_list) > 0: 
         print('slc_list:', main_win.slc_list)
         #Start with first slice
         main_win.win_msg('!Channel '+ch_name[-1]+': Manually closing contours of Slice '+str(main_win.slc_list[0]+1))
-        # Get channel
-        im_ch = controller.organ.obj_imChannels[ch_name]
-        main_win.im_ch = im_ch
         # Get slice to close
         slc_py = main_win.slc_list[0]
         print('Initial slc_py:', slc_py)
@@ -157,8 +174,8 @@ def next_prev_slice_in_tuple(next:bool, controller, ch_name:str):
     if next: 
         new_index = index+1
         if new_index>= len(main_win.slc_list):
-            main_win.win_msg('!You have reached the end of the slices selected to close. All closed slices comprising the current tuple will be plotted for you to check!')
-            plot_tuple_to_manually_close(controller, ch_name, controller.main_win.slc_tuple, controller.main_win.im_proc, initial=False)
+            plot_tuple_to_manually_close(controller, ch_name, controller.main_win.slc_tuple, 
+                                         controller.main_win.im_proc, initial=False)
             return
         else: 
             pass
@@ -172,6 +189,7 @@ def next_prev_slice_in_tuple(next:bool, controller, ch_name:str):
     slc_user = slc_py+1
     # Get image from stack
     main_win.myIm = main_win.im_proc[slc_py][:][:]
+    main_win.win_msg('!Channel '+ch_name[-1]+': Manually closing contours of Slice '+str(slc_user))
     #Get settings
     level = main_win.gui_manual_close_contours[ch_name]['level']
     min_contour_len = main_win.gui_manual_close_contours[ch_name]['min_contour_len']
@@ -186,23 +204,34 @@ def next_prev_slice_in_tuple(next:bool, controller, ch_name:str):
 
 def next_prev_tuple_to_manually_close(next:bool, controller, ch_name):
     main_win = controller.main_win
+    save_after_tuple = getattr(main_win, 'save_after_tuple_'+ch_name).isChecked()
     #Find the position of slc_tuple in manual_slices
-    index = main_win.manual_slices.index(main_win.slc_tuple[0])
+    index = main_win.manual_slices.index(main_win.slc_tuple)
     if next: 
         new_index = index+1
-        if new_index+1 >= len(main_win.manual_slices):
-            main_win.win_msg('!You have reached the end of the slice tuples. All closed slices will be plotted for you to check!')
+        if new_index+1 > len(main_win.manual_slices):
+            main_win.win_msg('!You have reached the end of the slice tuples. The closed channel will be saved and all closed slices will be plotted for you to check!')
             main_win.save_closed_channel(ch=main_win.im_ch.channel_no)
-            main_win.plot_all_slices(ch = ch_name, slice_range = main_win.slc_tuple)
+            slc_first_py = controller.main_win.gui_manual_close_contours[ch_name]['start_slc']
+            slc_last_py = controller.main_win.gui_manual_close_contours[ch_name]['end_slc']
+            main_win.plot_all_slices(ch = ch_name, slice_range = (slc_first_py, slc_last_py+1))
             return
         else:
             pass
     else: 
         new_index = index-1
-    #Plot initial tuple
-    main_win.slc_tuple = (main_win.manual_slices[new_index], main_win.manual_slices[new_index+1])
+    
+    if save_after_tuple:
+        main_win.win_msg('!Saving channel before continuing with next tuple.')
+        main_win.save_closed_channel(ch=main_win.im_ch.channel_no)
+    #Plot next tuple
+    main_win.slc_tuple = main_win.manual_slices[new_index]
     print('New slc_tuple:', main_win.slc_tuple)
     plot_tuple_to_manually_close(controller, ch_name, main_win.slc_tuple, controller.main_win.im_proc, initial=True)
+
+def close_inlets(controller, ch_name): 
+    pass
+
 
 def close_cont(controller, ch_name):
     #Check workflow status
