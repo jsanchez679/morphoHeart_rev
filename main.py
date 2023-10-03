@@ -316,12 +316,6 @@ class Controller:
         # self.main_win.prev_tuple_ch3.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch3'))
         # self.main_win.prev_tuple_ch4.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch4'))
 
-        #CLOSE INLETS
-        self.main_win.inlets_close_ch1_play.clicked.connect(lambda: self.close_inlets('ch1'))
-        # self.main_win.inlets_close_ch2_play.clicked.connect(lambda: self.close_inlets('ch2'))
-        # self.main_win.inlets_close_ch3_play.clicked.connect(lambda: self.close_inlets('ch3'))
-        # self.main_win.inlets_close_ch4_play.clicked.connect(lambda: self.close_inlets('ch4'))
-
     def init_morphoHeart_tab(self): 
         #Process and Analyse Tab
         self.main_win.keeplargest_play.clicked.connect(lambda: self.run_keeplargest())
@@ -631,11 +625,6 @@ class Controller:
 
     def manual_close_contours(self, ch_name):
         mA.manual_close_contours(controller=self, ch_name=ch_name)
-        if not mH_config.dev:
-            self.main_win.save_project_and_organ_pressed(alert_on = False)
-    
-    def close_inlets(self, ch_name): 
-        mA.close_inlets(controller=self, ch_name=ch_name)
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
     

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>689</width>
+    <width>727</width>
     <height>919</height>
    </rect>
   </property>
@@ -97,8 +97,7 @@ color: rgb(255, 255, 255);</string>
     <bool>true</bool>
    </property>
    <property name="plainText">
-    <string> 
-</string>
+    <string/>
    </property>
   </widget>
   <widget class="QWidget" name="widget_interpreter" native="true">
@@ -273,463 +272,39 @@ background-color: rgb(255, 255, 255);</string>
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QWidget" name="layoutWidget_3">
+  <widget class="QLineEdit" name="slices_to_close_ch1_3">
    <property name="geometry">
     <rect>
-     <x>490</x>
-     <y>660</y>
-     <width>940</width>
-     <height>42</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_3">
-    <item>
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <widget class="QPushButton" name="q_negativeSpace">
-      <property name="minimumSize">
-       <size>
-        <width>18</width>
-        <height>18</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>18</width>
-        <height>18</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-      </property>
-      <property name="text">
-       <string>?</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <spacer name="horizontalSpacer_6">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <widget class="QPushButton" name="q_segm">
-      <property name="minimumSize">
-       <size>
-        <width>18</width>
-        <height>18</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>18</width>
-        <height>18</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-      </property>
-      <property name="text">
-       <string>?</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <spacer name="horizontalSpacer_7">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <widget class="QPushButton" name="q_sect">
-      <property name="minimumSize">
-       <size>
-        <width>18</width>
-        <height>18</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>18</width>
-        <height>18</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-      </property>
-      <property name="text">
-       <string>?</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QCheckBox" name="ch1_mask">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>125</x>
-     <y>290</y>
-     <width>58</width>
+     <x>5</x>
+     <y>5</y>
+     <width>116</width>
      <height>20</height>
     </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
    </property>
    <property name="minimumSize">
     <size>
      <width>50</width>
-     <height>20</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>16777215</width>
-     <height>20</height>
+     <height>0</height>
     </size>
    </property>
    <property name="layoutDirection">
     <enum>Qt::LeftToRight</enum>
    </property>
    <property name="styleSheet">
-    <string notr="true">QCheckBox{font: 25 10pt &quot;Calibri Light&quot;;}
-QCheckBox:disabled{color: rgb(0, 0, 0)}</string>
-   </property>
-   <property name="text">
-    <string>Mask?</string>
-   </property>
-  </widget>
-  <widget class="QWidget" name="">
-   <property name="geometry">
-    <rect>
-     <x>440</x>
-     <y>535</y>
-     <width>152</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_299">
-    <item>
-     <widget class="QSlider" name="manual_level_ch1_slider">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>20</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QSlider::groove:horizontal {
-	color: rgb(52,59,72);
-}
-QSlider::groove:horizontal:hover {
-	color: rgb(0,0,0);
-}
-QSlider::handle:horizontal{
-	border: none; 
-	margin: 3px;
-	height: 8px;
-	width: 3px;
-	border-radius: 5px; 
-	background-color: rgb(70, 70, 70);
-}
-QSlider::handle:horizontal:hover {
-	border-color: rgb(0, 0, 0);
-	border: 1px;
-	background-color:rgb(162, 0, 122);
-}
-</string>
-      </property>
-      <property name="minimum">
-       <number>5</number>
-      </property>
-      <property name="maximum">
-       <number>2505</number>
-      </property>
-      <property name="singleStep">
-       <number>1</number>
-      </property>
-      <property name="pageStep">
-       <number>250</number>
-      </property>
-      <property name="value">
-       <number>5</number>
-      </property>
-      <property name="sliderPosition">
-       <number>5</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="invertedAppearance">
-       <bool>false</bool>
-      </property>
-      <property name="invertedControls">
-       <bool>false</bool>
-      </property>
-      <property name="tickPosition">
-       <enum>QSlider::TicksBelow</enum>
-      </property>
-      <property name="tickInterval">
-       <number>0</number>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLineEdit" name="manual_level_ch1_value">
-      <property name="minimumSize">
-       <size>
-        <width>60</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>60</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QLineEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
-      </property>
-      <property name="text">
-       <string>0.5</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <property name="readOnly">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="">
-   <property name="geometry">
-    <rect>
-     <x>430</x>
-     <y>580</y>
-     <width>152</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_298">
-    <item>
-     <widget class="QSlider" name="manual_min_cont_length_ch1_slider">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>20</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QSlider::groove:horizontal {
-	color: rgb(52,59,72);
-}
-QSlider::groove:horizontal:hover {
-	color: rgb(0,0,0);
-}
-QSlider::handle:horizontal{
-	border: none; 
-	margin: 3px;
-	height: 8px;
-	width: 3px;
-	border-radius: 5px; 
-	background-color: rgb(70, 70, 70);
-}
-QSlider::handle:horizontal:hover {
-	border-color: rgb(0, 0, 0);
-	border: 1px;
-	background-color:rgb(162, 0, 122);
-}
-</string>
-      </property>
-      <property name="minimum">
-       <number>50</number>
-      </property>
-      <property name="maximum">
-       <number>500</number>
-      </property>
-      <property name="singleStep">
-       <number>1</number>
-      </property>
-      <property name="pageStep">
-       <number>50</number>
-      </property>
-      <property name="sliderPosition">
-       <number>100</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="invertedAppearance">
-       <bool>false</bool>
-      </property>
-      <property name="invertedControls">
-       <bool>false</bool>
-      </property>
-      <property name="tickPosition">
-       <enum>QSlider::TicksBelow</enum>
-      </property>
-      <property name="tickInterval">
-       <number>0</number>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLineEdit" name="manual_min_cont_length_ch1_value">
-      <property name="minimumSize">
-       <size>
-        <width>60</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>60</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QLineEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
-      </property>
-      <property name="text">
-       <string>100</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <property name="readOnly">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QLabel" name="closing_slc_lab_2">
-   <property name="geometry">
-    <rect>
-     <x>255</x>
-     <y>555</y>
-     <width>70</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>70</width>
-     <height>20</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>70</width>
-     <height>20</height>
-    </size>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;
+    <string notr="true">QLineEdit{
+font: 25 9pt &quot;Calibri Light&quot;;
 background-color: rgb(240, 240, 240);
-color: rgb(100, 100, 100);</string>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Box</enum>
+color: rgb(0, 0, 0);}
+
+QLineEdit:focus { border: 2px solid rgb(0, 191, 0);}
+					
+</string>
    </property>
    <property name="text">
     <string/>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>-20</x>
-     <y>350</y>
-     <width>46</width>
-     <height>13</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>TextLabel</string>
    </property>
   </widget>
  </widget>

@@ -8,6 +8,7 @@ Version: Feb 13, 2023
 #%% ##### - Imports - ########################################################
 from skimage import measure, io
 import scipy.ndimage as ndimage
+from scipy.spatial import ConvexHull, distance
 from scipy.spatial.distance import cdist
 from skimage.measure import label, regionprops
 from skimage.draw import line_aa
@@ -19,7 +20,7 @@ plt.rcParams['figure.constrained_layout.use'] = True
 import cv2
 
 #%% ##### - Other Imports - ##################################################
-from .mH_funcBasics import ask4input, ask4inputList, get_by_path, alert, palette_rbg
+from .mH_funcBasics import ask4input, ask4inputList, get_by_path, alert
 from .mH_classes_new import ImChannel
 from ..gui.config import mH_config
 
@@ -475,6 +476,98 @@ def close_box(box, win):
     else: 
         win.win_msg('*Please enter the slices you would like to close from the current slice tuple ('+str(win.slc_tuple[0]+1)+'-'+str(win.slc_tuple[1])+')')
 
+def close_user(win): 
+    try: 
+        box_w = int(win.box_w.text())
+    except: 
+        win.win_msg("*Check the defined box's width for Close (User)")
+        return
+    try: 
+        box_h = int(win.box_h.text())
+    except: 
+        win.win_msg("*Check the defined box's height for Close (User)")
+        return
+    close_box(box=(box_w, box_h), win=win)
+
+def close_convex_hull(win): 
+    """
+    Function that closes the inlet/outlet of the input slice using convex hull
+    """
+    if win.slc_py != None:
+        slc_py = win.slc_py
+        slc_user = slc_py+1
+        ch_name = win.im_ch.channel_no
+        level = win.gui_manual_close_contours[ch_name]['level']
+        min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
+
+        contours_or = get_contours(win.myIm, min_contour_length=min_contour_len, level=level)
+        contours_or = sorted(contours_or, key = len, reverse=True)
+        ind_contours = []
+        for i, cont in enumerate(contours_or): 
+            props = maskContour(win.myIm, cont)
+            if props[2] > 15000:
+                ind_contours.append(i)
+
+        # print('ind_contours:', ind_contours)
+        im_height, im_width = win.myIm.shape
+        black_array = np.uint16(np.zeros((150,im_width), dtype=int))
+
+        myIm_closed = np.vstack((black_array, win.myIm, black_array))
+        myIm_closed = np.uint16(myIm_closed)
+
+        contours_new = get_contours(myIm_closed, min_contour_length=min_contour_len, level=level)
+        contours_new = sorted(contours_new, key = len, reverse=True)
+
+        contours = []
+        for index in ind_contours:
+            contours.append(contours_new[index])
+      
+        xy_contours = xy_allContours(contours)
+
+        clicks = []
+        #Get click to use convex hull to close
+        print("\n- Closing Inflow/Outflow tract - slice ", str(slc_user))
+        # Get click for point to create convex hull from
+        while len(clicks) == 0:
+            clicks = get_clicks([],myIm_closed, scale=0.6, text='CONVEX HULL')
+        clicks = clicks[-1]
+            
+        clicks_correct = False
+        while not clicks_correct: 
+            # Last point is considered the seed
+            if len(clicks) > 0:
+                y0, x0 = clicks
+                point2add = np.array([[y0],[x0]])
+                xy_contours_new = np.concatenate((xy_contours, np.transpose(point2add)))
+                qg_num = 'QG'+str(len(xy_contours_new)-1)
+                hull = ConvexHull(points=xy_contours_new,qhull_options=qg_num)
+                merge = hull.simplices[hull.good]
+                closing_pt1, closing_pt2 = selectHull (merge, xy_contours_new)
+                if type(closing_pt1) == tuple and type(closing_pt2) == tuple: 
+                    clicks_correct = True
+                    break
+                else: 
+                    alert('error')
+                    win.win_msg('*ALERT: Make sure you are clicking on a point outside the convex hull of the contours!')
+                    clicks = get_clicks([],myIm_closed, scale=0.6, text='CONVEX HULL')
+                    clicks = clicks[-1]
+
+        rr, cc, val = line_aa(int(closing_pt1[0]), int(closing_pt1[1]),
+                            int(closing_pt2[0]), int(closing_pt2[1]))
+        myIm_closed[rr, cc] = val * 50000
+        win.myIm = myIm_closed[150:150+im_height]
+        win.im_proc[slc_py][:][:] = win.myIm
+
+        #Plot image with closed contours
+        params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
+                    'level': level, 'min_contour_length': min_contour_len}
+        win.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
+                            name = 'Cont Slc '+str(slc_user))
+        win.plot_contours_slc(params)
+
+    else: 
+        win.win_msg('*Please enter the slices you would like to close from the current slice tuple ('+str(win.slc_tuple[0]+1)+'-'+str(win.slc_tuple[1])+')')
+
 def reset_img(rtype, win): 
 
     if win.slc_py != None:
@@ -508,8 +601,7 @@ def reset_img(rtype, win):
     else: 
         win.win_msg('*Please enter the slices you would like to close from the current slice tuple ('+str(win.slc_tuple[0]+1)+'-'+str(win.slc_tuple[1])+')')
   
-
-def get_clicks (clicks, myIm, scale, text):
+def get_clicks(clicks, myIm, scale, text):
     """
     Function to get clicks of prompted image slice.
     """
@@ -533,7 +625,7 @@ def get_clicks (clicks, myIm, scale, text):
 
     return clicks
 
-def draw_line (clicks, myIm, color_draw):
+def draw_line(clicks, myIm, color_draw):
     """
     Function that draws white or black line connecting all the clicks received as input
     """
@@ -607,6 +699,57 @@ def crop_n_close(clicks, myIm, box, level):
 
     return myIm
 
+def xy_allContours(contours):
+    """
+    Function to create a unique array including all the points that make up a list of contours
+
+    """
+    coordsXY = []
+
+    if len(contours) == 1:
+        coordsXY = np.array(contours)[0]
+    else:
+        for num, cont in enumerate(contours):
+            coords2add = cont
+            if len(coordsXY) == 0:
+                coordsXY = coords2add
+            else:
+                coordsXY = np.concatenate((coordsXY,coords2add))
+
+    return coordsXY
+
+def selectHull(merge, xy_contours):
+    """
+    Function that selects the longest good hull
+    """
+
+    eu_dist = []
+    pts1 = []
+    pts2 = []
+    if len(merge) > 0:
+        for num, pair in enumerate(merge):
+            #print(num,pair)
+            x1 = xy_contours[pair[0]][0]
+            y1 = xy_contours[pair[0]][1]
+            xy1 = (x1,y1)
+    
+            x2 = xy_contours[pair[1]][0]
+            y2 = xy_contours[pair[1]][1]
+            xy2 = (x2,y2)
+    
+            eu_dist.append(distance.euclidean(xy1,xy2))
+            pts1.append(xy1)
+            pts2.append(xy2)
+    
+            index4max = np.where(eu_dist == np.amax(eu_dist))
+            closing_pt1 = pts1[index4max[0][0]]
+            closing_pt2 = pts2[index4max[0][0]]
+    else: 
+        closing_pt1 = []
+        closing_pt2 = []
+    
+    return closing_pt1, closing_pt2
+
 #Plot contour functions
 def plot_props(params):
 
@@ -653,13 +796,13 @@ def plot_props(params):
 
     # Go through all the contours
     for num, contour in enumerate(cont_plot):
-        ax.plot(contour[:,1], contour[:,0], linewidth=0.25, color=palette[num])
+        ax.plot(contour[:,1], contour[:,0], linewidth=0.25, color=win.contours_palette[num])
         # txt = "Cont"+str(num)
         # ax.text(txt_pos[num][0], txt_pos[num][1],#0.95,(0.97-0.035*(num+1)), 
         #         txt,
         #         verticalalignment='top', horizontalalignment='left',
         #         transform=ax.transAxes,
-        #         color=palette[num], fontsize=2, weight = 'semibold')
+        #         color=win.contours_palette[num], fontsize=2, weight = 'semibold')
         ax.set_axis_off()
 
     win.fig_title.setText("Channel "+str(ch[-1])+" / Slice "+str(slc))
@@ -671,13 +814,12 @@ def plot_props(params):
     for index, contList in enumerate(cont_plot):
         ax = fig11.add_subplot(all_grid[index])
         ax.imshow(myIm, cmap=plt.cm.gray)
-        ax.plot(contList[:,1], contList[:,0], linewidth=0.15, color = palette[index])
+        ax.plot(contList[:,1], contList[:,0], linewidth=0.15, color = win.contours_palette[index])
         ax.set_title("Contour "+str(index+1), fontsize=2, weight = 'semibold', 
-                     color = palette[index],  pad=0.15)
+                     color = win.contours_palette[index],  pad=0.15)
         ax.set_axis_off()
 
     win.canvas_plot.draw()
 
-palette =  palette_rbg('bright', 30, False)*20
 #%% Module loaded
 print('morphoHeart! - Loaded funcContours')

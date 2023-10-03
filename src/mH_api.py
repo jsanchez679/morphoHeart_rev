@@ -58,11 +58,7 @@ def manual_close_contours(controller, ch_name):
     #Close contours manually
     controller.main_win.running_process = 'manual_'+ch_name
     #Enable and make visible close cont buttons
-    controller.main_win.close_cont_btns_widget.setVisible(True)
-    controller.main_win.close_cont_btns_widget.setEnabled(False)
-    #Open Buttons Section
-    controller.main_win.functions_btns_open.setChecked(False)
-    controller.main_win.open_section(name = 'functions_btns')
+    enable_close_functions(controller=controller, process = 'manual', ch_name=ch_name)
     #Enable buttons in manually close subsection
     getattr(controller.main_win, 'save_after_tuple_'+ch_name).setEnabled(True)
     getattr(controller.main_win, 'save_manually_closed_'+ch_name).setEnabled(True)
@@ -70,7 +66,7 @@ def manual_close_contours(controller, ch_name):
     #Get channel and save is as attribute
     im_ch = controller.organ.obj_imChannels[ch_name]
     controller.main_win.im_ch = im_ch
-    # Load stack and save them as attributes to use through the process of closing
+    # Load stack and save it as attribute to use through the process of closing
     controller.main_win.im_proc = im_ch.im_proc()
     controller.main_win.im_proc_o = copy.deepcopy(im_ch.im_proc())
     controller.main_win.slc_py = None
@@ -89,7 +85,7 @@ def manual_close_contours(controller, ch_name):
     slcs_per_im = n_rows*n_cols
     #Get manual slices tuples
     manual_slices = fcC.set_tuples(slc_first=slc_first_py, slc_last=slc_last_py, slcs_per_im=slcs_per_im)
-    controller.main_win.manual_slices = manual_slices# list(range(slc_first_py,slc_last_py+1,slcs_per_im))
+    controller.main_win.manual_slices = manual_slices
     #Message
     controller.main_win.win_msg('Manually closing contours for Channel '+str(ch_name[-1])+'. No. slices to close: '+str(slc_last_py-slc_first_py)+')')
     #Toggle button
@@ -99,7 +95,6 @@ def manual_close_contours(controller, ch_name):
     plot_tuple_to_manually_close(controller, ch_name, controller.main_win.slc_tuple, controller.main_win.im_proc, initial=True)
 
 def plot_tuple_to_manually_close(controller, ch_name, slc_tuple, im_proc, initial=True):
-
     #Get settings
     level = controller.main_win.gui_manual_close_contours[ch_name]['level']
     min_contour_len = controller.main_win.gui_manual_close_contours[ch_name]['min_contour_len']
@@ -119,9 +114,7 @@ def plot_tuple_to_manually_close(controller, ch_name, slc_tuple, im_proc, initia
     controller.main_win.closing_slc.setText('')
     if initial: 
         #Enable buttons to close
-        controller.main_win.close_draw_btns_widget.setEnabled(True)
-        controller.main_win.close_cont_btns_widget.setEnabled(True)
-        controller.main_win.close_reset_btns_widget.setEnabled(True)
+        enable_close_functions(controller=controller, process='manual', ch_name=ch_name, widgets=False)
         #Enable widget
         getattr(controller.main_win, 'close_tuples_'+ch_name+'_widget').setEnabled(True)
         controller.main_win.win_msg('!Channel '+ch_name[-1]+': Select the slices you would like to close from tuple '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1])+'. [e.g: to close slices 5, 9, 10, and 11 type: "5,9-11"]')
@@ -163,7 +156,7 @@ def close_slcs_tuple(controller, ch_name):
                                 name = 'Cont Slc '+str(slc_user))
         main_win.plot_contours_slc(params)
         main_win.closing_slc.setText(str(slc_user))
-        main_win.close_cont_btns_widget.setEnabled(True)
+        main_win.close_draw_btns_widget.setEnabled(True)
     else: 
         return
 
@@ -210,7 +203,7 @@ def next_prev_tuple_to_manually_close(next:bool, controller, ch_name):
     if next: 
         new_index = index+1
         if new_index+1 > len(main_win.manual_slices):
-            main_win.win_msg('!You have reached the end of the slice tuples. The closed channel will be saved and all closed slices will be plotted for you to check!')
+            main_win.win_msg('!You have reached the end of the slice tuples. The closed channel will be saved and all the slices within the input range will be plotted for you to check!')
             main_win.save_closed_channel(ch=main_win.im_ch.channel_no)
             slc_first_py = controller.main_win.gui_manual_close_contours[ch_name]['start_slc']
             slc_last_py = controller.main_win.gui_manual_close_contours[ch_name]['end_slc']
@@ -228,70 +221,6 @@ def next_prev_tuple_to_manually_close(next:bool, controller, ch_name):
     main_win.slc_tuple = main_win.manual_slices[new_index]
     print('New slc_tuple:', main_win.slc_tuple)
     plot_tuple_to_manually_close(controller, ch_name, main_win.slc_tuple, controller.main_win.im_proc, initial=True)
-
-def close_inlets(controller, ch_name): 
-    pass
-
-
-def close_cont(controller, ch_name):
-    #Check workflow status
-    workflow = controller.organ.workflow['morphoHeart']
-    process = ['ImProc',ch_name,'Status']
-    check_proc = get_by_path(workflow, process)
-    close_done = fcC.checkWfCloseCont(workflow, ch_name)
-    proceed = False
-    dict_names = {'A-MaskChannel': 'Mask Stack', 'A-Autom': 'Close Contours Automatically', 
-                    'B-Manual': 'Close Contours Manually', 'C-CloseInOut': 'Close Inflow/Outflow Tract(s)'}
-
-    if all(close_done[flag] == 'DONE' for flag in close_done):
-        #Ask if the user wants to re-run any of the processes
-        ch_userName = controller.organ.imChannels[ch_name]['user_chName']
-        title = 'Processes already performed in '+ch_userName
-        msg = 'You already finished processing the contours of this channel ('+ch_userName+'). Do you want to re-run any of the processes?'
-        items = {0: {'opt':'no, continue with next step'}, 1: {'opt':'yes, I would like to re-run a(some) process(es)!'}}
-        controller.prompt = Prompt_ok_cancel_radio(title, msg, items, parent=controller.main_win)
-        controller.prompt.exec()
-        print('output:',controller.prompt.output, '\n')
-
-        if controller.prompt.output[0] == 1:
-            print('close_done (original):',close_done)
-            controller.prompt = None
-            # Here ask for processes that the user might want to re-run
-            title = 'Select process(ess) to re-run'
-            msg = 'Select the process(es) you want to run:'
-            #- Get the items 
-            items = {}
-            for nn, key in enumerate(list(close_done.keys())): 
-                items[key] = {'opt': dict_names[key]}
-            # Prompt
-            controller.prompt = Prompt_ok_cancel_checkbox(title, msg, items, parent=controller.welcome_win)
-            controller.prompt.exec()
-            for key in close_done.keys():
-                if controller.prompt.output[key]: 
-                    close_done[key] = 'NI'
-            controller.prompt = None
-            proceed = True
-        else: 
-            proceed = False
-
-    elif check_proc == 'Initialised': 
-        proceed = True
-        print('Processing had been initialised!')
-    else: 
-        print('All new')
-        print('\tChannel:',ch_name, '-CloseCont:', close_done)
-        proceed = True
-        
-    if proceed: 
-        fcC.closeContours(organ=controller.organ, ch_name=ch_name, close_done=close_done, win=controller.main_win)
-        controller.main_win.win_msg('Contours of channel '+str(ch_name[-1])+ ' were successfully closed and saved!')
-    else: 
-        fcC.ImChannel(organ=controller.organ, ch_name=ch_name)
-        controller.main_win.win_msg('Channel '+str(ch_name[-1])+ ' was loaded successfully!')
-
-    #Toggle Button
-    close_cont_btn = getattr(controller.main_win, ch_name+'_closecont')
-    close_cont_btn.setChecked(True)
 
 def select_cont(controller, ch_name):
     #Check workflow status
@@ -325,6 +254,22 @@ def select_cont(controller, ch_name):
     #Toggle Button
     select_btn = getattr(controller.main_win, ch_name+'_selectcont')
     select_btn.setChecked(True)
+
+def enable_close_functions(controller, process, ch_name, widgets=True): 
+    if widgets: 
+        if process == 'manual': 
+            #Show and enable
+            controller.main_win.close_draw_btns_widget.setVisible(True)
+            controller.main_win.close_draw_btns_widget.setEnabled(False)
+            getattr(controller.main_win, 'next_slice_'+ch_name).setShortcut("Ctrl+Right")
+            getattr(controller.main_win, 'prev_slice_'+ch_name).setShortcut("Ctrl+Left")
+        #Open Buttons Section
+        controller.main_win.functions_btns_open.setChecked(False)
+        controller.main_win.open_section(name = 'functions_btns')
+    else: 
+        if process == 'manual': 
+            #Enable buttons to close
+            controller.main_win.close_draw_btns_widget.setEnabled(True)
 
 #ANALYSIS TAB
 def run_keeplargest(controller):
