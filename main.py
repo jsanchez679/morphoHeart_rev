@@ -316,6 +316,18 @@ class Controller:
         # self.main_win.prev_tuple_ch3.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch3'))
         # self.main_win.prev_tuple_ch4.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch4'))
 
+        #SELECTING CONTOURS
+        self.main_win.selecting_contours_ch1_play.clicked.connect(lambda: self.select_contours('ch1'))
+        # self.main_win.selecting_contours_ch2_play.clicked.connect(lambda: self.select_contours('ch2'))
+        # self.main_win.selecting_contours_ch3_play.clicked.connect(lambda: self.select_contours('ch3'))
+        # self.main_win.selecting_contours_ch4_play.clicked.connect(lambda: self.select_contours('ch4'))
+
+        #Run tuples
+        self.main_win.slc_tuple_select_ch1_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch1'))
+        # self.main_win.slc_tuple_select_ch2_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch2'))
+        # self.main_win.slc_tuple_select_ch3_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch3'))
+        # self.main_win.slc_tuple_select_ch4_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch4'))
+
     def init_morphoHeart_tab(self): 
         #Process and Analyse Tab
         self.main_win.keeplargest_play.clicked.connect(lambda: self.run_keeplargest())
@@ -625,9 +637,10 @@ class Controller:
 
     def manual_close_contours(self, ch_name):
         mA.manual_close_contours(controller=self, ch_name=ch_name)
-        if not mH_config.dev:
-            self.main_win.save_project_and_organ_pressed(alert_on = False)
     
+    def select_contours(self, ch_name): 
+        mA.select_contours(controller=self, ch_name=ch_name)
+
     #Analysis related
     def run_keeplargest(self):
         mA.run_keeplargest(controller=self)

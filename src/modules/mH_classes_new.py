@@ -1938,7 +1938,7 @@ class ImChannel(): #channel
         #Save channel
         self.save_channel(im_proc=im_proc)
         
-    def closeContours_manual(self, gui_param, gui_plot, win):
+    def closeContours_manual(self, gui_param, gui_plot, win): #check updates post process then delete
         from .mH_funcContours import manual_close_contours
         # Workflow process
         workflow = self.parent_organ.workflow['morphoHeart']
@@ -1972,7 +1972,7 @@ class ImChannel(): #channel
         # #Save channel
         # self.save_channel(im_proc=im_proc)
             
-    def closeInfOutf(self):
+    def closeInfOutf(self): #check updates post process then delete
         # Workflow process
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc', self.channel_no, 'B-CloseCont','Steps','C-CloseInOut','Status']
@@ -2008,7 +2008,7 @@ class ImChannel(): #channel
         # 'B-CloseCont':{'Status': 'NI',
         #                         'C-CloseInOut': {'Status': 'NI'}}},
 
-    def selectContours(self):
+    def selectContours(self): #check updates post process then delete
         # Workflow process
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc', self.channel_no,'C-SelectCont','Status']
@@ -2051,11 +2051,10 @@ class ImChannel(): #channel
         except: 
             pass
 
-        win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+'.')
         dirs_cont = []; shapes_s3 = []
         aa = 0
         for cont in cont_list:
-            win.win_msg('Creating masked stacks for each contour of channel '+self.channel_no+' ('+str(aa+1)+'/'+str(len(cont_list))+').')
+            win.win_msg('Creating masked stacks for each contour of Channel '+self.channel_no[-1]+' ('+str(aa+1)+'/'+str(len(cont_list))+').')
             s3 = ContStack(im_channel=self, cont_type=cont, layerDict=layerDict)#new=True,
             self.add_contStack(s3)
             path2file = self.parent_organ.dir_res(dir='s3_numpy') / s3.s3_file
@@ -2492,11 +2491,11 @@ class ContStack():
             z_dim = self.im_channel.shape[2]
             
             s3 = np.empty((x_dim,y_dim,z_dim+2))
-            for pos, keySlc in enumerate(layerDict.keys()):
-                if keySlc[0:3] == "slc":
-                    slcNum = int(keySlc[3:6])
-                    im_FilledCont = layerDict[keySlc][self.cont_type]
-                    s3[:,:,slcNum+1] = im_FilledCont
+            # for pos, keySlc in enumerate(layerDict.keys()):
+            #     if keySlc[0:3] == "slc":
+            #         slcNum = int(keySlc[3:6])
+            #         im_FilledCont = layerDict[keySlc][self.cont_type]
+            #         s3[:,:,slcNum+1] = im_FilledCont
             s3 = s3.astype('uint8')
 
         elif isinstance(layerDict, np.ndarray): 

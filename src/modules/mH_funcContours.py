@@ -173,7 +173,7 @@ def get_contours(myIm, min_contour_length, level):
         if len(contour)>min_contour_length:
             # Append contour to the array
             arr_contour_slc.append(contour)
-        
+
     return arr_contour_slc
 
 def get_cont_props(myIm, cont_sort): 
@@ -234,7 +234,9 @@ def maskContour(myIm, contour):
     sol = props[0].solidity
     bbox = props[0].bbox
 
-    props_all = np.array([area, centroid, max_int, mean_int, lgth, per, sol, bbox], dtype=object)
+    # props_all = np.array([area, centroid, max_int, mean_int, lgth, per, sol, bbox], dtype=object)
+    props_all = {'area:': area, 'centroid': centroid, 'max_int': max_int, 'mean_int': mean_int, 
+                 'length': lgth, 'perimeter': per, 'solidity': sol, 'bbox':bbox}
 
     return props_all
 
@@ -267,7 +269,7 @@ def filter_contours(contours, props, min_int, mean_int):
     filt_cont = []
     filt_props = []
     for num, cont in enumerate(contours):
-        if props[num][2] > min_int and props[num][3] > mean_int:
+        if props[num]['max_int'] > min_int and props[num]['mean_int'] > mean_int:
             filt_cont.append(cont)
             filt_props.append(props[num])
 
@@ -399,6 +401,76 @@ def set_tuples(slc_first, slc_last, slcs_per_im):
     print('final_tuples:', final_tuples)
     return final_tuples
 
+def tuple_pairs(gui_select_cont):
+    """
+    Funtion that subdivides the contour groups into a maximum number of slices (max_slc_diff) and returns a new list
+    of numCont and slcCont
+    """
+    slc_per_group = gui_select_cont['slc_per_group']
+    tuples_select = gui_select_cont['tuples_select']
+
+    num_int_cont = []
+    num_ext_cont = []
+    tuple_final = []
+
+    for key, row in tuples_select.items():
+        first_tuple = row['first']
+        end_tuple = row['last']
+        if end_tuple-first_tuple <= slc_per_group: 
+            num_int_cont.append(row['int_cont'])
+            num_ext_cont.append(row['ext_cont'])
+            tuple_final.append((row['first'], row['last']))
+        else: 
+            slcs2add = list(range(first_tuple, end_tuple, slc_per_group))
+            for slc2add in slcs2add:
+                num_int_cont.append(row['int_cont'])
+                num_ext_cont.append(row['ext_cont'])
+                tuple_final.append([slc2add, None])
+
+    for n, item in enumerate(tuple_final): 
+        if item[1] == None: 
+            if n < len(tuple_final)-1:
+                tuple_final[n] = (item[0], tuple_final[n+1][0])
+            else: 
+                last_key = list(gui_select_cont['tuples_select'].keys())[-1]
+                last_slc = gui_select_cont['tuples_select'][last_key]['last']
+                tuple_final[n] = (item[0], last_slc)
+
+    tuples_out = {}
+    for nn in range(len(tuple_final)): 
+        tuples_out[nn] = {'tuple_pair': tuple_final[nn], 
+                            'int_cont': num_int_cont[nn], 
+                            'ext_cont': num_ext_cont[nn]}
+
+    print('tuples_out:', tuples_out)
+    return tuples_out
+
+def fill_contours(selected_cont, slc_s3): 
+
+    """
+    Function to mask the image with the selected contours, fill them and get coordinates
+    """
+
+    if len(selected_cont['contours']) > 0:
+        for n, cont in enumerate(selected_cont['contours']):
+            # Create a contour masked image by using the contour coordinates rounded to their nearest integer value
+            slc_s3[np.round(cont[:, 1]).astype('int'), np.round(cont[:, 0]).astype('int')] = 1
+            # Fill in the holes created by the contour boundary
+            slc_s3 = ndimage.binary_fill_holes(slc_s3)
+            slc_s3 = np.transpose(slc_s3)
+            if n == 0:
+                slc_s3f = slc_s3
+            if n > 0:
+                slc_s3f = np.logical_xor(slc_s3f, slc_s3)
+
+        slc_s3f = slc_s3f.astype(int)
+        # coordsXY = np.where(resulting_mask)
+        # coordsXY = np.transpose(np.asarray(coordsXY))
+    else: 
+        slc_s3f = slc_s3
+
+    return slc_s3f
+
 # Interactive functions
 def get_slices(lineEdit, slc_tuple, win):
     """
@@ -425,6 +497,32 @@ def get_slices(lineEdit, slc_tuple, win):
                 numbers.append(int(numb)-1)
 
     return numbers
+
+def get_contour_num(lineEdit_int, lineEdit_ext, num_contours, win):
+
+    user_int = lineEdit_int.text()
+    int_num = []
+    if user_int != '':
+        int_split = user_int.split(',')
+        for txt in int_split: 
+            if int(txt) > num_contours: 
+                win.win_msg('*There is no Contour '+txt+' in the current slice. Check to continue!')
+                return
+            else: 
+                int_num.append(int(txt)-1)
+
+    user_ext = lineEdit_ext.text()
+    ext_num = []
+    if user_ext != '': 
+        ext_split = user_ext.split(',')
+        for txt in ext_split: 
+            if int(txt) > num_contours: 
+                win.win_msg('*There is no Contour '+txt+' in the current slice. Check to continue!')
+                return
+            else: 
+                ext_num.append(int(txt)-1)
+    
+    return {'internal': int_num, 'external': ext_num}
 
 #Draw functions
 def close_draw(color_draw, win): #_closed, slc, chStr, color_draw, level, plot_show = True):
@@ -818,6 +916,56 @@ def plot_props(params):
         ax.set_title("Contour "+str(index+1), fontsize=2, weight = 'semibold', 
                      color = win.contours_palette[index],  pad=0.15)
         ax.set_axis_off()
+
+    win.canvas_plot.draw()
+
+def plot_filled_contours(params):
+        # myIm, allContours, imIntFilledCont, imExtFilledCont, imAllFilledCont, plotshow, slcNum):
+    """
+    Funtion that plots a subplot of the filled contours for the particular image (myIm) being processed.
+    [Internal, External, Layer]
+
+    """
+
+    myIm = params['myIm']
+    slc = params['slc']
+    s3s = params['s3s']
+    win = params['win']
+    if 'all_cont' in params.keys():
+        all_cont = params['all_cont']['contours']
+    else: 
+        all_cont=None
+
+    fig11 = win.figure#plt.figure(figsize=(cols*imSize+colorImSize, rows*imSize), constrained_layout=True)
+    fig11.clear()
+
+    # gridspec inside gridspec
+    outer_grid = fig11.add_gridspec(nrows=1, ncols=4, width_ratios=[1,1,1,1])
+    outer_grid.update(left=0.1,right=0.9,top=0.95,bottom=0.05,wspace=0,hspace=0)
+
+    ax0 = fig11.add_subplot(outer_grid[0])
+    ax0.imshow(s3s['int'])
+    ax0.set_title("Filled Internal Contours", fontsize=3)
+    ax0.set_axis_off()
+
+    ax1 = fig11.add_subplot(outer_grid[1])
+    ax1.imshow(s3s['ext'])
+    ax1.set_title("Filled External Contours", fontsize=3)
+    ax1.set_axis_off()
+
+    ax2 = fig11.add_subplot(outer_grid[2])
+    ax2.imshow(s3s['tiss'])
+    ax2.set_title("Filled All Contours", fontsize=3)
+    ax2.set_axis_off()
+
+    ax3 = fig11.add_subplot(outer_grid[3])
+    ax3.imshow(myIm, cmap=plt.cm.gray)
+    titleAll = "Slc "+str(slc)
+    if all_cont != None: 
+        for n, contour in enumerate(all_cont):
+            ax3.plot(contour[:, 1], contour[:, 0], linewidth=0.15, color = win.contours_palette[n])
+    ax3.set_title(titleAll, fontsize=3)
+    ax3.set_axis_off()
 
     win.canvas_plot.draw()
 

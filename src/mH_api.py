@@ -59,10 +59,6 @@ def manual_close_contours(controller, ch_name):
     controller.main_win.running_process = 'manual_'+ch_name
     #Enable and make visible close cont buttons
     enable_close_functions(controller=controller, process = 'manual', ch_name=ch_name)
-    #Enable buttons in manually close subsection
-    getattr(controller.main_win, 'save_after_tuple_'+ch_name).setEnabled(True)
-    getattr(controller.main_win, 'save_manually_closed_'+ch_name).setEnabled(True)
-    getattr(controller.main_win, 'manual_close_'+ch_name+'_done').setEnabled(True)
     #Get channel and save is as attribute
     im_ch = controller.organ.obj_imChannels[ch_name]
     controller.main_win.im_ch = im_ch
@@ -255,21 +251,144 @@ def select_cont(controller, ch_name):
     select_btn = getattr(controller.main_win, ch_name+'_selectcont')
     select_btn.setChecked(True)
 
+def select_contours(controller, ch_name): 
+    #Select contours
+    controller.main_win.running_process = 'selecting_'+ch_name
+    #Enable and make visible close cont buttons
+    enable_close_functions(controller=controller, process = 'selecting', ch_name=ch_name)
+    #Get channel and save is as attribute
+    im_ch = controller.organ.obj_imChannels[ch_name]
+    controller.main_win.im_ch = im_ch
+    #Create empty channelS3 
+    im_ch.create_chS3s(layerDict={}, win=controller.main_win)
+    #Load s3s and save them as attributes
+    im_ch.load_chS3s(cont_types = ['int', 'tiss', 'ext'])
+    for cont in ['int', 'tiss', 'ext']: 
+        s3 = getattr(im_ch, 's3_'+cont).s3()
+        setattr(controller.main_win, 's3_'+cont, s3)
+    # Load stack and save it as attribute to use through the process of closing
+    controller.main_win.im_proc = im_ch.im_proc()
+    controller.main_win.im_proc_o = copy.deepcopy(im_ch.im_proc())
+    controller.main_win.slc_py = None
+    controller.main_win.tuples_out = None
+    #Get tuples_out
+    gui_select_cont = controller.main_win.gui_select_contours[ch_name]
+    controller.main_win.tuples_out = fcC.tuple_pairs(gui_select_cont)
+    #Message
+    controller.main_win.win_msg('Selecting contours for Channel '+str(ch_name[-1])+'.')
+    #Toggle button
+    getattr(controller.main_win, 'selecting_contours_'+ch_name+'_play').setChecked(True)
+    #Plot initial tuple
+    controller.main_win.index_active = 0
+    plot_props_to_select(controller, ch_name, controller.main_win.index_active, controller.main_win.im_proc)
+
+def plot_props_to_select(controller, ch_name, index_active, im_proc):
+    #Get settings
+    level = controller.main_win.gui_select_contours[ch_name]['level']
+    min_contour_len = controller.main_win.gui_select_contours[ch_name]['min_contour_len']
+    # > Fill widget data
+    tuple_active = controller.main_win.tuples_out[index_active]
+    first, last = tuple_active['tuple_pair']
+    getattr(controller.main_win, 'selecting_tuple_'+ch_name).setText(str(first+1)+' - '+str(last+1-1))
+    getattr(controller.main_win, 'selecting_fisrt_slc_'+ch_name).setText(str(first+1))
+    getattr(controller.main_win, 'int_of_'+ch_name).setText('/ '+str(tuple_active['int_cont']))
+    getattr(controller.main_win, 'ext_of_'+ch_name).setText('/ '+str(tuple_active['ext_cont']))
+    controller.main_win.slc_py = first
+    slc_user = controller.main_win.slc_py+1
+    #Get slice
+    controller.main_win.myIm = im_proc[controller.main_win.slc_py][:][:]
+    # Show new closed contours
+    new_contours = get_contours(controller.main_win.myIm, min_contour_length = min_contour_len, level = level)
+    # Sort the contours by length (bigger to smaller)
+    controller.main_win.new_contours = sorted(new_contours, key = len, reverse=True)
+    params_props = {'myIm': copy.deepcopy(controller.main_win.myIm), 'ch': ch_name, 'slc':slc_user, 
+                    'cont_sort': controller.main_win.new_contours, 'win':controller.main_win}
+    fcC.plot_props(params_props)
+    controller.main_win.add_thumbnail(function='fcC.plot_props', params = params_props, 
+                                        name='Conts. Slc'+str(slc_user))
+    
+    #Enable widget
+    getattr(controller.main_win, 'select_contours_'+ch_name+'_widget').setEnabled(True)
+    controller.main_win.win_msg('!Channel '+ch_name[-1]+': Enter the internal and external contours for slice '+str(first+1)+". If no internal/external contours, leave the space empty.")
+    lineEdit = getattr(controller.main_win, 'int_cont_'+ch_name)
+    lineEdit.clear()
+    lineEdit.setFocus()
+
+def select_slcs_tuple(controller, ch_name):
+    main_win = controller.main_win
+    num_contours = fcC.get_contour_num(lineEdit_int = getattr(main_win, 'int_cont_'+ch_name),
+                                        lineEdit_ext = getattr(main_win, 'ext_cont_'+ch_name),
+                                        num_contours = len(main_win.new_contours), 
+                                        win=main_win)
+    print('num_contours:',num_contours)
+    selected_cont = {}; all_cont = {'contours':[]}; s3s = {}
+    for ctype in ['internal', 'external']: 
+        selected_cont[ctype] = {'contours': [], 'props': []}
+        for cont in num_contours[ctype]: 
+            sp_cont = main_win.new_contours[cont]
+            selected_cont[ctype]['contours'].append(sp_cont)
+            all_cont['contours'].append(sp_cont)
+            # Get properties of the contour
+            sp_props = fcC.get_cont_props(main_win.myIm, [sp_cont])
+            selected_cont[ctype]['props'].append(sp_props[0])
+
+        slc_s3 = getattr(main_win, 's3_'+ctype[:3])[main_win.slc_py+1][:][:]
+        slc_s3 = fcC.fill_contours(selected_cont[ctype], slc_s3)
+        s3s[ctype[:3]] = slc_s3
+    
+    slc_tiss = getattr(main_win, 's3_tiss')[main_win.slc_py+1][:][:]
+    slc_tiss = fcC.fill_contours(all_cont, slc_tiss)
+    s3s['tiss'] = slc_tiss
+
+    params_filled = {'myIm': copy.deepcopy(main_win.myIm), 'slc':main_win.slc_py+1, 
+                    's3s': s3s, 'win': main_win, 'all_cont': all_cont}
+    fcC.plot_filled_contours(params_filled)
+    main_win.add_thumbnail(function='fcC.plot_filled_contours', params = params_filled, 
+                              name='FilledCont. Slc'+str(main_win.slc_py+1))
+
+    print('selected_cont:', selected_cont)
+
+
+
+
+
+
+
 def enable_close_functions(controller, process, ch_name, widgets=True): 
-    if widgets: 
-        if process == 'manual': 
+    
+    if process == 'manual': 
+        if widgets: 
             #Show and enable
             controller.main_win.close_draw_btns_widget.setVisible(True)
             controller.main_win.close_draw_btns_widget.setEnabled(False)
             getattr(controller.main_win, 'next_slice_'+ch_name).setShortcut("Ctrl+Right")
             getattr(controller.main_win, 'prev_slice_'+ch_name).setShortcut("Ctrl+Left")
-        #Open Buttons Section
-        controller.main_win.functions_btns_open.setChecked(False)
-        controller.main_win.open_section(name = 'functions_btns')
-    else: 
-        if process == 'manual': 
+            #Open Buttons Section
+            controller.main_win.functions_btns_open.setChecked(False)
+            controller.main_win.open_section(name = 'functions_btns')
+            #Enable buttons in manually close subsection
+            getattr(controller.main_win, 'save_after_tuple_'+ch_name).setEnabled(True)
+            getattr(controller.main_win, 'save_manually_closed_'+ch_name).setEnabled(True)
+            getattr(controller.main_win, 'manual_close_'+ch_name+'_done').setEnabled(True)
+        else:
             #Enable buttons to close
             controller.main_win.close_draw_btns_widget.setEnabled(True)
+    else: 
+        controller.main_win.close_draw_btns_widget.setVisible(False)
+        getattr(controller.main_win, 'close_tuples_'+ch_name+'_widget').setEnabled(False)
+        if widgets: 
+            #Enable
+            getattr(controller.main_win, 'select_contours_'+ch_name+'_widget').setEnabled(True)
+            getattr(controller.main_win, 'next_group_'+ch_name).setShortcut("Ctrl+Right")
+            getattr(controller.main_win, 'prev_group_'+ch_name).setShortcut("Ctrl+Left")
+            #Close Buttons Section
+            controller.main_win.functions_btns_open.setChecked(True)
+            controller.main_win.open_section(name = 'functions_btns')
+            #Enable buttons in selecting subsection
+            getattr(controller.main_win, 'save_after_group_'+ch_name).setEnabled(True)
+            getattr(controller.main_win, 'save_selecting_contours_'+ch_name).setEnabled(True)
+            getattr(controller.main_win, 'selecting_contours_'+ch_name+'_done').setEnabled(True)
+            controller.main_win.closing_slc.setText('')
 
 #ANALYSIS TAB
 def run_keeplargest(controller):
