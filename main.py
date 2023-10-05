@@ -327,6 +327,12 @@ class Controller:
         # self.main_win.slc_tuple_select_ch2_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch2'))
         # self.main_win.slc_tuple_select_ch3_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch3'))
         # self.main_win.slc_tuple_select_ch4_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch4'))
+        
+        #Next tuple
+        self.main_win.next_group_ch1.clicked.connect(lambda: mA.next_tuple_select(next=True, controller=self, ch_name='ch1'))
+        # self.main_win.next_group_ch2.clicked.connect(lambda: mA.next_tuple_select(next=True, controller=self, ch_name='ch2'))
+        # self.main_win.next_group_ch3.clicked.connect(lambda: mA.next_tuple_select(next=True, controller=self, ch_name='ch3'))
+        # self.main_win.next_group_ch4.clicked.connect(lambda: mA.next_tuple_select(next=True, controller=self, ch_name='ch4'))
 
     def init_morphoHeart_tab(self): 
         #Process and Analyse Tab

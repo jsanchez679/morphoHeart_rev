@@ -235,7 +235,7 @@ def maskContour(myIm, contour):
     bbox = props[0].bbox
 
     # props_all = np.array([area, centroid, max_int, mean_int, lgth, per, sol, bbox], dtype=object)
-    props_all = {'area:': area, 'centroid': centroid, 'max_int': max_int, 'mean_int': mean_int, 
+    props_all = {'area': area, 'centroid': centroid, 'max_int': max_int, 'mean_int': mean_int, 
                  'length': lgth, 'perimeter': per, 'solidity': sol, 'bbox':bbox}
 
     return props_all
@@ -848,6 +848,131 @@ def selectHull(merge, xy_contours):
     
     return closing_pt1, closing_pt2
 
+def autom_select_contours(props_first, cont_myIm, props_myIm, num_conts):
+
+    """
+    Function to automatically select contours by area, centroid position, mean intensity and perimeter
+    """
+
+    len_text_contours = len(props_myIm)
+    #0.area, 1.centroid, 2.bbox(r), 3.bbox(c), 4.perimeter
+    scale_factor = [0.20,0.7, 0, 0, 0.10]#[0.20,0.45,0.125, 0.125, 0.10]
+    selected_contours = {}; index = []
+    #Iterate first between internal and external
+    for cont in ['external','internal']:
+        selected_contours[cont] = []
+        num_cont = num_conts[cont[:3]]
+        props_sel = props_first[cont]['props']
+        # Iterate through all the contours that are identified in the previous already image
+        # with contours already selected
+        for prop in props_sel:
+            #Get the properties of the analysed contour
+            area_s = prop['area']
+            centroid_s = prop['centroid']
+            bbox_s = prop['bbox']
+            minr, minc, maxr, maxc = bbox_s
+            ranger_s = maxr-minr
+            rangec_s = maxc-minc
+            perimeter_s = prop['perimeter']
+
+            # Create empty array to save distances
+            bigNum = 10**20
+            dif_area = np.ones(len_text_contours)*bigNum
+            dif_centroid = np.ones(len_text_contours)*bigNum
+            dif_ranger = np.ones(len_text_contours)*bigNum
+            dif_rangec = np.ones(len_text_contours)*bigNum
+            dif_perimeter = np.ones(len_text_contours)*bigNum
+
+            max_area = 0
+            max_centroid = 0
+            max_perimeter = 0
+            max_ranger = 0
+            max_rangec = 0
+
+            # Create a variable where to save the grades of all the contours found in the 
+            # new image
+            final_grade = np.zeros(len_text_contours)
+            # Iterate through all the contours in the new image to find perfect match
+            for nn, sp_prop in enumerate(props_myIm):
+                # If the contour has not been selected then evaluate it
+                if nn not in index:
+                    # Get all the properties from this contour
+                    area = sp_prop['area']
+                    centroid = sp_prop['centroid']
+                    bbox = sp_prop['bbox']
+                    minr, minc, maxr, maxc = bbox
+                    ranger = maxr-minr
+                    rangec = maxc-minc
+                    perimeter = sp_prop['perimeter']
+
+                    # Get difference in properties
+                    dif_area[nn] = abs(area_s-area)
+                    if dif_area[nn] > max_area:
+                        max_area = dif_area[nn]
+                    dif_centroid[nn] = abs(distance.euclidean(centroid_s, centroid))
+                    if dif_centroid[nn] > max_centroid:
+                        max_centroid = dif_centroid[nn]
+                    dif_ranger[nn] = abs(ranger_s-ranger)
+                    if dif_ranger[nn] > max_ranger:
+                        max_ranger = dif_ranger[nn]
+                    dif_rangec[nn] = abs(rangec_s-rangec)
+                    if dif_rangec[nn] > max_rangec:
+                        max_rangec = dif_rangec[nn]
+                    dif_perimeter[nn] = abs(perimeter_s-perimeter)
+                    if dif_perimeter[nn] > max_perimeter:
+                        max_perimeter = dif_perimeter[nn]
+            
+            # print('MAX difference: area:', max_area, ' - centroid:', max_centroid, ' - perimeter:', max_perimeter)
+            index_area = np.where(dif_area == min(dif_area))[0][0]
+            index_centroid = np.where(dif_centroid == min(dif_centroid))[0][0]
+            index_perimeter = np.where(dif_perimeter == min(dif_perimeter))[0][0]
+            print('Index: area:', index_area, ' - centroid:', index_centroid, ' - perimeter:', index_perimeter)
+            # Once all the differences btw the selected contour of the prev image 
+            # and all the contours of this image have been acquired, then normalise this by
+            # the maximum value
+            try: 
+                dif_area = dif_area/max_area
+            except: 
+                dif_area = 0
+            try: 
+                dif_centroid = dif_centroid/max_centroid
+            except: 
+                dif_centroid = 0
+            try: 
+                dif_ranger = dif_ranger/max_ranger
+            except:
+                dif_ranger = 0
+            try: 
+                dif_rangec = dif_rangec/max_rangec
+            except: 
+                dif_rangec = 0
+            try: 
+                dif_perimeter = dif_perimeter/max_perimeter
+            except: 
+                dif_perimeter = 0
+            
+            # Use this normalised arrays to fill up the final grading per contour
+            for num in range(len_text_contours):
+                if not num in selected_contours:
+                    #0.area, 1.centroid, 2. bbox(r) 3. bbox(c), 4.perimeter
+                    grade = dif_area[num]*scale_factor[0]
+                    grade += dif_centroid[num]*scale_factor[1]
+                    grade += dif_ranger[num]*scale_factor[2]
+                    grade += dif_rangec[num]*scale_factor[3]
+                    grade += dif_perimeter[num]*scale_factor[4]
+                    final_grade[num] = grade
+                else:
+                    final_grade[num] = 10**30
+            # The contour that has got the minimum value for the final grade is in theory the contour 
+            # that is most similar to the selected contour in the previous image
+            index_selected = np.where(final_grade == min(final_grade))[0][0]
+            print('area:', dif_area[index_selected], ' - centroid:', dif_centroid[index_selected], ' - perimeter:', dif_perimeter[index_selected])
+            index.append(index_selected)
+            selected_contours[cont].append(index_selected)
+
+    print('selected_contours:', selected_contours)
+    return selected_contours
+
 #Plot contour functions
 def plot_props(params):
 
@@ -929,6 +1054,7 @@ def plot_filled_contours(params):
 
     myIm = params['myIm']
     slc = params['slc']
+    ch = params['ch']
     s3s = params['s3s']
     win = params['win']
     if 'all_cont' in params.keys():
@@ -967,6 +1093,7 @@ def plot_filled_contours(params):
     ax3.set_title(titleAll, fontsize=3)
     ax3.set_axis_off()
 
+    win.fig_title.setText("Selected Contours - Channel "+str(ch[-1])+" / Slice "+str(slc))
     win.canvas_plot.draw()
 
 #%% Module loaded

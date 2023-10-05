@@ -2489,13 +2489,8 @@ class ContStack():
             x_dim = self.im_channel.shape[0]
             y_dim = self.im_channel.shape[1]
             z_dim = self.im_channel.shape[2]
-            
-            s3 = np.empty((x_dim,y_dim,z_dim+2))
-            # for pos, keySlc in enumerate(layerDict.keys()):
-            #     if keySlc[0:3] == "slc":
-            #         slcNum = int(keySlc[3:6])
-            #         im_FilledCont = layerDict[keySlc][self.cont_type]
-            #         s3[:,:,slcNum+1] = im_FilledCont
+            # print(x_dim, y_dim, z_dim)
+            s3 = np.empty((x_dim+2,y_dim,z_dim))
             s3 = s3.astype('uint8')
 
         elif isinstance(layerDict, np.ndarray): 

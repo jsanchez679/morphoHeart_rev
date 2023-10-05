@@ -1033,7 +1033,7 @@ background-color: rgb(255, 255, 255);</string>
                </property>
                <property name="minimumSize">
                 <size>
-                 <width>400</width>
+                 <width>80</width>
                  <height>0</height>
                 </size>
                </property>
@@ -1106,9 +1106,9 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-883</y>
+                      <y>0</y>
                       <width>382</width>
-                      <height>1591</height>
+                      <height>1635</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_23">
@@ -1637,11 +1637,6 @@ QComboBox QAbstractItemView {
                               <item>
                                <property name="text">
                                 <string>tab10</string>
-                               </property>
-                              </item>
-                              <item>
-                               <property name="text">
-                                <string>bold</string>
                                </property>
                               </item>
                               <item>
@@ -2312,6 +2307,25 @@ background-color:rgb(203, 203, 203);
                       </layout>
                      </item>
                      <item>
+                      <widget class="QLabel" name="spacer_14">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>5</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>5</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
                       <widget class="QFrame" name="mask_all_ch1_widget">
                        <property name="frameShape">
                         <enum>QFrame::StyledPanel</enum>
@@ -2612,6 +2626,25 @@ border-color: rgb(115, 115, 115)}
                          </widget>
                         </item>
                        </layout>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="spacer_15">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>5</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>5</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
                       </widget>
                      </item>
                      <item>
@@ -3812,6 +3845,25 @@ border-color: rgb(115, 115, 115)}
                          </layout>
                         </item>
                        </layout>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="spacer_16">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>5</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>5</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
                       </widget>
                      </item>
                      <item>
@@ -5255,6 +5307,25 @@ color: rgb(234, 234, 234);
                       </widget>
                      </item>
                      <item>
+                      <widget class="QLabel" name="spacer_17">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>5</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>5</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
                       <layout class="QHBoxLayout" name="selecting_contours_lab">
                        <property name="spacing">
                         <number>0</number>
@@ -5355,7 +5426,7 @@ border-color: rgb(0,0, 0);</string>
                       </layout>
                      </item>
                      <item>
-                      <widget class="QWidget" name="manual_close_ch1_widget_2" native="true">
+                      <widget class="QWidget" name="selecting_contours_ch1_widget" native="true">
                        <property name="styleSheet">
                         <string notr="true"/>
                        </property>
@@ -6927,6 +6998,51 @@ border-color: rgb(115, 115, 115)}
                            <item>
                             <layout class="QHBoxLayout" name="horizontalLayout_308">
                              <item>
+                              <widget class="QLabel" name="label_34">
+                               <property name="styleSheet">
+                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                               </property>
+                               <property name="text">
+                                <string>Progress/group:</string>
+                               </property>
+                               <property name="alignment">
+                                <set>Qt::AlignCenter</set>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QProgressBar" name="progress_select">
+                               <property name="minimumSize">
+                                <size>
+                                 <width>80</width>
+                                 <height>18</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>16777215</width>
+                                 <height>18</height>
+                                </size>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QProgressBar {
+        border: 1px solid rgba(89, 179, 69, 255); 
+        border-radius: 5px;
+        text-align: center;
+        background-color: rgba(89, 179, 69, 100);
+        color:rgb(0, 0, 0);
+    }
+    QProgressBar::chunk {
+        background-color: rgba(89, 179, 69, 255);
+        border-radius: 5px;
+    }</string>
+                               </property>
+                               <property name="value">
+                                <number>24</number>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
                               <spacer name="horizontalSpacer_45">
                                <property name="orientation">
                                 <enum>Qt::Horizontal</enum>
@@ -6938,49 +7054,6 @@ border-color: rgb(115, 115, 115)}
                                 </size>
                                </property>
                               </spacer>
-                             </item>
-                             <item>
-                              <widget class="QPushButton" name="prev_group_ch1">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>20</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>20</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="autoFillBackground">
-                                <bool>false</bool>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">QPushButton{
-font: bold 10pt &quot;Calibri&quot;;
-border-width: 1px; 
-border-style: outset; 
-border-color: rgb(82, 122, 61); 
-background-color:  rgb(85, 170, 255)}
-
-QPushButton:hover{
-background-color: rgb(0, 105, 158); 
-border-color: rgb(115, 115, 115);
-color: rgb(255, 255, 255)}
-
-QPushButton:disabled{
-background-color: rgb(145, 145, 145); 
-border-color: rgb(115, 115, 115)}
-</string>
-                               </property>
-                               <property name="text">
-                                <string>&lt;&lt;</string>
-                               </property>
-                               <property name="checkable">
-                                <bool>true</bool>
-                               </property>
-                              </widget>
                              </item>
                              <item>
                               <widget class="QLabel" name="label_33">
@@ -9605,7 +9678,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-2240</y>
+                   <y>-3027</y>
                    <width>632</width>
                    <height>5616</height>
                   </rect>
@@ -59053,6 +59126,8 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>color_palette_ch1</tabstop>
   <tabstop>num_color_palette_ch1</tabstop>
   <tabstop>q_contours_palette</tabstop>
+  <tabstop>set_plot_cont_settings_ch1</tabstop>
+  <tabstop>set_plot_cont_settings_ch1_2</tabstop>
   <tabstop>set_plots_cont_settings_ch1</tabstop>
   <tabstop>selecting_contours_ch1_open</tabstop>
   <tabstop>q_selecting_close_ch1</tabstop>

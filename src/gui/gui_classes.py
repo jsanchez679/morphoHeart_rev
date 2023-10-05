@@ -51,8 +51,10 @@ plt.rcParams['figure.constrained_layout.use'] = True
 #%% morphoHeart Imports - ##################################################
 # from .src.modules.mH_funcBasics import get_by_path
 # from .src.modules.mH_funcMeshes import * 
-from ..modules.mH_funcBasics import get_by_path, compare_dicts, update_gui_set, alert, df_reset_index, df_add_value, palette_rbg
-from ..modules.mH_funcContours import checkWfCloseCont, ImChannel, get_contours, plot_props, close_draw, close_box, reset_img, close_convex_hull
+from ..modules.mH_funcBasics import (get_by_path, compare_dicts, update_gui_set, alert, df_reset_index, 
+                                     df_add_value, palette_rbg)
+from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours, plot_props, plot_filled_contours,
+                                        close_draw, close_box, reset_img, close_convex_hull)
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
@@ -4217,6 +4219,12 @@ class MainWindow(QMainWindow):
 
         #getattr(controller.main_win, 'select_contours_'+ch_name+'_widget').setEnabled(True)
 
+        # Plot filled contours 
+        self.select_plot_slc_ch1.clicked.connect(lambda: self.plot_filled_slice(ch='ch1'))
+        # self.select_plot_slc_ch2.clicked.connect(lambda: self.plot_filled_slice(ch='ch2'))
+        # self.select_plot_slc_ch3.clicked.connect(lambda: self.plot_filled_slice(ch='ch3'))
+        # self.select_plot_slc_ch4.clicked.connect(lambda: self.plot_filled_slice(ch='ch4'))
+
         for ch in ['ch1']:#, 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
                 tableW = getattr(self, 'select_tableW_'+ch)
@@ -4899,27 +4907,68 @@ class MainWindow(QMainWindow):
         return arr_contours
     
     def plot_slice(self, ch): 
-
-        #Get stack
-        im_ch = self.organ.obj_imChannels[ch]
-        try: 
-            stack = self.im_proc
-            print('Image from attr')
-        except: 
-            stack = im_ch.im_proc()
-            print('Image loaded')
+        #check if slice is out of range
         #Get slice
-        slc_user = int(getattr(self, 'eg_slice_'+ch).text())
-        slc_py = slc_user-1
-        myIm = copy.deepcopy(stack[slc_py][:][:])
-        #Get params 
-        level = self.plot_contours_settings[ch]['level']
-        min_contour_length = self.plot_contours_settings[ch]['min_contour_length']
-        params = {'myIm': myIm, 'slc_user': slc_user, 'ch': ch, 
-                  'level': level, 'min_contour_length': min_contour_length}
-        self.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
-                            name = 'Cont Slc '+str(slc_user))
-        self.plot_contours_slc(params)
+        slc_input = getattr(self, 'eg_slice_'+ch).text()
+        total_slcs = int(getattr(self, 'total_stack_slices_'+ch).text())
+        if slc_input == '': 
+            self.win_msg('*Please enter a valid slice number to plot filled contours.')
+            getattr(self, 'eg_slice_'+ch).setFocus()
+            return
+        elif int(slc_input) > total_slcs: 
+            self.win_msg('*The channel contains '+str(total_slcs)+' slices. Please enter a valid slice number to plot contours.')
+            getattr(self, 'eg_slice_'+ch).setFocus()
+            return
+        else: 
+            slc_user = int(slc_input)
+            #Get stack
+            im_ch = self.organ.obj_imChannels[ch]
+            try: 
+                stack = self.im_proc
+                print('Image from attr')
+            except: 
+                stack = im_ch.im_proc()
+                print('Image loaded')
+            
+            slc_py = slc_user-1
+            myIm = copy.deepcopy(stack[slc_py][:][:])
+            #Get params 
+            level = self.plot_contours_settings[ch]['level']
+            min_contour_length = self.plot_contours_settings[ch]['min_contour_length']
+            params = {'myIm': myIm, 'slc_user': slc_user, 'ch': ch, 
+                    'level': level, 'min_contour_length': min_contour_length}
+            self.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
+                                name = 'Cont Slc '+str(slc_user))
+            self.plot_contours_slc(params)
+
+    def plot_filled_slice(self, ch):
+
+        #Get slice
+        slc_input = getattr(self, 'select_slice_'+ch).text()
+        total_slcs = int(getattr(self, 'total_stack_slices_'+ch).text())
+        if slc_input == '': 
+            self.win_msg('*Please enter a valid slice number to plot filled contours.')
+            getattr(self, 'select_slice_'+ch).setFocus()
+            return
+        elif int(slc_input) > total_slcs: 
+            self.win_msg('*The channel contains '+str(total_slcs)+' slices. Please enter a valid slice number to plot filled contours.')
+            getattr(self, 'select_slice_'+ch).setFocus()
+            return
+        else: 
+            slc_user = int(slc_input)
+            slc = slc_user-1
+            s3s = {}
+            for cont in ['int', 'ext', 'tiss']:
+                slc_s3 = getattr(self, 's3_'+cont)[slc+1][:][:]
+                s3s[cont] = slc_s3
+
+            stack = self.im_proc
+            myIm = copy.deepcopy(stack[slc][:][:])
+            params_filled = {'myIm': copy.deepcopy(myIm), 'slc':slc_user, 
+                        'ch': ch, 's3s': s3s, 'win': self}
+            plot_filled_contours(params_filled)
+            self.add_thumbnail(function='fcC.plot_filled_contours', params = params_filled, 
+                                    name='FilledCont. Slc'+str(slc_user))
 
     #Image thumbnails
     def add_thumbnail(self, function, params, name): 
@@ -4989,9 +5038,11 @@ class MainWindow(QMainWindow):
             plot_props(params = params)
         elif funct == 'fcC.plot_contours_slc':
             self.plot_contours_slc(params = params)
+        elif funct == 'fcC.plot_filled_contours':
+            plot_filled_contours(params = params)
 
         self.current_thumbnail = btn_name
-        print('self.current_thumbnail:', self.current_thumbnail)
+        # print('self.current_thumbnail:', self.current_thumbnail)
 
     def clear_thumbnails(self):
         # delete thumbnails
@@ -9691,7 +9742,6 @@ class Worker_GetSlices(QObject):
         print('second work done')
         self.done.emit()
         
-
 #%% Other classes GUI related - ########################################################
 class MyToggle(QtWidgets.QPushButton):
     #https://stackoverflow.com/questions/56806987/switch-button-in-pyqt
@@ -9938,10 +9988,10 @@ def set_txts():
     play_grw = 'images/logos_play_gray_white.png'
     play_colors = [play_bw, play_gw, play_gb, play_grw]
 
-    play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-repeat; width: 65px; height: 56px;} "
-    hover_btn = "QPushButton:hover {border-image: url("+play_bw+")} "
-    pressed_btn = "QPushButton:checked {border-image: url("+play_gb+")}; "
-    disbled_btn = "QPushButton:disabled {border-image: url("+play_grw+")}; "
+    play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-repeat; width: 65px; height: 56px;};"
+    hover_btn = "QPushButton:hover {border-image: url("+play_bw+")};"
+    pressed_btn = "QPushButton:checked {border-image: url("+play_gb+")};"
+    disbled_btn = "QPushButton:disabled {border-image: url("+play_grw+")};"
     style_play = play_btn+hover_btn+pressed_btn+disbled_btn
 
     html_txt = ['<html><head><meta name="qrichtext" content="1" /><style type="text/css"> p, li { white-space: pre-wrap; } </style></head><body style=" font-family:"Calibri Light"; font-size:11pt; font-weight:24; font-style:normal;">',
@@ -9957,87 +10007,6 @@ def set_txts():
     # https://www.pythonguis.com/faq/avoid-gray-background-for-selected-icons/
     list_all = [mH_images, play_colors, style_play, html_txt, reg_exps, tE_styles]
     return list_all
-
-others = False 
-if others:
-    #Others 
-    # class Dialog_mH(QDialog):
-    #     def __init__(self, title:str, msg:str, parent=None):
-    #         super().__init__()
-    #         uic.loadUi('gui/prompt_options_select.ui', self)
-    #         self.setWindowTitle(title)
-    #         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
-    #         self.setWindowIcon(QIcon(mH_icon))
-    #         self.textEdit.setText(msg)
-    #         self.parent = parent
-    #         layout = self.hLayout
-    #         btn_stylesheet = "QPushButton{height:20; padding:0px; width:100; border-radius:10px; border-width: 1px;border-style: outset; border-color: rgb(66, 66, 66); background-color: rgb(211, 211, 211); color: rgb(39, 39, 39); font: 11pt \"Calibri Light\";} QPushButton:hover{background-color: #eb6fbd; border-color: #672146;}"
-            
-    #         btn_yes =  QtWidgets.QPushButton()
-    #         btn_yes.setStyleSheet(btn_stylesheet)
-    #         btn_yes_name = 'Yes'
-    #         btn_yes.setObjectName(btn_yes_name)
-    #         btn_yes.setText(btn_yes_name)
-    #         self.btn_yes = btn_yes
-    #         self.hLayout.addWidget(self.btn_yes)
-    #         btn_yes.clicked.connect(lambda: self.yes_func())
-
-    #         btn_no =  QtWidgets.QPushButton()
-    #         btn_no.setStyleSheet(btn_stylesheet)
-    #         btn_no_name = 'No'
-    #         btn_no.setObjectName(btn_no_name)
-    #         btn_no.setText(btn_no_name)
-    #         self.btn_no = btn_no
-    #         self.hLayout.addWidget(self.btn_no)
-    #         btn_no.clicked.connect(lambda: self.no_func())
-
-    #         self.setModal(True)
-    #         self.show()
-        
-    #     def yes_func(self):
-    #         print('Yes!')
-    #         self.parent.prompt_val.setText('Yes')
-    #         self.close()
-
-    #     def no_func(self):
-    #         print('No!')
-    #         self.parent.prompt_val.setText('No')
-    #         self.close()
-        
-    # class Prompt_options_input(QDialog):
-    #     def __init__(self, title:str, msg:str, res:dict, parent=None):
-    #         super().__init__(parent)
-    #         uic.loadUi('gui/prompt_options_input.ui', self)
-    #         self.setWindowTitle(title)
-    #         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
-    #         self.setWindowIcon(QIcon(mH_icon))
-    #         self.textEdit_msg.setText(msg)
-
-    #         #Set options list 
-    #         res_txt = ''
-    #         for num, item in res.items():
-    #             res_txt += '#'+str(num)+': '+ item+'\n'
-    #         self.textEdit_options.setText(res_txt)
-    #         print(res_txt)
-
-    #         reg_ex = QRegularExpression("(\d+(?:-\d+)?)((?:(?:,)(\d+(?:-\d+)?))*)")
-    #         input_validator = QRegularExpressionValidator(reg_ex, self.user_input)
-    #         self.user_input.setValidator(input_validator)
-
-    #         self.buttonBox.accepted.connect(self.accept)
-    #         self.buttonBox.rejected.connect(self.reject)
-    #         self.show()
-
-    # https://www.pythonguis.com/tutorials/pyqt-dialogs/
-    #
-    #Check: https://programtalk.com/python-examples/PyQt5.QtWidgets.QDialogButtonBox.Yes/
-    #https://www.youtube.com/watch?v=vIqw411xoj0
-    #https://www.youtube.com/watch?v=RI646fqeFDQ
-    #https://www.pythonguis.com/tutorials/pyqt6-creating-dialogs-qt-designer/
-    #https://www.google.com/search?client=firefox-b-d&q=custom+inputdialogs+pyqt6
-    #https://pythonpyqt.com/pyqt-input-dialog/
-    #https://python.hotexamples.com/examples/PyQt5.QtWidgets/QDialogButtonBox/setStandardButtons/python-qdialogbuttonbox-setstandardbuttons-method-examples.html
-    pass
 
 #%% Module loaded
 print('morphoHeart! - Loaded gui_classes')
