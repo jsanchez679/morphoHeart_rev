@@ -14,6 +14,7 @@ from skimage.measure import label, regionprops
 from skimage.draw import line_aa
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import copy
 plt.rcParams['figure.constrained_layout.use'] = True
 # from PyQt6.QtCore import QObject, QThread, pyqtSignal
@@ -1094,6 +1095,60 @@ def plot_filled_contours(params):
     ax3.set_axis_off()
 
     win.fig_title.setText("Selected Contours - Channel "+str(ch[-1])+" / Slice "+str(slc))
+    win.canvas_plot.draw()
+
+def plot_group_filled_contours(params): 
+
+    win = params['win']
+    n_rows = 5; n_cols = 4
+    fig11 = win.figure
+    fig11.clear()
+
+    # Gridspec inside gridspec
+    gs = gridspec.GridSpec(n_rows, n_cols, figure=fig11,
+                            height_ratios=[1]*n_rows,
+                            width_ratios=[1]*n_cols,
+                            hspace=0.01, wspace=0.01, 
+                            left=0.05, right=0.95, bottom=0.05, top=0.95)
+    
+    for nn, param_slc in enumerate(params['dict_plot']):
+        if nn == 0: 
+            first = param_slc['slc']
+
+        myIm = param_slc['myIm']
+        slc = param_slc['slc']
+        ch = param_slc['ch']
+        s3s = param_slc['s3s']
+        if 'all_cont' in param_slc.keys():
+            all_cont = param_slc['all_cont']['contours']
+        else: 
+            all_cont=None
+
+        ax0 = fig11.add_subplot(gs[nn])
+        ax0.imshow(s3s['int'])
+        ax0.set_title("Filled Internal Contours", fontsize=3)
+        ax0.set_axis_off()
+
+        ax1 = fig11.add_subplot(gs[nn])
+        ax1.imshow(s3s['ext'])
+        ax1.set_title("Filled External Contours", fontsize=3)
+        ax1.set_axis_off()
+
+        ax2 = fig11.add_subplot(gs[nn])
+        ax2.imshow(s3s['tiss'])
+        ax2.set_title("Filled All Contours", fontsize=3)
+        ax2.set_axis_off()
+
+        ax3 = fig11.add_subplot(gs[nn])
+        ax3.imshow(myIm, cmap=plt.cm.gray)
+        titleAll = "Slc "+str(slc)
+        if all_cont != None: 
+            for n, contour in enumerate(all_cont):
+                ax3.plot(contour[:, 1], contour[:, 0], linewidth=0.15, color = win.contours_palette[n])
+        ax3.set_title(titleAll, fontsize=3)
+        ax3.set_axis_off()
+
+    win.fig_title.setText("Filled Contours - Channel "+str(ch[-1])+" / Slices "+str(first)+'-'+str(slc))
     win.canvas_plot.draw()
 
 #%% Module loaded

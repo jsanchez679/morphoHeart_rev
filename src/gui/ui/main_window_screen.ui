@@ -1002,7 +1002,7 @@ background-color: rgb(255, 255, 255);</string>
           <enum>QTabWidget::Rounded</enum>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="usesScrollButtons">
           <bool>false</bool>
@@ -9678,7 +9678,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-3027</y>
+                   <y>-1742</y>
                    <width>632</width>
                    <height>5616</height>
                   </rect>
@@ -58210,6 +58210,8 @@ background-color: rgb(250, 250, 250);</string>
     <addaction name="actionOpen_another_organ_from_current_project"/>
     <addaction name="actionCreate_new_organ_within_the_current_project"/>
     <addaction name="separator"/>
+    <addaction name="actionOpen_a_new_Project_and_Organ"/>
+    <addaction name="separator"/>
     <addaction name="actionClose"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
@@ -58332,6 +58334,17 @@ background-color: rgb(250, 250, 250);</string>
    </property>
    <property name="shortcut">
     <string>Alt+Shift+N</string>
+   </property>
+  </action>
+  <action name="actionOpen_a_new_Project_and_Organ">
+   <property name="text">
+    <string>Open a new Project and Organ</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Calibri Light</family>
+     <pointsize>9</pointsize>
+    </font>
    </property>
   </action>
  </widget>
@@ -59126,8 +59139,6 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>color_palette_ch1</tabstop>
   <tabstop>num_color_palette_ch1</tabstop>
   <tabstop>q_contours_palette</tabstop>
-  <tabstop>set_plot_cont_settings_ch1</tabstop>
-  <tabstop>set_plot_cont_settings_ch1_2</tabstop>
   <tabstop>set_plots_cont_settings_ch1</tabstop>
   <tabstop>selecting_contours_ch1_open</tabstop>
   <tabstop>q_selecting_close_ch1</tabstop>

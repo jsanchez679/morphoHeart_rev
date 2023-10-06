@@ -54,7 +54,7 @@ plt.rcParams['figure.constrained_layout.use'] = True
 from ..modules.mH_funcBasics import (get_by_path, compare_dicts, update_gui_set, alert, df_reset_index, 
                                      df_add_value, palette_rbg)
 from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours, plot_props, plot_filled_contours,
-                                        close_draw, close_box, reset_img, close_convex_hull)
+                                        plot_group_filled_contours, close_draw, close_box, reset_img, close_convex_hull)
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
@@ -3489,7 +3489,7 @@ class ProjSettings(QDialog):
 
 class MainWindow(QMainWindow):
 
-    def __init__(self, proj, organ):
+    def __init__(self, proj, organ, controller):
         super().__init__()
         uic.loadUi('src/gui/ui/main_window_screen.ui', self)
         self.setWindowTitle('morphoHeart')
@@ -3503,6 +3503,7 @@ class MainWindow(QMainWindow):
         self.proj = proj
         self.organ = organ
         self.running_process = None
+        self.controller = controller
 
         #Menu options
         self.actionSave_Project_and_Organ.triggered.connect(self.save_project_and_organ_pressed)
@@ -4855,8 +4856,9 @@ class MainWindow(QMainWindow):
             # Plot
             ax = fig11.add_subplot(gs[im])#grid[im])
             ax.imshow(myIm, cmap=plt.cm.gray)
-            ax.set_xticks([])
-            ax.set_yticks([])
+            # ax.set_xticks([])
+            # ax.set_yticks([])
+            ax.set_axis_off()
             for n, contour in enumerate(contours):
                 ax.plot(contour[:, 1], contour[:, 0], linewidth=0.15, color = self.contours_palette[n])
             ax.set_title("Slc "+str(slc+1), fontsize=3, pad=0.1)
@@ -5040,6 +5042,10 @@ class MainWindow(QMainWindow):
             self.plot_contours_slc(params = params)
         elif funct == 'fcC.plot_filled_contours':
             plot_filled_contours(params = params)
+        elif funct == 'fcC.plot_group_filled_contours':
+            plot_group_filled_contours(params = params)
+        else: 
+            print('No plot function for this params')
 
         self.current_thumbnail = btn_name
         # print('self.current_thumbnail:', self.current_thumbnail)
@@ -9590,7 +9596,7 @@ class MainWindow(QMainWindow):
         self.proj.add_organ(self.organ)
         self.proj.save_project(alert_on)
         self.win_msg('Project  -'+ self.proj.user_projName + '-  and Organ  -'+ self.organ.user_organName +'-  were succesfully saved!')
-    
+
     def close_morphoHeart_pressed(self):
         print('Close was pressed')
         msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]

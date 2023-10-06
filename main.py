@@ -245,7 +245,7 @@ class Controller:
 
         #Create Main Project Window and show
         if self.main_win == None:
-            self.main_win = MainWindow(proj = self.proj, organ = self.organ) 
+            self.main_win = MainWindow(proj = self.proj, organ = self.organ, controller=self) 
             self.init_main_win()
         self.main_win.show()
 
@@ -266,6 +266,9 @@ class Controller:
         self.main_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.main_win))
         self.init_segmentation_tab()
         self.init_morphoHeart_tab()
+
+        #Action buttons
+        self.main_win.actionOpen_a_new_Project_and_Organ.triggered.connect(self.open_new_organ_and_project)
 
     def init_segmentation_tab(self): 
         #Segmentation Tab
@@ -726,6 +729,37 @@ class Controller:
         mA.run_segm_sect(controller=self, btn=btn)
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
+
+    #Actions Main Win
+    def open_new_organ_and_project(self): 
+        # if self.running_process != None: 
+        #     process, ch = self.running_process.split('_')
+        #     self.save_closed_channel(ch=ch, print_txt=True)
+
+        # self.organ.save_organ(alert_on)
+        # self.proj.add_organ(self.organ)
+        # self.proj.save_project(alert_on)
+
+        #Close welcome window
+        self.load_proj_win = None
+        self.main_win.close()
+        if self.main_win.prompt.output in ['Discard', 'Save All']: 
+            self.main_win = None
+            self.load_proj_win = LoadProj() 
+            self.load_proj_win.show()
+
+            #Connect buttons
+            # -Go Back
+            self.load_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
+            # -Browse project
+            self.load_proj_win.button_browse_proj.clicked.connect(lambda: self.load_proj())
+            # -Show New Organ Window 
+            self.load_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='load_proj_win'))
+            # -Go to main_window
+            self.load_proj_win.go_to_main_window.clicked.connect(lambda: self.show_main_window(parent_win='load_proj_win'))
+            # -See proj settings
+            self.load_proj_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.load_proj_win))
+
 
 def main():
     app = QtWidgets.QApplication(sys.argv)

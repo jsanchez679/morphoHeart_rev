@@ -308,6 +308,10 @@ def select_slcs_tuple(controller, ch_name):
     level = controller.main_win.gui_select_contours[ch_name]['level']
     min_contour_len = controller.main_win.gui_select_contours[ch_name]['min_contour_len']
 
+    # dict_plot = []
+    # dict_plot.append({'myIm': copy.deepcopy(main_win.myIm), 'slc':main_win.slc_py+1, 
+    #                 'ch': ch_name, 's3s': s3s, 'all_cont': all_cont})
+    
     for slc in range(tuple_range[0]+1, tuple_range[1], 1):
         print('slc:', slc, 'slc_user: ', slc+1)
         myIm = main_win.im_proc[slc][:][:]
@@ -336,12 +340,24 @@ def select_slcs_tuple(controller, ch_name):
                                                             contours=contours,  
                                                             slc = slc+1)
         #Plot that image with filled contours
-        #Make a plot for 4 slc to minimise slcs shown 
         params_filled_out = {'myIm': copy.deepcopy(myIm), 'slc':slc+1, 
                     'ch': ch_name, 's3s': s3s_out, 'win': main_win, 'all_cont': all_out}
         fcC.plot_filled_contours(params_filled_out)
         main_win.add_thumbnail(function='fcC.plot_filled_contours', params = params_filled_out, 
                                 name='FilledCont. Slc'+str(slc+1))
+        #Make a plot for 4 slc to minimise slcs shown 
+        # if len(dict_plot)== 5: 
+        #     dict_plot = []
+
+        # params_slc = {'myIm': copy.deepcopy(myIm), 'slc':slc+1, 
+        #             'ch': ch_name, 's3s': s3s_out, 'all_cont': all_out}
+        # dict_plot.append(params_slc)
+
+        # if len(dict_plot)==5: 
+        #     params_group = {'win': main_win, 'dict_plot': dict_plot}
+        #     fcC.plot_group_filled_contours(params = params_group)
+        #     main_win.add_thumbnail(function='fcC.plot_group_filled_contours', params = params_group, 
+        #                         name='FilledCont. Slcs'+str(tuple_range[0])+'-'+str(tuple_range[1]))
 
 def next_tuple_select(next:bool, controller, ch_name): 
     main_win = controller.main_win
@@ -413,7 +429,6 @@ def enable_close_functions(controller, process, ch_name, widgets=True):
             #Enable
             getattr(controller.main_win, 'select_contours_'+ch_name+'_widget').setEnabled(True)
             getattr(controller.main_win, 'next_group_'+ch_name).setShortcut("Ctrl+Right")
-            getattr(controller.main_win, 'prev_group_'+ch_name).setShortcut("Ctrl+Left")
             #Close Buttons Section
             controller.main_win.functions_btns_open.setChecked(True)
             controller.main_win.open_section(name = 'functions_btns')
