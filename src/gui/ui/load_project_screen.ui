@@ -997,6 +997,9 @@ color: rgb(230, 230, 230);
          </item>
          <item>
           <widget class="QPushButton" name="go_to_main_window">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimumSize">
             <size>
              <width>180</width>

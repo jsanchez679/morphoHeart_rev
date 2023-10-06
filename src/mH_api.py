@@ -52,6 +52,8 @@ def autom_close_contours(controller, ch_name):
                               win = controller.main_win)
     #Toggle button
     getattr(controller.main_win, 'autom_close_'+ch_name+'_play').setChecked(True)
+    #Update organ workflow
+    controller.main_win.user_done(process='autom_close', ch_name=ch_name)
 
 def manual_close_contours(controller, ch_name):
 
@@ -86,6 +88,8 @@ def manual_close_contours(controller, ch_name):
     controller.main_win.win_msg('Manually closing contours for Channel '+str(ch_name[-1])+'. No. slices to close: '+str(slc_last_py-slc_first_py)+')')
     #Toggle button
     getattr(controller.main_win, 'manual_close_'+ch_name+'_play').setChecked(True)
+    #Update organ workflow
+    controller.main_win.user_done(process='manual_close', ch_name=ch_name)
     #Plot initial tuple
     controller.main_win.slc_tuple = controller.main_win.manual_slices[0]
     plot_tuple_to_manually_close(controller, ch_name, controller.main_win.slc_tuple, controller.main_win.im_proc, initial=True)
@@ -245,6 +249,8 @@ def select_contours(controller, ch_name):
     controller.main_win.win_msg('Selecting contours for Channel '+str(ch_name[-1])+'.')
     #Toggle button
     getattr(controller.main_win, 'selecting_contours_'+ch_name+'_play').setChecked(True)
+    #Update organ workflow
+    controller.main_win.user_done(process='select_contours', ch_name=ch_name)
     #Plot initial tuple
     controller.main_win.index_active = 0
     plot_props_to_select(controller, ch_name, controller.main_win.index_active, controller.main_win.im_proc)

@@ -1002,7 +1002,7 @@ background-color: rgb(255, 255, 255);</string>
           <enum>QTabWidget::Rounded</enum>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="usesScrollButtons">
           <bool>false</bool>
@@ -1106,9 +1106,9 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>0</y>
+                      <y>-893</y>
                       <width>382</width>
-                      <height>1635</height>
+                      <height>1663</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_23">
@@ -1536,7 +1536,7 @@ border-color: #672146
                              <string>Min. Contour Length:</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -1898,7 +1898,7 @@ border-color: #672146
                              <string>Level (find contours):</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -4166,109 +4166,40 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                              <string>Min. Contour Length:</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
-                          <item row="2" column="1">
-                           <layout class="QHBoxLayout" name="horizontalLayout_298">
-                            <item>
-                             <widget class="QSlider" name="manual_min_cont_length_ch1_slider">
-                              <property name="maximumSize">
-                               <size>
-                                <width>16777215</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                              <property name="styleSheet">
-                               <string notr="true">QSlider::groove:horizontal {
-	color: rgb(52,59,72);
-}
-QSlider::groove:horizontal:hover {
-	color: rgb(0,0,0);
-}
-QSlider::handle:horizontal{
-	border: none; 
-	margin: 3px;
-	height: 8px;
-	width: 3px;
-	border-radius: 5px; 
-	background-color: rgb(70, 70, 70);
-}
-QSlider::handle:horizontal:hover {
-	border-color: rgb(0, 0, 0);
-	border: 1px;
-	background-color:rgb(162, 0, 122);
-}
-</string>
-                              </property>
-                              <property name="minimum">
-                               <number>50</number>
-                              </property>
-                              <property name="maximum">
-                               <number>500</number>
-                              </property>
-                              <property name="singleStep">
-                               <number>1</number>
-                              </property>
-                              <property name="pageStep">
-                               <number>50</number>
-                              </property>
-                              <property name="sliderPosition">
-                               <number>100</number>
-                              </property>
-                              <property name="orientation">
-                               <enum>Qt::Horizontal</enum>
-                              </property>
-                              <property name="invertedAppearance">
-                               <bool>false</bool>
-                              </property>
-                              <property name="invertedControls">
-                               <bool>false</bool>
-                              </property>
-                              <property name="tickPosition">
-                               <enum>QSlider::TicksBelow</enum>
-                              </property>
-                              <property name="tickInterval">
-                               <number>0</number>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QLineEdit" name="manual_min_cont_length_ch1_value">
-                              <property name="minimumSize">
-                               <size>
-                                <width>60</width>
-                                <height>0</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>60</width>
-                                <height>16777215</height>
-                               </size>
-                              </property>
-                              <property name="styleSheet">
-                               <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QLineEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
-                              </property>
-                              <property name="text">
-                               <string>100</string>
-                              </property>
-                              <property name="alignment">
-                               <set>Qt::AlignCenter</set>
-                              </property>
-                              <property name="readOnly">
-                               <bool>false</bool>
-                              </property>
-                             </widget>
-                            </item>
-                           </layout>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="manual_level_lab_ch1">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>120</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Level (find contours):</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                            </property>
+                           </widget>
                           </item>
                           <item row="1" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_299">
@@ -4373,8 +4304,108 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </item>
                            </layout>
                           </item>
-                          <item row="1" column="0">
-                           <widget class="QLabel" name="manual_level_lab_ch1">
+                          <item row="2" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_298">
+                            <item>
+                             <widget class="QSlider" name="manual_min_cont_length_ch1_slider">
+                              <property name="maximumSize">
+                               <size>
+                                <width>16777215</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QSlider::groove:horizontal {
+	color: rgb(52,59,72);
+}
+QSlider::groove:horizontal:hover {
+	color: rgb(0,0,0);
+}
+QSlider::handle:horizontal{
+	border: none; 
+	margin: 3px;
+	height: 8px;
+	width: 3px;
+	border-radius: 5px; 
+	background-color: rgb(70, 70, 70);
+}
+QSlider::handle:horizontal:hover {
+	border-color: rgb(0, 0, 0);
+	border: 1px;
+	background-color:rgb(162, 0, 122);
+}
+</string>
+                              </property>
+                              <property name="minimum">
+                               <number>50</number>
+                              </property>
+                              <property name="maximum">
+                               <number>500</number>
+                              </property>
+                              <property name="singleStep">
+                               <number>1</number>
+                              </property>
+                              <property name="pageStep">
+                               <number>50</number>
+                              </property>
+                              <property name="sliderPosition">
+                               <number>100</number>
+                              </property>
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="invertedAppearance">
+                               <bool>false</bool>
+                              </property>
+                              <property name="invertedControls">
+                               <bool>false</bool>
+                              </property>
+                              <property name="tickPosition">
+                               <enum>QSlider::TicksBelow</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>0</number>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLineEdit" name="manual_min_cont_length_ch1_value">
+                              <property name="minimumSize">
+                               <size>
+                                <width>60</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>60</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                              </property>
+                              <property name="text">
+                               <string>100</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="readOnly">
+                               <bool>false</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="3" column="0">
+                           <widget class="QLabel" name="manual_min_intensity_lab_ch1">
                             <property name="sizePolicy">
                              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                               <horstretch>0</horstretch>
@@ -4397,14 +4428,14 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                              <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                             </property>
                             <property name="text">
-                             <string>Level (find contours):</string>
+                             <string>Min. Intensity Value:</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
-                          <item row="1" column="2">
+                          <item row="0" column="1" alignment="Qt::AlignRight">
                            <widget class="QPushButton" name="q_manual_level_ch1">
                             <property name="minimumSize">
                              <size>
@@ -4437,38 +4468,108 @@ border-color: #672146
                             </property>
                            </widget>
                           </item>
-                          <item row="2" column="2">
-                           <widget class="QPushButton" name="q_manual_min_cont_length_ch1">
-                            <property name="minimumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                            </property>
-                            <property name="text">
-                             <string>?</string>
-                            </property>
-                           </widget>
+                          <item row="3" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_312">
+                            <item>
+                             <widget class="QSlider" name="manual_min_intensity_ch1_slider">
+                              <property name="maximumSize">
+                               <size>
+                                <width>16777215</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QSlider::groove:horizontal {
+	color: rgb(52,59,72);
+}
+QSlider::groove:horizontal:hover {
+	color: rgb(0,0,0);
+}
+QSlider::handle:horizontal{
+	border: none; 
+	margin: 3px;
+	height: 8px;
+	width: 3px;
+	border-radius: 5px; 
+	background-color: rgb(70, 70, 70);
+}
+QSlider::handle:horizontal:hover {
+	border-color: rgb(0, 0, 0);
+	border: 1px;
+	background-color:rgb(162, 0, 122);
+}
+</string>
+                              </property>
+                              <property name="minimum">
+                               <number>1000</number>
+                              </property>
+                              <property name="maximum">
+                               <number>21000</number>
+                              </property>
+                              <property name="singleStep">
+                               <number>10</number>
+                              </property>
+                              <property name="pageStep">
+                               <number>2000</number>
+                              </property>
+                              <property name="value">
+                               <number>15000</number>
+                              </property>
+                              <property name="sliderPosition">
+                               <number>15000</number>
+                              </property>
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="invertedAppearance">
+                               <bool>false</bool>
+                              </property>
+                              <property name="invertedControls">
+                               <bool>false</bool>
+                              </property>
+                              <property name="tickPosition">
+                               <enum>QSlider::TicksBelow</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>0</number>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLineEdit" name="manual_min_intensity_ch1_value">
+                              <property name="minimumSize">
+                               <size>
+                                <width>60</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>60</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                              </property>
+                              <property name="text">
+                               <string>15000</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="readOnly">
+                               <bool>true</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
                           </item>
                          </layout>
                         </item>
@@ -5526,139 +5627,34 @@ border-color: #672146
                         </item>
                         <item>
                          <layout class="QGridLayout" name="gridLayout_27">
-                          <item row="0" column="1">
-                           <layout class="QHBoxLayout" name="horizontalLayout_301">
-                            <item>
-                             <widget class="QSlider" name="selecting_level_ch1_slider">
-                              <property name="maximumSize">
-                               <size>
-                                <width>16777215</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                              <property name="styleSheet">
-                               <string notr="true">QSlider::groove:horizontal {
-	color: rgb(52,59,72);
-}
-QSlider::groove:horizontal:hover {
-	color: rgb(0,0,0);
-}
-QSlider::handle:horizontal{
-	border: none; 
-	margin: 3px;
-	height: 8px;
-	width: 3px;
-	border-radius: 5px; 
-	background-color: rgb(70, 70, 70);
-}
-QSlider::handle:horizontal:hover {
-	border-color: rgb(0, 0, 0);
-	border: 1px;
-	background-color:rgb(162, 0, 122);
-}
-</string>
-                              </property>
-                              <property name="minimum">
-                               <number>5</number>
-                              </property>
-                              <property name="maximum">
-                               <number>2505</number>
-                              </property>
-                              <property name="singleStep">
-                               <number>1</number>
-                              </property>
-                              <property name="pageStep">
-                               <number>250</number>
-                              </property>
-                              <property name="value">
-                               <number>5</number>
-                              </property>
-                              <property name="sliderPosition">
-                               <number>5</number>
-                              </property>
-                              <property name="orientation">
-                               <enum>Qt::Horizontal</enum>
-                              </property>
-                              <property name="invertedAppearance">
-                               <bool>false</bool>
-                              </property>
-                              <property name="invertedControls">
-                               <bool>false</bool>
-                              </property>
-                              <property name="tickPosition">
-                               <enum>QSlider::TicksBelow</enum>
-                              </property>
-                              <property name="tickInterval">
-                               <number>0</number>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QLineEdit" name="selecting_level_ch1_value">
-                              <property name="minimumSize">
-                               <size>
-                                <width>60</width>
-                                <height>0</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>60</width>
-                                <height>16777215</height>
-                               </size>
-                              </property>
-                              <property name="styleSheet">
-                               <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QLineEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
-                              </property>
-                              <property name="text">
-                               <string>0.5</string>
-                              </property>
-                              <property name="alignment">
-                               <set>Qt::AlignCenter</set>
-                              </property>
-                              <property name="readOnly">
-                               <bool>false</bool>
-                              </property>
-                             </widget>
-                            </item>
-                           </layout>
-                          </item>
-                          <item row="1" column="2">
-                           <widget class="QPushButton" name="q_selecting_min_cont_length_ch1">
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="selecting_level_lab_ch1">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
                             <property name="minimumSize">
                              <size>
-                              <width>18</width>
-                              <height>18</height>
+                              <width>120</width>
+                              <height>20</height>
                              </size>
                             </property>
                             <property name="maximumSize">
                              <size>
-                              <width>18</width>
-                              <height>18</height>
+                              <width>120</width>
+                              <height>20</height>
                              </size>
                             </property>
                             <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                             </property>
                             <property name="text">
-                             <string>?</string>
+                             <string>Level (find contours):</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
@@ -5789,73 +5785,112 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                              <string>Min. Contour Length:</string>
                             </property>
                             <property name="alignment">
-                             <set>Qt::AlignCenter</set>
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                             </property>
                            </widget>
                           </item>
-                          <item row="0" column="0">
-                           <widget class="QLabel" name="selecting_level_lab_ch1">
-                            <property name="sizePolicy">
-                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                              <horstretch>0</horstretch>
-                              <verstretch>0</verstretch>
-                             </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                             <size>
-                              <width>120</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>120</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                            </property>
-                            <property name="text">
-                             <string>Level (find contours):</string>
-                            </property>
-                            <property name="alignment">
-                             <set>Qt::AlignCenter</set>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="0" column="2">
-                           <widget class="QPushButton" name="q_selecting_level_ch1">
-                            <property name="minimumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                            </property>
-                            <property name="text">
-                             <string>?</string>
-                            </property>
-                           </widget>
+                          <item row="0" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_301">
+                            <item>
+                             <widget class="QSlider" name="selecting_level_ch1_slider">
+                              <property name="maximumSize">
+                               <size>
+                                <width>16777215</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QSlider::groove:horizontal {
+	color: rgb(52,59,72);
+}
+QSlider::groove:horizontal:hover {
+	color: rgb(0,0,0);
+}
+QSlider::handle:horizontal{
+	border: none; 
+	margin: 3px;
+	height: 8px;
+	width: 3px;
+	border-radius: 5px; 
+	background-color: rgb(70, 70, 70);
+}
+QSlider::handle:horizontal:hover {
+	border-color: rgb(0, 0, 0);
+	border: 1px;
+	background-color:rgb(162, 0, 122);
+}
+</string>
+                              </property>
+                              <property name="minimum">
+                               <number>5</number>
+                              </property>
+                              <property name="maximum">
+                               <number>2505</number>
+                              </property>
+                              <property name="singleStep">
+                               <number>1</number>
+                              </property>
+                              <property name="pageStep">
+                               <number>250</number>
+                              </property>
+                              <property name="value">
+                               <number>5</number>
+                              </property>
+                              <property name="sliderPosition">
+                               <number>5</number>
+                              </property>
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="invertedAppearance">
+                               <bool>false</bool>
+                              </property>
+                              <property name="invertedControls">
+                               <bool>false</bool>
+                              </property>
+                              <property name="tickPosition">
+                               <enum>QSlider::TicksBelow</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>0</number>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLineEdit" name="selecting_level_ch1_value">
+                              <property name="minimumSize">
+                               <size>
+                                <width>60</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>60</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                              </property>
+                              <property name="text">
+                               <string>0.5</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="readOnly">
+                               <bool>false</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
                           </item>
                          </layout>
                         </item>
@@ -58393,8 +58428,6 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>manual_min_cont_length_ch1_value</tabstop>
   <tabstop>manual_level_ch1_slider</tabstop>
   <tabstop>manual_level_ch1_value</tabstop>
-  <tabstop>q_manual_level_ch1</tabstop>
-  <tabstop>q_manual_min_cont_length_ch1</tabstop>
   <tabstop>q_manual_close_ch1</tabstop>
   <tabstop>manual_close_ch1_set</tabstop>
   <tabstop>manual_close_ch1_play</tabstop>
@@ -59144,10 +59177,8 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>q_selecting_close_ch1</tabstop>
   <tabstop>selecting_level_ch1_slider</tabstop>
   <tabstop>selecting_level_ch1_value</tabstop>
-  <tabstop>q_selecting_min_cont_length_ch1</tabstop>
   <tabstop>selecting_min_cont_length_ch1_slider</tabstop>
   <tabstop>selecting_min_cont_length_ch1_value</tabstop>
-  <tabstop>q_selecting_level_ch1</tabstop>
   <tabstop>cB_blind</tabstop>
   <tabstop>tab_chs</tabstop>
   <tabstop>tabWidget</tabstop>

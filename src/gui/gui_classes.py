@@ -3021,7 +3021,6 @@ class LoadProj(QDialog):
 
                 self.tabW_select_organ.resizeColumnsToContents()
                 self.tabW_select_organ.resizeRowsToContents()
-
             else: 
                 error_txt = "!The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
                 self.win_msg(error_txt, self.button_load_organs)
@@ -3031,6 +3030,7 @@ class LoadProj(QDialog):
 
             self.organ_checkboxes = cBs
             self.button_load_organs.setChecked(True)
+            self.go_to_main_window.setEnabled(True)
         else: 
             self.button_load_organs.setChecked(False)
             error_txt = '*You need to first load a project to load all the organs comprising it.'
@@ -3770,6 +3770,11 @@ class MainWindow(QMainWindow):
         min_length_validator_man = QRegularExpressionValidator(reg_ex, min_contour_length_man)
         min_contour_length_man.setValidator(min_length_validator_man)
 
+        #Min intensity
+        min_int_man = getattr(self, 'manual_min_intensity_'+ch+'_value')
+        min_int_validator_man = QRegularExpressionValidator(reg_ex_5, min_int_man)
+        min_int_man.setValidator(min_int_validator_man)
+
         #SELECTING CONTOURS
         #Level
         level_sel = getattr(self, 'selecting_level_'+ch+'_value')
@@ -3938,16 +3943,54 @@ class MainWindow(QMainWindow):
         # self.end_autom_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'autom_close'))
 
         #Sliders
+        #>> min contour length
         self.autom_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch1','slider'))
         # self.autom_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('ch2','autom_min_cont_length_ch2_slider'))
         # self.autom_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('ch3','autom_min_cont_length_ch3_slider'))
         # self.autom_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('ch4','autom_min_cont_length_ch4_slider'))
         
+        #>> min intensity value
+        self.autom_min_intensity_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch1','slider'))
+        # self.autom_min_intensity_ch2_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch2','slider'))
+        # self.autom_min_intensity_ch3_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch3','slider'))
+        # self.autom_min_intensity_ch4_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch4','slider'))
+
+        #>> mean intensity value
+        self.autom_mean_intensity_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch1','slider'))
+        # self.autom_mean_intensity_ch2_slider.valueChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch2','slider'))
+        # self.autom_mean_intensity_ch3_slider.valueChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch3','slider'))
+        # self.autom_mean_intensity_ch4_slider.valueChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch4','slider'))
+        
+        #>> min distance
+        self.autom_min_distance_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_distance_ch1','slider'))
+        # self.autom_min_distance_ch2_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_distance_ch2','slider'))
+        # self.autom_min_distance_ch3_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_distance_ch3','slider'))
+        # self.autom_min_distance_ch4_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_distance_ch4','slider'))
+
         #Text
+        #>> min contour length
         self.autom_min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch1','value'))
         # self.autom_min_cont_length_ch2_slider.textChanged.connect(lambda: self.slider_changed('ch2','autom_min_cont_length_ch2_slider'))
         # self.autom_min_cont_length_ch3_slider.textChanged.connect(lambda: self.slider_changed('ch3','autom_min_cont_length_ch3_slider'))
         # self.autom_min_cont_length_ch4_slider.textChanged.connect(lambda: self.slider_changed('ch4','autom_min_cont_length_ch4_slider'))
+
+        #>> min intensity value
+        self.autom_min_intensity_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch1','value'))
+        # self.autom_min_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch2','value'))
+        # self.autom_min_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch3','value'))
+        # self.autom_min_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch4','value'))
+
+        #>> mean intensity value
+        self.autom_mean_intensity_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch1','value'))
+        # self.autom_mean_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch2','value'))
+        # self.autom_mean_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch3','value'))
+        # self.autom_mean_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch4','value'))
+
+        #>> min distance
+        self.autom_min_distance_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch1','value'))
+        # self.autom_min_distance_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch2','value'))
+        # self.autom_min_distance_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch3','value'))
+        # self.autom_min_distance_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch4','value'))
 
         # DONE
         self.autom_close_ch1_done.clicked.connect(lambda: self.user_done('autom_close', 'ch1'))
@@ -4016,7 +4059,12 @@ class MainWindow(QMainWindow):
         # self.manual_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch2','slider'))
         # self.manual_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch3','slider'))
         # self.manual_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch4','slider'))
-    
+
+        self.manual_min_intensity_ch1_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch1','slider'))
+        # self.manual_min_intensity_ch2_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch2','slider'))
+        # self.manual_min_intensity_ch3_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch3','slider'))
+        # self.manual_min_intensity_ch4_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch4','slider'))
+
         #Text
         self.manual_level_ch1_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch1', 'value', divider = 10))
         # self.manual_level_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch2', 'value', divider = 10))
@@ -4027,6 +4075,11 @@ class MainWindow(QMainWindow):
         # self.manual_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch2','value'))
         # self.manual_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch3','value'))
         # self.manual_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch4','value'))
+
+        self.manual_min_intensity_ch1_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch1','value'))
+        # self.manual_min_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch2','value'))
+        # self.manual_min_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch3','value'))
+        # self.manual_min_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch4','value'))
 
         # Regex for slices
         reg_ex = QRegularExpression("[0-9,-]+")
@@ -4226,6 +4279,12 @@ class MainWindow(QMainWindow):
         # self.select_plot_slc_ch3.clicked.connect(lambda: self.plot_filled_slice(ch='ch3'))
         # self.select_plot_slc_ch4.clicked.connect(lambda: self.plot_filled_slice(ch='ch4'))
 
+        #Done
+        self.selecting_contours_ch1_done.clicked.connect(lambda: self.user_done('select_contours', 'ch1'))
+        # self.selecting_contours_ch2_done.clicked.connect(lambda: self.user_done('select_contours', 'ch2'))
+        # self.selecting_contours_ch3_done.clicked.connect(lambda: self.user_done('select_contours', 'ch3'))
+        # self.selecting_contours_ch4_done.clicked.connect(lambda: self.user_done('select_contours', 'ch4'))
+
         for ch in ['ch1']:#, 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
                 tableW = getattr(self, 'select_tableW_'+ch)
@@ -4286,32 +4345,33 @@ class MainWindow(QMainWindow):
             sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','A-Autom','Status']
             msg = 'Contours of Channel '+str(ch_name[-1])+' have been automatically closed!'
             self.running_process = None
-           
         elif process == 'manual_close': 
             sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','B-Manual','Status']
             msg = 'Contours of Channel '+str(ch_name[-1])+' have been manually closed!'
-            # self.running_process = None
+            self.running_process = None
             sp_process2 = ['ImProc', ch_name, 'B-CloseCont','Steps','C-CloseInOut','Status']
-        
-        elif process == 'inlets_close':
-            sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','C-CloseInOut','Status']
-            msg = 'Inlets/Outlets of Channel '+str(ch_name[-1])+' have been successfully closed!'
-            # self.running_process = None
+        elif process == 'select_contours':
+            sp_process = ['ImProc', ch_name, 'C-SelectCont','Status']
+            msg = 'Selecting the Contours of Channel '+str(ch_name[-1])+' has been successfully finished!'
+            self.running_process = None
+        else: 
+            print('What done?')
 
         if btn.isChecked(): 
             self.organ.update_mHworkflow(sp_process, update = 'DONE')
             if process == 'manual_close': 
                 self.organ.update_mHworkflow(sp_process2, update = 'DONE')
+            self.win_msg(msg)
         else: 
             self.organ.update_mHworkflow(sp_process, update = 'Initialised')
 
-        self.win_msg(msg)
         #Update Status in GUI and in CH Progress 
         self.update_status(workflow, sp_process, status)
         self.update_ch_progress()
-        alert('woohoo')
-
         print(sp_process, ':', get_by_path(workflow, sp_process))
+
+        if btn.isChecked():
+            alert('woohoo')
         
     #Set functions 
     def set_plot_contour_settings(self, ch_name, check=False):
@@ -4462,11 +4522,13 @@ class MainWindow(QMainWindow):
             save_after_tuple = getattr(self, 'save_after_tuple_'+ch_name).isChecked()
             min_contour_len = int(getattr(self, 'manual_min_cont_length_'+ch_name+'_value').text())
             level = float(getattr(self, 'manual_level_'+ch_name+'_value').text())
+            min_int = int(getattr(self, 'manual_min_intensity_'+ch_name+'_value').text())
 
             gui_manual_close_contours = {'start_slc': int(start_slc)-1, 
                                             'end_slc': int(end_slc)-1,
                                             'level': level,  
                                             'min_contour_len': min_contour_len,
+                                            'min_int': min_int,
                                             'save_after_tuple': save_after_tuple}
             
             print('gui_manual_close_contours: ', gui_manual_close_contours)
@@ -4624,8 +4686,14 @@ class MainWindow(QMainWindow):
                 getattr(self, 'manual_min_cont_length_'+ch_name+'_value').setText(str(min_contour_len))
                 level = wf_info['manual_close_contours'][ch_name]['level']
                 getattr(self, 'manual_level_'+ch_name+'_value').setText(str(level))
+                try: 
+                    min_int = wf_info['manual_close_contours'][ch_name]['min_int']
+                    getattr(self, 'manual_min_intensity_'+ch_name+'_value').setText(str(min_int))
+                except: 
+                    pass
                 save_after_tuple = wf_info['manual_close_contours'][ch_name]['save_after_tuple']
                 getattr(self, 'save_after_tuple_'+ch_name).setChecked(save_after_tuple)
+
 
                 workflow = self.organ.workflow['morphoHeart']['ImProc'][ch_name][ 'B-CloseCont']['Steps']['B-Manual']
                 status = getattr(self, 'manual_close_'+ch_name+'_status')

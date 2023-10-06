@@ -598,13 +598,14 @@ def close_convex_hull(win):
         ch_name = win.im_ch.channel_no
         level = win.gui_manual_close_contours[ch_name]['level']
         min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
+        min_int = win.gui_manual_close_contours[ch_name]['min_int']
 
         contours_or = get_contours(win.myIm, min_contour_length=min_contour_len, level=level)
         contours_or = sorted(contours_or, key = len, reverse=True)
         ind_contours = []
         for i, cont in enumerate(contours_or): 
             props = maskContour(win.myIm, cont)
-            if props[2] > 15000:
+            if props['max_int'] > min_int:
                 ind_contours.append(i)
 
         # print('ind_contours:', ind_contours)

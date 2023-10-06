@@ -37,6 +37,9 @@ class Controller:
         self.load_s3s = None
         self.proj_settings_win = None
 
+        self.wins = ['new_proj_win','meas_param_win','load_proj_win','new_organ_win',
+                     'main_win','load_s3s', 'proj_settings_win']
+
     def show_welcome(self):
         #Close previous windows if existent
         if self.new_proj_win != None:
@@ -126,17 +129,8 @@ class Controller:
         #Create new proj window and show
         if self.new_proj_win == None: 
             self.new_proj_win = CreateNewProj(controller=self)
+            self.init_create_new_proj()
         self.new_proj_win.show()
-
-        #Connect Buttons
-        # -Go Back 
-        self.new_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
-        # -Set Measurement Parameters 
-        self.new_proj_win.set_meas_param_all.clicked.connect(lambda: self.show_meas_param())
-        # -Create New Project 
-        self.new_proj_win.button_new_proj.clicked.connect(lambda: self.new_proj())
-        # -Show New Organ Window 
-        self.new_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='new_proj_win'))
 
     def show_meas_param(self):
         #Create meas param window and show
@@ -161,19 +155,8 @@ class Controller:
         #Create Load Project Window and show
         if self.load_proj_win == None:
             self.load_proj_win = LoadProj() 
+            self.init_load_proj()
         self.load_proj_win.show()
-
-        #Connect buttons
-        # -Go Back
-        self.load_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
-        # -Browse project
-        self.load_proj_win.button_browse_proj.clicked.connect(lambda: self.load_proj())
-        # -Show New Organ Window 
-        self.load_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='load_proj_win'))
-        # -Go to main_window
-        self.load_proj_win.go_to_main_window.clicked.connect(lambda: self.show_main_window(parent_win='load_proj_win'))
-        # -See proj settings
-        self.load_proj_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.load_proj_win))
 
     def show_new_organ(self, parent_win:str):
         #Identify parent and close it
@@ -195,21 +178,15 @@ class Controller:
         #Create new organ window and show
         if self.new_organ_win == None:
             self.new_organ_win = NewOrgan(proj = self.proj)
+            self.init_new_organ_win(parent_win=parent_win)
         self.new_organ_win.show()
 
-        #Connect Buttons
-        # -Go Back 
-        self.new_organ_win.button_go_back.clicked.connect(lambda: self.show_parent(parent_win))
-        # - Create New Organ
-        self.new_organ_win.button_create_new_organ.clicked.connect(lambda: self.new_organ())
-        # -Go to main_window
-        self.new_organ_win.go_to_main_window.clicked.connect(lambda: self.show_main_window(parent_win='new_organ_win'))
-        # -See proj settings
-        self.new_organ_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.new_organ_win))
-
     def show_parent(self, parent:str):
-        parent_win = getattr(self, parent)
-        parent_win.show()
+        try:
+            parent_win = getattr(self, parent)
+            parent_win.show()
+        except: 
+            self.clear_win_show_welcome(parent=None)
 
     def show_main_window(self, parent_win:str):
         #Close new organ or load organ window window
@@ -261,6 +238,42 @@ class Controller:
         self.proj_settings_win.show()
         getattr(parent_win, 'button_see_proj_settings').setChecked(False)
 
+    #Inititalise windows
+    def init_load_proj(self): 
+        #Connect buttons
+        # -Go Back
+        self.load_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
+        # -Browse project
+        self.load_proj_win.button_browse_proj.clicked.connect(lambda: self.load_proj())
+        # -Show New Organ Window 
+        self.load_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='load_proj_win'))
+        # -Go to main_window
+        self.load_proj_win.go_to_main_window.clicked.connect(lambda: self.show_main_window(parent_win='load_proj_win'))
+        # -See proj settings
+        self.load_proj_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.load_proj_win))
+
+    def init_create_new_proj(self): 
+        #Connect Buttons
+        # -Go Back 
+        self.new_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
+        # -Set Measurement Parameters 
+        self.new_proj_win.set_meas_param_all.clicked.connect(lambda: self.show_meas_param())
+        # -Create New Project 
+        self.new_proj_win.button_new_proj.clicked.connect(lambda: self.new_proj())
+        # -Show New Organ Window 
+        self.new_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='new_proj_win'))
+
+    def init_new_organ_win(self, parent_win=None): 
+        #Connect Buttons
+        # -Go Back 
+        self.new_organ_win.button_go_back.clicked.connect(lambda: self.show_parent(parent_win))
+        # - Create New Organ
+        self.new_organ_win.button_create_new_organ.clicked.connect(lambda: self.new_organ())
+        # -Go to main_window
+        self.new_organ_win.go_to_main_window.clicked.connect(lambda: self.show_main_window(parent_win='new_organ_win'))
+        # -See proj settings
+        self.new_organ_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.new_organ_win))
+
     def init_main_win(self): 
         
         self.main_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.main_win))
@@ -269,6 +282,9 @@ class Controller:
 
         #Action buttons
         self.main_win.actionOpen_a_new_Project_and_Organ.triggered.connect(self.open_new_organ_and_project)
+        self.main_win.actionCreate_new_Project.triggered.connect(self.create_new_project)
+        self.main_win.actionOpen_another_organ_from_current_project.triggered.connect(self.open_another_organ_same_project)
+        self.main_win.actionCreate_new_organ_within_the_current_project.triggered.connect(self.create_new_organ_same_project)
 
     def init_segmentation_tab(self): 
         #Segmentation Tab
@@ -612,6 +628,7 @@ class Controller:
                     self.proj.add_organ(self.organ)
                     self.organ.save_organ()
                     self.new_organ_win.win_msg('New organ "'+name+'" has been created as part of "'+self.proj.user_projName+'" project.')
+                    self.new_organ_win.go_to_main_window.setEnabled(True)
                 else: 
                     self.new_organ_win.button_create_new_organ.setChecked(False)
                     return
@@ -732,34 +749,54 @@ class Controller:
 
     #Actions Main Win
     def open_new_organ_and_project(self): 
-        # if self.running_process != None: 
-        #     process, ch = self.running_process.split('_')
-        #     self.save_closed_channel(ch=ch, print_txt=True)
-
-        # self.organ.save_organ(alert_on)
-        # self.proj.add_organ(self.organ)
-        # self.proj.save_project(alert_on)
-
         #Close welcome window
         self.load_proj_win = None
         self.main_win.close()
         if self.main_win.prompt.output in ['Discard', 'Save All']: 
             self.main_win = None
             self.load_proj_win = LoadProj() 
+            self.init_load_proj()
+            self.load_proj_win.button_go_back.clicked.connect(lambda: self.clear_win_show_welcome(parent = 'load_proj_win'))
             self.load_proj_win.show()
 
-            #Connect buttons
-            # -Go Back
-            self.load_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
-            # -Browse project
-            self.load_proj_win.button_browse_proj.clicked.connect(lambda: self.load_proj())
-            # -Show New Organ Window 
-            self.load_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='load_proj_win'))
-            # -Go to main_window
-            self.load_proj_win.go_to_main_window.clicked.connect(lambda: self.show_main_window(parent_win='load_proj_win'))
-            # -See proj settings
-            self.load_proj_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.load_proj_win))
+    def create_new_project(self): 
+        self.new_proj_win = None
+        self.main_win.close()
+        if self.main_win.prompt.output in ['Discard', 'Save All']: 
+            self.main_win = None
+            self.new_proj_win = CreateNewProj(controller=self)
+            self.init_create_new_proj()
+            self.new_proj_win.button_go_back.clicked.connect(lambda: self.clear_win_show_welcome(parent = 'new_proj_win'))
+            self.new_proj_win.show()
 
+    def open_another_organ_same_project(self):
+        self.main_win.close()
+        if self.main_win.prompt.output in ['Discard', 'Save All']: 
+            self.load_proj_win.button_go_back.clicked.connect(lambda: self.clear_win_show_welcome(parent = 'load_proj_win'))
+            self.load_proj_win.go_to_main_window.setChecked(False)
+            self.load_proj_win.show()
+
+    def create_new_organ_same_project(self): 
+        self.new_organ_win = None
+        self.main_win.close()
+        if self.main_win.prompt.output in ['Discard', 'Save All']: 
+            self.new_organ_win = NewOrgan(proj = self.proj)
+            self.init_new_organ_win()
+            self.new_organ_win.button_go_back.clicked.connect(lambda: self.clear_win_show_welcome(parent = 'new_organ_win'))
+            self.new_organ_win.show()
+    
+    def clear_win_show_welcome(self, parent):
+        if parent != None: 
+            getattr(self, parent).close()
+        else: 
+            for win in self.wins: 
+                if hasattr(self, win): 
+                    getattr(self, win).close()
+        
+        for win in self.wins: 
+            setattr(self, win, None)
+
+        self.show_welcome()
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
