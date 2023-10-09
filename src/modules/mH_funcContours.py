@@ -455,13 +455,13 @@ def fill_contours(selected_cont, slc_s3):
     if len(selected_cont['contours']) > 0:
         for n, cont in enumerate(selected_cont['contours']):
             # Create a contour masked image by using the contour coordinates rounded to their nearest integer value
-            slc_s3[np.round(cont[:, 1]).astype('int'), np.round(cont[:, 0]).astype('int')] = 1
+            slc_s3[np.round(cont[:, 0]).astype('int'), np.round(cont[:, 1]).astype('int')] = 1
             # Fill in the holes created by the contour boundary
             slc_s3 = ndimage.binary_fill_holes(slc_s3)
-            slc_s3 = np.transpose(slc_s3)
+            # slc_s3 = np.transpose(slc_s3)
             if n == 0:
                 slc_s3f = slc_s3
-            if n > 0:
+            elif n > 0:
                 slc_s3f = np.logical_xor(slc_s3f, slc_s3)
 
         slc_s3f = slc_s3f.astype(int)
@@ -471,6 +471,29 @@ def fill_contours(selected_cont, slc_s3):
         slc_s3f = slc_s3
 
     return slc_s3f
+
+    # if len(selected_cont['contours']) > 0:
+    #     for n, cont in enumerate(selected_cont['contours']):
+    #         r_mask = np.zeros_like(slc_s3, dtype='bool')
+    #         # Create a contour masked image by using the contour coordinates rounded to their nearest integer value
+    #         r_mask[np.round(cont[:, 0]).astype('int'), np.round(cont[:, 1]).astype('int')] = 1
+    #         # Fill in the holes created by the contour boundary
+    #         r_mask = ndimage.binary_fill_holes(slc_s3)
+    #         # r_mask = np.transpose(slc_s3)
+    #         if n == 0:
+    #             resulting_mask = r_mask
+    #         elif n > 0:
+    #             resulting_mask = np.logical_xor(resulting_mask, r_mask)
+
+    #     slc_s3 = resulting_mask.astype(int)
+    #     # coordsXY = np.where(resulting_mask)
+    #     # coordsXY = np.transpose(np.asarray(coordsXY))
+    # else: 
+    #     slc_s3 = slc_s3
+
+    # return slc_s3
+
+   
 
 # Interactive functions
 def get_slices(lineEdit, slc_tuple, win):
@@ -499,29 +522,49 @@ def get_slices(lineEdit, slc_tuple, win):
 
     return numbers
 
-def get_contour_num(lineEdit_int, lineEdit_ext, num_contours, win):
+def get_contour_num(lineEdit_int, lineEdit_ext, tuples_out_slc, num_contours, win):
 
     user_int = lineEdit_int.text()
     int_num = []
+    exp_int = tuples_out_slc['int_cont']
     if user_int != '':
         int_split = user_int.split(',')
         for txt in int_split: 
             if int(txt) > num_contours: 
                 win.win_msg('*There is no Contour '+txt+' in the current slice. Check to continue!')
-                return
+                return None
             else: 
                 int_num.append(int(txt)-1)
 
+    if len(int_num) < exp_int: 
+        win.win_msg('*Expecting '+str(exp_int)+' internal contour(s) and less were given. Please check to continue.')
+        return None
+    elif len(int_num) > exp_int: 
+        win.win_msg('*Expecting '+str(exp_int)+' internal contour(s) and more were given. Please check to continue.')
+        return None
+    else: 
+        pass
+        
     user_ext = lineEdit_ext.text()
     ext_num = []
+    exp_ext = tuples_out_slc['ext_cont']
     if user_ext != '': 
         ext_split = user_ext.split(',')
         for txt in ext_split: 
             if int(txt) > num_contours: 
                 win.win_msg('*There is no Contour '+txt+' in the current slice. Check to continue!')
-                return
+                return None
             else: 
                 ext_num.append(int(txt)-1)
+
+    if len(ext_num) < exp_ext: 
+        win.win_msg('*Expecting '+str(exp_ext)+' external contour(s) and less were given. Please check to continue.')
+        return None
+    elif len(ext_num) > exp_ext: 
+        win.win_msg('*Expecting '+str(exp_ext)+' external contour(s) and more were given. Please check to continue.')
+        return None
+    else: 
+        pass
     
     return {'internal': int_num, 'external': ext_num}
 
@@ -850,7 +893,7 @@ def selectHull(merge, xy_contours):
     
     return closing_pt1, closing_pt2
 
-def autom_select_contours(props_first, cont_myIm, props_myIm, num_conts):
+def autom_select_contours(props_first, props_myIm, num_conts):
 
     """
     Function to automatically select contours by area, centroid position, mean intensity and perimeter
@@ -968,7 +1011,7 @@ def autom_select_contours(props_first, cont_myIm, props_myIm, num_conts):
             # The contour that has got the minimum value for the final grade is in theory the contour 
             # that is most similar to the selected contour in the previous image
             index_selected = np.where(final_grade == min(final_grade))[0][0]
-            print('area:', dif_area[index_selected], ' - centroid:', dif_centroid[index_selected], ' - perimeter:', dif_perimeter[index_selected])
+            # print('area:', dif_area[index_selected], ' - centroid:', dif_centroid[index_selected], ' - perimeter:', dif_perimeter[index_selected])
             index.append(index_selected)
             selected_contours[cont].append(index_selected)
 
@@ -982,6 +1025,7 @@ def plot_props(params):
     ch = params['ch']
     slc = params['slc']
     cont_sort = params['cont_sort']
+    tuple_active = params['tuple_active']
     win = params['win']
     num_contours = len(cont_sort)
 
@@ -1010,6 +1054,8 @@ def plot_props(params):
     color_grid = outer_grid[0].subgridspec(nrows=1, ncols=1, wspace=0, hspace=0)
     ax = fig11.add_subplot(color_grid[0])
     ax.imshow(myIm, cmap=plt.cm.gray)
+    ax.set_title("Slice "+str(slc) + "\n Contours Expected \nInternal: "+str(tuple_active['int_cont'])+' - External: '+str(tuple_active['ext_cont']), 
+                 fontsize = 2.5, weight = 'semibold', pad=0.15)
 
     #Text positions
     # xlin = np.linspace(0.1,0.9, cols)
@@ -1101,7 +1147,8 @@ def plot_filled_contours(params):
 def plot_group_filled_contours(params): 
 
     win = params['win']
-    n_rows = 5; n_cols = 4
+    cols = 2
+    n_rows = 6; n_cols = 4*cols
     fig11 = win.figure
     fig11.clear()
 
@@ -1109,9 +1156,10 @@ def plot_group_filled_contours(params):
     gs = gridspec.GridSpec(n_rows, n_cols, figure=fig11,
                             height_ratios=[1]*n_rows,
                             width_ratios=[1]*n_cols,
-                            hspace=0.01, wspace=0.01, 
+                            hspace=0, wspace=0, 
                             left=0.05, right=0.95, bottom=0.05, top=0.95)
     
+    aa = 0
     for nn, param_slc in enumerate(params['dict_plot']):
         if nn == 0: 
             first = param_slc['slc']
@@ -1125,29 +1173,30 @@ def plot_group_filled_contours(params):
         else: 
             all_cont=None
 
-        ax0 = fig11.add_subplot(gs[nn])
+        ax0 = fig11.add_subplot(gs[aa])
         ax0.imshow(s3s['int'])
-        ax0.set_title("Filled Internal Contours", fontsize=3)
+        ax0.set_title("Int.Cont.", fontsize=2.5, pad=0.15)
         ax0.set_axis_off()
-
-        ax1 = fig11.add_subplot(gs[nn])
+        aa+=1
+        ax1 = fig11.add_subplot(gs[aa])
         ax1.imshow(s3s['ext'])
-        ax1.set_title("Filled External Contours", fontsize=3)
+        ax1.set_title("Ext.Cont.", fontsize=2.5, pad=0.15)
         ax1.set_axis_off()
-
-        ax2 = fig11.add_subplot(gs[nn])
+        aa+=1
+        ax2 = fig11.add_subplot(gs[aa])
         ax2.imshow(s3s['tiss'])
-        ax2.set_title("Filled All Contours", fontsize=3)
+        ax2.set_title("All Cont.", fontsize=2.5, pad=0.15)
         ax2.set_axis_off()
-
-        ax3 = fig11.add_subplot(gs[nn])
+        aa+=1
+        ax3 = fig11.add_subplot(gs[aa])
         ax3.imshow(myIm, cmap=plt.cm.gray)
         titleAll = "Slc "+str(slc)
         if all_cont != None: 
             for n, contour in enumerate(all_cont):
                 ax3.plot(contour[:, 1], contour[:, 0], linewidth=0.15, color = win.contours_palette[n])
-        ax3.set_title(titleAll, fontsize=3)
+        ax3.set_title(titleAll, fontsize=2.5, pad=0.15)
         ax3.set_axis_off()
+        aa+=1
 
     win.fig_title.setText("Filled Contours - Channel "+str(ch[-1])+" / Slices "+str(first)+'-'+str(slc))
     win.canvas_plot.draw()

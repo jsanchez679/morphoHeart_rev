@@ -53,8 +53,9 @@ plt.rcParams['figure.constrained_layout.use'] = True
 # from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import (get_by_path, compare_dicts, update_gui_set, alert, df_reset_index, 
                                      df_add_value, palette_rbg)
-from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours, plot_props, plot_filled_contours,
-                                        plot_group_filled_contours, close_draw, close_box, reset_img, close_convex_hull)
+from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours, 
+                                       plot_props, plot_filled_contours, plot_group_filled_contours, 
+                                       close_draw, close_box, reset_img, close_convex_hull, tuple_pairs)
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
 from ..modules.mH_classes_new import Project, Organ
 from .config import mH_config
@@ -3777,12 +3778,12 @@ class MainWindow(QMainWindow):
 
         #SELECTING CONTOURS
         #Level
-        level_sel = getattr(self, 'selecting_level_'+ch+'_value')
+        level_sel = getattr(self, 'select_level_'+ch+'_value')
         level_validator_sel = QRegularExpressionValidator(reg_ex_dec, level_sel)
         level_sel.setValidator(level_validator_sel)
         
         #Min contour length
-        min_contour_length_sel = getattr(self, 'selecting_min_cont_length_'+ch+'_value')
+        min_contour_length_sel = getattr(self, 'select_min_cont_length_'+ch+'_value')
         min_length_validator_sel = QRegularExpressionValidator(reg_ex, min_contour_length_sel)
         min_contour_length_sel.setValidator(min_length_validator_sel)
 
@@ -4145,25 +4146,25 @@ class MainWindow(QMainWindow):
     def init_select_contours(self): 
         
         #Level and Min Cont Length
-        self.selecting_level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('selecting_level_ch1', 'slider', info = 'ch1', divider = 10))
-        # self.selecting_level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('selecting_level_ch2', 'slider', info = 'ch2', divider = 10))
-        # self.selecting_level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('selecting_level_ch3', 'slider', info = 'ch3', divider = 10))
-        # self.selecting_level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('selecting_level_ch4', 'slider', info = 'ch4', divider = 10))
+        self.select_level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch1', 'slider', info = 'ch1', divider = 10))
+        # self.select_level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch2', 'slider', info = 'ch2', divider = 10))
+        # self.select_level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch3', 'slider', info = 'ch3', divider = 10))
+        # self.select_level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch4', 'slider', info = 'ch4', divider = 10))
         
-        self.selecting_level_ch1_value.textChanged.connect(lambda: self.slider_changed('selecting_level_ch1', 'value', info = 'ch1', divider = 10))
-        # self.selecting_level_ch2_value.textChanged.connect(lambda: self.slider_changed('selecting_level_ch2', 'value', info = 'ch2', divider = 10))
-        # self.selecting_level_ch3_value.textChanged.connect(lambda: self.slider_changed('selecting_level_ch3', 'value', info = 'ch3', divider = 10))
-        # self.selecting_level_ch4_value.textChanged.connect(lambda: self.slider_changed('selecting_level_ch4', 'value', info = 'ch4', divider = 10))
+        self.select_level_ch1_value.textChanged.connect(lambda: self.slider_changed('select_level_ch1', 'value', info = 'ch1', divider = 10))
+        # self.select_level_ch2_value.textChanged.connect(lambda: self.slider_changed('select_level_ch2', 'value', info = 'ch2', divider = 10))
+        # self.select_level_ch3_value.textChanged.connect(lambda: self.slider_changed('select_level_ch3', 'value', info = 'ch3', divider = 10))
+        # self.select_level_ch4_value.textChanged.connect(lambda: self.slider_changed('select_level_ch4', 'value', info = 'ch4', divider = 10))
         
-        self.selecting_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('selecting_min_cont_length_ch1', 'slider', info ='ch1'))
-        # self.selecting_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('selecting_min_cont_length_ch2', 'slider', info ='ch2'))
-        # self.selecting_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('selecting_min_cont_length_ch3', 'slider', info ='ch3'))
-        # self.selecting_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('selecting_min_cont_length_ch4', 'slider', info ='ch4'))
+        self.select_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch1', 'slider', info ='ch1'))
+        # self.select_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch2', 'slider', info ='ch2'))
+        # self.select_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch3', 'slider', info ='ch3'))
+        # self.select_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch4', 'slider', info ='ch4'))
        
-        self.selecting_min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('selecting_min_cont_length_ch1', 'value', info ='ch1'))
-        # self.selecting_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('selecting_min_cont_length_ch2', 'value', info ='ch2'))
-        # self.selecting_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('selecting_min_cont_length_ch3', 'value', info ='ch3'))
-        # self.selecting_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('selecting_min_cont_length_ch4', 'value', info ='ch4'))
+        self.select_min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch1', 'value', info ='ch1'))
+        # self.select_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch2', 'value', info ='ch2'))
+        # self.select_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch3', 'value', info ='ch3'))
+        # self.select_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch4', 'value', info ='ch4'))
 
         # Regex for slices
         reg_ex3d = QRegularExpression(r"\d{1,3}") #3 digit number
@@ -4219,22 +4220,22 @@ class MainWindow(QMainWindow):
         # self.add_tuple_ch4.clicked.connect(lambda: self.add_tuple_to_table(ch_name='ch4'))
 
          # - Open
-        self.selecting_contours_ch1_open.clicked.connect(lambda: self.open_section(name='selecting_contours_ch1'))
-        # self.selecting_contours_ch2_open.clicked.connect(lambda: self.open_section(name='selecting_contours_ch2'))
-        # self.selecting_contours_ch3_open.clicked.connect(lambda: self.open_section(name='selecting_contours_ch3'))
-        # self.selecting_contours_ch4_open.clicked.connect(lambda: self.open_section(name='selecting_contours_ch4'))
+        self.select_contours_all_ch1_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch1'))
+        # self.select_contours_all_ch2_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch2'))
+        # self.select_contours_all_ch3_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch3'))
+        # self.select_contours_all_ch4_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch4'))
 
         # - Play
-        self.selecting_contours_ch1_play.setStyleSheet(style_play)
-        # self.selecting_contours_ch2_play.setStyleSheet(style_play)
-        # self.selecting_contours_ch3_play.setStyleSheet(style_play)
-        # self.selecting_contours_ch4_play.setStyleSheet(style_play)
+        self.select_contours_ch1_play.setStyleSheet(style_play)
+        # self.select_contours_ch2_play.setStyleSheet(style_play)
+        # self.select_contours_ch3_play.setStyleSheet(style_play)
+        # self.select_contours_ch4_play.setStyleSheet(style_play)
 
         # - Set
-        self.selecting_contours_ch1_set.clicked.connect(lambda: self.set_select_contours('ch1'))
-        # self.selecting_contours_ch2_set.clicked.connect(lambda: self.set_select_contours('ch2'))
-        # self.selecting_contours_ch3_set.clicked.connect(lambda: self.set_select_contours('ch3'))
-        # self.selecting_contours_ch4_set.clicked.connect(lambda: self.set_select_contours('ch4'))
+        self.select_contours_ch1_set.clicked.connect(lambda: self.set_select_contours('ch1'))
+        # self.select_contours_ch2_set.clicked.connect(lambda: self.set_select_contours('ch2'))
+        # self.select_contours_ch3_set.clicked.connect(lambda: self.set_select_contours('ch3'))
+        # self.select_contours_ch4_set.clicked.connect(lambda: self.set_select_contours('ch4'))
 
         #Clear table
         self.clear_table_ch1.clicked.connect(lambda: self.clear_tuple_table('ch1'))
@@ -4280,10 +4281,10 @@ class MainWindow(QMainWindow):
         # self.select_plot_slc_ch4.clicked.connect(lambda: self.plot_filled_slice(ch='ch4'))
 
         #Done
-        self.selecting_contours_ch1_done.clicked.connect(lambda: self.user_done('select_contours', 'ch1'))
-        # self.selecting_contours_ch2_done.clicked.connect(lambda: self.user_done('select_contours', 'ch2'))
-        # self.selecting_contours_ch3_done.clicked.connect(lambda: self.user_done('select_contours', 'ch3'))
-        # self.selecting_contours_ch4_done.clicked.connect(lambda: self.user_done('select_contours', 'ch4'))
+        self.select_contours_ch1_done.clicked.connect(lambda: self.user_done('select_contours', 'ch1'))
+        # self.select_contours_ch2_done.clicked.connect(lambda: self.user_done('select_contours', 'ch2'))
+        # self.select_contours_ch3_done.clicked.connect(lambda: self.user_done('select_contours', 'ch3'))
+        # self.select_contours_ch4_done.clicked.connect(lambda: self.user_done('select_contours', 'ch4'))
 
         for ch in ['ch1']:#, 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
@@ -4399,12 +4400,12 @@ class MainWindow(QMainWindow):
         proc_set = ['wf_info']
         update = self.plot_contours_settings
         self.organ.update_settings(proc_set, update, 'mH', add='plot_contours_settings')
-        print('self.plot_contours_settings:',self.plot_contours_settings)
 
         if check: 
             getattr(self, 'set_plots_cont_settings_'+ch_name).setChecked(True)
             getattr(self, 'plot_slice_with_contours_'+ch_name).setEnabled(True)
             getattr(self, 'plot_all_slices_with_contours_'+ch_name).setEnabled(True)
+            print('self.plot_contours_settings:',self.plot_contours_settings)
     
     def set_autom_close_contours(self, ch_name): 
         wf_info = self.organ.mH_settings['wf_info']
@@ -4551,16 +4552,17 @@ class MainWindow(QMainWindow):
                 else: 
                     self.gui_select_contours = {ch_name: select_contours_ch}
                 
-            getattr(self, 'selecting_contours_'+ch_name+'_set').setChecked(True)
+            getattr(self, 'select_contours_'+ch_name+'_set').setChecked(True)
             print('self.gui_select_contours:',self.gui_select_contours)
-            getattr(self, 'selecting_contours_'+ch_name+'_play').setEnabled(True)
+            getattr(self, 'select_contours_'+ch_name+'_play').setEnabled(True)
 
             # Update mH_settings
             proc_set = ['wf_info']
             update = self.gui_select_contours
             self.organ.update_settings(proc_set, update, 'mH', add='select_contours')
+
         else: 
-            getattr(self, 'selecting_contours_'+ch_name+'_set').setChecked(False)
+            getattr(self, 'select_contours_'+ch_name+'_set').setChecked(False)
 
     def gui_select_contours_n(self, ch_name):
 
@@ -4574,8 +4576,8 @@ class MainWindow(QMainWindow):
             self.win_msg('*Please fill the "Set Groups Table" to be able to set the Selecting Contours Settings.')
             return None
         else:
-            min_contour_len = int(getattr(self, 'selecting_min_cont_length_'+ch_name+'_value').text())
-            level = float(getattr(self, 'selecting_level_'+ch_name+'_value').text())
+            min_contour_len = int(getattr(self, 'select_min_cont_length_'+ch_name+'_value').text())
+            level = float(getattr(self, 'select_level_'+ch_name+'_value').text())
             slc_per_group = int(slc_per_group)
             #Get tuples from table
             tuples_select = {}
@@ -4743,16 +4745,21 @@ class MainWindow(QMainWindow):
             #Get value from text
             value = getattr(self, wdg_name+'_value').text()
             slider = getattr(self, wdg_name+'_slider')
-            if divider == 1: 
-                if float(value) < slider.minimum(): 
-                    value = slider.minimum()
-                elif float(value) > slider.maximum():
-                    value = slider.maximum()
-            else: 
-                if float(value) < (slider.minimum()/divider): 
-                    value = slider.minimum()
-                elif float(value) > (slider.maximum()/divider):
-                    value = slider.maximum()
+            try: 
+                vv = float(value)
+                if divider == 1: 
+                    if float(value) < slider.minimum(): 
+                        value = slider.minimum()
+                    elif float(value) > slider.maximum():
+                        value = slider.maximum()
+                else: 
+                    if float(value) < (slider.minimum()/divider): 
+                        value = slider.minimum()
+                    elif float(value) > (slider.maximum()/divider):
+                        value = slider.maximum()
+            except ValueError: 
+                value = slider.minimum()
+            
             wdg_txt = getattr(self, wdg_name+'_slider')
             wdg_txt.setValue(float(value)*divider)
 
@@ -4774,7 +4781,7 @@ class MainWindow(QMainWindow):
         last_row = tableW.rowCount()-1
         if last_row >= 0: 
             last_first_slc = tableW.item(last_row, 0).text()
-            print('last_first_slc:', last_first_slc)
+            # print('last_first_slc:', last_first_slc)
             if int(first_slc) <= int(last_first_slc): 
                 self.win_msg('*The first slices in the Set Group Table need to be in ascending order. Make sure the new fisrt slice you are introducing is greater than the previous one.')
                 return
@@ -4791,6 +4798,12 @@ class MainWindow(QMainWindow):
         num_contours_int = num_contours_int_box.text()
         num_contours_ext_box = getattr(self, 'num_ext_cont_'+ch_name)
         num_contours_ext = num_contours_ext_box.text()
+
+        if int(num_contours_ext) == 0 and int(num_contours_int) > 0: 
+            self.win_msg('*At least one external contour should contain the entered internal contours. Please check to continue!')
+            return
+        else: 
+            self.win_msg(' ')
 
         total_slices = getattr(self, 'total_stack_slices_'+ch_name).text()
 
@@ -5089,6 +5102,12 @@ class MainWindow(QMainWindow):
                 plot_props(params = params)
             elif funct == 'fcC.plot_contours_slc':
                 self.plot_contours_slc(params = params)
+            elif funct == 'fcC.plot_filled_contours':
+                plot_filled_contours(params = params)
+            elif funct == 'fcC.plot_group_filled_contours':
+                plot_group_filled_contours(params = params)
+            else: 
+                print('No plot function for this params')
 
             self.current_thumbnail = num
             print('self.current_thumbnail:', self.current_thumbnail)

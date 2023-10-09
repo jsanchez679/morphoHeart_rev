@@ -81,6 +81,9 @@
                 <property name="styleSheet">
                  <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;</string>
                 </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
                 <property name="readOnly">
                  <bool>true</bool>
                 </property>
@@ -107,6 +110,9 @@ color: rgb(100, 100, 100);</string>
                 </property>
                 <property name="text">
                  <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                 <property name="indent">
                  <number>2</number>
@@ -135,6 +141,9 @@ color: rgb(100, 100, 100);</string>
                 <property name="text">
                  <string/>
                 </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
                 <property name="indent">
                  <number>2</number>
                 </property>
@@ -161,6 +170,9 @@ color: rgb(100, 100, 100);</string>
                 </property>
                 <property name="text">
                  <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                 <property name="indent">
                  <number>2</number>
@@ -238,6 +250,9 @@ color: rgb(100, 100, 100);</string>
                 </property>
                 <property name="text">
                  <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                 <property name="indent">
                  <number>2</number>
@@ -336,6 +351,9 @@ color: rgb(100, 100, 100);</string>
                 <property name="text">
                  <string/>
                 </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
                 <property name="indent">
                  <number>2</number>
                 </property>
@@ -362,6 +380,9 @@ color: rgb(100, 100, 100);</string>
                 </property>
                 <property name="text">
                  <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                 <property name="indent">
                  <number>2</number>
@@ -433,6 +454,9 @@ color: rgb(100, 100, 100);</string>
                 </property>
                 <property name="text">
                  <string/>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                 <property name="indent">
                  <number>2</number>
@@ -1106,7 +1130,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-893</y>
+                      <y>-890</y>
                       <width>382</width>
                       <height>1663</height>
                      </rect>
@@ -5432,7 +5456,7 @@ color: rgb(234, 234, 234);
                         <number>0</number>
                        </property>
                        <item>
-                        <widget class="QLabel" name="selecting_contours_ch1_title">
+                        <widget class="QLabel" name="select_contours_ch1_title">
                          <property name="minimumSize">
                           <size>
                            <width>0</width>
@@ -5459,7 +5483,7 @@ font: 25 10pt &quot;Calibri Light&quot;;</string>
                         </widget>
                        </item>
                        <item>
-                        <widget class="QPushButton" name="selecting_contours_ch1_open">
+                        <widget class="QPushButton" name="select_contours_all_ch1_open">
                          <property name="minimumSize">
                           <size>
                            <width>18</width>
@@ -5500,7 +5524,7 @@ border-color: #672146
                         </widget>
                        </item>
                        <item>
-                        <widget class="QLabel" name="selecting_contours_ch1_status">
+                        <widget class="QLabel" name="select_contours_ch1_status">
                          <property name="minimumSize">
                           <size>
                            <width>18</width>
@@ -5527,7 +5551,7 @@ border-color: rgb(0,0, 0);</string>
                       </layout>
                      </item>
                      <item>
-                      <widget class="QWidget" name="selecting_contours_ch1_widget" native="true">
+                      <widget class="QWidget" name="select_contours_all_ch1_widget" native="true">
                        <property name="styleSheet">
                         <string notr="true"/>
                        </property>
@@ -5591,7 +5615,7 @@ border-color: rgb(0,0, 0);</string>
                            </spacer>
                           </item>
                           <item>
-                           <widget class="QPushButton" name="q_selecting_close_ch1">
+                           <widget class="QPushButton" name="q_select_close_ch1">
                             <property name="minimumSize">
                              <size>
                               <width>18</width>
@@ -5661,7 +5685,7 @@ border-color: #672146
                           <item row="1" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_302">
                             <item>
-                             <widget class="QSlider" name="selecting_min_cont_length_ch1_slider">
+                             <widget class="QSlider" name="select_min_cont_length_ch1_slider">
                               <property name="maximumSize">
                                <size>
                                 <width>16777215</width>
@@ -5723,7 +5747,7 @@ QSlider::handle:horizontal:hover {
                              </widget>
                             </item>
                             <item>
-                             <widget class="QLineEdit" name="selecting_min_cont_length_ch1_value">
+                             <widget class="QLineEdit" name="select_min_cont_length_ch1_value">
                               <property name="minimumSize">
                                <size>
                                 <width>60</width>
@@ -5792,7 +5816,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                           <item row="0" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_301">
                             <item>
-                             <widget class="QSlider" name="selecting_level_ch1_slider">
+                             <widget class="QSlider" name="select_level_ch1_slider">
                               <property name="maximumSize">
                                <size>
                                 <width>16777215</width>
@@ -5857,7 +5881,7 @@ QSlider::handle:horizontal:hover {
                              </widget>
                             </item>
                             <item>
-                             <widget class="QLineEdit" name="selecting_level_ch1_value">
+                             <widget class="QLineEdit" name="select_level_ch1_value">
                               <property name="minimumSize">
                                <size>
                                 <width>60</width>
@@ -5983,7 +6007,7 @@ QLineEdit:focus { border: 2px solid rgb(0, 191, 0);}
 </string>
                               </property>
                               <property name="text">
-                               <string>40</string>
+                               <string>36</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -6392,7 +6416,7 @@ color: rgb(125, 125, 125);
                         <item>
                          <layout class="QHBoxLayout" name="horizontalLayout_304">
                           <item>
-                           <widget class="QPushButton" name="selecting_contours_ch1_set">
+                           <widget class="QPushButton" name="select_contours_ch1_set">
                             <property name="minimumSize">
                              <size>
                               <width>60</width>
@@ -6509,7 +6533,7 @@ color: rgb(234, 234, 234);
                            </spacer>
                           </item>
                           <item>
-                           <widget class="QPushButton" name="selecting_contours_ch1_play">
+                           <widget class="QPushButton" name="select_contours_ch1_play">
                             <property name="enabled">
                              <bool>false</bool>
                             </property>
@@ -6677,7 +6701,7 @@ border-color: #672146
                            <item>
                             <layout class="QGridLayout" name="gridLayout_30">
                              <item row="0" column="1">
-                              <widget class="QLabel" name="selecting_tuple_ch1">
+                              <widget class="QLabel" name="select_tuple_ch1">
                                <property name="minimumSize">
                                 <size>
                                  <width>100</width>
@@ -6765,7 +6789,7 @@ background-color: rgb(255, 255, 255);</string>
                               </widget>
                              </item>
                              <item row="0" column="3">
-                              <widget class="QLabel" name="selecting_fisrt_slc_ch1">
+                              <widget class="QLabel" name="select_fisrt_slc_ch1">
                                <property name="minimumSize">
                                 <size>
                                  <width>70</width>
@@ -7151,7 +7175,7 @@ border-color: rgb(115, 115, 115)}
                            <item>
                             <layout class="QHBoxLayout" name="horizontalLayout_311">
                              <item>
-                              <widget class="QLabel" name="selecting_tuples_bigLabel_2">
+                              <widget class="QLabel" name="select_tuples_bigLabel_2">
                                <property name="sizePolicy">
                                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                                  <horstretch>0</horstretch>
@@ -7570,7 +7594,7 @@ border-color: rgb(115, 115, 115)}
                            <item>
                             <layout class="QHBoxLayout" name="horizontalLayout_309">
                              <item>
-                              <widget class="QPushButton" name="save_selecting_contours_ch1">
+                              <widget class="QPushButton" name="save_select_contours_ch1">
                                <property name="enabled">
                                 <bool>false</bool>
                                </property>
@@ -7636,7 +7660,7 @@ color: rgb(234, 234, 234);
                               </spacer>
                              </item>
                              <item>
-                              <widget class="QPushButton" name="selecting_contours_ch1_done">
+                              <widget class="QPushButton" name="select_contours_ch1_done">
                                <property name="enabled">
                                 <bool>false</bool>
                                </property>
@@ -9713,7 +9737,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-1742</y>
+                   <y>0</y>
                    <width>632</width>
                    <height>5616</height>
                   </rect>
@@ -59173,18 +59197,18 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>num_color_palette_ch1</tabstop>
   <tabstop>q_contours_palette</tabstop>
   <tabstop>set_plots_cont_settings_ch1</tabstop>
-  <tabstop>selecting_contours_ch1_open</tabstop>
-  <tabstop>q_selecting_close_ch1</tabstop>
-  <tabstop>selecting_level_ch1_slider</tabstop>
-  <tabstop>selecting_level_ch1_value</tabstop>
-  <tabstop>selecting_min_cont_length_ch1_slider</tabstop>
-  <tabstop>selecting_min_cont_length_ch1_value</tabstop>
+  <tabstop>select_contours_all_ch1_open</tabstop>
+  <tabstop>q_select_close_ch1</tabstop>
+  <tabstop>select_level_ch1_slider</tabstop>
+  <tabstop>select_level_ch1_value</tabstop>
+  <tabstop>select_min_cont_length_ch1_slider</tabstop>
+  <tabstop>select_min_cont_length_ch1_value</tabstop>
   <tabstop>cB_blind</tabstop>
   <tabstop>tab_chs</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>plot_slices_ch1_open</tabstop>
-  <tabstop>selecting_contours_ch1_set</tabstop>
-  <tabstop>selecting_contours_ch1_play</tabstop>
+  <tabstop>select_contours_ch1_set</tabstop>
+  <tabstop>select_contours_ch1_play</tabstop>
  </tabstops>
  <resources/>
  <connections/>

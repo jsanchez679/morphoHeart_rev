@@ -336,10 +336,10 @@ class Controller:
         # self.main_win.prev_tuple_ch4.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch4'))
 
         #SELECTING CONTOURS
-        self.main_win.selecting_contours_ch1_play.clicked.connect(lambda: self.select_contours('ch1'))
-        # self.main_win.selecting_contours_ch2_play.clicked.connect(lambda: self.select_contours('ch2'))
-        # self.main_win.selecting_contours_ch3_play.clicked.connect(lambda: self.select_contours('ch3'))
-        # self.main_win.selecting_contours_ch4_play.clicked.connect(lambda: self.select_contours('ch4'))
+        self.main_win.select_contours_ch1_play.clicked.connect(lambda: self.select_contours('ch1'))
+        # self.main_win.select_contours_ch2_play.clicked.connect(lambda: self.select_contours('ch2'))
+        # self.main_win.select_contours_ch3_play.clicked.connect(lambda: self.select_contours('ch3'))
+        # self.main_win.select_contours_ch4_play.clicked.connect(lambda: self.select_contours('ch4'))
 
         #Run tuples
         self.main_win.slc_tuple_select_ch1_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch1'))
