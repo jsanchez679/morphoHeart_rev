@@ -242,9 +242,12 @@ def select_contours(controller, ch_name):
     controller.main_win.im_proc_o = copy.deepcopy(im_ch.im_proc())
     controller.main_win.slc_py = None
     controller.main_win.tuples_out = None
+    controller.main_win.dict_s3s = {}
     #Get tuples_out
     gui_select_cont = controller.main_win.gui_select_contours[ch_name]
     controller.main_win.tuples_out = fcC.tuple_pairs(gui_select_cont)
+    controller.main_win.prog_bar_reset()
+    controller.main_win.prog_bar_range(0,len(controller.main_win.tuples_out))
     #Message
     controller.main_win.win_msg('Selecting contours for Channel '+str(ch_name[-1])+'.')
     #Toggle button
@@ -299,6 +302,11 @@ def plot_props_to_select(controller, ch_name, index_active, im_proc):
 def select_slcs_tuple(controller, ch_name):
     #if something is actually selected!
     main_win = controller.main_win
+    getattr(main_win, 'slc_tuple_select_'+ch_name+'_play').setEnabled(False)
+    #Get tuples 
+    tuple_range = main_win.tuples_out[main_win.index_active]['tuple_pair']
+    getattr(main_win, 'progress_select_'+ch_name).setRange(tuple_range[0], tuple_range[1])
+    main_win.win_msg('!Selecting contours for Slices '+str(tuple_range[0]+1)+'-'+str(tuple_range[1])+'...')
     tuples_out_slc = controller.main_win.tuples_out[controller.main_win.index_active]
     num_contours = fcC.get_contour_num(lineEdit_int = getattr(main_win, 'int_cont_'+ch_name),
                                         lineEdit_ext = getattr(main_win, 'ext_cont_'+ch_name),
@@ -322,9 +330,8 @@ def select_slcs_tuple(controller, ch_name):
             # main_win.add_thumbnail(function='fcC.plot_filled_contours', params = params_filled, 
             #                         name='FilledCont. Slc'+str(main_win.slc_py+1))
 
-            print('selected_cont:', selected_cont)
-            #Get tuples 
-            tuple_range = main_win.tuples_out[main_win.index_active]['tuple_pair']
+            # print('selected_cont:', selected_cont)
+            #Get number of contours
             no_int = main_win.tuples_out[main_win.index_active]['int_cont']
             no_ext = main_win.tuples_out[main_win.index_active]['ext_cont']
             level = controller.main_win.gui_select_contours[ch_name]['level']
@@ -334,8 +341,10 @@ def select_slcs_tuple(controller, ch_name):
             dict_plot.append({'myIm': copy.deepcopy(main_win.myIm), 'slc':main_win.slc_py+1, 
                             'ch': ch_name, 's3s': s3s, 'all_cont': all_cont})
             
+            first_plot = 0
             slc_o = tuple_range[0]+1
-            for slc in range(tuple_range[0]+1, tuple_range[1], 1):
+            getattr(main_win, 'progress_select_'+ch_name).setValue(slc_o)
+            for slc in range(slc_o, tuple_range[1], 1):
                 print('slc:', slc, 'slc_user: ', slc+1)
                 myIm = main_win.im_proc[slc][:][:]
                 #Get contours, sort them and get their properties
@@ -353,12 +362,16 @@ def select_slcs_tuple(controller, ch_name):
 
                 #Automatically select the contours
                 selected_out = fcC.autom_select_contours(props_first = selected_cont,
-                                                        props_myIm = props_all, 
-                                                        num_conts = {'ext': no_ext, 'int': no_int})
+                                                        props_myIm = props_all)
+                
+                selected_outf = fcC.confirm_selection(selected_out=selected_out,
+                                                      props_myIm = props_all,
+                                                      num_conts = {'ext': no_ext, 'int': no_int}, 
+                                                      slc = slc)
                 selected_cont = None
                 #Get the s3s with the automatically selected contours
                 selected_cont, all_out, s3s_out = s3_with_contours(controller = controller,
-                                                                    num_contours=selected_out,
+                                                                    num_contours=selected_outf,
                                                                     contours=contours,  
                                                                     slc = slc+1)
                 #Plot that image with filled contours
@@ -380,13 +393,26 @@ def select_slcs_tuple(controller, ch_name):
                 if len(dict_plot)== 12 or slc == tuple_range[1]-1: 
                     slc_f = slc
                     params_group = {'win': main_win, 'dict_plot': dict_plot}
-                    fcC.plot_group_filled_contours(params = params_group)
+                    if first_plot == 0:
+                        fcC.plot_group_filled_contours(params = params_group)
+                        first_plot+=1
                     main_win.add_thumbnail(function='fcC.plot_group_filled_contours', params = params_group, 
-                                        name='FilledCont. Slcs'+str(slc_o)+'-'+str(slc_f+1))
+                                        name='Filled Slcs'+str(slc_o)+'-'+str(slc_f+1))
+                
+                getattr(main_win, 'progress_select_'+ch_name).setValue(slc)
+
             alert('bubble')
+            main_win.win_msg('!Contours have been selected for Slices '+str(tuple_range[0]+1)+'-'+str(tuple_range[1])+'. To continue selecting contours go to the next slice group.')
+            getattr(main_win, 'progress_select_'+ch_name).setValue(tuple_range[1])
+
+    getattr(main_win, 'next_group_'+ch_name).setEnabled(True)
+    main_win.prog_bar_update(main_win.index_active+1)
+    # print(main_win.dict_s3s)
     
 def next_tuple_select(next:bool, controller, ch_name): 
     main_win = controller.main_win
+    getattr(main_win, 'next_group_'+ch_name).setEnabled(False)
+    getattr(main_win, 'slc_tuple_select_'+ch_name+'_play').setEnabled(True)
     save_after_tuple = getattr(main_win, 'save_after_group_'+ch_name).isChecked()
     #Get the next tuple
     at_least_one = False
@@ -406,6 +432,7 @@ def next_tuple_select(next:bool, controller, ch_name):
                 #Plot next tuple
                 plot_props_to_select(controller, ch_name, controller.main_win.index_active, controller.main_win.im_proc)
                 at_least_one = True
+                getattr(main_win, 'progress_select_'+ch_name).setValue(0)
                 break
             else: 
                 controller.main_win.index_active +=1
@@ -428,15 +455,24 @@ def s3_with_contours(controller, num_contours, contours, slc):
         slc_s3 = getattr(main_win, 's3_'+ctype[:3])[slc][:][:]
         if len(num_contours[ctype])>0: 
             slc_s3 = fcC.fill_contours(selected_cont[ctype], slc_s3)
-            # getattr(main_win, 's3_'+ctype[:3])[slc][:][:] = slc_s3
+            getattr(main_win, 's3_'+ctype[:3])[slc][:][:] = slc_s3
         s3s[ctype[:3]] = slc_s3
     
     slc_tiss = getattr(main_win, 's3_tiss')[slc][:][:]
     slc_tiss = fcC.fill_contours(all_cont, slc_tiss)
-    # getattr(main_win, 's3_tiss')[slc][:][:] = slc_tiss
+    getattr(main_win, 's3_tiss')[slc][:][:] = slc_tiss
     s3s['tiss'] = slc_tiss
+    main_win.dict_s3s[slc] = selected_cont
 
     return selected_cont, all_cont, s3s
+
+def modify_selected_contours(controller, ch_name): 
+    main_win = controller.main_win
+    main_win.slc_to_select = fcC.get_slices(lineEdit = getattr(main_win, 'select_manually_slcs_'+ch_name), 
+                                                  slc_tuple=(1,int(getattr(main_win, 'total_stack_slices_'+ch_name).text())), 
+                                                  win=main_win)
+    
+    
 
 def enable_close_functions(controller, process, ch_name, widgets=True): 
     
@@ -474,6 +510,8 @@ def enable_close_functions(controller, process, ch_name, widgets=True):
             controller.main_win.closing_slc.setText('')
             getattr(controller.main_win, 'select_plot_slc_'+ch_name).setEnabled(True)
             getattr(controller.main_win, 'select_plot_all_'+ch_name).setEnabled(True)
+            #Diable 
+            getattr(controller.main_win, 'next_group_'+ch_name).setEnabled(False)
 
 #ANALYSIS TAB
 def run_keeplargest(controller):

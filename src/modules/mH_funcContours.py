@@ -454,46 +454,23 @@ def fill_contours(selected_cont, slc_s3):
 
     if len(selected_cont['contours']) > 0:
         for n, cont in enumerate(selected_cont['contours']):
+            r_mask = np.zeros_like(slc_s3, dtype='bool')
             # Create a contour masked image by using the contour coordinates rounded to their nearest integer value
-            slc_s3[np.round(cont[:, 0]).astype('int'), np.round(cont[:, 1]).astype('int')] = 1
+            r_mask[np.round(cont[:, 0]).astype('int'), np.round(cont[:, 1]).astype('int')] = 1
             # Fill in the holes created by the contour boundary
-            slc_s3 = ndimage.binary_fill_holes(slc_s3)
-            # slc_s3 = np.transpose(slc_s3)
+            r_mask = ndimage.binary_fill_holes(r_mask)
+            # Add both images 
             if n == 0:
-                slc_s3f = slc_s3
-            elif n > 0:
-                slc_s3f = np.logical_xor(slc_s3f, slc_s3)
+                resulting_mask = r_mask
+            if n > 0:
+                resulting_mask = np.logical_xor(resulting_mask,r_mask)
 
-        slc_s3f = slc_s3f.astype(int)
-        # coordsXY = np.where(resulting_mask)
-        # coordsXY = np.transpose(np.asarray(coordsXY))
+        slc_s3f = resulting_mask.astype(int)
+
     else: 
         slc_s3f = slc_s3
 
     return slc_s3f
-
-    # if len(selected_cont['contours']) > 0:
-    #     for n, cont in enumerate(selected_cont['contours']):
-    #         r_mask = np.zeros_like(slc_s3, dtype='bool')
-    #         # Create a contour masked image by using the contour coordinates rounded to their nearest integer value
-    #         r_mask[np.round(cont[:, 0]).astype('int'), np.round(cont[:, 1]).astype('int')] = 1
-    #         # Fill in the holes created by the contour boundary
-    #         r_mask = ndimage.binary_fill_holes(slc_s3)
-    #         # r_mask = np.transpose(slc_s3)
-    #         if n == 0:
-    #             resulting_mask = r_mask
-    #         elif n > 0:
-    #             resulting_mask = np.logical_xor(resulting_mask, r_mask)
-
-    #     slc_s3 = resulting_mask.astype(int)
-    #     # coordsXY = np.where(resulting_mask)
-    #     # coordsXY = np.transpose(np.asarray(coordsXY))
-    # else: 
-    #     slc_s3 = slc_s3
-
-    # return slc_s3
-
-   
 
 # Interactive functions
 def get_slices(lineEdit, slc_tuple, win):
@@ -569,7 +546,7 @@ def get_contour_num(lineEdit_int, lineEdit_ext, tuples_out_slc, num_contours, wi
     return {'internal': int_num, 'external': ext_num}
 
 #Draw functions
-def close_draw(color_draw, win): #_closed, slc, chStr, color_draw, level, plot_show = True):
+def close_draw(color_draw, win):
     """
     Function that collects clicks positions given by the user and connects them using a white or black line given as
     input by 'color_draw' parameter
@@ -893,7 +870,7 @@ def selectHull(merge, xy_contours):
     
     return closing_pt1, closing_pt2
 
-def autom_select_contours(props_first, props_myIm, num_conts):
+def autom_select_contours(props_first, props_myIm):
 
     """
     Function to automatically select contours by area, centroid position, mean intensity and perimeter
@@ -906,7 +883,6 @@ def autom_select_contours(props_first, props_myIm, num_conts):
     #Iterate first between internal and external
     for cont in ['external','internal']:
         selected_contours[cont] = []
-        num_cont = num_conts[cont[:3]]
         props_sel = props_first[cont]['props']
         # Iterate through all the contours that are identified in the previous already image
         # with contours already selected
@@ -914,25 +890,17 @@ def autom_select_contours(props_first, props_myIm, num_conts):
             #Get the properties of the analysed contour
             area_s = prop['area']
             centroid_s = prop['centroid']
-            bbox_s = prop['bbox']
-            minr, minc, maxr, maxc = bbox_s
-            ranger_s = maxr-minr
-            rangec_s = maxc-minc
             perimeter_s = prop['perimeter']
 
             # Create empty array to save distances
             bigNum = 10**20
             dif_area = np.ones(len_text_contours)*bigNum
             dif_centroid = np.ones(len_text_contours)*bigNum
-            dif_ranger = np.ones(len_text_contours)*bigNum
-            dif_rangec = np.ones(len_text_contours)*bigNum
             dif_perimeter = np.ones(len_text_contours)*bigNum
 
             max_area = 0
             max_centroid = 0
             max_perimeter = 0
-            max_ranger = 0
-            max_rangec = 0
 
             # Create a variable where to save the grades of all the contours found in the 
             # new image
@@ -944,11 +912,9 @@ def autom_select_contours(props_first, props_myIm, num_conts):
                     # Get all the properties from this contour
                     area = sp_prop['area']
                     centroid = sp_prop['centroid']
-                    bbox = sp_prop['bbox']
-                    minr, minc, maxr, maxc = bbox
-                    ranger = maxr-minr
-                    rangec = maxc-minc
                     perimeter = sp_prop['perimeter']
+                    mean_int = sp_prop['mean_int']
+                    max_int = sp_prop['max_int']
 
                     # Get difference in properties
                     dif_area[nn] = abs(area_s-area)
@@ -957,12 +923,6 @@ def autom_select_contours(props_first, props_myIm, num_conts):
                     dif_centroid[nn] = abs(distance.euclidean(centroid_s, centroid))
                     if dif_centroid[nn] > max_centroid:
                         max_centroid = dif_centroid[nn]
-                    dif_ranger[nn] = abs(ranger_s-ranger)
-                    if dif_ranger[nn] > max_ranger:
-                        max_ranger = dif_ranger[nn]
-                    dif_rangec[nn] = abs(rangec_s-rangec)
-                    if dif_rangec[nn] > max_rangec:
-                        max_rangec = dif_rangec[nn]
                     dif_perimeter[nn] = abs(perimeter_s-perimeter)
                     if dif_perimeter[nn] > max_perimeter:
                         max_perimeter = dif_perimeter[nn]
@@ -978,32 +938,22 @@ def autom_select_contours(props_first, props_myIm, num_conts):
             try: 
                 dif_area = dif_area/max_area
             except: 
-                dif_area = 0
+                dif_area = [0]*len(dif_area)
             try: 
                 dif_centroid = dif_centroid/max_centroid
             except: 
-                dif_centroid = 0
-            try: 
-                dif_ranger = dif_ranger/max_ranger
-            except:
-                dif_ranger = 0
-            try: 
-                dif_rangec = dif_rangec/max_rangec
-            except: 
-                dif_rangec = 0
+                dif_centroid = [0]*len(dif_centroid)
             try: 
                 dif_perimeter = dif_perimeter/max_perimeter
             except: 
-                dif_perimeter = 0
+                dif_perimeter = [0]*len(dif_perimeter)
             
             # Use this normalised arrays to fill up the final grading per contour
             for num in range(len_text_contours):
                 if not num in selected_contours:
-                    #0.area, 1.centroid, 2. bbox(r) 3. bbox(c), 4.perimeter
+                    #0.area, 1.centroid, 4.perimeter
                     grade = dif_area[num]*scale_factor[0]
                     grade += dif_centroid[num]*scale_factor[1]
-                    grade += dif_ranger[num]*scale_factor[2]
-                    grade += dif_rangec[num]*scale_factor[3]
                     grade += dif_perimeter[num]*scale_factor[4]
                     final_grade[num] = grade
                 else:
@@ -1017,6 +967,84 @@ def autom_select_contours(props_first, props_myIm, num_conts):
 
     print('selected_contours:', selected_contours)
     return selected_contours
+
+def confirm_selection(selected_out, props_myIm, num_conts, slc):
+
+    if num_conts['int']>0: 
+        #Get the bbox for the external contour(s)
+        bbox_external = []
+        for cont in selected_out['external']: 
+            # print(cont)
+            bbox_external.append(props_myIm[cont]['bbox'])
+        
+        right = [False]*len(selected_out['internal'])
+        for nn, intc in enumerate(selected_out['internal']): 
+            # print(intc)
+            bbox_int = props_myIm[intc]['bbox']
+            minr, minc, maxr, maxc = bbox_int
+
+            for bbox in bbox_external: 
+               minrb, mincb, maxrb, maxcb = bbox
+               if minrb <= minr and maxrb >= maxr: 
+                #    print('inside r')
+                   if mincb <= minc and maxcb >= maxc: 
+                    #    print('inside c')
+                       right[nn] = True
+        
+        print('Selected correctly:', right)
+        if all(right): 
+            return selected_out
+        else: 
+            print('Changing classification')
+            all_cont = selected_out['internal']+selected_out['external']
+        
+            cont_ext = {}; 
+            for acont in all_cont: 
+                bbox_e = props_myIm[acont]['bbox']
+                for bcont in all_cont: 
+                    if bcont != acont: 
+                        bbox_i = props_myIm[bcont]['bbox']
+                        inside = check_box_overlap(bbox_e,bbox_i)
+                        if inside: 
+                            if acont not in cont_ext.keys():
+                                cont_ext[acont] = [bcont]
+                            else: 
+                                cont_ext[acont].append(bcont)
+            selected_outf = {}
+            if len(cont_ext.keys()) == num_conts['ext']:
+                selected_outf['external'] = list(cont_ext.keys())
+                internal = []
+                for key in cont_ext: 
+                    internal += cont_ext[key]
+                selected_outf['internal'] = list(set(internal))
+                return selected_outf
+            else: 
+                print('Something went wrong automatically selecting contours for Slc '+str(slc))
+                alert('frog')
+                return selected_out
+    else: 
+        return selected_out
+    
+def check_box_overlap(box_e, box_i):
+    #external, internal
+
+    minrb, mincb, maxrb, maxcb = box_e
+    minr, minc, maxr, maxc = box_i
+
+    if minrb > minr or maxrb < maxr: 
+        return False
+
+    elif mincb > minc and maxcb < maxc: 
+        return False
+    
+    else: 
+        if minrb <= minr and maxrb >= maxr: 
+            if mincb <= minc and maxcb >= maxc: 
+                return True
+            else: 
+                return False
+        else: 
+            return False
 
 #Plot contour functions
 def plot_props(params):
@@ -1105,7 +1133,7 @@ def plot_filled_contours(params):
     ch = params['ch']
     s3s = params['s3s']
     win = params['win']
-    if 'all_cont' in params.keys():
+    if params['all_cont'] != None:
         all_cont = params['all_cont']['contours']
     else: 
         all_cont=None
@@ -1169,7 +1197,10 @@ def plot_group_filled_contours(params):
         ch = param_slc['ch']
         s3s = param_slc['s3s']
         if 'all_cont' in param_slc.keys():
-            all_cont = param_slc['all_cont']['contours']
+            if param_slc['all_cont'] != None:
+                all_cont = param_slc['all_cont']['contours']
+            else: 
+                all_cont=None
         else: 
             all_cont=None
 

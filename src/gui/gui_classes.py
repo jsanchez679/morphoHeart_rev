@@ -53,7 +53,7 @@ plt.rcParams['figure.constrained_layout.use'] = True
 # from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import (get_by_path, compare_dicts, update_gui_set, alert, df_reset_index, 
                                      df_add_value, palette_rbg)
-from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours, 
+from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours, get_slices,
                                        plot_props, plot_filled_contours, plot_group_filled_contours, 
                                        close_draw, close_box, reset_img, close_convex_hull, tuple_pairs)
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
@@ -4177,14 +4177,24 @@ class MainWindow(QMainWindow):
         # input_validator_ch4= QRegularExpressionValidator(reg_ex3d, self.first_slice_ch4)
         # self.first_slice_ch4.setValidator(input_validator_ch4)
 
-        input_validator_ch1s= QRegularExpressionValidator(reg_ex3d, self.select_slice_ch1)
+        reg_excd = QRegularExpression("[0-9,-]+")
+        input_validator_ch1s= QRegularExpressionValidator(reg_excd, self.select_slice_ch1)
         self.select_slice_ch1.setValidator(input_validator_ch1s)
-        # input_validator_ch2s= QRegularExpressionValidator(reg_ex3d, self.select_slice_ch2)
+        # input_validator_ch2s= QRegularExpressionValidator(reg_excd, self.select_slice_ch2)
         # self.select_slice_ch2.setValidator(input_validator_ch2s)
-        # input_validator_ch3s= QRegularExpressionValidator(reg_ex3d, self.select_slice_ch3)
+        # input_validator_ch3s= QRegularExpressionValidator(reg_excd, self.select_slice_ch3)
         # self.select_slice_ch3.setValidator(input_validator_ch3s)
-        # input_validator_ch4s= QRegularExpressionValidator(reg_ex3d, self.select_slice_ch4)
+        # input_validator_ch4s= QRegularExpressionValidator(reg_excd, self.select_slice_ch4)
         # self.select_slice_ch4.setValidator(input_validator_ch4s)
+
+        input_validator_sel_ch1 = QRegularExpressionValidator(reg_excd, self.select_manually_slcs_ch1)
+        self.select_manually_slcs_ch1.setValidator(input_validator_sel_ch1)
+        # input_validator_sel_ch2 = QRegularExpressionValidator(reg_excd, self.select_manually_slcs_ch2)
+        # self.select_manually_slcs_ch2.setValidator(input_validator_sel_ch2)
+        # input_validator_sel_ch3 = QRegularExpressionValidator(reg_excd, self.select_manually_slcs_ch3)
+        # self.select_manually_slcs_ch3.setValidator(input_validator_sel_ch3)
+        # input_validator_sel_ch4 = QRegularExpressionValidator(reg_excd, self.select_manually_slcs_ch4)
+        # self.select_manually_slcs_ch4.setValidator(input_validator_sel_ch4)
 
         reg_ex2d = QRegularExpression(r"\d{1,2}") #2 digit number
         input_validator_num_int_ch1= QRegularExpressionValidator(reg_ex2d, self.num_int_cont_ch1)
@@ -4244,7 +4254,7 @@ class MainWindow(QMainWindow):
         # self.clear_table_ch4.clicked.connect(lambda: self.clear_tuple_table('ch4'))
 
         # Regex for contours
-        reg_ex = QRegularExpression("[0-9,-]+")
+        reg_ex = QRegularExpression("[0-9,]+")
         input_validator_int_ch1 = QRegularExpressionValidator(reg_ex, self.int_cont_ch1)
         self.int_cont_ch1.setValidator(input_validator_int_ch1)
         # input_validator_int_ch2 = QRegularExpressionValidator(reg_ex, self.int_cont_ch2)
@@ -4263,14 +4273,7 @@ class MainWindow(QMainWindow):
         # input_validator_ext_ch4 = QRegularExpressionValidator(reg_ex, self.ext_cont_ch4)
         # self.ext_cont_ch4.setValidator(input_validator_ext_ch4)
 
-        input_validator_sel_ch1 = QRegularExpressionValidator(reg_ex, self.select_manually_slcs_ch1)
-        self.select_manually_slcs_ch1.setValidator(input_validator_sel_ch1)
-        # input_validator_sel_ch2 = QRegularExpressionValidator(reg_ex, self.select_manually_slcs_ch2)
-        # self.select_manually_slcs_ch2.setValidator(input_validator_sel_ch2)
-        # input_validator_sel_ch3 = QRegularExpressionValidator(reg_ex, self.select_manually_slcs_ch3)
-        # self.select_manually_slcs_ch3.setValidator(input_validator_sel_ch3)
-        # input_validator_sel_ch4 = QRegularExpressionValidator(reg_ex, self.select_manually_slcs_ch4)
-        # self.select_manually_slcs_ch4.setValidator(input_validator_sel_ch4)
+        
 
         #getattr(controller.main_win, 'select_contours_'+ch_name+'_widget').setEnabled(True)
 
@@ -4280,11 +4283,22 @@ class MainWindow(QMainWindow):
         # self.select_plot_slc_ch3.clicked.connect(lambda: self.plot_filled_slice(ch='ch3'))
         # self.select_plot_slc_ch4.clicked.connect(lambda: self.plot_filled_slice(ch='ch4'))
 
+        self.select_plot_all_ch1.clicked.connect(lambda: self.plot_filled_all(ch='ch1'))
+        # self.select_plot_all_ch2.clicked.connect(lambda: self.plot_filled_all(ch='ch2'))
+        # self.select_plot_all_ch3.clicked.connect(lambda: self.plot_filled_all(ch='ch3'))
+        # self.select_plot_all_ch4.clicked.connect(lambda: self.plot_filled_all(ch='ch4'))
+
         #Done
         self.select_contours_ch1_done.clicked.connect(lambda: self.user_done('select_contours', 'ch1'))
         # self.select_contours_ch2_done.clicked.connect(lambda: self.user_done('select_contours', 'ch2'))
         # self.select_contours_ch3_done.clicked.connect(lambda: self.user_done('select_contours', 'ch3'))
         # self.select_contours_ch4_done.clicked.connect(lambda: self.user_done('select_contours', 'ch4'))
+
+        #Progress Bar
+        self.progress_select_ch1.setValue(0)
+        # self.progress_select_ch2.setValue(0)
+        # self.progress_select_ch3.setValue(0)
+        # self.progress_select_ch4.setValue(0)
 
         for ch in ['ch1']:#, 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
@@ -4774,9 +4788,12 @@ class MainWindow(QMainWindow):
     def add_tuple_to_table(self, ch_name):
 
         tableW = getattr(self, 'select_tableW_'+ch_name)
-        
         first_slc_box = getattr(self, 'first_slice_'+ch_name)
         first_slc = first_slc_box.text()
+        if first_slc == '': 
+            self.win_msg('*Please provide the first slice comprising the new slice group.')
+            return
+        
         #Get last first slice 
         last_row = tableW.rowCount()-1
         if last_row >= 0: 
@@ -4794,13 +4811,20 @@ class MainWindow(QMainWindow):
         else: 
             pass
 
+        getattr(self, 'select_contours_'+ch_name+'_set').setChecked(False)
+        getattr(self, 'select_contours_'+ch_name+'_play').setEnabled(False)
+
         num_contours_int_box = getattr(self, 'num_int_cont_'+ch_name)
         num_contours_int = num_contours_int_box.text()
         num_contours_ext_box = getattr(self, 'num_ext_cont_'+ch_name)
         num_contours_ext = num_contours_ext_box.text()
 
+        if num_contours_ext == '' or num_contours_int == '': 
+            self.win_msg('*Please provide the number of internal and external contours you expect to find within this slice group.')
+            return
+
         if int(num_contours_ext) == 0 and int(num_contours_int) > 0: 
-            self.win_msg('*At least one external contour should contain the entered internal contours. Please check to continue!')
+            self.win_msg('*At least one external contour should contain the entered internal contours. Please check to continue.')
             return
         else: 
             self.win_msg(' ')
@@ -5025,33 +5049,83 @@ class MainWindow(QMainWindow):
             self.plot_contours_slc(params)
 
     def plot_filled_slice(self, ch):
-
         #Get slice
         slc_input = getattr(self, 'select_slice_'+ch).text()
-        total_slcs = int(getattr(self, 'total_stack_slices_'+ch).text())
         if slc_input == '': 
             self.win_msg('*Please enter a valid slice number to plot filled contours.')
             getattr(self, 'select_slice_'+ch).setFocus()
             return
-        elif int(slc_input) > total_slcs: 
-            self.win_msg('*The channel contains '+str(total_slcs)+' slices. Please enter a valid slice number to plot filled contours.')
-            getattr(self, 'select_slice_'+ch).setFocus()
-            return
         else: 
-            slc_user = int(slc_input)
-            slc = slc_user-1
-            s3s = {}
-            for cont in ['int', 'ext', 'tiss']:
-                slc_s3 = getattr(self, 's3_'+cont)[slc+1][:][:]
-                s3s[cont] = slc_s3
+            total_slcs = int(getattr(self, 'total_stack_slices_'+ch).text())
+            slc_input = get_slices(lineEdit = getattr(self, 'select_slice_'+ch), 
+                                    slc_tuple=(1,total_slcs), 
+                                    win=self)
+            if any(slc> total_slcs for slc in slc_input): 
+                self.win_msg('*The channel contains '+str(total_slcs)+' slices. Please enter a valid slice number to plot filled contours.')
+                getattr(self, 'select_slice_'+ch).setFocus()
+                return
+            else: 
+                for slc in slc_input: 
+                    slc_user = slc+1
+                    s3s = {}
+                    for cont in ['int', 'ext', 'tiss']:
+                        slc_s3 = getattr(self, 's3_'+cont)[slc+1][:][:]
+                        s3s[cont] = slc_s3
 
-            stack = self.im_proc
-            myIm = copy.deepcopy(stack[slc][:][:])
-            params_filled = {'myIm': copy.deepcopy(myIm), 'slc':slc_user, 
-                        'ch': ch, 's3s': s3s, 'win': self}
-            plot_filled_contours(params_filled)
-            self.add_thumbnail(function='fcC.plot_filled_contours', params = params_filled, 
-                                    name='FilledCont. Slc'+str(slc_user))
+                    stack = self.im_proc
+                    myIm = copy.deepcopy(stack[slc][:][:])
+                    if slc in self.dict_s3s.keys(): 
+                        all_cont = {'contours':[]}
+                        cont_dict = self.dict_s3s[slc]
+                        for cont in ['internal', 'external']:
+                            all_cont['contours']+= cont_dict[cont]['contours']
+                    else: 
+                        all_cont = None
+                    params_filled = {'myIm': copy.deepcopy(myIm), 'slc':slc_user, 
+                                'ch': ch, 's3s': s3s, 'win': self, 'all_cont' : all_cont}
+                    plot_filled_contours(params_filled)
+                    self.add_thumbnail(function='fcC.plot_filled_contours', params = params_filled, 
+                                            name='Filled Slc'+str(slc_user))
+                    
+                getattr(self, 'select_slice_'+ch).clear()
+
+    def plot_filled_all(self, ch): 
+        start = 1
+        total_slcs = int(getattr(self, 'total_stack_slices_'+ch).text())
+
+        self.win_msg('!Plotting the selected contours for all slices. This may take a while so be patient...')
+        dict_plot = []; slc_o = start
+        for slc in range(start, total_slcs): 
+            myIm = self.im_proc[slc][:][:]
+            s3s_out = {}
+            for cont in ['int', 'tiss', 'ext']: 
+                slc_s3 = getattr(self, 's3_'+cont)[slc+1][:][:]
+                s3s_out[cont] = slc_s3
+
+            if slc in self.dict_s3s.keys(): 
+                all_cont = {'contours':[]}
+                cont_dict = self.dict_s3s[slc]
+                for cont in ['internal', 'external']:
+                    all_cont['contours']+= cont_dict[cont]['contours']
+            else: 
+                all_cont = None
+
+            if len(dict_plot)== 12: 
+                dict_plot = []
+                slc_o = slc+1
+
+            params_slc = {'myIm': copy.deepcopy(myIm), 'slc':slc+1, 
+                            'ch': ch, 's3s': s3s_out, 'all_cont': all_cont}
+            
+            dict_plot.append(params_slc)
+
+            if len(dict_plot)== 12 or slc == total_slcs-1: 
+                slc_f = slc
+                params_group = {'win': self, 'dict_plot': dict_plot}
+                if slc_f == total_slcs-1: 
+                    plot_group_filled_contours(params = params_group)
+                self.add_thumbnail(function='fcC.plot_group_filled_contours', params = params_group, 
+                                    name='Filled Slcs'+str(slc_o)+'-'+str(slc_f+1))
 
     #Image thumbnails
     def add_thumbnail(self, function, params, name): 
@@ -5068,8 +5142,8 @@ class MainWindow(QMainWindow):
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         button.setSizePolicy(sizePolicy)
-        button.setMinimumSize(QtCore.QSize(120, 20))
-        button.setMaximumSize(QtCore.QSize(120, 20))
+        button.setMinimumSize(QtCore.QSize(125, 20))
+        button.setMaximumSize(QtCore.QSize(125, 20))
         # self.scroll_images.setSliderPosition(100)
         # print('scroll_images.sliderPosition():',scroll_images.sliderPosition())
 
@@ -5155,7 +5229,6 @@ class MainWindow(QMainWindow):
 
         #All Group box
         self.segmentationAll_play.setStyleSheet(style_play)
-        # setup_play_btn(btn = self.segmentationAll_play, win = self)
         self.segmentationAll_play.setEnabled(False)
         self.segmentationAll_play.clicked.connect(lambda: self.run_segmentationAll())
         self.centreline_thicknessAll_play.setStyleSheet(style_play)
@@ -9953,15 +10026,6 @@ def update_status(root_dict, items, fillcolor, override=False):
     # print('items:', items, '- wf_status:', wf_status)
 
 # Button general functions
-def setup_play_btn(btn, win): 
-    pixmapi = getattr(QStyle.StandardPixmap, 'SP_MediaPlay')
-    icon = win.style().standardIcon(pixmapi)
-    btn.setIcon(icon)
-    st1 = 'QPushButton{border-radius:12px; border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color:  rgb(0, 199, 0);}'
-    st2 = ' QPushButton:hover{background-color: rgb(0, 227, 0); border-color: rgb(115, 115, 115)}'
-    st3 = ' QPushButton:checked{background-color: rgb(0, 85, 0); border-color: rgb(115, 115, 115)}'
-    btn.setStyleSheet(st1+st2+st3)
-    
 def color_btn(btn, color, small=True): 
 
     if isinstance(color, list): 
@@ -10081,10 +10145,10 @@ def set_txts():
     play_grw = 'images/logos_play_gray_white.png'
     play_colors = [play_bw, play_gw, play_gb, play_grw]
 
-    play_btn = "QPushButton {border-image: url("+play_gw+"); background-repeat: no-repeat; width: 65px; height: 56px;};"
-    hover_btn = "QPushButton:hover {border-image: url("+play_bw+")};"
-    pressed_btn = "QPushButton:checked {border-image: url("+play_gb+")};"
-    disbled_btn = "QPushButton:disabled {border-image: url("+play_grw+")};"
+    play_btn = "QPushButton{border-image: url("+play_gw+"); background-repeat: no-repeat; width: 65px; height: 56px}"
+    hover_btn = " QPushButton:hover{border-image: url("+play_bw+")}"
+    pressed_btn = " QPushButton:checked{border-image: url("+play_gb+")}"
+    disbled_btn = " QPushButton:disabled{border-image: url("+play_grw+")}"
     style_play = play_btn+hover_btn+pressed_btn+disbled_btn
 
     html_txt = ['<html><head><meta name="qrichtext" content="1" /><style type="text/css"> p, li { white-space: pre-wrap; } </style></head><body style=" font-family:"Calibri Light"; font-size:11pt; font-weight:24; font-style:normal;">',
@@ -10114,4 +10178,3 @@ html_style = '</style></head><body style=" font-family:"Calibri Light"; font-siz
 html_beg = '<p align="center" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">'
 html_end = '</p>'
 html_end_end = '</p></body></html>'
-
