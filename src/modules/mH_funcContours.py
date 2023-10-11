@@ -152,13 +152,6 @@ def checkWfCloseCont(workflow, ch_name):
     
     return close_done
 
-def selectContours(organ, im_ch, win):
-    
-    layerDict = im_ch.selectContours()
-    im_ch.create_chS3s(layerDict=layerDict, win=win)
-    win.win_msg('Contour masks for channel '+str(im_ch.channel_no[-1])+ ' have been successfully created!')
-    win.update_ch_progress() 
-
 # Functions related to contours
 def get_contours(myIm, min_contour_length, level):
     """
@@ -484,7 +477,7 @@ def get_slices(lineEdit, slc_tuple, win):
     elif user_input == 'N' or user_input == 'n': 
         numbers = []
     elif user_input == '': 
-        error_txt = '*Please select the slices you want to close within the given tuple.'
+        error_txt = '*Please input the list of slices you want to process.'
         win.tE_validate.setText(error_txt)
         return
     else: 
@@ -545,6 +538,22 @@ def get_contour_num(lineEdit_int, lineEdit_ext, tuples_out_slc, num_contours, wi
     
     return {'internal': int_num, 'external': ext_num}
 
+def find_slc_within_tuples(slc, tuples_out): 
+
+    tuple_active = None
+    for tup in tuples_out: 
+        tup_pair = tuples_out[tup]['tuple_pair']
+        if slc == tup_pair[0] or slc == tup_pair[1]: 
+            tuple_active = tup
+            break
+        elif slc > tup_pair[0] and slc < tup_pair[1]: 
+            tuple_active = tup
+            break
+        else: 
+            pass
+
+    return tuples_out[tuple_active]
+    
 #Draw functions
 def close_draw(color_draw, win):
     """

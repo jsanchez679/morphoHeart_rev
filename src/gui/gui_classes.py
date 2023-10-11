@@ -3572,6 +3572,7 @@ class MainWindow(QMainWindow):
 
     #Progress Bar Related functions
     def prog_bar_range(self, r1, r2):
+        self.prog_bar_reset()
         self.prog_bar.setRange(r1, r2)
         self.prog_bar_reset()
 
@@ -4300,6 +4301,18 @@ class MainWindow(QMainWindow):
         # self.progress_select_ch3.setValue(0)
         # self.progress_select_ch4.setValue(0)
 
+        #Tick modify select
+        self.tick_modify_select_ch1.stateChanged.connect(lambda: self.enable_modify('ch1'))
+        # self.tick_modify_select_ch2.stateChanged.connect(lambda: self.enable_modify('ch2'))
+        # self.tick_modify_select_ch3.stateChanged.connect(lambda: self.enable_modify('ch3'))
+        # self.tick_modify_select_ch4.stateChanged.connect(lambda: self.enable_modify('ch4'))
+
+        #Save s3s
+        self.save_select_contours_ch1.clicked.connect(lambda: self.save_closed_channel(ch='ch1', print_txt=True, s3s=True))
+        # self.save_select_contours_ch2.clicked.connect(lambda: self.save_closed_channel(ch='ch2', print_txt=True, s3s=True))
+        # self.save_select_contours_ch3.clicked.connect(lambda: self.save_closed_channel(ch='ch3', print_txt=True, s3s=True))
+        # self.save_select_contours_ch4.clicked.connect(lambda: self.save_closed_channel(ch='ch4', print_txt=True, s3s=True))
+
         for ch in ['ch1']:#, 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
                 tableW = getattr(self, 'select_tableW_'+ch)
@@ -4312,6 +4325,11 @@ class MainWindow(QMainWindow):
                 tableW.resizeRowsToContents()
                 tableW.verticalHeader().setVisible(False)
                 tableW.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name=ch))
+
+                tick = getattr(self, 'tick_modify_select_'+ch)
+                # tick.setEnabled(False)
+                tick.setChecked(False)
+                self.enable_modify(ch)
 
                 # self.user_manual_close_contours(ch_name=ch) 
 
@@ -4336,10 +4354,12 @@ class MainWindow(QMainWindow):
         self.scroll_images.verticalScrollBar().rangeChanged.connect(self.scroll_thumb_to_bottom)
 
         self.im_thumbnails = {}
+        self.btn_thumbnails = {}
 
         #Init scroll style buttons
-        self.scroll_style = 'QPushButton{\nborder-width: 0.5px;\nborder-style: outset;\nborder-color: rgb(66, 66, 66);\nbackground-color: rgb(211, 211, 211);\ncolor: rgb(39, 39, 39);\nfont: 10pt "Calibri Light";}\n\nQPushButton:hover{\nbackground-color: rgb(57, 57, 57);\nborder-color: #672146;\ncolor: rgb(255, 255, 255);\n}\n'
-
+        self.scroll_style = 'QPushButton{border-width: 0.5px; \nborder-style: outset; \nborder-color: rgb(66, 66, 66);\nbackground-color: rgb(211, 211, 211);\ncolor: rgb(39, 39, 39);\nfont: 10pt "Calibri Light";}\nQPushButton:hover{background-color: rgb(57, 57, 57);border-color: rgb(255, 255, 255); color: rgb(255, 255, 255);}\nQPushButton:checked{background-color: rgb(57, 57, 57);border-color: #672146; color: rgb(255, 255, 255);border: 2px solid rgb(158,31,99);}'
+        #'QPushButton{\nborder-width: 0.5px;\nborder-style: outset;\nborder-color: rgb(66, 66, 66);\nbackground-color: rgb(211, 211, 211);\ncolor: rgb(39, 39, 39);\nfont: 10pt "Calibri Light";}\n\nQPushButton:hover{\nbackground-color: rgb(57, 57, 57);\nborder-color: #672146;\ncolor: rgb(255, 255, 255);\n}\n'
+        
         #Button to clear
         self.clear_scroll.clicked.connect(lambda: self.clear_thumbnails())
         #Buttons prev and next thumbnail
@@ -4610,6 +4630,10 @@ class MainWindow(QMainWindow):
                                     'slc_per_group': slc_per_group, 
                                     'tuples_select': tuples_select}
             
+            #Save in addition to this params the selecting contours and tuples?
+            #  the tuple number in which the user is
+            # the 
+            
             print('gui_select_contours: ', gui_select_contours)
             return gui_select_contours
 
@@ -4709,7 +4733,6 @@ class MainWindow(QMainWindow):
                     pass
                 save_after_tuple = wf_info['manual_close_contours'][ch_name]['save_after_tuple']
                 getattr(self, 'save_after_tuple_'+ch_name).setChecked(save_after_tuple)
-
 
                 workflow = self.organ.workflow['morphoHeart']['ImProc'][ch_name][ 'B-CloseCont']['Steps']['B-Manual']
                 status = getattr(self, 'manual_close_'+ch_name+'_status')
@@ -4873,6 +4896,21 @@ class MainWindow(QMainWindow):
 
         tableW.resizeRowsToContents()
 
+    def enable_modify(self, ch_name): 
+        tick = getattr(self, 'tick_modify_select_'+ch_name).isChecked()
+        wdg_select = getattr(self, 'select_contours_widget_'+ch_name)
+        wdg_modify = getattr(self, 'manually_select_widget_'+ch_name)
+        if tick: 
+            wdg_select.setEnabled(False)
+            wdg_select.setVisible(False)
+            wdg_modify.setEnabled(True)
+            wdg_modify.setVisible(True)
+        else: 
+            wdg_select.setEnabled(True)
+            wdg_select.setVisible(True)
+            wdg_modify.setEnabled(False)
+            wdg_modify.setVisible(False)
+            
     #Plot 2D functions (segmentation tab)
     def plot_all_slices(self, ch, slice_range='all'): 
 
@@ -5061,7 +5099,7 @@ class MainWindow(QMainWindow):
                                     slc_tuple=(1,total_slcs), 
                                     win=self)
             if any(slc> total_slcs for slc in slc_input): 
-                self.win_msg('*The channel contains '+str(total_slcs)+' slices. Please enter a valid slice number to plot filled contours.')
+                self.win_msg('*The channel contains '+str(total_slcs)+' slices. Please enter valid slice numbers to plot filled contours.')
                 getattr(self, 'select_slice_'+ch).setFocus()
                 return
             else: 
@@ -5133,6 +5171,10 @@ class MainWindow(QMainWindow):
         num = str(len(self.im_thumbnails))
         self.im_thumbnails[num] = {'function': function, 
                                     'params': params}
+        
+        for nn in range(int(num)): 
+            btn = self.btn_thumbnails[nn]
+            btn.setChecked(False)
 
         button = QPushButton(num)
         button.setText(str(name))
@@ -5150,6 +5192,8 @@ class MainWindow(QMainWindow):
         self.layout_scroll.addWidget(button)
         button.clicked.connect(lambda: self.scroll_im_selected())
         self.current_thumbnail = num
+        button.setChecked(True)
+        self.btn_thumbnails[num] = button
         button.show()
 
     def prev_next_thumbnail(self, next): 
@@ -5186,11 +5230,21 @@ class MainWindow(QMainWindow):
             self.current_thumbnail = num
             print('self.current_thumbnail:', self.current_thumbnail)
 
-    def scroll_im_selected(self): 
-        sending_button = self.sender()
-        btn_clicked = str(sending_button.objectName())
-        btn_name = btn_clicked.split('ScrollBtn')[1]
-        print('Clicked!', btn_clicked, '-', btn_name)
+    def scroll_im_selected(self, num=None): 
+        if num == None:
+            sending_button = self.sender()
+            btn_clicked = str(sending_button.objectName())
+            btn_name = btn_clicked.split('ScrollBtn')[1]
+            print('Clicked!', btn_clicked, '-', btn_name)
+        else:
+            btn_name = str(num)
+            print(num)
+
+        n_len = str(len(self.im_thumbnails))
+        for nn in range(int(n_len)): 
+            btn = self.btn_thumbnails[nn]
+            btn.setChecked(False)
+        self.btn_thumbnails[num].setChecked(True)
         
         funct = self.im_thumbnails[btn_name]['function']
         params = self.im_thumbnails[btn_name]['params']
@@ -5215,6 +5269,7 @@ class MainWindow(QMainWindow):
         # delete thumbnails
         delattr(self, 'im_thumbnails')
         self.im_thumbnails = {}
+        self.btn_thumbnails = {}
         # delete buttons
         for i in reversed(range(self.layout_scroll.count())): 
             self.layout_scroll.itemAt(i).widget().setParent(None)
@@ -9739,9 +9794,23 @@ class MainWindow(QMainWindow):
         print('Setting Plot Tab')
 
     #Menu functions / Saving functions
-    def save_closed_channel(self, ch, print_txt=False):
-        print('Save channel was pressed: ', ch)
+    def save_closed_channel(self, ch, print_txt=False, s3s=False):
+        #Get channel 
         im_ch = self.organ.obj_imChannels[ch]
+        self.prog_bar_range(0,3)
+        if s3s: 
+            print('Save channel s3s was pressed: ', ch)
+            n = 1
+            for cont in ['int', 'tiss', 'ext']: 
+                self.win_msg('!Saving masked stack for Channel '+ch[-1]+' (s3_'+cont+')...')
+                im_cont = getattr(im_ch, 's3_'+cont)
+                s32save = getattr(self, 's3_'+cont)
+                im_cont.s3_save(s32save)
+                self.prog_bar_update(n)
+                n+=1
+        else: 
+            print('Save channel was pressed: ', ch)
+        
         im_ch.save_channel(im_proc=self.im_proc)
         if print_txt: 
             self.win_msg('Channel '+ch[-1]+' was succesfully saved!')

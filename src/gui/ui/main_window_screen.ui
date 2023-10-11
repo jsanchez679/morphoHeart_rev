@@ -1130,9 +1130,9 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1220</y>
+                      <y>-1236</y>
                       <width>382</width>
-                      <height>1791</height>
+                      <height>1807</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_23">
@@ -6699,132 +6699,147 @@ border-color: #672146
                             </layout>
                            </item>
                            <item>
-                            <layout class="QGridLayout" name="gridLayout_30">
-                             <item row="0" column="1">
-                              <widget class="QLabel" name="select_tuple_ch1">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>100</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>16777215</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+                            <widget class="QWidget" name="select_contours_widget_ch1" native="true">
+                             <layout class="QVBoxLayout" name="verticalLayout_87">
+                              <property name="leftMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>0</number>
+                              </property>
+                              <item>
+                               <layout class="QGridLayout" name="gridLayout_30">
+                                <item row="0" column="1">
+                                 <widget class="QLabel" name="select_tuple_ch1">
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>100</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>16777215</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
 background-color: rgb(255, 255, 255);</string>
-                               </property>
-                               <property name="text">
-                                <string>----</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="2">
-                              <widget class="QLabel" name="tuple_analysed_lab_2">
-                               <property name="sizePolicy">
-                                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                                 <horstretch>0</horstretch>
-                                 <verstretch>0</verstretch>
-                                </sizepolicy>
-                               </property>
-                               <property name="minimumSize">
-                                <size>
-                                 <width>65</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>65</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                               </property>
-                               <property name="text">
-                                <string>Initial Slice:</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="0">
-                              <widget class="QLabel" name="tuple_analysed_lab_3">
-                               <property name="sizePolicy">
-                                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                                 <horstretch>0</horstretch>
-                                 <verstretch>0</verstretch>
-                                </sizepolicy>
-                               </property>
-                               <property name="minimumSize">
-                                <size>
-                                 <width>90</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>90</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                               </property>
-                               <property name="text">
-                                <string>Tuple analysed:</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="3">
-                              <widget class="QLabel" name="select_fisrt_slc_ch1">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>70</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>70</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+                                  </property>
+                                  <property name="text">
+                                   <string>----</string>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="0" column="2">
+                                 <widget class="QLabel" name="tuple_analysed_lab_2">
+                                  <property name="sizePolicy">
+                                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                   </sizepolicy>
+                                  </property>
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>65</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>65</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>Initial Slice:</string>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="0" column="0">
+                                 <widget class="QLabel" name="tuple_analysed_lab_3">
+                                  <property name="sizePolicy">
+                                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                   </sizepolicy>
+                                  </property>
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>90</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>90</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>Tuple analysed:</string>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="0" column="3">
+                                 <widget class="QLabel" name="select_fisrt_slc_ch1">
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>70</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>70</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
 background-color: rgb(255, 255, 255);</string>
-                               </property>
-                               <property name="text">
-                                <string>----</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                            </layout>
-                           </item>
-                           <item>
-                            <layout class="QGridLayout" name="gridLayout_31">
-                             <item row="0" column="1">
-                              <widget class="QLineEdit" name="int_cont_ch1">
-                               <property name="layoutDirection">
-                                <enum>Qt::LeftToRight</enum>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">QLineEdit{
+                                  </property>
+                                  <property name="text">
+                                   <string>----</string>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                               </layout>
+                              </item>
+                              <item>
+                               <layout class="QGridLayout" name="gridLayout_31">
+                                <item row="0" column="1">
+                                 <widget class="QLineEdit" name="int_cont_ch1">
+                                  <property name="layoutDirection">
+                                   <enum>Qt::LeftToRight</enum>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">QLineEdit{
 font: 25 9pt &quot;Calibri Light&quot;;
 background-color: rgb(240, 240, 240);
 color: rgb(0, 0, 0);}
@@ -6832,113 +6847,113 @@ color: rgb(0, 0, 0);}
 QLineEdit:focus { border: 2px solid rgb(0, 191, 0);}
 					
 </string>
-                               </property>
-                               <property name="text">
-                                <string/>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignCenter</set>
-                               </property>
-                               <property name="placeholderText">
-                                <string>Int. cont. numbers (separated by ',')</string>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="1" column="0">
-                              <widget class="QLabel" name="ext_cont_lab_ch1">
-                               <property name="sizePolicy">
-                                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                                 <horstretch>0</horstretch>
-                                 <verstretch>0</verstretch>
-                                </sizepolicy>
-                               </property>
-                               <property name="minimumSize">
-                                <size>
-                                 <width>80</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>80</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                               </property>
-                               <property name="text">
-                                <string>External Cont.:</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="1" column="2">
-                              <widget class="QLabel" name="ext_of_ch1">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>30</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>30</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+                                  </property>
+                                  <property name="text">
+                                   <string/>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignCenter</set>
+                                  </property>
+                                  <property name="placeholderText">
+                                   <string>Int. cont. numbers (separated by ',')</string>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="1" column="0">
+                                 <widget class="QLabel" name="ext_cont_lab_ch1">
+                                  <property name="sizePolicy">
+                                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                   </sizepolicy>
+                                  </property>
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>80</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>80</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>External Cont.:</string>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="1" column="2">
+                                 <widget class="QLabel" name="ext_of_ch1">
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>30</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>30</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
 background-color: rgb(255, 255, 255);</string>
-                               </property>
-                               <property name="text">
-                                <string>/xx</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="0">
-                              <widget class="QLabel" name="int_cont_lab_ch1">
-                               <property name="sizePolicy">
-                                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                                 <horstretch>0</horstretch>
-                                 <verstretch>0</verstretch>
-                                </sizepolicy>
-                               </property>
-                               <property name="minimumSize">
-                                <size>
-                                 <width>80</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>80</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                               </property>
-                               <property name="text">
-                                <string>Internal Cont.:</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="1" column="1">
-                              <widget class="QLineEdit" name="ext_cont_ch1">
-                               <property name="layoutDirection">
-                                <enum>Qt::LeftToRight</enum>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">QLineEdit{
+                                  </property>
+                                  <property name="text">
+                                   <string>/xx</string>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="0" column="0">
+                                 <widget class="QLabel" name="int_cont_lab_ch1">
+                                  <property name="sizePolicy">
+                                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                   </sizepolicy>
+                                  </property>
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>80</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>80</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>Internal Cont.:</string>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="1" column="1">
+                                 <widget class="QLineEdit" name="ext_cont_ch1">
+                                  <property name="layoutDirection">
+                                   <enum>Qt::LeftToRight</enum>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">QLineEdit{
 font: 25 9pt &quot;Calibri Light&quot;;
 background-color: rgb(240, 240, 240);
 color: rgb(0, 0, 0);}
@@ -6946,89 +6961,89 @@ color: rgb(0, 0, 0);}
 QLineEdit:focus { border: 2px solid rgb(0, 191, 0);}
 					
 </string>
-                               </property>
-                               <property name="text">
-                                <string/>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignCenter</set>
-                               </property>
-                               <property name="placeholderText">
-                                <string>Ext. cont. numbers (separated by ',')</string>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="2">
-                              <widget class="QLabel" name="int_of_ch1">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>30</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>30</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+                                  </property>
+                                  <property name="text">
+                                   <string/>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignCenter</set>
+                                  </property>
+                                  <property name="placeholderText">
+                                   <string>Ext. cont. numbers (separated by ',')</string>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="0" column="2">
+                                 <widget class="QLabel" name="int_of_ch1">
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>30</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>30</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
 background-color: rgb(255, 255, 255);</string>
-                               </property>
-                               <property name="text">
-                                <string>/xx</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="3">
-                              <widget class="QLabel" name="int_of_ch1_2">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>20</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>30</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+                                  </property>
+                                  <property name="text">
+                                   <string>/xx</string>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="0" column="3">
+                                 <widget class="QLabel" name="int_of_ch1_2">
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>30</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
 background-color: rgb(255, 255, 255);</string>
-                               </property>
-                               <property name="text">
-                                <string/>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="1" column="3">
-                              <widget class="QPushButton" name="slc_tuple_select_ch1_play">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>20</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>20</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="autoFillBackground">
-                                <bool>false</bool>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">QPushButton{
+                                  </property>
+                                  <property name="text">
+                                   <string/>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="1" column="3">
+                                 <widget class="QPushButton" name="slc_tuple_select_ch1_play">
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="autoFillBackground">
+                                   <bool>false</bool>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">QPushButton{
 border-radius:10px; 
 border-width: 1px; 
 border-style: outset; 
@@ -7043,48 +7058,48 @@ QPushButton:disabled{
 background-color: rgb(179, 179, 179); 
 border-color: rgb(115, 115, 115)}
 </string>
-                               </property>
-                               <property name="text">
-                                <string/>
-                               </property>
-                               <property name="checkable">
-                                <bool>true</bool>
-                               </property>
-                              </widget>
-                             </item>
-                            </layout>
-                           </item>
-                           <item>
-                            <layout class="QHBoxLayout" name="horizontalLayout_308">
-                             <item>
-                              <widget class="QLabel" name="label_34">
-                               <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                               </property>
-                               <property name="text">
-                                <string>Progress/group:</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                             <item>
-                              <widget class="QProgressBar" name="progress_select_ch1">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>80</width>
-                                 <height>18</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>16777215</width>
-                                 <height>18</height>
-                                </size>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">QProgressBar {
+                                  </property>
+                                  <property name="text">
+                                   <string/>
+                                  </property>
+                                  <property name="checkable">
+                                   <bool>true</bool>
+                                  </property>
+                                 </widget>
+                                </item>
+                               </layout>
+                              </item>
+                              <item>
+                               <layout class="QHBoxLayout" name="horizontalLayout_308">
+                                <item>
+                                 <widget class="QLabel" name="label_34">
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>Group Progress:</string>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item>
+                                 <widget class="QProgressBar" name="progress_select_ch1">
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>80</width>
+                                    <height>18</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>16777215</width>
+                                    <height>18</height>
+                                   </size>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">QProgressBar {
         border: 1px solid rgba(89, 179, 69, 255); 
         border-radius: 7px;
         text-align: center;
@@ -7095,57 +7110,57 @@ border-color: rgb(115, 115, 115)}
         background-color: rgba(89, 179, 69, 255);
         border-radius: 7px;
     }</string>
-                               </property>
-                               <property name="value">
-                                <number>24</number>
-                               </property>
-                              </widget>
-                             </item>
-                             <item>
-                              <spacer name="horizontalSpacer_45">
-                               <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                               </property>
-                               <property name="sizeHint" stdset="0">
-                                <size>
-                                 <width>40</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                              </spacer>
-                             </item>
-                             <item>
-                              <widget class="QLabel" name="label_33">
-                               <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                               </property>
-                               <property name="text">
-                                <string>Slice Group</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                             <item>
-                              <widget class="QPushButton" name="next_group_ch1">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>20</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>20</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                               <property name="autoFillBackground">
-                                <bool>false</bool>
-                               </property>
-                               <property name="styleSheet">
-                                <string notr="true">QPushButton{
+                                  </property>
+                                  <property name="value">
+                                   <number>24</number>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item>
+                                 <spacer name="horizontalSpacer_45">
+                                  <property name="orientation">
+                                   <enum>Qt::Horizontal</enum>
+                                  </property>
+                                  <property name="sizeHint" stdset="0">
+                                   <size>
+                                    <width>40</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                 </spacer>
+                                </item>
+                                <item>
+                                 <widget class="QLabel" name="label_33">
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>Slice Group</string>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item>
+                                 <widget class="QPushButton" name="next_group_ch1">
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="autoFillBackground">
+                                   <bool>false</bool>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">QPushButton{
 font: bold 10pt &quot;Calibri&quot;;
 border-width: 1px; 
 border-style: outset; 
@@ -7161,16 +7176,19 @@ QPushButton:disabled{
 background-color: rgb(145, 145, 145); 
 border-color: rgb(115, 115, 115)}
 </string>
-                               </property>
-                               <property name="text">
-                                <string>&gt;&gt;</string>
-                               </property>
-                               <property name="checkable">
-                                <bool>true</bool>
-                               </property>
-                              </widget>
-                             </item>
-                            </layout>
+                                  </property>
+                                  <property name="text">
+                                   <string>&gt;&gt;</string>
+                                  </property>
+                                  <property name="checkable">
+                                   <bool>true</bool>
+                                  </property>
+                                 </widget>
+                                </item>
+                               </layout>
+                              </item>
+                             </layout>
+                            </widget>
                            </item>
                            <item>
                             <layout class="QHBoxLayout" name="horizontalLayout_311">
@@ -7544,8 +7562,20 @@ text-decoration: underline;</string>
                             </layout>
                            </item>
                            <item>
-                            <widget class="QWidget" name="modify_select_widget" native="true">
+                            <widget class="QWidget" name="manually_select_widget_ch1" native="true">
                              <layout class="QVBoxLayout" name="verticalLayout_85">
+                              <property name="leftMargin">
+                               <number>3</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>3</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>3</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>3</number>
+                              </property>
                               <item>
                                <layout class="QHBoxLayout" name="horizontalLayout_313">
                                 <item>
@@ -7607,6 +7637,9 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                                   </property>
                                   <property name="alignment">
                                    <set>Qt::AlignCenter</set>
+                                  </property>
+                                  <property name="placeholderText">
+                                   <string>Slices to re-select contours (e.g. 4-7,9)</string>
                                   </property>
                                  </widget>
                                 </item>
@@ -7958,6 +7991,79 @@ border-color: rgb(115, 115, 115)}
                                   </property>
                                   <property name="text">
                                    <string/>
+                                  </property>
+                                  <property name="checkable">
+                                   <bool>true</bool>
+                                  </property>
+                                 </widget>
+                                </item>
+                               </layout>
+                              </item>
+                              <item>
+                               <layout class="QHBoxLayout" name="horizontalLayout_314">
+                                <item>
+                                 <spacer name="horizontalSpacer_49">
+                                  <property name="orientation">
+                                   <enum>Qt::Horizontal</enum>
+                                  </property>
+                                  <property name="sizeHint" stdset="0">
+                                   <size>
+                                    <width>40</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                 </spacer>
+                                </item>
+                                <item>
+                                 <widget class="QLabel" name="label_35">
+                                  <property name="styleSheet">
+                                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>Slice</string>
+                                  </property>
+                                  <property name="alignment">
+                                   <set>Qt::AlignCenter</set>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item>
+                                 <widget class="QPushButton" name="next_slc_select_ch1">
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="autoFillBackground">
+                                   <bool>false</bool>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(85, 170, 255)}
+
+QPushButton:hover{
+background-color: rgb(0, 105, 158); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>&gt;&gt;</string>
                                   </property>
                                   <property name="checkable">
                                    <bool>true</bool>
