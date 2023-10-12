@@ -482,6 +482,14 @@ def get_slices(lineEdit, slc_tuple, win):
         return
     else: 
         user_input_comma = user_input.split(',')
+        for inp in user_input_comma:
+            if '-' in inp: 
+                splo, splf = inp.split('-')
+                if splf < splo:
+                    error_txt = '*If you want to process a range of slices (e.g. A-B), make sure B>A.'
+                    win.tE_validate.setText(error_txt)
+                    return
+                
         for numb in user_input_comma: 
             if '-' in numb: 
                 st, end = numb.split('-')
@@ -492,7 +500,7 @@ def get_slices(lineEdit, slc_tuple, win):
 
     return numbers
 
-def get_contour_num(lineEdit_int, lineEdit_ext, tuples_out_slc, num_contours, win):
+def get_contour_num(lineEdit_int, lineEdit_ext, tuples_out_slc, num_contours, win, ignore=False):
 
     user_int = lineEdit_int.text()
     int_num = []
@@ -505,6 +513,7 @@ def get_contour_num(lineEdit_int, lineEdit_ext, tuples_out_slc, num_contours, wi
                 return None
             else: 
                 int_num.append(int(txt)-1)
+
 
     if len(int_num) < exp_int: 
         win.win_msg('*Expecting '+str(exp_int)+' internal contour(s) and less were given. Please check to continue.')
@@ -527,14 +536,15 @@ def get_contour_num(lineEdit_int, lineEdit_ext, tuples_out_slc, num_contours, wi
             else: 
                 ext_num.append(int(txt)-1)
 
-    if len(ext_num) < exp_ext: 
-        win.win_msg('*Expecting '+str(exp_ext)+' external contour(s) and less were given. Please check to continue.')
-        return None
-    elif len(ext_num) > exp_ext: 
-        win.win_msg('*Expecting '+str(exp_ext)+' external contour(s) and more were given. Please check to continue.')
-        return None
-    else: 
-        pass
+    if not ignore: 
+        if len(ext_num) < exp_ext: 
+            win.win_msg('*Expecting '+str(exp_ext)+' external contour(s) and less were given. Please check to continue.')
+            return None
+        elif len(ext_num) > exp_ext: 
+            win.win_msg('*Expecting '+str(exp_ext)+' external contour(s) and more were given. Please check to continue.')
+            return None
+        else: 
+            pass
     
     return {'internal': int_num, 'external': ext_num}
 

@@ -222,17 +222,28 @@ def next_prev_tuple_to_manually_close(next:bool, controller, ch_name):
     print('New slc_tuple:', main_win.slc_tuple)
     plot_tuple_to_manually_close(controller, ch_name, main_win.slc_tuple, controller.main_win.im_proc, initial=True)
 
-#Select contours
+def set_state(controller, ch_name, select_state):
+    proc_set = ['wf_info', 'select_contours', ch_name, 'select_state']
+    controller.organ.update_settings(proc_set, select_state, 'mH')
+    controller.main_win.select_state = select_state
+
+def set_index_active(controller, ch_name, index_active):
+    proc_set = ['wf_info', 'select_contours', ch_name, 'index_active']
+    controller.organ.update_settings(proc_set, index_active, 'mH')
+    controller.main_win.index_active = index_active
+
 def select_contours(controller, ch_name): 
     #Select contours
     controller.main_win.running_process = 'select_'+ch_name
     #Get channel and save is as attribute
     im_ch = controller.organ.obj_imChannels[ch_name]
     controller.main_win.im_ch = im_ch
-    #Check if the channels3 already exist....
+    # Load stack and save it as attribute to use through the process of closing
+    controller.main_win.im_proc = im_ch.im_proc()
+
+    #Check if the channels3 already exist, and if not create empty channelS3 
     if len(im_ch.contStack)<3:
         print('No mask stacks have been created or saved for this channel') 
-        #Create empty channelS3 
         im_ch.create_chS3s(layerDict={}, win=controller.main_win)
     #Load s3s and save them as attributes
     im_ch.load_chS3s(cont_types = ['int', 'tiss', 'ext'])
@@ -241,53 +252,61 @@ def select_contours(controller, ch_name):
         setattr(controller.main_win, 's3_'+cont, s3)
     #Enable and make visible close cont buttons
     enable_close_functions(controller=controller, process = 'selecting', ch_name=ch_name)
-    # Load stack and save it as attribute to use through the process of closing
-    controller.main_win.im_proc = im_ch.im_proc()
-    controller.main_win.im_proc_o = copy.deepcopy(im_ch.im_proc())
-    controller.main_win.slc_py = None
-    controller.main_win.tuples_out = None
+    #Create attribute to save selected contours 
     controller.main_win.dict_s3s = {}
-    #Get tuples_out
-    gui_select_cont = controller.main_win.gui_select_contours[ch_name]
-    controller.main_win.tuples_out = fcC.tuple_pairs(gui_select_cont)
-    #Initialise progress bar
-    controller.main_win.prog_bar_range(0,len(controller.main_win.tuples_out))
-    #Message
-    controller.main_win.win_msg('Selecting contours for Channel '+str(ch_name[-1])+'.')
     #Toggle button
     getattr(controller.main_win, 'select_contours_'+ch_name+'_play').setChecked(True)
-    #Update organ workflow
-    controller.main_win.user_done(process='select_contours', ch_name=ch_name)
-    #Plot initial tuple
-    at_least_one = False
-    controller.main_win.index_active = 0
-    while not at_least_one: 
-        initial_index = controller.main_win.tuples_out[controller.main_win.index_active]
-        if initial_index['int_cont']+initial_index['ext_cont'] > 0:
-            plot_props_to_select(controller, ch_name, controller.main_win.index_active)
-            at_least_one = True
-            break
+    if controller.main_win.select_state != 'Finished': 
+        #Get tuples_out
+        gui_select_cont = controller.main_win.gui_select_contours[ch_name]
+        controller.main_win.tuples_out = fcC.tuple_pairs(gui_select_cont)
+        #Initialise progress bar
+        controller.main_win.prog_bar_range(0,len(controller.main_win.tuples_out))
+        #Message
+        controller.main_win.win_msg('Selecting contours for Channel '+str(ch_name[-1])+'.')
+        #Update organ workflow
+        controller.main_win.user_done(process='select_contours', ch_name=ch_name)
+        #Plot initial tuple
+        at_least_one = False
+        if controller.main_win.select_state == None: 
+            set_state(controller, ch_name, 'Initialised')
+            set_index_active(controller, ch_name, 0)
         else: 
-            controller.main_win.index_active +=1
+            #Find the index of the tuple active and compare it the index_active saved
+            print(controller.main_win.index_active)
+
+        while not at_least_one: 
+            initial_index = controller.main_win.tuples_out[controller.main_win.index_active]
+            if initial_index['int_cont']+initial_index['ext_cont'] > 0:
+                plot_props_to_select(controller, ch_name, controller.main_win.index_active)
+                at_least_one = True
+                break
+            else: 
+                set_index_active(controller, ch_name, controller.main_win.index_active+1)
+    else: 
+        #Message
+        controller.main_win.win_msg('!The contours have already been selected for Channel '+str(ch_name[-1])+'. Use the "Check / Modify Selection" module to check and modify the selected contours if needed.')
 
 def plot_props_to_select(controller, ch_name, index_active):
-
+    main_win = controller.main_win
     # > Fill widget data
-    tuple_active = controller.main_win.tuples_out[index_active]
-    first, last = tuple_active['tuple_pair']
-    getattr(controller.main_win, 'select_tuple_'+ch_name).setText(str(first+1)+' - '+str(last+1-1))
-    getattr(controller.main_win, 'select_fisrt_slc_'+ch_name).setText(str(first+1))
-    getattr(controller.main_win, 'int_of_'+ch_name).setText('/ '+str(tuple_active['int_cont']))
-    getattr(controller.main_win, 'ext_of_'+ch_name).setText('/ '+str(tuple_active['ext_cont']))
-    controller.main_win.slc_py = first
+    tuple_active = main_win.tuples_out[index_active] 
 
+    first, last = tuple_active['tuple_pair']
+    getattr(main_win, 'select_tuple_'+ch_name).setText(str(first+1)+' - '+str(last+1-1))
+    getattr(main_win, 'select_fisrt_slc_'+ch_name).setText(str(first+1))
+    getattr(main_win, 'int_of_'+ch_name).setText('/ '+str(tuple_active['int_cont']))
+    getattr(main_win, 'ext_of_'+ch_name).setText('/ '+str(tuple_active['ext_cont']))
+    main_win.slc_py = first
+
+    print('Checking updates:', controller.organ.mH_settings['wf_info']['select_contours'][ch_name])
     #Get slice contours and plot contours 
     get_slc_cont_plot_props(controller=controller, ch_name=ch_name, tuple_active=tuple_active)
     
     #Enable widget
-    getattr(controller.main_win, 'select_contours_'+ch_name+'_widget').setEnabled(True)
-    controller.main_win.win_msg('!Channel '+ch_name[-1]+': Enter the internal and external contours for slice '+str(first+1)+". If no internal/external contours, leave the space empty.")
-    lineEdit = getattr(controller.main_win, 'int_cont_'+ch_name)
+    getattr(main_win, 'select_contours_'+ch_name+'_widget').setEnabled(True)
+    main_win.win_msg('!Channel '+ch_name[-1]+': Enter the internal and external contours for slice '+str(first+1)+". If no internal/external contours, leave the space empty.")
+    lineEdit = getattr(main_win, 'int_cont_'+ch_name)
     lineEdit.clear()
     lineEdit.setFocus()
 
@@ -313,7 +332,6 @@ def get_slc_cont_plot_props(controller, ch_name, tuple_active):
                                         name='Conts. Slc'+str(slc_user))
 
 def select_slcs_tuple(controller, ch_name):
-    #if something is actually selected!
     main_win = controller.main_win
     #Get contour numbers
     tuples_out_slc = controller.main_win.tuples_out[controller.main_win.index_active]
@@ -356,8 +374,7 @@ def select_slcs_tuple(controller, ch_name):
             dict_plot = []
             dict_plot.append({'myIm': copy.deepcopy(main_win.myIm), 'slc':main_win.slc_py+1, 
                             'ch': ch_name, 's3s': s3s, 'all_cont': all_cont})
-            
-            first_plot = 0
+        
             slc_o = tuple_range[0]+1
             getattr(main_win, 'progress_select_'+ch_name).setValue(slc_o)
             for slc in range(slc_o, tuple_range[1], 1):
@@ -409,9 +426,6 @@ def select_slcs_tuple(controller, ch_name):
                 if len(dict_plot)== 12 or slc == tuple_range[1]-1: 
                     slc_f = slc
                     params_group = {'win': main_win, 'dict_plot': dict_plot}
-                    if first_plot == 0:
-                        num_thumb = len(main_win.im_thumbnails)
-                        first_plot+=1
                     fcC.plot_group_filled_contours(params = params_group)
                     main_win.add_thumbnail(function='fcC.plot_group_filled_contours', params = params_group, 
                                         name='Filled Slcs'+str(slc_o)+'-'+str(slc_f+1))
@@ -421,11 +435,9 @@ def select_slcs_tuple(controller, ch_name):
             alert('bubble')
             main_win.win_msg('!Contours have been selected for Slices '+str(tuple_range[0]+1)+'-'+str(tuple_range[1])+'. To continue selecting contours go to the next slice group.')
             getattr(main_win, 'progress_select_'+ch_name).setValue(tuple_range[1])
-            main_win.scroll_im_selected(num=num_thumb)
     
     getattr(main_win, 'next_group_'+ch_name).setEnabled(True)
     main_win.prog_bar_update(main_win.index_active+1)
-    # print(main_win.dict_s3s)
     
 def next_tuple_select(controller, ch_name): 
     main_win = controller.main_win
@@ -443,25 +455,27 @@ def next_tuple_select(controller, ch_name):
             getattr(main_win, 'tick_modify_select_'+ch_name).setEnabled(True)
             getattr(main_win, 'progress_select_'+ch_name).setValue(100)
             main_win.prog_bar_update(100)
+            set_state(controller, ch_name, 'Finished')
             return
         else: 
             if save_after_tuple: 
-                pass
-            controller.main_win.index_active = new_index
-            next_index = controller.main_win.tuples_out[controller.main_win.index_active]
+                main_win.win_msg('!Saving channel before continuing with next group.')
+                main_win.save_closed_channel(ch=main_win.im_ch.channel_no)
+            
+            set_index_active(controller, ch_name, new_index)
+            next_index = main_win.tuples_out[main_win.index_active]
             if next_index['int_cont']+next_index['ext_cont'] > 0:
                 #Plot next tuple
-                plot_props_to_select(controller, ch_name, controller.main_win.index_active)
+                plot_props_to_select(controller, ch_name, main_win.index_active)
                 at_least_one = True
-                getattr(main_win, 'progress_select_'+ch_name).setValue(len(controller.main_win.tuples_out))
+                getattr(main_win, 'progress_select_'+ch_name).setValue(len(main_win.tuples_out))
                 break
             else: 
-                controller.main_win.index_active +=1
+                set_index_active(controller, ch_name, main_win.index_active+1)
 
 def s3_with_contours(controller, num_contours, contours, slc):
     
     main_win = controller.main_win
-    # print('num_contours:',num_contours)
     selected_cont = {}; all_cont = {'contours':[]}; s3s = {}
     for ctype in ['internal', 'external']: 
         selected_cont[ctype] = {'contours': [], 'props': []}
@@ -476,11 +490,16 @@ def s3_with_contours(controller, num_contours, contours, slc):
         slc_s3 = getattr(main_win, 's3_'+ctype[:3])[slc][:][:]
         if len(num_contours[ctype])>0: 
             slc_s3 = fcC.fill_contours(selected_cont[ctype], slc_s3)
-            getattr(main_win, 's3_'+ctype[:3])[slc][:][:] = slc_s3
+        else: 
+            slc_s3 = np.zeros_like(slc_s3, dtype='bool').astype(int)
+        getattr(main_win, 's3_'+ctype[:3])[slc][:][:] = slc_s3
         s3s[ctype[:3]] = slc_s3
     
     slc_tiss = getattr(main_win, 's3_tiss')[slc][:][:]
-    slc_tiss = fcC.fill_contours(all_cont, slc_tiss)
+    if len(all_cont['contours'])>0: 
+        slc_tiss = fcC.fill_contours(all_cont, slc_tiss)
+    else: 
+        slc_tiss = np.zeros_like(slc_tiss, dtype='bool').astype(int)
     getattr(main_win, 's3_tiss')[slc][:][:] = slc_tiss
     s3s['tiss'] = slc_tiss
     main_win.dict_s3s[slc-1] = selected_cont
@@ -492,72 +511,87 @@ def modify_selected_contours(controller, ch_name):
     main_win.slc_to_select = fcC.get_slices(lineEdit = getattr(main_win, 'select_manually_slcs_'+ch_name), 
                                             slc_tuple=(1,int(getattr(main_win, 'total_stack_slices_'+ch_name).text())), 
                                             win=main_win)
-    controller.main_win.win_msg('Selecting contours for Channel '+str(ch_name[-1])+'.')
-    controller.main_win.index_slc_active = 0
-    plot_props_to_slc_select(controller, ch_name, controller.main_win.index_slc_active)
+    #Get tuples_out
+    gui_select_cont = main_win.gui_select_contours[ch_name]
+    main_win.tuples_out = fcC.tuple_pairs(gui_select_cont)
+    
+    #Initialise progress bar
+    main_win.prog_bar_range(0,len(main_win.slc_to_select))
+    main_win.win_msg('Selecting contours for Channel '+str(ch_name[-1])+'.')
+    main_win.index_slc_active = 0
+
+    getattr(main_win, 'slc_manually_select_'+ch_name+'_play').setEnabled(True)
+    getattr(main_win, 'next_slc_select_'+ch_name).setEnabled(False)
+    plot_props_to_slc_select(controller, ch_name, main_win.index_slc_active)
     
 def plot_props_to_slc_select(controller, ch_name, index_active): 
     
     #Slc active
     slc_active = controller.main_win.slc_to_select[index_active]
     controller.main_win.slc_py = slc_active
-    
     #Find the tuple in which this slc fits 
-    tuple_active = fcC.find_slc_within_tuples(slc_active, controller.main_win.tuples_out)
+    controller.main_win.tuple_active = fcC.find_slc_within_tuples(slc_active, controller.main_win.tuples_out)
     #Set the values in gui
     getattr(controller.main_win, 'select_slc_'+ch_name).setText(str(slc_active))
-    getattr(controller.main_win, 'man_int_of_'+ch_name).setText('/ '+str(tuple_active['int_cont']))
-    getattr(controller.main_win, 'man_ext_of_'+ch_name).setText('/ '+str(tuple_active['ext_cont']))
-
+    getattr(controller.main_win, 'man_int_of_'+ch_name).setText('/ '+str(controller.main_win.tuple_active['int_cont']))
+    getattr(controller.main_win, 'man_ext_of_'+ch_name).setText('/ '+str(controller.main_win.tuple_active['ext_cont']))
     #Get slice contours and plot contours 
-    get_slc_cont_plot_props(controller=controller, ch_name=ch_name, tuple_active=tuple_active)
+    get_slc_cont_plot_props(controller=controller, ch_name=ch_name, tuple_active=controller.main_win.tuple_active)
     controller.main_win.win_msg('!Channel '+ch_name[-1]+': Enter the internal and external contours for slice '+str(slc_active+1)+". If no internal/external contours, leave the space empty.")
-    lineEdit = getattr(controller.main_win, 'int_cont_'+ch_name)
+    lineEdit = getattr(controller.main_win, 'man_int_cont_'+ch_name)
     lineEdit.clear()
     lineEdit.setFocus()
 
 def select_slc(controller, ch_name):
-
-    #if something is actually selected!
     main_win = controller.main_win
-    getattr(main_win, 'slc_tuple_select_'+ch_name+'_play').setEnabled(False)
-    #Get tuples 
-    tuple_range = main_win.tuples_out[main_win.index_active]['tuple_pair']
-    getattr(main_win, 'progress_select_'+ch_name).setRange(tuple_range[0], tuple_range[1])
-    main_win.win_msg('!Selecting contours for Slices '+str(tuple_range[0]+1)+'-'+str(tuple_range[1])+'...')
-    tuples_out_slc = controller.main_win.tuples_out[controller.main_win.index_active]
-    num_contours = fcC.get_contour_num(lineEdit_int = getattr(main_win, 'int_cont_'+ch_name),
-                                        lineEdit_ext = getattr(main_win, 'ext_cont_'+ch_name),
-                                        tuples_out_slc = tuples_out_slc, 
+    #Get contour numbers
+    num_contours = fcC.get_contour_num(lineEdit_int = getattr(main_win, 'man_int_cont_'+ch_name),
+                                        lineEdit_ext = getattr(main_win, 'man_ext_cont_'+ch_name),
+                                        tuples_out_slc = main_win.tuple_active, 
                                         num_contours = len(main_win.new_contours), 
-                                        win=main_win)
+                                        win=main_win, ignore=True)
     
     if num_contours != None: 
-        input_numbers = [len(num_contours[key])> 0 for key in num_contours.keys()]
-        #Use this if to check if the right number of contours where entered
-        if any(flag == True for flag in input_numbers): 
-            #Get the s3s with the selected contours
-            selected_cont, all_cont, s3s = s3_with_contours(controller = controller, 
-                                                            num_contours=num_contours, 
-                                                            contours=main_win.new_contours, 
-                                                            slc=main_win.slc_py+1)
-            #Plot that image with filled contours
-            # params_filled = {'myIm': copy.deepcopy(main_win.myIm), 'slc':main_win.slc_py+1, 
-            #                 'ch': ch_name, 's3s': s3s, 'win': main_win, 'all_cont': all_cont}
-            # fcC.plot_filled_contours(params_filled)
-            # main_win.add_thumbnail(function='fcC.plot_filled_contours', params = params_filled, 
-            #                         name='FilledCont. Slc'+str(main_win.slc_py+1))
-
-            # print('selected_cont:', selected_cont)
-            #Get number of contours
-            no_int = main_win.tuples_out[main_win.index_active]['int_cont']
-            no_ext = main_win.tuples_out[main_win.index_active]['ext_cont']
-            level = controller.main_win.gui_select_contours[ch_name]['level']
-            min_contour_len = controller.main_win.gui_select_contours[ch_name]['min_contour_len']
-
-            dict_plot = []
-            dict_plot.append({'myIm': copy.deepcopy(main_win.myIm), 'slc':main_win.slc_py+1, 
-                            'ch': ch_name, 's3s': s3s, 'all_cont': all_cont})
+        #Diable Play
+        getattr(main_win, 'slc_manually_select_'+ch_name+'_play').setEnabled(False)
+        main_win.win_msg('!Selecting contours for Slice '+str(controller.main_win.slc_py+1)+'...')
+        
+        #Get the s3s with the selected contours
+        selected_cont, all_cont, s3s = s3_with_contours(controller = controller, 
+                                                        num_contours=num_contours, 
+                                                        contours=main_win.new_contours, 
+                                                        slc=main_win.slc_py+1)
+        # Plot that image with filled contours
+        params_filled = {'myIm': copy.deepcopy(main_win.myIm), 'slc':main_win.slc_py+1, 
+                        'ch': ch_name, 's3s': s3s, 'win': main_win, 'all_cont': all_cont}
+        fcC.plot_filled_contours(params_filled)
+        main_win.add_thumbnail(function='fcC.plot_filled_contours', params = params_filled, 
+                                name='FilledCont. Slc'+str(main_win.slc_py+1))
+        main_win.prog_bar_update(controller.main_win.index_slc_active+1)
+        getattr(main_win, 'next_slc_select_'+ch_name).setEnabled(True)
+        
+def next_slc_select(controller, ch_name):
+    main_win = controller.main_win
+    getattr(main_win, 'next_slc_select_'+ch_name).setEnabled(False)
+    getattr(main_win, 'slc_manually_select_'+ch_name+'_play').setEnabled(True)
+    getattr(main_win, 'man_int_cont_'+ch_name).clear()
+    getattr(main_win, 'man_ext_cont_'+ch_name).clear()
+    #Get the next slice
+    at_least_one = False
+    while not at_least_one: 
+        new_index = main_win.index_slc_active + 1
+        if new_index >= len(main_win.slc_to_select): 
+            main_win.win_msg('!You have reached the end of the slices.')
+            getattr(main_win, 'progress_select_'+ch_name).setValue(100)
+            main_win.prog_bar_update(100)
+            return
+        else: 
+            #Plot next slice
+            main_win.index_slc_active = new_index
+            plot_props_to_slc_select(controller, ch_name, main_win.index_slc_active)
+            at_least_one = True
+            main_win.prog_bar_update(new_index)
+            break
 
 def enable_close_functions(controller, process, ch_name, widgets=True): 
     
@@ -575,6 +609,8 @@ def enable_close_functions(controller, process, ch_name, widgets=True):
             getattr(controller.main_win, 'save_after_tuple_'+ch_name).setEnabled(True)
             getattr(controller.main_win, 'save_manually_closed_'+ch_name).setEnabled(True)
             getattr(controller.main_win, 'manual_close_'+ch_name+'_done').setEnabled(True)
+            #UnCheck DONE
+            getattr(controller.main_win, 'manual_close_'+ch_name+'_done').setChecked(False)
         else:
             #Enable buttons to close
             controller.main_win.close_draw_btns_widget.setEnabled(True)
@@ -584,20 +620,30 @@ def enable_close_functions(controller, process, ch_name, widgets=True):
         if widgets: 
             #Enable
             getattr(controller.main_win, 'select_contours_'+ch_name+'_widget').setEnabled(True)
-            getattr(controller.main_win, 'next_group_'+ch_name).setShortcut("Ctrl+Right")
-            #Close Buttons Section
-            controller.main_win.functions_btns_open.setChecked(True)
-            controller.main_win.open_section(name = 'functions_btns')
-            #Enable buttons in selecting subsection
-            getattr(controller.main_win, 'save_after_group_'+ch_name).setEnabled(True)
-            getattr(controller.main_win, 'save_select_contours_'+ch_name).setEnabled(True)
-            getattr(controller.main_win, 'select_contours_'+ch_name+'_done').setEnabled(True)
-            controller.main_win.closing_slc.setText('')
             getattr(controller.main_win, 'select_plot_slc_'+ch_name).setEnabled(True)
             getattr(controller.main_win, 'select_plot_all_'+ch_name).setEnabled(True)
-            #Diable 
-            getattr(controller.main_win, 'next_group_'+ch_name).setEnabled(False)
-
+            getattr(controller.main_win, 'save_select_contours_'+ch_name).setEnabled(True)
+            getattr(controller.main_win, 'select_contours_'+ch_name+'_done').setEnabled(True)
+            #UnCheck DONE
+            getattr(controller.main_win, 'select_contours_'+ch_name+'_done').setChecked(False)
+            if controller.main_win.select_state != 'Finished': 
+                getattr(controller.main_win, 'next_group_'+ch_name).setShortcut("Ctrl+Right")
+                #Close Buttons Section
+                controller.main_win.functions_btns_open.setChecked(True)
+                controller.main_win.open_section(name = 'functions_btns')
+                #Enable buttons in selecting subsection
+                getattr(controller.main_win, 'save_after_group_'+ch_name).setEnabled(True)
+                controller.main_win.closing_slc.setText('')
+                #Diable 
+                getattr(controller.main_win, 'next_group_'+ch_name).setEnabled(False)
+            else: 
+                # activate modify option
+                getattr(controller.main_win, 'manually_select_widget_'+ch_name).setEnabled(True)
+                getattr(controller.main_win, 'tick_modify_select_'+ch_name).setEnabled(True)
+                getattr(controller.main_win, 'tick_modify_select_'+ch_name).setChecked(True)
+                getattr(controller.main_win, 'slc_manually_select_'+ch_name+'_play').setEnabled(False)
+                controller.main_win.enable_modify(ch_name)
+                
 #ANALYSIS TAB
 def run_keeplargest(controller):
     workflow = controller.organ.workflow

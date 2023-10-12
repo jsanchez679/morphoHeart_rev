@@ -364,6 +364,12 @@ class Controller:
         # self.main_win.slc_manually_select_ch3_play.clicked.connect(lambda: mA.select_slc(controller=self, ch_name='ch3'))
         # self.main_win.slc_manually_select_ch4_play.clicked.connect(lambda: mA.select_slc(controller=self, ch_name='ch4'))
 
+        #Next slc 
+        self.main_win.next_slc_select_ch1.clicked.connect(lambda: mA.next_slc_select(controller=self, ch_name='ch1'))
+        # self.main_win.next_slc_select_ch2.clicked.connect(lambda: mA.next_slc_select(controller=self, ch_name='ch2'))
+        # self.main_win.next_slc_select_ch3.clicked.connect(lambda: mA.next_slc_select(controller=self, ch_name='ch3'))
+        # self.main_win.next_slc_select_ch4.clicked.connect(lambda: mA.next_slc_select(controller=self, ch_name='ch4'))
+
     def init_morphoHeart_tab(self): 
         #Process and Analyse Tab
         self.main_win.keeplargest_play.clicked.connect(lambda: self.run_keeplargest())

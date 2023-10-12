@@ -3189,7 +3189,6 @@ class Load_S3s(QDialog):
                 text = getattr(self, 'check_'+ch+'_'+cont).text()
                 if text != 'Done':
                     self.win_msg('*Please select the stack with closed contours for '+ch+'_'+cont+'!', self.button_add_channels)
-                    # self.button_add_channels.setChecked(False)
                     return
                 else: 
                     im_ch = organ.obj_imChannels[ch]
@@ -3200,7 +3199,7 @@ class Load_S3s(QDialog):
                             im_ch.create_chS3s(layerDict=npy_stack, win=self, cont_list=[cont])
                             process = ['ImProc', ch, 'C-SelectCont','Status']
                             #Update organ workflow
-                            organ.update_mHworkflow(process, update = 'DONE')
+                            organ.update_mHworkflow(process, update = 'DONE-Loaded')
                             all_done.append(True)
                             nn += 1
                         else: 
@@ -3219,6 +3218,12 @@ class Load_S3s(QDialog):
                 process_x = ['ImProc', ch, 'B-CloseCont', 'Steps', proc, 'Status']
                 #Update organ workflow
                 organ.update_mHworkflow(process_x, update = 'DONE-Loaded')
+
+            #Update mask
+            mask_info = organ.mH_settings['setup']['mask_ch'][ch]
+            if mask_info: 
+                proc_mask = ['ImProc', ch, 'A-MaskChannel', 'Status']
+                organ.update_mHworkflow(proc_mask, update = 'DONE-Loaded')
 
         if all(flag == True for flag in all_done):
             parent_win.update_ch_progress()
@@ -4274,10 +4279,6 @@ class MainWindow(QMainWindow):
         # input_validator_ext_ch4 = QRegularExpressionValidator(reg_ex, self.ext_cont_ch4)
         # self.ext_cont_ch4.setValidator(input_validator_ext_ch4)
 
-        
-
-        #getattr(controller.main_win, 'select_contours_'+ch_name+'_widget').setEnabled(True)
-
         # Plot filled contours 
         self.select_plot_slc_ch1.clicked.connect(lambda: self.plot_filled_slice(ch='ch1'))
         # self.select_plot_slc_ch2.clicked.connect(lambda: self.plot_filled_slice(ch='ch2'))
@@ -4331,7 +4332,7 @@ class MainWindow(QMainWindow):
                 tick.setChecked(False)
                 self.enable_modify(ch)
 
-                # self.user_manual_close_contours(ch_name=ch) 
+                self.user_select_contours(ch_name=ch) 
 
     def init_plot_widget(self): 
 
@@ -4389,12 +4390,16 @@ class MainWindow(QMainWindow):
             sp_process = ['ImProc', ch_name, 'C-SelectCont','Status']
             msg = 'Selecting the Contours of Channel '+str(ch_name[-1])+' has been successfully finished!'
             self.running_process = None
+            sp_process2 = ['ImProc', ch_name, 'Status']
         else: 
             print('What done?')
 
         if btn.isChecked(): 
             self.organ.update_mHworkflow(sp_process, update = 'DONE')
             if process == 'manual_close': 
+                self.organ.update_mHworkflow(sp_process2, update = 'DONE')
+                self.close_draw_btns_widget.setVisible(False)
+            elif process == 'select_contours':
                 self.organ.update_mHworkflow(sp_process2, update = 'DONE')
             self.win_msg(msg)
         else: 
@@ -4624,15 +4629,24 @@ class MainWindow(QMainWindow):
                                             'last': last-1+1, 
                                             'int_cont': int_cont,
                                             'ext_cont': ext_cont}
-                
+            save_after_tuple = getattr(self, 'save_after_group_'+ch_name).isChecked()
+            #Define variables
+            self.slc_py = None
+            # self.tuple_active = None
+            if not hasattr(self, 'select_state'):
+                self.select_state = None
+            if not hasattr(self, 'index_active'): 
+                self.index_active = None
             gui_select_contours = {'level': level,  
                                     'min_contour_len': min_contour_len,
                                     'slc_per_group': slc_per_group, 
-                                    'tuples_select': tuples_select}
-            
-            #Save in addition to this params the selecting contours and tuples?
-            #  the tuple number in which the user is
-            # the 
+                                    'tuples_select': tuples_select, 
+                                    'save_after_tuple':save_after_tuple,
+                                    'select_state': self.select_state,
+                                    'index_active': self.index_active, 
+                                    # 'slc_py': self.slc_py, 
+                                    # 'tuple_active': self.tuple_active
+                                    }
             
             print('gui_select_contours: ', gui_select_contours)
             return gui_select_contours
@@ -4751,14 +4765,62 @@ class MainWindow(QMainWindow):
 
     def user_select_contours(self, ch_name): 
 
-        tableW = getattr(self, 'select_tableW_'+ch_name)
-        slc_groups = {}
-        row_index = 0
-        for slcs in slc_groups: 
-            tableW.setItem(row_index, 0, QTableWidgetItem(str(slc_groups['slc_first'])))
-            tableW.setItem(row_index, 1, QTableWidgetItem(str(slc_groups['slc_last'])))
-            tableW.setItem(row_index, 2, QTableWidgetItem(str(slc_groups['num_contours'])))
-            row_index+=1
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'select_contours' in wf_info.keys():
+            if ch_name in wf_info['select_contours'].keys() and len(wf_info['select_contours'][ch_name])>0:
+                min_contour_len = wf_info['select_contours'][ch_name]['min_contour_len']
+                getattr(self, 'select_min_cont_length_'+ch_name+'_value').setText(str(min_contour_len))
+                level = wf_info['select_contours'][ch_name]['level']
+                getattr(self, 'select_level_'+ch_name+'_value').setText(str(level))
+                slc_per_group = wf_info['select_contours'][ch_name]['slc_per_group']
+                getattr(self, 'num_slcs_per_group_'+ch_name).setText(str(slc_per_group))
+                #Fill table
+                tableW = getattr(self, 'select_tableW_'+ch_name)
+                slc_groups = wf_info['select_contours'][ch_name]['tuples_select']
+
+                for slc in slc_groups: 
+                    row_count = tableW.rowCount()
+                    tableW.insertRow(row_count)
+                    item_slc = QTableWidgetItem(str(slc_groups[slc]['first']+1))
+                    item_slc.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                    tableW.setItem(row_count, 0, item_slc)
+                    item_end = QTableWidgetItem(str(slc_groups[slc]['last']))
+                    item_end.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                    tableW.setItem(row_count, 1, item_end)
+                    item_num_int = QTableWidgetItem(str(slc_groups[slc]['int_cont']))
+                    item_num_int.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                    tableW.setItem(row_count, 2, item_num_int)
+                    item_num_ext = QTableWidgetItem(str(slc_groups[slc]['ext_cont']))
+                    item_num_ext.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                    tableW.setItem(row_count, 3, item_num_ext)
+                    tableW.setRowHeight(row_count,30)
+                    tableW.resizeRowsToContents()
+                try: 
+                    save_after_tuple = wf_info['select_contours'][ch_name]['save_after_tuple']
+                    getattr(self, 'save_after_group_'+ch_name).setChecked(save_after_tuple)
+                except: 
+                    pass
+                
+                try: 
+                    self.select_state = wf_info['select_contours'][ch_name]['select_state']
+                    self.index_active = wf_info['select_contours'][ch_name]['index_active'] 
+                except: 
+                    pass
+
+                workflow = self.organ.workflow['morphoHeart']['ImProc'][ch_name][ 'C-SelectCont']
+                status = getattr(self, 'select_contours_'+ch_name+'_status')
+                self.update_status(workflow, ['Status'], status)
+
+                if workflow['Status'] == 'DONE': 
+                    getattr(self, 'select_contours_all_'+ch_name+'_open').setChecked(True)
+                    self.open_section(name = 'select_contours_all_'+ch_name)
+                    getattr(self, 'select_contours_'+ch_name+'_play').setChecked(True)
+                    getattr(self, 'select_contours_'+ch_name+'_done').setEnabled(True)
+                    getattr(self, 'select_contours_'+ch_name+'_done').setChecked(True)
+                elif workflow['Status'] == 'Initialised':
+                    getattr(self, 'select_contours_'+ch_name+'_done').setEnabled(True)
+
+                self.set_select_contours(ch_name=ch_name)
 
     #Specific functions 
     def scroll_thumb_to_bottom(self): 
@@ -5128,11 +5190,11 @@ class MainWindow(QMainWindow):
                 getattr(self, 'select_slice_'+ch).clear()
 
     def plot_filled_all(self, ch): 
-        start = 1
+        start = 0
         total_slcs = int(getattr(self, 'total_stack_slices_'+ch).text())
 
         self.win_msg('!Plotting the selected contours for all slices. This may take a while so be patient...')
-        dict_plot = []; slc_o = start
+        dict_plot = []; slc_o = start+1
         for slc in range(start, total_slcs): 
             myIm = self.im_proc[slc][:][:]
             s3s_out = {}
@@ -5154,11 +5216,11 @@ class MainWindow(QMainWindow):
 
             params_slc = {'myIm': copy.deepcopy(myIm), 'slc':slc+1, 
                             'ch': ch, 's3s': s3s_out, 'all_cont': all_cont}
-            
             dict_plot.append(params_slc)
 
             if len(dict_plot)== 12 or slc == total_slcs-1: 
                 slc_f = slc
+                # print('slc_o:', slc_o, ' - slc_f:', slc_f)
                 params_group = {'win': self, 'dict_plot': dict_plot}
                 if slc_f == total_slcs-1: 
                     plot_group_filled_contours(params = params_group)
@@ -5167,13 +5229,13 @@ class MainWindow(QMainWindow):
 
     #Image thumbnails
     def add_thumbnail(self, function, params, name): 
-
+        
         num = str(len(self.im_thumbnails))
         self.im_thumbnails[num] = {'function': function, 
                                     'params': params}
         
         for nn in range(int(num)): 
-            btn = self.btn_thumbnails[nn]
+            btn = self.btn_thumbnails[str(nn)]
             btn.setChecked(False)
 
         button = QPushButton(num)
@@ -5186,6 +5248,7 @@ class MainWindow(QMainWindow):
         button.setSizePolicy(sizePolicy)
         button.setMinimumSize(QtCore.QSize(125, 20))
         button.setMaximumSize(QtCore.QSize(125, 20))
+        button.setCheckable(True)
         # self.scroll_images.setSliderPosition(100)
         # print('scroll_images.sliderPosition():',scroll_images.sliderPosition())
 
@@ -5198,6 +5261,7 @@ class MainWindow(QMainWindow):
 
     def prev_next_thumbnail(self, next): 
         if len(self.im_thumbnails)>0: 
+            self.btn_thumbnails[self.current_thumbnail].setChecked(False)
             if next: 
                 thumbnail_num = str(int(self.current_thumbnail)+1)
                 if thumbnail_num in self.im_thumbnails.keys():
@@ -5228,6 +5292,7 @@ class MainWindow(QMainWindow):
                 print('No plot function for this params')
 
             self.current_thumbnail = num
+            self.btn_thumbnails[str(num)].setChecked(True)
             print('self.current_thumbnail:', self.current_thumbnail)
 
     def scroll_im_selected(self, num=None): 
@@ -5236,15 +5301,13 @@ class MainWindow(QMainWindow):
             btn_clicked = str(sending_button.objectName())
             btn_name = btn_clicked.split('ScrollBtn')[1]
             print('Clicked!', btn_clicked, '-', btn_name)
+            num = str(btn_name)
         else:
             btn_name = str(num)
-            print(num)
+        # print('num:',num)
 
-        n_len = str(len(self.im_thumbnails))
-        for nn in range(int(n_len)): 
-            btn = self.btn_thumbnails[nn]
-            btn.setChecked(False)
-        self.btn_thumbnails[num].setChecked(True)
+        self.btn_thumbnails[self.current_thumbnail].setChecked(False)
+        self.btn_thumbnails[str(num)].setChecked(True)
         
         funct = self.im_thumbnails[btn_name]['function']
         params = self.im_thumbnails[btn_name]['params']
@@ -9811,6 +9874,7 @@ class MainWindow(QMainWindow):
         else: 
             print('Save channel was pressed: ', ch)
         
+        self.win_msg('!Saving Channel '+ch[-1]+'...')
         im_ch.save_channel(im_proc=self.im_proc)
         if print_txt: 
             self.win_msg('Channel '+ch[-1]+' was succesfully saved!')
@@ -9819,7 +9883,12 @@ class MainWindow(QMainWindow):
         print('Save project and organ was pressed')
         if self.running_process != None: 
             process, ch = self.running_process.split('_')
-            self.save_closed_channel(ch=ch, print_txt=True)
+            im_ch = self.organ.obj_imChannels[ch]
+            if len(im_ch.contStack)>0:
+                s3s=True
+            else: 
+                s3s=False
+            self.save_closed_channel(ch=ch, print_txt=True, s3s=s3s)
 
         self.organ.save_organ(alert_on)
         self.proj.add_organ(self.organ)
