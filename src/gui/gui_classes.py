@@ -3867,10 +3867,10 @@ class MainWindow(QMainWindow):
         # self.plot_slice_with_contours_ch4.clicked.connect(lambda: self.plot_slice(ch='ch4'))
 
         # - Open
-        self.plot_slices_ch1_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch1'))
-        # self.plot_slices_ch2_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch2'))
-        # self.plot_slices_ch3_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch3'))
-        # self.plot_slices_ch4_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch4'))
+        self.plot_slices_ch1_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch1', ch_name = 'ch1'))
+        # self.plot_slices_ch2_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch2', ch_name = 'ch2'))
+        # self.plot_slices_ch3_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch3', ch_name = 'ch3'))
+        # self.plot_slices_ch4_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch4', ch_name = 'ch4'))
 
         #Set
         self.set_plots_cont_settings_ch1.clicked.connect(lambda: self.set_plot_contour_settings('ch1', check=True))
@@ -3908,17 +3908,17 @@ class MainWindow(QMainWindow):
         # self.mask_ch4_play.setStyleSheet(style_play)
 
         # - Open
-        self.mask_ch1_open.clicked.connect(lambda: self.open_section(name='mask_ch1'))
-        # self.mask_ch2_open.clicked.connect(lambda: self.open_section(name='mask_ch2'))
-        # self.mask_ch3_open.clicked.connect(lambda: self.open_section(name='mask_ch3'))
-        # self.mask_ch4_open.clicked.connect(lambda: self.open_section(name='mask_ch4'))
+        self.mask_ch1_open.clicked.connect(lambda: self.open_section(name='mask_ch1', ch_name = 'ch1'))
+        # self.mask_ch2_open.clicked.connect(lambda: self.open_section(name='mask_ch2', ch_name = 'ch2'))
+        # self.mask_ch3_open.clicked.connect(lambda: self.open_section(name='mask_ch3', ch_name = 'ch3'))
+        # self.mask_ch4_open.clicked.connect(lambda: self.open_section(name='mask_ch4', ch_name = 'ch4'))
 
     def init_autom_close_contours(self): 
         # - Open
-        self.autom_close_ch1_open.clicked.connect(lambda: self.open_section(name='autom_close_ch1'))
-        # self.autom_close_ch2_open.clicked.connect(lambda: self.open_section(name='autom_close_ch2'))
-        # self.autom_close_ch3_open.clicked.connect(lambda: self.open_section(name='autom_close_ch3'))
-        # self.autom_close_ch4_open.clicked.connect(lambda: self.open_section(name='autom_close_ch4'))
+        self.autom_close_ch1_open.clicked.connect(lambda: self.open_section(name='autom_close_ch1', ch_name = 'ch1'))
+        # self.autom_close_ch2_open.clicked.connect(lambda: self.open_section(name='autom_close_ch2', ch_name = 'ch2'))
+        # self.autom_close_ch3_open.clicked.connect(lambda: self.open_section(name='autom_close_ch3', ch_name = 'ch3'))
+        # self.autom_close_ch4_open.clicked.connect(lambda: self.open_section(name='autom_close_ch4', ch_name = 'ch4'))
 
         # - Play
         self.autom_close_ch1_play.setStyleSheet(style_play)
@@ -4028,10 +4028,10 @@ class MainWindow(QMainWindow):
         self.close_draw_btns_widget.setEnabled(False)
         
         # - Open
-        self.manual_close_ch1_open.clicked.connect(lambda: self.open_section(name='manual_close_ch1'))
-        # self.manual_close_ch2_open.clicked.connect(lambda: self.open_section(name='manual_close_ch2'))
-        # self.manual_close_ch3_open.clicked.connect(lambda: self.open_section(name='manual_close_ch3'))
-        # self.manual_close_ch4_open.clicked.connect(lambda: self.open_section(name='manual_close_ch4'))
+        self.manual_close_ch1_open.clicked.connect(lambda: self.open_section(name='manual_close_ch1', ch_name = 'ch1'))
+        # self.manual_close_ch2_open.clicked.connect(lambda: self.open_section(name='manual_close_ch2', ch_name = 'ch2'))
+        # self.manual_close_ch3_open.clicked.connect(lambda: self.open_section(name='manual_close_ch3', ch_name = 'ch3'))
+        # self.manual_close_ch4_open.clicked.connect(lambda: self.open_section(name='manual_close_ch4', ch_name = 'ch4'))
 
         # - Play
         self.manual_close_ch1_play.setStyleSheet(style_play)
@@ -4236,10 +4236,10 @@ class MainWindow(QMainWindow):
         # self.add_tuple_ch4.clicked.connect(lambda: self.add_tuple_to_table(ch_name='ch4'))
 
          # - Open
-        self.select_contours_all_ch1_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch1'))
-        # self.select_contours_all_ch2_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch2'))
-        # self.select_contours_all_ch3_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch3'))
-        # self.select_contours_all_ch4_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch4'))
+        self.select_contours_all_ch1_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch1', ch_name = 'ch1'))
+        # self.select_contours_all_ch2_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch2', ch_name = 'ch2'))
+        # self.select_contours_all_ch3_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch3', ch_name = 'ch3'))
+        # self.select_contours_all_ch4_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch4', ch_name = 'ch4'))
 
         # - Play
         self.select_contours_ch1_play.setStyleSheet(style_play)
@@ -4676,6 +4676,10 @@ class MainWindow(QMainWindow):
                 getattr(self, 'plot_slices_'+ch_name+'_open').setChecked(True)
                 self.open_section(name = 'plot_slices_'+ch_name)
                 self.set_plot_contour_settings(ch_name=ch_name, check=True)
+        else: 
+            wdg = getattr(self, 'plot_slices_'+ch_name+'_widget')
+            scrollArea = getattr(self, 'scrollArea_'+ch_name)
+            scrollArea.ensureWidgetVisible(wdg)
              
     def user_mask(self, ch_name):
         wf_info = self.organ.mH_settings['wf_info']
@@ -4725,6 +4729,9 @@ class MainWindow(QMainWindow):
                     getattr(self, 'autom_close_'+ch_name+'_done').setChecked(True)
                 elif workflow['Status'] == 'Initialised':
                     getattr(self, 'autom_close_'+ch_name+'_done').setEnabled(True)
+                    wdg = getattr(self, 'autom_close_'+ch_name+'_widget')
+                    scrollArea = getattr(self, 'scrollArea_'+ch_name)
+                    scrollArea.ensureWidgetVisible(wdg)
 
                 self.set_autom_close_contours(ch_name=ch_name)
 
@@ -4760,6 +4767,9 @@ class MainWindow(QMainWindow):
                     getattr(self, 'manual_close_'+ch_name+'_done').setChecked(True)
                 elif workflow['Status'] == 'Initialised':
                     getattr(self, 'manual_close_'+ch_name+'_done').setEnabled(True)
+                    wdg = getattr(self, 'manual_close_'+ch_name+'_widget')
+                    scrollArea = getattr(self, 'scrollArea_'+ch_name)
+                    scrollArea.ensureWidgetVisible(wdg)
                     
                 self.set_manual_close_contours(ch_name=ch_name)
 
@@ -4819,6 +4829,9 @@ class MainWindow(QMainWindow):
                     getattr(self, 'select_contours_'+ch_name+'_done').setChecked(True)
                 elif workflow['Status'] == 'Initialised':
                     getattr(self, 'select_contours_'+ch_name+'_done').setEnabled(True)
+                    wdg = getattr(self, 'select_contours_all_'+ch_name+'_widget')
+                    scrollArea = getattr(self, 'scrollArea_'+ch_name)
+                    scrollArea.ensureWidgetVisible(wdg)
 
                 self.set_select_contours(ch_name=ch_name)
 
@@ -7968,7 +7981,7 @@ class MainWindow(QMainWindow):
         return gui_user_params
     
     #Functions specific to gui functionality
-    def open_section(self, name): 
+    def open_section(self, name, ch_name=None): 
         #Get button
         btn = getattr(self, name+'_open')
         wdg = getattr(self, name+'_widget')
@@ -7978,6 +7991,10 @@ class MainWindow(QMainWindow):
         else:
             wdg.setVisible(True)
             btn.setText('o')
+        
+        if 'ch' in name and ch_name != None: 
+            scrollArea = getattr(self, 'scrollArea_'+ch_name)
+            scrollArea.ensureWidgetVisible(wdg)
 
     def tick_all(self, ch, proc): 
         tick_int = getattr(self, proc+'_'+ch+'_int')

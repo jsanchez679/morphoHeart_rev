@@ -26,6 +26,8 @@ def mask_channel(controller, ch_name):
     process = ['ImProc', ch_name, 'A-MaskChannel','Status']
     #Initial message
     controller.main_win.win_msg('Masking Channel '+str(ch_name[-1])+'!')
+    #Enable and make visible close cont buttons
+    enable_close_functions(controller=controller, process = 'mask', ch_name=ch_name)
     #Get channel
     im_ch = controller.organ.obj_imChannels[ch_name]
     controller.main_win.win_msg('Masking Channel '+str(ch_name[-1]))
@@ -44,6 +46,8 @@ def autom_close_contours(controller, ch_name):
 
     #Initial message    
     controller.main_win.win_msg('Automatic Closure of Contours has started for Channel '+str(ch_name[-1])+'!')
+    #Enable and make visible close cont buttons
+    enable_close_functions(controller=controller, process = 'autom', ch_name=ch_name)
     #Get channel
     im_ch = controller.organ.obj_imChannels[ch_name]
     # Automatically Close Contours
@@ -55,6 +59,7 @@ def autom_close_contours(controller, ch_name):
     #Update organ workflow
     controller.main_win.user_done(process='autom_close', ch_name=ch_name)
 
+#Manually close contours
 def manual_close_contours(controller, ch_name):
 
     #Close contours manually
@@ -232,6 +237,7 @@ def set_index_active(controller, ch_name, index_active):
     controller.organ.update_settings(proc_set, index_active, 'mH')
     controller.main_win.index_active = index_active
 
+#Select contours
 def select_contours(controller, ch_name): 
     #Select contours
     controller.main_win.running_process = 'select_'+ch_name
@@ -594,8 +600,15 @@ def next_slc_select(controller, ch_name):
             break
 
 def enable_close_functions(controller, process, ch_name, widgets=True): 
-    
-    if process == 'manual': 
+
+    scrollArea = getattr(controller.main_win, 'scrollArea_'+ch_name)
+    ignore=False
+    if process == 'mask': 
+        widget_central = getattr(controller.main_win, 'mask_'+ch_name+'_widget')
+    elif process == 'autom': 
+        widget_central = getattr(controller.main_win, 'autom_close_'+ch_name+'_widget')
+    elif process == 'manual': 
+        widget_central = getattr(controller.main_win, 'manual_close_'+ch_name+'_widget')
         if widgets: 
             #Show and enable
             controller.main_win.close_draw_btns_widget.setVisible(True)
@@ -614,7 +627,8 @@ def enable_close_functions(controller, process, ch_name, widgets=True):
         else:
             #Enable buttons to close
             controller.main_win.close_draw_btns_widget.setEnabled(True)
-    else: #select
+    elif process == 'selecting':
+        widget_central = getattr(controller.main_win, 'select_contours_all_'+ch_name+'_widget')
         controller.main_win.close_draw_btns_widget.setVisible(False)
         getattr(controller.main_win, 'close_tuples_'+ch_name+'_widget').setEnabled(False)
         if widgets: 
@@ -643,6 +657,12 @@ def enable_close_functions(controller, process, ch_name, widgets=True):
                 getattr(controller.main_win, 'tick_modify_select_'+ch_name).setChecked(True)
                 getattr(controller.main_win, 'slc_manually_select_'+ch_name+'_play').setEnabled(False)
                 controller.main_win.enable_modify(ch_name)
+        scrollArea.verticalScrollBar().setValue(scrollArea.verticalScrollBar().maximum())
+        ignore=True
+    else: 
+        widget_central = getattr(controller.main_win,'plot_slices_'+ch_name+'_widget')
+    if not ignore:
+        scrollArea.ensureWidgetVisible(widget_central)
                 
 #ANALYSIS TAB
 def run_keeplargest(controller):
