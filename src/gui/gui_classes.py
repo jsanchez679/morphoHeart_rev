@@ -3665,20 +3665,24 @@ class MainWindow(QMainWindow):
                 tab_num = ch[-1]
                 ch_tab.setTabText(num, 'Ch'+tab_num+': '+self.channels[ch])
                 self.plot_contours_settings[ch] = {}
-                if ch == 'ch1': 
-                    #Channel name
-                    text_dir = getattr(self, 'stack_'+ch+'_dir')
-                    path_dir = img_dirs[ch]['image']['dir'].name
-                    text_dir.setText(str(path_dir))
-                    #Number of slices
-                    num_slices = self.organ.imChannels[ch]['shape'][0]
-                    setattr(self, 'num_slices_'+ch, num_slices)
-                    getattr(self, 'total_stack_slices_'+ch).setText(str(num_slices))
-                    self.init_segm_ch(ch)
-                    eg_slc = num_slices//2
-                    getattr(self, 'eg_slice_'+ch).setText(str(eg_slc))
-
+                #Channel name
+                text_dir = getattr(self, 'stack_'+ch+'_dir')
+                path_dir = img_dirs[ch]['image']['dir'].name
+                text_dir.setText(str(path_dir))
+                #Number of slices
+                num_slices = self.organ.imChannels[ch]['shape'][0]
+                setattr(self, 'num_slices_'+ch, num_slices)
+                getattr(self, 'total_stack_slices_'+ch).setText(str(num_slices))
+                self.init_segm_ch(ch)
+                eg_slc = num_slices//2
+                getattr(self, 'eg_slice_'+ch).setText(str(eg_slc))
             num +=1
+        
+        # Update mH_settings
+        if hasattr(self, 'plot_contours_settings'): 
+            proc_set = ['wf_info']
+            update = self.plot_contours_settings
+            self.organ.update_settings(proc_set, update, 'mH', add='plot_contours_settings')
 
         self.already_closed_s3s.stateChanged.connect(lambda: self.enable_load_s3s())
         self.enable_load_s3s()
@@ -3809,74 +3813,74 @@ class MainWindow(QMainWindow):
         #>> Grid settings
         #Rows and cols
         self.sB_cols_ch1.valueChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
-        # self.sB_cols_ch2.valueChanged.connect(lambda: self.get_plot_settings(ch='ch2'))
-        # self.sB_cols_ch3.valueChanged.connect(lambda: self.get_plot_settings(ch='ch3'))
-        # self.sB_cols_ch4.valueChanged.connect(lambda: self.get_plot_settings(ch='ch4'))
+        self.sB_cols_ch2.valueChanged.connect(lambda: self.get_plot_settings(ch='ch2'))
+        self.sB_cols_ch3.valueChanged.connect(lambda: self.get_plot_settings(ch='ch3'))
+        self.sB_cols_ch4.valueChanged.connect(lambda: self.get_plot_settings(ch='ch4'))
 
         self.sB_rows_ch1.valueChanged.connect(lambda: self.get_plot_settings(ch='ch1'))
-        # self.sB_rows_ch2.valueChanged.connect(lambda: self.get_plot_settings(ch='ch2'))
-        # self.sB_rows_ch3.valueChanged.connect(lambda: self.get_plot_settings(ch='ch3'))
-        # self.sB_rows_ch4.valueChanged.connect(lambda: self.get_plot_settings(ch='ch4'))
+        self.sB_rows_ch2.valueChanged.connect(lambda: self.get_plot_settings(ch='ch2'))
+        self.sB_rows_ch3.valueChanged.connect(lambda: self.get_plot_settings(ch='ch3'))
+        self.sB_rows_ch4.valueChanged.connect(lambda: self.get_plot_settings(ch='ch4'))
 
         self.level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('level_ch1', 'slider', info = 'ch1', divider = 10))
-        # self.level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('level_ch2', 'slider', info = 'ch2', divider = 10))
-        # self.level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('level_ch3', 'slider', info = 'ch3', divider = 10))
-        # self.level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('level_ch4', 'slider', info = 'ch4', divider = 10))
+        self.level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('level_ch2', 'slider', info = 'ch2', divider = 10))
+        self.level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('level_ch3', 'slider', info = 'ch3', divider = 10))
+        self.level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('level_ch4', 'slider', info = 'ch4', divider = 10))
 
         self.level_ch1_value.textChanged.connect(lambda: self.slider_changed('level_ch1', 'value', info = 'ch1', divider = 10))
-        # self.level_ch2_value.textChanged.connect(lambda: self.slider_changed('level_ch2', 'value', info = 'ch2', divider = 10))
-        # self.level_ch3_value.textChanged.connect(lambda: self.slider_changed('level_ch3', 'value', info = 'ch3', divider = 10))
-        # self.level_ch4_value.textChanged.connect(lambda: self.slider_changed('level_ch4', 'value', info = 'ch4', divider = 10))
+        self.level_ch2_value.textChanged.connect(lambda: self.slider_changed('level_ch2', 'value', info = 'ch2', divider = 10))
+        self.level_ch3_value.textChanged.connect(lambda: self.slider_changed('level_ch3', 'value', info = 'ch3', divider = 10))
+        self.level_ch4_value.textChanged.connect(lambda: self.slider_changed('level_ch4', 'value', info = 'ch4', divider = 10))
         
         self.min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch1', 'slider', info ='ch1'))
-        # self.min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch2', 'slider', info ='ch2'))
-        # self.min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch3', 'slider', info ='ch3'))
-        # self.min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch4', 'slider', info ='ch4'))
+        self.min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch2', 'slider', info ='ch2'))
+        self.min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch3', 'slider', info ='ch3'))
+        self.min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch4', 'slider', info ='ch4'))
 
         self.min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch1', 'value', info ='ch1'))
-        # self.min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch2', 'value', info ='ch2'))
-        # self.min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch3', 'value', info ='ch3'))
-        # self.min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch4', 'value', info ='ch4'))
+        self.min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch2', 'value', info ='ch2'))
+        self.min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch3', 'value', info ='ch3'))
+        self.min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch4', 'value', info ='ch4'))
 
         #Contours palette
         self.color_palette_ch1.currentTextChanged.connect(lambda: self.set_plot_contour_settings('ch1'))
-        # self.color_palette_ch2.currentTextChanged.connect(lambda: self.set_plot_contour_settings('ch2'))
-        # self.color_palette_ch3.currentTextChanged.connect(lambda: self.set_plot_contour_settings('ch3'))
-        # self.color_palette_ch4.currentTextChanged.connect(lambda: self.set_plot_contour_settings('ch4'))
+        self.color_palette_ch2.currentTextChanged.connect(lambda: self.set_plot_contour_settings('ch2'))
+        self.color_palette_ch3.currentTextChanged.connect(lambda: self.set_plot_contour_settings('ch3'))
+        self.color_palette_ch4.currentTextChanged.connect(lambda: self.set_plot_contour_settings('ch4'))
 
         #Q
         self.q_level_ch1.clicked.connect(lambda: self.help('level'))
-        # self.q_level_ch2.clicked.connect(lambda: self.help('level'))
-        # self.q_level_ch3.clicked.connect(lambda: self.help('level'))
-        # self.q_level_ch4.clicked.connect(lambda: self.help('level'))
+        self.q_level_ch2.clicked.connect(lambda: self.help('level'))
+        self.q_level_ch3.clicked.connect(lambda: self.help('level'))
+        self.q_level_ch4.clicked.connect(lambda: self.help('level'))
 
         self.q_min_cont_length_ch1.clicked.connect(lambda: self.help('min_contour_length'))
-        # self.q_min_cont_length_ch2.clicked.connect(lambda: self.help('min_contour_length'))
-        # self.q_min_cont_length_ch3.clicked.connect(lambda: self.help('min_contour_length'))
-        # self.q_min_cont_length_ch4.clicked.connect(lambda: self.help('min_contour_length'))
+        self.q_min_cont_length_ch2.clicked.connect(lambda: self.help('min_contour_length'))
+        self.q_min_cont_length_ch3.clicked.connect(lambda: self.help('min_contour_length'))
+        self.q_min_cont_length_ch4.clicked.connect(lambda: self.help('min_contour_length'))
 
         #>> Plot
         self.plot_all_slices_with_contours_ch1.clicked.connect(lambda: self.plot_all_slices(ch = 'ch1'))
-        # self.plot_all_slices_with_contours_ch2.clicked.connect(lambda: self.plot_all_slices(ch = 'ch2'))
-        # self.plot_all_slices_with_contours_ch3.clicked.connect(lambda: self.plot_all_slices(ch = 'ch3'))
-        # self.plot_all_slices_with_contours_ch4.clicked.connect(lambda: self.plot_all_slices(ch = 'ch4'))
+        self.plot_all_slices_with_contours_ch2.clicked.connect(lambda: self.plot_all_slices(ch = 'ch2'))
+        self.plot_all_slices_with_contours_ch3.clicked.connect(lambda: self.plot_all_slices(ch = 'ch3'))
+        self.plot_all_slices_with_contours_ch4.clicked.connect(lambda: self.plot_all_slices(ch = 'ch4'))
 
         self.plot_slice_with_contours_ch1.clicked.connect(lambda: self.plot_slice(ch='ch1'))
-        # self.plot_slice_with_contours_ch2.clicked.connect(lambda: self.plot_slice(ch='ch2'))
-        # self.plot_slice_with_contours_ch3.clicked.connect(lambda: self.plot_slice(ch='ch3'))
-        # self.plot_slice_with_contours_ch4.clicked.connect(lambda: self.plot_slice(ch='ch4'))
+        self.plot_slice_with_contours_ch2.clicked.connect(lambda: self.plot_slice(ch='ch2'))
+        self.plot_slice_with_contours_ch3.clicked.connect(lambda: self.plot_slice(ch='ch3'))
+        self.plot_slice_with_contours_ch4.clicked.connect(lambda: self.plot_slice(ch='ch4'))
 
         # - Open
         self.plot_slices_ch1_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch1', ch_name = 'ch1'))
-        # self.plot_slices_ch2_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch2', ch_name = 'ch2'))
-        # self.plot_slices_ch3_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch3', ch_name = 'ch3'))
-        # self.plot_slices_ch4_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch4', ch_name = 'ch4'))
+        self.plot_slices_ch2_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch2', ch_name = 'ch2'))
+        self.plot_slices_ch3_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch3', ch_name = 'ch3'))
+        self.plot_slices_ch4_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch4', ch_name = 'ch4'))
 
         #Set
-        self.set_plots_cont_settings_ch1.clicked.connect(lambda: self.set_plot_contour_settings('ch1', check=True))
-        # self.set_plots_cont_settings_ch2.clicked.connect(lambda: self.set_plot_contour_settings('ch2', check=True))
-        # self.set_plots_cont_settings_ch3.clicked.connect(lambda: self.set_plot_contour_settings('ch3', check=True))
-        # self.set_plots_cont_settings_ch4.clicked.connect(lambda: self.set_plot_contour_settings('ch4', check=True))
+        self.set_plots_cont_settings_ch1.clicked.connect(lambda: self.set_plot_contour_settings('ch1', init=True))
+        self.set_plots_cont_settings_ch2.clicked.connect(lambda: self.set_plot_contour_settings('ch2', init=True))
+        self.set_plots_cont_settings_ch3.clicked.connect(lambda: self.set_plot_contour_settings('ch3', init=True))
+        self.set_plots_cont_settings_ch4.clicked.connect(lambda: self.set_plot_contour_settings('ch4', init=True))
 
         self.functions_btns_open.setChecked(True)
         self.open_section(name = 'functions_btns')
@@ -3886,7 +3890,7 @@ class MainWindow(QMainWindow):
         mask_info = self.organ.mH_settings['setup']['mask_ch']
         img_dirs = self.organ.img_dirs
         print('mask_info:',mask_info)
-        for ch in ['ch1']:#, 'ch2', 'ch3', 'ch4']:
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             widg_all = getattr(self, 'mask_all_'+ch+'_widget')
             if ch in mask_info.keys():
                 if mask_info[ch]: 
@@ -3903,125 +3907,131 @@ class MainWindow(QMainWindow):
     
         #>> Mask 
         self.mask_ch1_play.setStyleSheet(style_play)
-        # self.mask_ch2_play.setStyleSheet(style_play)
-        # self.mask_ch3_play.setStyleSheet(style_play)
-        # self.mask_ch4_play.setStyleSheet(style_play)
+        self.mask_ch2_play.setStyleSheet(style_play)
+        self.mask_ch3_play.setStyleSheet(style_play)
+        self.mask_ch4_play.setStyleSheet(style_play)
 
         # - Open
         self.mask_ch1_open.clicked.connect(lambda: self.open_section(name='mask_ch1', ch_name = 'ch1'))
-        # self.mask_ch2_open.clicked.connect(lambda: self.open_section(name='mask_ch2', ch_name = 'ch2'))
-        # self.mask_ch3_open.clicked.connect(lambda: self.open_section(name='mask_ch3', ch_name = 'ch3'))
-        # self.mask_ch4_open.clicked.connect(lambda: self.open_section(name='mask_ch4', ch_name = 'ch4'))
+        self.mask_ch2_open.clicked.connect(lambda: self.open_section(name='mask_ch2', ch_name = 'ch2'))
+        self.mask_ch3_open.clicked.connect(lambda: self.open_section(name='mask_ch3', ch_name = 'ch3'))
+        self.mask_ch4_open.clicked.connect(lambda: self.open_section(name='mask_ch4', ch_name = 'ch4'))
 
     def init_autom_close_contours(self): 
         # - Open
         self.autom_close_ch1_open.clicked.connect(lambda: self.open_section(name='autom_close_ch1', ch_name = 'ch1'))
-        # self.autom_close_ch2_open.clicked.connect(lambda: self.open_section(name='autom_close_ch2', ch_name = 'ch2'))
-        # self.autom_close_ch3_open.clicked.connect(lambda: self.open_section(name='autom_close_ch3', ch_name = 'ch3'))
-        # self.autom_close_ch4_open.clicked.connect(lambda: self.open_section(name='autom_close_ch4', ch_name = 'ch4'))
+        self.autom_close_ch2_open.clicked.connect(lambda: self.open_section(name='autom_close_ch2', ch_name = 'ch2'))
+        self.autom_close_ch3_open.clicked.connect(lambda: self.open_section(name='autom_close_ch3', ch_name = 'ch3'))
+        self.autom_close_ch4_open.clicked.connect(lambda: self.open_section(name='autom_close_ch4', ch_name = 'ch4'))
 
         # - Play
         self.autom_close_ch1_play.setStyleSheet(style_play)
-        # self.autom_close_ch2_play.setStyleSheet(style_play)
-        # self.autom_close_ch3_play.setStyleSheet(style_play)
-        # self.autom_close_ch4_play.setStyleSheet(style_play)
+        self.autom_close_ch2_play.setStyleSheet(style_play)
+        self.autom_close_ch3_play.setStyleSheet(style_play)
+        self.autom_close_ch4_play.setStyleSheet(style_play)
 
         # - Set
         self.autom_close_ch1_set.clicked.connect(lambda: self.set_autom_close_contours('ch1'))
-        # self.autom_close_ch2_set.clicked.connect(lambda: self.set_autom_close_contours('ch2'))
-        # self.autom_close_ch3_set.clicked.connect(lambda: self.set_autom_close_contours('ch3'))
-        # self.autom_close_ch4_set.clicked.connect(lambda: self.set_autom_close_contours('ch4'))
+        self.autom_close_ch2_set.clicked.connect(lambda: self.set_autom_close_contours('ch2'))
+        self.autom_close_ch3_set.clicked.connect(lambda: self.set_autom_close_contours('ch3'))
+        self.autom_close_ch4_set.clicked.connect(lambda: self.set_autom_close_contours('ch4'))
 
         # - Plot 2D
         self.automt_ch1_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch1'))
-        # self.automt_ch2_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch2'))
-        # self.automt_ch3_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch3'))
-        # self.automt_ch4_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch4'))
+        self.automt_ch2_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch2'))
+        self.automt_ch3_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch3'))
+        self.automt_ch4_plot2d.stateChanged.connect(lambda: self.n_slices('automt_ch4'))
 
         # Start or end slice changed
         self.start_autom_ch1.textChanged.connect(lambda: self.slices_changed('ch1', 'autom_close'))
-        # self.start_autom_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'autom_close'))
-        # self.start_autom_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'autom_close'))
-        # self.start_autom_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'autom_close'))
+        self.start_autom_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'autom_close'))
+        self.start_autom_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'autom_close'))
+        self.start_autom_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'autom_close'))
 
         self.end_autom_ch1.textChanged.connect(lambda: self.slices_changed('ch1', 'autom_close'))
-        # self.end_autom_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'autom_close'))
-        # self.end_autom_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'autom_close'))
-        # self.end_autom_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'autom_close'))
+        self.end_autom_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'autom_close'))
+        self.end_autom_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'autom_close'))
+        self.end_autom_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'autom_close'))
 
         #Sliders
         #>> min contour length
         self.autom_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch1','slider'))
-        # self.autom_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('ch2','autom_min_cont_length_ch2_slider'))
-        # self.autom_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('ch3','autom_min_cont_length_ch3_slider'))
-        # self.autom_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('ch4','autom_min_cont_length_ch4_slider'))
+        self.autom_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('ch2','autom_min_cont_length_ch2_slider'))
+        self.autom_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('ch3','autom_min_cont_length_ch3_slider'))
+        self.autom_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('ch4','autom_min_cont_length_ch4_slider'))
         
         #>> min intensity value
         self.autom_min_intensity_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch1','slider'))
-        # self.autom_min_intensity_ch2_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch2','slider'))
-        # self.autom_min_intensity_ch3_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch3','slider'))
-        # self.autom_min_intensity_ch4_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch4','slider'))
+        self.autom_min_intensity_ch2_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch2','slider'))
+        self.autom_min_intensity_ch3_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch3','slider'))
+        self.autom_min_intensity_ch4_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch4','slider'))
 
         #>> mean intensity value
         self.autom_mean_intensity_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch1','slider'))
-        # self.autom_mean_intensity_ch2_slider.valueChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch2','slider'))
-        # self.autom_mean_intensity_ch3_slider.valueChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch3','slider'))
-        # self.autom_mean_intensity_ch4_slider.valueChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch4','slider'))
+        self.autom_mean_intensity_ch2_slider.valueChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch2','slider'))
+        self.autom_mean_intensity_ch3_slider.valueChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch3','slider'))
+        self.autom_mean_intensity_ch4_slider.valueChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch4','slider'))
         
         #>> min distance
         self.autom_min_distance_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_distance_ch1','slider'))
-        # self.autom_min_distance_ch2_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_distance_ch2','slider'))
-        # self.autom_min_distance_ch3_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_distance_ch3','slider'))
-        # self.autom_min_distance_ch4_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_distance_ch4','slider'))
+        self.autom_min_distance_ch2_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_distance_ch2','slider'))
+        self.autom_min_distance_ch3_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_distance_ch3','slider'))
+        self.autom_min_distance_ch4_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_distance_ch4','slider'))
 
         #Text
         #>> min contour length
         self.autom_min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch1','value'))
-        # self.autom_min_cont_length_ch2_slider.textChanged.connect(lambda: self.slider_changed('ch2','autom_min_cont_length_ch2_slider'))
-        # self.autom_min_cont_length_ch3_slider.textChanged.connect(lambda: self.slider_changed('ch3','autom_min_cont_length_ch3_slider'))
-        # self.autom_min_cont_length_ch4_slider.textChanged.connect(lambda: self.slider_changed('ch4','autom_min_cont_length_ch4_slider'))
+        self.autom_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch2','value'))
+        self.autom_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch3','value'))
+        self.autom_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch4','value'))
 
         #>> min intensity value
         self.autom_min_intensity_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch1','value'))
-        # self.autom_min_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch2','value'))
-        # self.autom_min_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch3','value'))
-        # self.autom_min_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch4','value'))
+        self.autom_min_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch2','value'))
+        self.autom_min_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch3','value'))
+        self.autom_min_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch4','value'))
 
         #>> mean intensity value
         self.autom_mean_intensity_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch1','value'))
-        # self.autom_mean_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch2','value'))
-        # self.autom_mean_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch3','value'))
-        # self.autom_mean_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch4','value'))
+        self.autom_mean_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch2','value'))
+        self.autom_mean_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch3','value'))
+        self.autom_mean_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch4','value'))
 
         #>> min distance
         self.autom_min_distance_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch1','value'))
-        # self.autom_min_distance_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch2','value'))
-        # self.autom_min_distance_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch3','value'))
-        # self.autom_min_distance_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch4','value'))
+        self.autom_min_distance_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch2','value'))
+        self.autom_min_distance_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch3','value'))
+        self.autom_min_distance_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch4','value'))
 
         # DONE
         self.autom_close_ch1_done.clicked.connect(lambda: self.user_done('autom_close', 'ch1'))
-        # self.autom_close_ch2_done.clicked.connect(lambda: self.user_done('autom_close', 'ch2'))
-        # self.autom_close_ch3_done.clicked.connect(lambda: self.user_done('autom_close', 'ch3'))
-        # self.autom_close_ch4_done.clicked.connect(lambda: self.user_done('autom_close', 'ch4'))
+        self.autom_close_ch2_done.clicked.connect(lambda: self.user_done('autom_close', 'ch2'))
+        self.autom_close_ch3_done.clicked.connect(lambda: self.user_done('autom_close', 'ch3'))
+        self.autom_close_ch4_done.clicked.connect(lambda: self.user_done('autom_close', 'ch4'))
 
         #Initialise with user settings, if they exist!
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
                 self.user_autom_close_contours(ch_name=ch)
+        
+        # Update mH_settings
+        if hasattr(self, 'gui_autom_close_contours'): 
+            proc_set = ['wf_info']
+            update = self.gui_autom_close_contours
+            self.organ.update_settings(proc_set, update, 'mH', add='autom_close_contours')
 
     def init_manual_close_contours(self): 
 
         #Prev and Next Slices/Tuples
         self.prev_slice_ch1.setEnabled(False)
-        # self.prev_slice_ch2.setEnabled(False)
-        # self.prev_slice_ch3.setEnabled(False)
-        # self.prev_slice_ch4.setEnabled(False)
+        self.prev_slice_ch2.setEnabled(False)
+        self.prev_slice_ch3.setEnabled(False)
+        self.prev_slice_ch4.setEnabled(False)
 
         self.next_slice_ch1.setEnabled(False)
-        # self.next_slice_ch2.setEnabled(False)
-        # self.next_slice_ch3.setEnabled(False)
-        # self.next_slice_ch4.setEnabled(False)
+        self.next_slice_ch2.setEnabled(False)
+        self.next_slice_ch3.setEnabled(False)
+        self.next_slice_ch4.setEnabled(False)
 
         #Hide and disable close cont buttons
         self.close_draw_btns_widget.setVisible(False)
@@ -4029,75 +4039,75 @@ class MainWindow(QMainWindow):
         
         # - Open
         self.manual_close_ch1_open.clicked.connect(lambda: self.open_section(name='manual_close_ch1', ch_name = 'ch1'))
-        # self.manual_close_ch2_open.clicked.connect(lambda: self.open_section(name='manual_close_ch2', ch_name = 'ch2'))
-        # self.manual_close_ch3_open.clicked.connect(lambda: self.open_section(name='manual_close_ch3', ch_name = 'ch3'))
-        # self.manual_close_ch4_open.clicked.connect(lambda: self.open_section(name='manual_close_ch4', ch_name = 'ch4'))
+        self.manual_close_ch2_open.clicked.connect(lambda: self.open_section(name='manual_close_ch2', ch_name = 'ch2'))
+        self.manual_close_ch3_open.clicked.connect(lambda: self.open_section(name='manual_close_ch3', ch_name = 'ch3'))
+        self.manual_close_ch4_open.clicked.connect(lambda: self.open_section(name='manual_close_ch4', ch_name = 'ch4'))
 
         # - Play
         self.manual_close_ch1_play.setStyleSheet(style_play)
-        # self.manual_close_ch2_play.setStyleSheet(style_play)
-        # self.manual_close_ch3_play.setStyleSheet(style_play)
-        # self.manual_close_ch4_play.setStyleSheet(style_play)
+        self.manual_close_ch2_play.setStyleSheet(style_play)
+        self.manual_close_ch3_play.setStyleSheet(style_play)
+        self.manual_close_ch4_play.setStyleSheet(style_play)
 
         # - Set
         self.manual_close_ch1_set.clicked.connect(lambda: self.set_manual_close_contours('ch1'))
-        # self.manual_close_ch2_set.clicked.connect(lambda: self.set_manual_close_contours('ch2'))
-        # self.manual_close_ch3_set.clicked.connect(lambda: self.set_manual_close_contours('ch3'))
-        # self.manual_close_ch4_set.clicked.connect(lambda: self.set_manual_close_contours('ch4'))
+        self.manual_close_ch2_set.clicked.connect(lambda: self.set_manual_close_contours('ch2'))
+        self.manual_close_ch3_set.clicked.connect(lambda: self.set_manual_close_contours('ch3'))
+        self.manual_close_ch4_set.clicked.connect(lambda: self.set_manual_close_contours('ch4'))
 
         # Start or end slice changed
         self.start_manual_ch1.textChanged.connect(lambda: self.slices_changed('ch1', 'manual_close'))
-        # self.start_manual_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'manual_close'))
-        # self.start_manual_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'manual_close'))
-        # self.start_manual_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'manual_close'))
+        self.start_manual_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'manual_close'))
+        self.start_manual_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'manual_close'))
+        self.start_manual_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'manual_close'))
 
         self.end_manual_ch1.textChanged.connect(lambda: self.slices_changed('ch1', 'manual_close'))
-        # self.end_manual_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'manual_close'))
-        # self.end_manual_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'manual_close'))
-        # self.end_manual_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'manual_close'))
+        self.end_manual_ch2.textChanged.connect(lambda: self.slices_changed('ch2', 'manual_close'))
+        self.end_manual_ch3.textChanged.connect(lambda: self.slices_changed('ch3', 'manual_close'))
+        self.end_manual_ch4.textChanged.connect(lambda: self.slices_changed('ch4', 'manual_close'))
 
         #Sliders
         self.manual_level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch1', 'slider', divider = 10))
-        # self.manual_level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch2', 'slider', divider = 10))
-        # self.manual_level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch3', 'slider', divider = 10))
-        # self.manual_level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch4', 'slider', divider = 10))
+        self.manual_level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch2', 'slider', divider = 10))
+        self.manual_level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch3', 'slider', divider = 10))
+        self.manual_level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('manual_level_ch4', 'slider', divider = 10))
 
         self.manual_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch1','slider'))
-        # self.manual_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch2','slider'))
-        # self.manual_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch3','slider'))
-        # self.manual_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch4','slider'))
+        self.manual_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch2','slider'))
+        self.manual_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch3','slider'))
+        self.manual_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch4','slider'))
 
         self.manual_min_intensity_ch1_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch1','slider'))
-        # self.manual_min_intensity_ch2_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch2','slider'))
-        # self.manual_min_intensity_ch3_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch3','slider'))
-        # self.manual_min_intensity_ch4_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch4','slider'))
+        self.manual_min_intensity_ch2_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch2','slider'))
+        self.manual_min_intensity_ch3_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch3','slider'))
+        self.manual_min_intensity_ch4_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch4','slider'))
 
         #Text
         self.manual_level_ch1_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch1', 'value', divider = 10))
-        # self.manual_level_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch2', 'value', divider = 10))
-        # self.manual_level_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch3', 'value', divider = 10))
-        # self.manual_level_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch4', 'value', divider = 10))
+        self.manual_level_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch2', 'value', divider = 10))
+        self.manual_level_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch3', 'value', divider = 10))
+        self.manual_level_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch4', 'value', divider = 10))
 
         self.manual_min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch1','value'))
-        # self.manual_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch2','value'))
-        # self.manual_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch3','value'))
-        # self.manual_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch4','value'))
+        self.manual_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch2','value'))
+        self.manual_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch3','value'))
+        self.manual_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch4','value'))
 
         self.manual_min_intensity_ch1_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch1','value'))
-        # self.manual_min_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch2','value'))
-        # self.manual_min_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch3','value'))
-        # self.manual_min_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch4','value'))
+        self.manual_min_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch2','value'))
+        self.manual_min_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch3','value'))
+        self.manual_min_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch4','value'))
 
         # Regex for slices
         reg_ex = QRegularExpression("[0-9,-]+")
         input_validator_ch1 = QRegularExpressionValidator(reg_ex, self.slices_to_close_ch1)
         self.slices_to_close_ch1.setValidator(input_validator_ch1)
-        # input_validator_ch2 = QRegularExpressionValidator(reg_ex, self.slices_to_close_ch2)
-        # self.slices_to_close_ch2.setValidator(input_validator_ch2)
-        # input_validator_ch3 = QRegularExpressionValidator(reg_ex, self.slices_to_close_ch3)
-        # self.slices_to_close_ch3.setValidator(input_validator_ch3)
-        # input_validator_ch4 = QRegularExpressionValidator(reg_ex, self.slices_to_close_ch4)
-        # self.slices_to_close_ch4.setValidator(input_validator_ch4)
+        input_validator_ch2 = QRegularExpressionValidator(reg_ex, self.slices_to_close_ch2)
+        self.slices_to_close_ch2.setValidator(input_validator_ch2)
+        input_validator_ch3 = QRegularExpressionValidator(reg_ex, self.slices_to_close_ch3)
+        self.slices_to_close_ch3.setValidator(input_validator_ch3)
+        input_validator_ch4 = QRegularExpressionValidator(reg_ex, self.slices_to_close_ch4)
+        self.slices_to_close_ch4.setValidator(input_validator_ch4)
 
         #Custom box to close
         reg_ex3d = QRegularExpression(r"\d{1,3}") #3 digit number
@@ -4134,187 +4144,193 @@ class MainWindow(QMainWindow):
 
         # Save Channel
         self.save_manually_closed_ch1.clicked.connect(lambda: self.save_closed_channel(ch='ch1', print_txt=True))
-        # self.save_manually_closed_ch2.clicked.connect(lambda: save_closed_channel(ch='ch2', print_txt=True))
-        # self.save_manually_closed_ch3.clicked.connect(lambda: save_closed_channel(ch='ch3', print_txt=True))
-        # self.save_manually_closed_ch4.clicked.connect(lambda: save_closed_channel(ch='ch4', print_txt=True))
+        self.save_manually_closed_ch2.clicked.connect(lambda: self.save_closed_channel(ch='ch2', print_txt=True))
+        self.save_manually_closed_ch3.clicked.connect(lambda: self.save_closed_channel(ch='ch3', print_txt=True))
+        self.save_manually_closed_ch4.clicked.connect(lambda: self.save_closed_channel(ch='ch4', print_txt=True))
 
         # DONE
         self.manual_close_ch1_done.clicked.connect(lambda: self.user_done('manual_close', 'ch1'))
-        # self.manual_close_ch2_done.clicked.connect(lambda: self.user_done('manual_close', 'ch2'))
-        # self.manual_close_ch3_done.clicked.connect(lambda: self.user_done('manual_close', 'ch3'))
-        # self.manual_close_ch4_done.clicked.connect(lambda: self.user_done('manual_close', 'ch4'))
+        self.manual_close_ch2_done.clicked.connect(lambda: self.user_done('manual_close', 'ch2'))
+        self.manual_close_ch3_done.clicked.connect(lambda: self.user_done('manual_close', 'ch3'))
+        self.manual_close_ch4_done.clicked.connect(lambda: self.user_done('manual_close', 'ch4'))
 
         #Initialise with user settings, if they exist!
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
                 self.user_manual_close_contours(ch_name=ch) 
+
+        # Update mH_settings
+        if hasattr(self, 'gui_manual_close_contours'): 
+            proc_set = ['wf_info']
+            update = self.gui_manual_close_contours
+            self.organ.update_settings(proc_set, update, 'mH', add='manual_close_contours')
     
     def init_select_contours(self): 
         
         #Level and Min Cont Length
         self.select_level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch1', 'slider', info = 'ch1', divider = 10))
-        # self.select_level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch2', 'slider', info = 'ch2', divider = 10))
-        # self.select_level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch3', 'slider', info = 'ch3', divider = 10))
-        # self.select_level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch4', 'slider', info = 'ch4', divider = 10))
+        self.select_level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch2', 'slider', info = 'ch2', divider = 10))
+        self.select_level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch3', 'slider', info = 'ch3', divider = 10))
+        self.select_level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch4', 'slider', info = 'ch4', divider = 10))
         
         self.select_level_ch1_value.textChanged.connect(lambda: self.slider_changed('select_level_ch1', 'value', info = 'ch1', divider = 10))
-        # self.select_level_ch2_value.textChanged.connect(lambda: self.slider_changed('select_level_ch2', 'value', info = 'ch2', divider = 10))
-        # self.select_level_ch3_value.textChanged.connect(lambda: self.slider_changed('select_level_ch3', 'value', info = 'ch3', divider = 10))
-        # self.select_level_ch4_value.textChanged.connect(lambda: self.slider_changed('select_level_ch4', 'value', info = 'ch4', divider = 10))
+        self.select_level_ch2_value.textChanged.connect(lambda: self.slider_changed('select_level_ch2', 'value', info = 'ch2', divider = 10))
+        self.select_level_ch3_value.textChanged.connect(lambda: self.slider_changed('select_level_ch3', 'value', info = 'ch3', divider = 10))
+        self.select_level_ch4_value.textChanged.connect(lambda: self.slider_changed('select_level_ch4', 'value', info = 'ch4', divider = 10))
         
         self.select_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch1', 'slider', info ='ch1'))
-        # self.select_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch2', 'slider', info ='ch2'))
-        # self.select_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch3', 'slider', info ='ch3'))
-        # self.select_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch4', 'slider', info ='ch4'))
+        self.select_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch2', 'slider', info ='ch2'))
+        self.select_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch3', 'slider', info ='ch3'))
+        self.select_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch4', 'slider', info ='ch4'))
        
         self.select_min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch1', 'value', info ='ch1'))
-        # self.select_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch2', 'value', info ='ch2'))
-        # self.select_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch3', 'value', info ='ch3'))
-        # self.select_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch4', 'value', info ='ch4'))
+        self.select_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch2', 'value', info ='ch2'))
+        self.select_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch3', 'value', info ='ch3'))
+        self.select_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch4', 'value', info ='ch4'))
 
         # Regex for slices
         reg_ex3d = QRegularExpression(r"\d{1,3}") #3 digit number
         input_validator_ch1= QRegularExpressionValidator(reg_ex3d, self.first_slice_ch1)
         self.first_slice_ch1.setValidator(input_validator_ch1)
-        # input_validator_ch2= QRegularExpressionValidator(reg_ex3d, self.first_slice_ch2)
-        # self.first_slice_ch2.setValidator(input_validator_ch2)
-        # input_validator_ch3= QRegularExpressionValidator(reg_ex3d, self.first_slice_ch3)
-        # self.first_slice_ch3.setValidator(input_validator_ch3)
-        # input_validator_ch4= QRegularExpressionValidator(reg_ex3d, self.first_slice_ch4)
-        # self.first_slice_ch4.setValidator(input_validator_ch4)
+        input_validator_ch2= QRegularExpressionValidator(reg_ex3d, self.first_slice_ch2)
+        self.first_slice_ch2.setValidator(input_validator_ch2)
+        input_validator_ch3= QRegularExpressionValidator(reg_ex3d, self.first_slice_ch3)
+        self.first_slice_ch3.setValidator(input_validator_ch3)
+        input_validator_ch4= QRegularExpressionValidator(reg_ex3d, self.first_slice_ch4)
+        self.first_slice_ch4.setValidator(input_validator_ch4)
 
         reg_excd = QRegularExpression("[0-9,-]+")
         input_validator_ch1s= QRegularExpressionValidator(reg_excd, self.select_slice_ch1)
         self.select_slice_ch1.setValidator(input_validator_ch1s)
-        # input_validator_ch2s= QRegularExpressionValidator(reg_excd, self.select_slice_ch2)
-        # self.select_slice_ch2.setValidator(input_validator_ch2s)
-        # input_validator_ch3s= QRegularExpressionValidator(reg_excd, self.select_slice_ch3)
-        # self.select_slice_ch3.setValidator(input_validator_ch3s)
-        # input_validator_ch4s= QRegularExpressionValidator(reg_excd, self.select_slice_ch4)
-        # self.select_slice_ch4.setValidator(input_validator_ch4s)
+        input_validator_ch2s= QRegularExpressionValidator(reg_excd, self.select_slice_ch2)
+        self.select_slice_ch2.setValidator(input_validator_ch2s)
+        input_validator_ch3s= QRegularExpressionValidator(reg_excd, self.select_slice_ch3)
+        self.select_slice_ch3.setValidator(input_validator_ch3s)
+        input_validator_ch4s= QRegularExpressionValidator(reg_excd, self.select_slice_ch4)
+        self.select_slice_ch4.setValidator(input_validator_ch4s)
 
         input_validator_sel_ch1 = QRegularExpressionValidator(reg_excd, self.select_manually_slcs_ch1)
         self.select_manually_slcs_ch1.setValidator(input_validator_sel_ch1)
-        # input_validator_sel_ch2 = QRegularExpressionValidator(reg_excd, self.select_manually_slcs_ch2)
-        # self.select_manually_slcs_ch2.setValidator(input_validator_sel_ch2)
-        # input_validator_sel_ch3 = QRegularExpressionValidator(reg_excd, self.select_manually_slcs_ch3)
-        # self.select_manually_slcs_ch3.setValidator(input_validator_sel_ch3)
-        # input_validator_sel_ch4 = QRegularExpressionValidator(reg_excd, self.select_manually_slcs_ch4)
-        # self.select_manually_slcs_ch4.setValidator(input_validator_sel_ch4)
+        input_validator_sel_ch2 = QRegularExpressionValidator(reg_excd, self.select_manually_slcs_ch2)
+        self.select_manually_slcs_ch2.setValidator(input_validator_sel_ch2)
+        input_validator_sel_ch3 = QRegularExpressionValidator(reg_excd, self.select_manually_slcs_ch3)
+        self.select_manually_slcs_ch3.setValidator(input_validator_sel_ch3)
+        input_validator_sel_ch4 = QRegularExpressionValidator(reg_excd, self.select_manually_slcs_ch4)
+        self.select_manually_slcs_ch4.setValidator(input_validator_sel_ch4)
 
         reg_ex2d = QRegularExpression(r"\d{1,2}") #2 digit number
         input_validator_num_int_ch1= QRegularExpressionValidator(reg_ex2d, self.num_int_cont_ch1)
         self.num_int_cont_ch1.setValidator(input_validator_num_int_ch1)
-        # input_validator_num_int_ch2= QRegularExpressionValidator(reg_ex2d, self.num_int_cont_ch2)
-        # self.num_int_cont_ch2.setValidator(input_validator_num_int_ch2)
-        # input_validator_num_int_ch3= QRegularExpressionValidator(reg_ex2d, self.num_int_cont_ch3)
-        # self.num_int_cont_ch3.setValidator(input_validator_num_int_ch3)
-        # input_validator_num_int_ch4= QRegularExpressionValidator(reg_ex2d, self.num_int_cont_ch4)
-        # self.num_int_cont_ch4.setValidator(input_validator_num_int_ch4)
+        input_validator_num_int_ch2= QRegularExpressionValidator(reg_ex2d, self.num_int_cont_ch2)
+        self.num_int_cont_ch2.setValidator(input_validator_num_int_ch2)
+        input_validator_num_int_ch3= QRegularExpressionValidator(reg_ex2d, self.num_int_cont_ch3)
+        self.num_int_cont_ch3.setValidator(input_validator_num_int_ch3)
+        input_validator_num_int_ch4= QRegularExpressionValidator(reg_ex2d, self.num_int_cont_ch4)
+        self.num_int_cont_ch4.setValidator(input_validator_num_int_ch4)
 
         input_validator_num_ext_ch1= QRegularExpressionValidator(reg_ex2d, self.num_ext_cont_ch1)
         self.num_ext_cont_ch1.setValidator(input_validator_num_ext_ch1)
-        # input_validator_num_ext_ch2= QRegularExpressionValidator(reg_ex2d, self.num_ext_cont_ch2)
-        # self.num_ext_cont_ch2.setValidator(input_validator_num_ext_ch2)
-        # input_validator_num_ext_ch3= QRegularExpressionValidator(reg_ex2d, self.num_ext_cont_ch3)
-        # self.num_ext_cont_ch3.setValidator(input_validator_num_ext_ch3)
-        # input_validator_num_ext_ch4= QRegularExpressionValidator(reg_ex2d, self.num_ext_cont_ch4)
-        # self.num_ext_cont_ch4.setValidator(input_validator_num_ext_ch4)
+        input_validator_num_ext_ch2= QRegularExpressionValidator(reg_ex2d, self.num_ext_cont_ch2)
+        self.num_ext_cont_ch2.setValidator(input_validator_num_ext_ch2)
+        input_validator_num_ext_ch3= QRegularExpressionValidator(reg_ex2d, self.num_ext_cont_ch3)
+        self.num_ext_cont_ch3.setValidator(input_validator_num_ext_ch3)
+        input_validator_num_ext_ch4= QRegularExpressionValidator(reg_ex2d, self.num_ext_cont_ch4)
+        self.num_ext_cont_ch4.setValidator(input_validator_num_ext_ch4)
 
         input_validator_slc_ch1= QRegularExpressionValidator(reg_ex2d, self.num_slcs_per_group_ch1)
         self.num_slcs_per_group_ch1.setValidator(input_validator_slc_ch1)
-        # input_validator_slc_ch2= QRegularExpressionValidator(reg_ex2d, self.num_slcs_per_group_ch2)
-        # self.num_slcs_per_group_ch2.setValidator(input_validator_slc_ch2)
-        # input_validator_slc_ch3= QRegularExpressionValidator(reg_ex2d, self.num_slcs_per_group_ch3)
-        # self.num_slcs_per_group_ch3.setValidator(input_validator_slc_ch3)
-        # input_validator_slc_ch4= QRegularExpressionValidator(reg_ex2d, self.num_slcs_per_group_ch4)
-        # self.num_slcs_per_group_ch4.setValidator(input_validator_slc_ch4)
+        input_validator_slc_ch2= QRegularExpressionValidator(reg_ex2d, self.num_slcs_per_group_ch2)
+        self.num_slcs_per_group_ch2.setValidator(input_validator_slc_ch2)
+        input_validator_slc_ch3= QRegularExpressionValidator(reg_ex2d, self.num_slcs_per_group_ch3)
+        self.num_slcs_per_group_ch3.setValidator(input_validator_slc_ch3)
+        input_validator_slc_ch4= QRegularExpressionValidator(reg_ex2d, self.num_slcs_per_group_ch4)
+        self.num_slcs_per_group_ch4.setValidator(input_validator_slc_ch4)
 
         self.add_tuple_ch1.clicked.connect(lambda: self.add_tuple_to_table(ch_name='ch1'))
-        # self.add_tuple_ch2.clicked.connect(lambda: self.add_tuple_to_table(ch_name='ch2'))
-        # self.add_tuple_ch3.clicked.connect(lambda: self.add_tuple_to_table(ch_name='ch3'))
-        # self.add_tuple_ch4.clicked.connect(lambda: self.add_tuple_to_table(ch_name='ch4'))
+        self.add_tuple_ch2.clicked.connect(lambda: self.add_tuple_to_table(ch_name='ch2'))
+        self.add_tuple_ch3.clicked.connect(lambda: self.add_tuple_to_table(ch_name='ch3'))
+        self.add_tuple_ch4.clicked.connect(lambda: self.add_tuple_to_table(ch_name='ch4'))
 
          # - Open
         self.select_contours_all_ch1_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch1', ch_name = 'ch1'))
-        # self.select_contours_all_ch2_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch2', ch_name = 'ch2'))
-        # self.select_contours_all_ch3_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch3', ch_name = 'ch3'))
-        # self.select_contours_all_ch4_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch4', ch_name = 'ch4'))
+        self.select_contours_all_ch2_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch2', ch_name = 'ch2'))
+        self.select_contours_all_ch3_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch3', ch_name = 'ch3'))
+        self.select_contours_all_ch4_open.clicked.connect(lambda: self.open_section(name='select_contours_all_ch4', ch_name = 'ch4'))
 
         # - Play
         self.select_contours_ch1_play.setStyleSheet(style_play)
-        # self.select_contours_ch2_play.setStyleSheet(style_play)
-        # self.select_contours_ch3_play.setStyleSheet(style_play)
-        # self.select_contours_ch4_play.setStyleSheet(style_play)
+        self.select_contours_ch2_play.setStyleSheet(style_play)
+        self.select_contours_ch3_play.setStyleSheet(style_play)
+        self.select_contours_ch4_play.setStyleSheet(style_play)
 
         # - Set
         self.select_contours_ch1_set.clicked.connect(lambda: self.set_select_contours('ch1'))
-        # self.select_contours_ch2_set.clicked.connect(lambda: self.set_select_contours('ch2'))
-        # self.select_contours_ch3_set.clicked.connect(lambda: self.set_select_contours('ch3'))
-        # self.select_contours_ch4_set.clicked.connect(lambda: self.set_select_contours('ch4'))
+        self.select_contours_ch2_set.clicked.connect(lambda: self.set_select_contours('ch2'))
+        self.select_contours_ch3_set.clicked.connect(lambda: self.set_select_contours('ch3'))
+        self.select_contours_ch4_set.clicked.connect(lambda: self.set_select_contours('ch4'))
 
         #Clear table
         self.clear_table_ch1.clicked.connect(lambda: self.clear_tuple_table('ch1'))
-        # self.clear_table_ch2.clicked.connect(lambda: self.clear_tuple_table('ch2'))
-        # self.clear_table_ch3.clicked.connect(lambda: self.clear_tuple_table('ch3'))
-        # self.clear_table_ch4.clicked.connect(lambda: self.clear_tuple_table('ch4'))
+        self.clear_table_ch2.clicked.connect(lambda: self.clear_tuple_table('ch2'))
+        self.clear_table_ch3.clicked.connect(lambda: self.clear_tuple_table('ch3'))
+        self.clear_table_ch4.clicked.connect(lambda: self.clear_tuple_table('ch4'))
 
         # Regex for contours
         reg_ex = QRegularExpression("[0-9,]+")
         input_validator_int_ch1 = QRegularExpressionValidator(reg_ex, self.int_cont_ch1)
         self.int_cont_ch1.setValidator(input_validator_int_ch1)
-        # input_validator_int_ch2 = QRegularExpressionValidator(reg_ex, self.int_cont_ch2)
-        # self.int_cont_ch2.setValidator(input_validator_int_ch2)
-        # input_validator_int_ch3 = QRegularExpressionValidator(reg_ex, self.int_cont_ch3)
-        # self.int_cont_ch3.setValidator(input_validator_int_ch3)
-        # input_validator_int_ch4 = QRegularExpressionValidator(reg_ex, self.int_cont_ch4)
-        # self.int_cont_ch4.setValidator(input_validator_int_ch4)
+        input_validator_int_ch2 = QRegularExpressionValidator(reg_ex, self.int_cont_ch2)
+        self.int_cont_ch2.setValidator(input_validator_int_ch2)
+        input_validator_int_ch3 = QRegularExpressionValidator(reg_ex, self.int_cont_ch3)
+        self.int_cont_ch3.setValidator(input_validator_int_ch3)
+        input_validator_int_ch4 = QRegularExpressionValidator(reg_ex, self.int_cont_ch4)
+        self.int_cont_ch4.setValidator(input_validator_int_ch4)
 
         input_validator_ext_ch1 = QRegularExpressionValidator(reg_ex, self.ext_cont_ch1)
         self.ext_cont_ch1.setValidator(input_validator_ext_ch1)
-        # input_validator_ext_ch2 = QRegularExpressionValidator(reg_ex, self.ext_cont_ch2)
-        # self.ext_cont_ch2.setValidator(input_validator_ext_ch2)
-        # input_validator_ext_ch3 = QRegularExpressionValidator(reg_ex, self.ext_cont_ch3)
-        # self.ext_cont_ch3.setValidator(input_validator_ext_ch3)
-        # input_validator_ext_ch4 = QRegularExpressionValidator(reg_ex, self.ext_cont_ch4)
-        # self.ext_cont_ch4.setValidator(input_validator_ext_ch4)
+        input_validator_ext_ch2 = QRegularExpressionValidator(reg_ex, self.ext_cont_ch2)
+        self.ext_cont_ch2.setValidator(input_validator_ext_ch2)
+        input_validator_ext_ch3 = QRegularExpressionValidator(reg_ex, self.ext_cont_ch3)
+        self.ext_cont_ch3.setValidator(input_validator_ext_ch3)
+        input_validator_ext_ch4 = QRegularExpressionValidator(reg_ex, self.ext_cont_ch4)
+        self.ext_cont_ch4.setValidator(input_validator_ext_ch4)
 
         # Plot filled contours 
         self.select_plot_slc_ch1.clicked.connect(lambda: self.plot_filled_slice(ch='ch1'))
-        # self.select_plot_slc_ch2.clicked.connect(lambda: self.plot_filled_slice(ch='ch2'))
-        # self.select_plot_slc_ch3.clicked.connect(lambda: self.plot_filled_slice(ch='ch3'))
-        # self.select_plot_slc_ch4.clicked.connect(lambda: self.plot_filled_slice(ch='ch4'))
+        self.select_plot_slc_ch2.clicked.connect(lambda: self.plot_filled_slice(ch='ch2'))
+        self.select_plot_slc_ch3.clicked.connect(lambda: self.plot_filled_slice(ch='ch3'))
+        self.select_plot_slc_ch4.clicked.connect(lambda: self.plot_filled_slice(ch='ch4'))
 
         self.select_plot_all_ch1.clicked.connect(lambda: self.plot_filled_all(ch='ch1'))
-        # self.select_plot_all_ch2.clicked.connect(lambda: self.plot_filled_all(ch='ch2'))
-        # self.select_plot_all_ch3.clicked.connect(lambda: self.plot_filled_all(ch='ch3'))
-        # self.select_plot_all_ch4.clicked.connect(lambda: self.plot_filled_all(ch='ch4'))
+        self.select_plot_all_ch2.clicked.connect(lambda: self.plot_filled_all(ch='ch2'))
+        self.select_plot_all_ch3.clicked.connect(lambda: self.plot_filled_all(ch='ch3'))
+        self.select_plot_all_ch4.clicked.connect(lambda: self.plot_filled_all(ch='ch4'))
 
         #Done
         self.select_contours_ch1_done.clicked.connect(lambda: self.user_done('select_contours', 'ch1'))
-        # self.select_contours_ch2_done.clicked.connect(lambda: self.user_done('select_contours', 'ch2'))
-        # self.select_contours_ch3_done.clicked.connect(lambda: self.user_done('select_contours', 'ch3'))
-        # self.select_contours_ch4_done.clicked.connect(lambda: self.user_done('select_contours', 'ch4'))
+        self.select_contours_ch2_done.clicked.connect(lambda: self.user_done('select_contours', 'ch2'))
+        self.select_contours_ch3_done.clicked.connect(lambda: self.user_done('select_contours', 'ch3'))
+        self.select_contours_ch4_done.clicked.connect(lambda: self.user_done('select_contours', 'ch4'))
 
         #Progress Bar
         self.progress_select_ch1.setValue(0)
-        # self.progress_select_ch2.setValue(0)
-        # self.progress_select_ch3.setValue(0)
-        # self.progress_select_ch4.setValue(0)
+        self.progress_select_ch2.setValue(0)
+        self.progress_select_ch3.setValue(0)
+        self.progress_select_ch4.setValue(0)
 
         #Tick modify select
         self.tick_modify_select_ch1.stateChanged.connect(lambda: self.enable_modify('ch1'))
-        # self.tick_modify_select_ch2.stateChanged.connect(lambda: self.enable_modify('ch2'))
-        # self.tick_modify_select_ch3.stateChanged.connect(lambda: self.enable_modify('ch3'))
-        # self.tick_modify_select_ch4.stateChanged.connect(lambda: self.enable_modify('ch4'))
+        self.tick_modify_select_ch2.stateChanged.connect(lambda: self.enable_modify('ch2'))
+        self.tick_modify_select_ch3.stateChanged.connect(lambda: self.enable_modify('ch3'))
+        self.tick_modify_select_ch4.stateChanged.connect(lambda: self.enable_modify('ch4'))
 
         #Save s3s
         self.save_select_contours_ch1.clicked.connect(lambda: self.save_closed_channel(ch='ch1', print_txt=True, s3s=True))
-        # self.save_select_contours_ch2.clicked.connect(lambda: self.save_closed_channel(ch='ch2', print_txt=True, s3s=True))
-        # self.save_select_contours_ch3.clicked.connect(lambda: self.save_closed_channel(ch='ch3', print_txt=True, s3s=True))
-        # self.save_select_contours_ch4.clicked.connect(lambda: self.save_closed_channel(ch='ch4', print_txt=True, s3s=True))
+        self.save_select_contours_ch2.clicked.connect(lambda: self.save_closed_channel(ch='ch2', print_txt=True, s3s=True))
+        self.save_select_contours_ch3.clicked.connect(lambda: self.save_closed_channel(ch='ch3', print_txt=True, s3s=True))
+        self.save_select_contours_ch4.clicked.connect(lambda: self.save_closed_channel(ch='ch4', print_txt=True, s3s=True))
 
-        for ch in ['ch1']:#, 'ch2', 'ch3', 'ch4']:
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
                 tableW = getattr(self, 'select_tableW_'+ch)
                 tableW.setColumnCount(4)
@@ -4333,6 +4349,12 @@ class MainWindow(QMainWindow):
                 self.enable_modify(ch)
 
                 self.user_select_contours(ch_name=ch) 
+
+        # Update mH_settings
+        if hasattr(self, 'gui_select_contours'): 
+            proc_set = ['wf_info']
+            update = self.gui_select_contours
+            self.organ.update_settings(proc_set, update, 'mH', add='select_contours')
 
     def init_plot_widget(self): 
 
@@ -4359,7 +4381,6 @@ class MainWindow(QMainWindow):
 
         #Init scroll style buttons
         self.scroll_style = 'QPushButton{border-width: 0.5px; \nborder-style: outset; \nborder-color: rgb(66, 66, 66);\nbackground-color: rgb(211, 211, 211);\ncolor: rgb(39, 39, 39);\nfont: 10pt "Calibri Light";}\nQPushButton:hover{background-color: rgb(57, 57, 57);border-color: rgb(255, 255, 255); color: rgb(255, 255, 255);}\nQPushButton:checked{background-color: rgb(57, 57, 57);border-color: #672146; color: rgb(255, 255, 255);border: 2px solid rgb(158,31,99);}'
-        #'QPushButton{\nborder-width: 0.5px;\nborder-style: outset;\nborder-color: rgb(66, 66, 66);\nbackground-color: rgb(211, 211, 211);\ncolor: rgb(39, 39, 39);\nfont: 10pt "Calibri Light";}\n\nQPushButton:hover{\nbackground-color: rgb(57, 57, 57);\nborder-color: #672146;\ncolor: rgb(255, 255, 255);\n}\n'
         
         #Button to clear
         self.clear_scroll.clicked.connect(lambda: self.clear_thumbnails())
@@ -4414,7 +4435,36 @@ class MainWindow(QMainWindow):
             alert('woohoo')
         
     #Set functions 
-    def set_plot_contour_settings(self, ch_name, check=False):
+    def set_plot_contour_settings(self, ch_name, init=False):
+
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_plot_contours = self.gui_plot_contours_n(ch_name)
+        if current_gui_plot_contours != None: 
+            if 'plot_contours_settings' not in wf_info.keys():
+                self.plot_contours_settings = {ch_name: current_gui_plot_contours}
+            elif ch_name not in wf_info['plot_contours_settings'].keys(): 
+                self.plot_contours_settings[ch_name] = current_gui_plot_contours
+            else: 
+                gui_plot_contours_loaded = self.organ.mH_settings['wf_info']['plot_contours_settings'][ch_name]
+                plot_contours_ch, changed  = update_gui_set(loaded = gui_plot_contours_loaded, 
+                                                                current = current_gui_plot_contours)
+                if hasattr(self, 'plot_contours_settings'):
+                    self.plot_contours_settings[ch_name] = plot_contours_ch
+                else: 
+                    self.plot_contours_settings = {ch_name: plot_contours_ch}
+
+            if init: 
+                getattr(self, 'set_plots_cont_settings_'+ch_name).setChecked(True)
+                getattr(self, 'plot_slice_with_contours_'+ch_name).setEnabled(True)
+                getattr(self, 'plot_all_slices_with_contours_'+ch_name).setEnabled(True)
+                print('self.plot_contours_settings:',self.plot_contours_settings)
+            else: 
+                # Update mH_settings
+                proc_set = ['wf_info', ch_name]
+                update = self.plot_contours_settings
+                self.organ.update_settings(proc_set, update, 'mH', add='plot_contours_settings')
+    
+    def gui_plot_contours_n(self, ch_name): 
 
         level = getattr(self, 'level_'+ch_name+'_value')
         level_val = float(level.text())
@@ -4429,24 +4479,17 @@ class MainWindow(QMainWindow):
         
         self.contours_palette =  palette_rbg(palette, num_pal, False)*20
 
-        self.plot_contours_settings[ch_name] = {'level': level_val, 
-                                            'min_contour_length': min_contour_length_val, 
-                                            'n_rows': n_rows_val, 
-                                            'n_cols': n_cols_val, 
-                                            'palette': palette, 
-                                            'n_palette': num_pal}
+        gui_plot_contours = {'level': level_val, 
+                                'min_contour_length': min_contour_length_val, 
+                                'n_rows': n_rows_val, 
+                                'n_cols': n_cols_val, 
+                                'palette': palette, 
+                                'n_palette': num_pal}
+        
+        print('gui_plot_contours: ', gui_plot_contours)
+        return gui_plot_contours
 
-        proc_set = ['wf_info']
-        update = self.plot_contours_settings
-        self.organ.update_settings(proc_set, update, 'mH', add='plot_contours_settings')
-
-        if check: 
-            getattr(self, 'set_plots_cont_settings_'+ch_name).setChecked(True)
-            getattr(self, 'plot_slice_with_contours_'+ch_name).setEnabled(True)
-            getattr(self, 'plot_all_slices_with_contours_'+ch_name).setEnabled(True)
-            print('self.plot_contours_settings:',self.plot_contours_settings)
-    
-    def set_autom_close_contours(self, ch_name): 
+    def set_autom_close_contours(self, ch_name, init=False): 
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_autom_contours = self.gui_autom_contours_n(ch_name)
         if current_gui_autom_contours != None: 
@@ -4467,10 +4510,11 @@ class MainWindow(QMainWindow):
             print('self.gui_autom_close_contours:',self.gui_autom_close_contours)
             getattr(self, 'autom_close_'+ch_name+'_play').setEnabled(True)
 
-            # Update mH_settings
-            proc_set = ['wf_info']
-            update = self.gui_autom_close_contours
-            self.organ.update_settings(proc_set, update, 'mH', add='autom_close_contours')
+            if not init: 
+                # Update mH_settings
+                proc_set = ['wf_info']
+                update = self.gui_autom_close_contours
+                self.organ.update_settings(proc_set, update, 'mH', add='autom_close_contours')
         else: 
             getattr(self, 'autom_close_'+ch_name+'_set').setChecked(False)
 
@@ -4512,7 +4556,7 @@ class MainWindow(QMainWindow):
             print('gui_autom_close_contours: ', gui_autom_close_contours)
             return gui_autom_close_contours
 
-    def set_manual_close_contours(self, ch_name): 
+    def set_manual_close_contours(self, ch_name, init=False): 
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_manual_contours = self.gui_manual_contours_n(ch_name)
         if current_gui_manual_contours != None: 
@@ -4533,10 +4577,11 @@ class MainWindow(QMainWindow):
             print('self.gui_manual_close_contours:',self.gui_manual_close_contours)
             getattr(self, 'manual_close_'+ch_name+'_play').setEnabled(True)
 
-            # Update mH_settings
-            proc_set = ['wf_info']
-            update = self.gui_manual_close_contours
-            self.organ.update_settings(proc_set, update, 'mH', add='manual_close_contours')
+            if not init: 
+                # Update mH_settings
+                proc_set = ['wf_info']
+                update = self.gui_manual_close_contours
+                self.organ.update_settings(proc_set, update, 'mH', add='manual_close_contours')
         else: 
             getattr(self, 'manual_close_'+ch_name+'_set').setChecked(False)
 
@@ -4574,7 +4619,7 @@ class MainWindow(QMainWindow):
             print('gui_manual_close_contours: ', gui_manual_close_contours)
             return gui_manual_close_contours
 
-    def set_select_contours(self, ch_name):
+    def set_select_contours(self, ch_name, init=False):
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_select_contours = self.gui_select_contours_n(ch_name)
         if current_gui_select_contours != None: 
@@ -4595,10 +4640,11 @@ class MainWindow(QMainWindow):
             print('self.gui_select_contours:',self.gui_select_contours)
             getattr(self, 'select_contours_'+ch_name+'_play').setEnabled(True)
 
-            # Update mH_settings
-            proc_set = ['wf_info']
-            update = self.gui_select_contours
-            self.organ.update_settings(proc_set, update, 'mH', add='select_contours')
+            if not init: 
+                # Update mH_settings
+                proc_set = ['wf_info']
+                update = self.gui_select_contours
+                self.organ.update_settings(proc_set, update, 'mH', add='select_contours')
 
         else: 
             getattr(self, 'select_contours_'+ch_name+'_set').setChecked(False)
@@ -4633,17 +4679,17 @@ class MainWindow(QMainWindow):
             #Define variables
             self.slc_py = None
             # self.tuple_active = None
-            if not hasattr(self, 'select_state'):
-                self.select_state = None
-            if not hasattr(self, 'index_active'): 
-                self.index_active = None
+            if not hasattr(self, 'select_state_'+ch_name):
+                setattr(self, 'select_state_'+ch_name, None)
+            if not hasattr(self, 'index_active_'+ch_name): 
+                setattr(self, 'index_active_'+ch_name, None)
             gui_select_contours = {'level': level,  
                                     'min_contour_len': min_contour_len,
                                     'slc_per_group': slc_per_group, 
                                     'tuples_select': tuples_select, 
                                     'save_after_tuple':save_after_tuple,
-                                    'select_state': self.select_state,
-                                    'index_active': self.index_active, 
+                                    'select_state': getattr(self, 'select_state_'+ch_name),
+                                    'index_active': getattr(self, 'index_active_'+ch_name), 
                                     # 'slc_py': self.slc_py, 
                                     # 'tuple_active': self.tuple_active
                                     }
@@ -4675,7 +4721,7 @@ class MainWindow(QMainWindow):
                     pass
                 getattr(self, 'plot_slices_'+ch_name+'_open').setChecked(True)
                 self.open_section(name = 'plot_slices_'+ch_name)
-                self.set_plot_contour_settings(ch_name=ch_name, check=True)
+                self.set_plot_contour_settings(ch_name=ch_name, init=True)
         else: 
             wdg = getattr(self, 'plot_slices_'+ch_name+'_widget')
             scrollArea = getattr(self, 'scrollArea_'+ch_name)
@@ -4733,7 +4779,7 @@ class MainWindow(QMainWindow):
                     scrollArea = getattr(self, 'scrollArea_'+ch_name)
                     scrollArea.ensureWidgetVisible(wdg)
 
-                self.set_autom_close_contours(ch_name=ch_name)
+                self.set_autom_close_contours(ch_name=ch_name, init=True)
 
     def user_manual_close_contours(self, ch_name): 
         wf_info = self.organ.mH_settings['wf_info']
@@ -4771,7 +4817,7 @@ class MainWindow(QMainWindow):
                     scrollArea = getattr(self, 'scrollArea_'+ch_name)
                     scrollArea.ensureWidgetVisible(wdg)
                     
-                self.set_manual_close_contours(ch_name=ch_name)
+                self.set_manual_close_contours(ch_name=ch_name, init=True)
 
     def user_select_contours(self, ch_name): 
 
@@ -4812,8 +4858,8 @@ class MainWindow(QMainWindow):
                     pass
                 
                 try: 
-                    self.select_state = wf_info['select_contours'][ch_name]['select_state']
-                    self.index_active = wf_info['select_contours'][ch_name]['index_active'] 
+                    setattr(self, 'select_state_'+ch_name, wf_info['select_contours'][ch_name]['select_state'])
+                    setattr(self, 'index_active_'+ch_name, wf_info['select_contours'][ch_name]['index_active'])
                 except: 
                     pass
 
@@ -4833,7 +4879,7 @@ class MainWindow(QMainWindow):
                     scrollArea = getattr(self, 'scrollArea_'+ch_name)
                     scrollArea.ensureWidgetVisible(wdg)
 
-                self.set_select_contours(ch_name=ch_name)
+                self.set_select_contours(ch_name=ch_name, init=True)
 
     #Specific functions 
     def scroll_thumb_to_bottom(self): 
@@ -9893,6 +9939,8 @@ class MainWindow(QMainWindow):
         
         self.win_msg('!Saving Channel '+ch[-1]+'...')
         im_ch.save_channel(im_proc=self.im_proc)
+        self.organ.add_channel(imChannel=im_ch)
+
         if print_txt: 
             self.win_msg('Channel '+ch[-1]+' was succesfully saved!')
 

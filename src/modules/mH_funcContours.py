@@ -485,7 +485,7 @@ def get_slices(lineEdit, slc_tuple, win):
         for inp in user_input_comma:
             if '-' in inp: 
                 splo, splf = inp.split('-')
-                if splf < splo:
+                if int(splf) < int(splo):
                     error_txt = '*If you want to process a range of slices (e.g. A-B), make sure B>A.'
                     win.tE_validate.setText(error_txt)
                     return
@@ -582,6 +582,8 @@ def close_draw(color_draw, win):
         clicks = get_clicks([], win.myIm, scale=1, text='DRAWING SLICE ('+color_draw+')')
         # Draw white/black line following the clicked pattern
         win.myIm = draw_line(clicks, win.myIm, color_draw)
+        win.im_proc[slc_py][:][:] = win.myIm
+
         #Plot image with closed contours
         params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
                     'level': level, 'min_contour_length': min_contour_len}
@@ -605,6 +607,7 @@ def close_box(box, win):
         clicks = get_clicks([], win.myIm, scale=1, text='CLOSING CONTOURS')
         #Close contours and get Image
         win.myIm = crop_n_close(clicks, win.myIm, box, level)
+        win.im_proc[slc_py][:][:] = win.myIm
         #Plot image with closed contours
         params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
                     'level': level, 'min_contour_length': min_contour_len}
@@ -719,7 +722,7 @@ def reset_img(rtype, win):
             win.myIm = copy.deepcopy(win.im_proc_o[slc_py][:][:])
         else: 
             im_ch = win.organ.obj_imChannels[ch_name]
-            myIm = im_ch.im_proc()[slc_py][:][:]
+            myIm = im_ch.im_proc(new=True)[slc_py][:][:]
             if rtype == 'masked': 
                 if win.organ.mH_settings['setup']['mask_ch'][ch_name]: 
                     myMask = io.imread(str(im_ch.dir_mk))[slc_py][:][:]
@@ -730,6 +733,7 @@ def reset_img(rtype, win):
                     win.win_msg('*No mask for this channel ('+ch_name+'). Image was reset to RAW instead')
             else: #rtype = 'raw'
                 win.myIm = copy.deepcopy(myIm)
+        win.im_proc[slc_py][:][:] = win.myIm
 
         #Plot image with closed contours
         params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
@@ -1072,7 +1076,8 @@ def plot_props(params):
     ch = params['ch']
     slc = params['slc']
     cont_sort = params['cont_sort']
-    tuple_active = params['tuple_active']
+    if 'tuple_active' in params.keys():
+        tuple_active = params['tuple_active']
     win = params['win']
     num_contours = len(cont_sort)
 
@@ -1101,8 +1106,11 @@ def plot_props(params):
     color_grid = outer_grid[0].subgridspec(nrows=1, ncols=1, wspace=0, hspace=0)
     ax = fig11.add_subplot(color_grid[0])
     ax.imshow(myIm, cmap=plt.cm.gray)
-    ax.set_title("Slice "+str(slc) + "\n Contours Expected \nInternal: "+str(tuple_active['int_cont'])+' - External: '+str(tuple_active['ext_cont']), 
-                 fontsize = 2.5, weight = 'semibold', pad=0.15)
+    if 'tuple_active' in params.keys():
+        title = "Slice "+str(slc) + "\n Contours Expected \nInternal: "+str(tuple_active['int_cont'])+' - External: '+str(tuple_active['ext_cont'])
+    else: 
+        title = "Slice "+str(slc)
+    ax.set_title(title, fontsize = 2.5, weight = 'semibold', pad=0.15)
 
     #Text positions
     # xlin = np.linspace(0.1,0.9, cols)

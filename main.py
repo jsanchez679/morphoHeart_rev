@@ -292,83 +292,83 @@ class Controller:
 
         #MASKING
         self.main_win.mask_ch1_play.clicked.connect(lambda: self.mask_ch('ch1'))
-        # self.main_win.mask_ch2_play.clicked.connect(lambda: self.mask_ch('ch2'))
-        # self.main_win.mask_ch3_play.clicked.connect(lambda: self.mask_ch('ch3'))
-        # self.main_win.mask_ch4_play.clicked.connect(lambda: self.mask_ch('ch4'))
+        self.main_win.mask_ch2_play.clicked.connect(lambda: self.mask_ch('ch2'))
+        self.main_win.mask_ch3_play.clicked.connect(lambda: self.mask_ch('ch3'))
+        self.main_win.mask_ch4_play.clicked.connect(lambda: self.mask_ch('ch4'))
 
         #AUTOMATICALLY CLOSE CONTOURS
         self.main_win.autom_close_ch1_play.clicked.connect(lambda: self.autom_close_contours('ch1'))
-        # self.main_win.autom_close_ch2_play.clicked.connect(lambda: self.autom_close_contours('ch2'))
-        # self.main_win.autom_close_ch3_play.clicked.connect(lambda: self.autom_close_contours('ch3'))
-        # self.main_win.autom_close_ch4_play.clicked.connect(lambda: self.autom_close_contours('ch4'))
+        self.main_win.autom_close_ch2_play.clicked.connect(lambda: self.autom_close_contours('ch2'))
+        self.main_win.autom_close_ch3_play.clicked.connect(lambda: self.autom_close_contours('ch3'))
+        self.main_win.autom_close_ch4_play.clicked.connect(lambda: self.autom_close_contours('ch4'))
 
         #MANUALLY CLOSE CONTOURS
         self.main_win.manual_close_ch1_play.clicked.connect(lambda: self.manual_close_contours('ch1'))
-        # self.main_win.manual_close_ch2_play.clicked.connect(lambda: self.manual_close_contours('ch2'))
-        # self.main_win.manual_close_ch3_play.clicked.connect(lambda: self.manual_close_contours('ch3'))
-        # self.main_win.manual_close_ch4_play.clicked.connect(lambda: self.manual_close_contours('ch4'))
+        self.main_win.manual_close_ch2_play.clicked.connect(lambda: self.manual_close_contours('ch2'))
+        self.main_win.manual_close_ch3_play.clicked.connect(lambda: self.manual_close_contours('ch3'))
+        self.main_win.manual_close_ch4_play.clicked.connect(lambda: self.manual_close_contours('ch4'))
 
         # Run tuples
         self.main_win.slc_tuple_ch1_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch1'))
-        # self.main_win.slc_tuple_ch2_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch2'))
-        # self.main_win.slc_tuple_ch3_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch3'))
-        # self.main_win.slc_tuple_ch4_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch4'))
+        self.main_win.slc_tuple_ch2_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch2'))
+        self.main_win.slc_tuple_ch3_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch3'))
+        self.main_win.slc_tuple_ch4_play.clicked.connect(lambda: mA.close_slcs_tuple(controller = self, ch_name='ch4'))
 
         # Slices and tuples
         self.main_win.next_slice_ch1.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=True, controller = self, ch_name ='ch1'))
-        # self.main_win.next_slice_ch2.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=True, controller = self, ch_name ='ch2'))
-        # self.main_win.next_slice_ch3.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=True, controller = self, ch_name ='ch3'))
-        # self.main_win.next_slice_ch4.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=True, controller = self, ch_name ='ch4'))
+        self.main_win.next_slice_ch2.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=True, controller = self, ch_name ='ch2'))
+        self.main_win.next_slice_ch3.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=True, controller = self, ch_name ='ch3'))
+        self.main_win.next_slice_ch4.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=True, controller = self, ch_name ='ch4'))
 
         self.main_win.prev_slice_ch1.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=False, controller = self, ch_name ='ch1'))
-        # self.main_win.prev_slice_ch2.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=False, controller = self, ch_name ='ch2'))
-        # self.main_win.prev_slice_ch3.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=False, controller = self, ch_name ='ch3'))
-        # self.main_win.prev_slice_ch4.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=False, controller = self, ch_name ='ch4'))
+        self.main_win.prev_slice_ch2.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=False, controller = self, ch_name ='ch2'))
+        self.main_win.prev_slice_ch3.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=False, controller = self, ch_name ='ch3'))
+        self.main_win.prev_slice_ch4.clicked.connect(lambda: mA.next_prev_slice_in_tuple(next=False, controller = self, ch_name ='ch4'))
 
         self.main_win.next_tuple_ch1.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=True, controller=self, ch_name='ch1'))
-        # self.main_win.next_tuple_ch2.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=True, controller=self, ch_name='ch2'))
-        # self.main_win.next_tuple_ch3.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=True, controller=self, ch_name='ch3'))
-        # self.main_win.next_tuple_ch4.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=True, controller=self, ch_name='ch4'))
+        self.main_win.next_tuple_ch2.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=True, controller=self, ch_name='ch2'))
+        self.main_win.next_tuple_ch3.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=True, controller=self, ch_name='ch3'))
+        self.main_win.next_tuple_ch4.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=True, controller=self, ch_name='ch4'))
 
         self.main_win.prev_tuple_ch1.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch1'))
-        # self.main_win.prev_tuple_ch2.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch2'))
-        # self.main_win.prev_tuple_ch3.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch3'))
-        # self.main_win.prev_tuple_ch4.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch4'))
+        self.main_win.prev_tuple_ch2.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch2'))
+        self.main_win.prev_tuple_ch3.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch3'))
+        self.main_win.prev_tuple_ch4.clicked.connect(lambda: mA.next_prev_tuple_to_manually_close(next=False, controller=self, ch_name='ch4'))
 
         #SELECTING CONTOURS
         self.main_win.select_contours_ch1_play.clicked.connect(lambda: self.select_contours('ch1'))
-        # self.main_win.select_contours_ch2_play.clicked.connect(lambda: self.select_contours('ch2'))
-        # self.main_win.select_contours_ch3_play.clicked.connect(lambda: self.select_contours('ch3'))
-        # self.main_win.select_contours_ch4_play.clicked.connect(lambda: self.select_contours('ch4'))
+        self.main_win.select_contours_ch2_play.clicked.connect(lambda: self.select_contours('ch2'))
+        self.main_win.select_contours_ch3_play.clicked.connect(lambda: self.select_contours('ch3'))
+        self.main_win.select_contours_ch4_play.clicked.connect(lambda: self.select_contours('ch4'))
 
         #Run tuples
         self.main_win.slc_tuple_select_ch1_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch1'))
-        # self.main_win.slc_tuple_select_ch2_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch2'))
-        # self.main_win.slc_tuple_select_ch3_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch3'))
-        # self.main_win.slc_tuple_select_ch4_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch4'))
+        self.main_win.slc_tuple_select_ch2_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch2'))
+        self.main_win.slc_tuple_select_ch3_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch3'))
+        self.main_win.slc_tuple_select_ch4_play.clicked.connect(lambda: mA.select_slcs_tuple(controller = self, ch_name='ch4'))
         
         #Next tuple
         self.main_win.next_group_ch1.clicked.connect(lambda: mA.next_tuple_select(controller=self, ch_name='ch1'))
-        # self.main_win.next_group_ch2.clicked.connect(lambda: mA.next_tuple_select(controller=self, ch_name='ch2'))
-        # self.main_win.next_group_ch3.clicked.connect(lambda: mA.next_tuple_select(controller=self, ch_name='ch3'))
-        # self.main_win.next_group_ch4.clicked.connect(lambda: mA.next_tuple_select(controller=self, ch_name='ch4'))
+        self.main_win.next_group_ch2.clicked.connect(lambda: mA.next_tuple_select(controller=self, ch_name='ch2'))
+        self.main_win.next_group_ch3.clicked.connect(lambda: mA.next_tuple_select(controller=self, ch_name='ch3'))
+        self.main_win.next_group_ch4.clicked.connect(lambda: mA.next_tuple_select(controller=self, ch_name='ch4'))
 
         self.main_win.select_manually_slc_ch1_play.clicked.connect(lambda: mA.modify_selected_contours(controller = self, ch_name='ch1'))
-        # self.main_win.select_manually_slc_ch2_play.clicked.connect(lambda: mA.modify_selected_contours(controller = self, ch_name='ch2'))
-        # self.main_win.select_manually_slc_ch3_play.clicked.connect(lambda: mA.modify_selected_contours(controller = self, ch_name='ch3'))
-        # self.main_win.select_manually_slc_ch4_play.clicked.connect(lambda: mA.modify_selected_contours(controller = self, ch_name='ch4'))
+        self.main_win.select_manually_slc_ch2_play.clicked.connect(lambda: mA.modify_selected_contours(controller = self, ch_name='ch2'))
+        self.main_win.select_manually_slc_ch3_play.clicked.connect(lambda: mA.modify_selected_contours(controller = self, ch_name='ch3'))
+        self.main_win.select_manually_slc_ch4_play.clicked.connect(lambda: mA.modify_selected_contours(controller = self, ch_name='ch4'))
 
         #Run slc
         self.main_win.slc_manually_select_ch1_play.clicked.connect(lambda: mA.select_slc(controller=self, ch_name='ch1'))
-        # self.main_win.slc_manually_select_ch2_play.clicked.connect(lambda: mA.select_slc(controller=self, ch_name='ch2'))
-        # self.main_win.slc_manually_select_ch3_play.clicked.connect(lambda: mA.select_slc(controller=self, ch_name='ch3'))
-        # self.main_win.slc_manually_select_ch4_play.clicked.connect(lambda: mA.select_slc(controller=self, ch_name='ch4'))
+        self.main_win.slc_manually_select_ch2_play.clicked.connect(lambda: mA.select_slc(controller=self, ch_name='ch2'))
+        self.main_win.slc_manually_select_ch3_play.clicked.connect(lambda: mA.select_slc(controller=self, ch_name='ch3'))
+        self.main_win.slc_manually_select_ch4_play.clicked.connect(lambda: mA.select_slc(controller=self, ch_name='ch4'))
 
         #Next slc 
         self.main_win.next_slc_select_ch1.clicked.connect(lambda: mA.next_slc_select(controller=self, ch_name='ch1'))
-        # self.main_win.next_slc_select_ch2.clicked.connect(lambda: mA.next_slc_select(controller=self, ch_name='ch2'))
-        # self.main_win.next_slc_select_ch3.clicked.connect(lambda: mA.next_slc_select(controller=self, ch_name='ch3'))
-        # self.main_win.next_slc_select_ch4.clicked.connect(lambda: mA.next_slc_select(controller=self, ch_name='ch4'))
+        self.main_win.next_slc_select_ch2.clicked.connect(lambda: mA.next_slc_select(controller=self, ch_name='ch2'))
+        self.main_win.next_slc_select_ch3.clicked.connect(lambda: mA.next_slc_select(controller=self, ch_name='ch3'))
+        self.main_win.next_slc_select_ch4.clicked.connect(lambda: mA.next_slc_select(controller=self, ch_name='ch4'))
 
     def init_morphoHeart_tab(self): 
         #Process and Analyse Tab
