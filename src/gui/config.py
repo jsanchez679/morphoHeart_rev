@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
 '''
 morphoHeart_config
+Version: Oct 17, 2023
 
-Version: Dec 01, 2022
 @author: Juliana Sanchez-Posada
-
 '''
+#%% Imports - ########################################################
 import os
 from pathlib import Path
 
+#%% ##### - Authorship - #####################################################
+__author__     = 'Juliana Sanchez-Posada'
+__license__    = 'MIT'
+__maintainer__ = 'J. Sanchez-Posada'
+__email__      = 'julianasanchezposada@gmail.com'
+__website__    = 'https://github.com/jsanchez679/morphoHeart'
+
+#%% config class
 class mH_Config():
     def __init__(self):
         self.version = '2.0.3'

@@ -1,9 +1,7 @@
 '''
 morphoHeart_funcMeshes
 
-Version: Dec 01, 2022
 @author: Juliana Sanchez-Posada
-
 '''
 #%% ##### - Imports - ########################################################
 import os
@@ -32,18 +30,11 @@ import pickle as pl
 import vtk
 #Following: https://stackoverflow.com/questions/23573707/disable-or-catch-vtk-warnings-in-vtkoutputwindow-when-embedding-mayavi
 vtk.vtkObject.GlobalWarningDisplayOff()
-
-# import matplotlib
-# matplotlib.use('QtAgg')
 import matplotlib.pyplot as plt
-# from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-# from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
-# # from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
-# from matplotlib.figure import Figure
 
-#%% ##### - Other Imports - ##################################################
+#%% morphoHeart Imports - ##################################################
 from ..gui.config import mH_config
-from .mH_funcBasics import ask4input, get_by_path, alert, df_reset_index, df_add_value
+from .mH_funcBasics import get_by_path, alert, df_reset_index, df_add_value
 
 # path_fcMeshes = os.path.abspath(__file__)
 path_mHImages = mH_config.path_mHImages
@@ -57,9 +48,13 @@ txt_size = mH_config.txt_size
 txt_color = mH_config.txt_color
 txt_slider_size = mH_config.txt_slider_size
 
-#%%
-# Definition of class to save dictionary
+#%% - morphoHeart Classes and Functions to Work with Meshes
 class NumpyArrayEncoder(json.JSONEncoder):
+    """
+    Definition of class to save dictionary
+    Args:
+        json (_type_): _description_
+    """
     def default(self, obj):
         if isinstance(obj, int):
             return int(obj)
@@ -75,7 +70,6 @@ class NumpyArrayEncoder(json.JSONEncoder):
 #Functions linked to GUI
 def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):#
 
-    workflow = organ.workflow['morphoHeart']
     proc_ms_all = ['MeshesProc','A-Create3DMesh', 'Status']
     run = False
     
@@ -84,13 +78,8 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):#
         #Check if all the meshes for each channel have been created and set new_set accordingly
         im_ch = organ.obj_imChannels[ch]
         proc_im_all = ['ImProc',im_ch.channel_no,'D-S3Create', 'Status']
-        process_ms = ['MeshesProc','A-Create3DMesh', im_ch.channel_no]
-        mesh_done = [get_by_path(workflow, process_ms+[cont]+['Status']) for cont in ['tiss', 'int', 'ext']]
-        if not all(flag == 'DONE' for flag in mesh_done):
-            new_set = True
-        else: 
-            new_set = False
-        
+        new_set = True
+
         win.prog_bar_range(0,3)
         aa = 0
         for cont in ['int', 'tiss', 'ext']:
@@ -111,21 +100,17 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):#
                 win.win_msg('*Remember to update the meshes within the s3_numpy folder to the ones in which contours have been selected!', win.keeplargest_play)
                 win.keeplargest_play.setChecked(False)
                 return
-            
         if run: 
             #Update organ workflow
             organ.update_mHworkflow(proc_im_all, 'DONE')      
-
             #Message User
             win.win_msg(' Channel '+ch[-1]+' meshes were successfully created!')
-
             #Enable button for plot
             getattr(win, 'keeplargest_plot_'+ch).setEnabled(True)
             getattr(win, 'summary_whole_plot_'+ch).setEnabled(True)
         else: 
             win.win_msg('*fcM.s32Meshes!')
             alert('error_beep')
-
     if run: 
         # Update organ workflow
         organ.update_mHworkflow(proc_ms_all, 'Initialised')

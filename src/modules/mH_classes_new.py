@@ -1,9 +1,7 @@
 '''
 morphoHeart_classes
 
-Version: Dec 01, 2022
 @author: Juliana Sanchez-Posada
-
 '''
 #%% ##### - Imports - ########################################################
 import os
@@ -28,10 +26,9 @@ import random
 from skimage.draw import line_aa
 import seaborn as sns
 
-#%% ##### - Other Imports - ##################################################
-#from ...config import dict_gui
+#%% morphoHeart Imports - ##################################################
 from ..gui.gui_classes import *
-from .mH_funcBasics import alert, ask4input, make_Paths, make_tuples, get_by_path, set_by_path
+from .mH_funcBasics import alert, make_Paths, make_tuples, get_by_path, set_by_path
 from .mH_funcMeshes import (unit_vector, plot_organCLs, find_angle_btw_pts, 
                             classify_segments_from_ext, create_subsegment, create_subsection, plot_grid)
 from ..gui.config import mH_config
@@ -47,12 +44,6 @@ txt_size = 0.7
 txt_color = '#696969'
 txt_slider_size = 0.8
 
-#%% ##### - Authorship - #####################################################
-__author__     = 'Juliana Sanchez-Posada'
-__license__    = 'MIT'
-__maintainer__ = 'J. Sanchez-Posada'
-__email__      = 'julianasanchezposada@gmail.com'
-__website__    = 'https://github.com/jsanchez679/morphoHeart'
 
 #%% ##### - Class definition - ###############################################
 # Definition of class to save dictionary
@@ -1931,46 +1922,15 @@ class ImChannel(): #channel
         process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
         if get_by_path(workflow, process_up) == 'NI':
             self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
+        process_up = ['ImProc', self.channel_no,'Status']
+        if get_by_path(workflow, process_up) == 'NI':
+            self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
         process_up2 = ['ImProc','Status']
         if get_by_path(workflow, process_up2) == 'NI':
             self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
 
         #Save channel
         self.save_channel(im_proc=im_proc)
-        
-    def closeContours_manual(self, gui_param, gui_plot, win): #check updates post process then delete
-        from .mH_funcContours import manual_close_contours
-        # Workflow process
-        workflow = self.parent_organ.workflow['morphoHeart']
-        process = ['ImProc', self.channel_no, 'B-CloseCont','Steps','B-Manual','Status']
-
-        # # Load image
-        # im_proc = self.im_proc()
-        
-        # #Process
-        # print('\n---- Closing Contours Manually! ----')
-        # im_proc = manual_close_contours(stack = im_proc, ch = self.channel_no,
-        #                                 gui_param = gui_param, gui_plot = gui_plot, win = win)
-        
-        # #Update organ imChannels
-        # self.parent_organ.add_channel(self)
-        # #Update channel process
-        # slc_first_py = gui_param['start_slc']
-        # slc_last_py = gui_param['end_slc']
-        # self.process.append('ClosedCont-Manual - Slc'+str(slc_first_py)+'-'+str(slc_last_py))
-
-        # #Update organ workflow
-        # self.parent_organ.update_mHworkflow(process, update = 'Initialised')
-        # getattr(win, 'manual_close_'+self.channel_no+'_done').setEnabled(True)
-        # process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
-        # if get_by_path(workflow, process_up) == 'NI':
-        #     self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
-        # process_up2 = ['ImProc','Status']
-        # if get_by_path(workflow, process_up2) == 'NI':
-        #     self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-        
-        # #Save channel
-        # self.save_channel(im_proc=im_proc)
             
     def closeInfOutf(self): #check updates post process then delete
         # Workflow process
@@ -2479,6 +2439,7 @@ class ContStack():
             self.shape_s3 = s3.shape
             self.process = ['Init']
         else: 
+            # s3 = self.s3_create(layerDict = layerDict)
             s3 = self.s3()
             self.shape_s3 = s3.shape
             self.process = im_channel.contStack[cont_type]['process']
@@ -2490,7 +2451,7 @@ class ContStack():
             y_dim = self.im_channel.shape[1]
             z_dim = self.im_channel.shape[2]
             # print(x_dim, y_dim, z_dim)
-            s3 = np.empty((x_dim+2,y_dim,z_dim))
+            s3 = np.empty((y_dim,z_dim,x_dim+2))
             s3 = s3.astype('uint8')
 
         elif isinstance(layerDict, np.ndarray): 
@@ -3553,7 +3514,7 @@ def mask_disc(shape_s3, s3, s3_cyl, directory, name, plot=False):
 
     return s3_mask
 
-def slc_plot (slc, im_cyl, im, myIm, directory, name):
+def slc_plot(slc, im_cyl, im, myIm, directory, name):
         """
         Function to plot mask, original image and result
         """

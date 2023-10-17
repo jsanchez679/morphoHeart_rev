@@ -1,28 +1,17 @@
 '''
 morphoHeart
 
-Version: Apr 26, 2023
 @author: Juliana Sanchez-Posada
-
 '''
 # Relative import problems: stackoverflow.com/a/14132912/8682868
 #%% Imports - ########################################################
 import sys
-# from PyQt6 import uic
 from PyQt6 import QtWidgets#, QtCore
-# from pathlib import Path
-# import os
-# conda_env = os.environ['CONDA_DEFAULT_ENV']
-# print(conda_env)
-
 
 #%% morphoHeart Imports - ##################################################
 from src.gui.config import mH_config 
 from src.gui.gui_classes import *
 from src.modules import mH_classes_new as mHC
-# from src.modules import mH_funcBasics as fcB
-# from src.modules import mH_funcContours as fcC
-# from src.modules import mH_funcMeshes as fcM
 from src import mH_api as mA
 
 #%% API
@@ -788,6 +777,7 @@ class Controller:
 
     def open_another_organ_same_project(self):
         self.main_win.close()
+        self.main_win = None
         if self.main_win.prompt.output in ['Discard', 'Save All']: 
             self.load_proj_win.button_go_back.clicked.connect(lambda: self.clear_win_show_welcome(parent = 'load_proj_win'))
             self.load_proj_win.go_to_main_window.setChecked(False)
@@ -796,6 +786,7 @@ class Controller:
     def create_new_organ_same_project(self): 
         self.new_organ_win = None
         self.main_win.close()
+        self.main_win = None
         if self.main_win.prompt.output in ['Discard', 'Save All']: 
             self.new_organ_win = NewOrgan(proj = self.proj)
             self.init_new_organ_win()

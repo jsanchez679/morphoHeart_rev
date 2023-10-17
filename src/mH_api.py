@@ -1,14 +1,9 @@
-
-
 '''
 morphoHeart_API
 
-Version: Jun 02, 2023
 @author: Juliana Sanchez-Posada
-
 '''
 #%% Imports - ########################################################
-
 
 #%% morphoHeart Imports - ##################################################
 from .modules import mH_funcBasics as fcB
@@ -18,9 +13,15 @@ from .modules.mH_classes_new import *
 from .gui.config import mH_config
 from .gui.gui_classes import *
 
-#Here, check if process was already run,  
-# update settings (wf_info) and create prompts and toggle buttons
+#%% API functions
+def set_process(controller, running_process):
+    proc_set = ['wf_info', 'active_process']
+    controller.organ.update_settings(proc_set, running_process, 'mH')
+    setattr(controller.main_win, 'running_process', running_process)
+
 def mask_channel(controller, ch_name): 
+    # Masking channel
+    set_process(controller, 'masking_'+ch_name)
     # Workflow process
     workflow = controller.organ.workflow['morphoHeart']
     process = ['ImProc', ch_name, 'A-MaskChannel','Status']
@@ -43,9 +44,8 @@ def mask_channel(controller, ch_name):
     controller.main_win.win_msg('Channel '+str(ch_name[-1])+' has been masked!')
 
 def autom_close_contours(controller, ch_name): 
-
     #Automatically close contours
-    controller.main_win.running_process = 'autom_'+ch_name
+    set_process(controller, 'autom_'+ch_name)
     #Initial message    
     controller.main_win.win_msg('Automatic Closure of Contours has started for Channel '+str(ch_name[-1])+'!')
     #Enable and make visible close cont buttons
@@ -62,11 +62,9 @@ def autom_close_contours(controller, ch_name):
     controller.main_win.user_done(process='autom_close', ch_name=ch_name)
 
 #Manually close contours
-
 def manual_close_contours(controller, ch_name):
-
     #Close contours manually
-    controller.main_win.running_process = 'manual_'+ch_name
+    set_process(controller, 'manual_'+ch_name)
     #Enable and make visible close cont buttons
     enable_close_functions(controller=controller, process = 'manual', ch_name=ch_name)
     #Get channel and save is as attribute
@@ -109,7 +107,7 @@ def plot_tuple_to_manually_close(controller, ch_name, slc_tuple, im_proc, initia
 
     # > Fill widget data
     getattr(controller.main_win, 'tuple_analysed_'+ch_name).setText(str(slc_tuple[0]+1)+' - '+str(slc_tuple[1]))
-    stack_cut = copy.deepcopy(im_proc[slc_tuple[0]:slc_tuple[1]+1][:][:])
+    stack_cut = copy.deepcopy(im_proc[:][:][slc_tuple[0]:slc_tuple[1]+1])
     params = {'ch_name': ch_name, 'stack': stack_cut, 
                 'slices_plot': slc_tuple, 'text': 'Contours', 
                 'level': level, 'min_contour_length': min_contour_len}
@@ -147,12 +145,11 @@ def close_slcs_tuple(controller, ch_name):
         #Start with first slice
         main_win.win_msg('!Channel '+ch_name[-1]+': Manually closing contours of Slice '+str(main_win.slc_list[0]+1))
         # Get slice to close
-        slc_py = main_win.slc_list[0]
-        print('Initial slc_py:', slc_py)
-        main_win.slc_py = slc_py
-        slc_user = slc_py+1
+        main_win.slc_py = main_win.slc_list[0]
+        print('Initial slc_py:', main_win.slc_py)
+        slc_user = main_win.slc_py+1
         # Get image from stack
-        main_win.myIm = main_win.im_proc[slc_py][:][:]
+        main_win.myIm = main_win.im_proc[:][:][main_win.slc_py]
         #Get settings
         level = main_win.gui_manual_close_contours[ch_name]['level']
         min_contour_len = main_win.gui_manual_close_contours[ch_name]['min_contour_len']
@@ -184,12 +181,11 @@ def next_prev_slice_in_tuple(next:bool, controller, ch_name:str):
         new_index = index-1
 
     #Set new slc_py
-    slc_py = main_win.slc_list[new_index]
-    print('New slc_py:', slc_py)
-    main_win.slc_py = slc_py
-    slc_user = slc_py+1
+    main_win.slc_py = main_win.slc_list[new_index]
+    print('New slc_py:', main_win.slc_py)
+    slc_user = main_win.slc_py+1
     # Get image from stack
-    main_win.myIm = main_win.im_proc[slc_py][:][:]
+    main_win.myIm = main_win.im_proc[:][:][main_win.slc_py]
     main_win.win_msg('!Channel '+ch_name[-1]+': Manually closing contours of Slice '+str(slc_user))
     #Get settings
     level = main_win.gui_manual_close_contours[ch_name]['level']
@@ -231,29 +227,18 @@ def next_prev_tuple_to_manually_close(next:bool, controller, ch_name):
     plot_tuple_to_manually_close(controller, ch_name, main_win.slc_tuple, controller.main_win.im_proc, initial=True)
 
 #Select contours
-def set_state(controller, ch_name, select_state):
-    proc_set = ['wf_info', 'select_contours', ch_name, 'select_state']
-    controller.organ.update_settings(proc_set, select_state, 'mH')
-    setattr(controller.main_win, 'select_state_'+ch_name, select_state)
-
-def set_index_active(controller, ch_name, index_active):
-    proc_set = ['wf_info', 'select_contours', ch_name, 'index_active']
-    controller.organ.update_settings(proc_set, index_active, 'mH')
-    setattr(controller.main_win, 'index_active_'+ch_name, index_active)
-
 def select_contours(controller, ch_name): 
     #Select contours
-    controller.main_win.running_process = 'select_'+ch_name
+    set_process(controller, 'select_'+ch_name)
     #Get channel and save is as attribute
     im_ch = controller.organ.obj_imChannels[ch_name]
     controller.main_win.im_ch = im_ch
     # Load stack and save it as attribute to use through the process of closing
     controller.main_win.im_proc = im_ch.im_proc()
-
     #Check if the channels3 already exist, and if not create empty channelS3 
     if len(im_ch.contStack)<3:
         print('No mask stacks have been created or saved for this channel') 
-        im_ch.create_chS3s(layerDict={}, win=controller.main_win)
+    im_ch.create_chS3s(layerDict={}, win=controller.main_win)
     #Load s3s and save them as attributes
     im_ch.load_chS3s(cont_types = ['int', 'tiss', 'ext'])
     for cont in ['int', 'tiss', 'ext']: 
@@ -265,6 +250,7 @@ def select_contours(controller, ch_name):
     controller.main_win.dict_s3s = {}
     #Toggle button
     getattr(controller.main_win, 'select_contours_'+ch_name+'_play').setChecked(True)
+    #########
     if getattr(controller.main_win, 'select_state_'+ch_name) != 'Finished': 
         #Get tuples_out
         gui_select_cont = controller.main_win.gui_select_contours[ch_name]
@@ -283,6 +269,7 @@ def select_contours(controller, ch_name):
         else: 
             #Find the index of the tuple active and compare it the index_active saved
             print(getattr(controller.main_win, 'index_active_'+ch_name))
+            controller.main_win.prog_bar_update(getattr(controller.main_win, 'index_active_'+ch_name))
 
         while not at_least_one: 
             initial_index = controller.main_win.tuples_out[getattr(controller.main_win, 'index_active_'+ch_name)]
@@ -295,6 +282,16 @@ def select_contours(controller, ch_name):
     else: 
         #Message
         controller.main_win.win_msg('!The contours have already been selected for Channel '+str(ch_name[-1])+'. Use the "Check / Modify Selection" module to check and modify the selected contours if needed.')
+
+def set_state(controller, ch_name, select_state):
+    proc_set = ['wf_info', 'select_contours', ch_name, 'select_state']
+    controller.organ.update_settings(proc_set, select_state, 'mH')
+    setattr(controller.main_win, 'select_state_'+ch_name, select_state)
+
+def set_index_active(controller, ch_name, index_active):
+    proc_set = ['wf_info', 'select_contours', ch_name, 'index_active']
+    controller.organ.update_settings(proc_set, index_active, 'mH')
+    setattr(controller.main_win, 'index_active_'+ch_name, index_active)
 
 def plot_props_to_select(controller, ch_name, index_active):
     main_win = controller.main_win
@@ -327,7 +324,7 @@ def get_slc_cont_plot_props(controller, ch_name, tuple_active):
 
     #Get slice
     im_proc = controller.main_win.im_proc
-    controller.main_win.myIm = im_proc[controller.main_win.slc_py][:][:]
+    controller.main_win.myIm = im_proc[:][:][controller.main_win.slc_py]
     slc_user = controller.main_win.slc_py+1
     # Show new closed contours
     new_contours = get_contours(controller.main_win.myIm, min_contour_length = min_contour_len, level = level)
@@ -389,7 +386,7 @@ def select_slcs_tuple(controller, ch_name):
             if len(range(slc_o, tuple_range[1], 1)) > 0: 
                 for slc in range(slc_o, tuple_range[1], 1):
                     print('slc:', slc, 'slc_user: ', slc+1)
-                    main_win.myIm = main_win.im_proc[slc][:][:]
+                    main_win.myIm = main_win.im_proc[:][:][slc]
                     #Get contours, sort them and get their properties
                     contours = get_contours(myIm=main_win.myIm, min_contour_length = min_contour_len, level = level)
                     contours = sorted(contours, key = len, reverse=True)
@@ -476,7 +473,7 @@ def next_tuple_select(controller, ch_name):
         else: 
             if save_after_tuple: 
                 main_win.win_msg('!Saving channel before continuing with next group.')
-                main_win.save_closed_channel(ch=main_win.im_ch.channel_no)
+                main_win.save_closed_channel(ch=main_win.im_ch.channel_no, s3s=True)
             
             set_index_active(controller, ch_name, new_index)
             next_index = main_win.tuples_out[getattr(main_win, 'index_active_'+ch_name)]
@@ -503,20 +500,20 @@ def s3_with_contours(controller, num_contours, contours, slc):
             sp_props = fcC.get_cont_props(main_win.myIm, [sp_cont])
             selected_cont[ctype]['props'].append(sp_props[0])
         
-        slc_s3 = getattr(main_win, 's3_'+ctype[:3])[slc][:][:]
+        slc_s3 = getattr(main_win, 's3_'+ctype[:3])[:,:,slc]
         if len(num_contours[ctype])>0: 
             slc_s3 = fcC.fill_contours(selected_cont[ctype], slc_s3)
         else: 
             slc_s3 = np.zeros_like(slc_s3, dtype='bool').astype(int)
-        getattr(main_win, 's3_'+ctype[:3])[slc][:][:] = slc_s3
+        getattr(main_win, 's3_'+ctype[:3])[:,:,slc] = slc_s3
         s3s[ctype[:3]] = slc_s3
     
-    slc_tiss = getattr(main_win, 's3_tiss')[slc][:][:]
+    slc_tiss = getattr(main_win, 's3_tiss')[:,:,slc]
     if len(all_cont['contours'])>0: 
         slc_tiss = fcC.fill_contours(all_cont, slc_tiss)
     else: 
         slc_tiss = np.zeros_like(slc_tiss, dtype='bool').astype(int)
-    getattr(main_win, 's3_tiss')[slc][:][:] = slc_tiss
+    getattr(main_win, 's3_tiss')[:,:,slc] = slc_tiss
     s3s['tiss'] = slc_tiss
     main_win.dict_s3s[slc-1] = selected_cont
 
@@ -524,6 +521,9 @@ def s3_with_contours(controller, num_contours, contours, slc):
 
 def modify_selected_contours(controller, ch_name): 
     main_win = controller.main_win
+    lineEdit = getattr(controller.main_win, 'man_int_cont_'+ch_name)
+    lineEdit.clear()
+    lineEdit.setFocus()
     main_win.slc_to_select = fcC.get_slices(lineEdit = getattr(main_win, 'select_manually_slcs_'+ch_name), 
                                             slc_tuple=(1,int(getattr(main_win, 'total_stack_slices_'+ch_name).text())), 
                                             win=main_win)
@@ -677,6 +677,7 @@ def enable_close_functions(controller, process, ch_name, widgets=True):
 #ANALYSIS TAB
 def run_keeplargest(controller):
     workflow = controller.organ.workflow
+    set_process(controller, 'keeplargest')
     #Check channels have already been created: 
     if len(controller.organ.obj_imChannels.keys()) == controller.organ.mH_settings['setup']['no_chs']:
         fcM.s32Meshes(organ = controller.organ, gui_keep_largest=controller.main_win.gui_keep_largest, 
@@ -684,16 +685,12 @@ def run_keeplargest(controller):
 
         #Update Status in GUI
         controller.main_win.update_status(None, 'DONE', controller.main_win.keeplargest_status, override = True)
-
         #Enable button for plot all
         getattr(controller.main_win, 'keeplargest_plot').setEnabled(True)
-
         #Toggle button
         getattr(controller.main_win, 'keeplargest_play').setChecked(True)
-
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
-
         #Add meshes to plot_user
         controller.main_win.fill_comboBox_all_meshes()
         
@@ -710,6 +707,7 @@ def run_keeplargest(controller):
     print('organ.workflow:', workflow)
 
 def run_cleanup(controller):
+    set_process(controller, 'cleanup')
     if controller.main_win.keeplargest_play.isChecked(): 
         workflow = controller.organ.workflow
         if controller.main_win.gui_clean['plot2d']:
@@ -723,13 +721,10 @@ def run_cleanup(controller):
 
         #Enable button for plot all
         getattr(controller.main_win, 'clean_plot').setEnabled(True)
-
         #Toggle button
         getattr(controller.main_win, 'cleanup_play').setChecked(True)
-
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
-
         #Add meshes to plot_user
         controller.main_win.fill_comboBox_all_meshes()
 
@@ -737,6 +732,7 @@ def run_cleanup(controller):
         controller.main_win.win_msg('*To clean-up the tissues make sure you have at least run the  -Keep Largest-  section.')
             
 def run_trimming(controller):
+    set_process(controller, 'trimming')
     if controller.main_win.keeplargest_play.isChecked(): 
         workflow = controller.organ.workflow
         meshes, no_cut, cuts_out = get_trimming_planes(organ = controller.organ,
@@ -746,19 +742,14 @@ def run_trimming(controller):
         fcM.trim_top_bottom_S3s(organ = controller.organ, meshes = meshes, 
                                 no_cut = no_cut, cuts_out = cuts_out,
                                 win = controller.main_win)
-        
         #Enable button for plot all
         getattr(controller.main_win, 'trimming_plot').setEnabled(True)
-
         #Toggle button
         getattr(controller.main_win, 'trimming_play').setChecked(True)
-
         #Update progress in main_win
         controller.main_win.update_workflow_progress()
-
         #Add meshes to plot_user
         controller.main_win.fill_comboBox_all_meshes()
-
     else: 
         controller.main_win.win_msg('*To trim the tissues make sure you have at least run the  -Keep Largest-  section.')
 
@@ -855,6 +846,7 @@ def get_trimming_planes(organ, gui_trim, win):
     return meshes, no_cut, cuts_out
 
 def run_axis_orientation(controller, only_roi=False):
+    set_process(controller, 'orientation')
     if controller.main_win.keeplargest_play.isChecked(): 
         #CHECK HERE WHICH ONE HAS BEEN RUN AND IF STACK WAS RUN, 
         # PROGRAM SO THAT THE STACK DATA DOESN'T GET REMOVED 
@@ -895,6 +887,7 @@ def run_axis_orientation(controller, only_roi=False):
         controller.main_win.win_msg('*To set the stack and roi axes make sure you have at least run the  -Keep Largest-  section.')
 
 def run_chNS(controller):
+    set_process(controller, 'chNS')
     if controller.main_win.keeplargest_play.isChecked(): 
         workflow = controller.organ.workflow['morphoHeart']
 
@@ -922,6 +915,7 @@ def run_chNS(controller):
         controller.main_win.win_msg('*To extract the channel from the negative space make sure you have at least run the  -Keep Largest-  section.')
 
 def run_centreline_clean(controller):
+    set_process(controller, 'centreline')
     if controller.main_win.keeplargest_play.isChecked(): 
         workflow = controller.organ.workflow['morphoHeart']
 
@@ -952,6 +946,7 @@ def run_centreline_clean(controller):
         controller.main_win.win_msg('*To extract the centreline from tissues make sure you have at least run the  -Keep Largest-  section.')
 
 def run_centreline_ML(controller): 
+    set_process(controller, 'centreline')
     workflow = controller.organ.workflow['morphoHeart']
     proc_simp = ['MeshesProc', 'C-Centreline', 'SimplifyMesh', 'Status']
     if get_by_path(workflow, proc_simp) == 'DONE':
@@ -993,6 +988,7 @@ def run_centreline_ML(controller):
             controller.main_win.win_msg('All MeshLab cut Meshes were successfully found!')
 
 def run_centreline_vmtk(controller): 
+    set_process(controller, 'centreline')
     if controller.main_win.centreline_ML_play.isChecked(): 
         workflow = controller.organ.workflow['morphoHeart']
         try: 
@@ -1017,6 +1013,7 @@ def run_centreline_vmtk(controller):
         controller.main_win.win_msg('*To extract the centrelines using VMTK make sure you have run the  -MeshLab-  cleanup first.')
 
 def run_centreline_select(controller):
+    set_process(controller, 'centreline')
     if controller.main_win.centreline_vmtk_play.isChecked(): 
 
         nPoints = controller.main_win.gui_centreline['buildCL']['nPoints']
@@ -1113,6 +1110,7 @@ def prompt_meshLab(controller, msg_add=None):
     print('output:',prompt.output, '\n')
 
 def run_heatmaps3D(controller, btn):
+    set_process(controller, 'heatmaps')
     if controller.main_win.keeplargest_play.isChecked(): 
         workflow = controller.organ.workflow['morphoHeart']
         thck_values = {'i2e': {'short': 'th_i2e',
@@ -1241,7 +1239,7 @@ def run_heatmaps3D(controller, btn):
         controller.main_win.win_msg('*To extract the thickness meshes make sure you have at least run the  -Keep Largest-  section.')
 
 def run_heatmaps2D(controller, btn):
-
+    set_process(controller, 'heatmaps')
     if controller.main_win.keeplargest_play.isChecked():
         if controller.main_win.thickness2D_set.isChecked():  
             workflow = controller.organ.workflow['morphoHeart']
@@ -1403,7 +1401,7 @@ def run_heatmaps2D(controller, btn):
         controller.main_win.win_msg('*To extract the 2D Heatmaps make sure you have run the  -Keep Largest-  section, extracted the Centreline and created the 3D Heatmap.')
 
 def run_segments(controller, btn): 
-
+    set_process(controller, 'segments')
     workflow = controller.organ.workflow['morphoHeart']
     segm_list = list(controller.main_win.segm_btns.keys())
     if btn != None: 
@@ -1706,7 +1704,7 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
         print('wf_info:', organ.mH_settings['wf_info']['segments']['setup'])
 
 def run_sections(controller, btn): 
-
+    set_process(controller, 'regions')
     workflow = controller.organ.workflow['morphoHeart']
     sect_list = list(controller.main_win.sect_btns.keys())
     if btn != None: 
@@ -1873,6 +1871,7 @@ def run_sections(controller, btn):
     controller.main_win.fill_comboBox_all_meshes()
 
 def run_segm_sect(controller, btn): 
+    set_process(controller, 'segments-regions')
     workflow = controller.organ.workflow['morphoHeart']
     segm_sect_list = list(controller.main_win.segm_sect_btns.keys())
     if btn != None: 
@@ -1961,6 +1960,7 @@ def run_segm_sect(controller, btn):
     controller.main_win.fill_comboBox_all_meshes()
 
 def run_measure(controller): 
+    set_process(controller, 'measure')
     if controller.main_win.keeplargest_play.isChecked(): 
         organ = controller.organ
         measurements = organ.mH_settings['measure']

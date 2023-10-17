@@ -1071,7 +1071,7 @@ background-color: rgb(255, 255, 255);</string>
                 <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;</string>
                </property>
                <property name="currentIndex">
-                <number>2</number>
+                <number>0</number>
                </property>
                <widget class="QWidget" name="tab_ch1">
                 <attribute name="title">
@@ -1130,7 +1130,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1184</y>
+                      <y>0</y>
                       <width>382</width>
                       <height>1807</height>
                      </rect>
@@ -8065,7 +8065,10 @@ color: rgb(234, 234, 234);
                               </widget>
                              </item>
                              <item>
-                              <widget class="QLabel" name="saved_s3s_ch1">
+                              <widget class="QPushButton" name="re_select_ch1">
+                               <property name="enabled">
+                                <bool>false</bool>
+                               </property>
                                <property name="minimumSize">
                                 <size>
                                  <width>100</width>
@@ -8074,19 +8077,39 @@ color: rgb(234, 234, 234);
                                </property>
                                <property name="maximumSize">
                                 <size>
-                                 <width>16777215</width>
+                                 <width>100</width>
                                  <height>20</height>
                                 </size>
                                </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
                                <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
+                                <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}</string>
                                </property>
                                <property name="text">
-                                <string/>
+                                <string>Re-Select Cont.</string>
                                </property>
-                               <property name="alignment">
-                                <set>Qt::AlignCenter</set>
+                               <property name="checkable">
+                                <bool>true</bool>
                                </property>
                               </widget>
                              </item>
@@ -8242,7 +8265,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1044</y>
+                      <y>-1236</y>
                       <width>382</width>
                       <height>1807</height>
                      </rect>
@@ -15177,7 +15200,10 @@ color: rgb(234, 234, 234);
                               </widget>
                              </item>
                              <item>
-                              <widget class="QLabel" name="saved_s3s_ch2">
+                              <widget class="QPushButton" name="re_select_ch2">
+                               <property name="enabled">
+                                <bool>false</bool>
+                               </property>
                                <property name="minimumSize">
                                 <size>
                                  <width>100</width>
@@ -15186,19 +15212,39 @@ color: rgb(234, 234, 234);
                                </property>
                                <property name="maximumSize">
                                 <size>
-                                 <width>16777215</width>
+                                 <width>100</width>
                                  <height>20</height>
                                 </size>
                                </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
                                <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
+                                <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}</string>
                                </property>
                                <property name="text">
-                                <string/>
+                                <string>Re-Select Cont.</string>
                                </property>
-                               <property name="alignment">
-                                <set>Qt::AlignCenter</set>
+                               <property name="checkable">
+                                <bool>true</bool>
                                </property>
                               </widget>
                              </item>
@@ -15354,7 +15400,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-667</y>
+                      <y>-1236</y>
                       <width>382</width>
                       <height>1807</height>
                      </rect>
@@ -22289,7 +22335,10 @@ color: rgb(234, 234, 234);
                               </widget>
                              </item>
                              <item>
-                              <widget class="QLabel" name="saved_s3s_ch3">
+                              <widget class="QPushButton" name="re_select_ch3">
+                               <property name="enabled">
+                                <bool>false</bool>
+                               </property>
                                <property name="minimumSize">
                                 <size>
                                  <width>100</width>
@@ -22298,19 +22347,39 @@ color: rgb(234, 234, 234);
                                </property>
                                <property name="maximumSize">
                                 <size>
-                                 <width>16777215</width>
+                                 <width>100</width>
                                  <height>20</height>
                                 </size>
                                </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
                                <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
+                                <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}</string>
                                </property>
                                <property name="text">
-                                <string/>
+                                <string>Re-Select Cont.</string>
                                </property>
-                               <property name="alignment">
-                                <set>Qt::AlignCenter</set>
+                               <property name="checkable">
+                                <bool>true</bool>
                                </property>
                               </widget>
                              </item>
@@ -22466,7 +22535,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1142</y>
+                      <y>-1236</y>
                       <width>382</width>
                       <height>1807</height>
                      </rect>
@@ -29401,7 +29470,10 @@ color: rgb(234, 234, 234);
                               </widget>
                              </item>
                              <item>
-                              <widget class="QLabel" name="saved_s3s_ch4">
+                              <widget class="QPushButton" name="re_select_ch4">
+                               <property name="enabled">
+                                <bool>false</bool>
+                               </property>
                                <property name="minimumSize">
                                 <size>
                                  <width>100</width>
@@ -29410,19 +29482,39 @@ color: rgb(234, 234, 234);
                                </property>
                                <property name="maximumSize">
                                 <size>
-                                 <width>16777215</width>
+                                 <width>100</width>
                                  <height>20</height>
                                 </size>
                                </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
                                <property name="styleSheet">
-                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
+                                <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}</string>
                                </property>
                                <property name="text">
-                                <string/>
+                                <string>Re-Select Cont.</string>
                                </property>
-                               <property name="alignment">
-                                <set>Qt::AlignCenter</set>
+                               <property name="checkable">
+                                <bool>true</bool>
                                </property>
                               </widget>
                              </item>

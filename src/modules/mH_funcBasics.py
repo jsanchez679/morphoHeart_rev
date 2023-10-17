@@ -1,15 +1,12 @@
 '''
 morphoHeart_funcBasics
 
-Version: Dec 01, 2022
 @author: Juliana Sanchez-Posada
-
 '''
-#%% Imports 
+#%% Imports - ########################################################
 import os
 from pathlib import Path, PurePath
 from playsound import playsound
-# import json
 import numpy as np 
 import flatdict
 from functools import reduce  
@@ -19,13 +16,10 @@ import vedo as vedo
 import copy
 import pandas as pd
 import seaborn as sns
-# from typing import Union
 
 path_fcBasics = os.path.abspath(__file__)
-# print(path_fcBasics)
 
-#%% morphoHeart Imports 
-# from .mH_classes_new import Project, Organ, ImChannel, ImChannelNS, ContStack, Mesh_mH
+#%% morphoHeart Imports - ##################################################
 from ..gui.config import mH_config
 
 alert_all=True
@@ -33,8 +27,7 @@ heart_default=False
 dict_gui = {'alert_all': alert_all,
             'heart_default': heart_default}
 
-#%% -Functions
-#%% func - alert
+#%% - morphoHeart Basic General Functions 
 def alert(sound:str):
     '''
     bubble:
@@ -72,115 +65,6 @@ def alert(sound:str):
         print('sound not played: ', sound)
         pass
 
-#%% func - ask4input
-def ask4input(text:str, res:dict, type_response:type, keep=False): # to delete
-    """
-    Function that ask for user input and transforms it into the expected type
-
-    Parameters
-    ----------
-    text : str
-        Text asking the question and giving possible options.
-    type_response : data types int/str/float/boolean
-        data type of the expected response
-    keep : Boolean
-        If True, leaves the string as it is (with upper and lower cases), else, changes the whole string to lower case.
-
-    Returns
-    -------
-    response : int/str/float/bool
-        returns an object with the corresponding type_response given as input.
-
-    """
-    alert('error_beep')
-    exit_now = False
-    response = None
-
-    while exit_now == False:
-        res_text = '> '+text+' \n\t'
-        res_len = len(res)
-        if len(res) <= 0:
-            res_text = res_text + ' >> : '
-        for n, r in enumerate(res.keys()): 
-            if n != res_len-1:
-                r_text = '['+str(r)+']: '+res[r] +'\n\t'
-            else: 
-                r_text = '['+str(r)+']: '+res[r] +' >> : '
-            res_text += r_text
-        response = input(res_text)
-        if type_response == int:
-            try:
-                response = int(response)
-                exit_now = True
-            except:
-                print('>> Error: -'+response+'- The number entered needs to be an integer!')
-                alert('error_beep')
-                pass
-        elif type_response == float:
-            try:
-                response = float(response)
-                exit_now = True
-            except:
-                print('>> Error: -'+response+'- The number entered needs to be a float!')
-                alert('error_beep')
-                pass
-        elif type_response == str:
-            if keep == False:
-                response = response.lower()
-            exit_now = True
-        elif type_response == bool:
-            try:
-                if int(response) in [0,1]:
-                    response = bool(int(response))
-                    exit_now = True
-            except:
-                print('>> Error: -'+response+'- The number entered needs to be a [0]:no or [1]:yes!')
-                alert('error_beep')
-                pass
-    
-    # print('\n')
-    return response
-
-# func - ask4inputList
-def ask4inputList(text, res, res_all=True):
-
-    alert('error_beep')
-    exit_now = False
-    obj_num = []
-    while not exit_now:
-        res_text = '> '+text+' \n\t'
-        res_len = len(res)
-        for n, r in enumerate(res.keys()): 
-            if n != res_len-1:
-                r_text = '['+str(r)+']: '+res[r] +'\n\t'
-            else:
-                if res_all:
-                    r_text = '['+str(r)+']: '+res[r] +'\n\t[all]: All >> : '
-                else: 
-                    r_text = '['+str(r)+']: '+res[r] +' >> : '
-            res_text += r_text
-        response = input(res_text).lower()
-        
-        if response == 'all':
-            obj_num = list(range(0,len(res),1))
-    
-        else:
-            obj_num = []
-            comma_split = response.split(',')
-    
-            for string in comma_split:
-                if '-' in string:
-                    minus_split = string.split('-')
-                    #print(minus_split)
-                    for n in list(range(int(minus_split[0]),int(minus_split[1])+1,1)):
-                        #print(n)
-                        obj_num.append(n)
-                else:
-                    obj_num.append(int(string))
-        exit_now = True
-
-    return obj_num
-
 def input_range(response):
     try: 
         obj_num = []
@@ -217,7 +101,7 @@ def df_add_value(df:pd.DataFrame, index:tuple, value):
 
     return df
 
-#Dictionaries
+# Dictionaries
 def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=False):
     """Compare two dictionaries recursively to find non mathcing elements
     https://stackoverflow.com/questions/27265939/comparing-python-dictionaries-and-nested-dictionaries
@@ -284,7 +168,6 @@ def compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="", ignore_dir=
     res = key_err + value_err + err
     return res
 
-# func - compare_nested_dicts
 def compare_nested_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path=""):
     
     res = compare_dicts(dict_1, dict_2, dict_1_name, dict_2_name, path="")
@@ -440,53 +323,6 @@ def palette_rbg(name:str, num:int, rgb=True):
         rgb_colors = palette
 
     return rgb_colors
-
-#https://stackoverflow.com/questions/30648317/programmatically-accessing-arbitrarily-deeply-nested-values-in-a-dictionary
-#https://stackoverflow.com/questions/13687924/setting-a-value-in-a-nested-python-dictionary-given-a-list-of-indices-and-value
-#https://www.geeksforgeeks.org/python-update-nested-dictionary/
-
-
-# terms = ['person', 'address', 'city'] 
-# result = nested_dict(3, str)
-# result[terms] = 'New York'  # as easy as it can be
-
-
-# class NestedDict(dict):
-
-#     def __getitem__(self,keytuple):
-#         # if key is not a tuple then access as normal
-#         if not isinstance(keytuple, tuple):
-#             return super(NestedDict,self).__getitem__(keytuple)
-#         d = self
-#         print('d:', d)
-#         for key in keytuple:
-#             d = d[key]
-#             print('key:',key, d)
-#         return d
-    
-#     def __setitem__(self, keylist, value):
-#         if isinstance(keylist, list):
-#             d = self[keylist[:-1]]
-#             super(NestedDict).__setitem__(d, key[-1], value)
-        
-    
-#         return super().__setitem__(__key, __value)
-
-# x = {
-#      'key1' : 'value1',
-#      'key2' : {
-#                'key21' : {
-#                           'key211': 'value211'
-#                          },
-#                'key22' : 'value22'
-#               },
-#      'key3' : 'value3'
-#     }
-    
-# nd = NestedDict(x)
-# nd['key2']
-
-
 
 #%% Module loaded
 print('morphoHeart! - Loaded funcBasics')

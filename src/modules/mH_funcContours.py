@@ -1,9 +1,7 @@
 """
 morphoHeart_funcContours
 
-Version: Feb 13, 2023
 @author: Juliana Sanchez-Posada
-
 """
 #%% ##### - Imports - ########################################################
 from skimage import measure, io
@@ -17,15 +15,14 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import copy
 plt.rcParams['figure.constrained_layout.use'] = True
-# from PyQt6.QtCore import QObject, QThread, pyqtSignal
 import cv2
 
-#%% ##### - Other Imports - ##################################################
-from .mH_funcBasics import ask4input, ask4inputList, get_by_path, alert
+#%% morphoHeart Imports - ##################################################
+from .mH_funcBasics import get_by_path, alert
 from .mH_classes_new import ImChannel
 from ..gui.config import mH_config
 
-#%% - morphoHeart A functions
+#%% - morphoHeart Functions to Work with Contours
 def autom_close_contours(stack, ch, gui_param, gui_plot, win):
     """
     Funtion that automatically closes the contours of the input slice between the range given by 'slices'
@@ -54,7 +51,7 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
     for index, slc_py in enumerate(range(slc_first_py, slc_last_py)):
 
         slc = slc_py+1 #Transformed user format
-        myIm = stack[slc_py][:][:]
+        myIm = stack[:][:][slc_py]
         # Get the contours of slice
         contours = get_contours(myIm, min_contour_length = min_contour_len, level = level)
         # Sort the contours by length (bigger to smaller)
@@ -96,7 +93,7 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
             plot_props(params_props)
             win.add_thumbnail(function='fcC.plot_props', params = params_props, 
                               name='Final Cont. Slc'+str(slc))
-        new_stack[slc_py][:][:] = myIm_closedCont
+        new_stack[:][:][slc_py] = myIm_closedCont
 
         #Update Bar
         win.prog_bar_update(value = slc_py-slc_first_py)
@@ -514,7 +511,6 @@ def get_contour_num(lineEdit_int, lineEdit_ext, tuples_out_slc, num_contours, wi
             else: 
                 int_num.append(int(txt)-1)
 
-
     if len(int_num) < exp_int: 
         win.win_msg('*Expecting '+str(exp_int)+' internal contour(s) and less were given. Please check to continue.')
         return None
@@ -545,6 +541,12 @@ def get_contour_num(lineEdit_int, lineEdit_ext, tuples_out_slc, num_contours, wi
             return None
         else: 
             pass
+
+    if len(list(set(int_num).intersection(set(ext_num))))>0:
+        win.win_msg('*Internal and external contours need to be mutually exclusive. Please check to continue.')
+        return None
+    else: 
+        pass
     
     return {'internal': int_num, 'external': ext_num}
 
@@ -582,7 +584,7 @@ def close_draw(color_draw, win):
         clicks = get_clicks([], win.myIm, scale=1, text='DRAWING SLICE ('+color_draw+')')
         # Draw white/black line following the clicked pattern
         win.myIm = draw_line(clicks, win.myIm, color_draw)
-        win.im_proc[slc_py][:][:] = win.myIm
+        win.im_proc[:][:][slc_py] = win.myIm
 
         #Plot image with closed contours
         params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
@@ -607,7 +609,7 @@ def close_box(box, win):
         clicks = get_clicks([], win.myIm, scale=1, text='CLOSING CONTOURS')
         #Close contours and get Image
         win.myIm = crop_n_close(clicks, win.myIm, box, level)
-        win.im_proc[slc_py][:][:] = win.myIm
+        win.im_proc[:][:][slc_py] = win.myIm
         #Plot image with closed contours
         params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
                     'level': level, 'min_contour_length': min_contour_len}
@@ -698,7 +700,7 @@ def close_convex_hull(win):
                             int(closing_pt2[0]), int(closing_pt2[1]))
         myIm_closed[rr, cc] = val * 50000
         win.myIm = myIm_closed[150:150+im_height]
-        win.im_proc[slc_py][:][:] = win.myIm
+        win.im_proc[:][:][slc_py] = win.myIm
 
         #Plot image with closed contours
         params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 
@@ -719,13 +721,13 @@ def reset_img(rtype, win):
         level = win.gui_manual_close_contours[ch_name]['level']
         min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
         if rtype == 'autom': 
-            win.myIm = copy.deepcopy(win.im_proc_o[slc_py][:][:])
+            win.myIm = copy.deepcopy(win.im_proc_o[:][:][slc_py])
         else: 
             im_ch = win.organ.obj_imChannels[ch_name]
-            myIm = im_ch.im_proc(new=True)[slc_py][:][:]
+            myIm = im_ch.im_proc(new=True)[:][:][slc_py]
             if rtype == 'masked': 
                 if win.organ.mH_settings['setup']['mask_ch'][ch_name]: 
-                    myMask = io.imread(str(im_ch.dir_mk))[slc_py][:][:]
+                    myMask = io.imread(str(im_ch.dir_mk))[:][:][slc_py]
                     myIm[myMask == False] = 0
                     win.myIm = copy.deepcopy(myIm)
                 else: 
@@ -733,7 +735,7 @@ def reset_img(rtype, win):
                     win.win_msg('*No mask for this channel ('+ch_name+'). Image was reset to RAW instead')
             else: #rtype = 'raw'
                 win.myIm = copy.deepcopy(myIm)
-        win.im_proc[slc_py][:][:] = win.myIm
+        win.im_proc[:][:][slc_py] = win.myIm
 
         #Plot image with closed contours
         params = {'myIm': copy.deepcopy(win.myIm), 'slc_user': slc_user, 'ch': ch_name, 

@@ -1,13 +1,9 @@
-
 '''
 morphoHeart_GUI_classes
 
-Version: Apr 26, 2023
 @author: Juliana Sanchez-Posada
-
 '''
 #%% Imports - ########################################################
-# import sys
 from PyQt6 import uic
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtCore import (pyqtSlot, QDate, Qt, QRegularExpression, QRect, QSize, QAbstractTableModel, QEvent,
@@ -21,7 +17,6 @@ from qtwidgets import Toggle, AnimatedToggle
 # import qtawesome as qta
 from pathlib import Path
 import flatdict
-# import os
 from itertools import count
 import webbrowser
 from skimage import measure, io
@@ -49,8 +44,6 @@ plt.rcParams['figure.constrained_layout.use'] = True
 #https://matplotlib.org/stable/tutorials/colors/colormaps.html
 
 #%% morphoHeart Imports - ##################################################
-# from .src.modules.mH_funcBasics import get_by_path
-# from .src.modules.mH_funcMeshes import * 
 from ..modules.mH_funcBasics import (get_by_path, compare_dicts, update_gui_set, alert, df_reset_index, 
                                      df_add_value, palette_rbg)
 from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours, get_slices,
@@ -73,7 +66,7 @@ txt_slider_size = mH_config.txt_slider_size
 
 #https://wpamelia.com/loading-bar/
 
-#%% Classes - ########################################################
+#%% - morphoHeart GUI Classes
 class WelcomeScreen(QDialog):
 
     def __init__(self) -> None:
@@ -441,6 +434,52 @@ class Prompt_save_all(QDialog):
     def __init__(self, msg:list, info:list, parent=None):
         super().__init__()
         uic.loadUi('src/gui/ui/prompt_saveall_discard_cancel.ui', self)
+        self.setWindowTitle('Save all?')
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        html_all = html_txt[0]
+        for ms in msg: 
+            html_all = html_all+html_txt[1]+ms+html_txt[2]
+        self.textEdit.setHtml(html_all)
+        self.info = info
+        self.parent = parent
+        self.output = None
+
+        #Add Button Box
+        self.buttonBox = QtWidgets.QDialogButtonBox()
+        self.buttonBox.setStyleSheet("QDialogButtonBox QPushButton{ color: rgb(39, 39, 39); font: 11pt \"Calibri Light\"; height:20;\n"
+                                        "padding:0px; width:90; background-color: rgb(211, 211, 211); border-radius: 10px;\n"
+                                        "border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66);}\n"
+                                    "QDialogButtonBox QPushButton:hover{background-color: #eb6fbd; border-color: #672146}")
+
+        self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.SaveAll|QtWidgets.QDialogButtonBox.StandardButton.Discard|QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+        self.buttonBox.setCenterButtons(True)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout.addWidget(self.buttonBox, 0, QtCore.Qt.AlignmentFlag.AlignRight)
+
+        self.tE_validate = QtWidgets.QLineEdit()
+        self.tE_validate.setMinimumSize(QtCore.QSize(0, 25))
+        self.tE_validate.setMaximumSize(QtCore.QSize(16777215, 25))
+        self.tE_validate.setStyleSheet("font: 25 9pt \"Calibri Light\"; color: rgb(170, 0, 127); background-color: rgb(250, 250, 250);")
+        self.tE_validate.setFrame(False)
+        self.tE_validate.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.tE_validate.setReadOnly(True)
+        self.tE_validate.setObjectName("tE_validate")
+        self.verticalLayout.addWidget(self.tE_validate)
+
+        self.buttonBox.clicked.connect(self.action_button)
+        self.setModal(True)
+        self.show()
+
+    def action_button(self, button): 
+        self.output = button.text()
+        self.close()
+
+class Prompt_save_all_chs3(QDialog): 
+    def __init__(self, msg:list, info:list, parent=None):
+        super().__init__()
+        uic.loadUi('src/gui/ui/prompt_saveall_discard_cancel_chs3.ui', self)
         self.setWindowTitle('Save all?')
         self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
         self.setWindowIcon(QIcon(mH_icon))
@@ -3511,19 +3550,8 @@ class MainWindow(QMainWindow):
         self.running_process = None
         self.controller = controller
 
-        #Menu options
-        self.actionSave_Project_and_Organ.triggered.connect(self.save_project_and_organ_pressed)
-        self.actionClose.triggered.connect(self.close_morphoHeart_pressed)
-
-        #Blind analysis
-        self.cB_blind.stateChanged.connect(lambda: self.blind_analysis())
-
-        #Sounds
-        layout = self.hL_sound_on_off 
-        add_sound_bar(self, layout)
-        sound_toggled(win=self)
-        self.fill_proj_organ_info(self.proj, self.organ)
-
+        #General Init
+        self.init_main_window()
         #Progress bar
         self.prog_bar_reset()
 
@@ -3534,27 +3562,8 @@ class MainWindow(QMainWindow):
         # self.init_plot_tab()
         self.win_msg('Organ "'+organ.info['user_organName']+'" was successfully loaded!')
 
-        #Activate tab depending on process running
-        if self.organ.analysis['morphoHeart']:
-            done_segmentation = []
-            workflow = self.organ.workflow['morphoHeart']['ImProc']
-            for ch in self.channels.keys():
-                if 'NS' not in ch: 
-                    done = get_by_path(workflow, [ch, 'C-SelectCont', 'Status'])
-                    done_segmentation.append(done)
-            
-            print('done_segmentation:',done_segmentation)
-            if all(flag == 'DONE' for flag in done_segmentation): 
-                self.tabWidget.setCurrentIndex(1)
-            else: 
-                self.tabWidget.setCurrentIndex(0)
-                self.tabWidget.setCurrentIndex(1)
-                self.tabWidget.setCurrentIndex(0)
-        else: 
-            if self.organ.analysis['morphoCell']:
-                self.tabWidget.setCurrentIndex(2)
-            else: 
-                self.tabWidget.setCurrentIndex(3)
+        # Init Tabs
+        self.init_tabs()
 
         # Theme 
         self.theme = self.cB_theme.currentText()
@@ -3579,7 +3588,6 @@ class MainWindow(QMainWindow):
     def prog_bar_range(self, r1, r2):
         self.prog_bar_reset()
         self.prog_bar.setRange(r1, r2)
-        self.prog_bar_reset()
 
     def prog_bar_update(self, value):
         self.prog_bar.setValue(value)
@@ -3607,6 +3615,60 @@ class MainWindow(QMainWindow):
         
     # Init functions
     #- General Init
+    def init_main_window(self):
+        #Fill Proj and Organ Data
+        self.fill_proj_organ_info(self.proj, self.organ)
+        #Blind analysis
+        self.cB_blind.stateChanged.connect(lambda: self.blind_analysis())
+
+        #Tab functions
+        self.current_tab = 0
+        self.tabWidget.currentChanged.connect(self.tab_changed)
+
+        #Menu options
+        self.actionSave_Project_and_Organ.triggered.connect(self.save_project_and_organ_pressed)
+        self.actionClose.triggered.connect(self.close_morphoHeart_pressed)
+
+        #Sounds
+        layout = self.hL_sound_on_off 
+        add_sound_bar(self, layout)
+        sound_toggled(win=self)
+
+    def init_tabs(self):
+        #Activate tab depending on process running and hide non-working tabs
+        if self.organ.analysis['morphoHeart']:
+            done_segmentation = []
+            workflow = self.organ.workflow['morphoHeart']['ImProc']
+            for ch in self.channels.keys():
+                if 'NS' not in ch: 
+                    done = get_by_path(workflow, [ch, 'C-SelectCont', 'Status'])
+                    done_segmentation.append(done)
+            
+            print('done_segmentation:',done_segmentation)
+            if all(flag == 'DONE' for flag in done_segmentation): 
+                self.tabWidget.setCurrentIndex(1)
+                self.current_tab = 1
+            else: 
+                self.tabWidget.setCurrentIndex(0)
+                self.tabWidget.setCurrentIndex(1)
+                self.tabWidget.setCurrentIndex(0)
+                self.current_tab = 0
+        else: 
+            #Hide morphoHeart Tabs
+            self.tabWidget.setTabVisible(0, False)
+            self.tabWidget.setTabVisible(1, False)
+            if self.organ.analysis['morphoCell']:
+                self.tabWidget.setCurrentIndex(2)
+            else: 
+                self.tabWidget.setCurrentIndex(3)
+        
+        if self.organ.analysis['morphoCell']:
+            self.tabWidget.setCurrentIndex(2)
+        else: 
+            self.tabWidget.setTabVisible(2, False)
+        #Hide Analysis 
+        self.tabWidget.setTabVisible(3, False)
+    
     def fill_proj_organ_info(self, proj, organ):
         self.lineEdit_proj_name.setText(proj.info['user_projName'])
         organ_data = ['user_organName','strain','stage','genotype','manipulation','im_orientation','user_organNotes']
@@ -3648,6 +3710,13 @@ class MainWindow(QMainWindow):
             self.lineEdit_genotype.clear()
             self.lineEdit_manipulation.clear()
     
+    def tab_changed(self): 
+        print('Tab was changed to '+str(self.tabWidget.currentIndex()))
+        if self.current_tab == 0 and self.tabWidget.currentIndex():
+            print('Warning!')
+
+        self.current_tab = self.tabWidget.currentIndex()
+
     #- Init SEGMENTATION Tab
     def init_segment_tab(self): 
 
@@ -3704,6 +3773,28 @@ class MainWindow(QMainWindow):
 
         #Disable draw and reset buttons
         self.close_draw_btns_widget.setEnabled(False)
+
+        #Set the segmentation window to the running process
+        self.user_running_process()
+        if self.running_process != None: 
+            proc, ch = self.running_process.split('_')
+            index = ['ch1', 'ch2', 'ch3', 'ch4'].index(ch)
+            self.tab_chs.setCurrentIndex(index)
+            scrollArea = getattr(self, 'scrollArea_'+ch)
+            if proc == 'masking':
+                widget_central = getattr(self, 'mask_'+ch+'_widget')
+            elif proc == 'autom':
+                widget_central = getattr(self, 'autom_close_'+ch+'_widget')
+            elif proc == 'manual':
+                widget_central = getattr(self, 'manual_close_'+ch+'_widget')
+            elif proc == 'select':
+                widget_central = getattr(self, 'select_contours_all_'+ch+'_widget')
+                scrollArea.verticalScrollBar().setValue(scrollArea.verticalScrollBar().maximum())
+            else: 
+                widget_central = getattr(self,'plot_slices_'+ch+'_widget')
+
+            if proc != 'select': 
+                scrollArea.ensureWidgetVisible(widget_central)
     
     #>> Initialise all modules of Process and Analyse
     def init_segm_ch(self, ch): 
@@ -4330,6 +4421,7 @@ class MainWindow(QMainWindow):
         self.save_select_contours_ch3.clicked.connect(lambda: self.save_closed_channel(ch='ch3', print_txt=True, s3s=True))
         self.save_select_contours_ch4.clicked.connect(lambda: self.save_closed_channel(ch='ch4', print_txt=True, s3s=True))
 
+        #Tuple table
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
                 tableW = getattr(self, 'select_tableW_'+ch)
@@ -4341,7 +4433,6 @@ class MainWindow(QMainWindow):
 
                 tableW.resizeRowsToContents()
                 tableW.verticalHeader().setVisible(False)
-                tableW.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name=ch))
 
                 tick = getattr(self, 'tick_modify_select_'+ch)
                 # tick.setEnabled(False)
@@ -4349,12 +4440,28 @@ class MainWindow(QMainWindow):
                 self.enable_modify(ch)
 
                 self.user_select_contours(ch_name=ch) 
-
+        
         # Update mH_settings
         if hasattr(self, 'gui_select_contours'): 
             proc_set = ['wf_info']
             update = self.gui_select_contours
             self.organ.update_settings(proc_set, update, 'mH', add='select_contours')
+        
+        self.select_tableW_ch1.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch1'))
+        self.select_tableW_ch2.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch2'))
+        self.select_tableW_ch3.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch3'))
+        self.select_tableW_ch4.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch4'))
+
+        #Re-select button
+        self.re_select_ch1.clicked.connect(lambda: self.enable_re_select(ch_name='ch1'))
+        self.re_select_ch2.clicked.connect(lambda: self.enable_re_select(ch_name='ch2'))
+        self.re_select_ch3.clicked.connect(lambda: self.enable_re_select(ch_name='ch3'))
+        self.re_select_ch4.clicked.connect(lambda: self.enable_re_select(ch_name='ch4'))
+
+        self.re_select_ch1.setEnabled(False)
+        self.re_select_ch2.setEnabled(False)
+        self.re_select_ch3.setEnabled(False)
+        self.re_select_ch4.setEnabled(False)
 
     def init_plot_widget(self): 
 
@@ -4401,16 +4508,14 @@ class MainWindow(QMainWindow):
         if process == 'autom_close': 
             sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','A-Autom','Status']
             msg = 'Contours of Channel '+str(ch_name[-1])+' have been automatically closed!'
-            self.running_process = None
         elif process == 'manual_close': 
             sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','B-Manual','Status']
             msg = 'Contours of Channel '+str(ch_name[-1])+' have been manually closed!'
-            self.running_process = None
+            sp_process1 = ['ImProc', ch_name, 'Status']
             sp_process2 = ['ImProc', ch_name, 'B-CloseCont','Steps','C-CloseInOut','Status']
         elif process == 'select_contours':
             sp_process = ['ImProc', ch_name, 'C-SelectCont','Status']
             msg = 'Selecting the Contours of Channel '+str(ch_name[-1])+' has been successfully finished!'
-            self.running_process = None
             sp_process2 = ['ImProc', ch_name, 'Status']
         else: 
             print('What done?')
@@ -4424,6 +4529,11 @@ class MainWindow(QMainWindow):
                 self.organ.update_mHworkflow(sp_process2, update = 'DONE')
             self.win_msg(msg)
         else: 
+            if process == 'manual_close': 
+                self.organ.update_mHworkflow(sp_process1, update = 'Initialised')
+                self.organ.update_mHworkflow(sp_process2, update = 'Initialised')
+            if process == 'select_contours': 
+                self.organ.update_mHworkflow(sp_process2, update = 'Initialised')
             self.organ.update_mHworkflow(sp_process, update = 'Initialised')
 
         #Update Status in GUI and in CH Progress 
@@ -4592,11 +4702,11 @@ class MainWindow(QMainWindow):
         if start_slc == '' or end_slc == '': 
             self.win_msg('*Please set the slice range in which you want to run the manual closure of the contours.')
             return None
-        elif int(start_slc) > getattr(self, 'num_slices_'+ch_name)-1:
+        elif int(start_slc) > getattr(self, 'num_slices_'+ch_name):
             num_slices = str(getattr(self, 'num_slices_'+ch_name))
             self.win_msg('*The starting slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.')
             return None
-        elif int(end_slc) > getattr(self, 'num_slices_'+ch_name)-1:
+        elif int(end_slc) > getattr(self, 'num_slices_'+ch_name):
             num_slices = str(getattr(self, 'num_slices_'+ch_name))
             self.win_msg('*The ending slice provided is greater than the number of slices that make up this channel ('+num_slices+'). Check to continue.')
             return None
@@ -4698,6 +4808,14 @@ class MainWindow(QMainWindow):
             return gui_select_contours
 
     #Functions to fill sections according to user's selections
+    def user_running_process(self):
+        wf_info = self.organ.mH_settings['wf_info']
+        if 'active_process' in wf_info.keys():
+            running_process = wf_info['active_process']
+        else: 
+            running_process = None
+        setattr(self, 'running_process', running_process)
+
     def user_plot_contour_settings(self, ch_name): 
         wf_info = self.organ.mH_settings['wf_info']
         if 'plot_contours_settings' in wf_info.keys():
@@ -5021,17 +5139,40 @@ class MainWindow(QMainWindow):
         tick = getattr(self, 'tick_modify_select_'+ch_name).isChecked()
         wdg_select = getattr(self, 'select_contours_widget_'+ch_name)
         wdg_modify = getattr(self, 'manually_select_widget_'+ch_name)
+        reselect = getattr(self, 're_select_'+ch_name)
         if tick: 
             wdg_select.setEnabled(False)
             wdg_select.setVisible(False)
             wdg_modify.setEnabled(True)
             wdg_modify.setVisible(True)
+            reselect.setEnabled(True)
         else: 
             wdg_select.setEnabled(True)
             wdg_select.setVisible(True)
             wdg_modify.setEnabled(False)
             wdg_modify.setVisible(False)
-            
+            reselect.setEnabled(False)
+
+    def enable_re_select(self, ch_name):
+                        
+        title = 'Re-Select Contours for Channel '+ch_name[-1]+'...'
+        msg = 'Are you sure you want to re-select the contours for Channel '+ch_name[-1]+'? If so press  -Ok-, else press  -Cancel-.' 
+        prompt = Prompt_ok_cancel(title, msg, parent=self)
+        prompt.exec()
+        print('output:',prompt.output, '\n')
+        if prompt.output: 
+            #Untick the modify section
+            getattr(self, 'tick_modify_select_'+ch_name).setChecked(False)
+            #Uncheck the select contours play
+            getattr(self, 'select_contours_'+ch_name+'_play').setChecked(False)
+            # Change the select state so that it starts from scratch
+            select_state = None 
+            proc_set = ['wf_info', 'select_contours', ch_name, 'select_state']
+            self.organ.update_settings(proc_set, select_state, 'mH')
+            setattr(self, 'select_state_'+ch_name, select_state)
+            #Print message
+            self.win_msg('!Go ahead and re-run "Select Contours" for Channel '+ch_name[-1]+'!')
+
     #Plot 2D functions (segmentation tab)
     def plot_all_slices(self, ch, slice_range='all'): 
 
@@ -5069,7 +5210,7 @@ class MainWindow(QMainWindow):
             slc_tuple = (slices[nn], slices[nn+1])
             name = 'Cont Slcs '+str(slc_tuple[0]+1)+'-'+str(slc_tuple[1]+1-1)
             # print('slc_tuple:', slc_tuple, 'name:', name)
-            stack_cut = copy.deepcopy(stack[slices[nn]:slices[nn+1]][:][:])
+            stack_cut = copy.deepcopy(stack[:][:][slices[nn]:slices[nn+1]])
             params = {'ch_name': ch, 'stack': stack_cut, 
                       'slices_plot': slc_tuple, 'text': 'Contours', 
                       'level': level, 'min_contour_length': min_contour_length}
@@ -5114,7 +5255,7 @@ class MainWindow(QMainWindow):
             #Get Image and Label
             slc = slc_plot_list[im]
             slc_im = slc_plot_list[im]-slc_plot_list[0]
-            myIm = stack[slc_im][:][:]
+            myIm = stack[:][:][slc_im]
             contours = get_contours(myIm, min_contour_length = min_contour_length, 
                                                 level = level)
             # Plot
@@ -5197,7 +5338,7 @@ class MainWindow(QMainWindow):
                 print('Image loaded')
             
             slc_py = slc_user-1
-            myIm = copy.deepcopy(stack[slc_py][:][:])
+            myIm = copy.deepcopy(stack[:][:][slc_py])
             #Get params 
             level = self.plot_contours_settings[ch]['level']
             min_contour_length = self.plot_contours_settings[ch]['min_contour_length']
@@ -5228,11 +5369,11 @@ class MainWindow(QMainWindow):
                     slc_user = slc+1
                     s3s = {}
                     for cont in ['int', 'ext', 'tiss']:
-                        slc_s3 = getattr(self, 's3_'+cont)[slc+1][:][:]
+                        slc_s3 = getattr(self, 's3_'+cont)[:,:,slc+1]
                         s3s[cont] = slc_s3
 
                     stack = self.im_proc
-                    myIm = copy.deepcopy(stack[slc][:][:])
+                    myIm = copy.deepcopy(stack[:][:][slc])
                     if slc in self.dict_s3s.keys(): 
                         all_cont = {'contours':[]}
                         cont_dict = self.dict_s3s[slc]
@@ -5255,10 +5396,10 @@ class MainWindow(QMainWindow):
         self.win_msg('!Plotting the selected contours for all slices. This may take a while so be patient...')
         dict_plot = []; slc_o = start+1
         for slc in range(start, total_slcs): 
-            myIm = self.im_proc[slc][:][:]
+            myIm = self.im_proc[:][:][slc]
             s3s_out = {}
             for cont in ['int', 'tiss', 'ext']: 
-                slc_s3 = getattr(self, 's3_'+cont)[slc+1][:][:]
+                slc_s3 = getattr(self, 's3_'+cont)[:,:,slc+1]
                 s3s_out[cont] = slc_s3
 
             if slc in self.dict_s3s.keys(): 
@@ -9938,7 +10079,8 @@ class MainWindow(QMainWindow):
             print('Save channel was pressed: ', ch)
         
         self.win_msg('!Saving Channel '+ch[-1]+'...')
-        im_ch.save_channel(im_proc=self.im_proc)
+        if hasattr(self, 'im_proc'):
+            im_ch.save_channel(im_proc=self.im_proc)
         self.organ.add_channel(imChannel=im_ch)
 
         if print_txt: 
@@ -9946,15 +10088,6 @@ class MainWindow(QMainWindow):
 
     def save_project_and_organ_pressed(self, alert_on=True):
         print('Save project and organ was pressed')
-        if self.running_process != None: 
-            process, ch = self.running_process.split('_')
-            im_ch = self.organ.obj_imChannels[ch]
-            if len(im_ch.contStack)>0:
-                s3s=True
-            else: 
-                s3s=False
-            self.save_closed_channel(ch=ch, print_txt=True, s3s=s3s)
-
         self.organ.save_organ(alert_on)
         self.proj.add_organ(self.organ)
         self.proj.save_project(alert_on)
@@ -9962,12 +10095,32 @@ class MainWindow(QMainWindow):
 
     def close_morphoHeart_pressed(self):
         print('Close was pressed')
-        msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
-        self.prompt = Prompt_save_all(msg, info=[self.organ, self.proj], parent=self)
+        msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save, all your changes will be lost."]
+        if '_ch' in self.running_process: 
+            self.prompt = Prompt_save_all_chs3(msg, info=[self.organ, self.proj], parent=self)
+            save_chs = True
+        else: 
+            self.prompt = Prompt_save_all(msg, info=[self.organ, self.proj], parent=self)
+            save_chs = False
         self.prompt.exec()
         print('output:',self.prompt.output, '\n')
 
         if self.prompt.output == 'Save All': 
+            if save_chs: 
+                ch_save = self.prompt.save_ch.isChecked()
+                s3s_save = self.prompt.save_chs3s.isChecked()
+                process, ch = self.running_process.split('_')
+                im_ch = self.organ.obj_imChannels[ch]
+                hass3s = []
+                for cont in ['int', 'tiss', 'ext']:
+                    hass3s.append(hasattr(self, 's3_'+cont))
+                
+                if len(im_ch.contStack)>0 and s3s_save and all(hass3s):
+                    s3s=True
+                else: 
+                    s3s=False
+                if ch_save: 
+                    self.save_closed_channel(ch=ch, print_txt=True, s3s=s3s)
             self.save_project_and_organ_pressed()
             print('All saved!')
             self.close()
@@ -9982,18 +10135,33 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         print('User pressed X')
         msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
-        self.prompt = Prompt_save_all(msg, info=[self.organ, self.proj], parent=self)
+        msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save, all your changes will be lost."]
+        if '_ch' in self.running_process: 
+            self.prompt = Prompt_save_all_chs3(msg, info=[self.organ, self.proj], parent=self)
+            save_chs = True
+        else: 
+            self.prompt = Prompt_save_all(msg, info=[self.organ, self.proj], parent=self)
+            save_chs = False
         self.prompt.exec()
         print('output:',self.prompt.output, '\n')
 
         if self.prompt.output == 'Save All': 
-            for item in [self.organ, self.proj]: 
-                if isinstance(item, Organ): 
-                    item.save_organ()
-                    self.win_msg('Organ file saved correctly!')
-                elif isinstance(item, Project):
-                    item.save_project()
-                    self.win_msg('Project file saved correctly!')
+            if save_chs: 
+                ch_save = self.prompt.save_ch.isChecked()
+                s3s_save = self.prompt.save_chs3s.isChecked()
+                process, ch = self.running_process.split('_')
+                im_ch = self.organ.obj_imChannels[ch]
+                hass3s = []
+                for cont in ['int', 'tiss', 'ext']:
+                    hass3s.append(hasattr(self, 's3_'+cont))
+                
+                if len(im_ch.contStack)>0 and s3s_save and all(hass3s):
+                    s3s=True
+                else: 
+                    s3s=False
+                if ch_save: 
+                    self.save_closed_channel(ch=ch, print_txt=True, s3s=s3s)
+            self.save_project_and_organ_pressed()
             print('All saved!')
             event.accept()
 
