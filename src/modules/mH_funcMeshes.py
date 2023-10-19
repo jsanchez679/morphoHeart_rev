@@ -72,7 +72,6 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):#
 
     proc_ms_all = ['MeshesProc','A-Create3DMesh', 'Status']
     run = False
-    
     for ch in organ.obj_imChannels.keys(): 
         win.win_msg('Creating Channel '+ch[-1]+' meshes!')
         #Check if all the meshes for each channel have been created and set new_set accordingly
@@ -97,9 +96,12 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):#
                 win.prog_bar_update(aa)
                 run = True
             else: 
-                win.win_msg('*Remember to update the meshes within the s3_numpy folder to the ones in which contours have been selected!', win.keeplargest_play)
-                win.keeplargest_play.setChecked(False)
+                if win.already_closed_s3s.isChecked():
+                    win.win_msg('*Remember to update the meshes within the s3_numpy folder to the ones in which contours have been selected!', win.keeplargest_play)
+                else: 
+                    win.win_msg('*Something went wrong creating the meshes for '+ch+'!. Make sure all the Channel s3s have been correctly saved to be able to create the meshes.', win.keeplargest_play)
                 return
+            
         if run: 
             #Update organ workflow
             organ.update_mHworkflow(proc_im_all, 'DONE')      
@@ -2414,7 +2416,7 @@ def get_unlooped_heatmap(hmitem, dir_df):
     df_unloopedf= pd.read_csv(str(dir_df))
     # print(df_unloopedf.sample(10))
     df_unloopedf = df_unloopedf.drop(['taken'], axis=1)
-    print(df_unloopedf.sample(10))
+    # print(df_unloopedf.sample(10))
     df_unloopedf.astype('float16').dtypes
 
     heatmap = pd.pivot_table(df_unloopedf, values= hmitem, columns = 'theta', index='z_plane', aggfunc=np.max)

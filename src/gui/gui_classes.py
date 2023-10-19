@@ -136,6 +136,26 @@ class Prompt_ok_cancel(QDialog):
         self.output = False
         self.close()
 
+class Prompt_ok(QDialog):
+    def __init__(self, title:str, msg:str, parent=None):
+        super().__init__(parent)
+        uic.loadUi('src/gui/ui/prompt_ok.ui', self)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.textEdit.setHtml(html_txt[0]+html_txt[1]+msg+html_txt[2])
+        self.output = None
+
+        self.ok_button.clicked.connect(lambda: self.accepted())
+    
+        self.setModal(True)
+        self.show()
+
+    def accepted(self): 
+        print('Entered func!')
+        self.output = True
+        self.close()
+
 class Prompt_ok_cancel_Big(QDialog):
     def __init__(self, title:str, msg:list, parent=None):
         super().__init__(parent)
@@ -587,8 +607,8 @@ class CreateNewProj(QDialog):
         self.dateEdit.setDate(now)
 
         self.checked_analysis = {'morphoHeart': self.checkBox_mH.isChecked(), 
-                                'morphoCell': self.checkBox_mC.isChecked(), 
-                                'morphoPlot': self.checkBox_mP.isChecked()}
+                                'morphoCell': self.checkBox_mC.isChecked(),} 
+                                # 'morphoPlot': self.checkBox_mP.isChecked()}
         #Set validator
         self.lineEdit_proj_name.setValidator(QRegularExpressionValidator(self.reg_ex, self.lineEdit_proj_name))
 
@@ -781,8 +801,8 @@ class CreateNewProj(QDialog):
         
         #Get Analysis Pipeline
         self.checked_analysis = {'morphoHeart': self.checkBox_mH.isChecked(), 
-                                    'morphoCell': self.checkBox_mC.isChecked(), 
-                                    'morphoPlot': self.checkBox_mP.isChecked()}
+                                    'morphoCell': self.checkBox_mC.isChecked(),} 
+                                    # 'morphoPlot': self.checkBox_mP.isChecked()}
         checked = [self.checked_analysis[key] for key in self.checked_analysis if 'Plot' not in key]
 
         if not(any(checked)):
@@ -2906,13 +2926,24 @@ class LoadProj(QDialog):
         self.setWindowIcon(QIcon(mH_icon))
         self.proj = None
         self.organ_selected = None
-        self.organ_checkboxes = None
+        self.multi_organ_checkboxes = None
+        self.multi_organs_added = []
+        self.added_organs_checkboxes = None
 
         #Buttons
-        self.button_load_organs.clicked.connect(lambda: self.load_proj_organs(proj = self.proj))
+        self.button_load_organs.clicked.connect(lambda: self.load_proj_organs(proj=self.proj))
+        self.button_load_organs_comb.clicked.connect(lambda: load_proj_organs_comb(win=self, proj=self.proj))
 
         #Blind analysis
-        self.cB_blind.stateChanged.connect(lambda: self.reload_table())
+        self.cB_blind.stateChanged.connect(lambda: self.reload_table(atype = 'single'))
+        self.cB_blind_comb.stateChanged.connect(lambda: self.reload_table(atype = 'comb'))
+
+        #Multi-Organ Analysis
+        self.add_organ.clicked.connect(lambda: add_organ_to_multi_analysis(win=self, proj=self.proj, add=True, single_proj=True))
+        self.remove_organ.clicked.connect(lambda: add_organ_to_multi_analysis(win=self, proj=self.proj, add=False, single_proj=True))
+
+        #Init window in tab 0
+        self.tab_select_organs.setCurrentIndex(0)
 
     def win_msg(self, msg, btn=None): 
         if msg[0] == '*':
@@ -2940,148 +2971,70 @@ class LoadProj(QDialog):
             self.checkBox_mH.setChecked(True)
         if proj.analysis['morphoCell']:
             self.checkBox_mC.setChecked(True)
-        if proj.analysis['morphoPlot']:
-            self.checkBox_mP.setChecked(True)
 
         date = proj.info['date_created']
         date_qt = QDate.fromString(date, "yyyy-MM-dd")
         self.dateEdit.setDate(date_qt)
         self.win_msg('Project "'+proj.info['user_projName']+'" was successfully loaded!')
         self.button_browse_proj.setChecked(True)
+        self.button_see_proj_settings.setEnabled(True)
     
-    def get_proj_wf(self, proj): 
-        flat_wf = flatdict.FlatDict(copy.deepcopy(proj.workflow))
-        keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))== 4 and 'Status' in key]
-        # print('flat_wf.keys():', flat_wf.keys())
-        for key in flat_wf.keys(): 
-            if key not in keep_keys: 
-                flat_wf.pop(key, None)
-        out_dict = flat_wf.as_dict()
-        for keyi in out_dict: 
-            if isinstance(out_dict[keyi], flatdict.FlatDict):
-                out_dict[keyi] = out_dict[keyi].as_dict()
+    def init_tables(self, load):
+        if load: 
+            #Single Organ Analysis
+            self.tabW_select_organ.clear()
+            self.tabW_select_organ.setRowCount(0)
+            self.tabW_select_organ.setColumnCount(0)
+            self.button_load_organs.setEnabled(True)
+            self.button_load_organs.setChecked(False)
+            self.organ_selected = None
+            self.organ_checkboxes = None
+            #Multi-Organ Analysis
+            self.tabW_select_organs.clear()
+            self.tabW_select_organs.setRowCount(0)
+            self.tabW_select_organs.setColumnCount(0)
+            self.tabW_organs_final.clear()
+            self.tabW_organs_final.setRowCount(0)
+            self.tabW_organs_final.setColumnCount(0)
+            self.button_load_organs_comb.setEnabled(True)
+            self.button_load_organs_comb.setChecked(False)
+            self.multi_organ_checkboxes = None
+            self.multi_organs_added = []
+            self.added_organs_checkboxes = None
+        else: 
+            #Single Organ Analysis
+            self.button_load_organs.setEnabled(False)
+            self.button_load_organs.setChecked(False)
+            #Multi-Organ Analysis
+            self.button_load_organs_comb.setEnabled(False)
+            self.button_load_organs_comb.setChecked(False)
 
-        return flatdict.FlatDict(out_dict)
-    
     def load_proj_organs(self, proj):
         #https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/
         #https://www.pythonguis.com/faq/qtablewidget-for-list-of-dict/
-        if self.button_browse_proj.isChecked(): 
-            if len(proj.organs) > 0: 
-                cBs = []
-                self.tabW_select_organ.clear()
-                wf_flat = self.get_proj_wf(proj)
-                blind = self.cB_blind.isChecked()
-                self.tabW_select_organ.setRowCount(len(proj.organs)+2)
-                keys = {'-':['select'],'Name': ['user_organName'], 'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
-                        'Genotype':['genotype'], 'Manipulation': ['manipulation']}
-                if blind:
-                    keys.pop('Genotype', None); keys.pop('Manipulation', None) 
-                name_keys = list(range(len(keys)))
-
-                keys_wf = {}
-                for wf_key in wf_flat.keys():
-                    nn,proc,sp,_ = wf_key.split(':')
-                    keys_wf[sp] = ['workflow']+wf_key.split(':')
-                
-                # Workflow
-                # - Get morphoHeart Labels
-                mH_keys = [num+len(name_keys) for num, key in enumerate(list(keys_wf.keys())) if 'morphoHeart' in keys_wf[key]]
-                # - Get morphoCell Labels
-                mC_keys = [num+len(name_keys)+len(mH_keys) for num, key in enumerate(list(keys_wf.keys())) if 'morphoCell' in keys_wf[key]]
-
-                #Changing big and small labels: 
-                big_labels = ['General Info']
-                index_big = [0]
-                len_ind_big = [len(keys)]
-                if len(mH_keys)>0:
-                    index_big.append(mH_keys[0]); big_labels.append('morphoHeart'); len_ind_big.append(len(mH_keys))
-                if len(mC_keys)>0:
-                    index_big.append(mC_keys[0]); big_labels.append('morphoCell'); len_ind_big.append(len(mC_keys))       
-
-                self.tabW_select_organ.setColumnCount(len(name_keys)+len(mH_keys)+len(mC_keys))
-                all_labels = keys |  keys_wf
-                aa = 0
-                for col in range(len(name_keys)+len(mH_keys)+len(mC_keys)):
-                    if col in index_big:
-                        self.tabW_select_organ.setSpan(0,col,1,len_ind_big[aa])
-                        item = QTableWidgetItem(big_labels[aa])
-                        item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
-                        self.tabW_select_organ.setItem(0,col, item)
-                        aa+= 1
-                    itemf = QTableWidgetItem(list(all_labels.keys())[col])
-                    itemf.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
-                    self.tabW_select_organ.setItem(1,col, itemf)
-
-                #Adding organs to table
-                row = 2
-                for organ in proj.organs:
-                    col = 0        
-                    for nn, key in all_labels.items(): 
-                        if len(key) == 1 and nn == '-': 
-                            widget   = QWidget()
-                            checkbox = QCheckBox()
-                            checkbox.setChecked(False)
-                            checkbox.setLayoutDirection(QtCore.Qt.LayoutDirection.RightToLeft)
-                            checkbox.setMinimumSize(QtCore.QSize(15, 20))
-                            checkbox.setMaximumSize(QtCore.QSize(15, 20))
-                            layoutH = QHBoxLayout(widget)
-                            layoutH.addWidget(checkbox)
-                            layoutH.setContentsMargins(0, 0, 0, 0)
-                            self.tabW_select_organ.setCellWidget(row, 0, widget)
-                            cB_name = 'cB_'+proj.organs[organ]['user_organName']
-                            setattr(self, cB_name, checkbox)
-                            cBs.append(cB_name)
-                        elif 'workflow' not in key: 
-                            item = QTableWidgetItem(get_by_path(proj.organs[organ],key))
-                            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
-                            self.tabW_select_organ.setItem(row,col, item)
-                        else: 
-                            widget   = QWidget()
-                            layoutH = QHBoxLayout(widget)
-                            color_status = QLineEdit()
-                            color_status.setEnabled(True)
-                            color_status.setMinimumSize(QtCore.QSize(15, 15))
-                            color_status.setMaximumSize(QtCore.QSize(15, 15))
-                            color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
-                            color_status.setReadOnly(True)
-                            layoutH.addWidget(color_status)
-                            layoutH.setContentsMargins(0, 0, 0, 0)
-                            update_status(proj.organs[organ], key, color_status)
-                            self.tabW_select_organ.setCellWidget(row, col, widget)
-                        col+=1
-                    row +=1
-                # self.tabW_select_organ.setHorizontalHeaderLabels([key for key in keys])
-                self.tabW_select_organ.verticalHeader().setVisible(False)
-                self.tabW_select_organ.horizontalHeader().setVisible(False)
-
-                headerc = self.tabW_select_organ.horizontalHeader()  
-                for col in range(len(all_labels.keys())):   
-                    headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
-
-                self.tabW_select_organ.resizeColumnsToContents()
-                self.tabW_select_organ.resizeRowsToContents()
-            else: 
-                error_txt = "!The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
-                self.win_msg(error_txt, self.button_load_organs)
-                self.button_load_organs.setChecked(True)
-                self.organ_checkboxes = None
-                return
-
-            self.organ_checkboxes = cBs
-            self.button_load_organs.setChecked(True)
-            self.go_to_main_window.setEnabled(True)
+        if len(proj.organs) > 0: 
+            cBs = fill_table_with_organs(win = self, proj = proj, table = self.tabW_select_organ, blind_cB = self.cB_blind)
         else: 
-            self.button_load_organs.setChecked(False)
-            error_txt = '*You need to first load a project to load all the organs comprising it.'
+            error_txt = "!The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
             self.win_msg(error_txt, self.button_load_organs)
-    
-    def reload_table(self): 
-        if self.button_load_organs.isChecked(): 
-            self.load_proj_organs(proj = self.proj)
-        else: 
-            pass
+            self.button_load_organs.setChecked(True)
+            self.organ_checkboxes = None
+            return
 
+        self.organ_checkboxes = cBs
+        self.button_load_organs.setChecked(True)
+        self.go_to_main_window.setEnabled(True)
+
+    def reload_table(self, atype): 
+        if atype == 'single': 
+            if self.button_load_organs.isChecked(): 
+                self.load_proj_organs(proj = self.proj)
+        else: # == 'comb'
+            if self.button_load_organs_comb.isChecked(): 
+                load_proj_organs_comb(win=self, proj=self.proj)
+                fill_table_selected_organs(win=self, table = self.tabW_organs_final, 
+                                            blind_cB=self.cB_blind_comb, single_proj=True)
+    
     def check_unique_organ_selected(self, proj): 
         print('self.organ_checkboxes:',self.organ_checkboxes)
         if self.organ_checkboxes != None: 
@@ -3092,6 +3045,7 @@ class LoadProj(QDialog):
             
             if sum(checked) <= 0: 
                 self.organ_selected = None
+                return
             elif sum(checked) > 1:
                 error_txt = '*Please select only one organ to analyse.'
                 self.win_msg(error_txt, self.go_to_main_window)
@@ -3107,8 +3061,359 @@ class LoadProj(QDialog):
                     self.organ_selected = organ_cB.split('cB_')[1]
             print(self.organ_selected)
         else: 
-            error_txt = '*Please select one organ to analyse.'
-            self.win_msg(error_txt, self.go_to_main_window)
+            return
+
+def get_proj_wf(proj): 
+    flat_wf = flatdict.FlatDict(copy.deepcopy(proj.workflow))
+    keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))== 4 and 'Status' in key]
+    # print('flat_wf.keys():', flat_wf.keys())
+    for key in flat_wf.keys(): 
+        if key not in keep_keys: 
+            flat_wf.pop(key, None)
+    out_dict = flat_wf.as_dict()
+    for keyi in out_dict: 
+        if isinstance(out_dict[keyi], flatdict.FlatDict):
+            out_dict[keyi] = out_dict[keyi].as_dict()
+
+    return flatdict.FlatDict(out_dict)
+
+def load_proj_organs_comb(win, proj):
+        #https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/
+        #https://www.pythonguis.com/faq/qtablewidget-for-list-of-dict/
+        
+        if len(proj.organs) > 0: 
+            cBs = fill_table_with_organs(win = win, proj = proj, table = win.tabW_select_organs, blind_cB = win.cB_blind_comb)
+            win.add_organ.setEnabled(True)
+            win.remove_organ.setEnabled(True)
+        else: 
+            error_txt = "!The project selected does not contain organs."
+            win.win_msg(error_txt, win.button_load_organs_comb)
+            win.button_load_organs_comb.setChecked(True)
+            win.multi_organ_checkboxes = None
+            return
+
+        win.multi_organ_checkboxes = cBs
+        win.button_load_organs_comb.setChecked(True)
+
+def fill_table_with_organs(win, proj, table, blind_cB): 
+
+    cBs = []
+    table.clear()
+    wf_flat = get_proj_wf(proj)
+    blind = blind_cB.isChecked()
+    table.setRowCount(len(proj.organs)+2)
+    keys = {'-':['select'],'Name': ['user_organName'], 'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
+            'Genotype':['genotype'], 'Manipulation': ['manipulation']}
+    if blind:
+        keys.pop('Genotype', None); keys.pop('Manipulation', None) 
+    name_keys = list(range(len(keys)))
+
+    keys_wf = {}
+    for wf_key in wf_flat.keys():
+        nn,proc,sp,_ = wf_key.split(':')
+        keys_wf[sp] = ['workflow']+wf_key.split(':')
+    
+    # Workflow
+    # - Get morphoHeart Labels
+    mH_keys = [num+len(name_keys) for num, key in enumerate(list(keys_wf.keys())) if 'morphoHeart' in keys_wf[key]]
+    # - Get morphoCell Labels
+    mC_keys = [num+len(name_keys)+len(mH_keys) for num, key in enumerate(list(keys_wf.keys())) if 'morphoCell' in keys_wf[key]]
+
+    #Changing big and small labels: 
+    big_labels = ['General Info']
+    index_big = [0]
+    len_ind_big = [len(keys)]
+    if len(mH_keys)>0:
+        index_big.append(mH_keys[0]); big_labels.append('morphoHeart'); len_ind_big.append(len(mH_keys))
+    if len(mC_keys)>0:
+        index_big.append(mC_keys[0]); big_labels.append('morphoCell'); len_ind_big.append(len(mC_keys))       
+
+    table.setColumnCount(len(name_keys)+len(mH_keys)+len(mC_keys))
+    all_labels = keys |  keys_wf
+    aa = 0
+    for col in range(len(name_keys)+len(mH_keys)+len(mC_keys)):
+        if col in index_big:
+            table.setSpan(0,col,1,len_ind_big[aa])
+            item = QTableWidgetItem(big_labels[aa])
+            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+            table.setItem(0,col, item)
+            aa+= 1
+        itemf = QTableWidgetItem(list(all_labels.keys())[col])
+        itemf.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+        table.setItem(1,col, itemf)
+
+    #Adding organs to table
+    row = 2
+    for organ in proj.organs:
+        col = 0        
+        for nn, key in all_labels.items(): 
+            if len(key) == 1 and nn == '-': 
+                widget   = QWidget()
+                checkbox = QCheckBox()
+                checkbox.setChecked(False)
+                checkbox.setLayoutDirection(QtCore.Qt.LayoutDirection.RightToLeft)
+                checkbox.setMinimumSize(QtCore.QSize(15, 20))
+                checkbox.setMaximumSize(QtCore.QSize(15, 20))
+                layoutH = QHBoxLayout(widget)
+                layoutH.addWidget(checkbox)
+                layoutH.setContentsMargins(0, 0, 0, 0)
+                table.setCellWidget(row, 0, widget)
+                cB_name = 'cB_'+proj.organs[organ]['user_organName']
+                setattr(win, cB_name, checkbox)
+                cBs.append(cB_name)
+            elif 'workflow' not in key: 
+                item = QTableWidgetItem(get_by_path(proj.organs[organ],key))
+                item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                table.setItem(row,col, item)
+            else: 
+                widget   = QWidget()
+                layoutH = QHBoxLayout(widget)
+                color_status = QLineEdit()
+                color_status.setEnabled(True)
+                color_status.setMinimumSize(QtCore.QSize(15, 15))
+                color_status.setMaximumSize(QtCore.QSize(15, 15))
+                color_status.setStyleSheet("border-color: rgb(0, 0, 0);")
+                color_status.setReadOnly(True)
+                layoutH.addWidget(color_status)
+                layoutH.setContentsMargins(0, 0, 0, 0)
+                update_status(proj.organs[organ], key, color_status)
+                table.setCellWidget(row, col, widget)
+            col+=1
+        row +=1
+
+    table.verticalHeader().setVisible(False)
+    table.horizontalHeader().setVisible(False)
+
+    headerc = table.horizontalHeader()  
+    for col in range(len(all_labels.keys())):   
+        headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
+
+    table.resizeColumnsToContents()
+    table.resizeRowsToContents()
+
+    return cBs
+
+def add_organ_to_multi_analysis(win, proj, add, single_proj):
+    if add: 
+        print('Init win.multi_organ_checkboxes:',win.multi_organ_checkboxes)
+        checked = []
+        for organ_cB in win.multi_organ_checkboxes:
+            cb = getattr(win, organ_cB).isChecked()
+            checked.append(cb)
+
+        if sum(checked) <= 0: 
+            error_txt = '*Please select at least one organ to add to the combinatorial analysis.'
+            win.win_msg(error_txt, win.go_to_analysis_window)
+            return
+        else: 
+            index = [i for i, x in enumerate(checked) if x]
+            print('len>1:',index)
+            print('organ_cB:',organ_cB)
+            for ind in index: 
+                org = win.multi_organ_checkboxes[ind].split('cB_')[1]
+                proj_name = proj.user_projName
+                proj_path = proj.dir_proj
+                notes = get_by_path(proj.organs[org],['user_organNotes'])
+                strain = get_by_path(proj.organs[org],['strain'])
+                stage = get_by_path(proj.organs[org],['stage'])
+                genotype = get_by_path(proj.organs[org],['genotype'])
+                manip = get_by_path(proj.organs[org],['manipulation'])
+                org_proj = {'user_projName': proj_name, 'proj_path': proj_path, 'user_organName': org, 
+                            'user_organNotes': notes, 'strain': strain, 'stage': stage, 
+                            'genotype': genotype, 'manipulation': manip}
+                win.multi_organs_added.append(org_proj)
+
+    else: #remove 
+        print('Init win.added_organs_checkboxes:',win.added_organs_checkboxes)
+        checked = []
+        for organ_cB in win.added_organs_checkboxes:
+            cb = getattr(win, organ_cB).isChecked()
+            checked.append(cb)
+
+        if sum(checked) <= 0: 
+            error_txt = '*Please select at least one organ to remove from the combinatorial analysis.'
+            win.win_msg(error_txt, win.go_to_analysis_window)
+            return
+        else: 
+            index = [i for i, x in enumerate(checked) if x]
+            for ind in index: 
+                org_proj = win.added_organs_checkboxes[ind].split('cB_')[1]
+                org, proj = org_proj.split('_o_')
+                n2del = []
+                for n, org_item in enumerate(win.multi_organs_added):
+                    if org_item['user_organName'] == org and org_item['user_projName'] == proj:
+                        n2del.append(win.multi_organs_added[n])
+                        break
+                for item in n2del: 
+                    win.multi_organs_added.remove(item)
+        
+    cBs = fill_table_selected_organs(win=win, table = win.tabW_organs_final, 
+                                        blind_cB=win.cB_blind_comb, single_proj=single_proj)
+    win.added_organs_checkboxes = cBs
+
+    for cB1 in win.multi_organ_checkboxes:
+        getattr(win, cB1).setChecked(False)
+    for cB2 in win.added_organs_checkboxes:
+        getattr(win, cB2).setChecked(False)
+
+    print('win.multi_organ_checkboxes:',win.multi_organ_checkboxes)
+    print('win.added_organs_checkboxes:',win.added_organs_checkboxes)
+    print('win.multi_organs_added:', win.multi_organs_added)
+
+    if len(win.added_organs_checkboxes)> 0: 
+        win.go_to_analysis_window.setEnabled(True)
+
+def fill_table_selected_organs(win, table, blind_cB, single_proj): 
+
+    cBs = []
+    table.clear()
+    blind = blind_cB.isChecked()
+    table.setRowCount(2)
+    keys = {'-':['select'],'Project': ['user_projName'],'Name': ['user_organName'], 
+            'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
+            'Genotype':['genotype'], 'Manipulation': ['manipulation']}
+    if blind:
+        keys.pop('Genotype', None); keys.pop('Manipulation', None) 
+    if single_proj: 
+        keys.pop('Project', None)
+    name_keys = list(range(len(keys)))
+
+    #Changing big and small labels: 
+    big_labels = ['General Info']
+    index_big = [0]
+    len_ind_big = [len(keys)]    
+
+    table.setColumnCount(len(name_keys))
+    all_labels = keys
+    aa = 0
+    for col in range(len(name_keys)):
+        if col in index_big:
+            table.setSpan(0,col,1,len_ind_big[aa])
+            item = QTableWidgetItem(big_labels[aa])
+            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+            table.setItem(0,col, item)
+            aa+= 1
+        itemf = QTableWidgetItem(list(all_labels.keys())[col])
+        itemf.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+        table.setItem(1,col, itemf)
+
+    #Adding organs to table
+    for org_item in win.multi_organs_added:
+        row = table.rowCount()
+        table.insertRow(row)
+        print(org_item)
+        organ_name = org_item['user_organName']
+        proj_name = org_item['user_projName']
+        cB_name = 'cB_'+organ_name+'_o_'+proj_name
+        col = 0        
+        for nn, key in all_labels.items(): 
+            if len(key) == 1 and nn == '-': 
+                widget   = QWidget()
+                checkbox = QCheckBox()
+                checkbox.setChecked(False)
+                checkbox.setLayoutDirection(QtCore.Qt.LayoutDirection.RightToLeft)
+                checkbox.setMinimumSize(QtCore.QSize(15, 20))
+                checkbox.setMaximumSize(QtCore.QSize(15, 20))
+                layoutH = QHBoxLayout(widget)
+                layoutH.addWidget(checkbox)
+                layoutH.setContentsMargins(0, 0, 0, 0)
+                table.setCellWidget(row, 0, widget)
+                setattr(win, cB_name, checkbox)
+                cBs.append(cB_name)
+            else: # if 'workflow' not in key: 
+                item = QTableWidgetItem(org_item[key[0]])
+                item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                table.setItem(row,col, item)
+            col+=1
+        row +=1
+
+    table.verticalHeader().setVisible(False)
+    table.horizontalHeader().setVisible(False)
+
+    headerc = table.horizontalHeader()  
+    for col in range(len(all_labels.keys())):   
+        headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
+
+    table.resizeColumnsToContents()
+    table.resizeRowsToContents()
+
+    return cBs
+
+class Load_MultiProj(QDialog): 
+
+    def __init__(self, parent=None):
+        super().__init__()
+        uic.loadUi('src/gui/ui/multi_proj_analysis_screen.ui', self)
+        self.setWindowTitle('Create Multi-Project Analysis...')
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.proj = None
+        self.multi_organ_checkboxes = None
+        self.multi_organs_added = []
+        self.added_organs_checkboxes = None
+
+        #Buttons
+        self.button_load_organs_comb.clicked.connect(lambda: load_proj_organs_comb(win=self, proj=self.proj))
+
+        #Blind analysis
+        self.cB_blind_comb.stateChanged.connect(lambda: self.reload_table())
+
+        #Multi-Organ Analysis
+        self.add_organ.clicked.connect(lambda: add_organ_to_multi_analysis(win=self, proj=self.proj, add=True, single_proj=False))
+        self.remove_organ.clicked.connect(lambda: add_organ_to_multi_analysis(win=self, proj=self.proj, add=False, single_proj=False))
+
+    def win_msg(self, msg, btn=None): 
+        if msg[0] == '*':
+            self.tE_validate.setStyleSheet(error_style)
+            msg = 'Error: '+msg
+            alert('error_beep')
+        elif msg[0] == '!':
+            self.tE_validate.setStyleSheet(note_style)
+            msg = msg[1:]
+        else: 
+            self.tE_validate.setStyleSheet(msg_style)
+        self.tE_validate.setText(msg)
+        print(msg)
+
+        if btn != None: 
+            btn.setChecked(False)
+
+    def fill_proj_info(self, proj):
+
+        self.lineEdit_proj_name.setText(proj.info['user_projName'])
+        self.textEdit_ref_notes.setText(proj.info['user_projNotes'])
+        self.lab_filled_proj_dir.setText(str(proj.dir_proj))
+
+        if proj.analysis['morphoHeart']:
+            self.checkBox_mH.setChecked(True)
+        if proj.analysis['morphoCell']:
+            self.checkBox_mC.setChecked(True)
+
+        date = proj.info['date_created']
+        date_qt = QDate.fromString(date, "yyyy-MM-dd")
+        self.dateEdit.setDate(date_qt)
+        self.win_msg('Project "'+proj.info['user_projName']+'" was successfully loaded!')
+        self.button_browse_proj.setChecked(True)
+        self.button_see_proj_settings.setEnabled(True)
+
+    def init_tables(self, load):
+        if load: 
+            #Multi-Organ Analysis
+            self.tabW_select_organs.clear()
+            self.tabW_select_organs.setRowCount(0)
+            self.tabW_select_organs.setColumnCount(0)
+            self.button_load_organs_comb.setEnabled(True)
+            self.button_load_organs_comb.setChecked(False)
+        else: 
+            #Multi-Organ Analysis
+            self.button_load_organs_comb.setEnabled(False)
+            self.button_load_organs_comb.setChecked(False)
+
+    def reload_table(self): 
+        if self.button_load_organs_comb.isChecked(): 
+            load_proj_organs_comb(win=self, proj=self.proj)
+            fill_table_selected_organs(win=self, table = self.tabW_organs_final, 
+                                        blind_cB=self.cB_blind_comb, single_proj=False)
 
 class Load_S3s(QDialog): 
     
@@ -3370,8 +3675,8 @@ class ProjSettings(QDialog):
         self.checkBox_mH.setChecked(an_mH)
         an_mC = self.proj.analysis['morphoCell']
         self.checkBox_mC.setChecked(an_mC)
-        an_mP = self.proj.analysis['morphoPlot']
-        self.checkBox_mP.setChecked(an_mP)
+        # an_mP = self.proj.analysis['morphoPlot']
+        # self.checkBox_mP.setChecked(an_mP)
 
     def init_orient_group(self): 
         sp_set = self.proj.mH_settings['setup']['orientation']
@@ -3559,15 +3864,15 @@ class MainWindow(QMainWindow):
         self.init_segment_tab()
         self.init_pandq_tab()
         # self.init_morphoCell_tab()
-        # self.init_plot_tab()
-        self.win_msg('Organ "'+organ.info['user_organName']+'" was successfully loaded!')
 
         # Init Tabs
         self.init_tabs()
-
         # Theme 
         self.theme = self.cB_theme.currentText()
         self.on_cB_theme_currentIndexChanged(0)
+
+        #Window Message
+        self.win_msg('Organ "'+organ.info['user_organName']+'" was successfully loaded!')
 
     @pyqtSlot(int)
     def on_cB_theme_currentIndexChanged(self, theme):
@@ -3621,12 +3926,9 @@ class MainWindow(QMainWindow):
         #Blind analysis
         self.cB_blind.stateChanged.connect(lambda: self.blind_analysis())
 
-        #Tab functions
-        self.current_tab = 0
-        self.tabWidget.currentChanged.connect(self.tab_changed)
-
         #Menu options
         self.actionSave_Project_and_Organ.triggered.connect(self.save_project_and_organ_pressed)
+        self.actionGo_to_Welcome_Page.triggered.connect(self.go_to_welcome_pressed)
         self.actionClose.triggered.connect(self.close_morphoHeart_pressed)
 
         #Sounds
@@ -3668,6 +3970,10 @@ class MainWindow(QMainWindow):
             self.tabWidget.setTabVisible(2, False)
         #Hide Analysis 
         self.tabWidget.setTabVisible(3, False)
+
+        #Tab functions
+        self.current_tab = 0
+        self.tabWidget.currentChanged.connect(self.tab_changed)
     
     def fill_proj_organ_info(self, proj, organ):
         self.lineEdit_proj_name.setText(proj.info['user_projName'])
@@ -3697,10 +4003,6 @@ class MainWindow(QMainWindow):
             self.tab_segm.setEnabled(True)
         else: 
             self.tab_segm.setVisible(False)
-        if proj.analysis['morphoPlot']:
-            self.tab_plot.setEnabled(True)
-        else: 
-            self.tab_plot.setVisible(False)
 
     def blind_analysis(self):
         if not self.cB_blind.isChecked(): 
@@ -3711,10 +4013,22 @@ class MainWindow(QMainWindow):
             self.lineEdit_manipulation.clear()
     
     def tab_changed(self): 
-        print('Tab was changed to '+str(self.tabWidget.currentIndex()))
-        if self.current_tab == 0 and self.tabWidget.currentIndex():
+        
+        if self.current_tab == 0 and self.tabWidget.currentIndex()== 1:
             print('Warning!')
-
+            #Get the status of all ImProc
+            wf = self.organ.workflow['morphoHeart']['ImProc']
+            all_done = [get_by_path(wf, [ch,'Status']) for ch in wf.keys() if ch in ['ch1', 'ch2', 'ch3', 'ch4']]
+            if not all(flag == 'DONE' for flag in all_done):
+                title = 'You are not done...'
+                msg = 'You are not done segmenting all the channels in this organ. Finish segmenting the channels before continuing to the "Process and Quantify" tab.' 
+                prompt = Prompt_ok(title, msg, parent=self)
+                prompt.exec()
+                print('output:',prompt.output, '\n')
+                self.tabWidget.setCurrentIndex(0)
+                return
+        
+        print('Tab was changed to '+str(self.tabWidget.currentIndex()))
         self.current_tab = self.tabWidget.currentIndex()
 
     #- Init SEGMENTATION Tab
@@ -4512,11 +4826,12 @@ class MainWindow(QMainWindow):
             sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','B-Manual','Status']
             msg = 'Contours of Channel '+str(ch_name[-1])+' have been manually closed!'
             sp_process1 = ['ImProc', ch_name, 'Status']
-            sp_process2 = ['ImProc', ch_name, 'B-CloseCont','Steps','C-CloseInOut','Status']
+            sp_process2 = ['ImProc', ch_name, 'B-CloseCont','Status']
+            sp_process3 = ['ImProc', ch_name, 'B-CloseCont','Steps','C-CloseInOut','Status']
         elif process == 'select_contours':
             sp_process = ['ImProc', ch_name, 'C-SelectCont','Status']
             msg = 'Selecting the Contours of Channel '+str(ch_name[-1])+' has been successfully finished!'
-            sp_process2 = ['ImProc', ch_name, 'Status']
+            sp_process1 = ['ImProc', ch_name, 'Status']
         else: 
             print('What done?')
 
@@ -4524,16 +4839,18 @@ class MainWindow(QMainWindow):
             self.organ.update_mHworkflow(sp_process, update = 'DONE')
             if process == 'manual_close': 
                 self.organ.update_mHworkflow(sp_process2, update = 'DONE')
+                self.organ.update_mHworkflow(sp_process3, update = 'DONE')
                 self.close_draw_btns_widget.setVisible(False)
             elif process == 'select_contours':
-                self.organ.update_mHworkflow(sp_process2, update = 'DONE')
+                self.organ.update_mHworkflow(sp_process1, update = 'DONE')
             self.win_msg(msg)
         else: 
             if process == 'manual_close': 
                 self.organ.update_mHworkflow(sp_process1, update = 'Initialised')
                 self.organ.update_mHworkflow(sp_process2, update = 'Initialised')
+                self.organ.update_mHworkflow(sp_process3, update = 'Initialised')
             if process == 'select_contours': 
-                self.organ.update_mHworkflow(sp_process2, update = 'Initialised')
+                self.organ.update_mHworkflow(sp_process1, update = 'Initialised')
             self.organ.update_mHworkflow(sp_process, update = 'Initialised')
 
         #Update Status in GUI and in CH Progress 
@@ -9192,7 +9509,6 @@ class MainWindow(QMainWindow):
         hm_all = list(self.hm_btns.keys())
         hm_name = hm_all[btn_num]
         self.win_msg('Plotting heatmaps2D ('+hm_name+')')
-        print('Plotting heatmaps2D ('+hm_name+')')
         short, ch_info = hm_name.split('[')
         if 'th' in hm_name: 
             ch, _ = ch_info[:-1].split('-')
@@ -9208,250 +9524,91 @@ class MainWindow(QMainWindow):
         vmax = gui_thball['max_val']
 
         print(dirs_df, cmap, vmin, vmax)
-
-        #Test
-        title = 'Test'
-        # cmap = 'turbo'
-        heatmap = np.array([[0.8, 2.4, 2.5, 3.9, 0.0, 4.0, 0.0],
-                    [2.4, 0.0, 4.0, 1.0, 2.7, 0.0, 0.0],
-                    [1.1, 2.4, 0.8, 4.3, 1.9, 4.4, 0.0],
-                    [0.6, 0.0, 0.3, 0.0, 3.1, 0.0, 0.0],
-                    [0.7, 1.7, 0.6, 2.6, 2.2, 6.2, 0.0],
-                    [1.3, 1.2, 0.0, 0.0, 0.0, 3.2, 5.1],
-                    [0.1, 2.0, 0.0, 1.4, 0.0, 1.9, 6.3]])
         
         #Get all construction settings
-        #Plot Title
         organ_name = self.organ.user_organName
         tissue_name = self.organ.mH_settings['setup']['name_chs'][ch]
         if 'th' in hm_name: 
             if 'i2e' in hm_name: 
-                title = organ_name +' - '+tissue_name.title()+' Thickness (int2ext) [um]'
+                label = 'Thickness (int2ext) [um]'
+                title = organ_name +' - '+tissue_name.title()+' '+label
             else: 
-                title = organ_name +' - '+tissue_name.title()+' Thickness (ext2int) [um]'
+                label = 'Thickness (ext2int) [um]'
+                title = organ_name +' - '+tissue_name.title()+' '+label
         else: 
-            title = organ_name +' - Myocardium ballooning [um]'
+            label = 'Ballooning - CL > Tissue [um]'
+            title = organ_name +' - '+label
         print('- title:', title)
 
         # Make figure
-        self.plot_win = PlotWindow(title= title, width = 8, height= 8, dpi = 300, parent = self)
+        self.plot_win = PlotWindow(title= title, width = 8, height = 8, dpi = 300, parent = self)
         self.plot_win.lab_title.setText(title)
-        fontsize = 2; labelsize = 10; width = 1.0; length = 4.0
-        if 'div1' in dirs_df.keys(): 
-            if 'whole' in str(dirs_df['div1']): 
+        fontsize = 2.5; labelsize = 10; width = 0.1; length = 2
+        n_subs = len(dirs_df)
+
+        fig11 = self.plot_win.figure
+        fig11.clear()
+
+        #Gridspec
+        outer_grid = fig11.add_gridspec(nrows=n_subs, ncols=2, width_ratios =[1,0.035])
+        outer_grid.update(left=0.1,right=0.9,top=0.95,bottom=0.05,wspace=0,hspace=0)
+
+        divs = sorted(list(dirs_df.keys()))
+
+        n=0
+        for div in divs:
+            if 'whole' in str(dirs_df[div]): 
                 name = ''
             else: 
-                name = self.ordered_kspl['div1']['name']
+                name = self.ordered_kspl[div]['name']
             print('name:', name)
-            #Get heatmap specific for that segm
-            dir_df = self.organ.dir_res(dir='csv_all') / dirs_df['div1']
-            heatmap1 = get_unlooped_heatmap(hm_name, dir_df)
-            ax1 = self.plot_win.figure_div1.add_subplot(111)
-            c1 = ax1.pcolor(heatmap1, cmap=cmap,vmin=vmin, vmax=vmax)
-            cb1 = self.plot_win.figure_div1.colorbar(c1, ax=ax1)
-            cb1.outline.set_visible(False)
-            cb1.ax.tick_params(labelsize=fontsize)
-            ax1.invert_yaxis()
-            ax1.tick_params(left = False, right = False , labelleft = False ,
-                labelbottom = False, bottom = False)
-            
-            # x_pos = ax1.get_xticks()
-            # x_pos_new = np.linspace(x_pos[0], x_pos[-1], 7)
-            # x_lab_new = np.arange(-180,200,60)
-            # ax1.set_xticks(x_pos_new) 
-            # ax1.set_xticklabels(x_lab_new, rotation=30, fontsize=fontsize)#, fontname='Arial')
-            # ax1.xaxis.set_tick_params(labelsize=fontsize, labelcolor='#696969', direction='out', which='major')
-            # ax1.xaxis.set_tick_params(width=width)
-            # print('params:', ax1.xaxis.get_tick_params(which='major'))
 
-            # y_pos = ax1.get_yticks()
-            # ylabels=np.linspace(heatmap1.index.min(), heatmap1.index.max(), len(y_pos)).round(2)
-            # ax1.set_yticks(ticks=y_pos, labels=ylabels)
-            # ax1.set_yticklabels(ylabels, rotation=0, fontsize=fontsize)#, fontname='Arial')
-            # ax1.yaxis.set_tick_params(labelsize=fontsize, width = width, length = length, 
-            #                           labelrotation = 0, labelcolor='#696969', direction='out', which='major')
-            # print('params:', ax1.yaxis.get_tick_params(which='major'))
+            #Get heatmap specific for that segm
+            dir_df = self.organ.dir_res(dir='csv_all') / dirs_df[div]
+            heatmap = get_unlooped_heatmap(hm_name, dir_df)
+
+            ax = fig11.add_subplot(outer_grid[n])
+            c = ax.pcolor(heatmap, cmap=cmap, vmin=vmin, vmax=vmax)
+            ax.invert_yaxis()
+
+            y_pos = ax.get_yticks()
+            ylabels=np.linspace(heatmap.index.min(), heatmap.index.max(), len(y_pos)).round(2)
+            ax.set_yticks(ticks=y_pos, labels=ylabels)
+            ax.set_yticklabels(ylabels, rotation=0, fontsize=fontsize)#, fontname='Arial')
+            ax.yaxis.set_tick_params(labelsize=fontsize, width = width, length = length, 
+                                      labelrotation = 0, labelcolor='#696969', direction='out', which='major')
+            # print('params:', ax.yaxis.get_tick_params(which='major'))
             # print('ylabels:', ylabels)
+            x_pos = ax.get_xticks()
+            x_pos_new = np.linspace(x_pos[0], x_pos[-1], 7)
+            ax.set_xticks(x_pos_new) 
+            x_lab_new = np.arange(-180,200,60)
+            ax.set_xticklabels(x_lab_new, rotation=30, fontsize=fontsize)#, fontname='Arial')
+            ax.xaxis.set_tick_params(labelsize=fontsize, width = width, length = length, 
+                                     labelcolor='#696969', direction='out', which='major')
+            # print('params:', ax.xaxis.get_tick_params(which='major'))
 
-            for pos in ['top', 'right', 'bottom', 'left']:
-                ax1.spines[pos].set_visible(False)
+            for pos in ['top', 'right']:
+                ax.spines[pos].set_visible(False)
+            for pos in ['bottom', 'left']:
+                ax.spines[pos].set_linewidth(0.1)
+            if name != '':
+                ax.set_ylabel(ylabel = name.title(), fontsize=fontsize)
 
-            self.plot_win.figure_div1.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
-            self.plot_win.canvas_div1.draw()
-            self.plot_win.lab_div1.setText('Plot '+name+': ')
-        
-        else: 
-            self.plot_win.toolbar_div1.setVisible(False)
-            self.plot_win.graph_widget_div1.setVisible(False)
-            self.plot_win.lab_div1.setVisible(False)
+            #Colorbar 
+            axc = fig11.add_subplot(outer_grid[n+1])
+            axc.set_axis_off()
+            cb = self.plot_win.figure.colorbar(c, ax=axc, fraction = 1)#, orientation='horizontal')
+            cb.ax.tick_params(width = 0.1, length = 2, labelsize=fontsize)
+            # cb.set_label(label, fontsize=fontsize)
+            cb.outline.set_visible(False)
 
-        if 'div2' in dirs_df.keys(): 
-            print(self.ordered_kspl['div2']['name'])
-            #Get heatmap specific for that segm
-            dir_df = self.organ.dir_res(dir='csv_all') / dirs_df['div2']
-            heatmap2 = get_unlooped_heatmap(hm_name, dir_df)
-            ax2 = self.plot_win.figure_div2.add_subplot(111)
-            c2 = ax2.pcolor(heatmap2, cmap=cmap,vmin=vmin, vmax=vmax)
-            cb2 = self.plot_win.figure_div1.colorbar(c2, ax=ax2)
-            cb2.outline.set_visible(False)
-            cb2.ax.tick_params(labelsize=fontsize)
-            ax2.invert_yaxis()
-            ax2.tick_params(left = False, right = False , labelleft = False ,
-                labelbottom = False, bottom = False)
-
-            # x_pos = ax2.get_xticks()
-            # x_pos_new = np.linspace(x_pos[0], x_pos[-1], 7)
-            # x_lab_new = np.arange(-180,200,60)
-            # ax2.set_xticks(x_pos_new) 
-            # ax2.set_xticklabels(x_lab_new, rotation=30, fontsize=fontsize)#, fontname='Arial')
-            # ax2.xaxis.set_tick_params(labelsize=fontsize, labelcolor='#696969', direction='out', which='major')
-            # ax2.xaxis.set_tick_params(width=width)
-            # print('params:', ax2.xaxis.get_tick_params(which='major'))
-
-            # y_pos = ax2.get_yticks()
-            # ylabels=np.linspace(heatmap2.index.min(), heatmap2.index.max(), len(y_pos)).round(2)
-            # ax2.set_yticks(ticks=y_pos, labels=ylabels)
-            # ax2.set_yticklabels(ylabels, rotation=0, fontsize=fontsize)#, fontname='Arial')
-            # ax2.yaxis.set_tick_params(labelsize=fontsize, width = width, length = length, 
-            #                           labelrotation = 0, labelcolor='#696969', direction='out', which='major')
-            # print('params:', ax1.yaxis.get_tick_params(which='major'))
-            # print('ylabels:', ylabels)
+            n+=2
             
-            for pos in ['top', 'right', 'bottom', 'left']:
-                ax2.spines[pos].set_visible(False)
-
-            self.plot_win.figure_div2.tight_layout()
-            self.plot_win.canvas_div2.draw()
-            self.plot_win.lab_div2.setText('Plot '+self.ordered_kspl['div2']['name']+': ')
-        
-        else: 
-            self.plot_win.toolbar_div2.setVisible(False)
-            self.plot_win.graph_widget_div2.setVisible(False)
-            self.plot_win.lab_div2.setVisible(False)
-
-        if 'div3' in dirs_df.keys(): 
-            print(self.ordered_kspl['div3']['name'])
-            #Get heatmap specific for that segm
-            #heatmap = 
-            ax3 = self.plot_win.figure_div3.add_subplot(111)
-            b3 = sns.heatmap(heatmap, cmap=cmap, ax=ax3)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
-            self.plot_win.figure_div3.tight_layout()
-            self.plot_win.canvas_div3.draw()
-            self.plot_win.lab_div3.setText('Plot '+self.ordered_kspl['div3']['name']+': ')
-        
-        else: 
-            self.plot_win.toolbar_div3.setVisible(False)
-            self.plot_win.graph_widget_div3.setVisible(False)
-            self.plot_win.lab_div3.setVisible(False)
-
-        if 'div4' in dirs_df.keys(): 
-            print(self.ordered_kspl['div4']['name'])
-            #Get heatmap specific for that segm
-            #heatmap = 
-            ax4 = self.plot_win.figure_div4.add_subplot(111)
-            b4 = sns.heatmap(heatmap, cmap=cmap, ax=ax4)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
-            self.plot_win.figure_div4.tight_layout()
-            self.plot_win.canvas_div4.draw()
-            self.plot_win.lab_div4.setText('Plot '+self.ordered_kspl['div4']['name']+': ')
-        
-        else: 
-            self.plot_win.toolbar_div4.setVisible(False)
-            self.plot_win.graph_widget_div4.setVisible(False)
-            self.plot_win.lab_div4.setVisible(False)
-        
-        if 'div5' in dirs_df.keys(): 
-            print(self.ordered_kspl['div5']['name'])
-            #Get heatmap specific for that segm
-            #heatmap = 
-            ax5 = self.plot_win.figure_div5.add_subplot(111)
-            b5 = sns.heatmap(heatmap, cmap=cmap, ax=ax5)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
-            self.plot_win.figure_div5.tight_layout()
-            self.plot_win.canvas_div5.draw()
-            self.plot_win.lab_div5.setText('Plot '+self.ordered_kspl['div5']['name']+': ')
-        
-        else: 
-            self.plot_win.toolbar_div5.setVisible(False)
-            self.plot_win.graph_widget_div5.setVisible(False)
-            self.plot_win.lab_div5.setVisible(False)
-
-        self.plot_win.exec()
-
-        # self.plot_win = PlotWindow(title= 'Plot test', width = 16, height= 10, dpi = 300, parent = self)
-        # ax_top = self.plot_win.figure_top.add_subplot(111)
-        # b_top = sns.heatmap(heatmap, cmap=cmap, ax=ax_top)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
-        # self.plot_win.figure_top.tight_layout()
-        # print('aaa')
-
-        # ax_bot = self.plot_win.figure_bot.add_subplot(111)
-        # b_bot = sns.heatmap(heatmap, cmap=cmap, ax=ax_bot)#, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
-        # self.plot_win.figure_bot.tight_layout()
-
-        # #draw new graph
-        # self.plot_win.canvas_top.draw()
-        # self.plot_win.canvas_bot.draw()
+        #Draw and show window
+        self.plot_win.canvas.draw()
         # self.plot_win.exec()
-
-        #Final version
-        # organ_name = self.organ.user_organName
-        # title_df = organ_name+'_dfUnloop_'+hm_name+'_'+self.ordered_kspl['div2']['name']+'.csv'
-        # dir_df = self.organ.dir_res(dir='csv_all') / title_df
-        # print(dir_df)
-
-        # df_unloopedf = pd.read_csv(dir_df)
-        # df_unloopedf = df_unloopedf.drop(['taken'], axis=1)
-        # df_unloopedf.astype('float16').dtypes  
-        # print(df_unloopedf.sample(10))
-
-        # heatmap = pd.pivot_table(df_unloopedf, values= hm_name, columns = 'theta', index='z_plane', aggfunc=np.max)
-        # heatmap.astype('float16').dtypes
-        # print(heatmap.sample(10))
-        # alert('woohoo')
-        # tissue_name = self.organ.mH_settings['setup']['name_chs'][ch]
-
-        # # for div in self.ordered_kspl['div']:
-        # if 'th' in hm_name: 
-        #     if 'i2e' in hm_name: 
-        #         title = organ_name +' - '+tissue_name.title()+' Thickness (int2ext) [um] - '+self.ordered_kspl['div2']['name'].title()
-        #     else: 
-        #         title = organ_name +' - '+tissue_name.title()+' Thickness (ext2int) [um] - '+self.ordered_kspl['div2']['name'].title()
-        # else: 
-        #     title = organ_name +' - Myocardium ballooning [um] - '+self.ordered_kspl['div1']['name'].title()
-        # print('\t- title:', title)
-
-        # #Get all construction settings
-        # gui_thball = self.gui_thickness_ballooning
-        # cmap = gui_thball[hm_name]['colormap']
-        # vmin = gui_thball[hm_name]['min_val']
-        # vmax = gui_thball[hm_name]['max_val']
-
-        # print('\n- Creating heatmaps for '+hm_name+'_'+self.ordered_kspl['div1']['name'].title())
-        
-        # # Make figure
-        # self.plot_win = PlotWindow(title= 'Plot test', width = 16, height = 10, dpi = 300, parent = self)
-        # ax = self.plot_win.figure.add_subplot(111)
-        # b = sns.heatmap(heatmap, cmap=cmap, ax=ax, vmin = vmin, vmax = vmax)#, xticklabels=20, yticklabels=550)
-        # self.plot_win.figure.tight_layout()
-        # print('aaa')
-
-        # y_text = 'Centreline Position'# ['+kspl_data['name'].title()+']'
-            
-        # x_pos = ax.get_xticks()
-        # x_pos_new = np.linspace(x_pos[0], x_pos[-1], 19)
-        # x_lab_new = np.arange(-180,200,20)
-        # ax.set_xticks(x_pos_new) 
-        # ax.set_xticklabels(x_lab_new, rotation=30)
-        
-        # y_pos = ax.get_yticks()
-        # y_pos_new = np.linspace(y_pos[0], y_pos[-1], 11)
-        # ax.set_yticks(y_pos_new) 
-        
-        # plt.ylabel(y_text, fontsize=10)
-        # plt.xlabel('Angle (\N{DEGREE SIGN})', fontsize=10)
-        # plt.title(title, fontsize = 15)
-
-        # #draw new graph
-        # self.plot_win.canvas.draw()
-        # self.plot_win.exec()
+        self.plot_win.show()
 
     #Plot 3D functions
     def plot_meshes(self, ch, chNS=False):
@@ -10057,9 +10214,6 @@ class MainWindow(QMainWindow):
     def init_morphoCell_tab(self): 
         print('Setting up morphoCell Tab')
 
-    def init_plot_tab(self): 
-        print('Setting Plot Tab')
-
     #Menu functions / Saving functions
     def save_closed_channel(self, ch, print_txt=False, s3s=False):
         #Get channel 
@@ -10093,10 +10247,22 @@ class MainWindow(QMainWindow):
         self.proj.save_project(alert_on)
         self.win_msg('Project  -'+ self.proj.user_projName + '-  and Organ  -'+ self.organ.user_organName +'-  were succesfully saved!')
 
+    def go_to_welcome_pressed(self): 
+        print('Go to Welcome was pressed')
+        title = 'Go to Welcome Page...'
+        msg = 'Are you sure you want to close the Analysis Window and go to the Welcome Page?' 
+        prompt = Prompt_ok_cancel(title, msg, parent=self)
+        prompt.exec()
+        print('output:',prompt.output, '\n')
+        if prompt.output: 
+            self.controller.show_welcome()
+        else: 
+            pass
+
     def close_morphoHeart_pressed(self):
         print('Close was pressed')
         msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save, all your changes will be lost."]
-        if '_ch' in self.running_process: 
+        if self.running_process != None and '_ch' in self.running_process: 
             self.prompt = Prompt_save_all_chs3(msg, info=[self.organ, self.proj], parent=self)
             save_chs = True
         else: 
@@ -10134,9 +10300,8 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         print('User pressed X')
-        msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
         msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save, all your changes will be lost."]
-        if '_ch' in self.running_process: 
+        if self.running_process != None and '_ch' in self.running_process: 
             self.prompt = Prompt_save_all_chs3(msg, info=[self.organ, self.proj], parent=self)
             save_chs = True
         else: 
@@ -10173,6 +10338,243 @@ class MainWindow(QMainWindow):
             print('Save All Cancelled')
             event.ignore()
 
+class MultipAnalysisWindow(QMainWindow): 
+    def __init__(self, projs, organs, df_pando, controller):
+        super().__init__()
+        uic.loadUi('src/gui/ui/main_analysis_screen.ui', self)
+        self.setWindowTitle('morphoHeart Analysis')
+        mH_logoXS = QPixmap('images/logos_1o75mm.png')
+        self.mH_logo_XS.setPixmap(mH_logoXS)
+        self.setWindowIcon(QIcon(mH_icon))
+        self.setStyleSheet("background-color:  rgb(255, 255, 255);")
+        self.label_version.setText('v'+mH_config.version+'  ')
+        self.label_version.setStyleSheet('color: rgb(116, 116, 116); font: bold 9pt "Calibri Light";')
+
+        self.projs = projs
+        self.organs = organs
+        self.df_pando = df_pando
+        self.controller = controller
+
+        #General Init
+        self.init_analysis_win()
+        #Progress bar
+        self.prog_bar.setValue(0)
+        #Init Plots 
+        # self.init_plot_results()
+
+        # Theme 
+        self.theme = self.cB_theme.currentText()
+        self.on_cB_theme_currentIndexChanged(0)
+
+        #Window Message
+        self.win_msg('Project and Organs were successfully loaded!')
+
+    @pyqtSlot(int)
+    def on_cB_theme_currentIndexChanged(self, theme):
+        print('mH_config.theme:',mH_config.theme)
+        if theme == 'Light' or theme == 0: 
+            file = 'src/gui/themes/Light.qss'
+        else: 
+            file = 'src/gui/themes/Dark.qss'
+        #Open the file
+        with open(file, 'r') as f: 
+            style_str = f.read()
+            print('Selected theme: ', theme)
+        #Set the theme
+        self.setStyleSheet(style_str)
+        mH_config.theme = theme
+
+    def win_msg(self, msg, btn=None): 
+        if msg[0] == '*':
+            self.tE_validate.setStyleSheet(error_style)
+            msg = 'Error: '+msg
+            alert('error_beep')
+        elif msg[0] == '!':
+            self.tE_validate.setStyleSheet(note_style)
+            msg = msg[1:]
+        else: 
+            self.tE_validate.setStyleSheet(msg_style)
+        self.tE_validate.setText(msg)
+        print(msg)
+
+        if btn != None: 
+            btn.setChecked(False)
+
+    def init_analysis_win(self): 
+        #Fill Proj and Organ Data
+        self.fill_proj_info(self.projs)
+        #Blind analysis
+        # self.cB_blind.stateChanged.connect(lambda: self.blind_analysis())
+        #Fill Organs Table
+        fill_organs_table(win = self, table = self.organs_analysis_widget, 
+                          df_pando = self.df_pando, single_proj = True)
+        #Menu options
+        # self.actionSave_Project_and_Organ.triggered.connect(self.save_project_and_organ_pressed)
+        self.actionGo_to_Welcome_Page.triggered.connect(self.go_to_welcome_pressed)
+        # self.actionClose.triggered.connect(self.close_morphoHeart_pressed)
+
+        #Open
+        self.organs_analysis_open.clicked.connect(lambda: self.open_section(name='organs_analysis'))
+        self.plot_open.clicked.connect(lambda: self.open_section(name='plot'))
+        self.average_heatmaps_open.clicked.connect(lambda: self.open_section(name='average_heatmaps'))
+
+        #Sounds
+        layout = self.hL_sound_on_off 
+        add_sound_bar(self, layout)
+        sound_toggled(win=self)
+
+    def init_plot_results(self): 
+        cB_organs, cB_meshes = self.get_meshes_from_organs()
+
+        self.plot_meshes_user = {}
+        self.all_meshes = {}
+
+        self.fill_comboBox_all_meshes()
+        
+        self.add_mesh.clicked.connect(lambda: self.add_mesh_to_plot())
+        self.set_plot.clicked.connect(lambda: self.set_plot_settings())
+        self.btn_user_plot.clicked.connect(lambda: self.create_user_plot())
+        self.plot_clear_All.clicked.connect(lambda: self.update_plot('del', 'all'))
+        self.combo_axes.setCurrentText('13')
+
+        self.alpha1.valueChanged.connect(lambda: self.update_plot('alpha', '1'))
+        self.alpha2.valueChanged.connect(lambda: self.update_plot('alpha', '2'))
+        self.alpha3.valueChanged.connect(lambda: self.update_plot('alpha', '3'))
+        self.alpha4.valueChanged.connect(lambda: self.update_plot('alpha', '4'))
+        self.alpha5.valueChanged.connect(lambda: self.update_plot('alpha', '5'))
+        self.alpha6.valueChanged.connect(lambda: self.update_plot('alpha', '6'))
+        self.alpha7.valueChanged.connect(lambda: self.update_plot('alpha', '7'))
+        self.alpha8.valueChanged.connect(lambda: self.update_plot('alpha', '8'))
+        self.alpha9.valueChanged.connect(lambda: self.update_plot('alpha', '9'))
+        self.alpha10.valueChanged.connect(lambda: self.update_plot('alpha', '10'))
+
+        self.plotno1.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '1'))
+        self.plotno2.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '2'))
+        self.plotno3.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '3'))
+        self.plotno4.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '4'))
+        self.plotno5.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '5'))
+        self.plotno6.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '6'))
+        self.plotno7.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '7'))
+        self.plotno8.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '8'))
+        self.plotno9.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '9'))
+        self.plotno10.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '10'))
+
+        self.del_mesh1.clicked.connect(lambda: self.update_plot('del', '1'))
+        self.del_mesh2.clicked.connect(lambda: self.update_plot('del', '2'))
+        self.del_mesh3.clicked.connect(lambda: self.update_plot('del', '3'))
+        self.del_mesh4.clicked.connect(lambda: self.update_plot('del', '4'))
+        self.del_mesh5.clicked.connect(lambda: self.update_plot('del', '5'))
+        self.del_mesh6.clicked.connect(lambda: self.update_plot('del', '6'))
+        self.del_mesh7.clicked.connect(lambda: self.update_plot('del', '7'))
+        self.del_mesh8.clicked.connect(lambda: self.update_plot('del', '8'))
+        self.del_mesh9.clicked.connect(lambda: self.update_plot('del', '9'))
+        self.del_mesh10.clicked.connect(lambda: self.update_plot('del', '10'))
+
+    def fill_proj_info(self, projs):
+
+        proj = self.projs[0]['proj']
+        self.lineEdit_proj_name.setText(proj.info['user_projName'])
+        self.lineEdit_user_organNotes.setText(proj.info['user_projNotes'])
+
+        date = proj.info['date_created']
+        date_qt = QDate.fromString(date, "yyyy-MM-dd")
+        self.dateEdit.setDate(date_qt)
+
+        if proj.analysis['morphoHeart']:
+            self.checkBox_mH.setChecked(True)
+        if proj.analysis['morphoCell']:
+            self.checkBox_mH.setChecked(True)
+
+    def open_section(self, name): 
+        #Get button
+        btn = getattr(self, name+'_open')
+        wdg = getattr(self, name+'_widget')
+        if btn.isChecked():
+            wdg.setVisible(False)
+            btn.setText('v')
+        else:
+            wdg.setVisible(True)
+            btn.setText('o')
+
+    def get_meshes_from_organs(self): 
+        #Create a dict containing all the meshes each organ has to fill the comboboxes in plot
+        pass
+    
+    def go_to_welcome_pressed(self): 
+        print('Go to Welcome was pressed')
+        title = 'Go to Welcome Page...'
+        msg = 'Are you sure you want to close the Analysis Window and go to the Welcome Page?' 
+        prompt = Prompt_ok_cancel(title, msg, parent=self)
+        prompt.exec()
+        print('output:',prompt.output, '\n')
+        if prompt.output: 
+            self.controller.show_welcome()
+        else: 
+            pass
+
+def fill_organs_table(win, table, df_pando, single_proj): 
+
+    table.clear()
+    blind = win.cB_blind.isChecked()
+    table.setRowCount(2)
+    keys = {'#':['select'],'Project': ['user_projName'], 'Name': ['user_organName'], 
+            'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
+            'Genotype':['genotype'], 'Manipulation': ['manipulation']}
+    if blind:
+        keys.pop('Genotype', None); keys.pop('Manipulation', None) 
+    if single_proj: 
+        keys.pop('Project', None)
+    name_keys = list(range(len(keys)))
+    
+    #Changing big and small labels: 
+    big_labels = ['General Info']
+    index_big = [0]
+    len_ind_big = [len(keys)]    
+
+    table.setColumnCount(len(name_keys))
+    all_labels = keys
+    aa = 0
+    for col in range(len(name_keys)):
+        if col in index_big:
+            table.setSpan(0,col,1,len_ind_big[aa])
+            item = QTableWidgetItem(big_labels[aa])
+            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+            table.setItem(0,col, item)
+            aa+= 1
+        itemf = QTableWidgetItem(list(all_labels.keys())[col])
+        itemf.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+        table.setItem(1,col, itemf)
+
+    #Adding organs to table
+    for index, df_row in df_pando.iterrows():
+        row = table.rowCount()
+        table.insertRow(row)
+        organ_name = df_row['user_organName']
+        proj_name = df_row['user_projName']
+        cB_name = 'cB_'+organ_name+'_o_'+proj_name
+        col = 0        
+        for nn, key in all_labels.items(): 
+            if nn == '#': 
+                item = QTableWidgetItem(str(row-1))
+                item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                table.setItem(row,col, item)
+            else: # if 'workflow' not in key: 
+                item = QTableWidgetItem(df_row[key[0]])
+                item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
+                table.setItem(row,col, item)
+            col+=1
+        row +=1
+
+    table.verticalHeader().setVisible(False)
+    table.horizontalHeader().setVisible(False)
+
+    headerc = table.horizontalHeader()  
+    for col in range(len(all_labels.keys())):   
+        headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+
+    table.resizeColumnsToContents()
+    table.resizeRowsToContents()
+    
 class PlotWindow(QDialog):
 
     def __init__(self, title:str, width:int, height:int, dpi:int, parent=None):
@@ -10183,72 +10585,19 @@ class PlotWindow(QDialog):
         self.setWindowIcon(QIcon(mH_icon))
         self.output = None
         
-        #Div1
         #   Canvas 
-        self.figure_div1 = Figure(figsize=(width, height), dpi=dpi)
-        self.canvas_div1 = FigureCanvas(self.figure_div1)
+        self.figure = Figure(figsize=(width, height), dpi=dpi)
+        self.canvas = FigureCanvas(self.figure)
 
-        self.layout_div1 = QVBoxLayout()
-        self.graph_widget_div1.setLayout(self.layout_div1)
-        self.layout_div1.addWidget(self.canvas_div1)
+        self.layout_div = QVBoxLayout()
+        self.graph_widget.setLayout(self.layout_div)
+        self.layout_div.addWidget(self.canvas)
 
        #    Toolbars
-        self.toolbar_div1 = NavigationToolbar(self.canvas_div1, self)
-        self.hLayout_div1.addWidget(self.toolbar_div1)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.hLayout.addWidget(self.toolbar)
 
-        #Div2
-        #   Canvas 
-        self.figure_div2 = Figure(figsize=(width, height), dpi=dpi)
-        self.canvas_div2 = FigureCanvas(self.figure_div2)
-
-        self.layout_div2 = QVBoxLayout()
-        self.graph_widget_div2.setLayout(self.layout_div2)
-        self.layout_div2.addWidget(self.canvas_div2)
-
-       #    Toolbars
-        self.toolbar_div2 = NavigationToolbar(self.canvas_div2, self)
-        self.hLayout_div2.addWidget(self.toolbar_div2)
-
-        #Div3
-        #   Canvas 
-        self.figure_div3 = Figure(figsize=(width, height), dpi=dpi)
-        self.canvas_div3 = FigureCanvas(self.figure_div3)
-
-        self.layout_div3 = QVBoxLayout()
-        self.graph_widget_div3.setLayout(self.layout_div3)
-        self.layout_div3.addWidget(self.canvas_div3)
-
-       #    Toolbars
-        self.toolbar_div3 = NavigationToolbar(self.canvas_div3, self)
-        self.hLayout_div3.addWidget(self.toolbar_div3)
-
-        #Div4
-        #   Canvas 
-        self.figure_div4 = Figure(figsize=(width, height), dpi=dpi)
-        self.canvas_div4 = FigureCanvas(self.figure_div4)
-
-        self.layout_div4 = QVBoxLayout()
-        self.graph_widget_div4.setLayout(self.layout_div4)
-        self.layout_div4.addWidget(self.canvas_div4)
-
-       #    Toolbars
-        self.toolbar_div4 = NavigationToolbar(self.canvas_div4, self)
-        self.hLayout_div4.addWidget(self.toolbar_div4)
-
-        #Div5
-        #   Canvas 
-        self.figure_div5 = Figure(figsize=(width, height), dpi=dpi)
-        self.canvas_div5 = FigureCanvas(self.figure_div5)
-
-        self.layout_div5 = QVBoxLayout()
-        self.graph_widget_div5.setLayout(self.layout_div5)
-        self.layout_div5.addWidget(self.canvas_div5)
-
-       #    Toolbars
-        self.toolbar_div5 = NavigationToolbar(self.canvas_div5, self)
-        self.hLayout_div5.addWidget(self.toolbar_div5)
-
-        self.show()
+        # self.show()
 
 from time import sleep
 class Worker_GetSlices(QObject):

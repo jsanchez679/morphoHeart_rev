@@ -2091,11 +2091,14 @@ class ImChannel(): #channel
 
         mesh_prop = {'keep_largest': keep_largest, 'rotateZ_90': rotateZ_90}
         try: 
-            mesh = Mesh_mH(imChannel = self, mesh_type = cont_type, 
-                        mesh_prop = mesh_prop, new_set = new_set)
-            print('!>> ',mesh.__dict__)
-            return True
-        except RuntimeError: 
+            try: 
+                mesh = Mesh_mH(imChannel = self, mesh_type = cont_type, 
+                            mesh_prop = mesh_prop, new_set = new_set)
+                print('!>> ',mesh.__dict__)
+                return True
+            except RuntimeError: 
+                return False
+        except: 
             return False
 
     def save_channel(self, im_proc):
@@ -2613,7 +2616,7 @@ class Mesh_mH():
         self.name = self.channel_no +'_'+self.mesh_type
         self.resolution = imChannel.get_resolution()
 
-        if self.name not in self.parent_organ.meshes.keys():
+        if self.name not in self.parent_organ.meshes.keys() or new_set:
             print('>> New mesh - ', self.name)
             new = True
             self.new_mesh(mesh_prop)

@@ -21,20 +21,30 @@ class Controller:
         self.new_proj_win = None
         self.meas_param_win = None
         self.load_proj_win = None
+        self.load_multi_proj_win = None
         self.new_organ_win = None
         self.main_win = None
+        self.multip_analysis_win = None
         self.load_s3s = None
         self.proj_settings_win = None
 
-        self.wins = ['new_proj_win','meas_param_win','load_proj_win','new_organ_win',
-                     'main_win','load_s3s', 'proj_settings_win']
+        self.wins = ['new_proj_win','meas_param_win','load_proj_win','load_multi_proj_win', 
+                     'new_organ_win','main_win','load_s3s', 'proj_settings_win']
 
     def show_welcome(self):
         #Close previous windows if existent
         if self.new_proj_win != None:
             self.new_proj_win.close()
+            self.new_proj_win = None
         if self.load_proj_win != None:
             self.load_proj_win.close()
+            self.load_proj_win = None
+        if self.load_multi_proj_win != None:
+            self.load_multi_proj_win.close()
+            self.load_multi_proj_win = None
+        if self.multip_analysis_win != None: 
+            self.multip_analysis_win.close()
+            self.multip_analysis_win = None
         #Create welcome window and show
         if self.new_proj_win == None: 
             self.welcome_win = WelcomeScreen()
@@ -47,6 +57,8 @@ class Controller:
         self.welcome_win.button_load_proj.clicked.connect(lambda: self.show_load_proj())
         # -Create new project from template
         self.welcome_win.button_new_proj_from_template.clicked.connect(lambda: self.button_clicked())
+        # -Multi-project analysis
+        self.welcome_win.button_multi_proj.clicked.connect(lambda: self.show_multi_proj())
     
     def button_clicked(self): 
         # #Message
@@ -146,6 +158,15 @@ class Controller:
             self.load_proj_win = LoadProj() 
             self.init_load_proj()
         self.load_proj_win.show()
+    
+    def show_multi_proj(self):
+        #Close welcome window
+        self.welcome_win.close()
+        #Create Load Multi-Project Window and show
+        if self.load_multi_proj_win == None:
+            self.load_multi_proj_win = Load_MultiProj() 
+            self.init_load_multi_proj()
+        self.load_multi_proj_win.show()
 
     def show_new_organ(self, parent_win:str):
         #Identify parent and close it
@@ -179,9 +200,10 @@ class Controller:
 
     def show_main_window(self, parent_win:str):
         #Close new organ or load organ window window
+        win = getattr(self, parent_win)
         if parent_win == 'new_organ_win':
             if self.new_organ_win.button_create_new_organ.isChecked():
-                self.new_organ_win.close()
+                pass# self.new_organ_win.close()
             else: 
                 error_txt = '*You need to first create the organ to continue.'
                 self.new_organ_win.win_msg(error_txt)
@@ -193,7 +215,7 @@ class Controller:
                 self.organ_to_analyse = self.load_proj_win.organ_selected#.replace(' ', '_')
                 self.load_proj_win.win_msg('Loading organ '+self.organ_to_analyse+'...')
                 self.load_organ(proj = self.proj, organ_to_load = self.organ_to_analyse)
-                self.load_proj_win.close()
+                # self.load_proj_win.close()
             else: 
                 if len(self.proj.organs) == 0: 
                     error_txt = "!The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
@@ -202,7 +224,6 @@ class Controller:
                     error_txt = '*Please select one organ to analyse.'
                     self.load_proj_win.win_msg(error_txt)
                     print('Controller, show_main_window: Error in loading window')
-                    alert('bubble')
                 return
         else: 
             print('Controller, show_main_window: Other parent window?')
@@ -213,8 +234,35 @@ class Controller:
         if self.main_win == None:
             self.main_win = MainWindow(proj = self.proj, organ = self.organ, controller=self) 
             self.init_main_win()
+        win.close()
         self.main_win.show()
 
+    def show_analysis_window(self, parent_win:str, single_proj:bool): 
+        print('This takes to Analysis Window from '+parent_win)
+        win = getattr(self, parent_win)
+        print('win.multi_organs_added:', win.multi_organs_added, '\n', len(win.multi_organs_added))
+        if len(win.multi_organs_added) > 0:
+            win.win_msg('Loading Organs in Analysis Window...')
+            df_pando, dict_projs, dict_organs = self.load_multip_proj_and_organs(proj_org = win.multi_organs_added, single_proj=single_proj)
+            # win.close()
+        else: 
+            error_txt = '*Please add organs to "Organs Added to Analysis" table to include in the combinatorial analysis.'
+            win.win_msg(error_txt, win.go_to_analysis_window)
+            return
+        
+        #Create Main Project Window and show
+        if self.multip_analysis_win == None:
+            if single_proj: 
+                self.multip_analysis_win = MultipAnalysisWindow(projs = dict_projs, organs = dict_organs, df_pando= df_pando, controller=self) 
+                self.init_multip_analysis_win()
+                win.close()
+                self.multip_analysis_win.show()
+            else:
+                pass 
+                # self.multip_analysis_win = MainWindow(proj = self.proj, organ = self.organ, controller=self) 
+                # self.init_multip_analysis_win()
+                # self.multip_analysis_win.show()
+    
     def show_load_closed_stacks(self):
         if self.load_s3s == None:
             self.load_s3s = Load_S3s(proj = self.proj, organ = self.organ, parent_win=self.main_win) 
@@ -232,14 +280,37 @@ class Controller:
         #Connect buttons
         # -Go Back
         self.load_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
+        self.load_proj_win.button_go_back_comb.clicked.connect(lambda: self.show_welcome())
         # -Browse project
-        self.load_proj_win.button_browse_proj.clicked.connect(lambda: self.load_proj())
+        self.load_proj_win.button_browse_proj.clicked.connect(lambda: self.load_proj(parent_win='load_proj_win'))
         # -Show New Organ Window 
         self.load_proj_win.button_add_organ.clicked.connect(lambda: self.show_new_organ(parent_win='load_proj_win'))
         # -Go to main_window
         self.load_proj_win.go_to_main_window.clicked.connect(lambda: self.show_main_window(parent_win='load_proj_win'))
+        # -Go to analysis window
+        self.load_proj_win.go_to_analysis_window.clicked.connect(lambda: self.show_analysis_window(parent_win='load_proj_win', single_proj=True))
         # -See proj settings
         self.load_proj_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.load_proj_win))
+
+    def init_load_multi_proj(self): 
+        #Connect buttons
+        # -Go Back
+        self.load_multi_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
+        # -Browse project
+        self.load_multi_proj_win.button_browse_proj.clicked.connect(lambda: self.load_proj(parent_win='load_multi_proj_win'))
+       # -Go to analysis window
+        self.load_multi_proj_win.go_to_analysis_window.clicked.connect(lambda: self.show_analysis_window(parent_win='load_multi_proj_win', single_proj=False))
+        # -See proj settings
+        self.load_multi_proj_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.load_proj_win))
+
+    def init_multi_proj(self): 
+        #Connect buttons
+        # -Go Back
+        self.load_multi_proj_win.button_go_back.clicked.connect(lambda: self.show_welcome())
+        # -Browse project
+        self.load_multi_proj_win.button_browse_proj.clicked.connect(lambda: self.load_proj(parent_win='load_multi_proj_win'))
+        # -See proj settings
+        self.load_multi_proj_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.load_multi_proj_win))
 
     def init_create_new_proj(self): 
         #Connect Buttons
@@ -520,6 +591,12 @@ class Controller:
         self.main_win.scut2_cut2_play_sect11.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_11'))
         self.main_win.scut2_cut2_play_sect12.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_12'))
 
+    def init_multip_analysis_win(self): 
+
+        self.multip_analysis_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.main_win))
+
+        #Action buttons
+        
     #Functions related to API  
     # Project Related  
     def set_proj_meas_param(self):
@@ -563,29 +640,27 @@ class Controller:
             print('\n>>> New Project: ',self.proj.__dict__.keys())
             self.new_proj_win.win_msg("New project '"+self.new_proj_win.lineEdit_proj_name.text()+"' has been created and saved! Continue by creating an organ as part of this project. ")
     
-    def load_proj(self):
+    def load_proj(self, parent_win):
         path_folder = QFileDialog.getExistingDirectory(self.load_proj_win, caption="Select the Project's directory")
         proj_name = str(Path(path_folder).name)[2:] #Removing the R_
         proj_name_us = proj_name.replace(' ', '_')
         json_name = 'mH_'+proj_name_us+'_project.json'
         proj_settings_path = Path(path_folder) / 'settings' / json_name
+        win = getattr(self, parent_win)
         if proj_settings_path.is_file(): 
             proj_dict = {'name': proj_name, 
                          'dir': path_folder}
             self.proj = mHC.Project(proj_dict, new=False)
             print('Loaded project:',self.proj.__dict__.keys())
             print('Project[organs]:',self.proj.organs)
-            self.load_proj_win.proj = self.proj
+            win.proj = self.proj
             #Fill window with project info
-            self.load_proj_win.fill_proj_info(proj = self.proj)
-            self.load_proj_win.button_load_organs.setChecked(False)
-            self.load_proj_win.tabW_select_organ.clear()
-            self.load_proj_win.tabW_select_organ.setRowCount(0)
-            self.load_proj_win.tabW_select_organ.setColumnCount(0)
-            self.load_proj_win.button_see_proj_settings.setEnabled(True)
+            win.fill_proj_info(proj = self.proj)
+            win.init_tables(load=True)
         else: 
-            self.load_proj_win.button_browse_proj.setChecked(False)
-            self.load_proj_win.win_msg('*There is no settings file for a project within the selected directory. Please select a new directory.')
+            win.button_browse_proj.setChecked(False)
+            win.init_tables(load=False)
+            win.win_msg('*There is no settings file for a project within the selected directory. Please select a new directory.')
 
     #Organ related
     def new_organ(self): 
@@ -645,16 +720,60 @@ class Controller:
             self.new_organ_win.button_create_new_organ.setChecked(False)
             return 
     
-    def load_organ(self, proj, organ_to_load):
-        self.organ = proj.load_organ(organ_to_load = organ_to_load)
-        print('-------------Loaded Organ:-------------')
-        print('organ.workflow: ', self.organ.workflow)
-        if not hasattr(self.organ, 'obj_temp'):
-            self.organ.obj_temp = {}
-        print('self.organ.obj_temp: ',self.organ.obj_temp)
-        print('self.organ.mH_settings: ',self.organ.mH_settings)
-        print('self.organ.mH_settings[wf_info]: ',self.organ.mH_settings['wf_info'])
-        print('self.organ.submeshes: ', self.organ.submeshes)
+    def load_organ(self, proj, organ_to_load, single_organ=True):
+        loaded_organ = proj.load_organ(organ_to_load = organ_to_load)
+        if not hasattr(loaded_organ, 'obj_temp'):
+                loaded_organ.obj_temp = {}
+        if single_organ: 
+            self.organ = loaded_organ
+            print('-------------Loaded Organ:-------------')
+            print('organ.workflow: ', self.organ.workflow)
+            print('self.organ.obj_temp: ',self.organ.obj_temp)
+            print('self.organ.mH_settings: ',self.organ.mH_settings)
+            print('self.organ.mH_settings[wf_info]: ',self.organ.mH_settings['wf_info'])
+            print('self.organ.submeshes: ', self.organ.submeshes)
+        else: 
+            return loaded_organ
+
+    def load_multip_proj_and_organs(self, proj_org, single_proj):
+        
+        #Transform the list of dictionaries into a dataframe
+        df_pando = pd.DataFrame(proj_org) 
+        #Get all proj and save them in dict of proj
+        proj_info = df_pando[['user_projName', 'proj_path']]
+        unique_proj_info = proj_info.drop_duplicates()
+        dict_projs = {}
+        for nn, row in unique_proj_info.iterrows(): 
+            proj_name = row['user_projName']
+            proj_path = row['proj_path']
+            proj_dict = {'name': proj_name, 
+                         'dir': str(proj_path)}
+            proj = mHC.Project(proj_dict, new=False)
+            dict_projs[nn] = {'proj_name': proj_name, 
+                             'proj_path': proj_path, 
+                             'proj': proj}
+        # print('dict_projs:', dict_projs)
+
+        dict_organs = {}
+        proj_num = []
+        for index, row in df_pando.iterrows():
+            # print(index, row)
+            #Get values from organ
+            org_proj_name = row['user_projName']
+            org_proj_path = row['proj_path']
+            for nk in dict_projs.keys(): 
+                pj_proj_name = dict_projs[nk]['proj_name']
+                pj_proj_path = dict_projs[nk]['proj_path']
+                if org_proj_name == pj_proj_name and str(org_proj_path) == str(pj_proj_path):
+                    proj_num.append(nk)
+                    break
+            org_name = row['user_organName']
+            organ = self.load_organ(proj = dict_projs[nk]['proj'], organ_to_load = org_name, single_organ=False)
+            dict_organs[index] = {'organ_name': org_name, 
+                                  'organ': organ}
+        df_pando['proj_num'] = proj_num
+
+        return df_pando, dict_projs, dict_organs
 
     #Channel segmentation related
     def mask_ch(self, ch_name): 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>796</width>
-    <height>733</height>
+    <height>724</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -482,34 +482,6 @@ background-color: rgb(255, 255, 255);</string>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_mP">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>120</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>120</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-          </property>
-          <property name="text">
-           <string>Videos / Plot</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -595,7 +567,7 @@ color: rgb(234, 234, 234);
 background-color: rgb(255, 255, 255);</string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_load_create_delete_organ">
       <attribute name="title">
@@ -648,6 +620,9 @@ background-color: rgb(255, 255, 255);</string>
          </item>
          <item>
           <widget class="QPushButton" name="button_load_organs">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimumSize">
             <size>
              <width>180</width>
@@ -1053,93 +1028,83 @@ color: rgb(230, 230, 230);
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_combinatorial_analysis_2">
+     <widget class="QWidget" name="tab_combinatorial_analysis">
       <attribute name="title">
        <string>Combinatorial Analysis</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QLabel" name="lab_no_ch_8">
-         <property name="styleSheet">
-          <string notr="true">font: bold 10pt &quot;Calibri&quot;;
-background-color: rgb(255, 255, 255);</string>
-         </property>
-         <property name="text">
-          <string>Select the organs you want to include in the combinatorial analysis...</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_9">
-             <item>
-              <widget class="QLineEdit" name="lineEdit_proj_name_2add">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="focusPolicy">
-                <enum>Qt::StrongFocus</enum>
-               </property>
-               <property name="layoutDirection">
-                <enum>Qt::RightToLeft</enum>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QLineEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
-               </property>
-               <property name="maxLength">
-                <number>30</number>
-               </property>
-               <property name="frame">
-                <bool>true</bool>
-               </property>
-               <property name="placeholderText">
-                <string>Project name</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="button_browse_proj_2add">
-               <property name="minimumSize">
-                <size>
-                 <width>120</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>120</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="mouseTracking">
-                <bool>true</bool>
-               </property>
-               <property name="focusPolicy">
-                <enum>Qt::ClickFocus</enum>
-               </property>
-               <property name="autoFillBackground">
-                <bool>false</bool>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton{border-radius:10px;
+          <widget class="QLabel" name="lab_no_ch_9">
+           <property name="styleSheet">
+            <string notr="true">font: bold 10pt &quot;Calibri&quot;;
+background-color: rgb(255, 255, 255);</string>
+           </property>
+           <property name="text">
+            <string>Select the organs you want to include in the combinatorial analysis...</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="cB_blind_comb">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>95</width>
+             <height>18</height>
+            </size>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+           </property>
+           <property name="text">
+            <string>Blind Analysis</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_load_organs_comb">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>180</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>180</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="mouseTracking">
+            <bool>true</bool>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton{border-radius:10px;
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
@@ -1158,22 +1123,45 @@ background-color: rgb(232, 232, 232);
 border-color: rgb(158, 158, 158);
 color: rgb(125, 125, 125);
 }
-</string>
-               </property>
-               <property name="text">
-                <string>&amp;Browse Project...</string>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+           </property>
+           <property name="text">
+            <string>Load Organs</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <item>
+            <widget class="QLabel" name="lab_no_ch_10">
+             <property name="styleSheet">
+              <string notr="true">font: 10pt &quot;Calibri&quot;;
+background-color: rgb(255, 255, 255);</string>
+             </property>
+             <property name="text">
+              <string>Organs in Project</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QTableWidget" name="tabW_select_organs">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -1181,13 +1169,13 @@ color: rgb(125, 125, 125);
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>300</height>
+               <height>340</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>300</height>
+               <height>340</height>
               </size>
              </property>
              <property name="styleSheet">
@@ -1279,6 +1267,9 @@ QTableWidget::item:focus{
            </item>
            <item>
             <widget class="QPushButton" name="add_organ">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="minimumSize">
               <size>
                <width>30</width>
@@ -1320,6 +1311,9 @@ color: rgb(125, 125, 125);
            </item>
            <item>
             <widget class="QPushButton" name="remove_organ">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="minimumSize">
               <size>
                <width>30</width>
@@ -1377,20 +1371,21 @@ color: rgb(125, 125, 125);
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_7">
            <item>
-            <spacer name="horizontalSpacer_5">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+            <widget class="QLabel" name="lab_no_ch_11">
+             <property name="styleSheet">
+              <string notr="true">font: 10pt &quot;Calibri&quot;;
+background-color: rgb(255, 255, 255);</string>
              </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
+             <property name="text">
+              <string>Organs Added to Analysis</string>
              </property>
-            </spacer>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
            </item>
            <item>
-            <widget class="QTableWidget" name="tabW_select_organs_final">
+            <widget class="QTableWidget" name="tabW_organs_final">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -1400,13 +1395,13 @@ color: rgb(125, 125, 125);
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>300</height>
+               <height>340</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>300</height>
+               <height>340</height>
               </size>
              </property>
              <property name="styleSheet">
@@ -1484,76 +1479,6 @@ QTableWidget::item:focus{
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
-         <item>
-          <spacer name="horizontalSpacer_6">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="button_add_organ_other_proj_2">
-           <property name="minimumSize">
-            <size>
-             <width>200</width>
-             <height>20</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>20</height>
-            </size>
-           </property>
-           <property name="autoFillBackground">
-            <bool>false</bool>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-</string>
-           </property>
-           <property name="text">
-            <string>Add Organ from Another Project</string>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-           <property name="autoExclusive">
-            <bool>true</bool>
-           </property>
-           <property name="autoDefault">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
           <spacer name="horizontalSpacer_7">
@@ -1569,7 +1494,7 @@ color: rgb(125, 125, 125);
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="button_go_back2">
+          <widget class="QPushButton" name="button_go_back_comb">
            <property name="minimumSize">
             <size>
              <width>80</width>
@@ -1621,6 +1546,9 @@ color: rgb(230, 230, 230);
          </item>
          <item>
           <widget class="QPushButton" name="go_to_analysis_window">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimumSize">
             <size>
              <width>180</width>

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1480</width>
-    <height>1036</height>
+    <height>981</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -812,59 +812,7 @@ color: rgb(234, 234, 234);
           </spacer>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_6">
-           <item alignment="Qt::AlignRight|Qt::AlignTop">
-            <widget class="QLabel" name="mH_logo_XS">
-             <property name="minimumSize">
-              <size>
-               <width>120</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>120</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::NoFrame</enum>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_version">
-             <property name="styleSheet">
-              <string notr="true">color: rgb(116, 116, 116); 
-font: bold 11pt &quot;Calibri Light&quot;;</string>
-             </property>
-             <property name="text">
-              <string>v2.0.1</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_7">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
+          <layout class="QVBoxLayout" name="verticalLayout_122">
            <item alignment="Qt::AlignHCenter">
             <widget class="QLabel" name="label_instructions_5">
              <property name="sizePolicy">
@@ -876,13 +824,13 @@ font: bold 11pt &quot;Calibri Light&quot;;</string>
              <property name="minimumSize">
               <size>
                <width>50</width>
-               <height>20</height>
+               <height>35</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>50</width>
-               <height>20</height>
+               <height>35</height>
               </size>
              </property>
              <property name="layoutDirection">
@@ -895,7 +843,7 @@ font: bold 11pt &quot;Calibri Light&quot;;</string>
               <string>Sounds:</string>
              </property>
              <property name="alignment">
-              <set>Qt::AlignCenter</set>
+              <set>Qt::AlignBottom|Qt::AlignHCenter</set>
              </property>
             </widget>
            </item>
@@ -987,6 +935,52 @@ font: 25 10pt &quot;Calibri Light&quot;;</string>
            </item>
           </layout>
          </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item alignment="Qt::AlignRight|Qt::AlignTop">
+            <widget class="QLabel" name="mH_logo_XS">
+             <property name="minimumSize">
+              <size>
+               <width>120</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>120</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_version">
+             <property name="styleSheet">
+              <string notr="true">color: rgb(116, 116, 116); 
+font: bold 11pt &quot;Calibri Light&quot;;</string>
+             </property>
+             <property name="text">
+              <string>v2.0.1</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
         </layout>
        </item>
        <item>
@@ -1026,7 +1020,7 @@ background-color: rgb(255, 255, 255);</string>
           <enum>QTabWidget::Rounded</enum>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="usesScrollButtons">
           <bool>false</bool>
@@ -1130,7 +1124,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>0</y>
+                      <y>-1133</y>
                       <width>382</width>
                       <height>1807</height>
                      </rect>
@@ -8265,7 +8259,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1236</y>
+                      <y>0</y>
                       <width>382</width>
                       <height>1807</height>
                      </rect>
@@ -15400,7 +15394,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1236</y>
+                      <y>0</y>
                       <width>382</width>
                       <height>1807</height>
                      </rect>
@@ -22535,7 +22529,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1236</y>
+                      <y>0</y>
                       <width>382</width>
                       <height>1807</height>
                      </rect>
@@ -30074,7 +30068,7 @@ QScrollBar::handle:vertical:hover {
                      <x>0</x>
                      <y>0</y>
                      <width>153</width>
-                     <height>304</height>
+                     <height>268</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_86"/>
@@ -31243,7 +31237,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>0</y>
+                   <y>-3330</y>
                    <width>632</width>
                    <height>5616</height>
                   </rect>
@@ -76700,7 +76694,7 @@ border-color: #672146
                   <number>0</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>6</number>
+                  <number>3</number>
                  </property>
                  <item>
                   <widget class="QWidget" name="widget_7" native="true">
@@ -77318,10 +77312,22 @@ QScrollBar::handle:horizontal:hover {
                            <x>0</x>
                            <y>0</y>
                            <width>319</width>
-                           <height>293</height>
+                           <height>275</height>
                           </rect>
                          </property>
                          <layout class="QVBoxLayout" name="verticalLayout_52">
+                          <property name="leftMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>3</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>0</number>
+                          </property>
                           <item>
                            <widget class="QWidget" name="widget_8" native="true">
                             <layout class="QGridLayout" name="gridLayout_3">
@@ -79671,11 +79677,6 @@ QTableWidget::item:focus{
            <string>Cellular (morphoCell)</string>
           </attribute>
          </widget>
-         <widget class="QWidget" name="tab_plot">
-          <attribute name="title">
-           <string>Plot (morphoPlot)</string>
-          </attribute>
-         </widget>
         </widget>
        </item>
        <item>
@@ -79777,6 +79778,7 @@ background-color: rgb(250, 250, 250);</string>
     <addaction name="separator"/>
     <addaction name="actionOpen_a_new_Project_and_Organ"/>
     <addaction name="separator"/>
+    <addaction name="actionGo_to_Welcome_Page"/>
     <addaction name="actionClose"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
@@ -79904,6 +79906,17 @@ background-color: rgb(250, 250, 250);</string>
   <action name="actionOpen_a_new_Project_and_Organ">
    <property name="text">
     <string>Open a new Project and Organ</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Calibri Light</family>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionGo_to_Welcome_Page">
+   <property name="text">
+    <string>Go to Welcome Page...</string>
    </property>
    <property name="font">
     <font>
