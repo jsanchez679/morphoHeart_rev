@@ -221,7 +221,7 @@ class Controller:
                     error_txt = "!The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
                     self.load_proj_win.win_msg(error_txt)
                 else: 
-                    error_txt = '*Please select one organ to analyse.'
+                    error_txt = '*Please select one organ to open.'
                     self.load_proj_win.win_msg(error_txt)
                     print('Controller, show_main_window: Error in loading window')
                 return

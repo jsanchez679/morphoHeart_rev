@@ -1244,12 +1244,12 @@ def classify_segments_from_ext(meshes, dict_segm, ext_sub):
     return dict_segm
 
 #Sections/Regions Functions
-def get_stack_clRibbon(organ, mesh_cl, nPoints, nRes, pl_normal, clRib_type):
+def get_stack_clRibbon(organ, mesh_cl, cl_ribbon, nPoints, nRes, pl_normal, clRib_type):
     
-    cl_ribbon =  mesh_cl.get_clRibbon(nPoints=nPoints, 
-                                      nRes=nRes, 
-                                      pl_normal=pl_normal, 
-                                      clRib_type=clRib_type)
+    # cl_ribbon =  mesh_cl.get_clRibbon(nPoints=nPoints, 
+    #                                   nRes=nRes, 
+    #                                   pl_normal=pl_normal, 
+    #                                   clRib_type=clRib_type)
     
     res = mesh_cl.resolution
     cl_ribbonR = cl_ribbon.clone().x(res[0])
@@ -1404,7 +1404,7 @@ def get_cube_clRibbon(organ, cut, s3_filledCube, res, pl_normal):
 
     return mask_cube_split, s3_filledCubes
     
-def select_ribMask(organ, cut, mask_cube_split, mesh_cl): 
+def select_ribMask(organ, cut, mask_cube_split, mesh_cl, kspl_ext): 
     
     dict_sides = {}
     for mesh in mask_cube_split:
@@ -1457,7 +1457,7 @@ def select_ribMask(organ, cut, mask_cube_split, mesh_cl):
     vpt = vedo.Plotter(axes=1)
     vpt.add_icon(logo, pos=(0.1,1), size=0.25)
     vpt.add_callback('mouse click', func)
-    vpt.show(mask_cube_split, mesh_cl, txt0, lb, msg, azimuth=45, elevation=20, zoom=0.8, interactive=True)
+    vpt.show(mask_cube_split, mesh_cl, kspl_ext, txt0, lb, msg, azimuth=45, elevation=20, zoom=0.8, interactive=True)
     print('selected_mesh:', selected_mesh)
 
     return selected_mesh

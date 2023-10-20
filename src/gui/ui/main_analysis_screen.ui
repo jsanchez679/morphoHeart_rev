@@ -453,13 +453,13 @@ color: rgb(234, 234, 234);
              <property name="minimumSize">
               <size>
                <width>50</width>
-               <height>35</height>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>50</width>
-               <height>35</height>
+               <height>40</height>
               </size>
              </property>
              <property name="layoutDirection">

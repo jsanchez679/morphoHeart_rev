@@ -1749,22 +1749,48 @@ def run_sections(controller, btn):
             nPoints = controller.main_win.gui_sect[cut]['nPoints']
             mesh_cl = controller.organ.obj_meshes[cl_name]
             nRes = controller.main_win.gui_sect[cut]['nRes']
-
             #Create mask_cube and save
             ext_plane = getattr(controller.main_win, 'extend_dir_'+cut.lower())['plane_normal']
             # -> Create ribbon
-            cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
-                                            pl_normal=ext_plane, 
-                                            clRib_type=clRib_type)
+            if controller.main_win.reg_same_centreline.isChecked(): 
+                #Find if the othe KSpline extended has already been created
+                if cut == 'Cut1':
+                    cuto = 'Cut2'
+                else: 
+                    cuto = 'Cut1'
+                if 'ext_nPoints' in controller.main_win.gui_sect[cuto].keys(): 
+                    ext_points = controller.main_win.gui_sect[cuto]['ext_pts']
+                    use_prev = True
+                else: 
+                    ext_points = None
+                    use_prev = False
+            else: 
+                ext_points = None
+                use_prev = False
+
+            happy = False
+            while not happy: 
+                cl_ribbon, kspl_ext = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+                                                            pl_normal=ext_plane, clRib_type=clRib_type, 
+                                                            use_prev=use_prev, ext_points = ext_points)
+                title = 'Check extended centreline...'
+                msg = 'Are you happy with the extended centreline/ribbon created?! \n If so, select  -OK-, else select  -Cancel- and redefine extended centreline.'
+                prompt = Prompt_ok_cancel(title, msg, parent=controller.main_win)
+                prompt.exec()
+                print('output:', prompt.output)
+                happy = prompt.output
+            
+            controller.main_win.gui_sect[cut]['ext_pts'] = kspl_ext.points()
+
             # obj = [(mesh2cut.mesh, cl_ribbon)]
             # txt = [(0, controller.organ.user_organName+'- Extended Centreline Ribbon to cut organ into sections')]
             # plot_grid(obj=obj, txt=txt, axes=8, sc_side=max(controller.organ.get_maj_bounds()))
             
             # -> Create high resolution ribbon
-            print('Creating high resolution centreline ribbon for '+cut.title())
             controller.main_win.win_msg('Creating high resolution centreline ribbon for '+cut.title())
             s3_filledCube, test_rib = fcM.get_stack_clRibbon(organ = controller.organ, 
                                                             mesh_cl = mesh_cl, 
+                                                            cl_ribbon = cl_ribbon, 
                                                             nPoints = nPoints, 
                                                             nRes = nRes, 
                                                             pl_normal = ext_plane, 
@@ -1788,7 +1814,7 @@ def run_sections(controller, btn):
             # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
             
             #Select the side of the ribbon that corresponds to section 1
-            selected_side = fcM.select_ribMask(controller.organ, cut, mask_cube_split, mesh_cl.mesh)
+            selected_side = fcM.select_ribMask(controller.organ, cut, mask_cube_split, mesh_cl.mesh, kspl_ext)
             
             if selected_side['name'] == 'NS': 
                 name_sect1 = controller.organ.mH_settings['setup']['sect'][cut.title()]['name_sections']['sect1']

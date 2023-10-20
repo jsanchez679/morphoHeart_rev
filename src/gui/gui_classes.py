@@ -3111,8 +3111,10 @@ def fill_table_with_organs(win, proj, table, blind_cB):
     keys_wf = {}
     for wf_key in wf_flat.keys():
         nn,proc,sp,_ = wf_key.split(':')
+        if 'Sections' in sp: 
+            sp = sp.replace('Sections', 'Regions')
         keys_wf[sp] = ['workflow']+wf_key.split(':')
-    
+
     # Workflow
     # - Get morphoHeart Labels
     mH_keys = [num+len(name_keys) for num, key in enumerate(list(keys_wf.keys())) if 'morphoHeart' in keys_wf[key]]
@@ -6700,6 +6702,7 @@ class MainWindow(QMainWindow):
                 getattr(self, 'lab_colors_'+cutl).setVisible(False)
                 getattr(self, 'cl_ext_'+cutl).setVisible(False)
                 getattr(self, 'dir_sect_'+cutl).setVisible(False)
+                getattr(self, 'reset_sides_'+cutl).setVisible(False)
                 for nn in range(1,3,1):
                     getattr(self, 'label_'+cutl+'_sect'+str(nn)).setVisible(False)
                     getattr(self, 'fillcolor_'+cutl+'_'+'sect'+str(nn)).setVisible(False)
@@ -7686,6 +7689,12 @@ class MainWindow(QMainWindow):
                             play_btn = self.sect_btns[sect]['play']
                             play_btn.setEnabled(True)
 
+            try: 
+                same_extCL = gui_sect['same_extCL']
+                self.reg_same_centreline.setChecked(same_extCL)
+            except: 
+                pass
+
             #Enable buttons if cuts have been made
             for name in self.sect_btns.keys():
                 cut, ch_cont = name.split(':')
@@ -8419,6 +8428,9 @@ class MainWindow(QMainWindow):
                 gui_sect[cutb]['axis_lab'] = selected.title()
                 direction = getattr(self, 'extend_dir_cut'+optcut)
                 gui_sect[cutb]['direction'] = direction
+
+        same_extCL = self.reg_same_centreline.isChecked()
+        gui_sect['same_extCL'] = same_extCL
             
         return gui_sect
 
@@ -9909,9 +9921,11 @@ class MainWindow(QMainWindow):
         nPoints = self.gui_sect[cut.title()]['nPoints']
         nRes = self.gui_sect[cut.title()]['nRes']
         ext_plane = getattr(self, 'extend_dir_'+cut.lower())['plane_normal']
+        ext_pts = self.gui_sect[cut.title()]['ext_pts']
         cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
                                             pl_normal=ext_plane, 
-                                            clRib_type=clRib_type)
+                                            clRib_type=clRib_type,
+                                            use_prev = True, ext_points=ext_pts)
         #Get first mesh from buttons 
         name_mesh = list(self.sect_btns.keys())[0].split(':')[1]
         mesh2cut = self.organ.obj_meshes[name_mesh]

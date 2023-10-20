@@ -824,13 +824,13 @@ color: rgb(234, 234, 234);
              <property name="minimumSize">
               <size>
                <width>50</width>
-               <height>35</height>
+               <height>45</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>50</width>
-               <height>35</height>
+               <height>45</height>
               </size>
              </property>
              <property name="layoutDirection">
@@ -31237,7 +31237,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-3330</y>
+                   <y>-3885</y>
                    <width>632</width>
                    <height>5616</height>
                   </rect>
@@ -62693,6 +62693,62 @@ border-color: rgb(255, 255, 255)
                                 </layout>
                                </item>
                                <item>
+                                <layout class="QHBoxLayout" name="horizontalLayout_428">
+                                 <item alignment="Qt::AlignHCenter">
+                                  <widget class="QPushButton" name="reset_sides_cut1">
+                                   <property name="minimumSize">
+                                    <size>
+                                     <width>140</width>
+                                     <height>20</height>
+                                    </size>
+                                   </property>
+                                   <property name="maximumSize">
+                                    <size>
+                                     <width>140</width>
+                                     <height>20</height>
+                                    </size>
+                                   </property>
+                                   <property name="autoFillBackground">
+                                    <bool>false</bool>
+                                   </property>
+                                   <property name="styleSheet">
+                                    <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                                   </property>
+                                   <property name="text">
+                                    <string>Redesignate Sides</string>
+                                   </property>
+                                   <property name="checkable">
+                                    <bool>true</bool>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                </layout>
+                               </item>
+                               <item>
                                 <spacer name="verticalSpacer_11">
                                  <property name="orientation">
                                   <enum>Qt::Vertical</enum>
@@ -63578,6 +63634,62 @@ border-color: rgb(255, 255, 255)
                                 </layout>
                                </item>
                                <item>
+                                <layout class="QHBoxLayout" name="horizontalLayout_429">
+                                 <item alignment="Qt::AlignHCenter">
+                                  <widget class="QPushButton" name="reset_sides_cut2">
+                                   <property name="minimumSize">
+                                    <size>
+                                     <width>140</width>
+                                     <height>20</height>
+                                    </size>
+                                   </property>
+                                   <property name="maximumSize">
+                                    <size>
+                                     <width>140</width>
+                                     <height>20</height>
+                                    </size>
+                                   </property>
+                                   <property name="autoFillBackground">
+                                    <bool>false</bool>
+                                   </property>
+                                   <property name="styleSheet">
+                                    <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                                   </property>
+                                   <property name="text">
+                                    <string>Redesignate Sides</string>
+                                   </property>
+                                   <property name="checkable">
+                                    <bool>true</bool>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                </layout>
+                               </item>
+                               <item>
                                 <spacer name="verticalSpacer_12">
                                  <property name="orientation">
                                   <enum>Qt::Vertical</enum>
@@ -63678,6 +63790,49 @@ color: rgb(234, 234, 234);
                                </property>
                                <property name="checkable">
                                 <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QCheckBox" name="reg_same_centreline">
+                               <property name="enabled">
+                                <bool>true</bool>
+                               </property>
+                               <property name="sizePolicy">
+                                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                 <horstretch>0</horstretch>
+                                 <verstretch>0</verstretch>
+                                </sizepolicy>
+                               </property>
+                               <property name="minimumSize">
+                                <size>
+                                 <width>170</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>110</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="layoutDirection">
+                                <enum>Qt::LeftToRight</enum>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                               </property>
+                               <property name="text">
+                                <string>Same Extended Centreline?</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                               <property name="checked">
+                                <bool>false</bool>
+                               </property>
+                               <property name="tristate">
+                                <bool>false</bool>
                                </property>
                               </widget>
                              </item>

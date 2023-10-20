@@ -36,13 +36,13 @@ from ..gui.config import mH_config
 path_mHImages = mH_config.path_mHImages
 
 #%% Set default fonts and sizes for plots
-txt_font = 'Dalim'
-leg_font = 'LogoType' # 'Quikhand' 'LogoType'  'Dalim'
-leg_width = 0.18
-leg_height = 0.2
-txt_size = 0.7
-txt_color = '#696969'
-txt_slider_size = 0.8
+txt_font = mH_config.txt_font
+leg_font = mH_config.leg_font
+leg_width = mH_config.leg_width
+leg_height = mH_config.leg_height
+txt_size = mH_config.txt_size
+txt_color = mH_config.txt_color
+txt_slider_size = mH_config.txt_slider_size
 
 
 #%% ##### - Class definition - ###############################################
@@ -2973,35 +2973,62 @@ class Mesh_mH():
         
         return linLine
 
-    def get_clRibbon(self, nPoints, nRes, pl_normal, clRib_type, return_kspl_ext=False):
+    def get_clRibbon(self, nPoints, nRes, pl_normal, clRib_type, use_prev=False, ext_points = None):
         """
         Function that creates dorso-ventral extended centreline ribbon
         """
+        use_prev = False
+        if not use_prev: 
+            cl = self.get_centreline(nPoints)
+            pts_cl = cl.points()
+            
+            # Extended centreline
+            nn = -2
+            unit_inf = unit_vector(pts_cl[-1]-pts_cl[nn])
+            inf_ext_normal = (pts_cl[-1]+(unit_inf)*100)#*70
+            unit_outf = unit_vector(pts_cl[0]-pts_cl[1])
+            outf_ext_normal = (pts_cl[0]+(unit_outf)*100)#*70 (test for LnR cut Jun14.22)
         
-        cl = self.get_centreline(nPoints)
-        pts_cl = cl.points()
-        
-        # Extended centreline
-        nn = -20
-        inf_ext_normal = (pts_cl[nn]+(pts_cl[-1]-pts_cl[nn])*5)#*70
-        outf_ext_normal = (pts_cl[0]+(pts_cl[0]-pts_cl[1])*100)#*70 (test for LnR cut Jun14.22)
-      
-        pts_cl_ext = np.insert(pts_cl,0,np.transpose(outf_ext_normal), axis=0)
-        pts_cl_ext = np.insert(pts_cl_ext,len(pts_cl_ext),np.transpose(inf_ext_normal), axis=0)
-    
+            pts_cl_ext = np.insert(pts_cl,0,np.transpose(outf_ext_normal), axis=0)
+            pts_cl_ext = np.insert(pts_cl_ext,len(pts_cl_ext),np.transpose(inf_ext_normal), axis=0)
+
+            kspl_o = vedo.KSpline(pts_cl_ext, res=nRes).color('green').legend('Ksplo').lw(2)#601
+        else: 
+            kspl_o = vedo.KSpline(ext_points, res=nRes).color('green').legend('Ksplo').lw(2)#601
+
+        kspl_f = self.modify_centreline(kspl_o=kspl_o, mesh=self.mesh)
+        pts_cl_extf = kspl_f.points()
+       
         # Increase the resolution of the extended centreline and interpolate to unify sampling
-        xd = np.diff(pts_cl_ext[:,0])
-        yd = np.diff(pts_cl_ext[:,1])
-        zd = np.diff(pts_cl_ext[:,2])
+        xd = np.diff(pts_cl_extf[:,0])
+        yd = np.diff(pts_cl_extf[:,1])
+        zd = np.diff(pts_cl_extf[:,2])
         dist = np.sqrt(xd**2+yd**2+zd**2)
         u = np.cumsum(dist)
         u = np.hstack([[0],u])
         t = np.linspace(0, u[-1], nRes)#601
-        resamp_pts = interpn((u,), pts_cl_ext, t)
+        try: 
+            resamp_pts = interpn((u,), pts_cl_extf, t)
+            print('Created resampled KSpline using interpn')
+        except: 
+            # Christian K Answer
+            # https://stackoverflow.com/questions/19117660/how-to-generate-equispaced-interpolating-values/19122075#19122075
+            xn = np.interp(t, u, pts_cl_extf[:,0])
+            yn = np.interp(t, u, pts_cl_extf[:,1])
+            zn = np.interp(t, u, pts_cl_extf[:,2])
+            resamp_pts = np.vstack((xn,yn,zn))
+            resamp_pts = resamp_pts.T
+            print('Created resampled KSpline using np.interp')
+
         kspl_ext = vedo.KSpline(resamp_pts, res=nRes).color('pink').legend('ExtendedCL').lw(2)#601
-    
+
+        # vp = vedo.Plotter(N=3, axes=3)
+        # vp.show(cl, at=0)
+        # vp.show(kspl_o, at=1)
+        # vp.show(kspl_ext, at=2, interactive=True)
+        
         pl_linLine_unitNormal = unit_vector(pl_normal)
-        maj_bound =(max(self.parent_organ.get_maj_bounds())/2)*1.2
+        maj_bound =(max(self.parent_organ.get_maj_bounds())/2)*2
         pl_linLine_unitNormal120 = pl_linLine_unitNormal*maj_bound
     
         if clRib_type == 'ext2sides': # Names are switched but it works
@@ -3021,28 +3048,39 @@ class Mesh_mH():
                 cl_ribbon.append(cl_ribbon2un)
             cl_ribbon = vedo.merge(cl_ribbon)
             cl_ribbon.legend('rib_ExtCL(1-side)').wireframe(True)
-    
-        elif clRib_type == 'HDStack':
-            x_ul, y_ul, z_ul = pl_linLine_unitNormal*2
-            x_cl, y_cl, z_cl = pl_linLine_unitNormal120
-            cl_ribbon = []
-            for i in range(100):
-                kspl_ext_D = kspl_ext.clone().x(x_cl-i*x_ul).y(y_cl-i*y_ul).z(z_cl-i*z_ul)
-                kspl_ext_V = kspl_ext.clone().x(-x_cl+i*x_ul).y(-y_cl+i*y_ul).z(-z_cl+i*z_ul)
-                cl_ribbon2un = vedo.Ribbon(kspl_ext_D, kspl_ext_V, alpha=0.2, res=(220, 20))
-                if i == 0:
-                    rib_pts = cl_ribbon2un.points()
-                else:
-                    rib_pts = np.concatenate((rib_pts,cl_ribbon2un.points()))
-                cl_ribbon.append(cl_ribbon2un)
-            cl_ribbon = vedo.merge(cl_ribbon)
-            cl_ribbon.legend('HDStack').wireframe(True)
-            
-        if return_kspl_ext:
-            return cl_ribbon, kspl_ext
+
         else: 
-            return cl_ribbon
+            print('What? Which function is calling?')
+            alert('bubble')
+
+        vp = vedo.Plotter(N=1, axes=3)
+        vp.show(self.mesh, kspl_o, kspl_ext, cl_ribbon, at=0, interactive=True)
+ 
+        return cl_ribbon, kspl_ext
+    
+    def modify_centreline(self, kspl_o, mesh):
+
+        # Load logo
+        path_logo = path_mHImages / 'logo-07.jpg'
+        logo = vedo.Picture(str(path_logo))
+        #Text
+        text = '>> Modify Extended Centreline Orientation Instructions: \n  -Drag extreme centreline points with mouse\n  -Add points by clicking on the line\n  -Remove them by selecting and pressing -Delete-\n  -Press q when ready to proceed.'
+        txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
         
+        #Make the user define the final points for the centreline
+        plt = vedo.show(mesh, kspl_o, txt, interactive=False, axes=1)
+        plt.add_icon(logo, pos=(0.9,1), size=0.25)
+        # Add the spline tool using the same points and interact with it
+        sptool = plt.add_spline_tool(kspl_o, closed=False)
+        plt.interactive()
+        # Switch off the tool
+        sptool.off()
+        # Extract and visualize the resulting spline
+        sp = sptool.spline().lw(4)
+        vedo.show(sp, "Extended Centreline is ready! \nClose window to continue", interactive=True, resetcam=False)
+
+        return sp
+
     def get_volume(self): 
         mesh_vol = self.mesh.volume()
         return mesh_vol
