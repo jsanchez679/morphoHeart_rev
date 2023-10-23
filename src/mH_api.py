@@ -13,6 +13,11 @@ from .modules.mH_classes_new import *
 from .gui.config import mH_config
 from .gui.gui_classes import *
 
+# Load logo
+path_mHImages = mH_config.path_mHImages
+path_logo = path_mHImages / 'logo-07.jpg'
+logo = vedo.Picture(str(path_logo))
+
 #%% API functions
 def set_process(controller, running_process):
     proc_set = ['wf_info', 'active_process']
@@ -1704,6 +1709,7 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
         print('wf_info:', organ.mH_settings['wf_info']['segments']['setup'])
 
 def run_sections(controller, btn): 
+
     set_process(controller, 'regions')
     workflow = controller.organ.workflow['morphoHeart']
     sect_list = list(controller.main_win.sect_btns.keys())
@@ -1773,6 +1779,7 @@ def run_sections(controller, btn):
                 cl_ribbon, kspl_ext = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
                                                             pl_normal=ext_plane, clRib_type=clRib_type, 
                                                             use_prev=use_prev, ext_points = ext_points)
+                
                 title = 'Check extended centreline...'
                 msg = 'Are you happy with the extended centreline/ribbon created?! \n If so, select  -OK-, else select  -Cancel- and redefine extended centreline.'
                 prompt = Prompt_ok_cancel(title, msg, parent=controller.main_win)
@@ -1788,13 +1795,17 @@ def run_sections(controller, btn):
             
             # -> Create high resolution ribbon
             controller.main_win.win_msg('Creating high resolution centreline ribbon for '+cut.title())
-            s3_filledCube, test_rib = fcM.get_stack_clRibbon(organ = controller.organ, 
+            controller.organ.obj_imChannels[ch].load_chS3s([cont])
+            s3_shape = getattr(controller.organ.obj_imChannels[ch], 's3_'+cont).s3().shape
+            s3_filledCube, test_rib = fcM.get_stack_clRibbon(organ = controller.organ,
+                                                             s3_shape = s3_shape, 
                                                             mesh_cl = mesh_cl, 
                                                             cl_ribbon = cl_ribbon, 
                                                             nPoints = nPoints, 
                                                             nRes = nRes, 
                                                             pl_normal = ext_plane, 
-                                                            clRib_type=clRib_type)
+                                                            clRib_type=clRib_type,
+                                                            win=controller.main_win)
             
             # obj = [(test_rib, mesh_cl.mesh)]
             # txt = [(0, controller.organ.user_organName)]
@@ -1804,6 +1815,7 @@ def run_sections(controller, btn):
             print('Creating cube sections for masking ('+cut.title()+')')
             controller.main_win.win_msg('Creating cube sections for masking ('+cut.title()+')')
             mask_cube_split, s3_filledCubes = fcM.get_cube_clRibbon(organ = controller.organ,
+                                                                    s3_shape = s3_shape, 
                                                                     cut = cut,  
                                                                     s3_filledCube = s3_filledCube,
                                                                     res = mesh_cl.resolution,  

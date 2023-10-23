@@ -1244,7 +1244,7 @@ def classify_segments_from_ext(meshes, dict_segm, ext_sub):
     return dict_segm
 
 #Sections/Regions Functions
-def get_stack_clRibbon(organ, mesh_cl, cl_ribbon, nPoints, nRes, pl_normal, clRib_type):
+def get_stack_clRibbon(organ, s3_shape, mesh_cl, cl_ribbon, nPoints, nRes, pl_normal, clRib_type, win):
     
     # cl_ribbon =  mesh_cl.get_clRibbon(nPoints=nPoints, 
     #                                   nRes=nRes, 
@@ -1260,6 +1260,10 @@ def get_stack_clRibbon(organ, mesh_cl, cl_ribbon, nPoints, nRes, pl_normal, clRi
     #Load stack shape
     shape_s3 = organ.info['shape_s3']
     zdim, xdim, ydim = shape_s3
+    xdims, ydims, zdims = s3_shape
+    if xdim != xdims or ydim != ydims or zdim+2 != zdims: 
+        xdim = xdims; ydim = ydims; zdim = zdims-2
+        print('dimensions changed!')
 
     # Rotate the points that make up the cl_ribbon, to convert them to a stack
     cust_angle = organ.info['custom_angle']
@@ -1280,16 +1284,19 @@ def get_stack_clRibbon(organ, mesh_cl, cl_ribbon, nPoints, nRes, pl_normal, clRi
     s3_filledCube = np.zeros((xdim, ydim, zdim+2))
     s3_filledCube[1:xdim-1,1:ydim-1,1:zdim+1] = 1
 
+    win.prog_bar_range(1,16)
+    n = 0
     # Rotate the points in all ribbons and fit into stack size 
     for cl_rib in cl_ribbonS:
         rib_pts = cl_rib.points()
         rib_points_rot = np.zeros_like(rib_pts)
         for i, pt in enumerate(rib_pts):
             rib_points_rot[i] = (np.dot(rotation_matrix(axis = axis, theta = theta),pt))
+        n+=1; win.prog_bar_update(n)
         rib_pix = np.transpose(np.asarray([rib_points_rot[:,i]//res[i] for i in range(len(res))]))
         rib_pix = rib_pix.astype(int)
         rib_pix = np.unique(rib_pix, axis=0)
-
+        n+=1; win.prog_bar_update(n)
         rib_pix_out = rib_pix.copy()
         index_out = []
         # Clean rib_pix if out of stack shape
@@ -1305,12 +1312,14 @@ def get_stack_clRibbon(organ, mesh_cl, cl_ribbon, nPoints, nRes, pl_normal, clRi
             
             if delete:
                 index_out.append(index)
-
+        n+=1; win.prog_bar_update(n)
         rib_pix_out = np.delete(rib_pix_out, index_out, axis = 0)
         # Create mask of cl_ribbon
         s3_rib[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 1
         # Create filled cube just to one side of cl
         s3_filledCube[rib_pix_out[:,0],rib_pix_out[:,1],rib_pix_out[:,2]] = 0
+        n+=1; win.prog_bar_update(n)
+    win.prog_bar_update(16)
     alert('clown')
         
     # Create volume of extended centreline mask
@@ -1318,11 +1327,15 @@ def get_stack_clRibbon(organ, mesh_cl, cl_ribbon, nPoints, nRes, pl_normal, clRi
     
     return s3_filledCube, test_rib
 
-def get_cube_clRibbon(organ, cut, s3_filledCube, res, pl_normal):
+def get_cube_clRibbon(organ, s3_shape, cut, s3_filledCube, res, pl_normal):
 
     # #Load stack shape
     shape_s3 = organ.info['shape_s3']
     zdim, xdim, ydim = shape_s3
+    xdims, ydims, zdims = s3_shape
+    if xdim != xdims or ydim != ydims or zdim+2 != zdims: 
+        xdim = xdims; ydim = ydims; zdim = zdims-2
+        print('dimensions changed!')
       
     #Identify the direction in which the cubes need to be built
     if organ.mH_settings['wf_info']['sections'][cut.title()]['axis_lab'].lower() == 'roi':
@@ -1351,7 +1364,7 @@ def get_cube_clRibbon(organ, cut, s3_filledCube, res, pl_normal):
                     # else: # repeat: 
                     #     s3_filledCube[xpos,0:index_y[0],zpos] = 0
         
-    elif coord_dir == 1:
+    elif coord_dir == 1 or coord_dir == 2:
         print('Extending cube in the y direction - check!!!')
         for ypos in range(0,ydim):
             for zpos in range(0,zdim+2): 
@@ -1365,7 +1378,7 @@ def get_cube_clRibbon(organ, cut, s3_filledCube, res, pl_normal):
                     # else:
                     #     s3_filledCube[0:index_x[1],ypos,zpos] = 0#[0]
 
-    elif coord_dir == 2: 
+    else:# coord_dir == 2: 
         print('Extending cube in the z direction')
         for xpos in range(0,xdim):
             for ypos in range(0,ydim): 

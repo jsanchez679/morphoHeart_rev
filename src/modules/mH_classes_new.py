@@ -34,6 +34,9 @@ from .mH_funcMeshes import (unit_vector, plot_organCLs, find_angle_btw_pts,
 from ..gui.config import mH_config
 
 path_mHImages = mH_config.path_mHImages
+# Load logo
+path_logo = path_mHImages / 'logo-07.jpg'
+logo = vedo.Picture(str(path_logo))
 
 #%% Set default fonts and sizes for plots
 txt_font = mH_config.txt_font
@@ -43,7 +46,6 @@ leg_height = mH_config.leg_height
 txt_size = mH_config.txt_size
 txt_color = mH_config.txt_color
 txt_slider_size = mH_config.txt_slider_size
-
 
 #%% ##### - Class definition - ###############################################
 # Definition of class to save dictionary
@@ -1593,9 +1595,6 @@ class Organ():
         lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
                             width=leg_width/1.5, height=leg_height/1.5)
         
-        path_logo = path_mHImages / 'logo-07.jpg'
-        logo = vedo.Picture(str(path_logo))
-        
         vpt = MyFaceSelectingPlotter(N=2, axes=1,colors=colors, color_o=color_o, 
                                         views=views)
         vpt.add_icon(logo, pos=(0.1,1), size=0.25)
@@ -1678,9 +1677,6 @@ class Organ():
             mks.append(vedo.Marker('*').c(col[0:-1]).legend(view))
         lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
                             width=leg_width/1.5, height=leg_height/1.5)
-        # Load logo
-        path_logo = path_mHImages / 'logo-07.jpg'
-        logo = vedo.Picture(str(path_logo))
         
         vpt = MyFaceSelectingPlotter(N=2, axes=1,colors=colors, color_o=color_o, 
                                      views=views)
@@ -2973,11 +2969,11 @@ class Mesh_mH():
         
         return linLine
 
-    def get_clRibbon(self, nPoints, nRes, pl_normal, clRib_type, use_prev=False, ext_points = None):
+    def get_clRibbon(self, nPoints, nRes, pl_normal, clRib_type, use_prev=False, ext_points = None, plot=True):
         """
         Function that creates dorso-ventral extended centreline ribbon
         """
-        use_prev = False
+
         if not use_prev: 
             cl = self.get_centreline(nPoints)
             pts_cl = cl.points()
@@ -2993,10 +2989,11 @@ class Mesh_mH():
             pts_cl_ext = np.insert(pts_cl_ext,len(pts_cl_ext),np.transpose(inf_ext_normal), axis=0)
 
             kspl_o = vedo.KSpline(pts_cl_ext, res=nRes).color('green').legend('Ksplo').lw(2)#601
+            kspl_f = self.modify_centreline(kspl_o=kspl_o, mesh=self.mesh)
         else: 
-            kspl_o = vedo.KSpline(ext_points, res=nRes).color('green').legend('Ksplo').lw(2)#601
-
-        kspl_f = self.modify_centreline(kspl_o=kspl_o, mesh=self.mesh)
+            kspl_o = []
+            kspl_f = vedo.KSpline(ext_points, res=nRes).color('green').legend('Ksplo').lw(2)#601
+        
         pts_cl_extf = kspl_f.points()
        
         # Increase the resolution of the extended centreline and interpolate to unify sampling
@@ -3021,16 +3018,11 @@ class Mesh_mH():
             print('Created resampled KSpline using np.interp')
 
         kspl_ext = vedo.KSpline(resamp_pts, res=nRes).color('pink').legend('ExtendedCL').lw(2)#601
-
-        # vp = vedo.Plotter(N=3, axes=3)
-        # vp.show(cl, at=0)
-        # vp.show(kspl_o, at=1)
-        # vp.show(kspl_ext, at=2, interactive=True)
         
         pl_linLine_unitNormal = unit_vector(pl_normal)
         maj_bound =(max(self.parent_organ.get_maj_bounds())/2)*2
         pl_linLine_unitNormal120 = pl_linLine_unitNormal*maj_bound
-    
+
         if clRib_type == 'ext2sides': # Names are switched but it works
             x_cl, y_cl, z_cl = pl_linLine_unitNormal120
             kspl_ext_D = kspl_ext.clone().x(x_cl).y(y_cl).z(z_cl).legend('kspl_CLExt1')
@@ -3053,31 +3045,41 @@ class Mesh_mH():
             print('What? Which function is calling?')
             alert('bubble')
 
-        vp = vedo.Plotter(N=1, axes=3)
-        vp.show(self.mesh, kspl_o, kspl_ext, cl_ribbon, at=0, interactive=True)
+        if plot: 
+            text = '> Final Extended Centreline and Ribbon.\n  Are you happy with the extended centreline/ribbon created?\n  Close window to continue'
+            txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
+
+            vp = vedo.Plotter(N=1, axes=1)
+            vp.add_icon(logo, pos=(0.9,1), size=0.25)
+            vp.show(self.mesh, kspl_o, kspl_ext, cl_ribbon, txt, at=0, interactive=True)
  
         return cl_ribbon, kspl_ext
     
     def modify_centreline(self, kspl_o, mesh):
-
-        # Load logo
-        path_logo = path_mHImages / 'logo-07.jpg'
-        logo = vedo.Picture(str(path_logo))
-        #Text
-        text = '>> Modify Extended Centreline Orientation Instructions: \n  -Drag extreme centreline points with mouse\n  -Add points by clicking on the line\n  -Remove them by selecting and pressing -Delete-\n  -Press q when ready to proceed.'
-        txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
         
+        #Text
+        text = '>> Modify Extended Centreline Orientation Instructions: \n  -Drag extreme centreline points with mouse\n  -Remove them by selecting and pressing -Delete-\n  -Press q (lower q) when ready to proceed.'
+        txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
+
         #Make the user define the final points for the centreline
-        plt = vedo.show(mesh, kspl_o, txt, interactive=False, axes=1)
-        plt.add_icon(logo, pos=(0.9,1), size=0.25)
+        vp = vedo.Plotter(N=1, axes=1)
+        vp.add_icon(logo, pos=(0.9,1), size=0.25)
+        vp.show(mesh, kspl_o, txt, interactive=False, at=0)
         # Add the spline tool using the same points and interact with it
-        sptool = plt.add_spline_tool(kspl_o, closed=False)
-        plt.interactive()
+        sptool = vp.add_spline_tool(kspl_o, closed=False)
+        vp.interactive()
         # Switch off the tool
         sptool.off()
         # Extract and visualize the resulting spline
         sp = sptool.spline().lw(4)
-        vedo.show(sp, "Extended Centreline is ready! \nClose window to continue", interactive=True, resetcam=False)
+        vp.close()
+
+        text = '>> Extended Centreline is ready! \nClose window to continue'
+        txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
+
+        vp2 = vedo.Plotter(N=1, axes=1)
+        vp2.add_icon(logo, pos=(0.9,1), size=0.25)
+        vp2.show(mesh, sp, txt, interactive=True, at=0)
 
         return sp
 

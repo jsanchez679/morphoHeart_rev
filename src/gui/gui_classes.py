@@ -2936,7 +2936,9 @@ class LoadProj(QDialog):
 
         #Blind analysis
         self.cB_blind.stateChanged.connect(lambda: self.reload_table(atype = 'single'))
+        self.cB_notes.stateChanged.connect(lambda: self.reload_table(atype = 'single'))
         self.cB_blind_comb.stateChanged.connect(lambda: self.reload_table(atype = 'comb'))
+        self.cB_notes_comb.stateChanged.connect(lambda: self.reload_table(atype = 'comb'))
 
         #Multi-Organ Analysis
         self.add_organ.clicked.connect(lambda: add_organ_to_multi_analysis(win=self, proj=self.proj, add=True, single_proj=True))
@@ -3013,7 +3015,8 @@ class LoadProj(QDialog):
         #https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/
         #https://www.pythonguis.com/faq/qtablewidget-for-list-of-dict/
         if len(proj.organs) > 0: 
-            cBs = fill_table_with_organs(win = self, proj = proj, table = self.tabW_select_organ, blind_cB = self.cB_blind)
+            cBs = fill_table_with_organs(win = self, proj = proj, table = self.tabW_select_organ, 
+                                         blind_cB = self.cB_blind, notes_cB = self.cB_notes)
         else: 
             error_txt = "!The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
             self.win_msg(error_txt, self.button_load_organs)
@@ -3033,7 +3036,8 @@ class LoadProj(QDialog):
             if self.button_load_organs_comb.isChecked(): 
                 load_proj_organs_comb(win=self, proj=self.proj)
                 fill_table_selected_organs(win=self, table = self.tabW_organs_final, 
-                                            blind_cB=self.cB_blind_comb, single_proj=True)
+                                            blind_cB=self.cB_blind_comb, 
+                                            notes_cB=self.cB_notes_comb, single_proj=True)
     
     def check_unique_organ_selected(self, proj): 
         print('self.organ_checkboxes:',self.organ_checkboxes)
@@ -3082,7 +3086,8 @@ def load_proj_organs_comb(win, proj):
         #https://www.pythonguis.com/faq/qtablewidget-for-list-of-dict/
         
         if len(proj.organs) > 0: 
-            cBs = fill_table_with_organs(win = win, proj = proj, table = win.tabW_select_organs, blind_cB = win.cB_blind_comb)
+            cBs = fill_table_with_organs(win = win, proj = proj, table = win.tabW_select_organs, 
+                                         blind_cB = win.cB_blind_comb, notes_cB = win.cB_notes_comb)
             win.add_organ.setEnabled(True)
             win.remove_organ.setEnabled(True)
         else: 
@@ -3095,17 +3100,20 @@ def load_proj_organs_comb(win, proj):
         win.multi_organ_checkboxes = cBs
         win.button_load_organs_comb.setChecked(True)
 
-def fill_table_with_organs(win, proj, table, blind_cB): 
+def fill_table_with_organs(win, proj, table, blind_cB, notes_cB): 
 
     cBs = []
     table.clear()
     wf_flat = get_proj_wf(proj)
     blind = blind_cB.isChecked()
+    notes = notes_cB.isChecked()
     table.setRowCount(len(proj.organs)+2)
     keys = {'-':['select'],'Name': ['user_organName'], 'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
             'Genotype':['genotype'], 'Manipulation': ['manipulation']}
     if blind:
         keys.pop('Genotype', None); keys.pop('Manipulation', None) 
+    if not notes: 
+        keys.pop('Notes', None)
     name_keys = list(range(len(keys)))
 
     keys_wf = {}
@@ -3135,6 +3143,8 @@ def fill_table_with_organs(win, proj, table, blind_cB):
     aa = 0
     for col in range(len(name_keys)+len(mH_keys)+len(mC_keys)):
         if col in index_big:
+            # Sets the span of the table element at (row , column ) to the number of rows 
+            # and columns specified by (rowSpanCount , columnSpanCount ).
             table.setSpan(0,col,1,len_ind_big[aa])
             item = QTableWidgetItem(big_labels[aa])
             item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignHCenter)
@@ -3250,7 +3260,8 @@ def add_organ_to_multi_analysis(win, proj, add, single_proj):
                     win.multi_organs_added.remove(item)
         
     cBs = fill_table_selected_organs(win=win, table = win.tabW_organs_final, 
-                                        blind_cB=win.cB_blind_comb, single_proj=single_proj)
+                                        blind_cB=win.cB_blind_comb, notes_cB=win.cB_notes, 
+                                        single_proj=single_proj)
     win.added_organs_checkboxes = cBs
 
     for cB1 in win.multi_organ_checkboxes:
@@ -3265,17 +3276,20 @@ def add_organ_to_multi_analysis(win, proj, add, single_proj):
     if len(win.added_organs_checkboxes)> 0: 
         win.go_to_analysis_window.setEnabled(True)
 
-def fill_table_selected_organs(win, table, blind_cB, single_proj): 
+def fill_table_selected_organs(win, table, blind_cB, notes_cB, single_proj): 
 
     cBs = []
     table.clear()
     blind = blind_cB.isChecked()
+    notes = notes_cB.isChecked()
     table.setRowCount(2)
     keys = {'-':['select'],'Project': ['user_projName'],'Name': ['user_organName'], 
             'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
             'Genotype':['genotype'], 'Manipulation': ['manipulation']}
     if blind:
         keys.pop('Genotype', None); keys.pop('Manipulation', None) 
+    if not notes: 
+        keys.pop('Notes', None)
     if single_proj: 
         keys.pop('Project', None)
     name_keys = list(range(len(keys)))
@@ -3415,7 +3429,8 @@ class Load_MultiProj(QDialog):
         if self.button_load_organs_comb.isChecked(): 
             load_proj_organs_comb(win=self, proj=self.proj)
             fill_table_selected_organs(win=self, table = self.tabW_organs_final, 
-                                        blind_cB=self.cB_blind_comb, single_proj=False)
+                                        blind_cB=self.cB_blind_comb,  notes_cB=win.cB_notes, 
+                                        single_proj=False)
 
 class Load_S3s(QDialog): 
     
@@ -4093,24 +4108,25 @@ class MainWindow(QMainWindow):
         #Set the segmentation window to the running process
         self.user_running_process()
         if self.running_process != None: 
-            proc, ch = self.running_process.split('_')
-            index = ['ch1', 'ch2', 'ch3', 'ch4'].index(ch)
-            self.tab_chs.setCurrentIndex(index)
-            scrollArea = getattr(self, 'scrollArea_'+ch)
-            if proc == 'masking':
-                widget_central = getattr(self, 'mask_'+ch+'_widget')
-            elif proc == 'autom':
-                widget_central = getattr(self, 'autom_close_'+ch+'_widget')
-            elif proc == 'manual':
-                widget_central = getattr(self, 'manual_close_'+ch+'_widget')
-            elif proc == 'select':
-                widget_central = getattr(self, 'select_contours_all_'+ch+'_widget')
-                scrollArea.verticalScrollBar().setValue(scrollArea.verticalScrollBar().maximum())
-            else: 
-                widget_central = getattr(self,'plot_slices_'+ch+'_widget')
+            if '_' in self.running_process:
+                proc, ch = self.running_process.split('_')
+                index = ['ch1', 'ch2', 'ch3', 'ch4'].index(ch)
+                self.tab_chs.setCurrentIndex(index)
+                scrollArea = getattr(self, 'scrollArea_'+ch)
+                if proc == 'masking':
+                    widget_central = getattr(self, 'mask_'+ch+'_widget')
+                elif proc == 'autom':
+                    widget_central = getattr(self, 'autom_close_'+ch+'_widget')
+                elif proc == 'manual':
+                    widget_central = getattr(self, 'manual_close_'+ch+'_widget')
+                elif proc == 'select':
+                    widget_central = getattr(self, 'select_contours_all_'+ch+'_widget')
+                    scrollArea.verticalScrollBar().setValue(scrollArea.verticalScrollBar().maximum())
+                else: 
+                    widget_central = getattr(self,'plot_slices_'+ch+'_widget')
 
-            if proc != 'select': 
-                scrollArea.ensureWidgetVisible(widget_central)
+                if proc != 'select': 
+                    scrollArea.ensureWidgetVisible(widget_central)
     
     #>> Initialise all modules of Process and Analyse
     def init_segm_ch(self, ch): 
@@ -6752,6 +6768,10 @@ class MainWindow(QMainWindow):
         self.cl_ext_cut1.clicked.connect(lambda: self.plot_cl_ext(cut = 'cut1'))
         self.cl_ext_cut2.clicked.connect(lambda: self.plot_cl_ext(cut = 'cut2'))
 
+        #Reset sides
+        self.reset_sides_cut1.clicked.connect(lambda: self.reset_sect_sides('Cut1'))
+        self.reset_sides_cut2.clicked.connect(lambda: self.reset_sect_sides('Cut2'))
+
         #Initialise with user settings, if they exist!
         self.user_sections()
 
@@ -7758,6 +7778,7 @@ class MainWindow(QMainWindow):
                 if all(all_done): 
                     getattr(self, key+'_set').setChecked(True)
     
+    #Set Buttons
     def set_keeplargest(self): 
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_keep_largest = self.gui_keep_largest_n()
@@ -8706,6 +8727,37 @@ class MainWindow(QMainWindow):
                 self.segm_sect_btns[btn_ss]['play'].setEnabled(True)
         
         self.update_segm_sect.setChecked(False)
+
+    def reset_sect_sides(self, cut): 
+
+        title = 'Reset Masks for Region '+cut+'...'
+        sect_set = self.organ.mH_settings['setup']['sect'][cut]['name_sections']
+        name_sects = '-'.join([sect_set[key] for key in sect_set])
+        msg = 'Do you want to recreate the mask for '+name_sects+' regions cut?! If so, select  -OK- and a new mask will be created next time you start a cut. Else select  -Cancel- and the current setting will remain unchanged.'
+        prompt = Prompt_ok_cancel(title, msg, parent=self)
+        prompt.exec()
+        print('output:', prompt.output)
+
+        if prompt.output: 
+            #Everything neeeds to be re-set
+            for key in ['mask_name', 'ext_pts']: 
+                self.organ.mH_settings['wf_info']['sections'][cut].pop(key, None)  
+            print('self.organ.mH_settings[wf_info][sections][cut]:', self.organ.mH_settings['wf_info']['sections'][cut])
+
+            #Get all the cuts for that cut
+            cuts = [key for key in self.sect_btns.keys() if cut in key]
+            for sect in cuts: 
+                _, ch_cont = sect.split(':')
+                ch, cont = ch_cont.split('_')
+                self.sect_btns[sect]['play'].setChecked(False)
+                self.sect_btns[sect]['plot'].setChecked(False)
+                self.sect_btns[sect]['plot'].setEnabled(False)
+                proc_wft = ['MeshesProc', 'E-Sections', cut, ch, cont, 'Status']
+                self.organ.update_mHworkflow(process = proc_wft, update = 'NI')
+
+            self.update_workflow_progress()
+        else: 
+            pass
 
     #Workflow functions   
     #>> Init Ch Progress Table
@@ -9925,7 +9977,8 @@ class MainWindow(QMainWindow):
         cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
                                             pl_normal=ext_plane, 
                                             clRib_type=clRib_type,
-                                            use_prev = True, ext_points=ext_pts)
+                                            use_prev = True, ext_points=ext_pts, 
+                                            plot=False)
         #Get first mesh from buttons 
         name_mesh = list(self.sect_btns.keys())[0].split(':')[1]
         mesh2cut = self.organ.obj_meshes[name_mesh]
@@ -10374,7 +10427,7 @@ class MultipAnalysisWindow(QMainWindow):
         #Progress bar
         self.prog_bar.setValue(0)
         #Init Plots 
-        # self.init_plot_results()
+        self.init_plot_results()
 
         # Theme 
         self.theme = self.cB_theme.currentText()
@@ -10418,7 +10471,8 @@ class MultipAnalysisWindow(QMainWindow):
         #Fill Proj and Organ Data
         self.fill_proj_info(self.projs)
         #Blind analysis
-        # self.cB_blind.stateChanged.connect(lambda: self.blind_analysis())
+        self.cB_blind.stateChanged.connect(lambda: fill_organs_table(win = self, table = self.organs_analysis_widget, 
+                                                                         df_pando = self.df_pando, single_proj = True))
         #Fill Organs Table
         fill_organs_table(win = self, table = self.organs_analysis_widget, 
                           df_pando = self.df_pando, single_proj = True)
@@ -10438,51 +10492,98 @@ class MultipAnalysisWindow(QMainWindow):
         sound_toggled(win=self)
 
     def init_plot_results(self): 
-        cB_organs, cB_meshes = self.get_meshes_from_organs()
 
-        self.plot_meshes_user = {}
+        names_organs = ['----']
         self.all_meshes = {}
+        self.plot_meshes_user = {}
+        self.plot_palette = palette_rbg('Set2', 15, False)
+        for key in self.organs.keys():
+            organ_name = self.organs[key]['organ_name']
+            names_organs.append(organ_name)
+            self.all_meshes[organ_name] = {}
+            fill_organ_all_meshes(win = self, organ_name = organ_name)
 
-        self.fill_comboBox_all_meshes()
-        
-        self.add_mesh.clicked.connect(lambda: self.add_mesh_to_plot())
-        self.set_plot.clicked.connect(lambda: self.set_plot_settings())
-        self.btn_user_plot.clicked.connect(lambda: self.create_user_plot())
-        self.plot_clear_All.clicked.connect(lambda: self.update_plot('del', 'all'))
+        self.comboBox_all_organs.addItems(names_organs)
+        self.comboBox_all_meshes.addItems(['----'])
+        self.comboBox_all_organs.currentTextChanged.connect(lambda: self.update_meshes())
+
+        self.add_organ_mesh.clicked.connect(lambda: add_organ_mesh_to_plot(win=self))
+        self.set_plot.clicked.connect(lambda: set_plot_settings(win=self))
+        self.btn_user_plot.clicked.connect(lambda: create_user_plot(win=self))
+        self.plot_clear_All.clicked.connect(lambda: update_plot(win=self, key='del', num='all'))
         self.combo_axes.setCurrentText('13')
 
-        self.alpha1.valueChanged.connect(lambda: self.update_plot('alpha', '1'))
-        self.alpha2.valueChanged.connect(lambda: self.update_plot('alpha', '2'))
-        self.alpha3.valueChanged.connect(lambda: self.update_plot('alpha', '3'))
-        self.alpha4.valueChanged.connect(lambda: self.update_plot('alpha', '4'))
-        self.alpha5.valueChanged.connect(lambda: self.update_plot('alpha', '5'))
-        self.alpha6.valueChanged.connect(lambda: self.update_plot('alpha', '6'))
-        self.alpha7.valueChanged.connect(lambda: self.update_plot('alpha', '7'))
-        self.alpha8.valueChanged.connect(lambda: self.update_plot('alpha', '8'))
-        self.alpha9.valueChanged.connect(lambda: self.update_plot('alpha', '9'))
-        self.alpha10.valueChanged.connect(lambda: self.update_plot('alpha', '10'))
+        self.fillcolor_no1.clicked.connect(lambda: color_picker(win=self, name = 'no1'))
+        self.fillcolor_no2.clicked.connect(lambda: color_picker(win=self, name = 'no2'))
+        self.fillcolor_no3.clicked.connect(lambda: color_picker(win=self, name = 'no3'))
+        self.fillcolor_no4.clicked.connect(lambda: color_picker(win=self, name = 'no4'))
+        self.fillcolor_no5.clicked.connect(lambda: color_picker(win=self, name = 'no5'))
+        self.fillcolor_no6.clicked.connect(lambda: color_picker(win=self, name = 'no6'))
+        self.fillcolor_no7.clicked.connect(lambda: color_picker(win=self, name = 'no7'))
+        self.fillcolor_no8.clicked.connect(lambda: color_picker(win=self, name = 'no8'))
+        self.fillcolor_no9.clicked.connect(lambda: color_picker(win=self, name = 'no9'))
+        self.fillcolor_no10.clicked.connect(lambda: color_picker(win=self, name = 'no10'))
+        self.fillcolor_no11.clicked.connect(lambda: color_picker(win=self, name = 'no11'))
+        self.fillcolor_no12.clicked.connect(lambda: color_picker(win=self, name = 'no12'))
+        self.fillcolor_no13.clicked.connect(lambda: color_picker(win=self, name = 'no13'))
+        self.fillcolor_no14.clicked.connect(lambda: color_picker(win=self, name = 'no14'))
+        self.fillcolor_no15.clicked.connect(lambda: color_picker(win=self, name = 'no15'))
 
-        self.plotno1.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '1'))
-        self.plotno2.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '2'))
-        self.plotno3.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '3'))
-        self.plotno4.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '4'))
-        self.plotno5.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '5'))
-        self.plotno6.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '6'))
-        self.plotno7.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '7'))
-        self.plotno8.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '8'))
-        self.plotno9.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '9'))
-        self.plotno10.currentIndexChanged.connect(lambda: self.update_plot('plot_no', '10'))
+        self.alpha1.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '1'))
+        self.alpha2.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '2'))
+        self.alpha3.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '3'))
+        self.alpha4.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '4'))
+        self.alpha5.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '5'))
+        self.alpha6.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '6'))
+        self.alpha7.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '7'))
+        self.alpha8.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '8'))
+        self.alpha9.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '9'))
+        self.alpha10.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '10'))
+        self.alpha11.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '11'))
+        self.alpha12.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '12'))
+        self.alpha13.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '13'))
+        self.alpha14.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '14'))
+        self.alpha15.valueChanged.connect(lambda: update_plot(win=self, key='alpha',num= '15'))
 
-        self.del_mesh1.clicked.connect(lambda: self.update_plot('del', '1'))
-        self.del_mesh2.clicked.connect(lambda: self.update_plot('del', '2'))
-        self.del_mesh3.clicked.connect(lambda: self.update_plot('del', '3'))
-        self.del_mesh4.clicked.connect(lambda: self.update_plot('del', '4'))
-        self.del_mesh5.clicked.connect(lambda: self.update_plot('del', '5'))
-        self.del_mesh6.clicked.connect(lambda: self.update_plot('del', '6'))
-        self.del_mesh7.clicked.connect(lambda: self.update_plot('del', '7'))
-        self.del_mesh8.clicked.connect(lambda: self.update_plot('del', '8'))
-        self.del_mesh9.clicked.connect(lambda: self.update_plot('del', '9'))
-        self.del_mesh10.clicked.connect(lambda: self.update_plot('del', '10'))
+        self.plotno1.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='1'))
+        self.plotno2.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='2'))
+        self.plotno3.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='3'))
+        self.plotno4.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='4'))
+        self.plotno5.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='5'))
+        self.plotno6.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='6'))
+        self.plotno7.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='7'))
+        self.plotno8.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='8'))
+        self.plotno9.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='9'))
+        self.plotno10.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='10'))
+        self.plotno11.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='11'))
+        self.plotno12.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='12'))
+        self.plotno13.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='13'))
+        self.plotno14.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='14'))
+        self.plotno15.currentIndexChanged.connect(lambda: update_plot(win=self, key='plot_no',num='15'))
+
+        self.del_mesh1.clicked.connect(lambda: update_plot(win=self, key='del',num='1'))
+        self.del_mesh2.clicked.connect(lambda: update_plot(win=self, key='del',num='2'))
+        self.del_mesh3.clicked.connect(lambda: update_plot(win=self, key='del',num='3'))
+        self.del_mesh4.clicked.connect(lambda: update_plot(win=self, key='del',num='4'))
+        self.del_mesh5.clicked.connect(lambda: update_plot(win=self, key='del',num='5'))
+        self.del_mesh6.clicked.connect(lambda: update_plot(win=self, key='del',num='6'))
+        self.del_mesh7.clicked.connect(lambda: update_plot(win=self, key='del',num='7'))
+        self.del_mesh8.clicked.connect(lambda: update_plot(win=self, key='del',num='8'))
+        self.del_mesh9.clicked.connect(lambda: update_plot(win=self, key='del',num='9'))
+        self.del_mesh10.clicked.connect(lambda: update_plot(win=self, key='del',num='10'))
+        self.del_mesh11.clicked.connect(lambda: update_plot(win=self, key='del',num='11'))
+        self.del_mesh12.clicked.connect(lambda: update_plot(win=self, key='del',num='12'))
+        self.del_mesh13.clicked.connect(lambda: update_plot(win=self, key='del',num='13'))
+        self.del_mesh14.clicked.connect(lambda: update_plot(win=self, key='del',num='14'))
+        self.del_mesh15.clicked.connect(lambda: update_plot(win=self, key='del',num='15'))
+
+    def update_meshes(self):
+        organ_selected = self.comboBox_all_organs.currentText()
+        self.comboBox_all_meshes.clear()
+        if len(self.all_meshes[organ_selected].keys()) == 0: 
+            self.comboBox_all_meshes.addItems(['----'])
+        else: 
+            self.comboBox_all_meshes.addItems(self.all_meshes[organ_selected].keys())
 
     def fill_proj_info(self, projs):
 
@@ -10588,7 +10689,272 @@ def fill_organs_table(win, table, df_pando, single_proj):
 
     table.resizeColumnsToContents()
     table.resizeRowsToContents()
+
+def set_plot_settings(win): 
+
+    no_plots = win.spin_noPlots.value()
+    axes = int(win.combo_axes.currentText())
+    zoom = win.spin_zoom.value()
+    elev = win.spin_elev.value()
+    azim = win.spin_azim.value()
+    reorient = win.check_reorient.isChecked()
+
+    win.plot_settings = {'no_plots': no_plots, 
+                            'axes': axes, 
+                            'zoom': zoom, 
+                            'elev': elev, 
+                            'azim': azim, 
+                            'reorient': reorient}
     
+    list_plots = list(range(1,no_plots+1,1))
+    list_plots_str = [str(item) for item in list_plots]
+    for nn in range(1,16,1): 
+        getattr(win, 'plotno'+str(nn)).clear()
+        getattr(win, 'plotno'+str(nn)).addItems(list_plots_str)
+    
+    print('win.plot_settings:', win.plot_settings)
+    win.add_organ_mesh.setEnabled(True)
+    win.set_plot.setChecked(True)
+
+def fill_organ_all_meshes(win, organ_name): 
+
+    for key, org in win.organs.items():
+        print(key, org)
+        if org['organ_name'] == organ_name:
+            organ = win.organs[key]['organ'] 
+            break
+
+    for mesh in organ.obj_meshes.keys(): 
+        mesh_obj = organ.obj_meshes[mesh]
+        mesh_name = mesh_obj.legend
+        win.all_meshes[organ_name][mesh_name] = {'obj_dir': 'obj_meshes', 
+                                                    'obj_name': mesh}
+        if hasattr(mesh_obj, 'mesh_meas'): 
+            for m_meas in mesh_obj.mesh_meas: 
+                print('mesh_name:',mesh_name, 'm_meas:', m_meas)
+                sp = m_meas.split('(')[1]
+                if 'thck' in m_meas: 
+                    meas_name = 'Thickness ('+sp
+                    if 'intTOext' in m_meas: 
+                        proc = 'th_i2e'
+                        title = mesh_name+'\nThickness [um]\n(int>ext)'
+                    else: 
+                        proc = 'th_e2i'
+                        title = mesh_name+'\nThickness [um]\n(ext>int)'
+                    ch, cont = mesh.split('_')
+                    name = proc+'['+ch+'-'+cont+']'
+                else: 
+                    meas_name = 'Ballooning (CL:'+sp
+                    proc = 'ball'
+                    ch, cont = mesh.split('_')
+                    cl_ch, cl_cont = sp.split('_')
+                    name = proc+'['+ch+'-'+cont+'(CL.'+cl_ch+'-'+cl_cont+']'
+                    title = mesh_name+'\nBallooning [um]\nCL('+cl_ch+'_'+cl_cont
+
+                win.all_meshes[mesh_name+': '+meas_name] = {'obj_dir': 'mesh_meas', 
+                                                            'obj_name': mesh,
+                                                            'mtype': m_meas, 
+                                                            'name': name, 
+                                                            'proc': proc, 
+                                                            'title': title}
+    try: 
+        for sub in organ.obj_subm.keys(): 
+            sub_name =organ.obj_subm[sub].sub_legend
+            win.all_meshes[organ_name][sub_name] = {'obj_dir': 'obj_subm',
+                                                        'obj_name': sub}
+    except: 
+        organ.obj_subm = {}
+        
+        print('win.all_meshes:', win.all_meshes)
+
+def add_organ_mesh_to_plot(win): 
+    organ2add = win.comboBox_all_organs.currentText()
+    mesh2add = win.comboBox_all_meshes.currentText()
+    if organ2add == '----':
+        win.win_msg('!Make sure you have selected an organ to add to the plot')
+        return
+    elif mesh2add == '----':
+        if len(win.all_meshes[organ2add].keys()) == 0: 
+            win.win_msg('!Organ '+organ2add+' does not have any meshes created yet')
+            return
+        else: 
+            win.win_msg('!Make sure you have selected a valid mesh to add from organ '+organ2add+' to the plot')
+            return
+    else: 
+        n_pos = len(win.plot_meshes_user)
+        if n_pos == 0: 
+            new_key = '0'
+        else: 
+            new_key = str(int(list(win.plot_meshes_user.keys())[-1])+1)
+
+        # print('new_key:', new_key)
+        if n_pos+1 < 15: 
+            win.plot_meshes_user[new_key] = {'organ': organ2add, 
+                                                'mesh': mesh2add, 
+                                                'color': win.plot_palette[int(new_key)],
+                                                'alpha': 0.1, 
+                                                'plot_no': 1}
+            # print('self.plot_meshes_user:', self.plot_meshes_user)
+            update_plot_list(win=win)
+        else: 
+            print('You cannot add plot more than 15 meshes. Delete another mesh to make space for anotherone')
+
+def update_plot(win, key, num): 
+
+    keys_mesh = list(win.plot_meshes_user.keys())
+    if len(keys_mesh)>0: 
+        if key == 'del' and num == 'all': 
+            win.plot_meshes_user = {}
+            update_plot_list(win=win)
+        else: 
+            pos = keys_mesh[int(num)-1]
+            # print('num:',num, 'pos:', pos)
+            # print('bef:',win.plot_meshes_user)
+            if key == 'del': 
+                print('pos2del:', pos)
+                print('bef:',win.plot_meshes_user)
+                win.plot_meshes_user.pop(pos, None)
+                update_plot_list(win=win)
+            
+            if key == 'alpha': 
+                new_alpha = getattr(win, 'alpha'+num).value()
+                win.plot_meshes_user[pos]['alpha'] = new_alpha
+
+            if key == 'plot_no': 
+                new_plot_no = getattr(win, 'plotno'+num).currentText()
+                try: 
+                    win.plot_meshes_user[pos]['plot_no'] = new_plot_no
+                except: 
+                    pass
+            
+            print('aft:',win.plot_meshes_user)
+
+def update_plot_list(win): 
+    
+    keys_mesh = list(win.plot_meshes_user.keys())
+    # print('keys_mesh:', keys_mesh)
+    nn = 0
+    for n_pos in range(1,11,1): 
+        organ_name = getattr(win, 'organ_no'+str(n_pos))
+        mesh_name = getattr(win, 'mesh_no'+str(n_pos))
+        opacity = getattr(win,'alpha'+str(n_pos))
+        colorfill = getattr(win, 'fillcolor_no'+str(n_pos))
+        plot_no = getattr(win, 'plotno'+str(n_pos))
+        del_mesh = getattr(win, 'del_mesh'+str(n_pos))
+        if n_pos-1 < len(win.plot_meshes_user): 
+            mesh_data = win.plot_meshes_user[keys_mesh[nn]]
+            organ_name.setEnabled(True)
+            organ_name.setText(mesh_data['organ'])
+            mesh_name.setEnabled(True)
+            mesh_name.setText(mesh_data['mesh'])
+            colorfill.setEnabled(True)
+            color_btn(btn=colorfill, color=mesh_data['color'])
+            opacity.setValue(mesh_data['alpha'])
+            opacity.setEnabled(True)
+            plot_no.setCurrentText(str(mesh_data['plot_no']))
+            plot_no.setEnabled(True)
+            del_mesh.setEnabled(True)
+            nn+=1
+        else: 
+            organ_name.setText('organ name')
+            organ_name.setEnabled(False)
+            mesh_name.setText('object name')
+            mesh_name.setEnabled(False)
+            colorfill.setEnabled(False)
+            # colorfill.set background rgb(211, 211, 211)
+            opacity.setEnabled(False)
+            plot_no.setEnabled(False)
+            del_mesh.setEnabled(False)
+
+def color_picker(win, name): 
+
+    color = QColorDialog.getColor()
+    if color.isValid():
+        print('The selected color is: ', color.name())
+        red, green, blue, _ = color.getRgb() #[red, green, blue]
+
+        #Color the buttons
+        fill = getattr(win, 'fillcolor_'+name)
+        color_btn(btn = fill, color = color.name())
+
+def create_user_plot(win): #needs work because all meshes were being added from segm_btns which cant be used here
+    if len(win.plot_meshes_user) < 1: 
+        win.win_msg('*No meshes have been added to the table.')
+    else:
+        if win.check_scalecube_plot.isChecked():
+            add_scale_cube = True
+        else: 
+            add_scale_cube = False
+
+        for plot in range(1,win.plot_settings['no_plots']+1,1): 
+            setattr(win, 'items_plot'+str(plot), [])
+
+        # print('win.all_meshes:', win.all_meshes)
+        # print('win.plot_meshes_user:', win.plot_meshes_user)
+        for num, item in win.plot_meshes_user.items(): 
+            # print('item:',  item)
+            method = win.all_meshes[item['mesh']]['obj_dir']
+            mesh_name = win.all_meshes[item['mesh']]['obj_name']
+            plot_no = item['plot_no']
+            if method == 'obj_meshes': 
+                mesh2add = win.organ.obj_meshes[mesh_name].mesh.clone()
+            elif method == 'obj_subm': 
+                submesh = win.organ.obj_subm[mesh_name]
+                print('mesh_name:',mesh_name)
+                if 'sCut' in mesh_name: 
+                    scut, rcut, ch, cont, segm, sect = mesh_name.split('_')
+                    name_btn = scut+'_o_'+rcut+':'+ch+'_'+cont
+                    if 'meshes' in win.segm_sect_btns[name_btn].keys(): 
+                        mesh2add = win.segm_sect_btns[name_btn]['meshes'][sect][segm]
+                    else: 
+                        seg_cut = mesh_name[1:5]
+                        mesh2add = submesh.get_sect_segm_mesh(seg_cut = seg_cut)
+                else: 
+                    if 'segm' in mesh_name: 
+                        scut, ch, cont, segm = mesh_name.split('_')
+                        name_btn = scut+':'+ch+'_'+cont
+                        if 'meshes' in win.segm_btns[name_btn].keys(): 
+                            mesh2add = win.segm_btns[name_btn]['meshes'][segm]
+                        else: 
+                            mesh2add = submesh.get_segm_mesh()
+                    else: #'sect' in segm
+                        rcut, ch, cont, sect = mesh_name.split('_')
+                        name_btn = rcut+':'+ch+'_'+cont
+                        if 'meshes' in win.sect_btns[name_btn].keys(): 
+                            mesh2add = win.sect_btns[name_btn]['meshes'][sect]
+                        else: 
+                            mesh2add = submesh.get_sect_mesh()
+            else: #method == 'mesh_meas':
+                print(item)
+                mtype = win.all_meshes[item['mesh']]['mtype']
+                mesh2add = win.organ.obj_meshes[mesh_name].mesh_meas[mtype].clone()
+                name = win.all_meshes[item['mesh']]['name']
+                proc = win.all_meshes[item['mesh']]['proc']
+                title = win.all_meshes[item['mesh']]['title']
+                mesh2add = win.set_scalebar(mesh=mesh2add, name = name, proc = proc, title = title)
+
+            #Update alpha and add it to the list
+            mesh2add.alpha(item['alpha'])
+            getattr(win, 'items_plot'+str(plot_no)).append(mesh2add)
+        
+        obj = []
+        for plot in range(1,win.plot_settings['no_plots']+1,1): 
+            tuple_list = tuple(getattr(win, 'items_plot'+str(plot)))
+            obj.append(tuple_list)
+            delattr(win, 'items_plot'+str(plot))
+        print('obj:', obj)
+
+        axes = win.plot_settings['axes']
+        zoom = win.plot_settings['zoom']
+        elev = win.plot_settings['elev']
+        azim = win.plot_settings['azim']
+        txt = [(0, win.organ.user_organName)]
+
+        plot_grid(obj=obj, txt=txt, axes=axes, sc_side=max(win.organ.get_maj_bounds()), 
+                    zoom=zoom, azimuth = azim, elevation =elev, add_scale_cube=add_scale_cube)
+
+    win.btn_user_plot.setChecked(False)
+
 class PlotWindow(QDialog):
 
     def __init__(self, title:str, width:int, height:int, dpi:int, parent=None):

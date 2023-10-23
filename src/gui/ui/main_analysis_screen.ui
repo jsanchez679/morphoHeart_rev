@@ -1007,7 +1007,7 @@ QComboBox QAbstractItemView {
                      <item>
                       <widget class="QPushButton" name="add_organ_mesh">
                        <property name="enabled">
-                        <bool>true</bool>
+                        <bool>false</bool>
                        </property>
                        <property name="minimumSize">
                         <size>
@@ -1737,8 +1737,8 @@ QScrollBar::handle:horizontal:hover {
                   <property name="geometry">
                    <rect>
                     <x>0</x>
-                    <y>0</y>
-                    <width>665</width>
+                    <y>-62</y>
+                    <width>660</width>
                     <height>422</height>
                    </rect>
                   </property>
@@ -1806,6 +1806,9 @@ QScrollBar::handle:horizontal:hover {
                       </item>
                       <item row="7" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no7">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -1926,6 +1929,9 @@ QComboBox QAbstractItemView {
                       </item>
                       <item row="3" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no3">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -2291,6 +2297,9 @@ QComboBox QAbstractItemView {
                       </item>
                       <item row="4" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no4">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -2568,6 +2577,9 @@ border-color:  rgb(255, 0, 0)}
                       </item>
                       <item row="2" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no2">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -2643,6 +2655,9 @@ QComboBox QAbstractItemView {
                       </item>
                       <item row="1" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no1">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -2858,6 +2873,9 @@ border-color:  rgb(255, 0, 0)}
                       </item>
                       <item row="6" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no6">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -2944,6 +2962,9 @@ border-color: rgb(255, 255, 255)
                       </item>
                       <item row="10" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no10">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -3173,6 +3194,9 @@ border-color: rgb(255, 255, 255)
                       </item>
                       <item row="5" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no5">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -3231,6 +3255,9 @@ border-color: rgb(255, 255, 255)
                       </item>
                       <item row="9" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no9">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -3261,6 +3288,9 @@ border-color: rgb(255, 255, 255)
                       </item>
                       <item row="8" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no8">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -4607,6 +4637,9 @@ QComboBox QAbstractItemView {
                       </item>
                       <item row="11" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no11">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -4637,6 +4670,9 @@ border-color: rgb(255, 255, 255)
                       </item>
                       <item row="12" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no12">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -4667,6 +4703,9 @@ border-color: rgb(255, 255, 255)
                       </item>
                       <item row="13" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no13">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -4697,6 +4736,9 @@ border-color: rgb(255, 255, 255)
                       </item>
                       <item row="14" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no14">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -4727,6 +4769,9 @@ border-color: rgb(255, 255, 255)
                       </item>
                       <item row="15" column="3" alignment="Qt::AlignHCenter">
                        <widget class="QPushButton" name="fillcolor_no15">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="minimumSize">
                          <size>
                           <width>15</width>
@@ -4926,7 +4971,7 @@ border-color: rgb(255, 255, 255)
                        </widget>
                       </item>
                       <item row="11" column="5">
-                       <widget class="QComboBox" name="plotno10_3">
+                       <widget class="QComboBox" name="plotno11">
                         <property name="enabled">
                          <bool>false</bool>
                         </property>
@@ -4971,7 +5016,7 @@ QComboBox QAbstractItemView {
                        </widget>
                       </item>
                       <item row="12" column="5">
-                       <widget class="QComboBox" name="plotno10_4">
+                       <widget class="QComboBox" name="plotno12">
                         <property name="enabled">
                          <bool>false</bool>
                         </property>
@@ -5016,7 +5061,7 @@ QComboBox QAbstractItemView {
                        </widget>
                       </item>
                       <item row="13" column="5">
-                       <widget class="QComboBox" name="plotno10_5">
+                       <widget class="QComboBox" name="plotno13">
                         <property name="enabled">
                          <bool>false</bool>
                         </property>
@@ -5061,7 +5106,7 @@ QComboBox QAbstractItemView {
                        </widget>
                       </item>
                       <item row="14" column="5">
-                       <widget class="QComboBox" name="plotno10_6">
+                       <widget class="QComboBox" name="plotno14">
                         <property name="enabled">
                          <bool>false</bool>
                         </property>
@@ -5106,7 +5151,7 @@ QComboBox QAbstractItemView {
                        </widget>
                       </item>
                       <item row="15" column="5">
-                       <widget class="QComboBox" name="plotno10_7">
+                       <widget class="QComboBox" name="plotno15">
                         <property name="enabled">
                          <bool>false</bool>
                         </property>
@@ -5367,6 +5412,9 @@ border-color:  rgb(255, 0, 0)}
                </item>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_271">
+                 <property name="spacing">
+                  <number>12</number>
+                 </property>
                  <item>
                   <spacer name="horizontalSpacer_32">
                    <property name="orientation">
