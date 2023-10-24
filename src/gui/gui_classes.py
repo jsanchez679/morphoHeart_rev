@@ -6362,7 +6362,7 @@ class MainWindow(QMainWindow):
                  'ball': {'proc': ['measure','ball'], 'name': 'Ballooning', 'min_val': 0, 'max_val': 60}}
 
         nn = 0
-        cmaps = ['turbo','viridis', 'jet', 'magma', 'inferno', 'plasma']
+        cmaps = ['turbo','viridis','jet','magma','inferno','plasma']
         for proc in setup: 
             name = setup[proc]['name']
             minn = setup[proc]['min_val']
@@ -8693,7 +8693,7 @@ class MainWindow(QMainWindow):
 
     def set_colormap(self, name):
         value = getattr(self, 'colormap'+name).currentText()
-        dir_pix = 'images/'+value+'.png'
+        dir_pix = 'images/cm_'+value+'.png'
         pixmap = QPixmap(dir_pix)
         cm_eg = getattr(self, 'cm_eg'+name)
         cm_eg.setPixmap(pixmap)
