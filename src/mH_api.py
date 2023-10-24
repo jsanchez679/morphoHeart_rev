@@ -1470,7 +1470,10 @@ def run_segments(controller, btn):
                             cut = cut, ch=ch, cont=cont, 
                             cl_spheres=cl_spheres, win=controller.main_win)
             # -> Create masks of discs
-            fcM.create_disc_mask(controller.organ, cut = cut, h_min = 0.1125)
+            # Get s3 dimensions
+            mesh2cut.imChannel.load_chS3s([cont])
+            s3_shape = getattr(mesh2cut.imChannel, 's3_'+cont).shape_s3
+            fcM.create_disc_mask(controller.organ, cut = cut, s3_shape = s3_shape, h_min = 0.1125)
             ext_subsgm, meshes_segm = fcM.segm_ext_ext(controller.organ, mesh2cut, cut, 
                                                       segm_names, palette, win=controller.main_win)
             #Add submeshes of ext_ext as attribute to organ
@@ -1796,16 +1799,12 @@ def run_sections(controller, btn):
             # -> Create high resolution ribbon
             controller.main_win.win_msg('Creating high resolution centreline ribbon for '+cut.title())
             controller.organ.obj_imChannels[ch].load_chS3s([cont])
-            s3_shape = getattr(controller.organ.obj_imChannels[ch], 's3_'+cont).s3().shape
+            s3_shape = getattr(controller.organ.obj_imChannels[ch], 's3_'+cont).shape_s3
             s3_filledCube, test_rib = fcM.get_stack_clRibbon(organ = controller.organ,
-                                                             s3_shape = s3_shape, 
-                                                            mesh_cl = mesh_cl, 
-                                                            cl_ribbon = cl_ribbon, 
-                                                            nPoints = nPoints, 
-                                                            nRes = nRes, 
-                                                            pl_normal = ext_plane, 
-                                                            clRib_type=clRib_type,
-                                                            win=controller.main_win)
+                                                                s3_shape = s3_shape, 
+                                                                mesh_cl = mesh_cl, 
+                                                                cl_ribbon = cl_ribbon, 
+                                                                win=controller.main_win)
             
             # obj = [(test_rib, mesh_cl.mesh)]
             # txt = [(0, controller.organ.user_organName)]

@@ -10889,8 +10889,8 @@ def create_user_plot(win): #needs work because all meshes were being added from 
         for plot in range(1,win.plot_settings['no_plots']+1,1): 
             setattr(win, 'items_plot'+str(plot), [])
 
-        # print('win.all_meshes:', win.all_meshes)
-        # print('win.plot_meshes_user:', win.plot_meshes_user)
+        print('win.all_meshes:', win.all_meshes)
+        print('win.plot_meshes_user:', win.plot_meshes_user)
         for num, item in win.plot_meshes_user.items(): 
             # print('item:',  item)
             method = win.all_meshes[item['mesh']]['obj_dir']

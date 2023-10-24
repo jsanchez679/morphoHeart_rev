@@ -1028,12 +1028,11 @@ def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
 
     return spheres_spline
 
-def create_disc_mask(organ, cut, h_min = 0.1125): 
+def create_disc_mask(organ, cut, s3_shape, h_min = 0.1125): 
     
     #Load stack shape
-    shape_s3 = organ.info['shape_s3']
-    zdim, xdim, ydim = shape_s3
-    print('shape_s3:',shape_s3, '- xdim:', xdim, '- ydim:',ydim, '- zdim:', zdim)
+    zdim, xdim, ydim = s3_shape
+    print('s3_shape:',s3_shape, '- xdim:', xdim, '- ydim:',ydim, '- zdim:', zdim)
         
     disc_info = organ.mH_settings['wf_info']['segments']['setup'][cut]['cut_info']
     for disc in disc_info:
@@ -1244,12 +1243,7 @@ def classify_segments_from_ext(meshes, dict_segm, ext_sub):
     return dict_segm
 
 #Sections/Regions Functions
-def get_stack_clRibbon(organ, s3_shape, mesh_cl, cl_ribbon, nPoints, nRes, pl_normal, clRib_type, win):
-    
-    # cl_ribbon =  mesh_cl.get_clRibbon(nPoints=nPoints, 
-    #                                   nRes=nRes, 
-    #                                   pl_normal=pl_normal, 
-    #                                   clRib_type=clRib_type)
+def get_stack_clRibbon(organ, s3_shape, mesh_cl, cl_ribbon, win):
     
     res = mesh_cl.resolution
     cl_ribbonR = cl_ribbon.clone().x(res[0])
@@ -1258,12 +1252,8 @@ def get_stack_clRibbon(organ, s3_shape, mesh_cl, cl_ribbon, nPoints, nRes, pl_no
     cl_ribbonS = [cl_ribbon, cl_ribbonR, cl_ribbonF, cl_ribbonT]
 
     #Load stack shape
-    shape_s3 = organ.info['shape_s3']
-    zdim, xdim, ydim = shape_s3
-    xdims, ydims, zdims = s3_shape
-    if xdim != xdims or ydim != ydims or zdim+2 != zdims: 
-        xdim = xdims; ydim = ydims; zdim = zdims-2
-        print('dimensions changed!')
+    xdim, ydim, zdims = s3_shape
+    zdim = zdims-2
 
     # Rotate the points that make up the cl_ribbon, to convert them to a stack
     cust_angle = organ.info['custom_angle']
@@ -1330,13 +1320,9 @@ def get_stack_clRibbon(organ, s3_shape, mesh_cl, cl_ribbon, nPoints, nRes, pl_no
 def get_cube_clRibbon(organ, s3_shape, cut, s3_filledCube, res, pl_normal):
 
     # #Load stack shape
-    shape_s3 = organ.info['shape_s3']
-    zdim, xdim, ydim = shape_s3
-    xdims, ydims, zdims = s3_shape
-    if xdim != xdims or ydim != ydims or zdim+2 != zdims: 
-        xdim = xdims; ydim = ydims; zdim = zdims-2
-        print('dimensions changed!')
-      
+    xdim, ydim, zdims = s3_shape
+    zdim = zdims-2
+
     #Identify the direction in which the cubes need to be built
     if organ.mH_settings['wf_info']['sections'][cut.title()]['axis_lab'].lower() == 'roi':
         ref_vect = [0, 1, 0]# [[0, 1, 0], [0, 0, 0]]
@@ -1359,10 +1345,7 @@ def get_cube_clRibbon(organ, s3_shape, cut, s3_filledCube, res, pl_normal):
                 index_y = list(index_y)
                 index_y.pop(0);index_y.pop(-1)
                 if len(index_y) > 0:
-                    # if not repeat: 
                     s3_filledCube[xpos,index_y[0]:ydim,zpos] = 0
-                    # else: # repeat: 
-                    #     s3_filledCube[xpos,0:index_y[0],zpos] = 0
         
     elif coord_dir == 1 or coord_dir == 2:
         print('Extending cube in the y direction - check!!!')
@@ -1373,10 +1356,7 @@ def get_cube_clRibbon(organ, s3_shape, cut, s3_filledCube, res, pl_normal):
                 index_x = list(index_x)
                 index_x.pop(0);index_x.pop(-1)
                 if len(index_x) > 0:
-                    # if not repeat:
-                    s3_filledCube[index_x[-1]:xdim,ypos,zpos] = 0#[1]
-                    # else:
-                    #     s3_filledCube[0:index_x[1],ypos,zpos] = 0#[0]
+                    s3_filledCube[index_x[-1]:xdim,ypos,zpos] = 0
 
     else:# coord_dir == 2: 
         print('Extending cube in the z direction')
@@ -1387,11 +1367,8 @@ def get_cube_clRibbon(organ, s3_shape, cut, s3_filledCube, res, pl_normal):
                 index_z = list(index_z)
                 index_z.pop(0);index_z.pop(-1)
                 if len(index_z) > 0:
-                    # if not repeat: 
                     s3_filledCube[xpos,ypos,index_z[0]:zdim+2] = 0
-                    # else: 
-                    #     s3_filledCube[xpos,ypos,0:index_z[0]] = 0
-        
+
     alert('woohoo')
     
     #Create volume of filled side of extended centreline mask

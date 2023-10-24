@@ -1124,7 +1124,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1133</y>
+                      <y>0</y>
                       <width>382</width>
                       <height>1807</height>
                      </rect>
@@ -8260,7 +8260,7 @@ QScrollBar::handle:vertical:hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>382</width>
+                      <width>372</width>
                       <height>1807</height>
                      </rect>
                     </property>
@@ -15395,7 +15395,7 @@ QScrollBar::handle:vertical:hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>382</width>
+                      <width>372</width>
                       <height>1807</height>
                      </rect>
                     </property>
@@ -22530,7 +22530,7 @@ QScrollBar::handle:vertical:hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>382</width>
+                      <width>372</width>
                       <height>1807</height>
                      </rect>
                     </property>
@@ -31237,7 +31237,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-3885</y>
+                   <y>-3436</y>
                    <width>632</width>
                    <height>5616</height>
                   </rect>
@@ -62739,7 +62739,7 @@ color: rgb(234, 234, 234);
 }</string>
                                    </property>
                                    <property name="text">
-                                    <string>Redesignate Sides</string>
+                                    <string>Re-Designate Regions</string>
                                    </property>
                                    <property name="checkable">
                                     <bool>true</bool>
@@ -63680,7 +63680,7 @@ color: rgb(234, 234, 234);
 }</string>
                                    </property>
                                    <property name="text">
-                                    <string>Redesignate Sides</string>
+                                    <string>Re-Designate Regions</string>
                                    </property>
                                    <property name="checkable">
                                     <bool>true</bool>

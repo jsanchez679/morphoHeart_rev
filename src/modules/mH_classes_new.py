@@ -1154,7 +1154,6 @@ class Organ():
             channel_dict['dir_stckproc'] = imChannel.dir_stckproc
             
             self.imChannels[imChannel.channel_no] = channel_dict
-            self.info['shape_s3'] = imChannel.shape
             
         else: # just update im_proc 
             self.imChannels[imChannel.channel_no]['process'] = imChannel.process
@@ -1164,6 +1163,7 @@ class Organ():
                 self.imChannels[imChannel.channel_no]['dir_stckproc'] = imChannel.dir_stckproc
             if hasattr(imChannel, 'shape_s3'):
                 self.imChannels[imChannel.channel_no]['shape_s3'] = imChannel.shape_s3
+                self.info['shape_s3'] = imChannel.shape_s3
         self.obj_imChannels[imChannel.channel_no] = imChannel
         
     def add_channelNS(self, imChannelNS):
@@ -1997,7 +1997,7 @@ class ImChannel(): #channel
         layerDict = {}
         return layerDict
 
-    def create_chS3s (self, layerDict:dict, win, cont_list=['int', 'ext', 'tiss']):
+    def create_chS3s(self, layerDict:dict, win, cont_list=['int', 'ext', 'tiss']):
         # Workflow process
         workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc',self.channel_no,'D-S3Create','Status']
@@ -2110,7 +2110,7 @@ class ImChannel(): #channel
             alert('countdown')
             self.dir_stckproc = im_name
     
-    def ch_clean (self, s3_mask, s3, inverted, plot_settings):#
+    def ch_clean(self, s3_mask, s3, inverted, plot_settings):#
         """
         Function to clean channel contour using other channel as a mask
         """
@@ -3130,7 +3130,7 @@ class Mesh_mH():
             s3_mask = s3_mask.astype('bool')
             directory = self.parent_organ.dir_res('imgs_videos')
             name = self.imChannel.channel_no+'_'+self.mesh_type
-            masked_s3 = mask_disc(self.parent_organ.info['shape_s3'], masked_s3, s3_mask, directory, name)
+            masked_s3 = mask_disc(masked_s3, s3_mask, directory, name)
 
         if 'NS' not in im_ch.channel_no: 
             max_depth = 1000
@@ -3345,7 +3345,7 @@ class SubMesh():
             s3_mask = s3_mask.astype('bool')
             directory = self.imChannel.parent_organ.dir_res('imgs_videos')
             name = self.imChannel.channel_no+'_'+self.mesh_type
-            masked_s3 = mask_disc(self.imChannel.parent_organ.info['shape_s3'], masked_s3, s3_mask, directory, name)
+            masked_s3 = mask_disc(masked_s3, s3_mask, directory, name)
 
         if 'NS' not in im_ch.channel_no: 
             max_depth = 1000
@@ -3533,11 +3533,11 @@ def draw_line (clicks, myIm, color_draw):
 
 #%% - Masking
 #%% func - mask_disc
-def mask_disc(shape_s3, s3, s3_cyl, directory, name, plot=False):
+def mask_disc(s3, s3_cyl, directory, name, plot=False):
     
     #Load stack shape
-    zdim, _, _ = shape_s3
     s3_mask = copy.deepcopy(s3)
+    zdim = s3_mask.shape[2]
     
     for slc in range(zdim):
         im_cyl =s3_cyl[:,:,slc]
