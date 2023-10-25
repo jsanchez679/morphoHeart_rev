@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1483</width>
-    <height>980</height>
+    <width>1365</width>
+    <height>903</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1737,8 +1737,8 @@ QScrollBar::handle:horizontal:hover {
                   <property name="geometry">
                    <rect>
                     <x>0</x>
-                    <y>-62</y>
-                    <width>660</width>
+                    <y>-163</y>
+                    <width>587</width>
                     <height>422</height>
                    </rect>
                   </property>
@@ -1750,7 +1750,7 @@ QScrollBar::handle:horizontal:hover {
                     <number>0</number>
                    </property>
                    <property name="rightMargin">
-                    <number>9</number>
+                    <number>6</number>
                    </property>
                    <property name="bottomMargin">
                     <number>6</number>
@@ -5416,19 +5416,6 @@ border-color:  rgb(255, 0, 0)}
                   <number>12</number>
                  </property>
                  <item>
-                  <spacer name="horizontalSpacer_32">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
                   <widget class="QPushButton" name="plot_clear_All">
                    <property name="minimumSize">
                     <size>
@@ -5479,6 +5466,19 @@ color: rgb(234, 234, 234);
                     <bool>true</bool>
                    </property>
                   </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_32">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
                  </item>
                  <item>
                   <widget class="QCheckBox" name="check_scalecube_plot">
@@ -5932,13 +5932,13 @@ border-color: #672146
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>200</height>
+                <height>0</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>200</height>
+                <height>16777215</height>
                </size>
               </property>
               <property name="frameShape">
@@ -5951,13 +5951,13 @@ border-color: #672146
                   <widget class="QLabel" name="lab_no_ch_51">
                    <property name="minimumSize">
                     <size>
-                     <width>0</width>
+                     <width>110</width>
                      <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>16777215</width>
+                     <width>130</width>
                      <height>20</height>
                     </size>
                    </property>
@@ -5977,13 +5977,13 @@ background-color: rgb(255, 255, 255);</string>
                   <widget class="QCheckBox" name="cB_strain">
                    <property name="minimumSize">
                     <size>
-                     <width>0</width>
+                     <width>100</width>
                      <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>16777215</width>
+                     <width>100</width>
                      <height>20</height>
                     </size>
                    </property>
@@ -6002,13 +6002,13 @@ background-color: rgb(255, 255, 255);</string>
                   <widget class="QCheckBox" name="cB_stage">
                    <property name="minimumSize">
                     <size>
-                     <width>0</width>
+                     <width>100</width>
                      <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>16777215</width>
+                     <width>100</width>
                      <height>20</height>
                     </size>
                    </property>
@@ -6027,13 +6027,13 @@ background-color: rgb(255, 255, 255);</string>
                   <widget class="QCheckBox" name="cB_genotype">
                    <property name="minimumSize">
                     <size>
-                     <width>0</width>
+                     <width>100</width>
                      <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>16777215</width>
+                     <width>100</width>
                      <height>20</height>
                     </size>
                    </property>
@@ -6052,13 +6052,13 @@ background-color: rgb(255, 255, 255);</string>
                   <widget class="QCheckBox" name="cB_manipulation">
                    <property name="minimumSize">
                     <size>
-                     <width>0</width>
+                     <width>100</width>
                      <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>16777215</width>
+                     <width>100</width>
                      <height>20</height>
                     </size>
                    </property>
@@ -6072,6 +6072,19 @@ background-color: rgb(255, 255, 255);</string>
                     <string>Manipulation</string>
                    </property>
                   </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_5">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
                  </item>
                  <item>
                   <widget class="QPushButton" name="q_filters">
@@ -6163,7 +6176,7 @@ color: rgb(234, 234, 234);
                <item>
                 <layout class="QGridLayout" name="gridLayout_2">
                  <item row="1" column="2">
-                  <widget class="QLabel" name="int_of_ch1_3">
+                  <widget class="QLabel" name="num_genot">
                    <property name="minimumSize">
                     <size>
                      <width>30</width>
@@ -6190,6 +6203,9 @@ background-color: rgb(255, 255, 255);</string>
                  </item>
                  <item row="1" column="4">
                   <widget class="QComboBox" name="comboBox_manipulation">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
@@ -6247,9 +6263,15 @@ QComboBox QAbstractItemView {
                  </item>
                  <item row="0" column="0">
                   <widget class="QLabel" name="label_16">
+                   <property name="minimumSize">
+                    <size>
+                     <width>110</width>
+                     <height>0</height>
+                    </size>
+                   </property>
                    <property name="maximumSize">
                     <size>
-                     <width>90</width>
+                     <width>110</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -6257,12 +6279,12 @@ QComboBox QAbstractItemView {
                     <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                    </property>
                    <property name="text">
-                    <string>Strain:</string>
+                    <string>    Strain:</string>
                    </property>
                   </widget>
                  </item>
                  <item row="1" column="5">
-                  <widget class="QLabel" name="int_of_ch1_4">
+                  <widget class="QLabel" name="num_manip">
                    <property name="minimumSize">
                     <size>
                      <width>30</width>
@@ -6289,6 +6311,9 @@ background-color: rgb(255, 255, 255);</string>
                  </item>
                  <item row="0" column="1">
                   <widget class="QComboBox" name="comboBox_strain">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
@@ -6345,7 +6370,7 @@ QComboBox QAbstractItemView {
                   </widget>
                  </item>
                  <item row="0" column="2">
-                  <widget class="QLabel" name="int_of_ch1_2">
+                  <widget class="QLabel" name="num_strain">
                    <property name="minimumSize">
                     <size>
                      <width>30</width>
@@ -6382,7 +6407,7 @@ background-color: rgb(255, 255, 255);</string>
                     <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                    </property>
                    <property name="text">
-                    <string>Stage:</string>
+                    <string>    Stage:</string>
                    </property>
                   </widget>
                  </item>
@@ -6398,12 +6423,15 @@ background-color: rgb(255, 255, 255);</string>
                     <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                    </property>
                    <property name="text">
-                    <string>Manipulation:</string>
+                    <string>    Manipulation:</string>
                    </property>
                   </widget>
                  </item>
                  <item row="1" column="1">
                   <widget class="QComboBox" name="comboBox_genotype">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
@@ -6461,6 +6489,9 @@ QComboBox QAbstractItemView {
                  </item>
                  <item row="0" column="4">
                   <widget class="QComboBox" name="comboBox_stage">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
@@ -6517,7 +6548,7 @@ QComboBox QAbstractItemView {
                   </widget>
                  </item>
                  <item row="0" column="5">
-                  <widget class="QLabel" name="int_of_ch1">
+                  <widget class="QLabel" name="num_stage">
                    <property name="minimumSize">
                     <size>
                      <width>30</width>
@@ -6544,9 +6575,15 @@ background-color: rgb(255, 255, 255);</string>
                  </item>
                  <item row="1" column="0">
                   <widget class="QLabel" name="label_18">
+                   <property name="minimumSize">
+                    <size>
+                     <width>110</width>
+                     <height>0</height>
+                    </size>
+                   </property>
                    <property name="maximumSize">
                     <size>
-                     <width>90</width>
+                     <width>110</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -6554,7 +6591,7 @@ background-color: rgb(255, 255, 255);</string>
                     <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                    </property>
                    <property name="text">
-                    <string>Genotype: </string>
+                    <string>    Genotype: </string>
                    </property>
                   </widget>
                  </item>
@@ -6566,13 +6603,13 @@ background-color: rgb(255, 255, 255);</string>
                   <widget class="QLabel" name="lab_no_ch_52">
                    <property name="minimumSize">
                     <size>
-                     <width>90</width>
+                     <width>110</width>
                      <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>90</width>
+                     <width>110</width>
                      <height>20</height>
                     </size>
                    </property>
@@ -6589,7 +6626,7 @@ background-color: rgb(255, 255, 255);</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="comboBox_all_organs_2">
+                  <widget class="QComboBox" name="comboBox_hm2d_all">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -6625,7 +6662,504 @@ QComboBox QAbstractItemView {
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="btn_user_plot_2">
+                  <widget class="QRadioButton" name="cB_div1">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>65</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>65</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="layoutDirection">
+                    <enum>Qt::LeftToRight</enum>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                   </property>
+                   <property name="text">
+                    <string>div1</string>
+                   </property>
+                   <property name="checkable">
+                    <bool>true</bool>
+                   </property>
+                   <property name="checked">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="cB_div2">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>65</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>65</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="layoutDirection">
+                    <enum>Qt::LeftToRight</enum>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                   </property>
+                   <property name="text">
+                    <string>div2</string>
+                   </property>
+                   <property name="checkable">
+                    <bool>true</bool>
+                   </property>
+                   <property name="checked">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="cB_div3">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>65</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>65</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="layoutDirection">
+                    <enum>Qt::LeftToRight</enum>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                   </property>
+                   <property name="text">
+                    <string>div3</string>
+                   </property>
+                   <property name="checkable">
+                    <bool>true</bool>
+                   </property>
+                   <property name="checked">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="cB_div4">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>65</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>65</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="layoutDirection">
+                    <enum>Qt::LeftToRight</enum>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                   </property>
+                   <property name="text">
+                    <string>div4</string>
+                   </property>
+                   <property name="checkable">
+                    <bool>true</bool>
+                   </property>
+                   <property name="checked">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="cB_div5">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>65</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>65</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="layoutDirection">
+                    <enum>Qt::LeftToRight</enum>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                   </property>
+                   <property name="text">
+                    <string>div5</string>
+                   </property>
+                   <property name="checkable">
+                    <bool>true</bool>
+                   </property>
+                   <property name="checked">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_11">
+                 <item>
+                  <widget class="QLabel" name="lab_no_ch_54">
+                   <property name="minimumSize">
+                    <size>
+                     <width>110</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>110</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: bold 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_22">
+                   <property name="minimumSize">
+                    <size>
+                     <width>65</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>65</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="sizeIncrement">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                   </property>
+                   <property name="text">
+                    <string>2D Range:</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_20">
+                   <property name="maximumSize">
+                    <size>
+                     <width>50</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                   </property>
+                   <property name="text">
+                    <string>Min:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QDoubleSpinBox" name="min_hm2d">
+                   <property name="minimumSize">
+                    <size>
+                     <width>60</width>
+                     <height>19</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>50</width>
+                     <height>19</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>1.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_21">
+                   <property name="maximumSize">
+                    <size>
+                     <width>50</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                   </property>
+                   <property name="text">
+                    <string>Max:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QDoubleSpinBox" name="max_hm2d">
+                   <property name="minimumSize">
+                    <size>
+                     <width>60</width>
+                     <height>19</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>50</width>
+                     <height>19</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <double>500.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>1.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_25">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>80</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="sizeIncrement">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                   </property>
+                   <property name="text">
+                    <string>Colormap:</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_62">
+                   <item>
+                    <widget class="QComboBox" name="colormap">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>70</width>
+                       <height>19</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>70</width>
+                       <height>19</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                     </property>
+                     <item>
+                      <property name="text">
+                       <string>turbo</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>jet</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>viridis</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="cm_eg">
+                     <property name="minimumSize">
+                      <size>
+                       <width>30</width>
+                       <height>19</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>30</width>
+                       <height>19</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">border-width: 1px;
+border-style: outset;
+border-color: rgb(255, 255, 255);
+background-color: rgb(211, 211, 211);
+</string>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_4">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="create_avehm">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="minimumSize">
                     <size>
                      <width>80</width>
@@ -6682,11 +7216,17 @@ color: rgb(234, 234, 234);
                 <layout class="QHBoxLayout" name="horizontalLayout_9">
                  <item>
                   <widget class="QLabel" name="label_19">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>20</height>
+                    </size>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                    </property>
                    <property name="text">
-                    <string>Organs included in Analysis: </string>
+                    <string>Organs included in Analysis:</string>
                    </property>
                   </widget>
                  </item>
@@ -6701,13 +7241,13 @@ color: rgb(234, 234, 234);
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
-                     <height>60</height>
+                     <height>25</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
                      <width>16777215</width>
-                     <height>80</height>
+                     <height>25</height>
                     </size>
                    </property>
                    <property name="styleSheet">
@@ -6778,7 +7318,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="minimumSize">
                <size>
-                <width>750</width>
+                <width>600</width>
                 <height>0</height>
                </size>
               </property>
@@ -6945,7 +7485,7 @@ background-color: rgb(250, 250, 250);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1483</width>
+     <width>1365</width>
      <height>21</height>
     </rect>
    </property>

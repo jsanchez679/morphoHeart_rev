@@ -19,7 +19,7 @@ __website__    = 'https://github.com/jsanchez679/morphoHeart'
 #%% config class
 class mH_Config():
     def __init__(self):
-        self.version = '2.0.3'
+        self.version = '2.0.4'
         self.gui_sound = (True, 'All')
         self.theme = 'Light'
         self.heart_default = False
@@ -35,7 +35,7 @@ class mH_Config():
 
         self.path_o = os.path.abspath(__file__)
         self.path_mHImages = Path(self.path_o).parent.parent.parent / 'images'
-        self.dev = False
+        self.dev = True
         self.dev_plots = False
         self.dev_hm3d2d = False
 

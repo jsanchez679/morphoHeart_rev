@@ -183,3 +183,28 @@ sptool.off()
 # Extract and visualize the resulting spline
 sp = sptool.spline().lw(4)
 show(sp, "My spline is ready!", interactive=True, resetcam=False).close()
+
+
+
+        #Text
+        text = '>> Modify Extended Centreline - Instructions: \n  -Drag extreme centreline points with mouse\n  -Remove them by selecting and pressing -Delete-\n  -Press q when ready to proceed.'
+        txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
+
+        #Make the user define the final points for the centreline
+        vp = vedo.Plotter(N=1, axes=1)
+        vp.add_icon(logo, pos=(0.9,1), size=0.25)
+        vp.show(mesh, kspl_o, txt, interactive=False, at=0)
+        # Add the spline tool using the same points and interact with it
+        sptool = vp.add_spline_tool(kspl_o, closed=False)
+        vp.interactive()
+        # Switch off the tool
+        sptool.off()
+        # Extract and visualize the resulting spline
+        sp = sptool.spline().lw(4)
+        vp.close()
+
+        text = '> Final extended centreline/ribbon. \n  Close window to continue.'
+        txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
+        vp2 = vedo.Plotter(N=1, axes=1)
+        vp2.add_icon(logo, pos=(0.9,1), size=0.25)
+        vp2.show(mesh, sp, txt, interactive=True, at=0)

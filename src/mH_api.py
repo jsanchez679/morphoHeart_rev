@@ -1395,6 +1395,8 @@ def run_heatmaps2D(controller, btn):
                 #Enable buttons to plot heatmaps
                 plot_btn = controller.main_win.hm_btns[hmitem]['plot2d']
                 plot_btn.setEnabled(True)
+                #Enable button to filter heatmaps
+                controller.main_win.filter_2dhm.setEnabled(True)
 
             print('\nEND Heatmaps')
             print('organ.mH_settings:', controller.organ.mH_settings)
@@ -1791,6 +1793,8 @@ def run_sections(controller, btn):
                 happy = prompt.output
             
             controller.main_win.gui_sect[cut]['ext_pts'] = kspl_ext.points()
+            # proc_kspl_ext = ['wf_info', 'sections', cut, 'ext_pts']
+            # controller.organ.update_settings(proc_kspl_ext, kspl_ext.points(), 'mH')
 
             # obj = [(mesh2cut.mesh, cl_ribbon)]
             # txt = [(0, controller.organ.user_organName+'- Extended Centreline Ribbon to cut organ into sections')]

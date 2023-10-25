@@ -2969,30 +2969,45 @@ class Mesh_mH():
         
         return linLine
 
-    def get_clRibbon(self, nPoints, nRes, pl_normal, clRib_type, use_prev=False, ext_points = None, plot=True):
+    def get_clRibbon(self, nPoints, nRes, pl_normal, clRib_type, use_prev=False, ext_points = None, plot=True, oldV=False):
         """
         Function that creates dorso-ventral extended centreline ribbon
         """
 
-        if not use_prev: 
+        if oldV: 
             cl = self.get_centreline(nPoints)
             pts_cl = cl.points()
             
             # Extended centreline
-            nn = -2
-            unit_inf = unit_vector(pts_cl[-1]-pts_cl[nn])
-            inf_ext_normal = (pts_cl[-1]+(unit_inf)*100)#*70
-            unit_outf = unit_vector(pts_cl[0]-pts_cl[1])
-            outf_ext_normal = (pts_cl[0]+(unit_outf)*100)#*70 (test for LnR cut Jun14.22)
+            nn = -20
+            inf_ext_normal = (pts_cl[nn]+(pts_cl[-1]-pts_cl[nn])*5)#*70
+            outf_ext_normal = (pts_cl[0]+(pts_cl[0]-pts_cl[1])*100)#*70 (test for LnR cut Jun14.22)
         
             pts_cl_ext = np.insert(pts_cl,0,np.transpose(outf_ext_normal), axis=0)
             pts_cl_ext = np.insert(pts_cl_ext,len(pts_cl_ext),np.transpose(inf_ext_normal), axis=0)
 
-            kspl_o = vedo.KSpline(pts_cl_ext, res=nRes).color('green').legend('Ksplo').lw(2)#601
-            kspl_f = self.modify_centreline(kspl_o=kspl_o, mesh=self.mesh)
+            kspl_f = vedo.KSpline(pts_cl_ext, res=nRes).color('green').legend('Ksplo').lw(2)#601
+            
         else: 
-            kspl_o = []
-            kspl_f = vedo.KSpline(ext_points, res=nRes).color('green').legend('Ksplo').lw(2)#601
+            if not use_prev: 
+                cl = self.get_centreline(nPoints)
+                pts_cl = cl.points()
+                
+                # Extended centreline
+                nn = -2
+                unit_inf = unit_vector(pts_cl[-1]-pts_cl[nn])
+                inf_ext_normal = (pts_cl[-1]+(unit_inf)*100)#*70
+                unit_outf = unit_vector(pts_cl[0]-pts_cl[1])
+                outf_ext_normal = (pts_cl[0]+(unit_outf)*100)#*70 (test for LnR cut Jun14.22)
+            
+                pts_cl_ext = np.insert(pts_cl,0,np.transpose(outf_ext_normal), axis=0)
+                pts_cl_ext = np.insert(pts_cl_ext,len(pts_cl_ext),np.transpose(inf_ext_normal), axis=0)
+
+                kspl_o = vedo.KSpline(pts_cl_ext, res=nRes).color('green').legend('Ksplo').lw(2)#601
+                kspl_f = self.modify_centreline(kspl_o=kspl_o, mesh=self.mesh)
+            else: 
+                kspl_o = []
+                kspl_f = vedo.KSpline(ext_points, res=nRes).color('green').legend('Ksplo').lw(2)#601
         
         pts_cl_extf = kspl_f.points()
        

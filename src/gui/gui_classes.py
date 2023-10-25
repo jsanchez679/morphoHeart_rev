@@ -542,6 +542,82 @@ class Prompt_save_all_chs3(QDialog):
         self.output = button.text()
         self.close()
 
+class Process_ongoing(QDialog):
+    def __init__(self, title:str, organ, parent=None):
+        super().__init__(parent)
+        uic.loadUi('src/gui/ui/process_ongoing_screen.ui', self)
+        self.setWindowTitle(title)
+        self.mH_logo_XS.setPixmap(QPixmap(mH_top_corner))
+        self.setWindowIcon(QIcon(mH_icon))
+        self.output = None
+
+        self.ok_button.setEnabled(False)
+        self.ok_button.clicked.connect(lambda: self.accepted())
+        self.win_msg('To start filtering the 2D heatmaps press  -Start-.')
+        self.start_button.clicked.connect(lambda: self.init_processing(organ=organ, win=parent))
+        self.prog_bar.setValue(0)
+        self.prog_bar_all.setValue(0)
+    
+        self.setModal(True)
+        self.show()
+
+    def accepted(self): 
+        print('Entered func!')
+        self.output = True
+        self.close()
+
+    def win_msg(self, msg):
+        self.tE_validate.setHtml(html_txt[0]+html_txt[1]+msg+html_txt[2]) 
+
+    def init_processing(self, organ, win): 
+
+        setup_hm2d = {'th_i2e': {'name': 'Thickness (int>ext)'}, 
+                            'th_e2i': {'name': 'Thickness (ext>int)'},
+                            'ball': {'name': 'Ballooning'}}
+        
+        print(win.hm_btns)
+        gui_thball = win.gui_thickness_ballooning
+        hm2filt = {}
+        for hm in win.hm_btns: 
+            if win.hm_btns[hm]['play2d'].isEnabled():
+                dirs_df = gui_thball[hm]['hm2d_dirs']
+                hm2filt[hm] = dirs_df
+        
+        flat_hm2filt = flatdict.FlatDict(hm2filt)
+        self.prog_bar_all.setRange(0,len(flat_hm2filt))
+        n = 0
+        for key, hm2f in flat_hm2filt.items(): 
+            print(key, hm2f)
+            mtype, div = key.split(':')
+            proc, item = mtype.split('[')
+            name = setup_hm2d[proc]['name']
+            name_hm = name+': '+item[:-1]
+        
+            hm2d_sel = {'organ': organ.user_organName, 
+                        'df_res': organ.dir_res('csv_all'), 
+                        'hm2d_dirs': {div: hm2f}}
+            hm_sel = name_hm
+            div_sel = div
+            opt_sel = str(hm2f).split('_')[-1].split('.')[0]
+
+            organ_name = organ.user_organName
+            title_df = organ_name+'_hmUnloop_'+mtype+'_'+opt_sel+'.csv'
+            dir_df = organ.dir_res(dir='csv_all') / title_df
+            if dir_df.is_file():
+                print('File already exists: ', str(title_df))
+            else:
+                win.win_msg('Creating filtered heatmap -'+name_hm+'- for '+organ_name+'...')
+                filt_hm = get_filtered_hms(self, hm2d_sel, hm_sel, div_sel, opt_sel)
+                filt_hm.to_csv(dir_df)
+            alert('woohoo')
+            n += 1
+            self.prog_bar_all.setValue(n)
+        
+        self.prog_bar_all.setValue(len(flat_hm2filt))
+
+        self.ok_button.setEnabled(True)
+        self.win_msg('All heatmaps have been succesfully filtered!')
+
 class CreateNewProj(QDialog):
 
     def __init__(self, controller, parent=None):
@@ -3982,14 +4058,14 @@ class MainWindow(QMainWindow):
                 self.tabWidget.setCurrentIndex(3)
         
         if self.organ.analysis['morphoCell']:
-            self.tabWidget.setCurrentIndex(2)
+            pass
+            # self.tabWidget.setCurrentIndex(2)
         else: 
             self.tabWidget.setTabVisible(2, False)
-        #Hide Analysis 
-        self.tabWidget.setTabVisible(3, False)
 
         #Tab functions
-        self.current_tab = 0
+        if not hasattr(self, 'current_tab'):
+            self.current_tab = 0
         self.tabWidget.currentChanged.connect(self.tab_changed)
     
     def fill_proj_organ_info(self, proj, organ):
@@ -4797,7 +4873,6 @@ class MainWindow(QMainWindow):
 
     def init_plot_widget(self): 
 
-        print('initialised plot_widget')
         #Central plot
         self.figure = Figure(layout="constrained", dpi=300)#figsize=(20, 20), dpi=300)
         self.canvas_plot = FigureCanvas(self.figure)
@@ -6500,6 +6575,9 @@ class MainWindow(QMainWindow):
         self.plot_planes.stateChanged.connect(lambda: self.plot_plane_cuts())
         self.update_div(self.organ)
 
+        #Filter heatmaps
+        self.filter_2dhm.clicked.connect(lambda: self.filter2DHM())
+
         #Initialise with user settings, if they exist!
         self.user_heatmaps()
 
@@ -7525,6 +7603,7 @@ class MainWindow(QMainWindow):
                     if getattr(self, 'd3d2_'+str(nn)).isChecked():
                         if 'heatmaps2D' in wf_info['heatmaps'].keys():
                             self.hm_btns[item]['play2d'].setEnabled(True)
+                            self.filter_2dhm.setEnabled(True)
                             if 'hm2d_dirs' in wf_info['heatmaps'][item].keys(): 
                                 self.hm_btns[item]['play2d'].setChecked(True)
                                 self.hm_btns[item]['plot2d'].setEnabled(True)
@@ -9565,6 +9644,25 @@ class MainWindow(QMainWindow):
             error_txt = '*Please make sure you have already acquired the centreline you are using to unloop the 3D heatmaps to be able to continue.'
             self.win_msg(error_txt, getattr(self, 'set_hm2d'))
 
+    def filter2DHM(self):
+        #Prompt
+        title = 'Filtering heatmaps...'
+        msg = 'Filtering the 2D Heatmaps might take a while and the program might be unresponsive, are you sure you want to run it now? Press  -OK- if you want to continue, or  -Cancel- if you want to run it later.'
+        prompt = Prompt_ok_cancel(title, msg, parent=self)
+        prompt.exec()
+        print('output:', prompt.output)
+        run = prompt.output
+        if run: 
+            print('Running...')
+            title = 'Filtering heatmaps...'
+            proc_ong = Process_ongoing(title=title, organ=self.organ, parent=self)
+            proc_ong.exec()
+            if proc_ong.output: 
+                self.win_msg('Filtering heatmaps was finished successfully!')
+
+        else: 
+            pass
+
     #Plot 2D functions (Heatmaps 2D)    
     def plot_heatmap2d(self, btn): 
         print('Plotting heatmap2d: ', btn)
@@ -9973,12 +10071,20 @@ class MainWindow(QMainWindow):
         nPoints = self.gui_sect[cut.title()]['nPoints']
         nRes = self.gui_sect[cut.title()]['nRes']
         ext_plane = getattr(self, 'extend_dir_'+cut.lower())['plane_normal']
-        ext_pts = self.gui_sect[cut.title()]['ext_pts']
-        cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
-                                            pl_normal=ext_plane, 
-                                            clRib_type=clRib_type,
-                                            use_prev = True, ext_points=ext_pts, 
-                                            plot=False)
+        try: 
+            ext_pts = self.gui_sect[cut.title()]['ext_pts']
+            cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+                                                pl_normal=ext_plane, 
+                                                clRib_type=clRib_type,
+                                                use_prev = True, ext_points=ext_pts, 
+                                                plot=False)
+        except: 
+            print('Old mH version, recreating cl ribbon')
+            cl_ribbon = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+                                                pl_normal=ext_plane, 
+                                                clRib_type=clRib_type,
+                                                plot=False, oldV=True)
+
         #Get first mesh from buttons 
         name_mesh = list(self.sect_btns.keys())[0].split(':')[1]
         mesh2cut = self.organ.obj_meshes[name_mesh]
@@ -10322,7 +10428,9 @@ class MainWindow(QMainWindow):
         prompt.exec()
         print('output:',prompt.output, '\n')
         if prompt.output: 
+            self.close()
             self.controller.show_welcome()
+            self.controller.main_win = None
         else: 
             pass
 
@@ -10427,7 +10535,11 @@ class MultipAnalysisWindow(QMainWindow):
         #Progress bar
         self.prog_bar.setValue(0)
         #Init Plots 
-        self.init_plot_results()
+        self.init_plot_meshes()
+        #Init Average Heatmaps
+        self.init_aveHM()
+        #Init Plot Widget
+        self.init_plot_widget()
 
         # Theme 
         self.theme = self.cB_theme.currentText()
@@ -10491,7 +10603,7 @@ class MultipAnalysisWindow(QMainWindow):
         add_sound_bar(self, layout)
         sound_toggled(win=self)
 
-    def init_plot_results(self): 
+    def init_plot_meshes(self): 
 
         names_organs = ['----']
         self.all_meshes = {}
@@ -10576,6 +10688,74 @@ class MultipAnalysisWindow(QMainWindow):
         self.del_mesh13.clicked.connect(lambda: update_plot(win=self, key='del',num='13'))
         self.del_mesh14.clicked.connect(lambda: update_plot(win=self, key='del',num='14'))
         self.del_mesh15.clicked.connect(lambda: update_plot(win=self, key='del',num='15'))
+
+    def init_aveHM(self): 
+
+        #Initialise comboBoxes
+        strain = list(set(self.df_pando['strain']))
+        self.comboBox_strain.addItems(strain)
+        self.num_strain.setText('/'+str(len(strain)))
+        stage = list(set(self.df_pando['stage']))
+        self.comboBox_stage.addItems(stage)
+        self.num_stage.setText('/'+str(len(stage)))
+        genot = list(set(self.df_pando['genotype']))
+        self.comboBox_genotype.addItems(genot)
+        self.num_genot.setText('/'+str(len(genot)))
+        manip = list(set(self.df_pando['manipulation']))
+        self.comboBox_manipulation.addItems(manip)
+        self.num_manip.setText('/'+str(len(manip)))
+        cmaps = ['turbo','viridis','jet','magma','inferno','plasma']
+        self.colormap.clear()
+        self.colormap.addItems(cmaps)
+        self.colormap.currentIndexChanged.connect(lambda: set_colormap(win=self))
+        set_colormap(win=self)
+
+        #Get all the heatmaps that should have been created in all the organs added
+        setup_hm2d = {'th_i2e': {'name': 'Thickness (int>ext)'}, 
+                            'th_e2i': {'name': 'Thickness (ext>int)'},
+                            'ball': {'name': 'Ballooning'}}
+        
+        self.hm2d = {}; self.hm2d_opts = {}
+        for key in self.organs.keys(): 
+            organ = self.organs[key]['organ']
+            if 'heatmaps' in organ.mH_settings['wf_info'].keys(): 
+                if 'heatmaps2D' in organ.mH_settings['wf_info']['heatmaps'].keys(): 
+                    for hm in organ.mH_settings['wf_info']['heatmaps'].keys():
+                        if hm != 'heatmaps2D':
+                            proc, item = hm.split('[')
+                            name = setup_hm2d[proc]['name']
+                            name_hm = name+': '+item[:-1]
+                            if 'hm2d_dirs' in organ.mH_settings['wf_info']['heatmaps'][hm].keys(): 
+                                add = {'organ': organ.user_organName, 
+                                       'df_res': organ.dir_res(dir='csv_all'),
+                                       'hm2d_dirs': organ.mH_settings['wf_info']['heatmaps'][hm]['hm2d_dirs']}
+                                opts = []
+                                for name in organ.mH_settings['wf_info']['heatmaps'][hm]['hm2d_dirs'].keys(): 
+                                    dir_name = str(organ.mH_settings['wf_info']['heatmaps'][hm]['hm2d_dirs'][name]).split('_')[-1]
+                                    opts.append(dir_name.split('.csv')[0])
+                                if hm not in self.hm2d.keys(): 
+                                    self.hm2d[name_hm] = [add]
+                                    self.hm2d_opts[name_hm] = opts
+                                else: 
+                                    self.hm2d[name_hm].append(add)
+                                    self.hm2d_opts[name_hm].append(opts)
+
+        self.comboBox_hm2d_all.addItems(list(self.hm2d.keys()))
+        self.comboBox_hm2d_all.currentTextChanged.connect(lambda: update_div(win=self))
+        self.set_filters.clicked.connect(lambda: set_aveHM(win=self))
+        self.create_avehm.clicked.connect(lambda: create_average_hm(win=self))
+
+        #Initialise div
+        update_div(win=self)
+
+    def init_plot_widget(self):
+        #Central plot
+        self.figure = Figure(layout="constrained", dpi=300)#figsize=(20, 20), dpi=300)
+        self.canvas_plot = FigureCanvas(self.figure)
+
+        self.layout_plot = QVBoxLayout()
+        self.image_widget.setLayout(self.layout_plot)
+        self.layout_plot.addWidget(self.canvas_plot)
 
     def update_meshes(self):
         organ_selected = self.comboBox_all_organs.currentText()
@@ -10685,7 +10865,7 @@ def fill_organs_table(win, table, df_pando, single_proj):
 
     headerc = table.horizontalHeader()  
     for col in range(len(all_labels.keys())):   
-        headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+        headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
 
     table.resizeColumnsToContents()
     table.resizeRowsToContents()
@@ -10954,6 +11134,283 @@ def create_user_plot(win): #needs work because all meshes were being added from 
                     zoom=zoom, azimuth = azim, elevation =elev, add_scale_cube=add_scale_cube)
 
     win.btn_user_plot.setChecked(False)
+
+def update_div(win):
+
+    hm_sel = win.comboBox_hm2d_all.currentText()
+    opts = win.hm2d_opts[hm_sel]
+    print('opts:', opts)
+    n = 0
+    win.opts = {}
+    for divs in ['div1', 'div2', 'div3', 'div4', 'div5']: 
+        div_cb = getattr(win, 'cB_'+divs)
+        if n < len(opts): 
+            div_cb.setVisible(True)
+            div_cb.setText(opts[n])
+            win.opts[divs] = opts[n]
+            if n == 0: 
+                div_cb.setChecked(True)
+            n+=1
+        else: 
+            div_cb.setVisible(False)
+    
+    if 'Thickness' in hm_sel:
+        win.min_hm2d.setValue(0)
+        win.max_hm2d.setValue(20)
+    else: # ballooning
+        win.min_hm2d.setValue(0)
+        win.max_hm2d.setValue(60)
+
+def set_colormap(win): 
+    value = getattr(win, 'colormap').currentText()
+    dir_pix = 'images/cm_'+value+'.png'
+    pixmap = QPixmap(dir_pix)
+    cm_eg = win.cm_eg
+    cm_eg.setPixmap(pixmap)
+    cm_eg.setScaledContents(True)
+
+def set_aveHM(win): 
+
+    win.aveHM_settings = {'strain': win.cB_strain.isChecked(), 
+                          'stage': win.cB_stage.isChecked(),
+                          'genotype': win.cB_genotype.isChecked(),
+                          'manipulation': win.cB_manipulation.isChecked()}
+    at_least_one = False
+    for filt, value in win.aveHM_settings.items():
+        if value: 
+            getattr(win, 'comboBox_'+filt).setEnabled(True)
+            at_least_one = True
+        else:
+            getattr(win, 'comboBox_'+filt).setEnabled(False)
+
+    print('win.aveHM_settings:', win.aveHM_settings)
+
+    if not at_least_one: 
+        win.win_msg('*You have not selected any parameter to filter your organs... go back and check to continue.', win.set_filters)
+        return
+    
+    win.create_avehm.setEnabled(True)
+
+def create_average_hm(win): 
+    
+    #Get values selected for each filter
+    param_values = {'strain': win.comboBox_strain.currentText(), 
+                    'stage': win.comboBox_stage.currentText(),
+                    'genotype': win.comboBox_genotype.currentText(),
+                    'manipulation': win.comboBox_manipulation.currentText()}
+    
+    min_val = win.min_hm2d.value()
+    max_val = win.max_hm2d.value()
+    cmap = win.colormap.currentText()
+    hm_sel = win.comboBox_hm2d_all.currentText()
+
+    for divs in ['div1', 'div2', 'div3', 'div4', 'div5']: 
+        div_cb = getattr(win, 'cB_'+divs)
+        if div_cb.isVisible() and div_cb.isChecked(): 
+            div_sel = divs
+            opt_sel = win.opts[divs]
+
+    organs_included = []
+    for item in win.hm2d[hm_sel]:
+        organs_included.append(item['organ'])
+    organs_f = ', '.join(organs_included)
+
+    win.organs_included_analysis.setHtml(html_txt[0]+html_txt[1]+organs_f+html_txt[2])# setText(organs_f)
+
+    filters = []; group = []
+    for filt, value in win.aveHM_settings.items(): 
+        if value: 
+            filters.append(filt)
+            group.append(param_values[filt])
+    group = tuple(group)
+
+    print('\n >> hm: ', hm_sel,' - Group: ', group, '- max:', max_val)
+    organs_out = filter_df(df_input = win.df_pando, filters = filters, group = group)
+    all_organs = list(organs_out['user_organName'])
+
+    hm2d_sel = copy.deepcopy(win.hm2d[hm_sel])
+    to_remove = []; 
+    for org_info in hm2d_sel: 
+        found = False
+        print(org_info)
+        organ = org_info['organ']
+        if organ in all_organs:
+            for div in org_info['hm2d_dirs']:
+                dir_hm = org_info['hm2d_dirs'][div]
+                print(dir_hm)
+                if opt_sel in str(dir_hm): 
+                    found = True
+                    div_sel = div
+                    break
+            if not found:
+                print('remove organ: ', organ)
+                to_remove.append(org_info)
+
+    if len(to_remove)> 0:
+        for item in to_remove: 
+            hm2d_sel.remove(item)
+
+    filt_hm_all = get_all_filtered_hms(win, hm2d_sel, hm_sel, div_sel, opt_sel)
+    # print(len(filt_hm_all)); print(hm2d_sel, hm_sel, div_sel, opt_sel)
+    win.win_msg('Averaging heatmaps...')
+    df_concat = pd.concat(filt_hm_all).groupby(level=0).mean()
+    win.win_msg('Creating average heatmap...')
+    plot_average_heatmap(win, df_concat, len(filt_hm_all), hm_sel, div_sel, opt_sel, (min_val, max_val), cmap)
+
+def get_all_filtered_hms(win, hm2d_sel, hm_sel, div_sel, opt_sel):
+    
+    setup_hm2d = {'Thickness (int>ext)': 'th_i2e', 
+                  'Thickness (ext>int)':'th_e2i',
+                  'Ballooning':'ball'}
+    
+    filt_hm_all = []
+    win.win_msg('Loading/Creating filtered heatmaps from organs....')
+    for hm2d in hm2d_sel: 
+        #see if it is saved
+        organ_name = hm2d['organ']
+        #Get organ from win.organs
+        for key in win.organs: 
+            if win.organs[key]['organ_name'] == organ_name:
+                break
+        organ = win.organs[key]['organ']
+        proc, ch_cont = hm_sel.split(': ')
+        mtype = setup_hm2d[proc]+'['+ch_cont+']'
+        title_df = organ_name+'_hmUnloop_'+mtype+'_'+opt_sel+'.csv'
+        dir_df = organ.dir_res(dir='csv_all') / title_df
+        if dir_df.is_file(): 
+            #load it
+            print('loading hm')
+            win.win_msg('Loading filtered heatmap -'+mtype+'- from '+organ_name+'...')
+            filt_hm = pd.read_csv(dir_df, index_col=0)
+        else: 
+            print('creating and saving df')
+            win.win_msg('Creating filtered heatmap -'+mtype+'- for '+organ_name+'...')
+            filt_hm = get_filtered_hms(win, hm2d, hm_sel, div_sel, opt_sel)
+            filt_hm.to_csv(dir_df)
+            win.win_msg('Filtered heatmap -'+mtype+'- for '+organ_name+' was created and saved...')
+            alert('woohoo')
+
+        filt_hm_all.append(filt_hm)
+    
+    return filt_hm_all
+
+def get_filtered_hms(win, hm2d_sel:dict, hm_name:str, div:str, opt:str, save=False): 
+
+    setup_hm2d = {'Thickness (int>ext)': 'th_i2e', 
+                  'Thickness (ext>int)':'th_e2i',
+                  'Ballooning':'ball'}
+    val, mesh_info = hm_name.split(': ')
+    value_name = setup_hm2d[val]+'['+mesh_info+']'
+
+    organ_name = hm2d_sel['organ']
+    df_res = hm2d_sel['df_res']
+    hm_dir = df_res / hm2d_sel['hm2d_dirs'][div]
+
+    #Open heatmap 
+    df = pd.read_csv(str(hm_dir))
+    df = df.drop(['taken'], axis=1)
+    df.astype('float16').dtypes
+    df_cols = ['z_plane', 'theta', 'radius']+[value_name]
+    
+    angles_f = np.linspace(-180,180,num = 360*6+1, endpoint = True)
+    step = round((angles_f[1]-angles_f[0])/2, 4)
+    
+    th_list = []
+    rad_list = []
+    zplane_list = []
+    theta_list = []
+    #Initialise prog bar
+    win.prog_bar.setRange(0,len(df.z_plane.unique()))
+    for j, z_plane in enumerate(sorted(df.z_plane.unique())):
+        df_z = df[df['z_plane'] == z_plane]
+        #max? mean?
+        print('z_plane:', z_plane)
+        for i, ang in enumerate(angles_f):
+            theta_list.append(round(ang,3))
+            filt = df_z[(df_z['theta'] >= ang-step) & (df_z['theta'] < ang+step)]
+            th_val = filt[value_name].max()
+            th_list.append(th_val)
+            rad_val = filt['radius'].max()
+            rad_list.append(rad_val)
+            
+            zplane_list.append(round(z_plane, 3))
+        win.prog_bar.setValue(j+1)
+    win.prog_bar.setValue(len(df.z_plane.unique()))
+    
+    alert('bubble')
+    matrix_unlooped = np.zeros((len(zplane_list),4))
+    matrix_unlooped[:,0] = zplane_list
+    matrix_unlooped[:,1] = theta_list
+    matrix_unlooped[:,2] = rad_list
+    matrix_unlooped[:,3] = th_list
+
+    df_filt = pd.DataFrame(matrix_unlooped, columns=df_cols)
+    alert('frog')
+    df_filt.astype('float16').dtypes
+    heatmap = pd.pivot_table(df_filt, values= value_name, columns = 'theta', index='z_plane', aggfunc='max')
+    heatmap.astype('float16').dtypes
+    alert('woohoo')
+    
+    return heatmap
+        
+def filter_df(df_input, filters, group):
+        
+    df_pivot = df_input.groupby(filters)
+    df_out = df_pivot.get_group(group)
+    
+    return df_out
+
+def plot_average_heatmap(win, df_concat, num_ave, hm_name, div, opt, min_max, cmap): 
+
+    title = 'Average heatmap for '+hm_name+' - '+opt+' (N='+str(num_ave)+') [um]'
+    print('- title:', title)
+    win.fig_title.setText(title)
+
+    fig11 = win.figure
+    fig11.clear()
+    fontsize = 2.5; labelsize = 10; width = 0.1; length = 2
+
+    #Gridspec
+    outer_grid = fig11.add_gridspec(nrows=1, ncols=2, width_ratios =[1,0.035])
+    outer_grid.update(left=0.1,right=0.9,top=0.95,bottom=0.05,wspace=0,hspace=0)
+
+    ax = fig11.add_subplot(outer_grid[0])
+    vmin, vmax = min_max
+    c = ax.pcolor(df_concat, cmap=cmap, vmin=vmin, vmax=vmax)
+    ax.invert_yaxis()
+
+    y_pos = ax.get_yticks()
+    ylabels=np.linspace(df_concat.index.min(), df_concat.index.max(), len(y_pos)).round(2)
+    ax.set_yticks(ticks=y_pos, labels=ylabels)
+    ax.set_yticklabels(ylabels, rotation=0, fontsize=fontsize)#, fontname='Arial')
+    ax.yaxis.set_tick_params(labelsize=fontsize, width = width, length = length, 
+                                labelrotation = 0, labelcolor='#696969', direction='out', which='major')
+    
+    x_pos = ax.get_xticks()
+    x_pos_new = np.linspace(x_pos[0], x_pos[-1], 7)
+    ax.set_xticks(x_pos_new) 
+    x_lab_new = np.arange(-180,200,60)
+    ax.set_xticklabels(x_lab_new, rotation=30, fontsize=fontsize)#, fontname='Arial')
+    ax.xaxis.set_tick_params(labelsize=fontsize, width = width, length = length, 
+                                labelcolor='#696969', direction='out', which='major')
+    
+    for pos in ['top', 'right']:
+        ax.spines[pos].set_visible(False)
+    for pos in ['bottom', 'left']:
+        ax.spines[pos].set_linewidth(0.1)
+    # if opt != 'whole':
+    #     ax.set_ylabel(ylabel = name.title(), fontsize=fontsize)
+
+    #Colorbar 
+    axc = fig11.add_subplot(outer_grid[1])
+    axc.set_axis_off()
+    cb = win.figure.colorbar(c, ax=axc, fraction = 1)#, orientation='horizontal')
+    cb.ax.tick_params(width = 0.1, length = 2, labelsize=fontsize)
+    # cb.set_label(label, fontsize=fontsize)
+    cb.outline.set_visible(False)
+
+    #Draw and show window
+    win.canvas_plot.draw()
 
 class PlotWindow(QDialog):
 

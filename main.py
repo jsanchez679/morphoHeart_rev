@@ -896,17 +896,17 @@ class Controller:
 
     def open_another_organ_same_project(self):
         self.main_win.close()
-        self.main_win = None
         if self.main_win.prompt.output in ['Discard', 'Save All']: 
+            self.main_win = None
             self.load_proj_win.button_go_back.clicked.connect(lambda: self.clear_win_show_welcome(parent = 'load_proj_win'))
             self.load_proj_win.go_to_main_window.setChecked(False)
             self.load_proj_win.show()
-
+        
     def create_new_organ_same_project(self): 
         self.new_organ_win = None
         self.main_win.close()
-        self.main_win = None
         if self.main_win.prompt.output in ['Discard', 'Save All']: 
+            self.main_win = None
             self.new_organ_win = NewOrgan(proj = self.proj)
             self.init_new_organ_win()
             self.new_organ_win.button_go_back.clicked.connect(lambda: self.clear_win_show_welcome(parent = 'new_organ_win'))
