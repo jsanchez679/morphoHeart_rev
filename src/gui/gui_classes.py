@@ -48,9 +48,9 @@ from ..modules.mH_funcBasics import (get_by_path, compare_dicts, update_gui_set,
                                      df_add_value, palette_rbg)
 from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours, get_slices,
                                        plot_props, plot_filled_contours, plot_group_filled_contours, 
-                                       close_draw, close_box, reset_img, close_convex_hull, tuple_pairs)
+                                       close_draw, close_box, close_user, reset_img, close_convex_hull, tuple_pairs)
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
-from ..modules.mH_classes_new import Project, Organ
+from ..modules.mH_classes_new import Project, Organ, create_submesh
 from .config import mH_config
 
 path_mHImages = mH_config.path_mHImages
@@ -766,7 +766,7 @@ class CreateNewProj(QDialog):
         self.ck_def_colorsNS.stateChanged.connect(lambda: self.default_colors('chNS'))
 
         #Operations
-        self.chNS_operation.addItems(['----', 'XOR'])
+        self.chNS_operation.addItems(['----', 'AND-XOR'])
 
     def init_segments_group(self):
         self.use_semgs_improve_hm2D = False
@@ -4153,6 +4153,8 @@ class MainWindow(QMainWindow):
                 eg_slc = num_slices//2
                 getattr(self, 'eg_slice_'+ch).setText(str(eg_slc))
             num +=1
+        #Initialise in ch1
+        self.tab_chs.setCurrentIndex(0)
         
         # Update mH_settings
         if hasattr(self, 'plot_contours_settings'): 
@@ -4829,6 +4831,20 @@ class MainWindow(QMainWindow):
         self.save_select_contours_ch3.clicked.connect(lambda: self.save_closed_channel(ch='ch3', print_txt=True, s3s=True))
         self.save_select_contours_ch4.clicked.connect(lambda: self.save_closed_channel(ch='ch4', print_txt=True, s3s=True))
 
+        #Check final meshes of s3s
+        self.plot_final_s3s_ch1.clicked.connect(lambda: self.plot_final_s3_meshes('ch1'))
+        self.plot_final_s3s_ch2.clicked.connect(lambda: self.plot_final_s3_meshes('ch2'))
+        self.plot_final_s3s_ch3.clicked.connect(lambda: self.plot_final_s3_meshes('ch3'))
+        self.plot_final_s3s_ch4.clicked.connect(lambda: self.plot_final_s3_meshes('ch4'))
+        self.plot_final_s3s_ch1.setEnabled(False)
+        self.plot_final_s3s_ch2.setEnabled(False)
+        self.plot_final_s3s_ch3.setEnabled(False)
+        self.plot_final_s3s_ch4.setEnabled(False)
+        self.plot_final_s3s_ch1.setVisible(False)
+        self.plot_final_s3s_ch2.setVisible(False)
+        self.plot_final_s3s_ch3.setVisible(False)
+        self.plot_final_s3s_ch4.setVisible(False)
+
         #Tuple table
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
@@ -4936,6 +4952,8 @@ class MainWindow(QMainWindow):
                 self.close_draw_btns_widget.setVisible(False)
             elif process == 'select_contours':
                 self.organ.update_mHworkflow(sp_process1, update = 'DONE')
+                getattr(self, 'plot_final_s3s_'+ch_name).setVisible(True)
+                getattr(self, 'plot_final_s3s_'+ch_name).setEnabled(True)
             self.win_msg(msg)
         else: 
             if process == 'manual_close': 
@@ -4944,6 +4962,8 @@ class MainWindow(QMainWindow):
                 self.organ.update_mHworkflow(sp_process3, update = 'Initialised')
             if process == 'select_contours': 
                 self.organ.update_mHworkflow(sp_process1, update = 'Initialised')
+                getattr(self, 'plot_final_s3s_'+ch_name).setVisible(False)
+                getattr(self, 'plot_final_s3s_'+ch_name).setEnabled(False)
             self.organ.update_mHworkflow(sp_process, update = 'Initialised')
 
         #Update Status in GUI and in CH Progress 
@@ -5401,6 +5421,8 @@ class MainWindow(QMainWindow):
                     getattr(self, 'select_contours_'+ch_name+'_play').setChecked(True)
                     getattr(self, 'select_contours_'+ch_name+'_done').setEnabled(True)
                     getattr(self, 'select_contours_'+ch_name+'_done').setChecked(True)
+                    getattr(self, 'plot_final_s3s_'+ch_name).setVisible(True)
+                    getattr(self, 'plot_final_s3s_'+ch_name).setEnabled(True)
                 elif workflow['Status'] == 'Initialised':
                     getattr(self, 'select_contours_'+ch_name+'_done').setEnabled(True)
                     wdg = getattr(self, 'select_contours_all_'+ch_name+'_widget')
@@ -5836,6 +5858,24 @@ class MainWindow(QMainWindow):
                     plot_group_filled_contours(params = params_group)
                 self.add_thumbnail(function='fcC.plot_group_filled_contours', params = params_group, 
                                     name='Filled Slcs'+str(slc_o)+'-'+str(slc_f+1))
+
+    #Plot 3D
+    def plot_final_s3_meshes(self, ch_name):
+
+        colors = ['gold','light green','light sea green']
+        
+        meshes_out = []
+        im_ch = self.organ.obj_imChannels[ch_name]
+        res = im_ch.resolution
+        for n, cont in enumerate(['int', 'ext', 'tiss']):
+            im_ch.load_chS3s([cont])
+            s3 = getattr(im_ch, 's3_'+cont).s3()
+            mesh = create_submesh(s3, res, keep_largest=False, rotateZ_90=True)
+            mesh.color(colors[n])
+            meshes_out.append(mesh)
+        
+        txt = [(0, self.organ.user_organName+' - Final S3s for Channel: '+im_ch.user_chName)]
+        plot_grid(obj=meshes_out, txt=txt, axes=5)
 
     #Image thumbnails
     def add_thumbnail(self, function, params, name): 

@@ -798,7 +798,7 @@ QScrollBar::handle:vertical:hover {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
+            <y>-265</y>
             <width>1047</width>
             <height>1183</height>
            </rect>
@@ -3714,6 +3714,235 @@ text-decoration: underline;
                 <layout class="QVBoxLayout" name="verticalLayout_3">
                  <item>
                   <layout class="QGridLayout" name="gridLayout_3">
+                   <item row="0" column="3" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+                    <widget class="QLabel" name="lab_no_ch_5">
+                     <property name="minimumSize">
+                      <size>
+                       <width>50</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>50</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                     </property>
+                     <property name="text">
+                      <string>External</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="5" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+                    <widget class="QLabel" name="lab_no_ch_20">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                     </property>
+                     <property name="text">
+                      <string>Internal</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="5">
+                    <layout class="QHBoxLayout" name="horizontalLayout_42">
+                     <item>
+                      <widget class="QComboBox" name="int_chNS">
+                       <property name="enabled">
+                        <bool>true</bool>
+                       </property>
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="minimumSize">
+                        <size>
+                         <width>70</width>
+                         <height>19</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>70</width>
+                         <height>19</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QComboBox" name="int_contNS">
+                       <property name="enabled">
+                        <bool>true</bool>
+                       </property>
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="minimumSize">
+                        <size>
+                         <width>70</width>
+                         <height>19</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>70</width>
+                         <height>19</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                       </property>
+                       <item>
+                        <property name="text">
+                         <string>----</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>internal</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>external</string>
+                        </property>
+                       </item>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="1" column="3">
+                    <layout class="QHBoxLayout" name="horizontalLayout_43">
+                     <item>
+                      <widget class="QLabel" name="lab_no_ch_19">
+                       <property name="minimumSize">
+                        <size>
+                         <width>70</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>70</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                       </property>
+                       <property name="text">
+                        <string>Channel</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lab_no_ch_18">
+                       <property name="minimumSize">
+                        <size>
+                         <width>70</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>70</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                       </property>
+                       <property name="text">
+                        <string>Contour</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
                    <item row="2" column="0">
                     <widget class="QLabel" name="label_31">
                      <property name="enabled">
@@ -3742,140 +3971,6 @@ text-decoration: underline;
                      </property>
                      <property name="text">
                       <string>ChNS</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="5">
-                    <layout class="QHBoxLayout" name="horizontalLayout_44">
-                     <item>
-                      <widget class="QLabel" name="lab_no_ch_6">
-                       <property name="minimumSize">
-                        <size>
-                         <width>0</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>16777215</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                       </property>
-                       <property name="text">
-                        <string>Channel</string>
-                       </property>
-                       <property name="alignment">
-                        <set>Qt::AlignCenter</set>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lab_no_ch_17">
-                       <property name="minimumSize">
-                        <size>
-                         <width>0</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>16777215</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                       </property>
-                       <property name="text">
-                        <string>Contour</string>
-                       </property>
-                       <property name="alignment">
-                        <set>Qt::AlignCenter</set>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="2" column="7">
-                    <widget class="QPushButton" name="button_set_chNS">
-                     <property name="minimumSize">
-                      <size>
-                       <width>120</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>120</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="autoFillBackground">
-                      <bool>false</bool>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
-                     </property>
-                     <property name="text">
-                      <string>Set Channel NS</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="3" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-                    <widget class="QLabel" name="lab_no_ch_5">
-                     <property name="minimumSize">
-                      <size>
-                       <width>50</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>50</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                     </property>
-                     <property name="text">
-                      <string>External</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignCenter</set>
                      </property>
                     </widget>
                    </item>
@@ -4132,128 +4227,6 @@ color: rgb(234, 234, 234);
                      </item>
                     </layout>
                    </item>
-                   <item row="2" column="1">
-                    <widget class="QLineEdit" name="chNS_username">
-                     <property name="enabled">
-                      <bool>true</bool>
-                     </property>
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>120</width>
-                       <height>18</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>120</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QLineEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="placeholderText">
-                      <string>Channel name</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="3">
-                    <layout class="QHBoxLayout" name="horizontalLayout_43">
-                     <item>
-                      <widget class="QLabel" name="lab_no_ch_19">
-                       <property name="minimumSize">
-                        <size>
-                         <width>70</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>70</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                       </property>
-                       <property name="text">
-                        <string>Channel</string>
-                       </property>
-                       <property name="alignment">
-                        <set>Qt::AlignCenter</set>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lab_no_ch_18">
-                       <property name="minimumSize">
-                        <size>
-                         <width>70</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>70</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                       </property>
-                       <property name="text">
-                        <string>Contour</string>
-                       </property>
-                       <property name="alignment">
-                        <set>Qt::AlignCenter</set>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="1" column="2">
-                    <widget class="QLabel" name="lab_no_ch_4">
-                     <property name="minimumSize">
-                      <size>
-                       <width>245</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>240</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                     </property>
-                     <property name="text">
-                      <string>Pick a color for each channel contour...</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignCenter</set>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="1" column="4">
                     <widget class="QLabel" name="lab_no_ch_8">
                      <property name="minimumSize">
@@ -4280,64 +4253,6 @@ background-color: rgb(255, 255, 255);</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="0" column="7">
-                    <widget class="QCheckBox" name="ck_def_colorsNS">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>120</width>
-                       <height>18</height>
-                      </size>
-                     </property>
-                     <property name="layoutDirection">
-                      <enum>Qt::LeftToRight</enum>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                     </property>
-                     <property name="text">
-                      <string>Use default colors</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="4" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-                    <widget class="QPushButton" name="q_operation">
-                     <property name="minimumSize">
-                      <size>
-                       <width>18</width>
-                       <height>18</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>18</width>
-                       <height>18</height>
-                      </size>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                     </property>
-                     <property name="text">
-                      <string>?</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="2" column="4">
                     <widget class="QComboBox" name="chNS_operation">
                      <property name="enabled">
@@ -4351,7 +4266,7 @@ border-color: #672146
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>70</width>
+                       <width>82</width>
                        <height>19</height>
                       </size>
                      </property>
@@ -4387,153 +4302,11 @@ QComboBox QAbstractItemView {
 }
 </string>
                      </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="5">
-                    <layout class="QHBoxLayout" name="horizontalLayout_42">
                      <item>
-                      <widget class="QComboBox" name="int_chNS">
-                       <property name="enabled">
-                        <bool>true</bool>
-                       </property>
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>70</width>
-                         <height>19</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>70</width>
-                         <height>19</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                       </property>
-                      </widget>
+                      <property name="text">
+                       <string>AND-XOR</string>
+                      </property>
                      </item>
-                     <item>
-                      <widget class="QComboBox" name="int_contNS">
-                       <property name="enabled">
-                        <bool>true</bool>
-                       </property>
-                       <property name="sizePolicy">
-                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                         <horstretch>0</horstretch>
-                         <verstretch>0</verstretch>
-                        </sizepolicy>
-                       </property>
-                       <property name="minimumSize">
-                        <size>
-                         <width>70</width>
-                         <height>19</height>
-                        </size>
-                       </property>
-                       <property name="maximumSize">
-                        <size>
-                         <width>70</width>
-                         <height>19</height>
-                        </size>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                       </property>
-                       <item>
-                        <property name="text">
-                         <string>----</string>
-                        </property>
-                       </item>
-                       <item>
-                        <property name="text">
-                         <string>internal</string>
-                        </property>
-                       </item>
-                       <item>
-                        <property name="text">
-                         <string>external</string>
-                        </property>
-                       </item>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="0" column="5" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-                    <widget class="QLabel" name="lab_no_ch_20">
-                     <property name="minimumSize">
-                      <size>
-                       <width>0</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                     </property>
-                     <property name="text">
-                      <string>Internal</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignCenter</set>
-                     </property>
                     </widget>
                    </item>
                    <item row="2" column="3">
@@ -4656,6 +4429,238 @@ QComboBox QAbstractItemView {
                       </widget>
                      </item>
                     </layout>
+                   </item>
+                   <item row="0" column="7">
+                    <widget class="QCheckBox" name="ck_def_colorsNS">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>18</height>
+                      </size>
+                     </property>
+                     <property name="layoutDirection">
+                      <enum>Qt::LeftToRight</enum>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                     </property>
+                     <property name="text">
+                      <string>Use default colors</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QLabel" name="lab_no_ch_4">
+                     <property name="minimumSize">
+                      <size>
+                       <width>245</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>240</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                     </property>
+                     <property name="text">
+                      <string>Pick a color for each channel contour...</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="7">
+                    <widget class="QPushButton" name="button_set_chNS">
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>120</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="autoFillBackground">
+                      <bool>false</bool>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                     </property>
+                     <property name="text">
+                      <string>Set Channel NS</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="4" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+                    <widget class="QPushButton" name="q_operation">
+                     <property name="minimumSize">
+                      <size>
+                       <width>18</width>
+                       <height>18</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>18</width>
+                       <height>18</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                     </property>
+                     <property name="text">
+                      <string>?</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="5">
+                    <layout class="QHBoxLayout" name="horizontalLayout_44">
+                     <item>
+                      <widget class="QLabel" name="lab_no_ch_6">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                       </property>
+                       <property name="text">
+                        <string>Channel</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lab_no_ch_17">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                       </property>
+                       <property name="text">
+                        <string>Contour</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="chNS_username">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>120</width>
+                       <height>18</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>120</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="placeholderText">
+                      <string>Channel name</string>
+                     </property>
+                    </widget>
                    </item>
                    <item row="0" column="6">
                     <spacer name="horizontalSpacer_5">

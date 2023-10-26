@@ -311,16 +311,21 @@ def check_gral_loading(proj, proj_name, dir_proj, organ=[], organ_name=''):
     
 # Color palette as RGB
 def palette_rbg(name:str, num:int, rgb=True):
-    rgb_colors = []
-    palette =  sns.color_palette(name, num)
-    if rgb: 
-        for color in palette:
-            tup = []
-            for value in color:
-                tup.append(round(value*255))
-            rgb_colors.append(tuple(tup))
+    #https://projects.susielu.com/viz-palette?colors=[%22#ffa500%22,%22#6495ed%22,%22#dc133b%22,%22#ade64f%22,%22#c36bea%22,%22#36cbd3%22,%22#a23e27%22,%22#FF1493%22,%22#8b008b%22,%22#3ff44c%22,%22#FF6347%22,%22#C0C0C0%22,%22#FFD700%22,%22#006400%22,%22#00FFFF%22,%22#DA70D6%22,%22#D2691E%22,%22#7FFFD4%22,%22#F0E68C%22,%22#DC143C%22]&backgroundColor=%22white%22&fontColor=%22black%22&mode=%22normal%22
+    if name != 'mH_default': 
+        rgb_colors = []
+        palette =  sns.color_palette(name, num)
+        if rgb: 
+            for color in palette:
+                tup = []
+                for value in color:
+                    tup.append(round(value*255))
+                rgb_colors.append(tuple(tup))
+        else: 
+            rgb_colors = palette
     else: 
-        rgb_colors = palette
+        rgb_colors = ["#ffa500","#6495ed","#dc133b","#ade64f","#c36bea","#36cbd3","#a23e27","#ff1493","#8b008b","#3ff44c",
+                        "#ff6347","#c0c0c0","#ffd700","#006400","#00ffff","#da70d6","#d2691e","#7fffd4","#f0e68c","#dc143c"]
 
     return rgb_colors
 

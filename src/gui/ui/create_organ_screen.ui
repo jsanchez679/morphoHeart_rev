@@ -1098,10 +1098,33 @@ font: 25 10pt &quot;Calibri Light&quot;;
 font-family: &quot;Calibri Light&quot;;
 }
 QTextEdit:focus { border: 1px solid #eb6fbd;}
+
+QScrollBar:vertical {
+	background-color: rgb(255, 255, 255);
+  	width: 12px;
+}
+
+QScrollBar::handle:vertical {
+	background-color: rgb(162, 0, 122);
+	min-height: 30px;
+	border-radius: 6px;
+}
+
+QScrollBar::handle:vertical:hover {
+	background-color:rgb(0, 0, 0);
+}
+
 					</string>
             </property>
             <property name="documentTitle">
              <string/>
+            </property>
+            <property name="html">
+             <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Calibri Light'; font-size:10pt; font-weight:24; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="placeholderText">
              <string>Enter reference notes regarding the new organ</string>

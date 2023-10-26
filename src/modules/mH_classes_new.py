@@ -1054,6 +1054,18 @@ class Organ():
             for imCh in self.imChannelNS:
                 im_ch = ImChannelNS(organ=self, ch_name=imCh)#, new=False)
                 self.obj_imChannelNS[imCh] = im_ch
+
+            #Modify XOR if organ was created before 26/10/23
+            date_update = '2023-10-26'
+            date_format = '%Y-%m-%d'
+            date_update_f = datetime.strptime(date_update, date_format)
+            #Get date of organ creation 
+            date_created = self.parent_project.info['date_created']
+            date_created_f = datetime.strptime(date_created, date_format)
+            if date_created_f < date_update_f:
+                self.mH_settings['setup']['chNS']['operation'] = 'AND-XOR'
+                self.parent_project.mH_settings['setup']['chNS']['operation'] = 'AND-XOR'
+                print('Updated XOR to AND-XOR in organ and project')
         
     def load_objMeshes(self):#
         self.obj_meshes = {}
@@ -2311,46 +2323,40 @@ class ImChannelNS(): #channel
         else: # just update process 
             self.contStack[cont_type]['process'] = contStack.process
 
-    def create_s3_tiss (self, layerDict, plot_settings): 
+    def create_s3_tiss(self, layerDict, plot_settings): 
         """
         Function to extract the negative space channel
         """        
         # Workflow process
-        workflow = self.parent_organ.workflow['morphoHeart']
         process = ['ImProc', self.channel_no,'D-S3Create','Status']
       
         plot, im_every = plot_settings 
         print('>> Extracting '+self.user_chName+'!')
         operation = layerDict['operation']
 
-        s3 = self.s3_ext.s3()
-        s3_mask = self.s3_int.s3()
+        extNS = self.s3_ext.s3()
+        intNS = self.s3_int.s3()
         
-        s3_bits = np.zeros_like(s3, dtype='uint8')
-        s3_new =  np.zeros_like(s3, dtype='uint8')
+        s3_bits = np.zeros_like(extNS, dtype='uint8')
+        s3_new =  np.zeros_like(extNS, dtype='uint8')
 
-        index = list(s3.shape).index(min(s3.shape))
+        index = list(extNS.shape).index(min(extNS.shape))
         if index == 2:
-            for slc in range(s3.shape[2]):
-                mask_slc = s3_mask[:,:,slc]
-                toClean_slc = s3[:,:,slc]
-                # Keep ch to use as mask as it is
-                inv_slc = np.copy(mask_slc)
-                if operation == 'XOR': 
+            for slc in range(extNS.shape[2]):
+                s3_intNS = intNS[:,:,slc]
+                s3_extNS = extNS[:,:,slc]
+                if operation == 'AND-XOR':# or operation == 'XOR': 
                     # inverted_mask or mask AND ch1_2clean
-                    toRemove_slc = np.logical_and(toClean_slc, inv_slc)
+                    s3_AND = np.logical_and(s3_extNS, s3_intNS)
                     # Keep only the clean bit
-                    cleaned_slc = np.logical_xor(toClean_slc, toRemove_slc)
-                else: 
-                    #Program this!
-                    pass
+                    s3_XOR = np.logical_xor(s3_extNS, s3_AND)
 
-                if plot and slc in list(range(0,s3.shape[0],im_every)):
+                if plot and slc in list(range(0,extNS.shape[0],im_every)):
                     print('Plotting! slc: ', slc)
-                    # self.slc_plot(slc, inv_slc, toClean_slc, toRemove_slc, cleaned_slc)
+                    # self.slc_plot(slc, s3_extNS, s3_intNS, s3_AND, s3_XOR)
 
-                s3_bits[:,:,slc] = toRemove_slc
-                s3_new[:,:,slc] = cleaned_slc
+                s3_bits[:,:,slc] = s3_AND
+                s3_new[:,:,slc] = s3_XOR
                 
             s3_new = s3_new.astype('uint8')
             alert('whistle')   
@@ -2364,20 +2370,20 @@ class ImChannelNS(): #channel
         
         return s3_new
     
-    def slc_plot (self, slc, mask_slc, toClean_slc, toRemove_slc, cleaned_slc):
+    def slc_plot (self, slc, s3_intNS, s3_extNS, s3_AND, s3_XOR): #Add this plot 
         """
         Function to plot mask, original image and result
         """
        
-        txt = ['ch0_int','ch1_ext','ch0_int AND ch1_ext','layer in between']
+        txt = ['ext','int','extANDint','(extANDint)XORext']
 
         #Plot
         fig, ax = plt.subplots(1, 4, figsize = (10,2.5))
         fig.suptitle("Slice:"+str(slc), y=1.05, weight="semibold")
-        ax[0].imshow(mask_slc)
-        ax[1].imshow(toClean_slc)
-        ax[2].imshow(toRemove_slc)
-        ax[3].imshow(cleaned_slc)
+        ax[0].imshow(s3_extNS)
+        ax[1].imshow(s3_intNS)
+        ax[2].imshow(s3_AND)
+        ax[3].imshow(s3_XOR)
         for num in range(0,4,1):
             ax[num].set_title(txt[num])
             ax[num].set_xticks([])
@@ -2987,7 +2993,7 @@ class Mesh_mH():
             pts_cl_ext = np.insert(pts_cl_ext,len(pts_cl_ext),np.transpose(inf_ext_normal), axis=0)
 
             kspl_f = vedo.KSpline(pts_cl_ext, res=nRes).color('green').legend('Ksplo').lw(2)#601
-            
+
         else: 
             if not use_prev: 
                 cl = self.get_centreline(nPoints)
@@ -3143,9 +3149,7 @@ class Mesh_mH():
             s3_dir = self.parent_organ.dir_res(dir='s3_numpy') / name_s3
             s3_mask = np.load(str(s3_dir))
             s3_mask = s3_mask.astype('bool')
-            directory = self.parent_organ.dir_res('imgs_videos')
-            name = self.imChannel.channel_no+'_'+self.mesh_type
-            masked_s3 = mask_disc(masked_s3, s3_mask, directory, name)
+            masked_s3 = mask_disc(masked_s3, s3_mask)
 
         if 'NS' not in im_ch.channel_no: 
             max_depth = 1000
@@ -3358,9 +3362,7 @@ class SubMesh():
             s3_dir = self.imChannel.parent_organ.dir_res(dir='s3_numpy') / name_s3
             s3_mask = np.load(str(s3_dir))
             s3_mask = s3_mask.astype('bool')
-            directory = self.imChannel.parent_organ.dir_res('imgs_videos')
-            name = self.imChannel.channel_no+'_'+self.mesh_type
-            masked_s3 = mask_disc(masked_s3, s3_mask, directory, name)
+            masked_s3 = mask_disc(masked_s3, s3_mask)
 
         if 'NS' not in im_ch.channel_no: 
             max_depth = 1000
@@ -3548,7 +3550,7 @@ def draw_line (clicks, myIm, color_draw):
 
 #%% - Masking
 #%% func - mask_disc
-def mask_disc(s3, s3_cyl, directory, name, plot=False):
+def mask_disc(s3, s3_cyl):
     
     #Load stack shape
     s3_mask = copy.deepcopy(s3)
@@ -3567,33 +3569,7 @@ def mask_disc(s3, s3_cyl, directory, name, plot=False):
         myIm = draw_line(clicks_random, im, '0')
         s3_mask[:,:,slc] = myIm
 
-        if slc%20 == 0 and plot: 
-            slc_plot(slc, im_cyl, im, myIm, directory, name)
-
     return s3_mask
-
-def slc_plot(slc, im_cyl, im, myIm, directory, name):
-        """
-        Function to plot mask, original image and result
-        """
-        
-        txt = ['Cyl','Im_o','Im_f']
-       
-        #Plot
-        fig, ax = plt.subplots(1, 3, figsize = (7.5,2.5))
-        fig.suptitle("Slice:"+str(slc), y=1.05, weight="semibold")
-        ax[0].imshow(im_cyl)
-        ax[1].imshow(im)
-        ax[2].imshow(myIm)
-        for num in range(0,3,1):
-            ax[num].set_title(txt[num])
-            ax[num].set_xticks([])
-            ax[num].set_yticks([])
-
-        slc_name = name +'_'+str(slc)
-        namef = directory / slc_name
-        plt.savefig(namef)
-        # plt.show()
 
 #%% - Mesh functions
 #%% func - create_mesh

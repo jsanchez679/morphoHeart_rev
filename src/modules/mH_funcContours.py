@@ -278,7 +278,7 @@ def dist_btw_allCont(contours, user_min_dist):
                 ij_tuple = (i,i+j+1)
                 ij_list.append(ij_tuple)
                 final_list.append(data_func)
-                print('- Contours to connect: ', ij_tuple, ' / Distance [px]: ', format(min_dist, '.2f'))
+                # print('- Contours to connect: ', ij_tuple, ' / Distance [px]: ', format(min_dist, '.2f'))
 
     return final_list
 

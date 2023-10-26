@@ -243,7 +243,7 @@ def select_contours(controller, ch_name):
     #Check if the channels3 already exist, and if not create empty channelS3 
     if len(im_ch.contStack)<3:
         print('No mask stacks have been created or saved for this channel') 
-    im_ch.create_chS3s(layerDict={}, win=controller.main_win)
+        im_ch.create_chS3s(layerDict={}, win=controller.main_win)
     #Load s3s and save them as attributes
     im_ch.load_chS3s(cont_types = ['int', 'tiss', 'ext'])
     for cont in ['int', 'tiss', 'ext']: 
@@ -655,6 +655,8 @@ def enable_close_functions(controller, process, ch_name, widgets=True):
             getattr(controller.main_win, 'select_contours_'+ch_name+'_done').setEnabled(True)
             #UnCheck DONE
             getattr(controller.main_win, 'select_contours_'+ch_name+'_done').setChecked(False)
+            getattr(controller.main_win, 'plot_final_s3s_'+ch_name).setEnabled(False)
+            getattr(controller.main_win, 'plot_final_s3s_'+ch_name).setVisible(False)
             if getattr(controller.main_win, 'select_state_'+ch_name) != 'Finished': 
                 getattr(controller.main_win, 'next_group_'+ch_name).setShortcut("Ctrl+Right")
                 #Close Buttons Section
@@ -894,8 +896,6 @@ def run_axis_orientation(controller, only_roi=False):
 def run_chNS(controller):
     set_process(controller, 'chNS')
     if controller.main_win.keeplargest_play.isChecked(): 
-        workflow = controller.organ.workflow['morphoHeart']
-
         if controller.main_win.gui_chNS['plot2d']:
             plot_settings = (True, controller.main_win.gui_chNS['n_slices'])
         else: 
