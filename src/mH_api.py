@@ -41,12 +41,56 @@ def mask_channel(controller, ch_name):
     im_ch.maskIm()
     #Update Status in GUI and in CH Progress 
     status_btn = getattr(controller.main_win, 'mask_'+ch_name+'_status')
-    controller.main_win.update_status(workflow, process, status_btn)
-    controller.main_win.update_ch_progress()
+    if getattr(controller.main_win, 'mask_with_npy_'+ch_name).isChecked():
+        if getattr(controller.main_win, 'set_npy_mask_'+ch_name).isChecked(): 
+            wfn = controller.organ.workflow['morphoHeart']['ImProc'][ch_name]['A-MaskNPY']['Status']
+            if wfn == 'DONE':
+                controller.main_win.update_status(workflow, process, status_btn)
+                controller.main_win.update_ch_progress()
+            else: 
+                controller.main_win.update_status(None, 'Initialised', status_btn, override=True)
+        else: 
+            controller.main_win.update_status(None, 'Initialised', status_btn, override=True)
+    else: 
+        controller.main_win.update_status(workflow, process, status_btn)
+        controller.main_win.update_ch_progress()
     #Toggle button
     getattr(controller.main_win, 'mask_'+ch_name+'_play').setChecked(True)
     #Win msg 
     controller.main_win.win_msg('Channel '+str(ch_name[-1])+' has been masked!')
+
+def mask_npy_channel(controller, ch_name): 
+    # Masking channel
+    set_process(controller, 'masking_'+ch_name)
+    # Workflow process
+    workflow = controller.organ.workflow['morphoHeart']
+    process = ['ImProc', ch_name, 'A-MaskNPY','Status']
+    #Initial message
+    controller.main_win.win_msg('Masking Channel '+str(ch_name[-1])+' with S3 from another Channel!')
+    #Enable and make visible close cont buttons
+    enable_close_functions(controller=controller, process = 'mask', ch_name=ch_name)
+    #Get channel
+    im_ch = controller.organ.obj_imChannels[ch_name]
+    fcC.mask_with_npy(organ = controller.organ, 
+                      im_ch=im_ch, gui_mask_npy = controller.main_win.gui_mask_npy[ch_name])
+    #Update status
+    status_btn = getattr(controller.main_win, 'mask_'+ch_name+'_status')
+    if controller.organ.mH_settings['setup']['mask_ch'][ch_name]: 
+        wfn = controller.organ.workflow['morphoHeart']['ImProc'][ch_name]['A-MaskChannel']['Status']
+        if wfn != 'DONE': 
+            controller.main_win.update_status(None, 'Initialised', status_btn, override=True)
+            controller.main_win.update_ch_progress()
+        else: 
+            controller.main_win.update_status(workflow, process,status_btn)#None, 'DONE', status_btn, override=True)
+    else: 
+        controller.main_win.update_status(workflow, process, status_btn)
+        cS_mask = getattr(controller.main_win, 'cS_'+ch_name+'_mask')
+        controller.main_win.update_status(workflow, process, cS_mask)
+    
+    #Toggle button
+    getattr(controller.main_win, 'npy_mask_'+ch_name+'_play').setChecked(True)
+    #Win msg 
+    controller.main_win.win_msg('Channel '+str(ch_name[-1])+' has been masked with another Channel S3!')
 
 def autom_close_contours(controller, ch_name): 
     #Automatically close contours
@@ -1778,7 +1822,9 @@ def run_sections(controller, btn):
             else: 
                 ext_points = None
                 use_prev = False
-
+                
+            #test this for a case in which the same centreline is used for both cuts
+            #  (is it asking for happy the second time around?)
             happy = False
             while not happy: 
                 cl_ribbon, kspl_ext = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 

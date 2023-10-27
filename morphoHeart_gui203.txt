@@ -24,7 +24,7 @@ pip install openpyxl==3.1.2
 
 ??? pip install ipykernel==6.25.1 (gets installed in vscode when the code is run)
 
-pip install opencv-python==4.8.0.76
+(mH_gui) C:\>pip install opencv-python==4.8.0.76
 
 
 (mH_gui) C:\>conda list

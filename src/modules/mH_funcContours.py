@@ -23,6 +23,61 @@ from .mH_classes_new import ImChannel
 from ..gui.config import mH_config
 
 #%% - morphoHeart Functions to Work with Contours
+def mask_with_npy(organ, im_ch, gui_mask_npy): 
+
+    # Workflow process
+    workflow = organ.workflow['morphoHeart']
+    process = ['ImProc', im_ch.channel_no, 'A-MaskNPY','Status']
+
+    # Load images
+    im_o = np.copy(im_ch.im_proc())
+    im_f = copy.deepcopy(im_o)
+
+    #Using channel
+    using_ch = gui_mask_npy['using_ch']
+    using_cont = gui_mask_npy['using_cont']
+    inverted = gui_mask_npy['inverted']
+    #Load channel and its corresponding cont
+    ch_mask = organ.obj_imChannels[using_ch]
+    ch_mask.load_chS3s(cont_types = [using_cont])
+    s3_mask = getattr(ch_mask, 's3_'+using_cont).s3()
+
+    #Get slice numbers
+    start = gui_mask_npy['start_slc']
+    end = gui_mask_npy['end_slc']+1
+
+    for slc in range(start, end, 1): 
+        im_slc = im_o[slc,:,:]
+        mask_slc = s3_mask[:,:,slc+1]
+
+        if inverted:
+            # Invert ch to use as mask 
+            inv_slc = np.where((mask_slc==0)|(mask_slc==1), mask_slc^1, mask_slc)
+        else: 
+            # Keep ch to use as mask as it is
+            inv_slc = np.copy(mask_slc)
+
+        im_slc[inv_slc == 1] = 0
+        im_f[slc,:,:] = im_slc
+
+    #Update organ workflow
+    organ.update_mHworkflow(process, update = 'DONE')
+    
+    process_up = ['ImProc', im_ch.channel_no, 'Status']
+    if get_by_path(workflow, process_up) == 'NI':
+        organ.update_mHworkflow(process_up, update = 'Initialised')
+
+    #Update channel process
+    im_ch.process.append('Masked_NPY')
+    organ.add_channel(im_ch)
+
+    process_up2 = ['ImProc','Status']
+    if get_by_path(workflow, process_up2) == 'NI':
+        organ.update_mHworkflow(process_up2, update = 'Initialised')
+    
+    #Save channel
+    im_ch.save_channel(im_proc=im_f)
+
 def autom_close_contours(stack, ch, gui_param, gui_plot, win):
     """
     Funtion that automatically closes the contours of the input slice between the range given by 'slices'
@@ -33,7 +88,7 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
     slc_first_py = gui_param['start_slc']
     slc_first = slc_first_py+1
     slc_last_py = gui_param['end_slc']
-    slc_last = slc_last_py+1
+    slc_last = slc_last_py+1+1 
     plot2d = gui_param['plot2d']
     n_slices = gui_param['n_slices']
     min_contour_len = gui_param['min_contour_len']
@@ -702,8 +757,35 @@ def reset_img(rtype, win):
                 else: 
                     win.myIm = copy.deepcopy(myIm)
                     win.win_msg('*No mask for this channel ('+ch_name+'). Image was reset to RAW instead')
+            elif rtype == 'maskedNPY': 
+                if 'mask_npy' in win.organ.mH_settings['wf_info'].keys(): 
+                    if win.organ.workflow['morphoHeart']['ImProc']['ch2']['A-MaskNPY']['Status'] == 'DONE': 
+                        gui_mask_npy = win.organ.mH_settings['wf_info']['mask_npy'][ch_name]
+                        #Using channel
+                        using_ch = gui_mask_npy['using_ch']
+                        using_cont = gui_mask_npy['using_cont']
+                        inverted = gui_mask_npy['inverted']
+                        #Load channel and its corresponding cont
+                        ch_mask = win.organ.obj_imChannels[using_ch]
+                        ch_mask.load_chS3s(cont_types = [using_cont])
+                        mask_slc = getattr(ch_mask, 's3_'+using_cont).s3()[:,:,slc_py+1]
+                        if inverted:
+                            # Invert ch to use as mask 
+                            inv_slc = np.where((mask_slc==0)|(mask_slc==1), mask_slc^1, mask_slc)
+                        else: 
+                            # Keep ch to use as mask as it is
+                            inv_slc = np.copy(mask_slc)
+                        myIm[inv_slc == 1] = 0
+                        win.myIm = copy.deepcopy(myIm)
+                    else: 
+                        win.myIm = copy.deepcopy(myIm)
+                        win.win_msg('*No mask S3 has been applied to this channel ('+ch_name+'). Image was reset to RAW instead')
+                else: 
+                    win.myIm = copy.deepcopy(myIm)
+                    win.win_msg('*No mask S3 set-up for this channel ('+ch_name+'). Image was reset to RAW instead')
             else: #rtype = 'raw'
                 win.myIm = copy.deepcopy(myIm)
+
         win.im_proc[:][:][slc_py] = win.myIm
 
         #Plot image with closed contours

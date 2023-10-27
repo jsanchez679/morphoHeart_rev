@@ -4174,11 +4174,8 @@ class MainWindow(QMainWindow):
         self.init_manual_close_contours()
         #Initialise Selecting Contours
         self.init_select_contours()
-
         # #Initialise the Plot Widget and Scroll
         self.init_plot_widget()
-        # self.button_continue.clicked.connect(lambda: self.continue_next_tab())
-        self.init_ch_progress()
 
         #Disable draw and reset buttons
         self.close_draw_btns_widget.setEnabled(False)
@@ -4205,6 +4202,9 @@ class MainWindow(QMainWindow):
 
                 if proc != 'select': 
                     scrollArea.ensureWidgetVisible(widget_central)
+        
+        #Init channel progress
+        self.init_ch_progress()
     
     #>> Initialise all modules of Process and Analyse
     def init_segm_ch(self, ch): 
@@ -4229,6 +4229,17 @@ class MainWindow(QMainWindow):
         eg_slice = getattr(self, 'eg_slice_'+ch)
         eg_slice_validator = QRegularExpressionValidator(reg_ex, eg_slice)
         eg_slice.setValidator(eg_slice_validator)
+
+        #MASK With NPY
+        #Start slice
+        start_nump = getattr(self, 'start_npy_mask_'+ch)
+        start_validatorp = QRegularExpressionValidator(reg_ex, start_nump)
+        start_nump.setValidator(start_validatorp)
+
+        #End slice
+        end_nump = getattr(self, 'end_npy_mask_'+ch)
+        end_validatorp = QRegularExpressionValidator(reg_ex, end_nump)
+        end_nump.setValidator(end_validatorp)
 
         #AUTOMATICALLY CLOSE CONTOURS
         #Start slice
@@ -4388,24 +4399,6 @@ class MainWindow(QMainWindow):
         
     def init_mask(self): 
 
-        mask_info = self.organ.mH_settings['setup']['mask_ch']
-        img_dirs = self.organ.img_dirs
-        print('mask_info:',mask_info)
-        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
-            widg_all = getattr(self, 'mask_all_'+ch+'_widget')
-            if ch in mask_info.keys():
-                if mask_info[ch]: 
-                    widg_all.setVisible(True)
-                    text_dir = getattr(self, 'mask_'+ch+'_dir')
-                    path_dir = img_dirs[ch]['mask']['dir'].name
-                    text_dir.setText(str(path_dir))
-                    #Initialise with user settings, if they exist!
-                    self.user_mask(ch_name = ch)
-                else: 
-                    widg_all.setVisible(False)
-            else: 
-                widg_all.setVisible(False)
-    
         #>> Mask 
         self.mask_ch1_play.setStyleSheet(style_play)
         self.mask_ch2_play.setStyleSheet(style_play)
@@ -4418,6 +4411,50 @@ class MainWindow(QMainWindow):
         self.mask_ch3_open.clicked.connect(lambda: self.open_section(name='mask_ch3', ch_name = 'ch3'))
         self.mask_ch4_open.clicked.connect(lambda: self.open_section(name='mask_ch4', ch_name = 'ch4'))
 
+        # - Mask using numpy array from other channels
+        self.mask_with_npy_ch1.stateChanged.connect(lambda: self.enable_mask_npy('ch1'))
+        self.mask_with_npy_ch2.stateChanged.connect(lambda: self.enable_mask_npy('ch2'))
+        self.mask_with_npy_ch3.stateChanged.connect(lambda: self.enable_mask_npy('ch3'))
+        self.mask_with_npy_ch4.stateChanged.connect(lambda: self.enable_mask_npy('ch4'))
+
+        #Set Mask NPY
+        self.set_npy_mask_ch1.clicked.connect(lambda: self.set_mask_npy('ch1'))
+        self.set_npy_mask_ch2.clicked.connect(lambda: self.set_mask_npy('ch2'))
+        self.set_npy_mask_ch3.clicked.connect(lambda: self.set_mask_npy('ch3'))
+        self.set_npy_mask_ch4.clicked.connect(lambda: self.set_mask_npy('ch4'))
+
+        #Play
+        self.npy_mask_ch1_play.setStyleSheet(style_play)
+        self.npy_mask_ch2_play.setStyleSheet(style_play)
+        self.npy_mask_ch3_play.setStyleSheet(style_play)
+        self.npy_mask_ch4_play.setStyleSheet(style_play)
+
+        mask_info = self.organ.mH_settings['setup']['mask_ch']
+        img_dirs = self.organ.img_dirs
+        print('mask_info:',mask_info)
+        for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
+            widg_all = getattr(self, 'mask_all_'+ch+'_widget')
+            if ch in mask_info.keys():
+                widg_all.setVisible(True)
+                if mask_info[ch]: 
+                    text_dir = getattr(self, 'mask_'+ch+'_dir')
+                    path_dir = img_dirs[ch]['mask']['dir'].name
+                    text_dir.setText(str(path_dir))
+                else: 
+                    getattr(self, 'mask_selected_'+ch).setVisible(False)
+                    getattr(self, 'mask_'+ch+'_play').setVisible(False)
+                    
+                ch_opt = [cho for cho in self.channels if cho != 'chNS' and cho != ch]
+                getattr(self, 'npy_ch_'+ch).addItems(ch_opt)
+                getattr(self, 'npy_cont_'+ch).addItems(['int', 'ext'])
+                self.enable_mask_npy(ch)
+
+                #Initialise with user settings, if they exist!
+                self.user_mask(ch_name = ch)
+
+            else: 
+                widg_all.setVisible(False)            
+        
     def init_autom_close_contours(self): 
         # - Open
         self.autom_close_ch1_open.clicked.connect(lambda: self.open_section(name='autom_close_ch1', ch_name = 'ch1'))
@@ -4639,8 +4676,11 @@ class MainWindow(QMainWindow):
         self.draw_convexHull.setShortcut("Ctrl+H")
         #Reset
         self.draw_reset.clicked.connect(lambda: reset_img(rtype='autom',win=self))
-        self.draw_reset.setShortcut("Ctrl+R")
+        self.draw_reset.setShortcut("Ctrl+A")
         self.draw_reset_to_masked.clicked.connect(lambda: reset_img(rtype='masked',win=self))
+        self.draw_reset_to_masked.setShortcut("Ctrl+R")
+        self.draw_reset_to_maskedNPY.clicked.connect(lambda: reset_img(rtype='maskedNPY',win=self))
+        self.draw_reset_to_maskedNPY.setShortcut("Ctrl+T")
         self.draw_reset_to_raw.clicked.connect(lambda: reset_img(rtype='raw',win=self))
 
         # Save Channel
@@ -4954,6 +4994,8 @@ class MainWindow(QMainWindow):
                 self.organ.update_mHworkflow(sp_process1, update = 'DONE')
                 getattr(self, 'plot_final_s3s_'+ch_name).setVisible(True)
                 getattr(self, 'plot_final_s3s_'+ch_name).setEnabled(True)
+                scroll_tabch = getattr(self, 'scrollArea_'+ch_name)
+                scroll_tabch.verticalScrollBar().setValue(scroll_tabch.verticalScrollBar().maximum())
             self.win_msg(msg)
         else: 
             if process == 'manual_close': 
@@ -5029,6 +5071,99 @@ class MainWindow(QMainWindow):
         print('gui_plot_contours: ', gui_plot_contours)
         return gui_plot_contours
 
+    def set_mask_npy(self, ch_name, init=False): 
+        wf_info = self.organ.mH_settings['wf_info']
+        current_gui_mask_npy = self.gui_mask_npy_n(ch_name)
+        if current_gui_mask_npy != None: 
+            if 'mask_npy' not in wf_info.keys():
+                self.gui_mask_npy = {ch_name: current_gui_mask_npy}
+            elif ch_name not in wf_info['mask_npy'].keys(): 
+                self.gui_mask_npy[ch_name] = current_gui_mask_npy
+            else: 
+                gui_mask_npy_loaded = self.organ.mH_settings['wf_info']['mask_npy'][ch_name]
+                mask_mpy_ch, changed  = update_gui_set(loaded = gui_mask_npy_loaded, 
+                                                                current = current_gui_mask_npy)
+                if hasattr(self, 'gui_mask_npy'):
+                    self.gui_mask_npy[ch_name] = mask_mpy_ch
+                else: 
+                    self.gui_mask_npy = {ch_name: mask_mpy_ch}
+                
+            getattr(self, 'set_npy_mask_'+ch_name).setChecked(True)
+            print('self.gui_mask_npy:',self.gui_mask_npy)
+            getattr(self, 'npy_mask_'+ch_name+'_play').setEnabled(True)
+
+            if not init: 
+                # Update mH_settings
+                proc_set = ['wf_info']
+                update = self.gui_mask_npy
+                self.organ.update_settings(proc_set, update, 'mH', add='mask_npy')
+
+                #Check the status of normal_masking
+                wf = self.organ.workflow['morphoHeart']
+                process = ['ImProc', ch_name, 'A-MaskChannel','Status']
+                status_btn = getattr(self, 'mask_'+ch_name+'_status')
+                if get_by_path(wf, process) == 'DONE': 
+                    update_status(None, 'Initialised', status_btn, override = True)
+
+            #Add an extra workflow process: 
+            if 'A-MaskNPY' not in self.organ.workflow['morphoHeart']['ImProc'][ch_name].keys(): 
+                self.organ.workflow['morphoHeart']['ImProc'][ch_name]['A-MaskNPY'] = {'Status': 'NI'}
+
+        else: 
+            getattr(self, 'set_npy_mask_'+ch_name).setChecked(False)
+
+    def gui_mask_npy_n(self, ch_name): 
+        btn = getattr(self, 'set_npy_mask_'+ch_name)
+        if getattr(self, 'mask_with_npy_'+ch_name).isChecked(): 
+            start_slc = getattr(self, 'start_npy_mask_'+ch_name).text()
+            end_slc = getattr(self, 'end_npy_mask_'+ch_name).text()
+            using_ch = getattr(self, 'npy_ch_'+ch_name).currentText()
+            using_cont = getattr(self, 'npy_cont_'+ch_name).currentText()
+            if start_slc == '' or end_slc == '': 
+                self.win_msg('*Please set the slice range for channel '+ch_name[-1]+' which you want to use the s3 mask.', btn)
+                return None
+            elif start_slc == '0' or end_slc == '0': 
+                self.win_msg('*Slice 0 is not valid.', btn)
+                return None
+            elif int(start_slc) > getattr(self, 'num_slices_'+ch_name):
+                num_slices = str(getattr(self, 'num_slices_'+ch_name))
+                self.win_msg('*The starting slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.', btn)
+                return None
+            elif int(end_slc) > getattr(self, 'num_slices_'+ch_name):
+                num_slices = str(getattr(self, 'num_slices_'+ch_name))
+                self.win_msg('*The ending slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.', btn)
+                return None
+            elif int(start_slc) >= int(end_slc):
+                self.win_msg('*The starting slice needs to be less than the ending slice. Check to continue.', btn)
+                return None
+            elif using_ch == '----' or using_cont == '----': 
+                self.win_msg('*Please select the channel and contour s3 to use as mask for Channel '+ch_name[-1], btn)
+                return None
+            else: 
+                im_ch = self.organ.obj_imChannels[using_ch]
+                if len(im_ch.contStack)<3:
+                    self.win_msg('*The s3s from Channel '+using_ch[-1]+' have not yet been created. Come back and set this process once you have created them.')
+                    return None
+                else:# len(im.contStacks)=3 
+                    #See if the contours have been actually selected
+                    status_select = self.organ.workflow['morphoHeart']['ImProc'][using_ch]['C-SelectCont']['Status']
+                    if status_select != 'DONE': 
+                        self.win_msg('*You are not done selecting the contours for Channel '+using_ch[-1]+'. Come back and set this process once you have finished selecting the contours.')
+                        return None
+                    else: 
+                        gui_mask_npy = {'mask_using_npy': True,
+                                        'start_slc': int(start_slc)-1, 
+                                        'end_slc': int(end_slc)-1,
+                                        'using_ch': using_ch,
+                                        'using_cont': using_cont, 
+                                        'inverted': getattr(self, 'inverted_mask_'+ch_name).isChecked()}
+                        
+        else: 
+            gui_mask_npy = {'mask_npy': False}
+
+        print('gui_mask_npy: ', gui_mask_npy)
+        return gui_mask_npy
+
     def set_autom_close_contours(self, ch_name, init=False): 
         wf_info = self.organ.mH_settings['wf_info']
         current_gui_autom_contours = self.gui_autom_contours_n(ch_name)
@@ -5059,22 +5194,25 @@ class MainWindow(QMainWindow):
             getattr(self, 'autom_close_'+ch_name+'_set').setChecked(False)
 
     def gui_autom_contours_n(self, ch_name): 
-        
+        btn = getattr(self, 'autom_close_'+ch_name+'_set')
         start_slc = getattr(self, 'start_autom_'+ch_name).text()
         end_slc = getattr(self, 'end_autom_'+ch_name).text()
         if start_slc == '' or end_slc == '': 
-            self.win_msg('*Please set the slice range in which you want to run the automatic closure of the contours.')
+            self.win_msg('*Please set the slice range in which you want to run the automatic closure of the contours.', btn)
+            return None
+        elif start_slc == '0' or end_slc == '0': 
+            self.win_msg('*Slice 0 is not valid.')
             return None
         elif int(start_slc) > getattr(self, 'num_slices_'+ch_name)-1:
             num_slices = str(getattr(self, 'num_slices_'+ch_name))
-            self.win_msg('*The starting slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.')
+            self.win_msg('*The starting slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.', btn)
             return None
-        elif int(end_slc) > getattr(self, 'num_slices_'+ch_name)-1:
+        elif int(end_slc) > getattr(self, 'num_slices_'+ch_name):
             num_slices = str(getattr(self, 'num_slices_'+ch_name))
-            self.win_msg('*The ending slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.')
+            self.win_msg('*The ending slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.', btn)
             return None
         elif int(start_slc) >= int(end_slc):
-            self.win_msg('*The starting slice needs to be less than the ending slice. Check to continue.')
+            self.win_msg('*The starting slice needs to be less than the ending slice. Check to continue.', btn)
             return None
         else: 
             plot2d = getattr(self, 'automt_'+ch_name+'_plot2d').isChecked() #automt_ch1_plot2d
@@ -5126,22 +5264,25 @@ class MainWindow(QMainWindow):
             getattr(self, 'manual_close_'+ch_name+'_set').setChecked(False)
 
     def gui_manual_contours_n(self, ch_name): 
-
+        btn = getattr(self, 'manual_close_'+ch_name+'_set')
         start_slc = getattr(self, 'start_manual_'+ch_name).text()
         end_slc = getattr(self, 'end_manual_'+ch_name).text()
         if start_slc == '' or end_slc == '': 
-            self.win_msg('*Please set the slice range in which you want to run the manual closure of the contours.')
+            self.win_msg('*Please set the slice range in which you want to run the manual closure of the contours.', btn)
+            return None
+        elif start_slc == '0' or end_slc == '0': 
+            self.win_msg('*Slice 0 is not valid.')
             return None
         elif int(start_slc) > getattr(self, 'num_slices_'+ch_name):
             num_slices = str(getattr(self, 'num_slices_'+ch_name))
-            self.win_msg('*The starting slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.')
+            self.win_msg('*The starting slice provided is greater than or equal to the number of slices that make up this channel ('+num_slices+'). Check to continue.', btn)
             return None
         elif int(end_slc) > getattr(self, 'num_slices_'+ch_name):
             num_slices = str(getattr(self, 'num_slices_'+ch_name))
-            self.win_msg('*The ending slice provided is greater than the number of slices that make up this channel ('+num_slices+'). Check to continue.')
+            self.win_msg('*The ending slice provided is greater than the number of slices that make up this channel ('+num_slices+'). Check to continue.', btn)
             return None
         elif int(start_slc) >= int(end_slc):
-            self.win_msg('*The ending slice needs to be less than the starting slice. Check to continue.')
+            self.win_msg('*The ending slice needs to be less than the starting slice. Check to continue.', btn)
             return None
         else: 
             save_after_tuple = getattr(self, 'save_after_tuple_'+ch_name).isChecked()
@@ -5190,15 +5331,15 @@ class MainWindow(QMainWindow):
             getattr(self, 'select_contours_'+ch_name+'_set').setChecked(False)
 
     def gui_select_contours_n(self, ch_name):
-
+        btn = getattr(self, 'select_contours_'+ch_name+'_set')
         slc_per_group = getattr(self, 'num_slcs_per_group_'+ch_name).text()
         tableW = getattr(self, 'select_tableW_'+ch_name)
         row_count = tableW.rowCount()
         if slc_per_group == '': 
-            self.win_msg('*Please provide the slice group size ("No slc/group") to use when automatically selecting contours.')
+            self.win_msg('*Please provide the slice group size ("No slc/group") to use when automatically selecting contours.', btn)
             return None
         elif row_count < 1:
-            self.win_msg('*Please fill the "Set Groups Table" to be able to set the Selecting Contours Settings.')
+            self.win_msg('*Please fill the "Set Groups Table" to be able to set the Selecting Contours Settings.', btn)
             return None
         else:
             min_contour_len = int(getattr(self, 'select_min_cont_length_'+ch_name+'_value').text())
@@ -5277,14 +5418,55 @@ class MainWindow(QMainWindow):
              
     def user_mask(self, ch_name):
         wf_info = self.organ.mH_settings['wf_info']
-        workflow = self.organ.workflow['morphoHeart']['ImProc'][ch_name]['A-MaskChannel']
+        mask_info = self.organ.mH_settings['setup']['mask_ch']
         status = getattr(self, 'mask_'+ch_name+'_status')
-        self.update_status(workflow, ['Status'], status)
+        normal_masking = False
+        npy_masking = False
 
-        if workflow['Status'] == 'DONE': 
-            getattr(self, 'mask_'+ch_name+'_open').setChecked(True)
-            self.open_section(name = 'mask_'+ch_name)
-            getattr(self, 'mask_'+ch_name+'_play').setChecked(True)
+        if mask_info[ch_name]: 
+            workflow_normal = self.organ.workflow['morphoHeart']['ImProc'][ch_name]['A-MaskChannel']
+            wf_mask = workflow_normal['Status']
+            normal_masking = True
+            
+        if 'mask_npy' in wf_info.keys():
+            if ch_name in wf_info['mask_npy'].keys() and len(wf_info['mask_npy'][ch_name])>0:
+                mask_npy = wf_info['mask_npy'][ch_name]['mask_using_npy']
+                getattr(self, 'mask_with_npy_'+ch_name).setChecked(mask_npy)
+                if mask_npy: 
+                    start_slc = wf_info['mask_npy'][ch_name]['start_slc']+1
+                    getattr(self, 'start_npy_mask_'+ch_name).setText(str(start_slc))
+                    end_slc =  wf_info['mask_npy'][ch_name]['end_slc']+1
+                    getattr(self, 'end_npy_mask_'+ch_name).setText(str(end_slc))
+                    using_ch = wf_info['mask_npy'][ch_name]['using_ch']
+                    getattr(self, 'npy_ch_'+ch_name).setCurrentText(using_ch)
+                    using_cont = wf_info['mask_npy'][ch_name]['using_cont']
+                    getattr(self, 'npy_cont_'+ch_name).setCurrentText(using_cont)
+                    inverted = wf_info['mask_npy'][ch_name]['inverted']
+                    getattr(self, 'inverted_mask_'+ch_name).setChecked(inverted)
+
+                    workflow_npy = self.organ.workflow['morphoHeart']['ImProc'][ch_name]['A-MaskNPY']
+                    wf_mask_npy = workflow_npy['Status']
+                    npy_masking = True
+
+        if normal_masking and npy_masking: 
+            if all(flag == 'DONE' for flag in [wf_mask, wf_mask_npy]): 
+                getattr(self, 'mask_'+ch_name+'_open').setChecked(True)
+                self.open_section(name = 'mask_'+ch_name)
+                getattr(self, 'mask_'+ch_name+'_play').setChecked(True)
+                getattr(self, 'npy_mask_'+ch_name+'_play').setChecked(True)
+                self.update_status(None, 'DONE', status, override=True)
+            elif any(flag == 'DONE' for flag in [wf_mask, wf_mask_npy]):
+                self.update_status(None, 'Initialised', status, override=True)
+            self.set_mask_npy(ch_name=ch_name, init=True)
+        elif normal_masking and not npy_masking: 
+            self.update_status(workflow_normal, ['Status'], status)
+            if wf_mask == 'DONE': 
+                getattr(self, 'mask_'+ch_name+'_play').setChecked(True)
+        elif not normal_masking and npy_masking: 
+            self.update_status(workflow_npy, ['Status'], status)
+            self.set_mask_npy(ch_name=ch_name, init=True)
+            if wf_mask == 'DONE': 
+                getattr(self, 'npy_mask_'+ch_name+'_play').setChecked(True)
 
     def user_autom_close_contours(self, ch_name): 
         wf_info = self.organ.mH_settings['wf_info']
@@ -5432,6 +5614,14 @@ class MainWindow(QMainWindow):
                 self.set_select_contours(ch_name=ch_name, init=True)
 
     #Specific functions 
+    def enable_mask_npy(self, ch_name): 
+        tick_mask = getattr(self, 'mask_with_npy_'+ch_name)
+        mask_widget = getattr(self, 'npy_mask_'+ch_name+'_widget')
+        if tick_mask.isChecked(): 
+            mask_widget.setVisible(True)
+        else: 
+            mask_widget.setVisible(False)
+
     def scroll_thumb_to_bottom(self): 
         self.scroll_images.verticalScrollBar().setValue(self.scroll_images.verticalScrollBar().maximum())
     
@@ -8916,8 +9106,6 @@ class MainWindow(QMainWindow):
         headerc = self.tabW_progress_ch.horizontalHeader()  
         for col in range(len(self.proc_keys)):   
             headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
-            # header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-            # header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         
         headerr = self.tabW_progress_ch.verticalHeader()  
         for row in range(len(im_chs)):   
@@ -8927,6 +9115,29 @@ class MainWindow(QMainWindow):
         self.tabW_progress_ch.resizeRowsToContents()
         self.segm_status = cS
         self.update_ch_progress()
+
+        for ch in self.channels: 
+            if ch != 'chNS': 
+                wf = self.organ.workflow['morphoHeart']['ImProc'][ch]
+                cS_mask = getattr(self, 'cS_'+ch+'_mask')
+                if 'A-MaskChannel' in wf.keys(): 
+                    if 'A-MaskNPY' in wf.keys():
+                        if wf['A-MaskChannel']['Status'] == 'DONE' and wf['A-MaskNPY']['Status'] == 'DONE':                  
+                            self.update_status(None, 'DONE', cS_mask, override=True)
+                        elif wf['A-MaskChannel']['Status'] == 'DONE' or wf['A-MaskNPY']['Status'] == 'DONE': 
+                            self.update_status(None, 'Initialised', cS_mask, override=True)
+                        else: 
+                            self.update_status(None, 'NI', cS_mask, override=True)
+                    else: 
+                        pass
+                else: 
+                    if 'A-MaskNPY' in wf.keys():
+                        if wf['A-MaskNPY']['Status'] == 'DONE':
+                            self.update_status(None, 'DONE', cS_mask, override=True)
+                        else: 
+                            self.update_status(None, 'NI', cS_mask, override=True)
+                    else: 
+                        pass
 
     def update_ch_progress(self): 
         workflow = self.organ.workflow['morphoHeart']
@@ -8944,6 +9155,7 @@ class MainWindow(QMainWindow):
                     items = ['ImProc',ch,'B-CloseCont','Steps', keyf,'Status']
                 elif 'mask' in cs or 'select' in cs:
                     items = ['ImProc',ch,keyf,'Status']
+                    
             update_status(workflow, items, cS)       
     
     def fill_workflow(self):
@@ -10153,10 +10365,28 @@ class MainWindow(QMainWindow):
         nRes = self.gui_thickness_ballooning['heatmaps2D']['nRes']
         mesh_cl = self.organ.obj_meshes[ch_cl+'_'+cont_cl]        
         ext_plane = self.gui_thickness_ballooning['heatmaps2D']['direction']['plane_normal']
-        cl_ribbon, kspl_ext = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
-                                            pl_normal=ext_plane, 
-                                            clRib_type=clRib_type, 
-                                            return_kspl_ext=True)
+        if 'ext_pts' not in self.gui_thickness_ballooning['heatmaps2D']:
+            happy = False
+            while not happy: 
+                cl_ribbon, kspl_ext = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+                                                            pl_normal=ext_plane, clRib_type=clRib_type, 
+                                                            use_prev=False)
+                
+                title = 'Check extended centreline...'
+                msg = 'Are you happy with the extended centreline/ribbon created?! \n If so, select  -OK-, else select  -Cancel- and redefine extended centreline.'
+                prompt = Prompt_ok_cancel(title, msg, parent=self)
+                prompt.exec()
+                print('output:', prompt.output)
+                happy = prompt.output
+
+            self.gui_thickness_ballooning['heatmaps2D']['ext_pts'] = kspl_ext.points()
+        else: 
+            ext_points = self.gui_thickness_ballooning['heatmaps2D']['ext_pts']
+            cl_ribbon, kspl_ext = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+                                                        pl_normal=ext_plane, clRib_type=clRib_type, 
+                                                        use_prev=True, ext_points = ext_points, plot=False)
+
+
         if plotshow:
             txt = [(0, self.organ.user_organName + ' - Extended Centreline to Unloop and Unroll 3D Heatmaps')]
             obj = [(mesh_cl.mesh, cl_ribbon, kspl_ext)]
@@ -10533,7 +10763,7 @@ class MainWindow(QMainWindow):
                 im_ch = self.organ.obj_imChannels[ch]
                 hass3s = []
                 for cont in ['int', 'tiss', 'ext']:
-                    hass3s.append(hasattr(self, 's3_'+cont))
+                    hass3s.append(hasattr(im_ch, 's3_'+cont))
                 
                 if len(im_ch.contStack)>0 and s3s_save and all(hass3s):
                     s3s=True

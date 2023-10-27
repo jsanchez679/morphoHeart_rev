@@ -1890,7 +1890,6 @@ class ImChannel(): #channel
             #Update organ imChannels
             self.parent_organ.imChannels[self.channel_no]['masked'] = True
             self.parent_organ.add_channel(self)
-            # self.parent_organ.save_organ()
                 
             process_up2 = ['ImProc','Status']
             if get_by_path(workflow, process_up2) == 'NI':
@@ -1939,75 +1938,6 @@ class ImChannel(): #channel
 
         #Save channel
         self.save_channel(im_proc=im_proc)
-            
-    def closeInfOutf(self): #check updates post process then delete
-        # Workflow process
-        workflow = self.parent_organ.workflow['morphoHeart']
-        process = ['ImProc', self.channel_no, 'B-CloseCont','Steps','C-CloseInOut','Status']
-      
-        # Load image
-        im_proc = self.im_proc()
-        
-        #Process
-        print('\n---- Closing Inf/Ouft! ----')
-        
-        #Update organ workflow
-        self.parent_organ.update_mHworkflow(process, update = 'DONE')
-        
-        process_up = ['ImProc',self.channel_no,'B-CloseCont','Status']
-        if get_by_path(workflow, process_up) == 'NI':
-            self.parent_organ.update_mHworkflow(process_up, update = 'Initialised')
-        
-        # Update channel process
-        self.process.append('ClosedInfOutf')
-        
-        #Update organ imChannels
-        self.parent_organ.add_channel(self)
-        
-        #TO DO: Update general status of B-CloseCont to Done when confirmed
-        self.parent_organ.check_status(process = 'ImProc')
-        # self.parent_organ.save_organ()
-        
-        process_up2 = ['ImProc','Status']
-        if get_by_path(workflow, process_up2) == 'NI':
-            self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-            
-        #Update 
-        # 'B-CloseCont':{'Status': 'NI',
-        #                         'C-CloseInOut': {'Status': 'NI'}}},
-
-    def selectContours(self): #check updates post process then delete
-        # Workflow process
-        workflow = self.parent_organ.workflow['morphoHeart']
-        process = ['ImProc', self.channel_no,'C-SelectCont','Status']
-
-        #Get images
-        im_proc = self.im_proc()
-
-        #Process
-        print('\n---- Selecting Contours! ----')
-        
-        #Update organ workflow
-        self.parent_organ.update_mHworkflow(process, update = 'DONE')
-
-        #Update channel process
-        self.process.append('SelectCont')
-                
-        #Update organ imChannels
-        self.parent_organ.add_channel(self)
-        # self.parent_organ.save_organ()
-        
-        process_up2 = ['ImProc','Status']
-        if get_by_path(workflow, process_up2) == 'NI':
-            self.parent_organ.update_mHworkflow(process_up2, update = 'Initialised')
-            
-        #Update
-        # 'C-SelectCont':{'Status': 'NI'},
-        #                 # 'Info': {'tuple_slices': None,
-        #                 #         'number_contours': None,
-        #                 #         'range': None}},
-        layerDict = {}
-        return layerDict
 
     def create_chS3s(self, layerDict:dict, win, cont_list=['int', 'ext', 'tiss']):
         # Workflow process
@@ -2975,7 +2905,8 @@ class Mesh_mH():
         
         return linLine
 
-    def get_clRibbon(self, nPoints, nRes, pl_normal, clRib_type, use_prev=False, ext_points = None, plot=True, oldV=False):
+    def get_clRibbon(self, nPoints, nRes, pl_normal, clRib_type, use_prev=False, 
+                     ext_points = None, plot=True, oldV=False):
         """
         Function that creates dorso-ventral extended centreline ribbon
         """

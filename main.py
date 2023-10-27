@@ -356,6 +356,12 @@ class Controller:
         self.main_win.mask_ch3_play.clicked.connect(lambda: self.mask_ch('ch3'))
         self.main_win.mask_ch4_play.clicked.connect(lambda: self.mask_ch('ch4'))
 
+        #MASKING NPY
+        self.main_win.npy_mask_ch1_play.clicked.connect(lambda: self.mask_npy('ch1'))
+        self.main_win.npy_mask_ch2_play.clicked.connect(lambda: self.mask_npy('ch2'))
+        self.main_win.npy_mask_ch3_play.clicked.connect(lambda: self.mask_npy('ch3'))
+        self.main_win.npy_mask_ch4_play.clicked.connect(lambda: self.mask_npy('ch4'))
+
         #AUTOMATICALLY CLOSE CONTOURS
         self.main_win.autom_close_ch1_play.clicked.connect(lambda: self.autom_close_contours('ch1'))
         self.main_win.autom_close_ch2_play.clicked.connect(lambda: self.autom_close_contours('ch2'))
@@ -778,6 +784,11 @@ class Controller:
     #Channel segmentation related
     def mask_ch(self, ch_name): 
         mA.mask_channel(controller=self, ch_name=ch_name)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
+
+    def mask_npy(self, ch_name): 
+        mA.mask_npy_channel(controller=self, ch_name=ch_name)
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 

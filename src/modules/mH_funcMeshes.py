@@ -2409,7 +2409,7 @@ def get_unlooped_heatmap(hmitem, dir_df):
     # print(df_unloopedf.sample(10))
     df_unloopedf.astype('float16').dtypes
 
-    heatmap = pd.pivot_table(df_unloopedf, values= hmitem, columns = 'theta', index='z_plane', aggfunc=np.max)
+    heatmap = pd.pivot_table(df_unloopedf, values= hmitem, columns = 'theta', index='z_plane', aggfunc='max')
     # heatmap.astype('float16').dtypes
 
     return heatmap
