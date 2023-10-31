@@ -1095,7 +1095,7 @@ background-color: rgb(255, 255, 255);</string>
                 <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;</string>
                </property>
                <property name="currentIndex">
-                <number>3</number>
+                <number>0</number>
                </property>
                <widget class="QWidget" name="tab_ch1">
                 <attribute name="title">
@@ -1154,7 +1154,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>0</y>
+                      <y>-1178</y>
                       <width>382</width>
                       <height>1956</height>
                      </rect>
@@ -1825,13 +1825,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -4838,13 +4838,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -6419,13 +6419,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -9573,13 +9573,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -12586,13 +12586,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -14167,13 +14167,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -16650,7 +16650,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>0</y>
+                      <y>-1152</y>
                       <width>382</width>
                       <height>1956</height>
                      </rect>
@@ -17321,13 +17321,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -20334,13 +20334,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -21915,13 +21915,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -24398,7 +24398,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>0</y>
+                      <y>-1010</y>
                       <width>382</width>
                       <height>1956</height>
                      </rect>
@@ -25069,13 +25069,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -28082,13 +28082,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>
@@ -29663,13 +29663,13 @@ QSlider::handle:horizontal:hover {
                                <number>5</number>
                               </property>
                               <property name="maximum">
-                               <number>2505</number>
+                               <number>500005</number>
                               </property>
                               <property name="singleStep">
-                               <number>1</number>
+                               <number>500</number>
                               </property>
                               <property name="pageStep">
-                               <number>250</number>
+                               <number>10000</number>
                               </property>
                               <property name="value">
                                <number>5</number>

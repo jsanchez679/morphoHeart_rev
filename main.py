@@ -1029,3 +1029,4 @@ if __name__ == '__main__':
 #self.cB_theme.currentIndexChanged.connect(lambda: self.theme_changed())
 
 # https://stackoverflow.com/questions/23634241/put-an-image-on-a-qpushbutton
+# %%

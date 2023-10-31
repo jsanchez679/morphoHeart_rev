@@ -4210,6 +4210,7 @@ class MainWindow(QMainWindow):
     def init_segm_ch(self, ch): 
 
         #Regular expressions
+        reg_ex_dec6 = QRegularExpression(r"\d{1,6}+\.\d") #6 digit number with decimal
         reg_ex_dec = QRegularExpression(r"\d{1,3}+\.\d") #3 digit number with decimal
         reg_ex = QRegularExpression(r"\d{1,3}") #3 digit number
         reg_ex_5 = QRegularExpression(r"\d{1,5}") #3 digit number
@@ -4217,7 +4218,7 @@ class MainWindow(QMainWindow):
         #PLOT GRID SETTINGS
         #Level
         level = getattr(self, 'level_'+ch+'_value')
-        level_validator = QRegularExpressionValidator(reg_ex_dec, level)
+        level_validator = QRegularExpressionValidator(reg_ex_dec6, level)
         level.setValidator(level_validator)
         
         #Min contour length
@@ -4285,7 +4286,7 @@ class MainWindow(QMainWindow):
 
         #Level
         level_man = getattr(self, 'manual_level_'+ch+'_value')
-        level_validator_man = QRegularExpressionValidator(reg_ex_dec, level_man)
+        level_validator_man = QRegularExpressionValidator(reg_ex_dec6, level_man)
         level_man.setValidator(level_validator_man)
         
         #Min contour length
@@ -4301,7 +4302,7 @@ class MainWindow(QMainWindow):
         #SELECTING CONTOURS
         #Level
         level_sel = getattr(self, 'select_level_'+ch+'_value')
-        level_validator_sel = QRegularExpressionValidator(reg_ex_dec, level_sel)
+        level_validator_sel = QRegularExpressionValidator(reg_ex_dec6, level_sel)
         level_sel.setValidator(level_validator_sel)
         
         #Min contour length
@@ -4320,6 +4321,21 @@ class MainWindow(QMainWindow):
             self.all_closed.setEnabled(False)
             self.tab_chs.setEnabled(True)
 
+    def eventFilter(self, widget, event):
+        # FocusOut event
+        if event.type() == QtCore.QEvent.Type.FocusOut:
+            # do custom stuff
+            widget_name = widget.objectName()
+            print ('focus out:', widget_name)
+            name = widget_name.split('_value')[0]
+            ch = name.split('_')[-1]
+            if 'level' in widget_name: 
+                self.slider_changed(name, 'value', info = ch, divider = 10)
+            else: 
+                self.slider_changed(name, 'value', info =ch)
+
+        return super().eventFilter(widget, event)
+        
     def init_grid_plot(self): 
         #Connect buttons
         #>> Grid settings
@@ -4339,20 +4355,20 @@ class MainWindow(QMainWindow):
         self.level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('level_ch3', 'slider', info = 'ch3', divider = 10))
         self.level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('level_ch4', 'slider', info = 'ch4', divider = 10))
 
-        self.level_ch1_value.textChanged.connect(lambda: self.slider_changed('level_ch1', 'value', info = 'ch1', divider = 10))
-        self.level_ch2_value.textChanged.connect(lambda: self.slider_changed('level_ch2', 'value', info = 'ch2', divider = 10))
-        self.level_ch3_value.textChanged.connect(lambda: self.slider_changed('level_ch3', 'value', info = 'ch3', divider = 10))
-        self.level_ch4_value.textChanged.connect(lambda: self.slider_changed('level_ch4', 'value', info = 'ch4', divider = 10))
+        self.level_ch1_value.installEventFilter(self)
+        self.level_ch2_value.installEventFilter(self)
+        self.level_ch3_value.installEventFilter(self)
+        self.level_ch4_value.installEventFilter(self)
         
         self.min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch1', 'slider', info ='ch1'))
         self.min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch2', 'slider', info ='ch2'))
         self.min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch3', 'slider', info ='ch3'))
         self.min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch4', 'slider', info ='ch4'))
 
-        self.min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch1', 'value', info ='ch1'))
-        self.min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch2', 'value', info ='ch2'))
-        self.min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch3', 'value', info ='ch3'))
-        self.min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('min_cont_length_ch4', 'value', info ='ch4'))
+        self.min_cont_length_ch1_value.installEventFilter(self)
+        self.min_cont_length_ch2_value.installEventFilter(self)
+        self.min_cont_length_ch3_value.installEventFilter(self)
+        self.min_cont_length_ch4_value.installEventFilter(self)
 
         #Contours palette
         self.color_palette_ch1.currentTextChanged.connect(lambda: self.set_plot_contour_settings('ch1'))
@@ -4518,28 +4534,28 @@ class MainWindow(QMainWindow):
 
         #Text
         #>> min contour length
-        self.autom_min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch1','value'))
-        self.autom_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch2','value'))
-        self.autom_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch3','value'))
-        self.autom_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch4','value'))
+        self.autom_min_cont_length_ch1_value.installEventFilter(self)
+        self.autom_min_cont_length_ch2_value.installEventFilter(self)
+        self.autom_min_cont_length_ch3_value.installEventFilter(self)
+        self.autom_min_cont_length_ch4_value.installEventFilter(self)
 
         #>> min intensity value
-        self.autom_min_intensity_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch1','value'))
-        self.autom_min_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch2','value'))
-        self.autom_min_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch3','value'))
-        self.autom_min_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch4','value'))
+        self.autom_min_cont_length_ch1_value.installEventFilter(self)
+        self.autom_min_cont_length_ch2_value.installEventFilter(self)
+        self.autom_min_cont_length_ch3_value.installEventFilter(self)
+        self.autom_min_cont_length_ch4_value.installEventFilter(self)
 
         #>> mean intensity value
-        self.autom_mean_intensity_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch1','value'))
-        self.autom_mean_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch2','value'))
-        self.autom_mean_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch3','value'))
-        self.autom_mean_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_mean_intensity_ch4','value'))
+        self.autom_mean_intensity_ch1_value.installEventFilter(self)
+        self.autom_mean_intensity_ch2_value.installEventFilter(self)
+        self.autom_mean_intensity_ch3_value.installEventFilter(self)
+        self.autom_mean_intensity_ch4_value.installEventFilter(self)
 
         #>> min distance
-        self.autom_min_distance_ch1_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch1','value'))
-        self.autom_min_distance_ch2_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch2','value'))
-        self.autom_min_distance_ch3_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch3','value'))
-        self.autom_min_distance_ch4_value.textChanged.connect(lambda: self.slider_changed('autom_min_distance_ch4','value'))
+        self.autom_min_distance_ch1_value.installEventFilter(self)
+        self.autom_min_distance_ch2_value.installEventFilter(self)
+        self.autom_min_distance_ch3_value.installEventFilter(self)
+        self.autom_min_distance_ch4_value.installEventFilter(self)
 
         # DONE
         self.autom_close_ch1_done.clicked.connect(lambda: self.user_done('autom_close', 'ch1'))
@@ -4621,20 +4637,20 @@ class MainWindow(QMainWindow):
         self.manual_min_intensity_ch4_slider.valueChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch4','slider'))
 
         #Text
-        self.manual_level_ch1_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch1', 'value', divider = 10))
-        self.manual_level_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch2', 'value', divider = 10))
-        self.manual_level_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch3', 'value', divider = 10))
-        self.manual_level_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_level_ch4', 'value', divider = 10))
+        self.manual_level_ch1_value.installEventFilter(self)
+        self.manual_level_ch2_value.installEventFilter(self)
+        self.manual_level_ch3_value.installEventFilter(self)
+        self.manual_level_ch4_value.installEventFilter(self)
 
-        self.manual_min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch1','value'))
-        self.manual_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch2','value'))
-        self.manual_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch3','value'))
-        self.manual_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_min_cont_length_ch4','value'))
+        self.manual_min_cont_length_ch1_value.installEventFilter(self)
+        self.manual_min_cont_length_ch2_value.installEventFilter(self)
+        self.manual_min_cont_length_ch3_value.installEventFilter(self)
+        self.manual_min_cont_length_ch4_value.installEventFilter(self)
 
-        self.manual_min_intensity_ch1_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch1','value'))
-        self.manual_min_intensity_ch2_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch2','value'))
-        self.manual_min_intensity_ch3_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch3','value'))
-        self.manual_min_intensity_ch4_value.textChanged.connect(lambda: self.slider_changed('manual_min_intensity_ch4','value'))
+        self.manual_min_intensity_ch1_value.installEventFilter(self)
+        self.manual_min_intensity_ch2_value.installEventFilter(self)
+        self.manual_min_intensity_ch3_value.installEventFilter(self)
+        self.manual_min_intensity_ch4_value.installEventFilter(self)
 
         # Regex for slices
         reg_ex = QRegularExpression("[0-9,-]+")
@@ -4714,20 +4730,20 @@ class MainWindow(QMainWindow):
         self.select_level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch3', 'slider', info = 'ch3', divider = 10))
         self.select_level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch4', 'slider', info = 'ch4', divider = 10))
         
-        self.select_level_ch1_value.textChanged.connect(lambda: self.slider_changed('select_level_ch1', 'value', info = 'ch1', divider = 10))
-        self.select_level_ch2_value.textChanged.connect(lambda: self.slider_changed('select_level_ch2', 'value', info = 'ch2', divider = 10))
-        self.select_level_ch3_value.textChanged.connect(lambda: self.slider_changed('select_level_ch3', 'value', info = 'ch3', divider = 10))
-        self.select_level_ch4_value.textChanged.connect(lambda: self.slider_changed('select_level_ch4', 'value', info = 'ch4', divider = 10))
+        self.select_level_ch1_value.installEventFilter(self)
+        self.select_level_ch2_value.installEventFilter(self)
+        self.select_level_ch3_value.installEventFilter(self)
+        self.select_level_ch4_value.installEventFilter(self)
         
         self.select_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch1', 'slider', info ='ch1'))
         self.select_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch2', 'slider', info ='ch2'))
         self.select_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch3', 'slider', info ='ch3'))
         self.select_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch4', 'slider', info ='ch4'))
        
-        self.select_min_cont_length_ch1_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch1', 'value', info ='ch1'))
-        self.select_min_cont_length_ch2_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch2', 'value', info ='ch2'))
-        self.select_min_cont_length_ch3_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch3', 'value', info ='ch3'))
-        self.select_min_cont_length_ch4_value.textChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch4', 'value', info ='ch4'))
+        self.select_min_cont_length_ch1_value.installEventFilter(self)
+        self.select_min_cont_length_ch2_value.installEventFilter(self)
+        self.select_min_cont_length_ch3_value.installEventFilter(self)
+        self.select_min_cont_length_ch4_value.installEventFilter(self)
 
         # Regex for slices
         reg_ex3d = QRegularExpression(r"\d{1,3}") #3 digit number
@@ -11705,7 +11721,7 @@ class PlotWindow(QDialog):
         self.hLayout.addWidget(self.toolbar)
 
         # self.show()
-
+   
 from time import sleep
 class Worker_GetSlices(QObject):
     
