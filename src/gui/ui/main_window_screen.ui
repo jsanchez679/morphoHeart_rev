@@ -1154,7 +1154,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1178</y>
+                      <y>-1187</y>
                       <width>382</width>
                       <height>1956</height>
                      </rect>
