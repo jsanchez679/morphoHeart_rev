@@ -1031,7 +1031,7 @@ def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
 def create_disc_mask(organ, cut, s3_shape, h_min = 0.1125): 
     
     #Load stack shape
-    zdim, xdim, ydim = s3_shape
+    xdim, ydim, zdim = s3_shape
     print('s3_shape:',s3_shape, '- xdim:', xdim, '- ydim:',ydim, '- zdim:', zdim)
         
     disc_info = organ.mH_settings['wf_info']['segments']['setup'][cut]['cut_info']
