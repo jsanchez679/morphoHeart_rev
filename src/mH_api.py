@@ -1522,18 +1522,22 @@ def run_segments(controller, btn):
             fcM.create_disc_mask(controller.organ, cut = cut, s3_shape = s3_shape, h_min = 0.1125)
             ext_subsgm, meshes_segm = fcM.segm_ext_ext(controller.organ, mesh2cut, cut, 
                                                       segm_names, palette, win=controller.main_win)
-            #Add submeshes of ext_ext as attribute to organ
-            controller.organ.ext_subsgm = ext_subsgm
+            if ext_subsgm == None and meshes_segm == None: 
+                btn2uncheck = controller.main_win.segm_btns[segm]['play']
+                controller.main_win.win_msg('!Dividing '+mesh2cut.legend+' resulted in less segments than expected. Please re-run this process and make sure the defined disc(s) is(are) splitting the mesh into the expected number of segments.', btn2uncheck)
+            else: 
+                #Add submeshes of ext_ext as attribute to organ
+                controller.organ.ext_subsgm = ext_subsgm
 
-            #Enable Plot Buttons
-            controller.main_win.segm_btns[segm]['plot'].setEnabled(True)
-            print('wf:', controller.organ.workflow['morphoHeart']['MeshesProc'])
+                #Enable Plot Buttons
+                controller.main_win.segm_btns[segm]['plot'].setEnabled(True)
+                print('wf:', controller.organ.workflow['morphoHeart']['MeshesProc'])
 
-            #Enable play buttons of meshes with other methods
-            for sgmt in segm_list:
-                if sgmt != segm: 
-                    play_btn = controller.main_win.segm_btns[sgmt]['play']
-                    play_btn.setEnabled(True)
+                #Enable play buttons of meshes with other methods
+                for sgmt in segm_list:
+                    if sgmt != segm: 
+                        play_btn = controller.main_win.segm_btns[sgmt]['play']
+                        play_btn.setEnabled(True)
             
         elif method == 'cut_with_ext-ext' or method == 'cut_with_other_ext-ext':
             #Loading external subsegments 

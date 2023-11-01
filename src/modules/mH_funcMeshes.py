@@ -1036,7 +1036,7 @@ def sphs_in_spline(kspl, colour=False, color_map='turbo', every=10):
 def create_disc_mask(organ, cut, s3_shape, h_min = 0.1125): 
     
     #Load stack shape
-    zdim, xdim, ydim = s3_shape
+    xdim, ydim, zdim = s3_shape
     print('s3_shape:',s3_shape, '- xdim:', xdim, '- ydim:',ydim, '- zdim:', zdim)
         
     disc_info = organ.mH_settings['wf_info']['segments']['setup'][cut]['cut_info']
@@ -1115,38 +1115,41 @@ def create_disc_mask(organ, cut, s3_shape, h_min = 0.1125):
 def segm_ext_ext(organ, mesh, cut, segm_names, palette, win):
 
     #Mask the s3_stack to create segments
-    cut_masked = mesh.mask_segments(cut = cut)
-    #Create a dictionary containing the information of the classified segments 
-    dict_segm, colors = organ.dict_segments(cut, palette)
-    #Ask user to classify the segments using the interactive plot
-    dict_segm = classify_segments(meshes=cut_masked, dict_segm=dict_segm, 
-                                  colors_dict=colors)
-    # print('dict_segm after classification:', dict_segm)
+    cut_masked = mesh.mask_segments(cut = cut, check=True)
+    if cut_masked != None: 
+        #Create a dictionary containing the information of the classified segments 
+        dict_segm, colors = organ.dict_segments(cut, palette)
+        #Ask user to classify the segments using the interactive plot
+        dict_segm = classify_segments(meshes=cut_masked, dict_segm=dict_segm, 
+                                    colors_dict=colors)
+        # print('dict_segm after classification:', dict_segm)
 
-    meshes_segm = {}; final_subsgm = {}; ext_subsgm_names = {}
-    #Create submeshes for the input mesh
-    for n, segm, color in zip(count(), segm_names, palette):
-        print('\t- Creating segment No.',n, ' for ', cut, '.', segm, color)
-        sp_dict_segm = dict_segm[segm]
-        # subsgm: instance of class Submesh
-        # final_segm_mesh: instance of mesh (vedo)
-        subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
-        final_segm_mesh = create_subsegment(organ, subsgm, cut, cut_masked,
-                                                'segm', sp_dict_segm, color)
-        save_submesh(organ, subsgm, final_segm_mesh, win)
-        final_subsgm[segm]=subsgm
-        meshes_segm[segm] = final_segm_mesh
-        ext_subsgm_names[segm] = subsgm.sub_name_all
+        meshes_segm = {}; final_subsgm = {}; ext_subsgm_names = {}
+        #Create submeshes for the input mesh
+        for n, segm, color in zip(count(), segm_names, palette):
+            print('\t- Creating segment No.',n, ' for ', cut, '.', segm, color)
+            sp_dict_segm = dict_segm[segm]
+            # subsgm: instance of class Submesh
+            # final_segm_mesh: instance of mesh (vedo)
+            subsgm = mesh.create_segment(name = segm, cut = cut, color = color)
+            final_segm_mesh = create_subsegment(organ, subsgm, cut, cut_masked,
+                                                    'segm', sp_dict_segm, color)
+            save_submesh(organ, subsgm, final_segm_mesh, win)
+            final_subsgm[segm]=subsgm
+            meshes_segm[segm] = final_segm_mesh
+            ext_subsgm_names[segm] = subsgm.sub_name_all
 
-    #Add ext_subsm names to load them in the future
-    proc_set = ['wf_info', 'segments', 'setup', cut, 'names']
-    organ.update_settings(proc_set, ext_subsgm_names, 'mH')
-    print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
-    print('organ.submeshes:', organ.submeshes)
+        #Add ext_subsm names to load them in the future
+        proc_set = ['wf_info', 'segments', 'setup', cut, 'names']
+        organ.update_settings(proc_set, ext_subsgm_names, 'mH')
+        print('wf_info (segm)-after: ', get_by_path(organ.mH_settings, ['wf_info', 'segments']))
+        print('organ.submeshes:', organ.submeshes)
 
-    #final_subsgm:dict of class submesh 
-    #meshes_segm: dict of final meshes
-    return final_subsgm, meshes_segm
+        #final_subsgm:dict of class submesh 
+        #meshes_segm: dict of final meshes
+        return final_subsgm, meshes_segm
+    else: 
+        return None, None
 
 def get_segments(organ, mesh, cut, segm_names, palette, ext_subsgm, win): 
         

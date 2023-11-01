@@ -3062,7 +3062,7 @@ class Mesh_mH():
         
         return submesh
         
-    def mask_segments(self, cut):
+    def mask_segments(self, cut, check=False):
           
         # Get segments info
         no_discs = self.parent_organ.mH_settings['setup']['segm'][cut]['no_cuts_4segments']
@@ -3093,10 +3093,16 @@ class Mesh_mH():
         print('> Meshes making up tissue: ', len(cut_masked))
         alert('frog')
         if len(cut_masked) < no_segm: 
-            obj = cut_masked
-            plot_grid(obj=obj, txt=[], axes=5, sc_side=max(self.parent_organ.get_maj_bounds()))
-            cut_masked_rot = cut_masked
+            if check: 
+                obj = cut_masked
+                plot_grid(obj=obj, txt=[], axes=5, sc_side=max(self.parent_organ.get_maj_bounds()))
+                return None
+            else: 
+                rotate = True
         else: 
+            rotate = True
+
+        if rotate: 
             cut_masked_rot = []
             for n, mesh in enumerate(cut_masked):
                 if self.rotateZ_90:
@@ -3104,7 +3110,8 @@ class Mesh_mH():
                 else:
                     cut_masked_rot.append(mesh.alpha(0.1).legend('No.'+str(n)))
 
-        print('Rotated final segments (vedo.Mesh):', len(cut_masked_rot))
+            print('Rotated final segments (vedo.Mesh):', len(cut_masked_rot))
+            
         return cut_masked_rot
         
     def create_segment(self, name, cut, color):
