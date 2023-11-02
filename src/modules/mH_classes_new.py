@@ -2628,8 +2628,19 @@ class Mesh_mH():
 
     def new_mesh(self, mesh_prop):#
 
-        self.keep_largest = mesh_prop['keep_largest']
-        self.rotateZ_90 = mesh_prop['rotateZ_90']
+        if mesh_prop['keep_largest'] != None: 
+            keep_largest = mesh_prop['keep_largest']
+        else: 
+            keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][self.channel_no][self.mesh_type]
+
+        if mesh_prop['rotateZ_90'] != None: 
+            rotateZ_90 = mesh_prop['rotateZ_90']
+        else:
+            rotateZ_90 = self.parent_organ.mH_settings['setup']['rotateZ_90']
+
+        self.keep_largest = keep_largest
+        self.rotateZ_90 = rotateZ_90
+        print('self.keep_largest:', self.keep_largest, ' - self.rotateZ_90:', self.rotateZ_90)
         
         self.create_mesh(keep_largest = self.keep_largest, rotateZ_90 = self.rotateZ_90)
         if self.channel_no != 'chNS': 
@@ -2666,7 +2677,7 @@ class Mesh_mH():
             if mesh_prop['keep_largest'] != None: 
                 keep_largest = mesh_prop['keep_largest']
             else: 
-                keep_largest = self.parent_organ.mH_settings['setup']['keep_largest'][self.channel_no][self.mesh_type]
+                keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][self.channel_no][self.mesh_type]
 
             if mesh_prop['rotateZ_90'] != None: 
                 rotateZ_90 = mesh_prop['rotateZ_90']
@@ -2675,14 +2686,16 @@ class Mesh_mH():
 
             self.keep_largest = keep_largest
             self.rotateZ_90 = rotateZ_90
+            print('self.keep_largest:', self.keep_largest, ' - self.rotateZ_90:', self.rotateZ_90)
             print('>> Re-creating mesh -', self.name)
             self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
         else: 
             if self.channel_no != 'chNS':
-                self.keep_largest = self.parent_organ.mH_settings['setup']['keep_largest'][self.channel_no][self.mesh_type]
+                self.keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][self.channel_no][self.mesh_type]
             else: 
                 self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no]['keep_largest'][self.mesh_type]
             self.rotateZ_90 = self.parent_organ.mH_settings['setup']['rotateZ_90']
+            print('self.keep_largest:', self.keep_largest, ' - self.rotateZ_90:', self.rotateZ_90)
             print('>> Loading mesh-', self.name)
             self.load_mesh()
             if self.name in self.parent_organ.objects['Centreline'].keys():
