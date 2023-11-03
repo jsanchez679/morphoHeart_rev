@@ -2865,7 +2865,7 @@ class NewOrgan(QDialog):
             cwd = self.user_dir
         else: 
             cwd = Path().absolute()
-        file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image Files (*.tif)")
+        file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image Files (*.tif, *.tiff)")
         if Path(file_name).is_file(): 
             label = getattr(self, 'lab_filled_dir_'+ch)
             label.setText(str(file_name))
@@ -2899,7 +2899,7 @@ class NewOrgan(QDialog):
                 cwd = self.user_dir
             else: 
                 cwd = Path().absolute()
-            file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), 'Image Files (*.tif)')
+            file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), 'Image Files (*.tif, *.tiff)')
             if Path(file_name).is_file(): 
                 label = getattr(self, 'lab_filled_dir_mask_'+ch)
                 label.setText(str(file_name))
