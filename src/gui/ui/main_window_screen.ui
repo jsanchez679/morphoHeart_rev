@@ -1050,7 +1050,7 @@ background-color: rgb(255, 255, 255);</string>
           <enum>QTabWidget::Rounded</enum>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="usesScrollButtons">
           <bool>false</bool>
@@ -1154,7 +1154,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1187</y>
+                      <y>0</y>
                       <width>382</width>
                       <height>1956</height>
                      </rect>
@@ -16650,7 +16650,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1152</y>
+                      <y>0</y>
                       <width>382</width>
                       <height>1956</height>
                      </rect>
@@ -24398,7 +24398,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1010</y>
+                      <y>0</y>
                       <width>382</width>
                       <height>1956</height>
                      </rect>
@@ -34541,15 +34541,14 @@ background-color: rgb(255, 255, 255);</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -35381,15 +35380,14 @@ border-color: rgb(255, 255, 255)
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -35636,15 +35634,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -35787,15 +35784,14 @@ background-color: rgb(255, 255, 255);</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -36002,30 +35998,22 @@ border-color: rgb(115, 115, 115)}
                                 <bool>false</bool>
                                </property>
                                <property name="styleSheet">
-                                <string notr="true">QPushButton{border-radius:10px;
+                                <string notr="true">QPushButton{
 border-width: 1px;
 border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
+border-color: rgb(0, 170, 255);
+background-color:  rgb(0, 255, 255);
+color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
 
 QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
 }</string>
                                </property>
                                <property name="text">
@@ -37979,15 +37967,14 @@ background-color: rgb(255, 255, 255);</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -38027,15 +38014,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -38075,15 +38061,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -38123,15 +38108,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -38477,30 +38461,22 @@ border-color: rgb(115, 115, 115)}
                                 <bool>false</bool>
                                </property>
                                <property name="styleSheet">
-                                <string notr="true">QPushButton{border-radius:10px;
+                                <string notr="true">QPushButton{
 border-width: 1px;
 border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
+border-color: rgb(0, 170, 255);
+background-color:  rgb(0, 255, 255);
+color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
 
 QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
 }</string>
                                </property>
                                <property name="text">
@@ -41158,30 +41134,22 @@ border-color: rgb(115, 115, 115)}
                                 <bool>false</bool>
                                </property>
                                <property name="styleSheet">
-                                <string notr="true">QPushButton{border-radius:10px;
+                                <string notr="true">QPushButton{
 border-width: 1px;
 border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
+border-color: rgb(0, 170, 255);
+background-color:  rgb(0, 255, 255);
+color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
 
 QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
 }</string>
                                </property>
                                <property name="text">
@@ -41650,15 +41618,14 @@ QComboBox QAbstractItemView {
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -41749,15 +41716,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -42591,15 +42557,14 @@ background-color: rgb(255, 255, 255);</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -43588,15 +43553,14 @@ background-color: rgb(255, 255, 255);</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -43756,15 +43720,14 @@ background-color: rgb(255, 255, 255);</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -43804,15 +43767,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -44037,15 +43999,14 @@ background-color: rgb(255, 255, 255);</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -44429,15 +44390,14 @@ border-color: rgb(255, 255, 255)
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -46355,15 +46315,14 @@ border-color: rgb(0,0, 0);</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -47229,15 +47188,14 @@ border-color: rgb(0,0, 0);</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -47475,15 +47433,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -47523,15 +47480,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -47571,15 +47527,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -47619,15 +47574,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -48909,15 +48863,14 @@ background-color: rgb(211, 211, 211);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -49028,15 +48981,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -49437,15 +49389,14 @@ background-color: rgb(211, 211, 211);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -49556,15 +49507,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -49632,15 +49582,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -49847,15 +49796,14 @@ background-color: rgb(211, 211, 211);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -49895,15 +49843,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -49943,15 +49890,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -50214,15 +50160,14 @@ background-color: rgb(211, 211, 211);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -50672,15 +50617,14 @@ background-color: rgb(255, 255, 255);</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -50720,15 +50664,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -50796,15 +50739,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -51332,15 +51274,14 @@ Ref</string>
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -51380,15 +51321,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -51428,15 +51368,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -51476,15 +51415,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -51719,15 +51657,14 @@ background-color: rgb(211, 211, 211);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -52061,15 +51998,14 @@ background-color: rgb(211, 211, 211);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -52109,15 +52045,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -52157,15 +52092,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -52360,15 +52294,14 @@ background-color: rgb(211, 211, 211);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -52408,15 +52341,14 @@ background-color:rgb(203, 203, 203);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -52648,15 +52580,14 @@ background-color: rgb(211, 211, 211);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -52891,15 +52822,14 @@ background-color: rgb(211, 211, 211);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -55610,15 +55540,14 @@ color: rgb(234, 234, 234);
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -56635,15 +56564,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -56764,15 +56692,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -56893,15 +56820,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -57022,15 +56948,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -57151,15 +57076,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -57280,15 +57204,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -57409,15 +57332,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -57538,15 +57460,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -57667,15 +57588,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -57796,15 +57716,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -57925,15 +57844,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -58054,15 +57972,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -59443,15 +59360,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -59572,15 +59488,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -59701,15 +59616,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -59830,15 +59744,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -59959,15 +59872,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -60088,15 +60000,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -60217,15 +60128,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -60346,15 +60256,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -60475,15 +60384,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -60604,15 +60512,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -60733,15 +60640,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -60862,15 +60768,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -61477,15 +61382,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -61606,15 +61510,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -61735,15 +61638,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -61864,15 +61766,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -61993,15 +61894,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -62122,15 +62022,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -62251,15 +62150,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -62380,15 +62278,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -62509,15 +62406,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -62638,15 +62534,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -62767,15 +62662,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -62896,15 +62790,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -63076,15 +62969,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -63205,15 +63097,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -63334,15 +63225,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -63463,15 +63353,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -63592,15 +63481,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -63721,15 +63609,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -63850,15 +63737,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -63979,15 +63865,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -64108,15 +63993,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -64237,15 +64121,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -64366,15 +64249,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -64495,15 +64377,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -64915,15 +64796,14 @@ QComboBox QAbstractItemView {
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -65856,15 +65736,14 @@ QComboBox QAbstractItemView {
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -67921,15 +67800,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -68050,15 +67928,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -68179,15 +68056,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -68308,15 +68184,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -68437,15 +68312,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -68566,15 +68440,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -68695,15 +68568,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -68824,15 +68696,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -68953,15 +68824,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -69082,15 +68952,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -69211,15 +69080,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -69340,15 +69208,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -70152,15 +70019,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -70281,15 +70147,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -70410,15 +70275,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -70539,15 +70403,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -70668,15 +70531,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -70797,15 +70659,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -70926,15 +70787,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -71055,15 +70915,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -71184,15 +71043,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -71313,15 +71171,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -71442,15 +71299,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -71571,15 +71427,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -72383,15 +72238,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -72512,15 +72366,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -72641,15 +72494,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -72770,15 +72622,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -72899,15 +72750,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -73028,15 +72878,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -73157,15 +73006,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -73286,15 +73134,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -73415,15 +73262,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -73544,15 +73390,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -73673,15 +73518,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -73802,15 +73646,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -74614,15 +74457,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -74743,15 +74585,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -74872,15 +74713,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -75001,15 +74841,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -75130,15 +74969,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -75259,15 +75097,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -75388,15 +75225,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -75517,15 +75353,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -75646,15 +75481,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -75775,15 +75609,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -75904,15 +75737,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -76033,15 +75865,14 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color: rgb(0, 170, 255);
-
 background-color:  rgb(0, 255, 255);
-	color: rgb(0, 0, 127);
+color: rgb(0, 0, 127);
 font: 25 10pt &quot;Calibri Light&quot;;
 }
 
 QPushButton:hover{
-background-color: #eb6fbd;
-border-color: #672146
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
 QPushButton:disabled {
@@ -76397,7 +76228,7 @@ border-color: #672146
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>150</height>
+                  <height>130</height>
                  </size>
                 </property>
                 <property name="maximumSize">
@@ -78846,25 +78677,6 @@ color: rgb(234, 234, 234);
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="spacer_user_params">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>5</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>5</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item>
                <layout class="QHBoxLayout" name="horizontalLayout_98">
                 <property name="spacing">
                  <number>0</number>
@@ -78975,7 +78787,7 @@ border-color: #672146
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>250</height>
+                  <height>220</height>
                  </size>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_54">
@@ -79324,25 +79136,6 @@ border-color: #672146
                    </item>
                   </layout>
                  </item>
-                 <item>
-                  <widget class="QLabel" name="spacer_12">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>5</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>5</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
                 </layout>
                </widget>
               </item>
@@ -79432,7 +79225,7 @@ border-color: #672146
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>230</height>
+                  <height>220</height>
                  </size>
                 </property>
                 <property name="frameShape">
@@ -81967,30 +81760,22 @@ border-color: #672146
                            <bool>false</bool>
                           </property>
                           <property name="styleSheet">
-                           <string notr="true">QPushButton{border-radius:10px;
+                           <string notr="true">QPushButton{
 border-width: 1px;
 border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
+border-color: rgb(0, 170, 255);
+background-color:  rgb(0, 255, 255);
+color: rgb(0, 0, 127);
+font: 25 10pt &quot;Calibri Light&quot;;
+}
 
 QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
+background-color: rgb(0, 85, 127);
+	color: rgb(255, 255, 255);
 }
 
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
+QPushButton:disabled {
+background-color:rgb(203, 203, 203);
 }</string>
                           </property>
                           <property name="text">

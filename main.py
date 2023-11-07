@@ -139,16 +139,17 @@ class Controller:
             if self.meas_param_win == None: 
                 self.meas_param_win = SetMeasParam(mH_settings = self.new_proj_win.mH_settings, 
                                                 parent=self.new_proj_win)
+            else:
+                #Find what is going on here!
+                self.meas_param_win.ch_all = self.new_proj_win.mH_settings['name_chs']
+                if isinstance(self.new_proj_win.mH_settings['chNS'], dict) and len(list(self.new_proj_win.mH_settings['chNS'].keys()))>0:
+                    if self.new_proj_win.mH_settings['chNS']['layer_btw_chs']:
+                        self.meas_param_win.ch_all['chNS'] = self.new_proj_win.mH_settings['chNS']['user_nsChName']
+                print(self.meas_param_win.ch_all)
+                self.meas_param_win.set_meas_param_table()
             self.meas_param_win.show()
             self.meas_param_win.button_set_params.clicked.connect(lambda: self.set_proj_meas_param())
             self.new_proj_win.set_meas_param_all.setChecked(True)
-
-        else: 
-            error_txt = "*Make sure all the 'Set' Buttons are toggle/checked to continue."
-            self.new_proj_win.win_msg(error_txt)
-            print('Controller, show_meas_param: Something is wrong')
-            alert('bubble')
-            return
 
     def show_load_proj(self): 
         #Close welcome window
@@ -619,33 +620,33 @@ class Controller:
         if self.new_proj_win.validate_set_all():
             self.new_proj_win.win_msg("Creating and saving new project...")
             temp_dir = self.new_proj_win.check_template()
+            if temp_dir != False: 
+                self.new_proj_win.button_new_proj.setChecked(True)
 
-            self.new_proj_win.button_new_proj.setChecked(True)
+                proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text(), 
+                            'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText(),
+                            'date' : str(self.new_proj_win.dateEdit.date().toPyDate()),
+                            'analysis' : self.new_proj_win.checked_analysis, 
+                            'dir_proj' : self.new_proj_win.proj_dir, 
+                            'heart_default': self.new_proj_win.heart_analysis.isChecked()}
+                
+                self.proj = mHC.Project(proj_dict, new=True)
+                self.new_proj_win.mH_settings['chs_all'] = self.ch_all
+                self.new_proj_win.mH_settings['params'] = self.mH_params
 
-            proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text(), 
-                        'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText(),
-                        'date' : str(self.new_proj_win.dateEdit.date().toPyDate()),
-                        'analysis' : self.new_proj_win.checked_analysis, 
-                        'dir_proj' : self.new_proj_win.proj_dir, 
-                        'heart_default': self.new_proj_win.heart_analysis.isChecked()}
-            
-            self.proj = mHC.Project(proj_dict, new=True)
-            self.new_proj_win.mH_settings['chs_all'] = self.ch_all
-            self.new_proj_win.mH_settings['params'] = self.mH_params
-
-            self.proj.set_settings(settings={'mH': {'settings':self.new_proj_win.mH_settings, 
-                                                    'params': self.new_proj_win.mH_user_params},
-                                            'mC': {'settings': self.new_proj_win.mC_settings,
-                                                'params': self.new_proj_win.mC_user_params}})
-            
-            self.proj.set_workflow()
-            self.proj.create_proj_dir()
-    
-            self.proj.save_project(temp_dir = temp_dir)
-            self.new_proj_win.button_add_organ.setEnabled(True)
-            print('\n>>> New Project: ',self.proj.__dict__.keys())
-            self.new_proj_win.win_msg("New project '"+self.new_proj_win.lineEdit_proj_name.text()+"' has been created and saved! Continue by creating an organ as part of this project. ")
-    
+                self.proj.set_settings(settings={'mH': {'settings':self.new_proj_win.mH_settings, 
+                                                        'params': self.new_proj_win.mH_user_params},
+                                                'mC': {'settings': self.new_proj_win.mC_settings,
+                                                    'params': self.new_proj_win.mC_user_params}})
+                
+                self.proj.set_workflow()
+                self.proj.create_proj_dir()
+        
+                self.proj.save_project(temp_dir = temp_dir)
+                self.new_proj_win.button_add_organ.setEnabled(True)
+                print('\n>>> New Project: ',self.proj.__dict__.keys())
+                self.new_proj_win.win_msg("New project '"+self.new_proj_win.lineEdit_proj_name.text()+"' has been created and saved! Continue by creating an organ as part of this project. ")
+        
     def load_proj(self, parent_win):
         path_folder = QFileDialog.getExistingDirectory(self.load_proj_win, caption="Select the Project's directory")
         proj_name = str(Path(path_folder).name)[2:] #Removing the R_

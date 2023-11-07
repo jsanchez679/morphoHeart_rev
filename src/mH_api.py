@@ -1486,6 +1486,7 @@ def run_segments(controller, btn):
                         'nPoints' : nPoints}
     else: 
         cl_spheres = None
+
     # print('cl_spheres: ', cl_spheres)
     print('organ.obj_temp:', controller.organ.obj_temp)
 
@@ -1510,7 +1511,7 @@ def run_segments(controller, btn):
         print('\n- Dividing '+mesh2cut.legend+' into segments '+user_names)
         controller.main_win.win_msg('Dividing '+mesh2cut.legend+' into segments '+user_names)
 
-        if method == 'ext-ext': 
+        if method == 'ext-ext' or method == 'indep-ext': #TEST!!!
             # -> Get the discs that are going to be used to cut
             get_segm_discs(controller.organ, 
                             cut = cut, ch=ch, cont=cont, 
@@ -1558,10 +1559,13 @@ def run_segments(controller, btn):
             btn.setEnabled(True)
             print('wf:', controller.organ.workflow['morphoHeart']['MeshesProc'])
 
-        else: 
+        else: #method == 'cut_with_ext-indep'
             print('No functions for this method:', method)
             alert('error_beep')
             meshes_segm = None
+            controller.main_win.win_msg('*Process to cut indep other than ext not yet coded: '+ method)
+            controller.main_win.segm_btns[segm]['play'].setChecked(False)
+            return 
 
         #Save meshes temporarily within segment buttons
         controller.main_win.segm_btns[segm]['meshes'] = meshes_segm
@@ -1619,6 +1623,7 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
         nPoints = cl_spheres['nPoints']
     else:
         segm_using_cl = False
+        cl = []
 
     # Get user segment names
     dict_names = organ.mH_settings['setup']['segm'][cut]['name_segments']
@@ -1632,7 +1637,7 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
 
     for n in range(no_cuts_4segments):
         happyWithDisc = False
-        print('Creating Disc No.'+str(n)+' for cutting tissues into segments!')
+
         win.win_msg('Creating Disc No.'+str(n)+' for cutting tissues into segments!')
         while not happyWithDisc: 
             if segm_using_cl:

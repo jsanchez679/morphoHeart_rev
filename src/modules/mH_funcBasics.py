@@ -62,7 +62,7 @@ def alert(sound:str):
             if sound == 'error_beep': 
                 print('EEERROR')
     except:# playsound.PlaysoundException: 
-        print('sound not played: ', sound)
+        print('Sound not played: ', sound)
         pass
 
 def input_range(response):
@@ -261,7 +261,11 @@ def make_Paths(load_dict):
             set_by_path(load_dict, key, Path(value))
     
     return load_dict
-            
+
+def rename_directory(old_name, new_name):
+    path = Path(old_name)
+    path.rename(new_name)
+
 def make_tuples(load_dict, tuple_keys): 
     flat_dict = flatdict.FlatDict(copy.deepcopy(load_dict))
     #Make all keys from input list into tuples
@@ -275,40 +279,6 @@ def make_tuples(load_dict, tuple_keys):
         
     return load_dict
 
-def check_gral_loading(proj, proj_name, dir_proj, organ=[], organ_name=''):
-    
-    from .mH_classes import Project, Organ
-    
-    proj_new = Project(new = False, name = proj_name, dir_proj = dir_proj)
-    print('>> Check Project: \n',compare_nested_dicts(proj.__dict__,proj_new.__dict__,'proj','new'))
-   
-    if isinstance(organ, Organ):
-        organ_new = proj_new.load_organ(user_organName = organ_name)   
-        print('>> Check Organ: \n',compare_nested_dicts(organ.__dict__,organ_new.__dict__,'organ','new'))  
-        
-        for ch in organ.obj_imChannels: 
-            ch_m = organ.obj_imChannels[ch]
-            ch_mn = organ_new.obj_imChannels[ch]
-            print('>> Check ',ch,': \n',compare_nested_dicts(ch_m.__dict__,ch_mn.__dict__,'orig','new'))  
-        
-        for chNS in organ.obj_imChannelNS: 
-            chNS_m = organ.obj_imChannelNS[chNS]
-            chNS_mn = organ_new.obj_imChannelNS[chNS]
-            print('>> Check ',chNS,': \n',compare_nested_dicts(chNS_m.__dict__,chNS_mn.__dict__,'orig','new'))  
-        
-        if len(organ.obj_meshes) != len(organ_new.obj_meshes):
-            print('organ.obj_meshes: ', organ.obj_meshes)
-            print('organ_new.obj_meshes: ', organ_new.obj_meshes)
-            
-        for obj in organ.obj_meshes: 
-            obj_m = organ.obj_meshes[obj]
-            obj_mn = organ_new.obj_meshes[obj]
-            print('>> Check ',obj,': \n',compare_nested_dicts(obj_m.__dict__,obj_mn.__dict__,'orig','new'))  
-        
-        del organ_new
-        
-    del proj_new
-    
 # Color palette as RGB
 def palette_rbg(name:str, num:int, rgb=True):
     #https://projects.susielu.com/viz-palette?colors=[%22#ffa500%22,%22#6495ed%22,%22#dc133b%22,%22#ade64f%22,%22#c36bea%22,%22#36cbd3%22,%22#a23e27%22,%22#FF1493%22,%22#8b008b%22,%22#3ff44c%22,%22#FF6347%22,%22#C0C0C0%22,%22#FFD700%22,%22#006400%22,%22#00FFFF%22,%22#DA70D6%22,%22#D2691E%22,%22#7FFFD4%22,%22#F0E68C%22,%22#DC143C%22]&backgroundColor=%22white%22&fontColor=%22black%22&mode=%22normal%22

@@ -923,9 +923,9 @@ class CreateNewProj(QDialog):
     def create_new_proj(self):
         self.tabWidget.setEnabled(True)
         self.tab_mHeart.setEnabled(self.checked_analysis['morphoHeart'])
+        self.tabWidget.setTabVisible(0, self.checked_analysis['morphoHeart'])
         self.tab_mCell.setEnabled(self.checked_analysis['morphoCell'])
-        self.tab_mHeart.setVisible(self.checked_analysis['morphoHeart'])
-        self.tab_mCell.setVisible(self.checked_analysis['morphoCell'])
+        self.tabWidget.setTabVisible(1, self.checked_analysis['morphoCell'])
         if self.checked_analysis['morphoHeart']:
             self.mH_settings = {'no_chs': 0,
                                 'name_chs': 0,
@@ -1273,6 +1273,7 @@ class CreateNewProj(QDialog):
     def set_selected_processes(self): 
         #Get info from checked boxes
         __ = self.checked('chNS')
+        self.button_set_chNS.setEnabled(True)
         #---- Segments
         segm_bool = self.checked('segm')   
         #---- Sections
@@ -1295,6 +1296,7 @@ class CreateNewProj(QDialog):
                             getattr(self, 'label_'+stype+'_'+ch+'_'+cont).setVisible(False)
                             getattr(self, 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont).setVisible(False)
 
+        #Set Table for Segments-Sections
         if segm_bool and sect_bool: 
             self.set_segm_sect.setEnabled(True)
             self.set_segm_sect.setVisible(True)
@@ -1311,8 +1313,7 @@ class CreateNewProj(QDialog):
                                 getattr(self, 'label_'+cut_segm+'_'+ch).setVisible(False)
                                 getattr(self, 'label_'+cut_segm+'_'+ch+'_'+cont).setVisible(False)
                                 getattr(self, 'cB_'+cut_segm+'_'+cut_sect+'_'+ch+'_'+cont).setVisible(False)
-
-
+        
         self.button_set_processes.setChecked(True)
 
         #Enable measurement parameters now to know whether regions was selected
@@ -1890,12 +1891,28 @@ class CreateNewProj(QDialog):
             self.widget_segm_sect.setVisible(False)
 
     def fill_segm_sect(self): 
+        # Create Segment Labels
+        for n, scut in enumerate([1, 2]): 
+            sname = 'Cut'+str(scut)
+            if getattr(self, 'tick_segm'+str(scut)).isChecked():
+                sname = sname+': '+getattr(self, 'names_segm'+str(scut)).text()
+            label_segm = getattr(self, 'lab_segm'+str(scut))
+            label_segm.setText(sname)
+
+        for n, rcut in enumerate([1, 2]): 
+            rname = 'Cut'+str(rcut)
+            if getattr(self, 'tick_sect'+str(rcut)).isChecked():
+                rname = rname+': '+getattr(self, 'names_sect'+str(rcut)).text()
+            label_sect = getattr(self, 'lab_sect'+str(rcut))
+            label_sect.setText(rname)
+
+        #Enable or disable Segm
         if not self.tick_segm2.isChecked(): 
             bool_segm = False
         else: 
             bool_segm = True
 
-        getattr(self, 'lab_segm2').setEnabled(bool_segm)
+        getattr(self, 'lab_segm2').setEnabled(bool_segm)        
         for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
             for cont in ['int', 'tiss', 'ext']:
                 getattr(self, 'label_'+'sCut2'+'_'+ch).setEnabled(bool_segm)
@@ -1903,15 +1920,13 @@ class CreateNewProj(QDialog):
                 for cut_sect in ['Cut1', 'Cut2']: #sections
                     getattr(self, 'cB_'+'sCut1'+'_'+cut_sect+'_'+ch+'_'+cont).setEnabled(False)
                     getattr(self, 'cB_'+'sCut2'+'_'+cut_sect+'_'+ch+'_'+cont).setEnabled(False)
-
+        
+        #Enable or disable sect
         if not self.tick_sect2.isChecked():
             bool_sect = False
         else: 
             bool_sect = True
-
-        for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
-            for cont in ['int', 'tiss', 'ext']:
-                getattr(self, 'lab_sect2').setEnabled(bool_sect)
+        getattr(self, 'lab_sect2').setEnabled(bool_sect)
 
         list_segm = [key.split('cB_segm_')[1] for key in self.dict_segm.keys() if self.dict_segm[key]]
         list_sect = [key.split('cB_sect_')[1] for key in self.dict_sect.keys() if self.dict_sect[key]]
@@ -2003,6 +2018,7 @@ class CreateNewProj(QDialog):
             else: 
                 error_txt = '*You need to set Channel NS settings first to set measurement parameters.'
                 self.win_msg(error_txt, self.set_meas_param_all)
+                self.button_set_chNS.setEnabled(True)
                 return
             
         if all(valid): 
@@ -2016,16 +2032,22 @@ class CreateNewProj(QDialog):
         temp_dir = None
         if self.cB_proj_as_template.isChecked():
             line_temp = self.lineEdit_template_name.text()
-            line_temp = line_temp.replace(' ', '_')
-            temp_name = 'mH_'+line_temp+'_project.json'
-            cwd = Path().absolute()
-            dir_temp = cwd / 'db' / 'templates' / temp_name 
-            if dir_temp.is_file():
-                self.win_msg('*There is already a template with the selected name. Please give this template a new name.')
-                return
+            if len(line_temp) < 8: 
+                self.win_msg('*The name of the project template needs to have at least eight (8) characters.')
+                return False
             else: 
-                print('New project template: ', dir_temp)
-                temp_dir = dir_temp
+                line_temp = line_temp.replace(' ', '_')
+                temp_name = 'mH_'+line_temp+'_project.json'
+                cwd = Path().absolute()
+                dir_db_temp = cwd / 'db' / 'templates'
+                dir_db_temp.mkdir(parents=True, exist_ok=True) 
+                dir_temp = dir_db_temp / temp_name 
+                if dir_temp.is_file():
+                    self.win_msg('*There is already a template with the indicated name. Please give this template a new name.')
+                    return False
+                else: 
+                    print('New project template: ', dir_temp)
+                    temp_dir = dir_temp
         
         return temp_dir
     
@@ -2061,7 +2083,7 @@ class SetMeasParam(QDialog):
         self.ch_all = ch_all
 
         #Disable params
-        self.disable_pars = {2: {'ch1': ['tiss'], 'ch2': ['tiss'], 'ch3': ['tiss'], 'ch4': ['tiss'], 'chNS': ['tiss']},#centreline
+        self.disable_pars = {2: {'ch1': ['tiss'], 'ch2': ['tiss'], 'ch3': ['tiss'], 'ch4': ['tiss'], 'chNS': ['ext', 'int', 'tiss']},#centreline
                              3: {'ch1': ['int', 'ext'],'ch2': ['int', 'ext'],'ch3': ['int', 'ext'],'ch4': ['int', 'ext'],'chNS': ['int', 'ext']}, #th_i2e
                              4: {'ch1': ['int', 'ext'],'ch2': ['int', 'ext'],'ch3': ['int', 'ext'],'ch4': ['int', 'ext'],'chNS': ['int', 'ext']}, #th_e2i
                              5: {'ch1': ['tiss'], 'ch2': ['tiss'], 'ch3': ['tiss'], 'ch4': ['tiss'], 'chNS': ['int','tiss','ext']}} #ball
@@ -2229,17 +2251,14 @@ class SetMeasParam(QDialog):
                 for num in range(10): 
                     if num < len(self.params):
                         btn_name = 'cB_'+ch+'_'+cont+'_param'+str(num)
-                        # print(btn_name, getattr(self, btn_name).isChecked())
                         dict_meas[btn_name] = getattr(self, btn_name).isChecked()
 
         for num in range(6,10,1):
             if num < len(self.params):
                 btn_name = 'cB_roi_param'+str(num)
-                # print(btn_name, getattr(self, btn_name).isChecked())
                 dict_meas[btn_name] = getattr(self, btn_name).isChecked()
 
         setattr(self, 'dict_meas', dict_meas)
-        # print('self.dict_meas:',self.dict_meas)
 
     def set_meas_param_table(self): 
         #Set Measurement Parameters
@@ -3002,6 +3021,7 @@ class LoadProj(QDialog):
         self.setWindowIcon(QIcon(mH_icon))
         self.proj = None
         self.organ_selected = None
+        self.organs_2del = None
         self.multi_organ_checkboxes = None
         self.multi_organs_added = []
         self.added_organs_checkboxes = None
@@ -3015,6 +3035,9 @@ class LoadProj(QDialog):
         self.cB_notes.stateChanged.connect(lambda: self.reload_table(atype = 'single'))
         self.cB_blind_comb.stateChanged.connect(lambda: self.reload_table(atype = 'comb'))
         self.cB_notes_comb.stateChanged.connect(lambda: self.reload_table(atype = 'comb'))
+
+        # -Delete Organ
+        self.button_delete_organ.clicked.connect(lambda: self.delete_organ(proj = self.proj))
 
         #Multi-Organ Analysis
         self.add_organ.clicked.connect(lambda: add_organ_to_multi_analysis(win=self, proj=self.proj, add=True, single_proj=True))
@@ -3093,16 +3116,17 @@ class LoadProj(QDialog):
         if len(proj.organs) > 0: 
             cBs = fill_table_with_organs(win = self, proj = proj, table = self.tabW_select_organ, 
                                          blind_cB = self.cB_blind, notes_cB = self.cB_notes)
+            self.organ_checkboxes = cBs
+            self.button_load_organs.setChecked(True)
+            self.go_to_main_window.setEnabled(True)
         else: 
+            self.tabW_select_organ.clear()
+            self.tabW_select_organ.setRowCount(0); self.tabW_select_organ.setColumnCount(0)
             error_txt = "!The project selected does not contain organs. Add a new organ to this project by selecting 'Create New Organ'."
             self.win_msg(error_txt, self.button_load_organs)
             self.button_load_organs.setChecked(True)
             self.organ_checkboxes = None
             return
-
-        self.organ_checkboxes = cBs
-        self.button_load_organs.setChecked(True)
-        self.go_to_main_window.setEnabled(True)
 
     def reload_table(self, atype): 
         if atype == 'single': 
@@ -3134,7 +3158,6 @@ class LoadProj(QDialog):
                 if len(checked) > 1:
                     index = [i for i, x in enumerate(checked) if x][0]
                     print('len>1:',index)
-                    print('organ_cB:',organ_cB)
                     self.organ_selected = self.organ_checkboxes[index].split('cB_')[1]
                 else: 
                     print('len=1:',organ_cB)
@@ -3143,6 +3166,42 @@ class LoadProj(QDialog):
         else: 
             return
 
+    def delete_organ(self, proj):
+        print('self.organ_checkboxes:',self.organ_checkboxes)
+        if self.organ_checkboxes != None: 
+            checked = []
+            for organ_cB in self.organ_checkboxes:
+                cb = getattr(self, organ_cB).isChecked()
+                checked.append(cb)
+            
+            if sum(checked) <= 0: 
+                self.organs_2del = None
+                error_txt = '*Select at least one organ to delete.'
+                self.win_msg(error_txt, self.button_delete_organ)
+                return
+            else: 
+                self.organs_2del = []
+                for organ_cB in self.organ_checkboxes:
+                    if getattr(self, organ_cB).isChecked():
+                        organ_name = organ_cB.split('cB_')[1]
+                        self.organs_2del.append(organ_name)
+                print(self.organs_2del)
+
+                #Confirm organ deletion 
+                title = 'Confirm organ deletion...'
+                msg = 'Are you sure you want to delete the selected organ(s) ('+', '.join(self.organs_2del)+') from the Project "'+proj.user_projName+'"? If so press  -Ok-, else press  -Cancel-.' 
+                prompt = Prompt_ok_cancel(title, msg, parent=self)
+                prompt.exec()
+                print('output:',prompt.output, '\n')
+                if prompt.output: 
+                    proj.delete_organs(organs = self.organs_2del)
+                    proj.save_project(alert_on=True)
+                    saved_msg = 'Project "'+proj.user_projName+'" was successfully saved after having deleted organs!'
+                    self.win_msg(saved_msg)
+                    self.load_proj_organs(proj = proj)
+
+        self.button_delete_organ.setChecked(False)
+        
 def get_proj_wf(proj): 
     flat_wf = flatdict.FlatDict(copy.deepcopy(proj.workflow))
     keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))== 4 and 'Status' in key]
@@ -3296,7 +3355,6 @@ def add_organ_to_multi_analysis(win, proj, add, single_proj):
         else: 
             index = [i for i, x in enumerate(checked) if x]
             print('len>1:',index)
-            print('organ_cB:',organ_cB)
             for ind in index: 
                 org = win.multi_organ_checkboxes[ind].split('cB_')[1]
                 proj_name = proj.user_projName
@@ -3895,13 +3953,13 @@ class ProjSettings(QDialog):
                             ch, cont = ch_cont.split('_')
                             getattr(self, 'cB_'+scut+'_'+rcut+'_'+ch+'_'+cont).setChecked(True)
                     else: 
-                        getattr(self, 'lab_sect'+rcut[-1]).setVisible(False)   
+                        # getattr(self, 'lab_sect'+rcut[-1]).setVisible(False)   
                         for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
                             for cont in ['int', 'tiss', 'ext']: 
                                 getattr(self, 'cB_'+scut+'_'+rcut+'_'+ch+'_'+cont).setVisible(False)
                         self.line_19.setVisible(False)
             else: 
-                getattr(self, 'lab_segm'+scut[-1]).setVisible(False)   
+                # getattr(self, 'lab_segm'+scut[-1]).setVisible(False)   
                 self.line_18.setVisible(False)
                 self.line_19.setVisible(False)
                 self.line_20.setVisible(False)

@@ -85,7 +85,6 @@ def s32Meshes(organ, gui_keep_largest:dict, win, rotateZ_90=True):#
             win.win_msg('Creating meshes of Channel '+im_ch.channel_no[-1]+'! ('+str(aa+1)+'/3)')
             proc_cont_im = ['ImProc',im_ch.channel_no,'D-S3Create','Info', cont, 'Status']
             proc_cont_ms = ['MeshesProc','A-Create3DMesh', im_ch.channel_no, cont, 'Status']
-            #FIXED 231030 added mHsettings
             mesh_created = im_ch.s32Meshes(cont_type=cont,
                                             keep_largest=gui_keep_largest[im_ch.channel_no][cont],
                                             rotateZ_90 = rotateZ_90, new_set = new_set)
@@ -144,7 +143,6 @@ def clean_ch(organ, gui_clean, win, plot_settings=(False,None)):#
         win.prog_bar_range(0,len(gui_clean[ch]['cont']))
         aa = 0
         for cont in gui_clean[ch]['cont']:
-            print('Cleaning '+ch+'-'+cont+' with '+with_ch+'-'+with_cont+' (inverted: '+str(inverted)+').')
             win.win_msg('Cleaning '+ch+'-'+cont+' with '+with_ch+'-'+with_cont+' (inverted: '+str(inverted)+').')
             #Get the contour to clean
             s3 = getattr(ch_to_clean, 's3_'+cont)
@@ -154,10 +152,9 @@ def clean_ch(organ, gui_clean, win, plot_settings=(False,None)):#
             proc_up = ['ImProc',ch,'E-CleanCh','Info',s3.cont_type, 'Status']
             organ.update_mHworkflow(proc_up, 'DONE')
         
-            #Recreate Mesh #FIXED 231030 added mHsettings
             _ = ch_to_clean.s32Meshes(cont_type=cont, 
-                                      keep_largest=organ.mH_settings['wf_info']['keep_largest'][ch][cont], 
-                                      rotateZ_90=organ.mH_settings['setup']['rotateZ_90'],
+                                    #   keep_largest=organ.mH_settings['wf_info']['keep_largest'][ch][cont], 
+                                    #   rotateZ_90=organ.mH_settings['setup']['rotateZ_90'],
                                       new_set=True)
             aa+=1
             win.prog_bar_update(aa)
@@ -213,8 +210,10 @@ def trim_top_bottom_S3s(organ, meshes, no_cut, cuts_out, win):#
                 print('Cutting '+ch_name.title()+' (contour: '+cont+')...')
                 win.win_msg('Cutting '+ch_name.title()+' (contour: '+cont+')...')
                 im_ch.trimS3(cuts=cuts, cont=cont, cuts_out=cuts_out)
-                _ = im_ch.s32Meshes(cont_type=cont, keep_largest=organ.mH_settings['wf_info']['keep_largest'][ch][cont], 
-                                      rotateZ_90=organ.mH_settings['setup']['rotateZ_90'], new_set=True)
+                _ = im_ch.s32Meshes(cont_type=cont, 
+                                    # keep_largest=organ.mH_settings['wf_info']['keep_largest'][ch][cont], 
+                                    # rotateZ_90=organ.mH_settings['setup']['rotateZ_90'], 
+                                    new_set=True)
 
                 # Update organ workflow
                 process = proc_im+['Info',cont,'Status']

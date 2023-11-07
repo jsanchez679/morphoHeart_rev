@@ -28,7 +28,7 @@ import seaborn as sns
 
 #%% morphoHeart Imports - ##################################################
 from ..gui.gui_classes import *
-from .mH_funcBasics import alert, make_Paths, make_tuples, get_by_path, set_by_path
+from .mH_funcBasics import alert, make_Paths, make_tuples, get_by_path, set_by_path, rename_directory
 from .mH_funcMeshes import (unit_vector, plot_organCLs, find_angle_btw_pts, 
                             classify_segments_from_ext, create_subsegment, create_subsection, plot_grid)
 from ..gui.config import mH_config
@@ -803,6 +803,20 @@ class Project():
             print('organ wf_so_far:', wf_so_far)
             self.organs[organ_name]['workflow'] = wf_so_far
         
+    def delete_organs(self, organs): 
+        print('Deleting organs: ', organs)
+        for organ in organs: 
+            organ_folder = self.organs[organ]['user_organName']
+            dir_o = Path(self.dir_proj) / Path(organ_folder)
+            dir_f = Path(self.dir_proj) / Path(organ_folder+'_deleted')
+            try: 
+                rename_directory(dir_o, dir_f)
+            except: 
+                print('The original directory was not found:', str(dir_o))
+
+            self.organs.pop(organ, None)
+        print('self.organs:',self.organs)
+
     def get_current_wf(self, organ): #
         flat_wf = flatdict.FlatDict(copy.deepcopy(organ.workflow))
         keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))==4 and 'Status' in key]
@@ -2567,7 +2581,10 @@ class Mesh_mH():
         if mesh_prop['keep_largest'] != None: 
             keep_largest = mesh_prop['keep_largest']
         else: 
-            keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][self.channel_no][self.mesh_type]
+            try: 
+                keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][self.channel_no][self.mesh_type]
+            except: 
+                keep_largest = False
 
         if mesh_prop['rotateZ_90'] != None: 
             rotateZ_90 = mesh_prop['rotateZ_90']
@@ -2613,7 +2630,10 @@ class Mesh_mH():
             if mesh_prop['keep_largest'] != None: 
                 keep_largest = mesh_prop['keep_largest']
             else: 
-                keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][self.channel_no][self.mesh_type]
+                try: 
+                    keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][self.channel_no][self.mesh_type]
+                except: 
+                    keep_largest = False
 
             if mesh_prop['rotateZ_90'] != None: 
                 rotateZ_90 = mesh_prop['rotateZ_90']
@@ -2627,9 +2647,16 @@ class Mesh_mH():
             self.create_mesh(keep_largest = keep_largest, rotateZ_90 = rotateZ_90)
         else: 
             if self.channel_no != 'chNS':
-                self.keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][self.channel_no][self.mesh_type]
+                try: 
+                    self.keep_largest = self.parent_organ.mH_settings['wf_info']['keep_largest'][self.channel_no][self.mesh_type]
+                except: 
+                    self.keep_largest = False
             else: 
-                self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no]['keep_largest'][self.mesh_type]
+                try: 
+                    self.keep_largest = self.parent_organ.mH_settings['setup'][self.channel_no]['keep_largest'][self.mesh_type]
+                except:
+                    self.keep_largest = False
+
             self.rotateZ_90 = self.parent_organ.mH_settings['setup']['rotateZ_90']
             print('self.keep_largest:', self.keep_largest, ' - self.rotateZ_90:', self.rotateZ_90)
             print('>> Loading mesh-', self.name)
