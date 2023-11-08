@@ -798,7 +798,7 @@ QScrollBar::handle:vertical:hover {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-169</y>
+            <y>-590</y>
             <width>1047</width>
             <height>1183</height>
            </rect>
@@ -4302,11 +4302,6 @@ QComboBox QAbstractItemView {
 }
 </string>
                      </property>
-                     <item>
-                      <property name="text">
-                       <string>AND-XOR</string>
-                      </property>
-                     </item>
                     </widget>
                    </item>
                    <item row="2" column="3">
@@ -7634,7 +7629,7 @@ background-color: rgb(255, 255, 255);</string>
 background-color: rgb(255, 255, 255);</string>
                      </property>
                      <property name="text">
-                      <string>Tick the number of segment divisions you want to make, the channel contours that will be cut and the measurements to extract...</string>
+                      <string>Tick the number of segment divisions you want to create, the channel contours that will be cut and the measurements to extract...</string>
                      </property>
                      <property name="alignment">
                       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -10805,7 +10800,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
 background-color: rgb(255, 255, 255);</string>
                      </property>
                      <property name="text">
-                      <string>Tick the number of region divisions you want to make, the channel contours that will be cut and the measurements to extract...</string>
+                      <string>Tick the number of region divisions you want to create, the channel contours that will be cut and the measurements to extract...</string>
                      </property>
                      <property name="alignment">
                       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -10908,7 +10903,7 @@ text-decoration: underline;
                       <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                      </property>
                      <property name="text">
-                      <string>Cut layers into a combination of segments and regions?</string>
+                      <string>Do you want to create/analyse the intersection between segments and regions?</string>
                      </property>
                     </widget>
                    </item>
@@ -10960,7 +10955,7 @@ text-decoration: underline;
 background-color: rgb(255, 255, 255);</string>
                       </property>
                       <property name="text">
-                       <string>Tick the segment/region intersection you would like to make and the measurements to extract...</string>
+                       <string>Tick the segment/region intersection you would like to create and the measurements to extract...</string>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

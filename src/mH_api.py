@@ -963,6 +963,7 @@ def run_chNS(controller):
     else: 
         controller.main_win.win_msg('*To extract the channel from the negative space make sure you have at least run the  -Keep Largest-  section.')
 
+# > CENTRELINE
 def run_centreline_clean(controller):
     set_process(controller, 'centreline')
     if controller.main_win.keeplargest_play.isChecked(): 
@@ -1046,9 +1047,16 @@ def run_centreline_vmtk(controller):
         except:
             print('except') 
             voronoi = controller.organ.mH_settings['wf_info']['centreline']['vmtk_CL']['voronoi']
-        fcM.extract_cl(organ=controller.organ, 
-                    win=controller.main_win, 
-                    voronoi=voronoi)
+        done = fcM.extract_cl(organ=controller.organ, 
+                                    win=controller.main_win, 
+                                    voronoi=voronoi)
+        if not done: 
+            title = 'Something went wrong in VMTK...'
+            msg = 'Something went wrong when trying to extract the centreline using VMTK. Please go back and check all the meshes created in MeshLab and re-run this process to extract the centrelines.' 
+            prompt = Prompt_ok(title, msg, parent=controller.main_win)
+            prompt.exec()
+            print('output:',prompt.output, '\n')
+            return
         
         #Enable button for select
         getattr(controller.main_win, 'centreline_select').setEnabled(True)
@@ -1158,6 +1166,7 @@ def prompt_meshLab(controller, msg_add=None):
     prompt.exec()
     print('output:',prompt.output, '\n')
 
+# > HEATMAPS
 def run_heatmaps3D(controller, btn):
     set_process(controller, 'heatmaps')
     if controller.main_win.keeplargest_play.isChecked(): 
@@ -1451,6 +1460,7 @@ def run_heatmaps2D(controller, btn):
     else: 
         controller.main_win.win_msg('*To extract the 2D Heatmaps make sure you have run the  -Keep Largest-  section, extracted the Centreline and created the 3D Heatmap.')
 
+# > SEGMENTS
 def run_segments(controller, btn): 
     set_process(controller, 'segments')
     workflow = controller.organ.workflow['morphoHeart']
@@ -1526,6 +1536,12 @@ def run_segments(controller, btn):
             if ext_subsgm == None and meshes_segm == None: 
                 btn2uncheck = controller.main_win.segm_btns[segm]['play']
                 controller.main_win.win_msg('!Dividing '+mesh2cut.legend+' resulted in less segments than expected. Please re-run this process and make sure the defined disc(s) is(are) splitting the mesh into the expected number of segments.', btn2uncheck)
+                title = 'Something went wrong when cutting the '+mesh2cut.legend+' into segments...'
+                msg = 'Dividing '+mesh2cut.legend+' resulted in less segments than expected. Please re-run this process and make sure the defined disc(s) is(are) splitting the mesh into the expected number of segments.' 
+                prompt = Prompt_ok(title, msg, parent=controller.main_win)
+                prompt.exec()
+                print('output:',prompt.output, '\n')
+                return
             else: 
                 #Add submeshes of ext_ext as attribute to organ
                 controller.organ.ext_subsgm = ext_subsgm
@@ -1766,6 +1782,7 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
         organ.update_settings(proc+[cyl_name], update = cyl_dict, mH = 'mH')
         print('wf_info:', organ.mH_settings['wf_info']['segments']['setup'])
 
+# > SECTIONS
 def run_sections(controller, btn): 
 
     set_process(controller, 'regions')
@@ -1966,6 +1983,7 @@ def run_sections(controller, btn):
     #Add meshes to plot_user
     controller.main_win.fill_comboBox_all_meshes()
 
+# > SEGM-SECT
 def run_segm_sect(controller, btn): 
     set_process(controller, 'segments-regions')
     workflow = controller.organ.workflow['morphoHeart']
@@ -2055,6 +2073,7 @@ def run_segm_sect(controller, btn):
     #Add meshes to plot_user
     controller.main_win.fill_comboBox_all_meshes()
 
+#> MEASURE
 def run_measure(controller): 
     set_process(controller, 'measure')
     if controller.main_win.keeplargest_play.isChecked(): 

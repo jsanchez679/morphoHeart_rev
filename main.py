@@ -140,7 +140,7 @@ class Controller:
                 self.meas_param_win = SetMeasParam(mH_settings = self.new_proj_win.mH_settings, 
                                                 parent=self.new_proj_win)
             else:
-                #Find what is going on here!
+                #If the window to set measurements parameters had already been created, re initialise it with the channels selected. 
                 self.meas_param_win.ch_all = self.new_proj_win.mH_settings['name_chs']
                 if isinstance(self.new_proj_win.mH_settings['chNS'], dict) and len(list(self.new_proj_win.mH_settings['chNS'].keys()))>0:
                     if self.new_proj_win.mH_settings['chNS']['layer_btw_chs']:

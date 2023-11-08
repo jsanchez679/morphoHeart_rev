@@ -389,6 +389,10 @@ class Prompt_user_input(QDialog):
             reg_ex = QRegularExpression("[a-z-A-Z_ 0-9(),.:;/+-]+")
             self.buttonBox.clicked.connect(lambda: self.validate_organ_data(parent, info))
 
+        elif title == 'Custom Imaging Orientation':
+            reg_ex = QRegularExpression("[a-z-A-Z_ 0-9,]+")
+            self.buttonBox.clicked.connect(lambda: self.validate_custom_imOr(parent, info))
+
         elif title == 'Centreline point number to initialise Disc':
             reg_ex = QRegularExpression("\d{1,3}")
             self.buttonBox.clicked.connect(lambda: self.validate_number(parent, info))
@@ -424,8 +428,22 @@ class Prompt_user_input(QDialog):
     
     def validate_organ_data(self, parent, name):
         user_input = self.lineEdit.text()
-        if len(user_input) <= 0: 
+        if len(user_input) < 2: 
             error_txt = "*The organ's "+name+" needs to have at least two (2) characters."
+            self.tE_validate.setText(error_txt)
+            return
+        else: 
+            setattr(self, 'custom_'+name, user_input)
+            cB_data = getattr(parent, 'cB_'+name)
+            cB_data.addItem(user_input)
+            cB_data.setCurrentText(user_input)
+            self.output = user_input
+            self.close()
+    
+    def validate_custom_imOr(self, parent, name): 
+        user_input = self.lineEdit.text()
+        if len(user_input) < 2: 
+            error_txt = "*The custom imaging orientation name needs to have at least two (2) characters."
             self.tE_validate.setText(error_txt)
             return
         else: 
@@ -742,6 +760,10 @@ class CreateNewProj(QDialog):
         self.set_processes.setEnabled(False)
         self.button_set_processes.clicked.connect(lambda: self.set_selected_processes())
 
+        self.tick_chNS.stateChanged.connect(lambda: self.reset_set_processes())
+        self.tick_segm.stateChanged.connect(lambda: self.reset_set_processes())
+        self.tick_sect.stateChanged.connect(lambda: self.reset_set_processes())
+
     def init_orient_group(self): 
         self.cB_stack_orient.currentIndexChanged.connect(lambda: self.custom_orient('stack'))
         self.cB_roi_orient.currentIndexChanged.connect(lambda: self.custom_orient('roi'))
@@ -961,6 +983,8 @@ class CreateNewProj(QDialog):
             msg = "Give the name of the three different custom orientations for the  '"+ortype.upper()+"'  separated by a comma:"
             title = 'Custom Orientation'
             self.prompt = Prompt_user_input(msg = msg, title = title, info = ortype, parent = self)
+            if self.prompt.output == None: 
+                getattr(self,'cB_'+ortype+'_orient').setCurrentIndex(0)
         else: 
             pass 
 
@@ -1092,6 +1116,11 @@ class CreateNewProj(QDialog):
             if stype == 'chNS': 
                 if 'chNS' in self.ch_selected: 
                     self.ch_selected.remove('chNS')
+            if stype in list(self.mH_settings.keys()):
+                self.mH_settings.pop(stype, None)
+                getattr(self, 'button_set_'+stype).setChecked(False)
+            if stype in self.mH_settings['name_chs']: 
+                self.mH_settings['name_chs'].pop('chNS', None)
             s_set.setVisible(False)
             s_set.setEnabled(False)
             self.mH_settings[stype] = False
@@ -1314,10 +1343,18 @@ class CreateNewProj(QDialog):
                                 getattr(self, 'label_'+cut_segm+'_'+ch+'_'+cont).setVisible(False)
                                 getattr(self, 'cB_'+cut_segm+'_'+cut_sect+'_'+ch+'_'+cont).setVisible(False)
         
+        else: 
+            self.set_segm_sect.setEnabled(False)
+            self.set_segm_sect.setVisible(False)
+        
         self.button_set_processes.setChecked(True)
 
         #Enable measurement parameters now to know whether regions was selected
         self.set_meas_param_all.setEnabled(True)
+        self.set_meas_param_all.setChecked(False)
+
+    def reset_set_processes(self): 
+        self.button_set_processes.setChecked(False)
 
     # -- Functions for ChannelNS
     def validate_chNS_settings(self): 
@@ -1499,6 +1536,7 @@ class CreateNewProj(QDialog):
                 no_segm = getattr(self, 'sB_no_segm'+cut_no).value()
                 names_segm = getattr(self, 'names_segm'+cut_no).text()
                 names_segm = names_segm.split(',')
+                no_discs = getattr(self, 'sB_segm_noObj'+cut_no).value()
                 for xx, nam in enumerate(names_segm):
                     if nam == '':
                         names_segm.remove('')
@@ -1515,6 +1553,17 @@ class CreateNewProj(QDialog):
                     return
                 else: 
                     valid.append(True)
+                
+                #Check that the number of discs is at least number of segm -1
+                if int(no_discs) < int(no_segm)-1:
+                    title = 'Are you sure?'
+                    msg = 'Are you sure you only need '+str(no_discs)+' disc(s) to obtain '+str(no_segm)+' segment(s)? If you are happy with these settings press  -Ok-, else press  -Cancel- and change them.'
+                    prompt = Prompt_ok_cancel(title, msg, parent=self)
+                    prompt.exec()
+                    print('output:', prompt.output)
+                    if not prompt.output: 
+                        self.button_set_segm.setChecked(False)
+                        return
 
                 #Get checkboxes
                 self.check_checkBoxes(self.ch_selected, 'segm')
@@ -1889,21 +1938,26 @@ class CreateNewProj(QDialog):
         else: 
             self.mH_settings['segm-sect'] = False
             self.widget_segm_sect.setVisible(False)
+        self.button_set_segm_sect.setChecked(False)
 
     def fill_segm_sect(self): 
         # Create Segment Labels
         for n, scut in enumerate([1, 2]): 
             sname = 'Cut'+str(scut)
+            label_segm = getattr(self, 'lab_segm'+str(scut))
             if getattr(self, 'tick_segm'+str(scut)).isChecked():
                 sname = sname+': '+getattr(self, 'names_segm'+str(scut)).text()
-            label_segm = getattr(self, 'lab_segm'+str(scut))
+            else: 
+                label_segm.setEnabled(False)
             label_segm.setText(sname)
 
         for n, rcut in enumerate([1, 2]): 
             rname = 'Cut'+str(rcut)
+            label_sect = getattr(self, 'lab_sect'+str(rcut))
             if getattr(self, 'tick_sect'+str(rcut)).isChecked():
                 rname = rname+': '+getattr(self, 'names_sect'+str(rcut)).text()
-            label_sect = getattr(self, 'lab_sect'+str(rcut))
+            else: 
+                label_sect.setEnabled(False)
             label_sect.setText(rname)
 
         #Enable or disable Segm
@@ -2744,7 +2798,8 @@ class NewOrgan(QDialog):
         genot_it = list(['--select--']+proj.gui_custom_data['genotype']+['add'])
         self.cB_genotype.addItems(genot_it)
         self.cB_manipulation.clear()
-        manip_it = list(['--select--', 'None']+proj.gui_custom_data['manipulation']+['add'])
+        manip_it = list(['None']+proj.gui_custom_data['manipulation'])
+        manip_it = ['--select--']+list(set(manip_it))+['add']
         self.cB_manipulation.addItems(manip_it)
         self.cB_stack_orient.clear()
         imOr_it = list(['--select--']+proj.gui_custom_data['im_orientation']+['add'])
@@ -2790,10 +2845,6 @@ class NewOrgan(QDialog):
             pass
 
         if user_data == 'add':
-            if name == 'stack_orient': 
-                self.lab_custom_angle.setEnabled(True)
-                self.cust_angle.setEnabled(True)
-
             msg = "Provide the '"+gui_name.upper()+"' of the organ being created."
             title = 'Custom '+gui_name.title()
             self.prompt = Prompt_user_input(msg = msg, title = title, info = name, parent = self)
@@ -11972,7 +12023,10 @@ def split_str(input_str):
                 # print('char:', char)
                 nam = nam.replace(char,'')
         if nam == '': 
-            nam.remove('')
+            try: 
+                nam.remove('')
+            except: 
+                pass
         # print(nam)
         output_str.append(nam)
 

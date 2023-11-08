@@ -603,6 +603,7 @@ def extract_cl(organ, win, voronoi=False):#
     proc_all = ['MeshesProc','C-Centreline','vmtk_CL', 'Status']
     cl_names = list(organ.mH_settings['measure']['CL'].keys())
     nn = 0
+    done = []
     for name in cl_names: 
         ch, cont, _ = name.split('_')
         proc_sp = ['MeshesProc','C-Centreline','vmtk_CL', ch, cont, 'Status']
@@ -610,44 +611,63 @@ def extract_cl(organ, win, voronoi=False):#
         vmtktxt, dir_npcl = code_vmtk(organ, ch, cont, voronoi)
         
         myArguments = vmtktxt
-        myPype = pypes.PypeRun(myArguments)
-        
-        for m in range(len(myPype.ScriptObjectList)):
-            if isinstance(myPype.ScriptObjectList[m], vmtk.vmtkcenterlines.vmtkCenterlines):
-                centerlineReader = myPype.ScriptObjectList[m]
-        clNumpyAdaptor = vmtkscripts.vmtkCenterlinesToNumpy()
-        clNumpyAdaptor.Centerlines = centerlineReader.Centerlines # Surface # cl
-        clNumpyAdaptor.Execute()
-        numpyCenterlines = clNumpyAdaptor.ArrayDict
-
-        # Copy dictionary into new dictionary to save
-        centrelines_dict = dict()
-        centrelines_dict['Points'] =  numpyCenterlines['Points']
-
-        cellData = centrelines_dict['CellData'] = dict()
-        cellData['CellPointIds'] = numpyCenterlines['CellData']['CellPointIds']
-        pointData = centrelines_dict['PointData'] = dict()
-        pointData['EdgeArray'] = numpyCenterlines['PointData']['EdgeArray']
-        pointData['EdgePCoordArray'] = numpyCenterlines['PointData']['EdgePCoordArray']
-        pointData['MaximumInscribedSphereRadius'] = numpyCenterlines['PointData']['MaximumInscribedSphereRadius']
-
-        with open(dir_npcl, "w") as write_file:
-            json.dump(centrelines_dict, write_file, cls=NumpyArrayEncoder)
-            print('>> Dictionary saved correctly!\n> File: '+ dir_npcl.name);
-            alert('countdown')
-        
-        # Update organ workflow
-        organ.update_mHworkflow(proc_sp, 'DONE')
-        status_sq = getattr(win, 'vmtk_status'+str(nn+1))
-        win.update_status(workflow, proc_sp, status_sq)
-        nn+=1
-
-    #Message User
-    win.win_msg('All meshes for centreline have been successfully smoothed!')
-
-    # Update organ workflow
-    organ.update_mHworkflow(proc_all, 'DONE')
+        try: 
+            myPype = pypes.PypeRun(myArguments)
             
+            for m in range(len(myPype.ScriptObjectList)):
+                if isinstance(myPype.ScriptObjectList[m], vmtk.vmtkcenterlines.vmtkCenterlines):
+                    centerlineReader = myPype.ScriptObjectList[m]
+            clNumpyAdaptor = vmtkscripts.vmtkCenterlinesToNumpy()
+            clNumpyAdaptor.Centerlines = centerlineReader.Centerlines # Surface # cl
+            clNumpyAdaptor.Execute()
+            numpyCenterlines = clNumpyAdaptor.ArrayDict
+
+            # Copy dictionary into new dictionary to save
+            centrelines_dict = dict()
+            centrelines_dict['Points'] =  numpyCenterlines['Points']
+
+            cellData = centrelines_dict['CellData'] = dict()
+            cellData['CellPointIds'] = numpyCenterlines['CellData']['CellPointIds']
+            pointData = centrelines_dict['PointData'] = dict()
+            pointData['EdgeArray'] = numpyCenterlines['PointData']['EdgeArray']
+            pointData['EdgePCoordArray'] = numpyCenterlines['PointData']['EdgePCoordArray']
+            pointData['MaximumInscribedSphereRadius'] = numpyCenterlines['PointData']['MaximumInscribedSphereRadius']
+
+            with open(dir_npcl, "w") as write_file:
+                json.dump(centrelines_dict, write_file, cls=NumpyArrayEncoder)
+                print('>> Dictionary saved correctly!\n> File: '+ dir_npcl.name);
+                alert('countdown')
+
+            cl_data = load_vmtkCL(organ, ch, cont)
+            #Get cl points from vmtk
+            pts_cl = np.asarray(cl_data['Points'])
+
+        except: 
+            win.win_msg('*Something went wrong when trying to obtain the centreline for '+name+'!')
+            return False
+        
+        try: 
+            if len(pts_cl) > 0: 
+                # Update organ workflow
+                organ.update_mHworkflow(proc_sp, 'DONE')
+                status_sq = getattr(win, 'vmtk_status'+str(nn+1))
+                win.update_status(workflow, proc_sp, status_sq)
+                nn+=1
+                done.append(True)
+        except: 
+            done.append(False)
+            win.win_msg('*Something went wrong when trying to obtain the centreline for '+name+'!')
+
+    if all(done): 
+        #Message User
+        win.win_msg('The centreline for all meshes have been successfully obtained!')
+        # Update organ workflow
+        organ.update_mHworkflow(proc_all, 'DONE')
+        return True
+    else: 
+        win.win_msg('*Something went wrong when trying to obtain the centreline for the selected meshes!')
+        return False
+    
         # --------
         # ArrayDict
         #     ['Points']                   <-- required, is Nx3 array of N vertexes and x, y, z locations
