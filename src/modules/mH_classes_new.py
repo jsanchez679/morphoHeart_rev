@@ -1817,7 +1817,8 @@ class ImChannel(): #channel
         if not isinstance(im, np.ndarray):
             print('>> Error: morphoHeart was unable to load tiff.\n>> Directory: ',str(self.dir_cho))
             alert('error_beep')
-        return im
+        else: 
+            return im
     
     def im_proc(self, new=False):#
         if new: 
@@ -1952,6 +1953,9 @@ class ImChannel(): #channel
 
         #Save channel
         self.save_channel(im_proc=im_proc)
+
+        #Plot slice range
+        win.plot_all_slices(ch = self.channel_no, slice_range = (slc_first_py, slc_last_py+1))
 
     def create_chS3s(self, layerDict:dict, win, cont_list=['int', 'ext', 'tiss']):
         # Workflow process

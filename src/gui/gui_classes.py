@@ -48,7 +48,8 @@ from ..modules.mH_funcBasics import (get_by_path, compare_dicts, update_gui_set,
                                      df_add_value, palette_rbg)
 from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours, get_slices,
                                        plot_props, plot_filled_contours, plot_group_filled_contours, 
-                                       close_draw, close_box, close_user, reset_img, close_convex_hull, tuple_pairs)
+                                       close_draw, close_box, close_user, reset_img, close_convex_hull, tuple_pairs, 
+                                       mask_with_npy)
 from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
 from ..modules.mH_classes_new import Project, Organ, create_submesh
 from .config import mH_config
@@ -412,7 +413,7 @@ class Prompt_user_input(QDialog):
         self.close()
 
     def validate_custom_or(self, parent, info):
-        user_input = split_str(self.lineEdit.text())
+        user_input = split_str(self.lineEdit.text().strip())
         if len(set(user_input)) != 3:
             error_txt = '*Three different names need to be given for each orientation'
             self.tE_validate.setText(error_txt)
@@ -427,7 +428,7 @@ class Prompt_user_input(QDialog):
             self.close()
     
     def validate_organ_data(self, parent, name):
-        user_input = self.lineEdit.text()
+        user_input = self.lineEdit.text().strip()
         if len(user_input) < 2: 
             error_txt = "*The organ's "+name+" needs to have at least two (2) characters."
             self.tE_validate.setText(error_txt)
@@ -441,7 +442,7 @@ class Prompt_user_input(QDialog):
             self.close()
     
     def validate_custom_imOr(self, parent, name): 
-        user_input = self.lineEdit.text()
+        user_input = self.lineEdit.text().strip()
         if len(user_input) < 2: 
             error_txt = "*The custom imaging orientation name needs to have at least two (2) characters."
             self.tE_validate.setText(error_txt)
@@ -885,16 +886,17 @@ class CreateNewProj(QDialog):
     def validate_new_proj(self): 
         valid = []; error_txt = ''
         #Get project name
-        if len(self.lineEdit_proj_name.text())<5:
+        proj_name = self.lineEdit_proj_name.text().strip()
+        if len(proj_name)<5:
             error_txt = '*Project name needs to have at least five (5) characters'
             self.win_msg(error_txt, self.button_create_initial_proj)
             return
-        elif validate_txt(self.lineEdit_proj_name.text()) != None:
+        elif validate_txt(proj_name) != None:
             error_txt = "Please avoid using invalid characters in the project's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
             self.win_msg(error_txt, self.button_create_initial_proj)
             return
         else: 
-            self.proj_name = self.lineEdit_proj_name.text()
+            self.proj_name = proj_name
             valid.append(True)
         
         #Get Analysis Pipeline
@@ -1145,7 +1147,7 @@ class CreateNewProj(QDialog):
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             tick = getattr(self, 'tick_'+ch)
             if tick.isChecked(): 
-                ch_name = getattr(self, ch+'_username').text()
+                ch_name = getattr(self, ch+'_username').text().strip()
                 if len(ch_name) < 3:
                     error_txt = '*Active channels must have a name with at least three (3) characters.'
                     self.win_msg(error_txt, self.button_set_initial_set)
@@ -1268,7 +1270,7 @@ class CreateNewProj(QDialog):
             tick = getattr(self, 'tick_'+ch)
             if tick.isChecked(): 
                 ch_selected.append(ch)
-                user_name[ch] = getattr(self, ch+'_username').text()
+                user_name[ch] = getattr(self, ch+'_username').text().strip()
                 ch_relation[ch] = getattr(self, 'cB_'+ch).currentText().split(' ')[0]
                 mask_ch[ch] = getattr(self, ch+'_mask').isChecked()
                 color_chs[ch] = {}
@@ -1360,7 +1362,7 @@ class CreateNewProj(QDialog):
     def validate_chNS_settings(self): 
         valid = []; error_txt = ''
         #Check name
-        name_chNS = self.chNS_username.text()
+        name_chNS = self.chNS_username.text().strip()
         names_ch = [self.mH_settings['name_chs'][key] for key in self.mH_settings['name_chs'].keys()]
         # print('names_ch:',names_ch)
         if len(name_chNS)< 3: 
@@ -1444,7 +1446,7 @@ class CreateNewProj(QDialog):
                             'ch_ext': (ch_ext.lower(), ext_cont[0:3]),
                             'ch_int': (ch_int.lower(), int_cont[0:3]),
                             'operation' : chNS_operation,
-                            'user_nsChName': self.chNS_username.text(),
+                            'user_nsChName': self.chNS_username.text().strip(),
                             'color_chns': color_chNS, 
                             'keep_largest': {},
                             'alpha': {}}
@@ -1540,6 +1542,7 @@ class CreateNewProj(QDialog):
                 for xx, nam in enumerate(names_segm):
                     if nam == '':
                         names_segm.remove('')
+                names_segm = [name.strip() for name in names_segm]
 
                 #Check values
                 # print(names_segm, len(names_segm), no_segm)
@@ -1622,6 +1625,7 @@ class CreateNewProj(QDialog):
                 for xx, nam in enumerate(names_sect):
                     if nam == '':
                         names_sect.remove('')
+                names_sect = [name.strip() for name in names_sect]
 
                 #Check values
                 if len(names_sect) != 2:
@@ -1712,6 +1716,7 @@ class CreateNewProj(QDialog):
                 no_obj = getattr(self, 'sB_segm_noObj'+cut_no).value()
                 names_segm = getattr(self, 'names_segm'+cut_no).text()
                 names_segm = split_str(names_segm)
+                names_segm = [name.strip() for name in names_segm]
                 #Measure
                 meas_vol = getattr(self, 'cB_volume_'+stype).isChecked()
                 meas_area = getattr(self, 'cB_area_'+stype).isChecked()
@@ -1807,6 +1812,7 @@ class CreateNewProj(QDialog):
                 obj_type = getattr(self, 'cB_obj_sect'+cut_no).currentText()
                 names_sect = getattr(self, 'names_sect'+cut_no).text()
                 names_sect = split_str(names_sect)
+                names_sect = [name.strip() for name in names_sect]
                 #Measure
                 meas_vol = getattr(self, 'cB_volume_'+stype).isChecked()
                 meas_area = getattr(self, 'cB_area_'+stype).isChecked()
@@ -2085,7 +2091,7 @@ class CreateNewProj(QDialog):
     def check_template(self): 
         temp_dir = None
         if self.cB_proj_as_template.isChecked():
-            line_temp = self.lineEdit_template_name.text()
+            line_temp = self.lineEdit_template_name.text().strip()
             if len(line_temp) < 8: 
                 self.win_msg('*The name of the project template needs to have at least eight (8) characters.')
                 return False
@@ -2854,8 +2860,8 @@ class NewOrgan(QDialog):
     def validate_organ(self, proj):
         valid = []; error_txt = ''
         #Check the name is unique within the project
-        organ_folder = self.lineEdit_organ_name.text()
-        organ_dir = Path(proj.dir_proj) / organ_folder 
+        organ_name = self.lineEdit_organ_name.text().strip()
+        organ_dir = Path(proj.dir_proj) / organ_name 
         if organ_dir.is_dir(): 
             error_txt = '*There is already an organ within this project with the same name. Please give this organ a new name to continue.'
             self.win_msg(error_txt, self.button_create_new_organ)
@@ -2864,16 +2870,16 @@ class NewOrgan(QDialog):
             valid.append(True)
 
         #Get organ name
-        if len(self.lineEdit_organ_name.text())<5:
+        if len(organ_name)<5:
             error_txt = '*Organ name needs to be longer than five (5) characters'
             self.win_msg(error_txt, self.button_create_new_organ)
             return
-        elif validate_txt(self.lineEdit_organ_name.text()) != None:
+        elif validate_txt(organ_name) != None:
             error_txt = "*Please avoid using invalid characters in the project's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
             self.win_msg(error_txt, self.button_create_new_organ)
             return
         else: 
-            self.organ_name = self.lineEdit_organ_name.text()
+            self.organ_name = organ_name
             valid.append(True)
         
         #Get Strain, stage and genotype
@@ -3858,6 +3864,9 @@ class ProjSettings(QDialog):
         if self.proj.analysis['morphoCell']: 
             pass
             # self.init_mCell_tab()
+
+        #Close button
+        self.button_close.clicked.connect(lambda: self.close_window())
     
     def init_gral_proj(self): 
         proj_name = self.proj.info['user_projName']
@@ -4037,7 +4046,10 @@ class ProjSettings(QDialog):
         print('User pressed X: ProjSettings')
         event.accept()
         self.controller.proj_settings_win = None
-        # print('self.controller.proj_settings_win:',self.controller.proj_settings_win)
+
+    def close_window(self):
+        self.close()
+        self.controller.proj_settings_win = None
 
 class MainWindow(QMainWindow):
 
@@ -4437,11 +4449,11 @@ class MainWindow(QMainWindow):
             widget_name = widget.objectName()
             print ('focus out:', widget_name)
             name = widget_name.split('_value')[0]
-            ch = name.split('_')[-1]
+            # ch = name.split('_')[-1]
             if 'level' in widget_name: 
-                self.slider_changed(name, 'value', info = ch, divider = 10)
+                self.slider_changed(name, 'value', divider = 10)
             else: 
-                self.slider_changed(name, 'value', info =ch)
+                self.slider_changed(name, 'value')
 
         return super().eventFilter(widget, event)
         
@@ -4459,20 +4471,20 @@ class MainWindow(QMainWindow):
         self.sB_rows_ch3.valueChanged.connect(lambda: self.get_plot_settings(ch='ch3'))
         self.sB_rows_ch4.valueChanged.connect(lambda: self.get_plot_settings(ch='ch4'))
 
-        self.level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('level_ch1', 'slider', info = 'ch1', divider = 10))
-        self.level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('level_ch2', 'slider', info = 'ch2', divider = 10))
-        self.level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('level_ch3', 'slider', info = 'ch3', divider = 10))
-        self.level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('level_ch4', 'slider', info = 'ch4', divider = 10))
+        self.level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('level_ch1', 'slider', divider = 10))
+        self.level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('level_ch2', 'slider', divider = 10))
+        self.level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('level_ch3', 'slider', divider = 10))
+        self.level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('level_ch4', 'slider', divider = 10))
 
         self.level_ch1_value.installEventFilter(self)
         self.level_ch2_value.installEventFilter(self)
         self.level_ch3_value.installEventFilter(self)
         self.level_ch4_value.installEventFilter(self)
         
-        self.min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch1', 'slider', info ='ch1'))
-        self.min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch2', 'slider', info ='ch2'))
-        self.min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch3', 'slider', info ='ch3'))
-        self.min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch4', 'slider', info ='ch4'))
+        self.min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch1', 'slider'))
+        self.min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch2', 'slider'))
+        self.min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch3', 'slider'))
+        self.min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('min_cont_length_ch4', 'slider'))
 
         self.min_cont_length_ch1_value.installEventFilter(self)
         self.min_cont_length_ch2_value.installEventFilter(self)
@@ -4507,6 +4519,16 @@ class MainWindow(QMainWindow):
         self.plot_slice_with_contours_ch3.clicked.connect(lambda: self.plot_slice(ch='ch3'))
         self.plot_slice_with_contours_ch4.clicked.connect(lambda: self.plot_slice(ch='ch4'))
 
+        self.prev_sliceo_ch1.clicked.connect(lambda: self.plot_next_prev_slice(ch='ch1', next=False))
+        self.prev_sliceo_ch2.clicked.connect(lambda: self.plot_next_prev_slice(ch='ch2', next=False))
+        self.prev_sliceo_ch3.clicked.connect(lambda: self.plot_next_prev_slice(ch='ch3', next=False))
+        self.prev_sliceo_ch4.clicked.connect(lambda: self.plot_next_prev_slice(ch='ch4', next=False))
+
+        self.next_sliceo_ch1.clicked.connect(lambda: self.plot_next_prev_slice(ch='ch1', next=True))
+        self.next_sliceo_ch2.clicked.connect(lambda: self.plot_next_prev_slice(ch='ch2', next=True))
+        self.next_sliceo_ch3.clicked.connect(lambda: self.plot_next_prev_slice(ch='ch3', next=True))
+        self.next_sliceo_ch4.clicked.connect(lambda: self.plot_next_prev_slice(ch='ch4', next=True))
+
         # - Open
         self.plot_slices_ch1_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch1', ch_name = 'ch1'))
         self.plot_slices_ch2_open.clicked.connect(lambda: self.open_section(name='plot_slices_ch2', ch_name = 'ch2'))
@@ -4518,6 +4540,12 @@ class MainWindow(QMainWindow):
         self.set_plots_cont_settings_ch2.clicked.connect(lambda: self.set_plot_contour_settings('ch2', init=True))
         self.set_plots_cont_settings_ch3.clicked.connect(lambda: self.set_plot_contour_settings('ch3', init=True))
         self.set_plots_cont_settings_ch4.clicked.connect(lambda: self.set_plot_contour_settings('ch4', init=True))
+
+        #Reset
+        self.reset_grid_plot_ch1.clicked.connect(lambda: self.reset_values(ch ='ch1', proc='grid_plot'))
+        self.reset_grid_plot_ch2.clicked.connect(lambda: self.reset_values(ch ='ch2', proc='grid_plot'))
+        self.reset_grid_plot_ch3.clicked.connect(lambda: self.reset_values(ch ='ch3', proc='grid_plot'))
+        self.reset_grid_plot_ch4.clicked.connect(lambda: self.reset_values(ch ='ch4', proc='grid_plot'))
 
         self.functions_btns_open.setChecked(True)
         self.open_section(name = 'functions_btns')
@@ -4553,6 +4581,17 @@ class MainWindow(QMainWindow):
         self.npy_mask_ch2_play.setStyleSheet(style_play)
         self.npy_mask_ch3_play.setStyleSheet(style_play)
         self.npy_mask_ch4_play.setStyleSheet(style_play)
+
+        #Reset stack 
+        self.reset_mask_ch1.clicked.connect(lambda: self.reset_stack(ch='ch1', proc='mask'))
+        self.reset_mask_ch2.clicked.connect(lambda: self.reset_stack(ch='ch2', proc='mask'))
+        self.reset_mask_ch3.clicked.connect(lambda: self.reset_stack(ch='ch3', proc='mask'))
+        self.reset_mask_ch4.clicked.connect(lambda: self.reset_stack(ch='ch4', proc='mask'))
+
+        self.reset_npy_mask_ch1.clicked.connect(lambda: self.reset_stack(ch='ch1', proc='npy_mask'))
+        self.reset_npy_mask_ch2.clicked.connect(lambda: self.reset_stack(ch='ch2', proc='npy_mask'))
+        self.reset_npy_mask_ch3.clicked.connect(lambda: self.reset_stack(ch='ch3', proc='npy_mask'))
+        self.reset_npy_mask_ch4.clicked.connect(lambda: self.reset_stack(ch='ch4', proc='npy_mask'))
 
         mask_info = self.organ.mH_settings['setup']['mask_ch']
         img_dirs = self.organ.img_dirs
@@ -4619,9 +4658,9 @@ class MainWindow(QMainWindow):
         #Sliders
         #>> min contour length
         self.autom_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch1','slider'))
-        self.autom_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('ch2','autom_min_cont_length_ch2_slider'))
-        self.autom_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('ch3','autom_min_cont_length_ch3_slider'))
-        self.autom_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('ch4','autom_min_cont_length_ch4_slider'))
+        self.autom_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch2','slider'))
+        self.autom_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch3','slider'))
+        self.autom_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_cont_length_ch4','slider'))
         
         #>> min intensity value
         self.autom_min_intensity_ch1_slider.valueChanged.connect(lambda: self.slider_changed('autom_min_intensity_ch1','slider'))
@@ -4671,6 +4710,18 @@ class MainWindow(QMainWindow):
         self.autom_close_ch2_done.clicked.connect(lambda: self.user_done('autom_close', 'ch2'))
         self.autom_close_ch3_done.clicked.connect(lambda: self.user_done('autom_close', 'ch3'))
         self.autom_close_ch4_done.clicked.connect(lambda: self.user_done('autom_close', 'ch4'))
+
+        #Reset
+        self.reset_auto_ch1.clicked.connect(lambda: self.reset_values(ch ='ch1', proc='auto'))
+        self.reset_auto_ch2.clicked.connect(lambda: self.reset_values(ch ='ch2', proc='auto'))
+        self.reset_auto_ch3.clicked.connect(lambda: self.reset_values(ch ='ch3', proc='auto'))
+        self.reset_auto_ch4.clicked.connect(lambda: self.reset_values(ch ='ch4', proc='auto'))
+
+        #Reset stack 
+        self.reset_autom_close_ch1.clicked.connect(lambda: self.reset_stack(ch='ch1', proc='auto'))
+        self.reset_autom_close_ch2.clicked.connect(lambda: self.reset_stack(ch='ch2', proc='auto'))
+        self.reset_autom_close_ch3.clicked.connect(lambda: self.reset_stack(ch='ch3', proc='auto'))
+        self.reset_autom_close_ch4.clicked.connect(lambda: self.reset_stack(ch='ch4', proc='auto'))
 
         #Initialise with user settings, if they exist!
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
@@ -4820,6 +4871,12 @@ class MainWindow(QMainWindow):
         self.manual_close_ch3_done.clicked.connect(lambda: self.user_done('manual_close', 'ch3'))
         self.manual_close_ch4_done.clicked.connect(lambda: self.user_done('manual_close', 'ch4'))
 
+        #Reset
+        self.reset_manual_ch1.clicked.connect(lambda: self.reset_values(ch ='ch1', proc='manual'))
+        self.reset_manual_ch2.clicked.connect(lambda: self.reset_values(ch ='ch2', proc='manual'))
+        self.reset_manual_ch3.clicked.connect(lambda: self.reset_values(ch ='ch3', proc='manual'))
+        self.reset_manual_ch4.clicked.connect(lambda: self.reset_values(ch ='ch4', proc='manual'))
+
         #Initialise with user settings, if they exist!
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
@@ -4834,20 +4891,20 @@ class MainWindow(QMainWindow):
     def init_select_contours(self): 
         
         #Level and Min Cont Length
-        self.select_level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch1', 'slider', info = 'ch1', divider = 10))
-        self.select_level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch2', 'slider', info = 'ch2', divider = 10))
-        self.select_level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch3', 'slider', info = 'ch3', divider = 10))
-        self.select_level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch4', 'slider', info = 'ch4', divider = 10))
+        self.select_level_ch1_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch1', 'slider', divider = 10))
+        self.select_level_ch2_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch2', 'slider', divider = 10))
+        self.select_level_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch3', 'slider', divider = 10))
+        self.select_level_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_level_ch4', 'slider', divider = 10))
         
         self.select_level_ch1_value.installEventFilter(self)
         self.select_level_ch2_value.installEventFilter(self)
         self.select_level_ch3_value.installEventFilter(self)
         self.select_level_ch4_value.installEventFilter(self)
         
-        self.select_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch1', 'slider', info ='ch1'))
-        self.select_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch2', 'slider', info ='ch2'))
-        self.select_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch3', 'slider', info ='ch3'))
-        self.select_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch4', 'slider', info ='ch4'))
+        self.select_min_cont_length_ch1_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch1', 'slider'))
+        self.select_min_cont_length_ch2_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch2', 'slider'))
+        self.select_min_cont_length_ch3_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch3', 'slider'))
+        self.select_min_cont_length_ch4_slider.valueChanged.connect(lambda: self.slider_changed('select_min_cont_length_ch4', 'slider'))
        
         self.select_min_cont_length_ch1_value.installEventFilter(self)
         self.select_min_cont_length_ch2_value.installEventFilter(self)
@@ -5052,6 +5109,12 @@ class MainWindow(QMainWindow):
         self.re_select_ch3.setEnabled(False)
         self.re_select_ch4.setEnabled(False)
 
+        #Reset
+        self.reset_select_ch1.clicked.connect(lambda: self.reset_values(ch ='ch1', proc='select'))
+        self.reset_select_ch2.clicked.connect(lambda: self.reset_values(ch ='ch2', proc='select'))
+        self.reset_select_ch3.clicked.connect(lambda: self.reset_values(ch ='ch3', proc='select'))
+        self.reset_select_ch4.clicked.connect(lambda: self.reset_values(ch ='ch4', proc='select'))
+
     def init_plot_widget(self): 
 
         #Central plot
@@ -5095,17 +5158,23 @@ class MainWindow(QMainWindow):
 
         if process == 'autom_close': 
             sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','A-Autom','Status']
-            msg = 'Contours of Channel '+str(ch_name[-1])+' have been automatically closed!'
+            msg = 'Contours of Channel '+str(ch_name[-1])+' have been automatically closed! Saving all changes in channel, organ and project...'
+            save_ch = False
+            save_chS3 = False
         elif process == 'manual_close': 
             sp_process = ['ImProc', ch_name, 'B-CloseCont','Steps','B-Manual','Status']
-            msg = 'Contours of Channel '+str(ch_name[-1])+' have been manually closed!'
+            msg = 'Contours of Channel '+str(ch_name[-1])+' have been manually closed! Saving all changes in channel, organ and project'
             sp_process1 = ['ImProc', ch_name, 'Status']
             sp_process2 = ['ImProc', ch_name, 'B-CloseCont','Status']
             sp_process3 = ['ImProc', ch_name, 'B-CloseCont','Steps','C-CloseInOut','Status']
+            save_ch = True
+            save_chS3 = False
         elif process == 'select_contours':
             sp_process = ['ImProc', ch_name, 'C-SelectCont','Status']
-            msg = 'Selecting the Contours of Channel '+str(ch_name[-1])+' has been successfully finished!'
+            msg = 'Selecting the Contours of Channel '+str(ch_name[-1])+' has been successfully finished! Saving all changes in channel, organ and project'
             sp_process1 = ['ImProc', ch_name, 'Status']
+            save_ch = True
+            save_chS3 = True
         else: 
             print('What done?')
 
@@ -5114,7 +5183,7 @@ class MainWindow(QMainWindow):
             if process == 'manual_close': 
                 self.organ.update_mHworkflow(sp_process2, update = 'DONE')
                 self.organ.update_mHworkflow(sp_process3, update = 'DONE')
-                self.close_draw_btns_widget.setVisible(False)
+                # self.close_draw_btns_widget.setVisible(False)
             elif process == 'select_contours':
                 self.organ.update_mHworkflow(sp_process1, update = 'DONE')
                 getattr(self, 'plot_final_s3s_'+ch_name).setVisible(True)
@@ -5122,6 +5191,23 @@ class MainWindow(QMainWindow):
                 scroll_tabch = getattr(self, 'scrollArea_'+ch_name)
                 scroll_tabch.verticalScrollBar().setValue(scroll_tabch.verticalScrollBar().maximum())
             self.win_msg(msg)
+
+            #Save channel, organ and project
+            im_ch = self.organ.obj_imChannels[ch_name]
+            if save_ch and hasattr(self, 'im_proc'):
+                im_ch.save_channel(im_proc=self.im_proc)
+                getattr(self, 'save_manually_closed_'+ch_name).setChecked(True)
+            if save_chS3: 
+                for cont in ['int', 'tiss', 'ext']: 
+                    im_cont = getattr(im_ch, 's3_'+cont)
+                    s32save = getattr(self, 's3_'+cont)
+                    im_cont.s3_save(s32save)
+                getattr(self, 'save_select_contours_'+ch_name).setChecked(True)
+            self.organ.add_channel(imChannel=im_ch)
+            self.organ.save_organ(alert_on=False)
+            self.proj.add_organ(self.organ)
+            self.proj.save_project(alert_on=False)
+
         else: 
             if process == 'manual_close': 
                 self.organ.update_mHworkflow(sp_process1, update = 'Initialised')
@@ -5140,6 +5226,176 @@ class MainWindow(QMainWindow):
 
         if btn.isChecked():
             alert('woohoo')
+        
+    def reset_values(self, ch, proc): 
+        wf_info = self.organ.mH_settings['wf_info']
+        default = True
+        if proc == 'grid_plot': 
+            # if 'plot_contours_settings' in wf_info.keys():
+            #     if ch in wf_info['plot_contours_settings'].keys() and len(wf_info['plot_contours_settings'][ch])>0:
+            #         getattr(self, 'level_'+ch+'_slider').setValue(int(wf_info['plot_contours_settings'][ch]['level']))
+            #         getattr(self, 'min_cont_length_'+ch+'_slider').setValue(int(wf_info['plot_contours_settings'][ch]['min_contour_length']))
+            #     else: 
+            #         default = True
+            # else: 
+            #     default = True
+
+            # if default:
+            getattr(self, 'level_'+ch+'_slider').setValue(5)
+            getattr(self, 'min_cont_length_'+ch+'_slider').setValue(100)
+        elif proc == 'auto':
+            # if 'autom_close_contours' in wf_info.keys():
+            #     if ch in wf_info['autom_close_contours'].keys() and len(wf_info['autom_close_contours'][ch])>0:
+            #         getattr(self, 'autom_min_cont_length_'+ch+'_slider').setValue(int(wf_info['autom_close_contours'][ch]['min_contour_len']))
+            #         getattr(self, 'autom_min_intensity_'+ch+'_slider').setValue(int(wf_info['autom_close_contours'][ch]['min_int']))
+            #         getattr(self, 'autom_mean_intensity_'+ch+'_slider').setValue(int(wf_info['autom_close_contours'][ch]['mean_int']))
+            #         getattr(self, 'autom_min_distance_'+ch+'_slider').setValue(int(wf_info['autom_close_contours'][ch]['min_dist']))
+            #     else: 
+            #         default = True
+            # else: 
+            #     default = True
+
+            # if default: 
+            getattr(self, 'autom_min_cont_length_'+ch+'_slider').setValue(100)
+            getattr(self, 'autom_min_intensity_'+ch+'_slider').setValue(15000)
+            getattr(self, 'autom_mean_intensity_'+ch+'_slider').setValue(5000)
+            getattr(self, 'autom_min_distance_'+ch+'_slider').setValue(15)
+        elif proc == 'manual': 
+            # if 'manual_close_contours' in wf_info.keys():
+            #     if ch in wf_info['manual_close_contours'].keys() and len(wf_info['manual_close_contours'][ch])>0:
+            #         getattr(self, 'manual_level_'+ch+'_slider').setValue(int(wf_info['manual_close_contours'][ch]['level']))
+            #         getattr(self, 'manual_min_cont_length_'+ch+'_slider').setValue(int(wf_info['manual_close_contours'][ch]['min_contour_len']))
+            #         getattr(self, 'manual_min_intensity_'+ch+'_slider').setValue(int(wf_info['manual_close_contours'][ch]['min_int']))
+            #     else: 
+            #         default = True
+            # else: 
+            #     default = True
+            
+            # if default: 
+            getattr(self, 'manual_level_'+ch+'_slider').setValue(5)
+            getattr(self, 'manual_min_cont_length_'+ch+'_slider').setValue(100)
+            getattr(self, 'manual_min_intensity_'+ch+'_slider').setValue(15000)
+        elif proc == 'select': 
+            # if 'select_contours' in wf_info.keys():
+            #     if ch in wf_info['select_contours'].keys() and len(wf_info['select_contours'][ch])>0:
+            #         getattr(self, 'select_level_'+ch+'_slider').setValue(int(wf_info['select_contours'][ch]['level']))
+            #         getattr(self, 'select_min_cont_length_'+ch+'_slider').setValue(int(wf_info['select_contours'][ch]['min_contour_len']))
+            #     else: 
+            #         default = True
+            # else: 
+            #     default = True
+            
+            # if default: 
+            getattr(self, 'select_level_'+ch+'_slider').setValue(5)
+            getattr(self, 'select_min_cont_length_'+ch+'_slider').setValue(100)
+        else: 
+            pass
+
+    def reset_stack(self, ch, proc): 
+        im_ch = self.organ.obj_imChannels[ch]
+
+        if proc == 'mask': 
+            txt = 'the original RAW images'
+        elif proc == 'npy_mask': 
+            txt = 'the original RAW images'
+        else:# proc == 'autom':
+            if getattr(self, 'mask_with_npy_'+ch).isChecked() and getattr(self, 'npy_mask_'+ch+'_play').isChecked(): 
+                txt = 'the masked images (using other channel s3)'
+                procf = 'npy_mask'
+            elif getattr(self, 'mask_'+ch+'_play').isChecked():
+                txt = 'the masked images (using input mask)'
+                procf = 'mask'
+            else: 
+                txt = 'the original RAW images'
+                procf = 'RAW'
+
+        title = 'Resetting STACK...'
+        msg = 'Are you sure you want to reset the stack to '+txt+'? If so press  -Ok-, else press  -Cancel-.' 
+        prompt = Prompt_ok_cancel(title, msg, parent=self)
+        prompt.exec()
+        print('output:',prompt.output, '\n')
+        if prompt.output: 
+            self.win_msg('Resetting stack of Channel '+ch[-1]+' to '+txt+'...')
+            if proc == 'mask' or proc == 'npy_mask': 
+                if Path(im_ch.dir_cho).is_file():
+                    im = im_ch.im()
+                    im_ch.save_channel(im_proc=im)
+                    #Update workflow
+                    try: 
+                        process = ['ImProc', ch, 'A-MaskChannel','Status']
+                        self.organ.update_mHworkflow(process, update = 'NI')
+                    except: 
+                        pass
+                    try: 
+                        process = ['ImProc', ch, 'A-MaskNPY','Status']
+                        self.organ.update_mHworkflow(process, update = 'NI')
+                    except: 
+                        pass
+
+                    #Update status
+                    status_btn = getattr(self, 'mask_'+ch+'_status')
+                    self.update_status(None, 'NI', status_btn, override=True)
+                    #Uncheck play
+                    getattr(self, 'mask_'+ch+'_play').setChecked(False)
+                    getattr(self, 'npy_mask_'+ch+'_play').setChecked(False)
+                    #Disable reset
+                    getattr(self, 'reset_mask_'+ch).setEnabled(False)
+                    getattr(self, 'reset_npy_mask_'+ch).setEnabled(False)
+
+                else: 
+                    self.win_msg('*No image file was identified in the original directory: ', str(Path(im_ch.dir_cho)))
+                    return
+            else: #proc == 'autom':
+                if procf == 'RAW': 
+                    if Path(im_ch.dir_cho).is_file():
+                        im = im_ch.im()
+                        im_ch.save_channel(im_proc=im)
+                    else: 
+                        self.win_msg('*No image file was identified in the original directory: ', str(Path(im_ch.dir_cho)))
+                        return
+                else: 
+                    mask_info = self.organ.mH_settings['setup']['mask_ch']
+                    if mask_info[ch]: 
+                        im_ch.maskIm()
+                    if procf == 'npy_mask': 
+                        mask_with_npy(organ = self.organ, im_ch=im_ch, 
+                                    gui_mask_npy = self.gui_mask_npy[ch])
+
+            #Save everything
+            self.reset_progress_post_processes(ch, proc)
+            self.update_ch_progress()
+            self.organ.add_channel(imChannel=im_ch)
+            self.organ.save_organ(alert_on=False)
+            self.proj.save_project(alert_on=False)
+
+            #Plot masked stack
+            self.plot_all_slices(ch = ch)
+        
+        else: 
+            print('Reset '+proc+' was cancelled!')
+
+    def reset_progress_post_processes(self, ch, proc):
+        #Automatic
+        #Update workflow
+        process = ['ImProc', ch, 'B-CloseCont','Steps','A-Autom','Status']
+        self.organ.update_mHworkflow(process, update = 'NI')
+        #Update status
+        status_btn = getattr(self, 'autom_close_'+ch+'_status')
+        self.update_status(None, 'NI', status_btn, override=True)
+        #Uncheck play
+        getattr(self, 'autom_close_'+ch+'_play').setChecked(False)
+        #Disable reset
+        getattr(self, 'reset_autom_close_'+ch).setEnabled(False)
+
+        #Manual
+        #Update workflow
+        process = ['ImProc', ch, 'B-CloseCont','Steps','B-Manual','Status']
+        self.organ.update_mHworkflow(process, update = 'NI')
+        #Update status
+        status_btn = getattr(self, 'manual_close_'+ch+'_status')
+        self.update_status(None, 'NI', status_btn, override=True)
+        #Uncheck play
+        getattr(self, 'manual_close_'+ch+'_play').setChecked(False)
         
     #Set functions 
     def set_plot_contour_settings(self, ch_name, init=False):
@@ -5315,6 +5571,7 @@ class MainWindow(QMainWindow):
                 proc_set = ['wf_info']
                 update = self.gui_autom_close_contours
                 self.organ.update_settings(proc_set, update, 'mH', add='autom_close_contours')
+            getattr(self, 'autom_close_'+ch_name+'_done').setChecked(False)
         else: 
             getattr(self, 'autom_close_'+ch_name+'_set').setChecked(False)
 
@@ -5385,6 +5642,7 @@ class MainWindow(QMainWindow):
                 proc_set = ['wf_info']
                 update = self.gui_manual_close_contours
                 self.organ.update_settings(proc_set, update, 'mH', add='manual_close_contours')
+            getattr(self, 'manual_close_'+ch_name+'_done').setChecked(False)
         else: 
             getattr(self, 'manual_close_'+ch_name+'_set').setChecked(False)
 
@@ -5451,7 +5709,7 @@ class MainWindow(QMainWindow):
                 proc_set = ['wf_info']
                 update = self.gui_select_contours
                 self.organ.update_settings(proc_set, update, 'mH', add='select_contours')
-
+            getattr(self, 'select_contours_'+ch_name+'_done').setChecked(False)
         else: 
             getattr(self, 'select_contours_'+ch_name+'_set').setChecked(False)
 
@@ -5466,7 +5724,15 @@ class MainWindow(QMainWindow):
         elif row_count < 1:
             self.win_msg('*Please fill the "Set Groups Table" to be able to set the Selecting Contours Settings.', btn)
             return None
-        else:
+        
+        check, proc, row = self.check_table_contents(ch_name = ch_name)
+        if check: 
+            if proc == 'slices': 
+                self.win_msg('*Some manual changes were performed on the table and there is a gap between first and last slices in the rows with First Slc:'+str(row[0])+' and '+str(row[1])+'. Please check to continue...', btn)
+            else: #cont
+                self.win_msg('*Some manual changes were performed on the table and no external contours were defined for row with FirstSlc:'+str(row)+'. Please check to continue...', btn)
+            return None
+        else: 
             min_contour_len = int(getattr(self, 'select_min_cont_length_'+ch_name+'_value').text())
             level = float(getattr(self, 'select_level_'+ch_name+'_value').text())
             slc_per_group = int(slc_per_group)
@@ -5502,6 +5768,24 @@ class MainWindow(QMainWindow):
             
             print('gui_select_contours: ', gui_select_contours)
             return gui_select_contours
+
+    def check_table_contents(self, ch_name):
+        tableW = getattr(self, 'select_tableW_'+ch_name) 
+        for row in range(tableW.rowCount()-1):
+            #Check last_slc in row and compare to first slice in next_row
+            last_slc_row = int(tableW.item(row, 1).text())
+            first_slc_next_row = int(tableW.item(row+1, 0).text())
+            if last_slc_row+1 != first_slc_next_row: 
+                return True, 'slices', (int(tableW.item(row, 0).text()), int(tableW.item(row+1, 0).text()))
+        
+        for row in range(tableW.rowCount()):
+            #Check number of int and ext contours
+            int_cont = int(tableW.item(row, 2).text())
+            ext_cont = int(tableW.item(row, 3).text())
+            if int_cont > 0 and ext_cont <= 0: 
+                return True, 'cont', int(tableW.item(row, 0).text())
+        
+        return False, '', ''
 
     #Functions to fill sections according to user's selections
     def user_running_process(self):
@@ -5578,7 +5862,11 @@ class MainWindow(QMainWindow):
                 getattr(self, 'mask_'+ch_name+'_open').setChecked(True)
                 self.open_section(name = 'mask_'+ch_name)
                 getattr(self, 'mask_'+ch_name+'_play').setChecked(True)
+                #Enable reset
+                getattr(self, 'reset_mask_'+ch_name).setEnabled(True)
                 getattr(self, 'npy_mask_'+ch_name+'_play').setChecked(True)
+                #Enable reset
+                getattr(self, 'reset_npy_mask_'+ch_name).setEnabled(True)
                 self.update_status(None, 'DONE', status, override=True)
             elif any(flag == 'DONE' for flag in [wf_mask, wf_mask_npy]):
                 self.update_status(None, 'Initialised', status, override=True)
@@ -5587,11 +5875,15 @@ class MainWindow(QMainWindow):
             self.update_status(workflow_normal, ['Status'], status)
             if wf_mask == 'DONE': 
                 getattr(self, 'mask_'+ch_name+'_play').setChecked(True)
+                #Enable reset
+                getattr(self, 'reset_mask_'+ch_name).setEnabled(True)
         elif not normal_masking and npy_masking: 
             self.update_status(workflow_npy, ['Status'], status)
             self.set_mask_npy(ch_name=ch_name, init=True)
             if wf_mask == 'DONE': 
                 getattr(self, 'npy_mask_'+ch_name+'_play').setChecked(True)
+                #Enable reset
+                getattr(self, 'reset_npy_mask_'+ch_name).setEnabled(True)
 
     def user_autom_close_contours(self, ch_name): 
         wf_info = self.organ.mH_settings['wf_info']
@@ -5633,6 +5925,9 @@ class MainWindow(QMainWindow):
                     wdg = getattr(self, 'autom_close_'+ch_name+'_widget')
                     scrollArea = getattr(self, 'scrollArea_'+ch_name)
                     scrollArea.ensureWidgetVisible(wdg)
+
+                #Enable reset
+                getattr(self, 'reset_autom_close_'+ch_name).setEnabled(True)
 
                 self.set_autom_close_contours(ch_name=ch_name, init=True)
 
@@ -5802,6 +6097,15 @@ class MainWindow(QMainWindow):
         if first_slc == '': 
             self.win_msg('*Please provide the first slice comprising the new slice group.')
             return
+
+        num_contours_int_box = getattr(self, 'num_int_cont_'+ch_name)
+        num_contours_int = num_contours_int_box.text()
+        num_contours_ext_box = getattr(self, 'num_ext_cont_'+ch_name)
+        num_contours_ext = num_contours_ext_box.text()
+
+        if num_contours_ext == '' or num_contours_int == '': 
+            self.win_msg('*Please provide the number of internal and external contours you expect to find within this slice group.')
+            return
         
         #Get last first slice 
         last_row = tableW.rowCount()-1
@@ -5809,7 +6113,7 @@ class MainWindow(QMainWindow):
             last_first_slc = tableW.item(last_row, 0).text()
             # print('last_first_slc:', last_first_slc)
             if int(first_slc) <= int(last_first_slc): 
-                self.win_msg('*The first slices in the Set Group Table need to be in ascending order. Make sure the new fisrt slice you are introducing is greater than the previous one.')
+                self.win_msg('*The first slices in the Set Group Table need to be in ascending order. Make sure the new first slice you are introducing is greater than the previous one.')
                 return
             else: 
                 pass
@@ -5822,15 +6126,6 @@ class MainWindow(QMainWindow):
 
         getattr(self, 'select_contours_'+ch_name+'_set').setChecked(False)
         getattr(self, 'select_contours_'+ch_name+'_play').setEnabled(False)
-
-        num_contours_int_box = getattr(self, 'num_int_cont_'+ch_name)
-        num_contours_int = num_contours_int_box.text()
-        num_contours_ext_box = getattr(self, 'num_ext_cont_'+ch_name)
-        num_contours_ext = num_contours_ext_box.text()
-
-        if num_contours_ext == '' or num_contours_int == '': 
-            self.win_msg('*Please provide the number of internal and external contours you expect to find within this slice group.')
-            return
 
         if int(num_contours_ext) == 0 and int(num_contours_int) > 0: 
             self.win_msg('*At least one external contour should contain the entered internal contours. Please check to continue.')
@@ -5924,13 +6219,19 @@ class MainWindow(QMainWindow):
     def plot_all_slices(self, ch, slice_range='all'): 
 
         #Get stack
+        load = True
         im_ch = self.organ.obj_imChannels[ch]
-        try: 
-            stack = self.im_proc
-            print('Image from attr')
-        except: 
+        if hasattr(self, 'im_proc'): 
+            if hasattr(self, 'im_ch'):
+                if self.im_ch.channel_no == im_ch.channel_no:
+                    if 'manual' in self.running_process or 'select' in self.running_process:
+                        stack = self.im_proc
+                        load = False
+                        print('Image from attr')
+        if load: 
             stack = im_ch.im_proc()
             print('Image loaded')
+
         slcs_per_im = int(self.plot_contours_settings[ch]['n_rows'])*int(self.plot_contours_settings[ch]['n_cols'])
         #Get settings to plot
         if slice_range == 'all': 
@@ -6076,11 +6377,16 @@ class MainWindow(QMainWindow):
         else: 
             slc_user = int(slc_input)
             #Get stack
+            load = True
             im_ch = self.organ.obj_imChannels[ch]
-            try: 
-                stack = self.im_proc
-                print('Image from attr')
-            except: 
+            if hasattr(self, 'im_proc'): 
+                if hasattr(self, 'im_ch'):
+                    if self.im_ch.channel_no == im_ch.channel_no:
+                        if 'manual' in self.running_process or 'select' in self.running_process:
+                            stack = self.im_proc
+                            load = False
+                            print('Image from attr')
+            if load: 
                 stack = im_ch.im_proc()
                 print('Image loaded')
             
@@ -6094,6 +6400,23 @@ class MainWindow(QMainWindow):
             self.add_thumbnail(function ='fcC.plot_contours_slc', params = params, 
                                 name = 'Cont Slc '+str(slc_user))
             self.plot_contours_slc(params)
+
+    def plot_next_prev_slice(self, ch, next: bool): 
+        num_slices = int(getattr(self, 'total_stack_slices_'+ch).text())
+        current_slice = getattr(self, 'eg_slice_'+ch)
+        current_slice_num = int(current_slice.text())
+        if next: 
+            if current_slice_num+1 <= num_slices:
+                new_slice = current_slice_num+1
+            else: 
+                new_slice = 1
+        else: 
+            if current_slice_num-1 >= 1:
+                new_slice = current_slice_num-1
+            else: 
+                new_slice = num_slices
+        current_slice.setText(str(new_slice))
+        self.plot_slice(ch=ch)
 
     def plot_filled_slice(self, ch):
         #Get slice
@@ -6186,11 +6509,12 @@ class MainWindow(QMainWindow):
             im_ch.load_chS3s([cont])
             s3 = getattr(im_ch, 's3_'+cont).s3()
             mesh = create_submesh(s3, res, keep_largest=False, rotateZ_90=True)
-            mesh.color(colors[n])
+            mesh.color(colors[n]).alpha(0.1)
+            mesh.legend(im_ch.channel_no+'_'+cont)
             meshes_out.append(mesh)
         
         txt = [(0, self.organ.user_organName+' - Final S3s for Channel: '+im_ch.user_chName)]
-        plot_grid(obj=meshes_out, txt=txt, axes=5)
+        plot_grid(obj=meshes_out, txt=txt, zoom=1.5, axes=5)
 
     #Image thumbnails
     def add_thumbnail(self, function, params, name): 
@@ -10409,7 +10733,10 @@ class MainWindow(QMainWindow):
         
         centreline = self.gui_orientation['roi']['centreline'].split('(')[1].split(')')[0]
         ch, cont = centreline.split('_')
-        linLine = self.organ.obj_meshes[ch+'_'+cont].get_linLine(color='gold')
+        if name == 'stack': 
+            linLine = []
+        else: 
+            linLine = self.organ.obj_meshes[ch+'_'+cont].get_linLine(color='gold')
 
         mesh_ext = self.organ.obj_meshes[ext_ch.channel_no+'_tiss']
         cubes = getattr(self.organ, name+'_cube')
@@ -12010,13 +12337,9 @@ def split_str(input_str):
     input_str = input_str.split(',')
     output_str = []
     for xx, nam in enumerate(input_str):
+        nam = nam.strip()
         if ' ' in nam: 
-            if nam[0] == ' ':
-                nam = nam[1:]
-            if nam[-1] == ' ':
-                nam = nam[0:-1]
-            if ' ' in nam: 
-                nam = nam.replace(' ', '_')
+            nam = nam.replace(' ', '_')
             input_str[xx] = nam
         for char in inv_chars:
             if char in nam:

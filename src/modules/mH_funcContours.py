@@ -87,8 +87,8 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
     level = gui_plot['level']
     slc_first_py = gui_param['start_slc']
     slc_first = slc_first_py+1
-    slc_last_py = gui_param['end_slc']
-    slc_last = slc_last_py+1+1 
+    slc_last_py = gui_param['end_slc']+1
+    slc_last = slc_last_py+1
     plot2d = gui_param['plot2d']
     n_slices = gui_param['n_slices']
     min_contour_len = gui_param['min_contour_len']
@@ -154,9 +154,6 @@ def autom_close_contours(stack, ch, gui_param, gui_plot, win):
         win.prog_bar_update(value = slc_py-slc_first_py)
     
     win.prog_bar_update(value = slc_last-slc_first)
-    
-    #Plot slice range
-    win.plot_all_slices(ch = ch, slice_range = (slc_first_py, slc_last_py))
 
     return new_stack
 
@@ -522,7 +519,7 @@ def get_slices(lineEdit, slc_tuple, win):
     return numbers
 
 def get_contour_num(lineEdit_int, lineEdit_ext, tuples_out_slc, num_contours, win, ignore=False):
-
+    #Internal contours
     user_int = lineEdit_int.text()
     int_num = []
     exp_int = tuples_out_slc['int_cont']
@@ -535,15 +532,17 @@ def get_contour_num(lineEdit_int, lineEdit_ext, tuples_out_slc, num_contours, wi
             else: 
                 int_num.append(int(txt)-1)
 
-    if len(int_num) < exp_int: 
-        win.win_msg('*Expecting '+str(exp_int)+' internal contour(s) and less were given. Please check to continue.')
-        return None
-    elif len(int_num) > exp_int: 
-        win.win_msg('*Expecting '+str(exp_int)+' internal contour(s) and more were given. Please check to continue.')
-        return None
-    else: 
-        pass
-        
+    if not ignore: 
+        if len(int_num) < exp_int: 
+            win.win_msg('*Expecting '+str(exp_int)+' internal contour(s) and less were given. Please check to continue.')
+            return None
+        elif len(int_num) > exp_int: 
+            win.win_msg('*Expecting '+str(exp_int)+' internal contour(s) and more were given. Please check to continue.')
+            return None
+        else: 
+            pass
+    
+    #External contours
     user_ext = lineEdit_ext.text()
     ext_num = []
     exp_ext = tuples_out_slc['ext_cont']
@@ -597,12 +596,15 @@ def close_draw(color_draw, win):
     input by 'color_draw' parameter
 
     """
+
     if win.slc_py != None:
         slc_py = win.slc_py
         slc_user = slc_py+1
         ch_name = win.im_ch.channel_no
         level = win.gui_manual_close_contours[ch_name]['level']
         min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
+        #Uncheck SAVE
+        getattr(win, 'save_manually_closed_'+ch_name).setChecked(False)
 
         #Get clicks of positions to close contours
         clicks = get_clicks([], win.myIm, scale=1, text='DRAWING SLICE ('+color_draw+')')
@@ -629,6 +631,8 @@ def close_box(box, win):
         ch_name = win.im_ch.channel_no
         level = win.gui_manual_close_contours[ch_name]['level']
         min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
+        #Uncheck SAVE
+        getattr(win, 'save_manually_closed_'+ch_name).setChecked(False)
 
         clicks = get_clicks([], win.myIm, scale=1, text='CLOSING CONTOURS')
         #Close contours and get Image
@@ -667,6 +671,8 @@ def close_convex_hull(win):
         level = win.gui_manual_close_contours[ch_name]['level']
         min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
         min_int = win.gui_manual_close_contours[ch_name]['min_int']
+        #Uncheck SAVE
+        getattr(win, 'save_manually_closed_'+ch_name).setChecked(False)
 
         contours_or = get_contours(win.myIm, min_contour_length=min_contour_len, level=level)
         contours_or = sorted(contours_or, key = len, reverse=True)
@@ -744,6 +750,8 @@ def reset_img(rtype, win):
         ch_name = win.im_ch.channel_no
         level = win.gui_manual_close_contours[ch_name]['level']
         min_contour_len = win.gui_manual_close_contours[ch_name]['min_contour_len']
+        #Uncheck SAVE
+        getattr(win, 'save_manually_closed_'+ch_name).setChecked(False)
         if rtype == 'autom': 
             win.myIm = copy.deepcopy(win.im_proc_o[:][:][slc_py])
         else: 

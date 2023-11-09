@@ -56,8 +56,12 @@ def mask_channel(controller, ch_name):
         controller.main_win.update_ch_progress()
     #Toggle button
     getattr(controller.main_win, 'mask_'+ch_name+'_play').setChecked(True)
+    #Enable reset
+    getattr(controller.main_win, 'reset_mask_'+ch_name).setEnabled(True)
     #Win msg 
     controller.main_win.win_msg('Channel '+str(ch_name[-1])+' has been masked!')
+    #Plot masked stack
+    controller.main_win.plot_all_slices(ch = ch_name)
 
 def mask_npy_channel(controller, ch_name): 
     # Masking channel
@@ -81,7 +85,7 @@ def mask_npy_channel(controller, ch_name):
             controller.main_win.update_status(None, 'Initialised', status_btn, override=True)
             controller.main_win.update_ch_progress()
         else: 
-            controller.main_win.update_status(workflow, process,status_btn)#None, 'DONE', status_btn, override=True)
+            controller.main_win.update_status(workflow, process,status_btn)
     else: 
         controller.main_win.update_status(workflow, process, status_btn)
         cS_mask = getattr(controller.main_win, 'cS_'+ch_name+'_mask')
@@ -89,12 +93,20 @@ def mask_npy_channel(controller, ch_name):
     
     #Toggle button
     getattr(controller.main_win, 'npy_mask_'+ch_name+'_play').setChecked(True)
+    #Enable reset
+    getattr(controller.main_win, 'reset_npy_mask_'+ch_name).setEnabled(True)
     #Win msg 
     controller.main_win.win_msg('Channel '+str(ch_name[-1])+' has been masked with another Channel S3!')
+    #Plot masked stack
+    start = controller.main_win.gui_mask_npy[ch_name]['start_slc']
+    end = controller.main_win.gui_mask_npy[ch_name]['end_slc']+1
+    controller.main_win.plot_all_slices(ch = ch_name, slice_range=(start, end))
 
 def autom_close_contours(controller, ch_name): 
     #Automatically close contours
     set_process(controller, 'autom_'+ch_name)
+    #Uncheck DONE
+    getattr(controller.main_win, 'autom_close_'+ch_name+'_done').setChecked(False)
     #Initial message    
     controller.main_win.win_msg('Automatic Closure of Contours has started for Channel '+str(ch_name[-1])+'!')
     #Enable and make visible close cont buttons
@@ -107,13 +119,23 @@ def autom_close_contours(controller, ch_name):
                               win = controller.main_win)
     #Toggle button
     getattr(controller.main_win, 'autom_close_'+ch_name+'_play').setChecked(True)
+    #Enable reset
+    getattr(controller.main_win, 'reset_autom_close_'+ch_name).setEnabled(True)
     #Update organ workflow
     controller.main_win.user_done(process='autom_close', ch_name=ch_name)
+    #Plot autom closed stack
+    start = controller.main_win.gui_autom_close_contours[ch_name]['start_slc']
+    end = controller.main_win.gui_autom_close_contours[ch_name]['end_slc']+1
+    controller.main_win.plot_all_slices(ch = ch_name, slice_range=(start, end))
 
 #Manually close contours
 def manual_close_contours(controller, ch_name):
     #Close contours manually
     set_process(controller, 'manual_'+ch_name)
+    #Uncheck DONE
+    getattr(controller.main_win, 'manual_close_'+ch_name+'_done').setChecked(False)
+    #Uncheck Saved
+    getattr(controller.main_win, 'save_manually_closed_'+ch_name).setChecked(False)
     #Enable and make visible close cont buttons
     enable_close_functions(controller=controller, process = 'manual', ch_name=ch_name)
     #Get channel and save is as attribute
@@ -127,7 +149,7 @@ def manual_close_contours(controller, ch_name):
     # Get slices
     slc_first_py = controller.main_win.gui_manual_close_contours[ch_name]['start_slc']
     slc_last_py = controller.main_win.gui_manual_close_contours[ch_name]['end_slc']
-    if slc_last_py+1 >= controller.main_win.im_proc.shape[0]:
+    if slc_last_py+1 > controller.main_win.im_proc.shape[0]:
         pass
     else:
         slc_last_py = slc_last_py+1
@@ -270,6 +292,8 @@ def next_prev_tuple_to_manually_close(next:bool, controller, ch_name):
     if save_after_tuple:
         main_win.win_msg('!Saving channel before continuing with next tuple.')
         main_win.save_closed_channel(ch=main_win.im_ch.channel_no)
+        #Check Save ch
+        getattr(main_win, 'save_manually_closed_'+ch_name).setChecked(True)
     #Plot next tuple
     main_win.slc_tuple = main_win.manual_slices[new_index]
     print('New slc_tuple:', main_win.slc_tuple)
@@ -279,6 +303,10 @@ def next_prev_tuple_to_manually_close(next:bool, controller, ch_name):
 def select_contours(controller, ch_name): 
     #Select contours
     set_process(controller, 'select_'+ch_name)
+    #Uncheck DONE
+    getattr(controller.main_win, 'select_contours_'+ch_name+'_done').setChecked(False)
+    #Uncheck Saved S3
+    getattr(controller.main_win, 'save_select_contours_'+ch_name).setChecked(False)
     #Get channel and save is as attribute
     im_ch = controller.organ.obj_imChannels[ch_name]
     controller.main_win.im_ch = im_ch
@@ -388,6 +416,8 @@ def get_slc_cont_plot_props(controller, ch_name, tuple_active):
 
 def select_slcs_tuple(controller, ch_name):
     main_win = controller.main_win
+    #Uncheck SAVE s3
+    getattr(main_win, 'save_select_contours_'+ch_name).setChecked(False)
     #Get contour numbers
     tuples_out_slc = controller.main_win.tuples_out[getattr(main_win, 'index_active_'+ch_name)]
     num_contours = fcC.get_contour_num(lineEdit_int = getattr(main_win, 'int_cont_'+ch_name),
@@ -523,7 +553,9 @@ def next_tuple_select(controller, ch_name):
             if save_after_tuple: 
                 main_win.win_msg('!Saving channel before continuing with next group.')
                 main_win.save_closed_channel(ch=main_win.im_ch.channel_no, s3s=True)
-            
+                #Check SAVE s3
+                getattr(main_win, 'save_select_contours_'+ch_name).setChecked(True)
+
             set_index_active(controller, ch_name, new_index)
             next_index = main_win.tuples_out[getattr(main_win, 'index_active_'+ch_name)]
             if next_index['int_cont']+next_index['ext_cont'] > 0:
@@ -597,7 +629,7 @@ def plot_props_to_slc_select(controller, ch_name, index_active):
     #Find the tuple in which this slc fits 
     controller.main_win.tuple_active = fcC.find_slc_within_tuples(slc_active, controller.main_win.tuples_out)
     #Set the values in gui
-    getattr(controller.main_win, 'select_slc_'+ch_name).setText(str(slc_active))
+    getattr(controller.main_win, 'select_slc_'+ch_name).setText(str(slc_active+1))
     getattr(controller.main_win, 'man_int_of_'+ch_name).setText('/ '+str(controller.main_win.tuple_active['int_cont']))
     getattr(controller.main_win, 'man_ext_of_'+ch_name).setText('/ '+str(controller.main_win.tuple_active['ext_cont']))
     #Get slice contours and plot contours 

@@ -623,8 +623,8 @@ class Controller:
             if temp_dir != False: 
                 self.new_proj_win.button_new_proj.setChecked(True)
 
-                proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text(), 
-                            'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText(),
+                proj_dict = {'name': self.new_proj_win.lineEdit_proj_name.text().strip(), 
+                            'notes' : self.new_proj_win.textEdit_ref_notes.toPlainText().strip(),
                             'date' : str(self.new_proj_win.dateEdit.date().toPyDate()),
                             'analysis' : self.new_proj_win.checked_analysis, 
                             'dir_proj' : self.new_proj_win.proj_dir, 
@@ -679,8 +679,8 @@ class Controller:
                     self.new_organ_win.win_msg('Creating organ "'+self.new_organ_win.lineEdit_organ_name.text()+'"')
                     # self.new_organ_win.button_create_new_organ.setDisabled(True)
 
-                    name = self.new_organ_win.lineEdit_organ_name.text()
-                    notes = self.new_organ_win.textEdit_ref_notes.toPlainText()
+                    name = self.new_organ_win.lineEdit_organ_name.text().strip()
+                    notes = self.new_organ_win.textEdit_ref_notes.toPlainText().strip()
                     strain = self.new_organ_win.cB_strain.currentText()
                     stage = self.new_organ_win.cB_stage.currentText()
                     genotype = self.new_organ_win.cB_genotype.currentText()

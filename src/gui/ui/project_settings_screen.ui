@@ -12545,7 +12545,7 @@ QCheckBox:disabled{color: rgb(0, 0, 0)}</string>
       </spacer>
      </item>
      <item alignment="Qt::AlignRight">
-      <widget class="QPushButton" name="button_go_back">
+      <widget class="QPushButton" name="button_close">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>

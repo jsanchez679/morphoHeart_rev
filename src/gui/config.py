@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
 morphoHeart_config
-Version: Oct 17, 2023
+Version: Nov 9, 2023
 
 @author: Juliana Sanchez-Posada
 '''
@@ -19,7 +19,7 @@ __website__    = 'https://github.com/jsanchez679/morphoHeart'
 #%% config class
 class mH_Config():
     def __init__(self):
-        self.version = '2.0.4'
+        self.version = '2.0.5'
         self.gui_sound = (True, 'All')
         self.theme = 'Light'
         self.heart_default = False
@@ -35,7 +35,7 @@ class mH_Config():
 
         self.path_o = os.path.abspath(__file__)
         self.path_mHImages = Path(self.path_o).parent.parent.parent / 'images'
-        self.dev = True
+        self.dev = False
         self.dev_plots = False
         self.dev_hm3d2d = False
 

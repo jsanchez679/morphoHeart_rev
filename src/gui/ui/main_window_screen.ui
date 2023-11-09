@@ -1050,7 +1050,7 @@ background-color: rgb(255, 255, 255);</string>
           <enum>QTabWidget::Rounded</enum>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="usesScrollButtons">
           <bool>false</bool>
@@ -1095,7 +1095,7 @@ background-color: rgb(255, 255, 255);</string>
                 <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;</string>
                </property>
                <property name="currentIndex">
-                <number>0</number>
+                <number>3</number>
                </property>
                <widget class="QWidget" name="tab_ch1">
                 <attribute name="title">
@@ -1154,9 +1154,9 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>0</y>
+                      <y>-409</y>
                       <width>382</width>
-                      <height>1956</height>
+                      <height>1960</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_23">
@@ -2120,6 +2120,44 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </property>
                            </widget>
                           </item>
+                          <item row="0" column="2">
+                           <widget class="QPushButton" name="reset_grid_plot_ch1">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset slider values to default</string>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
+                            </property>
+                           </widget>
+                          </item>
                          </layout>
                         </item>
                         <item>
@@ -2255,6 +2293,107 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="prev_sliceo_ch1">
+                         <property name="minimumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Previous slice in list (Ctrl+P)</string>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(170, 255, 127)}
+
+QPushButton:hover{
+background-color: rgb(0, 170, 0); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                         </property>
+                         <property name="text">
+                          <string>&lt;</string>
+                         </property>
+                         <property name="shortcut">
+                          <string>Ctrl+Left</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="next_sliceo_ch1">
+                         <property name="minimumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Next slice in list (Ctrl+N)</string>
+                         </property>
+                         <property name="accessibleDescription">
+                          <string>aaa</string>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(170, 255, 127)}
+
+QPushButton:hover{
+background-color: rgb(0, 170, 0); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                         </property>
+                         <property name="text">
+                          <string>&gt;</string>
+                         </property>
+                         <property name="shortcut">
+                          <string>Ctrl+Right</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
                          </property>
                         </widget>
                        </item>
@@ -2690,6 +2829,59 @@ border-color: #672146
                               </spacer>
                              </item>
                              <item>
+                              <widget class="QPushButton" name="reset_mask_ch1">
+                               <property name="enabled">
+                                <bool>false</bool>
+                               </property>
+                               <property name="minimumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="toolTip">
+                                <string>Reset images to original stack (RAW)</string>
+                               </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                               </property>
+                               <property name="text">
+                                <string>R</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
                               <widget class="QPushButton" name="mask_ch1_play">
                                <property name="enabled">
                                 <bool>true</bool>
@@ -2965,58 +3157,6 @@ QComboBox QAbstractItemView {
                                   </item>
                                  </layout>
                                 </item>
-                                <item row="2" column="2">
-                                 <widget class="QPushButton" name="set_npy_mask_ch1">
-                                  <property name="minimumSize">
-                                   <size>
-                                    <width>60</width>
-                                    <height>20</height>
-                                   </size>
-                                  </property>
-                                  <property name="maximumSize">
-                                   <size>
-                                    <width>60</width>
-                                    <height>20</height>
-                                   </size>
-                                  </property>
-                                  <property name="autoFillBackground">
-                                   <bool>false</bool>
-                                  </property>
-                                  <property name="styleSheet">
-                                   <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
-                                  </property>
-                                  <property name="text">
-                                   <string>Set</string>
-                                  </property>
-                                  <property name="checkable">
-                                   <bool>true</bool>
-                                  </property>
-                                 </widget>
-                                </item>
                                 <item row="0" column="1">
                                  <layout class="QHBoxLayout" name="horizontalLayout_433">
                                   <item>
@@ -3174,6 +3314,58 @@ background-color: rgb(255, 255, 255);</string>
                                     </property>
                                    </widget>
                                   </item>
+                                  <item>
+                                   <widget class="QPushButton" name="set_npy_mask_ch1">
+                                    <property name="minimumSize">
+                                     <size>
+                                      <width>60</width>
+                                      <height>20</height>
+                                     </size>
+                                    </property>
+                                    <property name="maximumSize">
+                                     <size>
+                                      <width>60</width>
+                                      <height>20</height>
+                                     </size>
+                                    </property>
+                                    <property name="autoFillBackground">
+                                     <bool>false</bool>
+                                    </property>
+                                    <property name="styleSheet">
+                                     <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                                    </property>
+                                    <property name="text">
+                                     <string>Set</string>
+                                    </property>
+                                    <property name="checkable">
+                                     <bool>true</bool>
+                                    </property>
+                                   </widget>
+                                  </item>
                                  </layout>
                                 </item>
                                 <item row="2" column="3">
@@ -3219,6 +3411,59 @@ border-color: rgb(115, 115, 115)}
                                   </property>
                                   <property name="text">
                                    <string/>
+                                  </property>
+                                  <property name="checkable">
+                                   <bool>true</bool>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="2" column="2">
+                                 <widget class="QPushButton" name="reset_npy_mask_ch1">
+                                  <property name="enabled">
+                                   <bool>false</bool>
+                                  </property>
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="toolTip">
+                                   <string>Reset images to original stack (RAW)</string>
+                                  </property>
+                                  <property name="autoFillBackground">
+                                   <bool>false</bool>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>R</string>
                                   </property>
                                   <property name="checkable">
                                    <bool>true</bool>
@@ -3958,39 +4203,6 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </item>
                            </layout>
                           </item>
-                          <item row="0" column="1" alignment="Qt::AlignRight">
-                           <widget class="QPushButton" name="q_automatic_close_ch1">
-                            <property name="minimumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                            </property>
-                            <property name="text">
-                             <string>?</string>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="4" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_296">
                             <item>
@@ -4244,6 +4456,94 @@ background-color: rgb(255, 255, 255);</string>
                             </item>
                            </layout>
                           </item>
+                          <item row="0" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_445">
+                            <item>
+                             <spacer name="horizontalSpacer_102">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="q_automatic_close_ch1">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                              </property>
+                              <property name="text">
+                               <string>?</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="reset_auto_ch1">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>Reset slider values to default</string>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                              </property>
+                              <property name="text">
+                               <string>R</string>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
                          </layout>
                         </item>
                         <item>
@@ -4294,6 +4594,59 @@ color: rgb(234, 234, 234);
                             </property>
                             <property name="text">
                              <string>Set</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="reset_autom_close_ch1">
+                            <property name="enabled">
+                             <bool>false</bool>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset images to masked (if applicable) or RAW</string>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
                             </property>
                             <property name="checkable">
                              <bool>true</bool>
@@ -5036,39 +5389,6 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </property>
                            </widget>
                           </item>
-                          <item row="0" column="1" alignment="Qt::AlignRight">
-                           <widget class="QPushButton" name="q_manual_level_ch1">
-                            <property name="minimumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                            </property>
-                            <property name="text">
-                             <string>?</string>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="3" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_312">
                             <item>
@@ -5167,6 +5487,94 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                               </property>
                               <property name="readOnly">
                                <bool>true</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="0" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_446">
+                            <item>
+                             <spacer name="horizontalSpacer_103">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="q_manual_level_ch1">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                              </property>
+                              <property name="text">
+                               <string>?</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="reset_manual_ch1">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>Reset slider values to default</string>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                              </property>
+                              <property name="text">
+                               <string>R</string>
                               </property>
                              </widget>
                             </item>
@@ -5871,8 +6279,8 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color:rgb(0, 50, 37);
-background-color: rgb(0, 130, 93);
-color: rgb(255, 255, 255);
+background-color:rgb(0, 204, 143);
+color: rgb(49, 49, 49);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -6214,6 +6622,44 @@ border-color: #672146
                             </property>
                             <property name="text">
                              <string>?</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="reset_select_ch1">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset slider values to default</string>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
                             </property>
                            </widget>
                           </item>
@@ -8620,8 +9066,8 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color:rgb(0, 50, 37);
-background-color: rgb(0, 130, 93);
-color: rgb(255, 255, 255);
+background-color:rgb(0, 204, 143);
+color: rgb(49, 49, 49);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -8902,9 +9348,9 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>0</y>
+                      <y>-240</y>
                       <width>382</width>
-                      <height>1956</height>
+                      <height>1960</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_88">
@@ -9868,6 +10314,44 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </property>
                            </widget>
                           </item>
+                          <item row="0" column="2">
+                           <widget class="QPushButton" name="reset_grid_plot_ch2">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset slider values to default</string>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
+                            </property>
+                           </widget>
+                          </item>
                          </layout>
                         </item>
                         <item>
@@ -10003,6 +10487,107 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="prev_sliceo_ch2">
+                         <property name="minimumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Previous slice in list (Ctrl+P)</string>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(170, 255, 127)}
+
+QPushButton:hover{
+background-color: rgb(0, 170, 0); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                         </property>
+                         <property name="text">
+                          <string>&lt;</string>
+                         </property>
+                         <property name="shortcut">
+                          <string>Ctrl+Left</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="next_sliceo_ch2">
+                         <property name="minimumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Next slice in list (Ctrl+N)</string>
+                         </property>
+                         <property name="accessibleDescription">
+                          <string>aaa</string>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(170, 255, 127)}
+
+QPushButton:hover{
+background-color: rgb(0, 170, 0); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                         </property>
+                         <property name="text">
+                          <string>&gt;</string>
+                         </property>
+                         <property name="shortcut">
+                          <string>Ctrl+Right</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
                          </property>
                         </widget>
                        </item>
@@ -10438,6 +11023,59 @@ border-color: #672146
                               </spacer>
                              </item>
                              <item>
+                              <widget class="QPushButton" name="reset_mask_ch2">
+                               <property name="enabled">
+                                <bool>false</bool>
+                               </property>
+                               <property name="minimumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="toolTip">
+                                <string>Reset images to original stack (RAW)</string>
+                               </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                               </property>
+                               <property name="text">
+                                <string>R</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
                               <widget class="QPushButton" name="mask_ch2_play">
                                <property name="enabled">
                                 <bool>true</bool>
@@ -10627,58 +11265,6 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                               </item>
                               <item>
                                <layout class="QGridLayout" name="gridLayout_75">
-                                <item row="2" column="2">
-                                 <widget class="QPushButton" name="set_npy_mask_ch2">
-                                  <property name="minimumSize">
-                                   <size>
-                                    <width>60</width>
-                                    <height>20</height>
-                                   </size>
-                                  </property>
-                                  <property name="maximumSize">
-                                   <size>
-                                    <width>60</width>
-                                    <height>20</height>
-                                   </size>
-                                  </property>
-                                  <property name="autoFillBackground">
-                                   <bool>false</bool>
-                                  </property>
-                                  <property name="styleSheet">
-                                   <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
-                                  </property>
-                                  <property name="text">
-                                   <string>Set</string>
-                                  </property>
-                                  <property name="checkable">
-                                   <bool>true</bool>
-                                  </property>
-                                 </widget>
-                                </item>
                                 <item row="0" column="0">
                                  <widget class="QLabel" name="lab_no_ch_35">
                                   <property name="minimumSize">
@@ -10971,7 +11557,112 @@ border-color: rgb(115, 115, 115)}
                                     </property>
                                    </widget>
                                   </item>
+                                  <item>
+                                   <widget class="QPushButton" name="set_npy_mask_ch2">
+                                    <property name="minimumSize">
+                                     <size>
+                                      <width>60</width>
+                                      <height>20</height>
+                                     </size>
+                                    </property>
+                                    <property name="maximumSize">
+                                     <size>
+                                      <width>60</width>
+                                      <height>20</height>
+                                     </size>
+                                    </property>
+                                    <property name="autoFillBackground">
+                                     <bool>false</bool>
+                                    </property>
+                                    <property name="styleSheet">
+                                     <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                                    </property>
+                                    <property name="text">
+                                     <string>Set</string>
+                                    </property>
+                                    <property name="checkable">
+                                     <bool>true</bool>
+                                    </property>
+                                   </widget>
+                                  </item>
                                  </layout>
+                                </item>
+                                <item row="2" column="2">
+                                 <widget class="QPushButton" name="reset_npy_mask_ch2">
+                                  <property name="enabled">
+                                   <bool>false</bool>
+                                  </property>
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="toolTip">
+                                   <string>Reset images to original stack (RAW)</string>
+                                  </property>
+                                  <property name="autoFillBackground">
+                                   <bool>false</bool>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>R</string>
+                                  </property>
+                                  <property name="checkable">
+                                   <bool>true</bool>
+                                  </property>
+                                 </widget>
                                 </item>
                                </layout>
                               </item>
@@ -11706,39 +12397,6 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </item>
                            </layout>
                           </item>
-                          <item row="0" column="1" alignment="Qt::AlignRight">
-                           <widget class="QPushButton" name="q_automatic_close_ch2">
-                            <property name="minimumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                            </property>
-                            <property name="text">
-                             <string>?</string>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="4" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_325">
                             <item>
@@ -11992,6 +12650,94 @@ background-color: rgb(255, 255, 255);</string>
                             </item>
                            </layout>
                           </item>
+                          <item row="0" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_444">
+                            <item>
+                             <spacer name="horizontalSpacer_101">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="q_automatic_close_ch2">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                              </property>
+                              <property name="text">
+                               <string>?</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="reset_auto_ch2">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>Reset slider values to default</string>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                              </property>
+                              <property name="text">
+                               <string>R</string>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
                          </layout>
                         </item>
                         <item>
@@ -12042,6 +12788,59 @@ color: rgb(234, 234, 234);
                             </property>
                             <property name="text">
                              <string>Set</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="reset_autom_close_ch2">
+                            <property name="enabled">
+                             <bool>false</bool>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset images to masked (if applicable) or RAW</string>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
                             </property>
                             <property name="checkable">
                              <bool>true</bool>
@@ -12784,39 +13583,6 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </property>
                            </widget>
                           </item>
-                          <item row="0" column="1" alignment="Qt::AlignRight">
-                           <widget class="QPushButton" name="q_manual_level_ch2">
-                            <property name="minimumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                            </property>
-                            <property name="text">
-                             <string>?</string>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="3" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_331">
                             <item>
@@ -12915,6 +13681,94 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                               </property>
                               <property name="readOnly">
                                <bool>true</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="0" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_447">
+                            <item>
+                             <spacer name="horizontalSpacer_104">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="q_manual_level_ch2">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                              </property>
+                              <property name="text">
+                               <string>?</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="reset_manual_ch2">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>Reset slider values to default</string>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                              </property>
+                              <property name="text">
+                               <string>R</string>
                               </property>
                              </widget>
                             </item>
@@ -13619,8 +14473,8 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color:rgb(0, 50, 37);
-background-color: rgb(0, 130, 93);
-color: rgb(255, 255, 255);
+background-color:rgb(0, 204, 143);
+color: rgb(49, 49, 49);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -13962,6 +14816,44 @@ border-color: #672146
                             </property>
                             <property name="text">
                              <string>?</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="reset_select_ch2">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset slider values to default</string>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
                             </property>
                            </widget>
                           </item>
@@ -16368,8 +17260,8 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color:rgb(0, 50, 37);
-background-color: rgb(0, 130, 93);
-color: rgb(255, 255, 255);
+background-color:rgb(0, 204, 143);
+color: rgb(49, 49, 49);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -16650,9 +17542,9 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>0</y>
+                      <y>-422</y>
                       <width>382</width>
-                      <height>1956</height>
+                      <height>1960</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_100">
@@ -17616,6 +18508,44 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </property>
                            </widget>
                           </item>
+                          <item row="0" column="2">
+                           <widget class="QPushButton" name="reset_grid_plot_ch3">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset slider values to default</string>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
+                            </property>
+                           </widget>
+                          </item>
                          </layout>
                         </item>
                         <item>
@@ -17751,6 +18681,107 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="prev_sliceo_ch3">
+                         <property name="minimumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Previous slice in list (Ctrl+P)</string>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(170, 255, 127)}
+
+QPushButton:hover{
+background-color: rgb(0, 170, 0); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                         </property>
+                         <property name="text">
+                          <string>&lt;</string>
+                         </property>
+                         <property name="shortcut">
+                          <string>Ctrl+Left</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="next_sliceo_ch3">
+                         <property name="minimumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Next slice in list (Ctrl+N)</string>
+                         </property>
+                         <property name="accessibleDescription">
+                          <string>aaa</string>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(170, 255, 127)}
+
+QPushButton:hover{
+background-color: rgb(0, 170, 0); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                         </property>
+                         <property name="text">
+                          <string>&gt;</string>
+                         </property>
+                         <property name="shortcut">
+                          <string>Ctrl+Right</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
                          </property>
                         </widget>
                        </item>
@@ -18186,6 +19217,59 @@ border-color: #672146
                               </spacer>
                              </item>
                              <item>
+                              <widget class="QPushButton" name="reset_mask_ch3">
+                               <property name="enabled">
+                                <bool>false</bool>
+                               </property>
+                               <property name="minimumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="toolTip">
+                                <string>Reset images to original stack (RAW)</string>
+                               </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                               </property>
+                               <property name="text">
+                                <string>R</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
                               <widget class="QPushButton" name="mask_ch3_play">
                                <property name="enabled">
                                 <bool>true</bool>
@@ -18487,58 +19571,6 @@ background-color: rgb(255, 255, 255);</string>
                                   </property>
                                  </widget>
                                 </item>
-                                <item row="2" column="2">
-                                 <widget class="QPushButton" name="set_npy_mask_ch3">
-                                  <property name="minimumSize">
-                                   <size>
-                                    <width>60</width>
-                                    <height>20</height>
-                                   </size>
-                                  </property>
-                                  <property name="maximumSize">
-                                   <size>
-                                    <width>60</width>
-                                    <height>20</height>
-                                   </size>
-                                  </property>
-                                  <property name="autoFillBackground">
-                                   <bool>false</bool>
-                                  </property>
-                                  <property name="styleSheet">
-                                   <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
-                                  </property>
-                                  <property name="text">
-                                   <string>Set</string>
-                                  </property>
-                                  <property name="checkable">
-                                   <bool>true</bool>
-                                  </property>
-                                 </widget>
-                                </item>
                                 <item row="2" column="1">
                                  <layout class="QHBoxLayout" name="horizontalLayout_439">
                                   <item>
@@ -18581,6 +19613,58 @@ color: rgb(234, 234, 234);
                                     </property>
                                     <property name="tristate">
                                      <bool>false</bool>
+                                    </property>
+                                   </widget>
+                                  </item>
+                                  <item>
+                                   <widget class="QPushButton" name="set_npy_mask_ch3">
+                                    <property name="minimumSize">
+                                     <size>
+                                      <width>60</width>
+                                      <height>20</height>
+                                     </size>
+                                    </property>
+                                    <property name="maximumSize">
+                                     <size>
+                                      <width>60</width>
+                                      <height>20</height>
+                                     </size>
+                                    </property>
+                                    <property name="autoFillBackground">
+                                     <bool>false</bool>
+                                    </property>
+                                    <property name="styleSheet">
+                                     <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                                    </property>
+                                    <property name="text">
+                                     <string>Set</string>
+                                    </property>
+                                    <property name="checkable">
+                                     <bool>true</bool>
                                     </property>
                                    </widget>
                                   </item>
@@ -18715,6 +19799,59 @@ border-color: rgb(115, 115, 115)}
                                   </property>
                                   <property name="text">
                                    <string/>
+                                  </property>
+                                  <property name="checkable">
+                                   <bool>true</bool>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="2" column="2">
+                                 <widget class="QPushButton" name="reset_npy_mask_ch3">
+                                  <property name="enabled">
+                                   <bool>false</bool>
+                                  </property>
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="toolTip">
+                                   <string>Reset images to original stack (RAW)</string>
+                                  </property>
+                                  <property name="autoFillBackground">
+                                   <bool>false</bool>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>R</string>
                                   </property>
                                   <property name="checkable">
                                    <bool>true</bool>
@@ -18993,6 +20130,109 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                         </item>
                         <item>
                          <layout class="QGridLayout" name="gridLayout_47">
+                          <item row="4" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_363">
+                            <item>
+                             <widget class="QSlider" name="autom_min_distance_ch3_slider">
+                              <property name="maximumSize">
+                               <size>
+                                <width>16777215</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QSlider::groove:horizontal {
+	color: rgb(52,59,72);
+}
+QSlider::groove:horizontal:hover {
+	color: rgb(0,0,0);
+}
+QSlider::handle:horizontal{
+	border: none; 
+	margin: 3px;
+	height: 8px;
+	width: 3px;
+	border-radius: 5px; 
+	background-color: rgb(70, 70, 70);
+}
+QSlider::handle:horizontal:hover {
+	border-color: rgb(0, 0, 0);
+	border: 1px;
+	background-color:rgb(162, 0, 122);
+}
+</string>
+                              </property>
+                              <property name="minimum">
+                               <number>10</number>
+                              </property>
+                              <property name="maximum">
+                               <number>50</number>
+                              </property>
+                              <property name="singleStep">
+                               <number>10</number>
+                              </property>
+                              <property name="pageStep">
+                               <number>5</number>
+                              </property>
+                              <property name="value">
+                               <number>15</number>
+                              </property>
+                              <property name="sliderPosition">
+                               <number>15</number>
+                              </property>
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="invertedAppearance">
+                               <bool>false</bool>
+                              </property>
+                              <property name="invertedControls">
+                               <bool>false</bool>
+                              </property>
+                              <property name="tickPosition">
+                               <enum>QSlider::TicksBelow</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>0</number>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLineEdit" name="autom_min_distance_ch3_value">
+                              <property name="minimumSize">
+                               <size>
+                                <width>60</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>60</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                              </property>
+                              <property name="text">
+                               <string>15</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="readOnly">
+                               <bool>true</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
                           <item row="3" column="0">
                            <widget class="QLabel" name="autom_mean_intensity_lab_ch3">
                             <property name="sizePolicy">
@@ -19018,37 +20258,6 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </property>
                             <property name="text">
                              <string>Mean Intensity:</string>
-                            </property>
-                            <property name="alignment">
-                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="4" column="0">
-                           <widget class="QLabel" name="autom_min_distance_lab_ch3">
-                            <property name="sizePolicy">
-                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                              <horstretch>0</horstretch>
-                              <verstretch>0</verstretch>
-                             </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                             <size>
-                              <width>130</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>130</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                            </property>
-                            <property name="text">
-                             <string>Max. Distance:</string>
                             </property>
                             <property name="alignment">
                              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -19147,6 +20356,349 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                               </property>
                               <property name="text">
                                <string>5000</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="readOnly">
+                               <bool>true</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="5" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_365">
+                            <item>
+                             <widget class="QLabel" name="automt_ch3_lab1">
+                              <property name="enabled">
+                               <bool>false</bool>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>70</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>70</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                              </property>
+                              <property name="text">
+                               <string>Every other:</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QSpinBox" name="automt_ch3_n_slices">
+                              <property name="enabled">
+                               <bool>false</bool>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>50</width>
+                                <height>19</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>50</width>
+                                <height>19</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
+</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignCenter</set>
+                              </property>
+                              <property name="minimum">
+                               <number>0</number>
+                              </property>
+                              <property name="maximum">
+                               <number>150</number>
+                              </property>
+                              <property name="singleStep">
+                               <number>25</number>
+                              </property>
+                              <property name="value">
+                               <number>25</number>
+                              </property>
+                              <property name="displayIntegerBase">
+                               <number>10</number>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLabel" name="automt_ch3_lab2">
+                              <property name="enabled">
+                               <bool>false</bool>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>30</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>30</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                              </property>
+                              <property name="text">
+                               <string>slices</string>
+                              </property>
+                              <property name="alignment">
+                               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="autom_min_intensity_lab_ch3_4">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>130</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>130</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Min. Intensity Value:</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="autom_filter_lab_10">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>130</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>130</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 bold 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Filter contours by: </string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="0">
+                           <layout class="QHBoxLayout" name="horizontalLayout_364">
+                            <item alignment="Qt::AlignRight">
+                             <widget class="QCheckBox" name="automt_ch3_plot2d">
+                              <property name="enabled">
+                               <bool>true</bool>
+                              </property>
+                              <property name="sizePolicy">
+                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                               </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                               <size>
+                                <width>80</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>65</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="layoutDirection">
+                               <enum>Qt::LeftToRight</enum>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                              </property>
+                              <property name="text">
+                               <string>Plot slices?</string>
+                              </property>
+                              <property name="checkable">
+                               <bool>true</bool>
+                              </property>
+                              <property name="checked">
+                               <bool>false</bool>
+                              </property>
+                              <property name="tristate">
+                               <bool>false</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="4" column="0">
+                           <widget class="QLabel" name="autom_min_distance_lab_ch3">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>130</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>130</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                            </property>
+                            <property name="text">
+                             <string>Max. Distance:</string>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_362">
+                            <item>
+                             <widget class="QSlider" name="autom_min_cont_length_ch3_slider">
+                              <property name="maximumSize">
+                               <size>
+                                <width>16777215</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QSlider::groove:horizontal {
+	color: rgb(52,59,72);
+}
+QSlider::groove:horizontal:hover {
+	color: rgb(0,0,0);
+}
+QSlider::handle:horizontal{
+	border: none; 
+	margin: 3px;
+	height: 8px;
+	width: 3px;
+	border-radius: 5px; 
+	background-color: rgb(70, 70, 70);
+}
+QSlider::handle:horizontal:hover {
+	border-color: rgb(0, 0, 0);
+	border: 1px;
+	background-color:rgb(162, 0, 122);
+}
+</string>
+                              </property>
+                              <property name="minimum">
+                               <number>50</number>
+                              </property>
+                              <property name="maximum">
+                               <number>500</number>
+                              </property>
+                              <property name="singleStep">
+                               <number>10</number>
+                              </property>
+                              <property name="pageStep">
+                               <number>50</number>
+                              </property>
+                              <property name="sliderPosition">
+                               <number>100</number>
+                              </property>
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="invertedAppearance">
+                               <bool>false</bool>
+                              </property>
+                              <property name="invertedControls">
+                               <bool>false</bool>
+                              </property>
+                              <property name="tickPosition">
+                               <enum>QSlider::TicksBelow</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>0</number>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QLineEdit" name="autom_min_cont_length_ch3_value">
+                              <property name="minimumSize">
+                               <size>
+                                <width>60</width>
+                                <height>0</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>60</width>
+                                <height>16777215</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                              </property>
+                              <property name="text">
+                               <string>100</string>
                               </property>
                               <property name="alignment">
                                <set>Qt::AlignCenter</set>
@@ -19292,184 +20844,37 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </property>
                            </widget>
                           </item>
-                          <item row="0" column="0">
-                           <widget class="QLabel" name="autom_filter_lab_10">
-                            <property name="sizePolicy">
-                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                              <horstretch>0</horstretch>
-                              <verstretch>0</verstretch>
-                             </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                             <size>
-                              <width>130</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>130</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">font: 25 bold 10pt &quot;Calibri Light&quot;;</string>
-                            </property>
-                            <property name="text">
-                             <string>Filter contours by: </string>
-                            </property>
-                            <property name="alignment">
-                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="2" column="0">
-                           <widget class="QLabel" name="autom_min_intensity_lab_ch3_4">
-                            <property name="sizePolicy">
-                             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                              <horstretch>0</horstretch>
-                              <verstretch>0</verstretch>
-                             </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                             <size>
-                              <width>130</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>130</width>
-                              <height>20</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                            </property>
-                            <property name="text">
-                             <string>Min. Intensity Value:</string>
-                            </property>
-                            <property name="alignment">
-                             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="1" column="1">
-                           <layout class="QHBoxLayout" name="horizontalLayout_362">
+                          <item row="0" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_443">
                             <item>
-                             <widget class="QSlider" name="autom_min_cont_length_ch3_slider">
-                              <property name="maximumSize">
-                               <size>
-                                <width>16777215</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                              <property name="styleSheet">
-                               <string notr="true">QSlider::groove:horizontal {
-	color: rgb(52,59,72);
-}
-QSlider::groove:horizontal:hover {
-	color: rgb(0,0,0);
-}
-QSlider::handle:horizontal{
-	border: none; 
-	margin: 3px;
-	height: 8px;
-	width: 3px;
-	border-radius: 5px; 
-	background-color: rgb(70, 70, 70);
-}
-QSlider::handle:horizontal:hover {
-	border-color: rgb(0, 0, 0);
-	border: 1px;
-	background-color:rgb(162, 0, 122);
-}
-</string>
-                              </property>
-                              <property name="minimum">
-                               <number>50</number>
-                              </property>
-                              <property name="maximum">
-                               <number>500</number>
-                              </property>
-                              <property name="singleStep">
-                               <number>10</number>
-                              </property>
-                              <property name="pageStep">
-                               <number>50</number>
-                              </property>
-                              <property name="sliderPosition">
-                               <number>100</number>
-                              </property>
+                             <spacer name="horizontalSpacer_51">
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
                               </property>
-                              <property name="invertedAppearance">
-                               <bool>false</bool>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
                               </property>
-                              <property name="invertedControls">
-                               <bool>false</bool>
-                              </property>
-                              <property name="tickPosition">
-                               <enum>QSlider::TicksBelow</enum>
-                              </property>
-                              <property name="tickInterval">
-                               <number>0</number>
-                              </property>
-                             </widget>
+                             </spacer>
                             </item>
                             <item>
-                             <widget class="QLineEdit" name="autom_min_cont_length_ch3_value">
+                             <widget class="QPushButton" name="q_automatic_close_ch3">
                               <property name="minimumSize">
                                <size>
-                                <width>60</width>
-                                <height>0</height>
+                                <width>18</width>
+                                <height>18</height>
                                </size>
                               </property>
                               <property name="maximumSize">
                                <size>
-                                <width>60</width>
-                                <height>16777215</height>
+                                <width>18</width>
+                                <height>18</height>
                                </size>
                               </property>
                               <property name="styleSheet">
-                               <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QLineEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
-                              </property>
-                              <property name="text">
-                               <string>100</string>
-                              </property>
-                              <property name="alignment">
-                               <set>Qt::AlignCenter</set>
-                              </property>
-                              <property name="readOnly">
-                               <bool>true</bool>
-                              </property>
-                             </widget>
-                            </item>
-                           </layout>
-                          </item>
-                          <item row="0" column="1" alignment="Qt::AlignRight">
-                           <widget class="QPushButton" name="q_automatic_close_ch3">
-                            <property name="minimumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:9px;
+                               <string notr="true">QPushButton{border-radius:9px;
 border-width: 1px;
 border-style: outset;
 border-color: rgb(66, 66, 66);
@@ -19481,260 +20886,47 @@ QPushButton:hover{
 background-color: rgb(0, 0, 0);
 border-color: #672146
 }</string>
-                            </property>
-                            <property name="text">
-                             <string>?</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="4" column="1">
-                           <layout class="QHBoxLayout" name="horizontalLayout_363">
+                              </property>
+                              <property name="text">
+                               <string>?</string>
+                              </property>
+                             </widget>
+                            </item>
                             <item>
-                             <widget class="QSlider" name="autom_min_distance_ch3_slider">
-                              <property name="maximumSize">
+                             <widget class="QPushButton" name="reset_auto_ch3">
+                              <property name="minimumSize">
                                <size>
-                                <width>16777215</width>
-                                <height>20</height>
+                                <width>18</width>
+                                <height>18</height>
                                </size>
                               </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>Reset slider values to default</string>
+                              </property>
                               <property name="styleSheet">
-                               <string notr="true">QSlider::groove:horizontal {
-	color: rgb(52,59,72);
-}
-QSlider::groove:horizontal:hover {
-	color: rgb(0,0,0);
-}
-QSlider::handle:horizontal{
-	border: none; 
-	margin: 3px;
-	height: 8px;
-	width: 3px;
-	border-radius: 5px; 
-	background-color: rgb(70, 70, 70);
-}
-QSlider::handle:horizontal:hover {
-	border-color: rgb(0, 0, 0);
-	border: 1px;
-	background-color:rgb(162, 0, 122);
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
 }
 </string>
                               </property>
-                              <property name="minimum">
-                               <number>10</number>
-                              </property>
-                              <property name="maximum">
-                               <number>50</number>
-                              </property>
-                              <property name="singleStep">
-                               <number>10</number>
-                              </property>
-                              <property name="pageStep">
-                               <number>5</number>
-                              </property>
-                              <property name="value">
-                               <number>15</number>
-                              </property>
-                              <property name="sliderPosition">
-                               <number>15</number>
-                              </property>
-                              <property name="orientation">
-                               <enum>Qt::Horizontal</enum>
-                              </property>
-                              <property name="invertedAppearance">
-                               <bool>false</bool>
-                              </property>
-                              <property name="invertedControls">
-                               <bool>false</bool>
-                              </property>
-                              <property name="tickPosition">
-                               <enum>QSlider::TicksBelow</enum>
-                              </property>
-                              <property name="tickInterval">
-                               <number>0</number>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QLineEdit" name="autom_min_distance_ch3_value">
-                              <property name="minimumSize">
-                               <size>
-                                <width>60</width>
-                                <height>0</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>60</width>
-                                <height>16777215</height>
-                               </size>
-                              </property>
-                              <property name="styleSheet">
-                               <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QLineEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
-                              </property>
                               <property name="text">
-                               <string>15</string>
-                              </property>
-                              <property name="alignment">
-                               <set>Qt::AlignCenter</set>
-                              </property>
-                              <property name="readOnly">
-                               <bool>true</bool>
-                              </property>
-                             </widget>
-                            </item>
-                           </layout>
-                          </item>
-                          <item row="5" column="0">
-                           <layout class="QHBoxLayout" name="horizontalLayout_364">
-                            <item alignment="Qt::AlignRight">
-                             <widget class="QCheckBox" name="automt_ch3_plot2d">
-                              <property name="enabled">
-                               <bool>true</bool>
-                              </property>
-                              <property name="sizePolicy">
-                               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                               </sizepolicy>
-                              </property>
-                              <property name="minimumSize">
-                               <size>
-                                <width>80</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>65</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                              <property name="layoutDirection">
-                               <enum>Qt::LeftToRight</enum>
-                              </property>
-                              <property name="styleSheet">
-                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                              </property>
-                              <property name="text">
-                               <string>Plot slices?</string>
-                              </property>
-                              <property name="checkable">
-                               <bool>true</bool>
-                              </property>
-                              <property name="checked">
-                               <bool>false</bool>
-                              </property>
-                              <property name="tristate">
-                               <bool>false</bool>
-                              </property>
-                             </widget>
-                            </item>
-                           </layout>
-                          </item>
-                          <item row="5" column="1">
-                           <layout class="QHBoxLayout" name="horizontalLayout_365">
-                            <item>
-                             <widget class="QLabel" name="automt_ch3_lab1">
-                              <property name="enabled">
-                               <bool>false</bool>
-                              </property>
-                              <property name="minimumSize">
-                               <size>
-                                <width>70</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>70</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                              <property name="styleSheet">
-                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                              </property>
-                              <property name="text">
-                               <string>Every other:</string>
-                              </property>
-                              <property name="alignment">
-                               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QSpinBox" name="automt_ch3_n_slices">
-                              <property name="enabled">
-                               <bool>false</bool>
-                              </property>
-                              <property name="minimumSize">
-                               <size>
-                                <width>50</width>
-                                <height>19</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>50</width>
-                                <height>19</height>
-                               </size>
-                              </property>
-                              <property name="styleSheet">
-                               <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;
-</string>
-                              </property>
-                              <property name="alignment">
-                               <set>Qt::AlignCenter</set>
-                              </property>
-                              <property name="minimum">
-                               <number>0</number>
-                              </property>
-                              <property name="maximum">
-                               <number>150</number>
-                              </property>
-                              <property name="singleStep">
-                               <number>25</number>
-                              </property>
-                              <property name="value">
-                               <number>25</number>
-                              </property>
-                              <property name="displayIntegerBase">
-                               <number>10</number>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QLabel" name="automt_ch3_lab2">
-                              <property name="enabled">
-                               <bool>false</bool>
-                              </property>
-                              <property name="minimumSize">
-                               <size>
-                                <width>30</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                              <property name="maximumSize">
-                               <size>
-                                <width>30</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                              <property name="styleSheet">
-                               <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
-background-color: rgb(255, 255, 255);</string>
-                              </property>
-                              <property name="text">
-                               <string>slices</string>
-                              </property>
-                              <property name="alignment">
-                               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                               <string>R</string>
                               </property>
                              </widget>
                             </item>
@@ -19790,6 +20982,59 @@ color: rgb(234, 234, 234);
                             </property>
                             <property name="text">
                              <string>Set</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="reset_autom_close_ch3">
+                            <property name="enabled">
+                             <bool>false</bool>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset images to masked (if applicable) or RAW</string>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
                             </property>
                             <property name="checkable">
                              <bool>true</bool>
@@ -20532,39 +21777,6 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </property>
                            </widget>
                           </item>
-                          <item row="0" column="1" alignment="Qt::AlignRight">
-                           <widget class="QPushButton" name="q_manual_level_ch3">
-                            <property name="minimumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                            </property>
-                            <property name="text">
-                             <string>?</string>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="3" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_369">
                             <item>
@@ -20663,6 +21875,94 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                               </property>
                               <property name="readOnly">
                                <bool>true</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="0" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_448">
+                            <item>
+                             <spacer name="horizontalSpacer_105">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="q_manual_level_ch3">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                              </property>
+                              <property name="text">
+                               <string>?</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="reset_manual_ch3">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>Reset slider values to default</string>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                              </property>
+                              <property name="text">
+                               <string>R</string>
                               </property>
                              </widget>
                             </item>
@@ -21367,8 +22667,8 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color:rgb(0, 50, 37);
-background-color: rgb(0, 130, 93);
-color: rgb(255, 255, 255);
+background-color:rgb(0, 204, 143);
+color: rgb(49, 49, 49);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -21710,6 +23010,44 @@ border-color: #672146
                             </property>
                             <property name="text">
                              <string>?</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="reset_select_ch3">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset slider values to default</string>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
                             </property>
                            </widget>
                           </item>
@@ -24116,8 +25454,8 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color:rgb(0, 50, 37);
-background-color: rgb(0, 130, 93);
-color: rgb(255, 255, 255);
+background-color:rgb(0, 204, 143);
+color: rgb(49, 49, 49);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -24398,9 +25736,9 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>0</y>
+                      <y>-373</y>
                       <width>382</width>
-                      <height>1956</height>
+                      <height>1960</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_111">
@@ -25364,6 +26702,44 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </property>
                            </widget>
                           </item>
+                          <item row="0" column="2">
+                           <widget class="QPushButton" name="reset_grid_plot_ch4">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset slider values to default</string>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
+                            </property>
+                           </widget>
+                          </item>
                          </layout>
                         </item>
                         <item>
@@ -25499,6 +26875,107 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="prev_sliceo_ch4">
+                         <property name="minimumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Previous slice in list (Ctrl+P)</string>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(170, 255, 127)}
+
+QPushButton:hover{
+background-color: rgb(0, 170, 0); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                         </property>
+                         <property name="text">
+                          <string>&lt;</string>
+                         </property>
+                         <property name="shortcut">
+                          <string>Ctrl+Left</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="next_sliceo_ch4">
+                         <property name="minimumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>20</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Next slice in list (Ctrl+N)</string>
+                         </property>
+                         <property name="accessibleDescription">
+                          <string>aaa</string>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QPushButton{
+font: bold 10pt &quot;Calibri&quot;;
+border-width: 1px; 
+border-style: outset; 
+border-color: rgb(82, 122, 61); 
+background-color:  rgb(170, 255, 127)}
+
+QPushButton:hover{
+background-color: rgb(0, 170, 0); 
+border-color: rgb(115, 115, 115);
+color: rgb(255, 255, 255)}
+
+QPushButton:disabled{
+background-color: rgb(145, 145, 145); 
+border-color: rgb(115, 115, 115)}
+</string>
+                         </property>
+                         <property name="text">
+                          <string>&gt;</string>
+                         </property>
+                         <property name="shortcut">
+                          <string>Ctrl+Right</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
                          </property>
                         </widget>
                        </item>
@@ -25934,6 +27411,59 @@ border-color: #672146
                               </spacer>
                              </item>
                              <item>
+                              <widget class="QPushButton" name="reset_mask_ch4">
+                               <property name="enabled">
+                                <bool>false</bool>
+                               </property>
+                               <property name="minimumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>20</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                               <property name="toolTip">
+                                <string>Reset images to original stack (RAW)</string>
+                               </property>
+                               <property name="autoFillBackground">
+                                <bool>false</bool>
+                               </property>
+                               <property name="styleSheet">
+                                <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                               </property>
+                               <property name="text">
+                                <string>R</string>
+                               </property>
+                               <property name="checkable">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
                               <widget class="QPushButton" name="mask_ch4_play">
                                <property name="enabled">
                                 <bool>true</bool>
@@ -26254,6 +27784,58 @@ QComboBox QAbstractItemView {
                                     </property>
                                    </widget>
                                   </item>
+                                  <item>
+                                   <widget class="QPushButton" name="set_npy_mask_ch4">
+                                    <property name="minimumSize">
+                                     <size>
+                                      <width>60</width>
+                                      <height>20</height>
+                                     </size>
+                                    </property>
+                                    <property name="maximumSize">
+                                     <size>
+                                      <width>60</width>
+                                      <height>20</height>
+                                     </size>
+                                    </property>
+                                    <property name="autoFillBackground">
+                                     <bool>false</bool>
+                                    </property>
+                                    <property name="styleSheet">
+                                     <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                                    </property>
+                                    <property name="text">
+                                     <string>Set</string>
+                                    </property>
+                                    <property name="checkable">
+                                     <bool>true</bool>
+                                    </property>
+                                   </widget>
+                                  </item>
                                  </layout>
                                 </item>
                                 <item row="0" column="0">
@@ -26368,58 +27950,6 @@ QComboBox QAbstractItemView {
                                   </item>
                                  </layout>
                                 </item>
-                                <item row="2" column="2">
-                                 <widget class="QPushButton" name="set_npy_mask_ch4">
-                                  <property name="minimumSize">
-                                   <size>
-                                    <width>60</width>
-                                    <height>20</height>
-                                   </size>
-                                  </property>
-                                  <property name="maximumSize">
-                                   <size>
-                                    <width>60</width>
-                                    <height>20</height>
-                                   </size>
-                                  </property>
-                                  <property name="autoFillBackground">
-                                   <bool>false</bool>
-                                  </property>
-                                  <property name="styleSheet">
-                                   <string notr="true">QPushButton{border-radius:10px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgb(211, 211, 211);
-color: rgb(39, 39, 39);
-font: 10pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgba(167, 0, 125, 200);
-border-color: #672146;
-color: rgb(234, 234, 234);
-}
-
-QPushButton:disabled{
-background-color: rgb(232, 232, 232);
-border-color: rgb(158, 158, 158);
-color: rgb(125, 125, 125);
-}
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
-                                  </property>
-                                  <property name="text">
-                                   <string>Set</string>
-                                  </property>
-                                  <property name="checkable">
-                                   <bool>true</bool>
-                                  </property>
-                                 </widget>
-                                </item>
                                 <item row="2" column="3">
                                  <widget class="QPushButton" name="npy_mask_ch4_play">
                                   <property name="enabled">
@@ -26463,6 +27993,59 @@ border-color: rgb(115, 115, 115)}
                                   </property>
                                   <property name="text">
                                    <string/>
+                                  </property>
+                                  <property name="checkable">
+                                   <bool>true</bool>
+                                  </property>
+                                 </widget>
+                                </item>
+                                <item row="2" column="2">
+                                 <widget class="QPushButton" name="reset_npy_mask_ch4">
+                                  <property name="enabled">
+                                   <bool>false</bool>
+                                  </property>
+                                  <property name="minimumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                   <size>
+                                    <width>20</width>
+                                    <height>20</height>
+                                   </size>
+                                  </property>
+                                  <property name="toolTip">
+                                   <string>Reset images to original stack (RAW)</string>
+                                  </property>
+                                  <property name="autoFillBackground">
+                                   <bool>false</bool>
+                                  </property>
+                                  <property name="styleSheet">
+                                   <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                                  </property>
+                                  <property name="text">
+                                   <string>R</string>
                                   </property>
                                   <property name="checkable">
                                    <bool>true</bool>
@@ -27202,39 +28785,6 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </item>
                            </layout>
                           </item>
-                          <item row="0" column="1" alignment="Qt::AlignRight">
-                           <widget class="QPushButton" name="q_automatic_close_ch4">
-                            <property name="minimumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                            </property>
-                            <property name="text">
-                             <string>?</string>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="4" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_401">
                             <item>
@@ -27488,6 +29038,94 @@ background-color: rgb(255, 255, 255);</string>
                             </item>
                            </layout>
                           </item>
+                          <item row="0" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_434">
+                            <item>
+                             <spacer name="horizontalSpacer_39">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="q_automatic_close_ch4">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                              </property>
+                              <property name="text">
+                               <string>?</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="reset_auto_ch4">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>Reset slider values to default</string>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                              </property>
+                              <property name="text">
+                               <string>R</string>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
                          </layout>
                         </item>
                         <item>
@@ -27538,6 +29176,59 @@ color: rgb(234, 234, 234);
                             </property>
                             <property name="text">
                              <string>Set</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="reset_autom_close_ch4">
+                            <property name="enabled">
+                             <bool>false</bool>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>20</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset images to masked (if applicable) or RAW</string>
+                            </property>
+                            <property name="autoFillBackground">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius: 3px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(255, 170, 0);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(255, 153, 37);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
                             </property>
                             <property name="checkable">
                              <bool>true</bool>
@@ -28280,39 +29971,6 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                             </property>
                            </widget>
                           </item>
-                          <item row="0" column="1" alignment="Qt::AlignRight">
-                           <widget class="QPushButton" name="q_manual_level_ch4">
-                            <property name="minimumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>18</width>
-                              <height>18</height>
-                             </size>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">QPushButton{border-radius:9px;
-border-width: 1px;
-border-style: outset;
-border-color: rgb(66, 66, 66);
-background-color: rgba(162, 0, 122,180);
-color: rgb(255, 255, 255);
-font: 9pt &quot;Calibri Light&quot;;}
-
-QPushButton:hover{
-background-color: rgb(0, 0, 0);
-border-color: #672146
-}</string>
-                            </property>
-                            <property name="text">
-                             <string>?</string>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="3" column="1">
                            <layout class="QHBoxLayout" name="horizontalLayout_407">
                             <item>
@@ -28411,6 +30069,94 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                               </property>
                               <property name="readOnly">
                                <bool>true</bool>
+                              </property>
+                             </widget>
+                            </item>
+                           </layout>
+                          </item>
+                          <item row="0" column="1">
+                           <layout class="QHBoxLayout" name="horizontalLayout_449">
+                            <item>
+                             <spacer name="horizontalSpacer_106">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="q_manual_level_ch4">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                              </property>
+                              <property name="text">
+                               <string>?</string>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QPushButton" name="reset_manual_ch4">
+                              <property name="minimumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="maximumSize">
+                               <size>
+                                <width>18</width>
+                                <height>18</height>
+                               </size>
+                              </property>
+                              <property name="toolTip">
+                               <string>Reset slider values to default</string>
+                              </property>
+                              <property name="styleSheet">
+                               <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                              </property>
+                              <property name="text">
+                               <string>R</string>
                               </property>
                              </widget>
                             </item>
@@ -29115,8 +30861,8 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color:rgb(0, 50, 37);
-background-color: rgb(0, 130, 93);
-color: rgb(255, 255, 255);
+background-color:rgb(0, 204, 143);
+color: rgb(49, 49, 49);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -29458,6 +31204,44 @@ border-color: #672146
                             </property>
                             <property name="text">
                              <string>?</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="reset_select_ch4">
+                            <property name="minimumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="maximumSize">
+                             <size>
+                              <width>18</width>
+                              <height>18</height>
+                             </size>
+                            </property>
+                            <property name="toolTip">
+                             <string>Reset slider values to default</string>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+</string>
+                            </property>
+                            <property name="text">
+                             <string>R</string>
                             </property>
                            </widget>
                           </item>
@@ -31864,8 +33648,8 @@ border-color: rgb(115, 115, 115)}
 border-width: 1px;
 border-style: outset;
 border-color:rgb(0, 50, 37);
-background-color: rgb(0, 130, 93);
-color: rgb(255, 255, 255);
+background-color:rgb(0, 204, 143);
+color: rgb(49, 49, 49);
 font: 10pt &quot;Calibri Light&quot;;}
 
 QPushButton:hover{
@@ -82496,7 +84280,6 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>autom_min_intensity_ch1_value</tabstop>
   <tabstop>autom_min_cont_length_ch1_slider</tabstop>
   <tabstop>autom_min_cont_length_ch1_value</tabstop>
-  <tabstop>q_automatic_close_ch1</tabstop>
   <tabstop>autom_min_distance_ch1_slider</tabstop>
   <tabstop>autom_min_distance_ch1_value</tabstop>
   <tabstop>automt_ch1_plot2d</tabstop>
@@ -83267,7 +85050,6 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>select_contours_ch1_set</tabstop>
   <tabstop>select_contours_ch1_play</tabstop>
   <tabstop>scrollArea_ch1</tabstop>
-  <tabstop>q_manual_level_ch1</tabstop>
   <tabstop>manual_min_intensity_ch1_slider</tabstop>
   <tabstop>manual_min_intensity_ch1_value</tabstop>
   <tabstop>select_tableW_ch1</tabstop>
@@ -83318,7 +85100,6 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>autom_min_intensity_ch2_value</tabstop>
   <tabstop>autom_min_cont_length_ch2_slider</tabstop>
   <tabstop>autom_min_cont_length_ch2_value</tabstop>
-  <tabstop>q_automatic_close_ch2</tabstop>
   <tabstop>autom_min_distance_ch2_slider</tabstop>
   <tabstop>autom_min_distance_ch2_value</tabstop>
   <tabstop>automt_ch2_plot2d</tabstop>
@@ -83333,7 +85114,6 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>manual_level_ch2_value</tabstop>
   <tabstop>manual_min_cont_length_ch2_slider</tabstop>
   <tabstop>manual_min_cont_length_ch2_value</tabstop>
-  <tabstop>q_manual_level_ch2</tabstop>
   <tabstop>manual_min_intensity_ch2_slider</tabstop>
   <tabstop>manual_min_intensity_ch2_value</tabstop>
   <tabstop>manual_close_ch2_set</tabstop>
@@ -83410,7 +85190,6 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>autom_min_intensity_ch3_value</tabstop>
   <tabstop>autom_min_cont_length_ch3_slider</tabstop>
   <tabstop>autom_min_cont_length_ch3_value</tabstop>
-  <tabstop>q_automatic_close_ch3</tabstop>
   <tabstop>autom_min_distance_ch3_slider</tabstop>
   <tabstop>autom_min_distance_ch3_value</tabstop>
   <tabstop>automt_ch3_plot2d</tabstop>
@@ -83425,7 +85204,6 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>manual_level_ch3_value</tabstop>
   <tabstop>manual_min_cont_length_ch3_slider</tabstop>
   <tabstop>manual_min_cont_length_ch3_value</tabstop>
-  <tabstop>q_manual_level_ch3</tabstop>
   <tabstop>manual_min_intensity_ch3_slider</tabstop>
   <tabstop>manual_min_intensity_ch3_value</tabstop>
   <tabstop>manual_close_ch3_set</tabstop>
@@ -83502,7 +85280,6 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>autom_min_intensity_ch4_value</tabstop>
   <tabstop>autom_min_cont_length_ch4_slider</tabstop>
   <tabstop>autom_min_cont_length_ch4_value</tabstop>
-  <tabstop>q_automatic_close_ch4</tabstop>
   <tabstop>autom_min_distance_ch4_slider</tabstop>
   <tabstop>autom_min_distance_ch4_value</tabstop>
   <tabstop>automt_ch4_plot2d</tabstop>
@@ -83517,7 +85294,6 @@ background-color: rgb(250, 250, 250);</string>
   <tabstop>manual_level_ch4_value</tabstop>
   <tabstop>manual_min_cont_length_ch4_slider</tabstop>
   <tabstop>manual_min_cont_length_ch4_value</tabstop>
-  <tabstop>q_manual_level_ch4</tabstop>
   <tabstop>manual_min_intensity_ch4_slider</tabstop>
   <tabstop>manual_min_intensity_ch4_value</tabstop>
   <tabstop>manual_close_ch4_set</tabstop>
