@@ -7388,6 +7388,42 @@ class MainWindow(QMainWindow):
         self.cut2_plot_segm11.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm11'))
         self.cut2_plot_segm12.clicked.connect(lambda: self.plot_segm_sect(btn='cut2_segm12'))
 
+        # Angles and Ellipsoids
+        segm_meas = self.organ.mH_settings['setup']['segm']['measure']
+        if segm_meas['Ellip'] or segm_meas['Angles']: 
+            self.widget_angles_ellips.setVisible(True)
+            cuts2do = [key for key in self.organ.mH_settings['setup']['segm'].keys() if 'Cut' in key]
+            for cutp in ['Cut1', 'Cut2']: 
+                getattr(self, 'ang_ellip_'+cutp.lower()).setVisible(False)
+                getattr(self, 'widget_angle_meas_'+cutp.lower()).setVisible(False)
+                if cutp in cuts2do: 
+                    list_meshes = []
+                    for chq in self.organ.mH_settings['setup']['segm'][cutp]['ch_segments'].keys():
+                        for contq in self.organ.mH_settings['setup']['segm'][cutp]['ch_segments'][chq]: 
+                            list_meshes.append(chq+'_'+contq)
+                    getattr(self, 'angles_mesh2use_'+cutp.lower()).addItems(sorted(list_meshes))
+
+                else: 
+                    getattr(self, 'angles_'+cutp.lower()).setVisible(False)
+
+            if segm_meas['Ellip']: 
+                self.widget_ellipsoid.setVisible(True)
+                self.ellipsoids_play.setEnabled(False)
+                self.view_ellipsoid.setEnabled(False)
+                self.plot_ellipsoid.setEnabled(False)
+            else:
+                self.widget_ellipsoid.setVisible(False)
+
+            #Centreline to use
+            self.angles_centreline2use.addItems(self.items_centreline)
+            #Set buttons
+            self.set_angles_initial.clicked.connect(lambda: self.select_cl_angle_ellip())
+            self.set_angles_cut1.clicked.connect(lambda: self.set_angles_ellip(cut = 'cut1', init=True))
+            self.set_angles_cut2.clicked.connect(lambda: self.set_angles_ellip(cut = 'cut2', init=True))
+
+        else:
+            self.widget_angles_ellips.setVisible(False)
+
         #Initialise with user settings, if they exist!
         self.user_segments()
 
@@ -9145,6 +9181,29 @@ class MainWindow(QMainWindow):
 
         return gui_segm
 
+    def set_angles_ellip(self, cut, intit=False): 
+        self.gui_angles_ellip(self, cut)
+
+
+    def gui_angles_ellip(self, cut): 
+        mesh2use = getattr(self, 'angles_mesh2use_'+cut)
+        if mesh2use == '----': 
+            self.win_msg('*Please select the mesh you want to use to define the segments orientation lines.', getattr(self, 'set_angles_'+cut))
+            return None
+        else: 
+            for reg in ['roi', 'stack']: 
+                if getattr(self, 'angle_'+reg+'_'+cut).isChecked(): 
+                    selected = reg
+                    break
+
+            gui_angles = {'mesh_to_use': mesh2use, 
+                            'axis_lab': selected.title()}
+            
+            print('gui_angles: ', gui_angles)
+            return gui_angles
+        
+            self.win_msg('Great, now set the orientation extremes for each individual segment by clicking the button with each segment name')
+    
     def set_sections(self, init=False): 
 
         sect_setup = self.organ.mH_settings['setup']['sect']
@@ -9867,231 +9926,8 @@ class MainWindow(QMainWindow):
             self.organ.measure_status = 'DONE'
 
     def get_var_names(self): 
-
         df_res = self.organ.mH_settings['df_res']
         self.index_param = set([param for (param, _, _) in df_res.index])
-
-    def get_results_df(self): #to delete
-        alert('bubble')
-        print('get_results_df')
-
-        # #Actual names
-        # params = self.organ.mH_settings['setup']['params']
-        # dict_names = {}
-        # for pp in params:
-        #     var = params[pp]
-        #     dict_names[var['s']] = var['l']
-        # dict_names['Ellip'] = 'Ellipsoid'
-        # dict_names['Angles'] = 'Angles'
-
-        # measurements = self.organ.mH_settings['measure']
-        # df_index = pd.DataFrame.from_dict(measurements, orient='index')
-        # #Drop variables that don't result in a single measurement
-        # vars2drop = ['th_e2i', 'th_i2e', 'ball', 'hm3Dto2D']
-        # vars = list(df_index.index)
-        # for var in vars: 
-        #     if var in vars2drop: 
-        #         df_index = df_index.drop(var)
-        # cols = list(df_index.columns)
-
-        # #Add column with actual names of variables
-        # var_names = []
-        # for index, row in df_index.iterrows(): 
-        #     try: 
-        #         var_names.append(dict_names[index])
-        #     except: 
-        #         var, typpe = index.split('(')
-        #         if typpe == 'segm)': 
-        #             name = 'Segment'
-        #         elif typpe == 'segm-sect)': 
-        #             name = 'Segm-Reg'
-        #         else: 
-        #             name == 'Region'
-        #         var_names.append(dict_names[var]+': '+name)
-
-        # df_index['Parameter'] = var_names
-        # df_index = df_index.reset_index()
-        # df_index = df_index.drop(['index'], axis=1)
-        # df_melt = pd.melt(df_index, id_vars = ['Parameter'],  value_vars=cols, value_name='Value')
-        # df_melt = df_melt.rename(columns={"variable": "Tissue-Contour"})
-        # df_melt = df_melt.dropna()
-        # mult_index= ['Parameter', 'Tissue-Contour']
-        # df_melt = df_melt.set_index(mult_index)
-        # #Create a copy to modify
-        # df_new = df_melt.copy(deep=True)
-
-        # #Add values from Centreline
-        # if 'CL' in vars:
-        #     key_cl = {'lin_length': 'Linear Length', 'looped_length': 'Looped Length'}
-        #     dict_CL = {}
-        #     df_CL = df_melt.loc[[dict_names['CL']]]
-        #     for index, row in df_CL.iterrows():
-        #         if isinstance(row['Value'], dict): 
-        #             row_cl = row['Value']
-        #         else: 
-        #             row_cl = {'lin_length': True, 'looped_length': True}
-        #         df_new.drop(index, axis=0, inplace=True)
-        #         for key, item in row_cl.items():
-        #             new_index = 'Centreline: '+key_cl[key]
-        #             new_variable = index[1]
-        #             dict_CL[(new_index, new_variable)] = item
-        #     # print('dict_CL:',  dict_CL)
-        #     if len(dict_CL) != 0: 
-        #         df_CL = pd.DataFrame(dict_CL, index =[0])
-        #         df_CL_melt = pd.melt(df_CL, var_name=mult_index,value_name='Value')
-        #         df_CL_melt = df_CL_melt.set_index(mult_index)
-        #         df_final = pd.concat([df_new, df_CL_melt])
-        #         df_final = df_final.sort_values(by=['Parameter'])
-        #     else: 
-        #         df_final = df_new.sort_values(by=['Parameter'])
-
-        # #Add values from Ellipsoids
-        # if 'Ellip(segm)' in vars: 
-        #     key_ellip = {'ell_width': 'Width', 'ell_length': 'Length', 'ell_depth': 'Depth', 'ell_asphericity': 'Asphericity'}
-        #     dict_ellip = {}
-        #     df_ellip = df_melt.loc[['Ellipsoid: Segment']]
-        #     for index, row in df_ellip.iterrows():
-        #         if isinstance(row['Value'], dict): 
-        #             row_ell = row['Value']
-        #         else: 
-        #             row_ell = {'ell_width': True, 'ell_length': True, 'ell_depth': True, 'ell_asphericity': True}
-        #         df_final.drop(index, axis=0, inplace=True)
-        #         for key, item in row_ell.items():
-        #             new_index = 'Ellipsoid: '+key_ellip[key]
-        #             new_variable = index[1]
-        #             dict_ellip[(new_index, new_variable)] = item
-        #     # print('dict_ellip:',  dict_ellip)
-        #     if len(dict_ellip) != 0: 
-        #         df_ellip = pd.DataFrame(dict_ellip, index =[0])
-        #         df_ellip_melt = pd.melt(df_ellip, var_name=mult_index,value_name='Value')
-        #         df_ellip_melt = df_ellip_melt.set_index(mult_index)
-        #         df_final = pd.concat([df_final, df_ellip_melt])
-        #         df_final = df_final.sort_values(by=['Parameter'])
-        #     else: 
-        #         df_final = df_final.sort_values(by=['Parameter'])
-
-        # #Add values from Angles
-        # if 'Angles(segm)' in vars: 
-        #     #Get segments names
-        #     if isinstance(self.organ.mH_settings['setup']['segm'], dict):
-        #         segm_names = {}
-        #         for cut in [key for key in self.organ.mH_settings['setup']['segm'] if 'Cut' in key]:
-        #             segm_names[cut] = [key for key in self.organ.mH_settings['setup']['segm'][cut]['name_segments'].keys()]
-        #     #Create key names
-        #     key_angles = {}
-        #     for cut in segm_names:
-        #         for segm in segm_names[cut]:
-        #             segm_name = cut+'.'+segm+'_or'
-        #             key_angles[segm_name] = cut+'.'+segm.title()+' Or.'
-        #     for n in range(len(segm_names[cut])-1):
-        #         key_angles[cut+'.'+segm_names[cut][n]+'-'+segm_names[cut][n+1]] = cut+'.'+segm_names[cut][n].title()+'-'+segm_names[cut][n+1].title()
-
-        #     #Now modify the dataframe
-        #     for n, angle_name in enumerate(['Ang.Coronal']):#, 'Ang.Sagittal', 'Ang.Transverse']):
-        #         df_ang = df_melt.loc[['Angles: Segment']]
-        #         #Filter angles so that it only gets measured in the biggest mesh per ch_cont
-        #         names_ang = [cut_segm for (_, cut_segm) in list(df_ang.index)]
-        #         cut_ch_cont = {}
-        #         for name in names_ang: 
-        #             cut, ch, cont, num = name.split('_')
-        #             if num == 'segm1': 
-        #                 if cut+'_'+ch not in cut_ch_cont.keys(): 
-        #                     cut_ch_cont[cut+'_'+ch] = [cont]
-        #                 else: 
-        #                     cut_ch_cont[cut+'_'+ch].append(cont)
-        #         keep_names = []
-        #         for cut_ch in cut_ch_cont.keys(): 
-        #             for cont in ['ext', 'tiss', 'int']: 
-        #                 if cont in cut_ch_cont[cut_ch]: 
-        #                     keep_names.append(cut_ch+'_'+cont)
-        #                     break
-        #         index_list = []
-        #         for index, row in df_ang.iterrows():
-        #             cuts, chs, conts, segms = index[1].split('_')
-        #             if cuts+'_'+chs+'_'+conts in keep_names: 
-        #                 row_ang = {}
-        #                 index_list.append(index[1])
-        #                 for keya in key_angles.keys():
-        #                     row_ang[keya] = True
-        #             else: 
-        #                 pass
-        #             df_final.drop(index, axis=0, inplace=True)
-        #         dict_angles = {}
-        #         for index in index_list: 
-        #             for key, item in row_ang.items():
-        #                 new_index = angle_name+': '+key_angles[key]
-        #                 new_variable = index
-        #                 dict_angles[(new_index, new_variable)] = item
-        #         # print('dict_angles:',  dict_angles)
-        #         if len(dict_angles) != 0: 
-        #             df_angf = pd.DataFrame(dict_angles, index =[0])
-        #             df_ang_melt = pd.melt(df_angf, var_name=mult_index,value_name='Value')
-        #             df_ang_melt = df_ang_melt.set_index(mult_index)
-        #             df_final = pd.concat([df_final, df_ang_melt])
-        #             df_final = df_final.sort_values(by=['Parameter'])
-        #         else: 
-        #             df_final = df_final.sort_values(by=['Parameter'])
-
-        # #Change True Values to TBO
-        # values_updated = []
-        # for index, row in df_final.iterrows(): 
-        #     if isinstance(row['Value'], bool): 
-        #         values_updated.append('TBO')
-        #     else: 
-        #         values_updated.append(row['Value'])
-
-        # #Add column with better names
-        # user_tiss_cont = []
-        # name_chs = self.organ.mH_settings['setup']['name_chs']
-        # if isinstance(self.organ.mH_settings['setup']['segm'], dict):
-        #     name_segm = {}
-        #     for cut in [key for key in self.organ.mH_settings['setup']['segm'] if 'Cut' in key]:
-        #         name_segm[cut] = self.organ.mH_settings['setup']['segm'][cut]['name_segments']
-        # if isinstance(self.organ.mH_settings['setup']['sect'], dict):
-        #     name_sect = {}
-        #     for cut in [key for key in self.organ.mH_settings['setup']['sect'] if 'Cut' in key]:
-        #         name_sect[cut] = self.organ.mH_settings['setup']['sect'][cut]['name_sections']
-        # name_cont = {'int': 'internal', 'tiss': 'tissue', 'ext': 'external'}
-
-        # for index, _ in df_final.iterrows(): 
-        #     param, tiss_cont = index
-        #     split_name = tiss_cont.split('_')
-        #     # print(split_name, len(split_name))
-        #     if len(split_name) == 1 and tiss_cont == 'roi': 
-        #         namef = 'Organ/ROI'
-        #     elif len(split_name) == 3: 
-        #         ch, cont, _ = split_name
-        #         namef = name_chs[ch]+ ' ('+name_cont[cont]+')'
-        #     elif len(split_name) == 4: 
-        #         # print('split_name:', split_name)
-        #         cut, ch, cont, subm = split_name
-        #         if 'segm' in subm: 
-        #             namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_segm[cut][subm]+')'
-        #         else: 
-        #             namef = cut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_sect[cut][subm]+')'
-        #         # print(namef)
-        #     elif len(split_name) == 6: #Intersections
-        #         # print('split_name:', split_name)
-        #         scut, rcut, ch, cont, segm, sect = split_name
-        #         namef = scut[1:]+'-'+rcut+': '+name_chs[ch]+ '-'+name_cont[cont]+' ('+name_segm[scut[1:]][segm]+'-'+name_sect[rcut][sect]+')'
-        #     else: 
-        #         print(index, len(split_name))
-        #         namef = 'Check: '+tiss_cont
-            
-        #     # print(index, namef.title())
-        #     nameff = namef.title()
-        #     user_tiss_cont.append(nameff)
-
-        # df_final['Value'] = values_updated
-        # df_final['User (Tissue-Contour)'] = user_tiss_cont
-        # df_finalf = df_final.reset_index()
-        # df_finalf = df_finalf.set_index(mult_index+['User (Tissue-Contour)'])
-
-        # df_finalf = df_finalf.sort_values(['Parameter','Tissue-Contour'],
-        #                                         ascending = [True, True])
-        
-        # print('df_finalf: ', df_finalf)
-        # self.df_res = df_finalf
             
     #Other analysis tab
     def improve_2DHM_segm(self):
@@ -10363,6 +10199,65 @@ class MainWindow(QMainWindow):
 
         else: 
             pass
+
+    def select_cl_angle_ellip(self): 
+        
+        if self.centreline_select.isChecked(): 
+            if self.angles_centreline2use.currentText() == '----': 
+                error_txt = '*Please select the centreline you want to use to define segment orientation to be able to continue.'
+                self.win_msg(error_txt, getattr(self, 'set_angles_initial'))
+                return
+
+            at_least_one = False
+            for cut in ['cut1', 'cut2']:
+                if getattr(self, 'angles_'+cut).isChecked(): 
+                    at_least_one = True
+                    break
+    
+            if at_least_one: 
+                # Make specific cut widgets visible and set segm buttons
+                for cut in ['cut1', 'cut2']:
+                    cb_cut = getattr(self, 'angles_'+cut)
+                    widg_cut = getattr(self, 'ang_ellip_'+cut)
+                    if cb_cut.isChecked(): 
+                        widg_cut.setVisible(True)
+                        #Get the centreline that will be used to define the segment orientations
+                        hm_ch_cont_cl = self.angles_centreline2use.currentText().split('(')[1]
+                        ch_cl, cont_cl = hm_ch_cont_cl.split('_')
+                        cont_cl = cont_cl[:-1]
+                        #Get the mesh and then its centreline
+                        nPoints = self.angles_nPoints.value()
+                        mesh = self.organ.obj_meshes[ch_cl+'_'+cont_cl]
+                        mesh_cl = mesh.get_centreline(nPoints=nPoints)
+                        kspl_CL = self.organ.obj_meshes[ch_cl+'_'+cont_cl].get_centreline(nPoints)  
+                        segm_cuts_info = self.organ.mH_settings['wf_info']['segments']['setup'][cut.title()]['cut_info']
+                        ordered_kspl = kspl_chamber_cut(organ = self.organ, 
+                                                        mesh = mesh,
+                                                        kspl_CLnew = kspl_CL, 
+                                                        segm_cuts_info=segm_cuts_info, 
+                                                        cut=cut.title(), init=True)
+                        for nn in range(1,6,1):
+                            div = 'div'+str(nn)
+                            button = getattr(self, 'angle_'+cut+'_'+div)
+                            if div in ordered_kspl.keys(): 
+                                new_name = ordered_kspl[div]['name']
+                                button.setText('> '+new_name+' >')
+                                button.setVisible(True)
+                                button.setChecked(False)
+                            else: 
+                                button.setVisible(False)
+                    else: 
+                        widg_cut.setVisible(False)
+
+                #Make the measure widget visible
+                self.set_angles_initial.setChecked(True)
+            else: 
+                error_txt = '*Please tick the segment cuts from which you would like to measure the angles (e.g. Cut1) to be able to continue.'
+                self.win_msg(error_txt, getattr(self, 'set_angles_initial'))
+                return
+        else: 
+            error_txt = '*Please make sure you have already acquired the centreline you have selected to be able to continue.'
+            self.win_msg(error_txt, getattr(self, 'set_angles_initial'))
 
     #Plot 2D functions (Heatmaps 2D)    
     def plot_heatmap2d(self, btn): 

@@ -2093,7 +2093,7 @@ def kspl_chamber_cut(organ, mesh, kspl_CLnew, segm_cuts_info, cut, ordered_segm=
         plane_disc = vedo.Plane(pos=cut_info['pl_centre'], normal=cut_info['normal_unit'], s=(300,300))
         ksplCL_cut = kspl_CLnew.clone().cutWithMesh(plane_disc, invert=True)
         # Find point of new kspline closer to last point of kspline cut
-        _, num_pt = find_closest_pt_guess(ksplCL_cut.points(), kspl_CLnew.points(),350)
+        _, num_pt = find_closest_pt_guess(ksplCL_cut.points(), kspl_CLnew.points(),int(len(kspl_CLnew.points())*0.6))
         list_num_pts.append(num_pt)
         num_pts[disc] = num_pt
         
