@@ -3051,10 +3051,13 @@ class Mesh_mH():
  
         return cl_ribbon, kspl_ext
     
-    def modify_centreline(self, kspl_o, mesh):
+    def modify_centreline(self, kspl_o, mesh, ext=True):
         
         #Text
-        text = '>> Modify Extended Centreline Orientation Instructions: \n  -Drag extreme centreline points with mouse\n  -Remove them by selecting and pressing -Delete-\n  -Press q (lower q) when ready to proceed.'
+        if ext: 
+            text = '>> Modify Extended Centreline Instructions: \n  -Drag extreme centreline points with mouse\n  -Remove them by selecting and pressing -Delete-\n  -Press q (lower q) when ready to proceed.\n  -Note: Only modify the orientation of the \n          extreme points but not the length of the centreline,\n          to make sure the created ribbon cuts the \n          whole stack into two different regions.'
+        else: 
+            text = '>> Modify Centreline Instructions: \n  -Drag extreme centreline points with mouse\n  -Remove them by selecting and pressing -Delete-\n  -Press q (lower q) when ready to proceed.'
         txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
 
         #Make the user define the final points for the centreline

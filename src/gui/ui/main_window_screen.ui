@@ -1050,7 +1050,7 @@ background-color: rgb(255, 255, 255);</string>
           <enum>QTabWidget::Rounded</enum>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <property name="usesScrollButtons">
           <bool>false</bool>
@@ -25736,7 +25736,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-373</y>
+                      <y>-1115</y>
                       <width>382</width>
                       <height>1960</height>
                      </rect>
@@ -35556,7 +35556,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>0</y>
+                   <y>-3014</y>
                    <width>632</width>
                    <height>5616</height>
                   </rect>

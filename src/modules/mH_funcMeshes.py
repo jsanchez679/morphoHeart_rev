@@ -730,8 +730,138 @@ def load_vmtkCL(organ, ch, cont):#
         decodedArray = json.load(read_file)
 
     return decodedArray
+
+def define_CL(organ, name, nPoints): 
+
+    ch, cont, _ = name.split('_')
+    cl_data = load_vmtkCL(organ, ch, cont)
+    #Get cl points from vmtk
+    pts_cl = np.asarray(cl_data['Points'])
+    # Interpolate points of original centreline
+    pts_int_o = get_interpolated_pts(points=pts_cl, nPoints = nPoints)
+    # Create IFT and OFT spheres to show original points position
+    sph_inf_o = vedo.Sphere(pts_int_o[-1], r = 3, c='tomato')
+    sph_outf_o = vedo.Sphere(pts_int_o[0], r = 3, c='navy')
     
-def create_CLs(organ, name, nPoints, same_plane):#
+    # Get outflow point for that layer
+    pt2add_outf = organ.objects['Spheres']['cut4cl']['top'][ch+'_'+cont]['center']
+    pts_withOutf = np.insert(pts_cl, 0, np.transpose(pt2add_outf), axis=0)
+    
+    pt2add_inf = organ.objects['Spheres']['cut4cl']['bottom'][ch+'_'+cont]['center']
+    pts_all_opt1 = np.insert(pts_withOutf, len(pts_withOutf), np.transpose(pt2add_inf), axis=0)
+
+    # Interpolate points
+    pts_int_opt1 = get_interpolated_pts(points=pts_all_opt1, nPoints = nPoints)
+    # Create kspline with points
+    kspl_opt1 = vedo.KSpline(pts_int_opt1, res = nPoints)
+    kspl_opt1.color('blueviolet').legend('CL_'+ch+'_'+cont).lw(5)
+    dict_clOpt = {'Option 3': {'kspl': kspl_opt1, 'sph_bot': sph_outf_o, 
+                                'sph_top': sph_inf_o, 'pt2add': pt2add_inf, 
+                                'description': 'Point in meshesCut4Cl'}}
+    
+    mesh = organ.obj_meshes[ch+'_'+cont]
+    kspl_f = mesh.modify_centreline(kspl_o=kspl_opt1, mesh=mesh.mesh, ext=False)
+    pts_cl_extf = kspl_f.points()
+       
+    # Increase the resolution of the extended centreline and interpolate to unify sampling
+    xd = np.diff(pts_cl_extf[:,0])
+    yd = np.diff(pts_cl_extf[:,1])
+    zd = np.diff(pts_cl_extf[:,2])
+    dist = np.sqrt(xd**2+yd**2+zd**2)
+    u = np.cumsum(dist)
+    u = np.hstack([[0],u])
+    t = np.linspace(0, u[-1], nPoints)#601
+    try: 
+        resamp_pts = interpn((u,), pts_cl_extf, t)
+        print('Created resampled KSpline using interpn')
+    except: 
+        # Christian K Answer
+        # https://stackoverflow.com/questions/19117660/how-to-generate-equispaced-interpolating-values/19122075#19122075
+        xn = np.interp(t, u, pts_cl_extf[:,0])
+        yn = np.interp(t, u, pts_cl_extf[:,1])
+        zn = np.interp(t, u, pts_cl_extf[:,2])
+        resamp_pts = np.vstack((xn,yn,zn))
+        resamp_pts = resamp_pts.T
+        print('Created resampled KSpline using np.interp')
+
+    kspl_ext = vedo.KSpline(resamp_pts, res=nPoints).color('pink').legend('ExtendedCL').lw(2)#601
+
+    return kspl_ext, dict_clOpt
+    
+def create_CLs(organ, name, nPoints):#
+    """
+    Function that creates the centrelines using the points given as input in the dict_cl
+
+    """
+    cl_colors = {'Op1':'navy','Op2':'blueviolet'}
+    
+    ch, cont, _ = name.split('_')
+    cl_data = load_vmtkCL(organ, ch, cont)
+    #Get cl points from vmtk
+    pts_cl = np.asarray(cl_data['Points'])
+    # Interpolate points of original centreline
+    pts_int_o = get_interpolated_pts(points=pts_cl, nPoints = nPoints)
+    # Last CL point
+    pt_m1 = pts_int_o[-1]
+    sph_m1 = vedo.Sphere(pos = pt_m1, r=4, c='black')
+    # Create kspline with original points
+    kspl_o = vedo.KSpline(pts_int_o, res = nPoints).color('gold').legend('CLo_'+ch+'_'+cont).lw(5)
+    # Create IFT and OFT spheres to show original points position
+    sph_inf_o = vedo.Sphere(pts_int_o[-1], r = 3, c='tomato')
+    sph_outf_o = vedo.Sphere(pts_int_o[0], r = 3, c='navy')
+    
+    # Get outflow point for that layer
+    pt2add_outf = organ.objects['Spheres']['cut4cl']['top'][ch+'_'+cont]['center']
+    pts_withOutf = np.insert(pts_cl, 0, np.transpose(pt2add_outf), axis=0)
+    
+    #Dictionary with kspl options
+    dict_clOpt = {}
+
+    # Get inflow point for that layer (four options)
+    # - Option 1, use centroids of kspline cuts
+    pt2add_inf = organ.objects['Spheres']['cut4cl']['bottom'][ch+'_'+cont]['center']
+    pts_all_opt1 = np.insert(pts_withOutf, len(pts_withOutf), np.transpose(pt2add_inf), axis=0)
+
+    # Interpolate points
+    pts_int_opt1 = get_interpolated_pts(points=pts_all_opt1, nPoints = nPoints)
+    # Create kspline with points
+    kspl_opt1 = vedo.KSpline(pts_int_opt1, res = nPoints)
+    kspl_opt1.color(cl_colors['Op1']).legend('(Op1) CL_'+ch+'_'+cont).lw(5)
+    dict_clOpt['Option 1'] = {'kspl': kspl_opt1, 'sph_bot': sph_outf_o, 
+                                'sph_top': sph_inf_o, 'pt2add': pt2add_inf, 
+                                'description': 'Point in meshesCut4Cl'}
+    
+    # - Option 6 (add mid point between final point of original centreline and inf tract)
+    pt_m6 = pt_m1+(pt2add_inf-pt_m1)/2
+    sph_m6 = vedo.Sphere(pos = pt_m6, r=4, c='gold')
+
+    pts_all_opt6 = np.insert(pts_withOutf, len(pts_withOutf), np.transpose(pt_m6), axis=0)
+    pts_all_opt6f = np.insert(pts_all_opt6, len(pts_all_opt6), np.transpose(pt2add_inf), axis=0)
+
+    # Interpolate points
+    pts_int_opt6 = get_interpolated_pts(points=pts_all_opt6f, nPoints = nPoints)
+    # Create kspline with points
+    kspl_opt6 = vedo.KSpline(pts_int_opt6, res = nPoints)
+    kspl_opt6.color(cl_colors['Op2']).legend('(Op2) CL_'+ch+'_'+cont).lw(5)
+    dict_clOpt['Option 2'] = {'kspl': kspl_opt6, 'sph_bot': sph_m6, 
+                                'sph_top': sph_inf_o, 'pt2add': pt2add_inf,
+                                'description': 'Center point between last and meshesCut4Cl'}
+    
+    obj = []; txt = []
+    mesh = organ.obj_meshes[ch+'_'+cont].mesh.clone()
+    for num, opt in enumerate(dict_clOpt.keys()):
+        obj2add = (mesh.alpha(0.01), sph_m1, kspl_o, dict_clOpt[opt]['kspl'], dict_clOpt[opt]['sph_bot'], dict_clOpt[opt]['sph_top'])
+        obj.append(obj2add)
+        if num == 0: 
+            txt.append((num, organ.user_organName +' - '+opt))
+        else: 
+            txt.append((num, opt))
+    
+    plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds())) 
+
+    return dict_clOpt      
+
+def create_CLs_old(organ, name, nPoints, same_plane):# to delete
     """
     Function that creates the centrelines using the points given as input in the dict_cl
 

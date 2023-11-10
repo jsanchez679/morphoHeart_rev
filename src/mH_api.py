@@ -1116,29 +1116,48 @@ def run_centreline_select(controller):
             ch, cont, _ = name.split('_')
             print('name:', name)
             proc_wft = ['MeshesProc', 'C-Centreline', 'buildCL', ch, cont, 'Status']
+
             dict_clOpt = fcM.create_CLs(organ=controller.organ, 
                                         name=name,
-                                        nPoints = nPoints, 
-                                        same_plane = same_plane)
+                                        nPoints = nPoints)
             
             title = 'Select best centreline for tissue-contour' 
             msg = 'Select the preferred centreline for processing this tissue-contour ('+ch+'-'+cont+')'
-            items = {1: {'opt': 'Option 1'}, 2: {'opt': 'Option 2'}, 3: {'opt': 'Option 3'}, 
-                        4: {'opt': 'Option 4'}, 5:{'opt': 'Option 5'}, 6:{'opt': 'Option 6'}}
+            items = {1: {'opt': 'Option 1'}, 2: {'opt': 'Option 2'}, 3: {'opt': 'I would like to manually define the centreline'}}
             prompt = Prompt_ok_cancel_radio(title, msg, items, parent=controller.main_win)
             prompt.exec()
             print('output:', prompt.output, '\n')  
             opt_selected = prompt.output[0]
             cl_selected = items[opt_selected]['opt']
-            proc_set = ['wf_info','centreline','buildCL','connect_cl',ch+'_'+cont]
-            update = cl_selected +'-'+dict_clOpt[items[opt_selected]['opt']]['description']
-            controller.organ.update_settings(process = proc_set, update = update, mH='mH')
 
-            #Add text to Opt Centreline
-            getattr(controller.main_win, 'opt_cl'+str(nn+1)).setText(prompt.output[1])
+            proc_set = ['wf_info','centreline','buildCL','connect_cl',ch+'_'+cont]
+            if opt_selected == 3:
+                #Here, add option to align centreline
+                happy = False
+                while not happy: 
+                    cl_final, dict_clOpt = fcM.define_CL(organ=controller.organ, 
+                                                        name=name,
+                                                        nPoints = nPoints)
+                    
+                    title = 'Check centreline...'
+                    msg = 'Are you happy with the created centreline?! \n If so, select  -OK-, else select  -Cancel- and redefine it.'
+                    prompt2 = Prompt_ok_cancel(title, msg, parent=controller.main_win)
+                    prompt2.exec()
+                    print('output:', prompt2.output)
+                    happy = prompt2.output
+                    update = 'User Modif.'
+                    #Add text to Opt Centreline
+                    getattr(controller.main_win, 'opt_cl'+str(nn+1)).setText(update)
+
+            else: 
+                update = cl_selected +'-'+dict_clOpt[items[opt_selected]['opt']]['description']
+                cl_final = dict_clOpt[cl_selected]['kspl']
+                #Add text to Opt Centreline
+                getattr(controller.main_win, 'opt_cl'+str(nn+1)).setText(prompt.output[1])
+            
+            controller.organ.update_settings(process = proc_set, update = update, mH='mH')
             
             #Add centreline to organ
-            cl_final = dict_clOpt[cl_selected]['kspl']
             controller.organ.add_object(cl_final, proc='Centreline', class_name=ch+'_'+cont, name='KSpline')
             controller.organ.obj_meshes[ch+'_'+cont].set_centreline()
             
