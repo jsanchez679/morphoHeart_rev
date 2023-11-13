@@ -55,6 +55,9 @@ from ..modules.mH_classes_new import Project, Organ, create_submesh
 from .config import mH_config
 
 path_mHImages = mH_config.path_mHImages
+# Load logo
+path_logo = path_mHImages / 'logo-07.jpg'
+logo = vedo.Picture(str(path_logo))
 
 #%% Set default fonts and sizes for plots
 txt_font = mH_config.txt_font
@@ -7424,6 +7427,18 @@ class MainWindow(QMainWindow):
         else:
             self.widget_angles_ellips.setVisible(False)
 
+        self.angle_cut1_div1.clicked.connect(lambda: self.set_segms_or(cut='cut1', div='div1'))
+        self.angle_cut1_div2.clicked.connect(lambda: self.set_segms_or(cut='cut1', div='div2'))
+        self.angle_cut1_div3.clicked.connect(lambda: self.set_segms_or(cut='cut1', div='div3'))
+        self.angle_cut1_div4.clicked.connect(lambda: self.set_segms_or(cut='cut1', div='div4'))
+        self.angle_cut1_div5.clicked.connect(lambda: self.set_segms_or(cut='cut1', div='div5'))
+
+        self.angle_cut2_div1.clicked.connect(lambda: self.set_segms_or(cut='cut2', div='div1'))
+        self.angle_cut2_div2.clicked.connect(lambda: self.set_segms_or(cut='cut2', div='div2'))
+        self.angle_cut2_div3.clicked.connect(lambda: self.set_segms_or(cut='cut2', div='div3'))
+        self.angle_cut2_div4.clicked.connect(lambda: self.set_segms_or(cut='cut2', div='div4'))
+        self.angle_cut2_div5.clicked.connect(lambda: self.set_segms_or(cut='cut2', div='div5'))
+
         #Initialise with user settings, if they exist!
         self.user_segments()
 
@@ -9181,8 +9196,22 @@ class MainWindow(QMainWindow):
 
         return gui_segm
 
-    def set_angles_ellip(self, cut, intit=False): 
-        self.gui_angles_ellip(self, cut)
+    def set_angles_ellip(self, cut, init=False): 
+        mesh2use = getattr(self, 'angles_mesh2use_'+cut).currentText()
+        segm_btn_name = cut.title()+':'+mesh2use
+        if not self.segm_btns[segm_btn_name]['plot'].isEnabled(): 
+            self.win_msg('*The segments for the selected mesh -'+mesh2use+'- have not been obtained yet. Please extract the segments first to be able to set the angle settings.',getattr(self, 'set_angles_'+cut))
+            return
+        for div in getattr(self, 'div_'+cut): 
+            if not getattr(self, 'angle_'+cut+'_'+div).isChecked(): 
+                self.win_msg('*Please set the orientation segment for each segment cut to continue.', getattr(self, 'set_angles_'+cut))
+                return
+            
+        if self.gui_angles_ellip(self, cut) != None: 
+            pass
+
+        else: 
+            return
 
 
     def gui_angles_ellip(self, cut): 
@@ -9527,6 +9556,95 @@ class MainWindow(QMainWindow):
             self.gui_thickness_ballooning[item]['colormap'] = value
             print('Updated colormap: ',self.gui_thickness_ballooning[item])
 
+    def set_segms_or(self, cut, div):
+        mesh2use = getattr(self, 'angles_mesh2use_'+cut).currentText()
+        segm_btn_name = cut.title()+':'+mesh2use
+        if not self.segm_btns[segm_btn_name]['plot'].isEnabled(): 
+            self.win_msg('*The segments for the selected mesh -'+mesh2use+'- have not been obtained yet. Please extract the segments first to be able to set the angle settings.',getattr(self, 'set_angles_'+cut))
+            return
+        ch, cont = mesh2use.split('_')
+        segm_no = getattr(self, 'div_'+cut)[div]['segm']
+        subm_name = cut.title()+'_'+mesh2use+'_'+segm_no
+        subsegm = self.organ.obj_subm[subm_name]
+        sub_mesh = subsegm.get_segm_mesh()
+        cl_name = self.angles_centreline2use.currentText().split('(')[1]
+        cl_name = cl_name[:-1]
+        cl = self.organ.obj_meshes[cl_name].get_centreline()
+        st, end = getattr(self, 'div_'+cut)[div]['num_pts_range']
+        segm_name = getattr(self, 'div_'+cut)[div]['name']
+        cut_cl = vedo.KSpline(points = cl.points()[st:end]).lw(5).color('black').legend('CL_'+cl_name+'('+segm_name+')')
+        cut_cl_sphs = []
+        vcols = [vedo.color_map(v, 'turbo', 0, len(cut_cl.points())) for v in list(range(len(cut_cl.points())))] 
+
+        for num, pt in enumerate(cut_cl.points()): 
+            if num % 2 == 0:
+                sph = vedo.Sphere(pos=pt, r=1, c=vcols[num])
+                cut_cl_sphs.append(sph)
+
+        #Select the first pt for the segment
+        init_pt = self.select_pts_orientation(sub_mesh, segm_name, cut_cl_sphs)
+        last_pt = self.select_pts_orientation(sub_mesh, segm_name, cut_cl_sphs, init_pt)
+
+    def select_pts_orientation(self, sub_mesh, segm_name, cut_cl_sphs, init_pt=[]):
+
+        self.pt_selected = []
+        while len(self.pt_selected) != 3:
+            if len(init_pt) > 0: 
+                sph = vedo.Sphere(pos=init_pt, r=3, c='darkmagenta')
+            else: 
+                sph = []
+
+            def func(evt):
+                if not evt.actor: 
+                    return
+                elif isinstance(evt.actor, vedo.mesh.Mesh): 
+                    msh = evt.actor
+                    pt = evt.picked3d   # 3d coords of point under mouse
+                    print('aja mesh', type(msh), self.pt_selected, len(self.pt_selected))
+                    if isinstance(msh, vedo.shapes.Sphere): 
+                        pid = msh.pos()
+                        print('> pt sphere:', pt)
+                    else: 
+                        pid = msh.closest_point(pt, return_point_id=False)
+                        print('> ',pt, ' ', pid) 
+                else: 
+                    return   
+                                  
+                self.pt_selected = pid
+                sph = vedo.Sphere(pos=pid, r=3, c='darkblue')
+                if len(init_pt) > 0: 
+                    line = vedo.Line(p0=init_pt, p1=pid, lw=3, c='limegreen')
+                    line.name = 'line'
+                    plt.remove('line').add(line)
+                
+                txt = f"Point:  {vedo.precision(pid ,3)}" 
+                sph.name = 'silu'
+                plt.remove('silu').add(sph)
+                msg.text(txt)      
+
+            def sliderAlphaMeshOut(widget, event):
+                valueAlpha = widget.GetRepresentation().GetValue()
+                sub_mesh.alpha(valueAlpha)
+            
+            msg = vedo.Text2D(pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, alpha=0.8) # an empty text
+            if len(init_pt) > 0: 
+                inst = 'Please select the first point making up the line segment with which to measure the orientation of the '+segm_name+'. \nClose the window when you are done'
+            else: 
+                inst = ''
+            txt0 = vedo.Text2D(inst,  c=txt_color, font=txt_font, s=txt_size)
+            txt_slider_size2 = 0.7
+            
+            plt = vedo.Plotter(axes=1)
+            plt.add_icon(logo, pos=(0.1,1), size=0.25)
+            plt.add_callback('mouse click', func) # add the callback function
+            plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.01,
+                            pos=[(0.92,0.25), (0.92,0.35)], c= 'limegreen', 
+                            title='Opacity ('+segm_name+')', title_size=txt_slider_size2)
+            plt.show(cut_cl_sphs, sub_mesh, txt0, msg, at=0, viewup='y')
+
+        print('self.pt_selected', self.pt_selected)
+        return self.pt_selected
+    
     def update_segm_sect_play(self):
 
         for btn_ss in self.segm_sect_btns:
@@ -10236,6 +10354,7 @@ class MainWindow(QMainWindow):
                                                         kspl_CLnew = kspl_CL, 
                                                         segm_cuts_info=segm_cuts_info, 
                                                         cut=cut.title(), init=True)
+                        setattr(self, 'div_'+cut, ordered_kspl)
                         for nn in range(1,6,1):
                             div = 'div'+str(nn)
                             button = getattr(self, 'angle_'+cut+'_'+div)
@@ -10653,9 +10772,6 @@ class MainWindow(QMainWindow):
             mks.append(vedo.Marker('*').c(col[0:-1]).legend(view))
         lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
                             width=leg_width/1.5, height=leg_height/1.5)
-        
-        path_logo = path_mHImages / 'logo-07.jpg'
-        logo = vedo.Picture(str(path_logo))
 
         vp = vedo.Plotter(N=2, axes=1)
         vp.add_icon(logo, pos=(0.1,1), size=0.25)
@@ -12052,35 +12168,7 @@ class PlotWindow(QDialog):
         self.hLayout.addWidget(self.toolbar)
 
         # self.show()
-   
-from time import sleep
-class Worker_GetSlices(QObject):
-    
-    wait_for_input = pyqtSignal()
-    done = pyqtSignal()
 
-    def __init__(self, slc_tuple, win,  parent = None):
-        super().__init__(parent)
-        self.status = 'Init'
-        self.slc_tuple = slc_tuple
-        self.win = win
-
-    @pyqtSlot()
-    def firstWork(self): # get slices
-        print('doing first work')
-        print('slc_tuple:', self.slc_tuple)
-        for n in range(1,6,1):
-            sleep(1)
-            print('n:', n)
-        print('first work done')
-        self.wait_for_input.emit()
-
-    @pyqtSlot()
-    def secondWork(self):
-        print('doing second work')
-        sleep(10)
-        print('second work done')
-        self.done.emit()
         
 #%% Other classes GUI related - ########################################################
 class MyToggle(QtWidgets.QPushButton):
