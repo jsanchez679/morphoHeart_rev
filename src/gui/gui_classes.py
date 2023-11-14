@@ -2941,7 +2941,7 @@ class NewOrgan(QDialog):
             cwd = self.user_dir
         else: 
             cwd = Path().absolute()
-        file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image Files (*.tif, *.tiff)")
+        file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image Files (*.tif *.tiff)")
         if Path(file_name).is_file(): 
             label = getattr(self, 'lab_filled_dir_'+ch)
             label.setText(str(file_name))
@@ -2975,7 +2975,7 @@ class NewOrgan(QDialog):
                 cwd = self.user_dir
             else: 
                 cwd = Path().absolute()
-            file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), 'Image Files (*.tif, *.tiff)')
+            file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), 'Image Files (*.tif *.tiff)')
             if Path(file_name).is_file(): 
                 label = getattr(self, 'lab_filled_dir_mask_'+ch)
                 label.setText(str(file_name))
@@ -3210,6 +3210,7 @@ class LoadProj(QDialog):
             elif sum(checked) > 1:
                 error_txt = '*Please select only one organ to analyse.'
                 self.win_msg(error_txt, self.go_to_main_window)
+                return
             else: 
                 print('checked:', checked)
                 if len(checked) > 1:
@@ -7830,7 +7831,10 @@ class MainWindow(QMainWindow):
             self.user_params_widget.setVisible(False)
             self.user_params_open.setVisible(False)
             self.label_user_params.setVisible(False)
-            self.spacer_user_params.setVisible(False)
+            try: 
+                self.spacer_user_params.setVisible(False)
+            except: 
+                pass
         else: 
             self.continuous_set.clicked.connect(lambda: self.set_user_user_params(ptype='continuous'))
             self.categorical_set.clicked.connect(lambda: self.set_user_user_params(ptype='categorical'))
