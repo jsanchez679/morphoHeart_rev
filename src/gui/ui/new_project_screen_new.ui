@@ -798,7 +798,7 @@ QScrollBar::handle:vertical:hover {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-801</y>
+            <y>-642</y>
             <width>938</width>
             <height>1394</height>
            </rect>
@@ -7296,7 +7296,7 @@ border-color: #672146
                       <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                      </property>
                      <property name="text">
-                      <string>Angles</string>
+                      <string>Angles*</string>
                      </property>
                     </widget>
                    </item>

@@ -7802,7 +7802,7 @@ border-color: #672146
                           <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                          </property>
                          <property name="text">
-                          <string>Angles</string>
+                          <string>Angles*</string>
                          </property>
                         </widget>
                        </item>

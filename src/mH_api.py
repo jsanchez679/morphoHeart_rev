@@ -1833,6 +1833,49 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
         organ.update_settings(proc+[cyl_name], update = cyl_dict, mH = 'mH')
         print('wf_info:', organ.mH_settings['wf_info']['segments']['setup'])
 
+# > Angles Segments
+def run_angles(controller, btn): 
+    #Get direction of cut
+    dir, cut = btn.split('_')
+    axes = controller.main_win.gui_angles['ang_settings']['axes'].split(',')
+    ax_selected = axes[int(dir[-1])-1].strip()
+    mtype = controller.main_win.gui_angles[cut]['axis_lab']
+
+    #Get cube
+    cubes = getattr(controller.organ, mtype+'_cube')
+    orient_cube = cubes['cube']
+    clear_cube = cubes['clear']
+    #Get plane 
+    pl_normal = controller.main_win.gui_orientation[mtype]['planar_views'][ax_selected]['pl_normal']
+    id_cell = controller.main_win.gui_orientation[mtype]['planar_views'][ax_selected]['idcell']
+    pl_centre = orient_cube.cell_centers()[id_cell]
+    plane = vedo.Plane(pos=pl_centre, normal = pl_normal)
+
+    #Get external mesh
+    mesh_name = controller.main_win.gui_angles[cut]['mesh_to_use']
+    #Get the segments and iterate through them
+    divs = controller.main_win.gui_angles[cut]['div']
+    for div in divs: 
+        segm_no = divs[div]['segm']
+        subm_name = cut.title()+'_'+mesh_name+'_'+segm_no
+        subsegm = controller.organ.obj_subm[subm_name]
+
+        #Get the submesh
+        sub_mesh = subsegm.get_segm_mesh()
+
+        #Create the line 
+        p0 = divs[div]['segment_pts']['start']
+        p1 = divs[div]['segment_pts']['end']
+        line_or = vedo.Line(p0=p0, p1=p1, c='limegreen', lw=3)
+
+        proj_line = line_or.clone().project_on_plane(plane = plane).lw(3).color('darkpurple')
+        #find out where the plane is!
+        plt = vedo.Plotter(N=1, axes=1)
+        plt.show(sub_mesh, clear_cube, line_or, plane, proj_line, at=0, interactive=True)
+
+    print('')
+    pass
+
 # > SECTIONS
 def run_sections(controller, btn): 
 

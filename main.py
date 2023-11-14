@@ -511,6 +511,15 @@ class Controller:
         self.main_win.cut2_play_segm11.clicked.connect(lambda: self.run_segments(btn='Cut2_11'))
         self.main_win.cut2_play_segm12.clicked.connect(lambda: self.run_segments(btn='Cut2_12'))
 
+        #Angles segments
+        self.main_win.play_angle_dir1_cut1.clicked.connect(lambda: self.run_angles(btn= 'dir1_cut1'))
+        self.main_win.play_angle_dir2_cut1.clicked.connect(lambda: self.run_angles(btn= 'dir2_cut1'))
+        self.main_win.play_angle_dir3_cut1.clicked.connect(lambda: self.run_angles(btn= 'dir3_cut1'))
+
+        self.main_win.play_angle_dir1_cut2.clicked.connect(lambda: self.run_angles(btn= 'dir1_cut2'))
+        self.main_win.play_angle_dir2_cut2.clicked.connect(lambda: self.run_angles(btn= 'dir2_cut2'))
+        self.main_win.play_angle_dir3_cut2.clicked.connect(lambda: self.run_angles(btn= 'dir3_cut2'))
+
         # SECTIONS
         # self.main_win.sections_play.clicked.connect(lambda: self.run_sections())
         #Cut 1
@@ -871,6 +880,11 @@ class Controller:
 
     def run_segments(self, btn=None):
         mA.run_segments(controller=self, btn=btn)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
+
+    def run_angles(self, btn=None): 
+        mA.run_angles(controller=self, btn=btn)
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 

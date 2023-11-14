@@ -3213,6 +3213,7 @@ class LoadProj(QDialog):
             elif sum(checked) > 1:
                 error_txt = '*Please select only one organ to analyse.'
                 self.win_msg(error_txt, self.go_to_main_window)
+                return
             else: 
                 print('checked:', checked)
                 if len(checked) > 1:
@@ -9217,37 +9218,40 @@ class MainWindow(QMainWindow):
             #Get variables for all Cuts
             cl2use = self.angles_centreline2use.currentText()
             nPoints = self.angles_nPoints.value()
-            ck_cut1 = self.angles_cut1.isChecked(True)
-            ck_cut2 = self.angles_cut2.isChecked(True)
+            ck_cut1 = self.angles_cut1.isChecked()
+            ck_cut2 = self.angles_cut2.isChecked()
             
             centreline_set = {'centreline': cl2use, 
                                 'nPoints': nPoints, 
                                 'cut1': ck_cut1, 
                                 'cut2': ck_cut2}
+            
             #Get values for current cut
             current_gui_angles_cut = self.gui_angles_ellip(cut)
             wf_info = self.organ.mH_settings['wf_info'] 
             if 'segm_angles' not in wf_info.keys():
-                self.gui_angles = {'cl_settings': centreline_set, 
+                self.gui_angles = {'ang_settings': centreline_set, 
                                    cut: current_gui_angles_cut}
             elif cut not in wf_info['segm_angles'].keys(): 
-                self.gui_angles['cl_settings'] = centreline_set
+                self.gui_angles['ang_settings'] = centreline_set
                 self.gui_angles[cut] = current_gui_angles_cut
             else: 
                 gui_angles_loaded = self.organ.mH_settings['wf_info']['segm_angles'][cut]
                 gui_angles, changed = update_gui_set(loaded = gui_angles_loaded, 
                                                      current = current_gui_angles_cut)
                 if hasattr(self, 'gui_angles'): 
-                    self.gui_angles['cl_settings'] = centreline_set
+                    self.gui_angles['ang_settings'] = centreline_set
                     self.gui_angles[cut] = gui_angles
                 else: 
-                    self.gui_angles = {'cl_settings': centreline_set, 
+                    self.gui_angles = {'ang_settings': centreline_set, 
                                         cut: gui_angles}
             
             getattr(self, 'set_angles_'+cut).setChecked(True)
             print('self.gui_angles:',self.gui_angles)
-            for n, axes in enumerate(wf_info['orientation'][self.gui_angles[cut]['axis_lab']]['axis']): 
-                getattr(self, 'angle_dir'+str(n)+'_'+cut).setText(axes)
+            axes = wf_info['orientation'][self.gui_angles[cut]['axis_lab']]['axis'].split(',')
+            self.gui_angles['ang_settings']['axes'] = wf_info['orientation'][self.gui_angles[cut]['axis_lab']]['axis']
+            for n, ax in enumerate(axes): 
+                getattr(self, 'angle_dir'+str(n+1)+'_'+cut).setText(ax.strip())
             getattr(self, 'widget_angle_meas_'+cut).setVisible(True)
 
             if not init: 
@@ -9602,7 +9606,7 @@ class MainWindow(QMainWindow):
             self.win_msg('*The segments for the selected mesh -'+mesh2use+'- have not been obtained yet. Please extract the segments first to be able to set the angle settings.',getattr(self, 'set_angles_'+cut))
             return
         
-        ch, cont = mesh2use.split('_')
+        # ch, cont = mesh2use.split('_')
         segm_no = getattr(self, 'div_'+cut)[div]['segm']
         subm_name = cut.title()+'_'+mesh2use+'_'+segm_no
         subsegm = self.organ.obj_subm[subm_name]
