@@ -2944,7 +2944,7 @@ class NewOrgan(QDialog):
             cwd = self.user_dir
         else: 
             cwd = Path().absolute()
-        file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image Files (*.tif, *.tiff)")
+        file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image File (*.tif *.tiff)")
         if Path(file_name).is_file(): 
             label = getattr(self, 'lab_filled_dir_'+ch)
             label.setText(str(file_name))
@@ -2978,7 +2978,7 @@ class NewOrgan(QDialog):
                 cwd = self.user_dir
             else: 
                 cwd = Path().absolute()
-            file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), 'Image Files (*.tif, *.tiff)')
+            file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), 'Image Files (*.tif *.tiff)')
             if Path(file_name).is_file(): 
                 label = getattr(self, 'lab_filled_dir_mask_'+ch)
                 label.setText(str(file_name))
@@ -7881,7 +7881,10 @@ class MainWindow(QMainWindow):
             self.user_params_widget.setVisible(False)
             self.user_params_open.setVisible(False)
             self.label_user_params.setVisible(False)
-            self.spacer_user_params.setVisible(False)
+            try: 
+                self.spacer_user_params.setVisible(False)
+            except: 
+                pass
         else: 
             self.continuous_set.clicked.connect(lambda: self.set_user_user_params(ptype='continuous'))
             self.categorical_set.clicked.connect(lambda: self.set_user_user_params(ptype='categorical'))
@@ -9199,39 +9202,74 @@ class MainWindow(QMainWindow):
     def set_angles_ellip(self, cut, init=False): 
         mesh2use = getattr(self, 'angles_mesh2use_'+cut).currentText()
         segm_btn_name = cut.title()+':'+mesh2use
-        if not self.segm_btns[segm_btn_name]['plot'].isEnabled(): 
-            self.win_msg('*The segments for the selected mesh -'+mesh2use+'- have not been obtained yet. Please extract the segments first to be able to set the angle settings.',getattr(self, 'set_angles_'+cut))
-            return
-        for div in getattr(self, 'div_'+cut): 
-            if not getattr(self, 'angle_'+cut+'_'+div).isChecked(): 
-                self.win_msg('*Please set the orientation segment for each segment cut to continue.', getattr(self, 'set_angles_'+cut))
-                return
-            
-        if self.gui_angles_ellip(self, cut) != None: 
-            pass
-
-        else: 
-            return
-
-
-    def gui_angles_ellip(self, cut): 
-        mesh2use = getattr(self, 'angles_mesh2use_'+cut)
         if mesh2use == '----': 
             self.win_msg('*Please select the mesh you want to use to define the segments orientation lines.', getattr(self, 'set_angles_'+cut))
             return None
+        elif not self.segm_btns[segm_btn_name]['plot'].isEnabled(): 
+            self.win_msg('*The segments for the selected mesh -'+mesh2use+'- have not been obtained yet. Please extract the segments first to be able to set the angle settings.',getattr(self, 'set_angles_'+cut))
+            return
         else: 
-            for reg in ['roi', 'stack']: 
-                if getattr(self, 'angle_'+reg+'_'+cut).isChecked(): 
-                    selected = reg
-                    break
-
-            gui_angles = {'mesh_to_use': mesh2use, 
-                            'axis_lab': selected.title()}
+            for div in getattr(self, 'div_'+cut): 
+                if not getattr(self, 'angle_'+cut+'_'+div).isChecked(): 
+                    self.win_msg('*Please set the orientation segment for each segment cut to continue.', getattr(self, 'set_angles_'+cut))
+                    return
             
-            print('gui_angles: ', gui_angles)
-            return gui_angles
-        
-            self.win_msg('Great, now set the orientation extremes for each individual segment by clicking the button with each segment name')
+            #Get variables for all Cuts
+            cl2use = self.angles_centreline2use.currentText()
+            nPoints = self.angles_nPoints.value()
+            ck_cut1 = self.angles_cut1.isChecked(True)
+            ck_cut2 = self.angles_cut2.isChecked(True)
+            
+            centreline_set = {'centreline': cl2use, 
+                                'nPoints': nPoints, 
+                                'cut1': ck_cut1, 
+                                'cut2': ck_cut2}
+            #Get values for current cut
+            current_gui_angles_cut = self.gui_angles_ellip(cut)
+            wf_info = self.organ.mH_settings['wf_info'] 
+            if 'segm_angles' not in wf_info.keys():
+                self.gui_angles = {'cl_settings': centreline_set, 
+                                   cut: current_gui_angles_cut}
+            elif cut not in wf_info['segm_angles'].keys(): 
+                self.gui_angles['cl_settings'] = centreline_set
+                self.gui_angles[cut] = current_gui_angles_cut
+            else: 
+                gui_angles_loaded = self.organ.mH_settings['wf_info']['segm_angles'][cut]
+                gui_angles, changed = update_gui_set(loaded = gui_angles_loaded, 
+                                                     current = current_gui_angles_cut)
+                if hasattr(self, 'gui_angles'): 
+                    self.gui_angles['cl_settings'] = centreline_set
+                    self.gui_angles[cut] = gui_angles
+                else: 
+                    self.gui_angles = {'cl_settings': centreline_set, 
+                                        cut: gui_angles}
+            
+            getattr(self, 'set_angles_'+cut).setChecked(True)
+            print('self.gui_angles:',self.gui_angles)
+            for n, axes in enumerate(wf_info['orientation'][self.gui_angles[cut]['axis_lab']]['axis']): 
+                getattr(self, 'angle_dir'+str(n)+'_'+cut).setText(axes)
+            getattr(self, 'widget_angle_meas_'+cut).setVisible(True)
+
+            if not init: 
+                # Update mH_settings
+                proc_set = ['wf_info']
+                update = self.gui_angles
+                self.organ.update_settings(proc_set, update, 'mH', add='gui_angles')
+
+    def gui_angles_ellip(self, cut): 
+        mesh2use = getattr(self, 'angles_mesh2use_'+cut).currentText()
+
+        for reg in ['roi', 'stack']: 
+            if getattr(self, 'angle_'+reg+'_'+cut).isChecked(): 
+                selected = reg
+                break
+
+        gui_angles = {'mesh_to_use': mesh2use, 
+                        'axis_lab': selected,
+                        'div': getattr(self, 'div_'+cut)}
+            
+        print('gui_angles ('+cut+'): ', gui_angles)
+        return gui_angles
     
     def set_sections(self, init=False): 
 
@@ -9557,11 +9595,13 @@ class MainWindow(QMainWindow):
             print('Updated colormap: ',self.gui_thickness_ballooning[item])
 
     def set_segms_or(self, cut, div):
+
         mesh2use = getattr(self, 'angles_mesh2use_'+cut).currentText()
         segm_btn_name = cut.title()+':'+mesh2use
         if not self.segm_btns[segm_btn_name]['plot'].isEnabled(): 
             self.win_msg('*The segments for the selected mesh -'+mesh2use+'- have not been obtained yet. Please extract the segments first to be able to set the angle settings.',getattr(self, 'set_angles_'+cut))
             return
+        
         ch, cont = mesh2use.split('_')
         segm_no = getattr(self, 'div_'+cut)[div]['segm']
         subm_name = cut.title()+'_'+mesh2use+'_'+segm_no
@@ -9580,67 +9620,101 @@ class MainWindow(QMainWindow):
             if num % 2 == 0:
                 sph = vedo.Sphere(pos=pt, r=1, c=vcols[num])
                 cut_cl_sphs.append(sph)
-
+        
+        init_top = cl.points()[st]
+        try: 
+            init_bot = cl.points()[end]
+        except:
+            init_bot = cl.points()[end-1]
         #Select the first pt for the segment
-        init_pt = self.select_pts_orientation(sub_mesh, segm_name, cut_cl_sphs)
-        last_pt = self.select_pts_orientation(sub_mesh, segm_name, cut_cl_sphs, init_pt)
+        set_top_pt = self.select_pts_orientation(sub_mesh, segm_name, cut_cl_sphs, init_top, init_bot, init = True)
+        set_bot_pt = self.select_pts_orientation(sub_mesh, segm_name, cut_cl_sphs, init_bot, other_pt=set_top_pt)
+        print('set_top_pt:', set_top_pt)
+        print('set_bot_pt:', set_bot_pt)
 
-    def select_pts_orientation(self, sub_mesh, segm_name, cut_cl_sphs, init_pt=[]):
+        list_keys = list(getattr(self, 'div_'+cut)[div].keys())
+        for key in list_keys:
+            if key not in ['num_pts_range', 'segm', 'name']:
+                getattr(self, 'div_'+cut)[div].pop(key, None)
+        
+        getattr(self, 'div_'+cut)[div]['segment_pts'] = {'start': set_top_pt, 
+                                                         'end': set_bot_pt}
+        #Toggle button
+        getattr(self, 'angle_'+cut+'_'+div).setChecked(True)
+        self.win_msg('!Line segment for measuring orientation of the '+segm_name+' ('+cut.title()+') has been set!')
 
-        self.pt_selected = []
-        while len(self.pt_selected) != 3:
-            if len(init_pt) > 0: 
-                sph = vedo.Sphere(pos=init_pt, r=3, c='darkmagenta')
-            else: 
-                sph = []
+    def select_pts_orientation(self, sub_mesh, segm_name, cut_cl_sphs, init_pt, other_pt=[], init = False):
+        
+        if init: 
+            color_set = 'darkblue'
+            color_other = 'darkmagenta'
+        else: 
+            color_set = 'crimson'
+            color_other = 'darkblue'
 
-            def func(evt):
-                if not evt.actor: 
-                    return
-                elif isinstance(evt.actor, vedo.mesh.Mesh): 
-                    msh = evt.actor
-                    pt = evt.picked3d   # 3d coords of point under mouse
-                    print('aja mesh', type(msh), self.pt_selected, len(self.pt_selected))
-                    if isinstance(msh, vedo.shapes.Sphere): 
-                        pid = msh.pos()
-                        print('> pt sphere:', pt)
-                    else: 
-                        pid = msh.closest_point(pt, return_point_id=False)
-                        print('> ',pt, ' ', pid) 
+        #Initialise sphere to move
+        if hasattr(self, 'pt_selected'): 
+            del self.pt_selected
+
+        self.pt_selected = init_pt
+        sph = vedo.Sphere(pos=init_pt, r=2.5, c=color_set)
+        sph.name = 'silu'
+
+        #Initialise other sphere
+        if len(other_pt) > 0: 
+            sph2 = vedo.Sphere(pos=other_pt, r=2.5, c=color_other)
+            line = vedo.Line(p0=other_pt, p1=init_pt, lw=4, c='limegreen')
+            line.name = 'line'
+        else: 
+            sph2 = []
+            line = []
+
+        def func(evt):
+            if not evt.actor: 
+                return
+            elif isinstance(evt.actor, vedo.mesh.Mesh): 
+                msh = evt.actor
+                pt = evt.picked3d   # 3d coords of point under mouse
+                # print('aja mesh', type(msh), self.pt_selected, len(self.pt_selected))
+                if isinstance(msh, vedo.shapes.Sphere): 
+                    pid = msh.pos()
                 else: 
-                    return   
-                                  
-                self.pt_selected = pid
-                sph = vedo.Sphere(pos=pid, r=3, c='darkblue')
-                if len(init_pt) > 0: 
-                    line = vedo.Line(p0=init_pt, p1=pid, lw=3, c='limegreen')
-                    line.name = 'line'
-                    plt.remove('line').add(line)
-                
-                txt = f"Point:  {vedo.precision(pid ,3)}" 
-                sph.name = 'silu'
-                plt.remove('silu').add(sph)
-                msg.text(txt)      
-
-            def sliderAlphaMeshOut(widget, event):
-                valueAlpha = widget.GetRepresentation().GetValue()
-                sub_mesh.alpha(valueAlpha)
-            
-            msg = vedo.Text2D(pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, alpha=0.8) # an empty text
-            if len(init_pt) > 0: 
-                inst = 'Please select the first point making up the line segment with which to measure the orientation of the '+segm_name+'. \nClose the window when you are done'
+                    pid = msh.closest_point(pt, return_point_id=False)
             else: 
-                inst = ''
-            txt0 = vedo.Text2D(inst,  c=txt_color, font=txt_font, s=txt_size)
-            txt_slider_size2 = 0.7
+                return   
+                                
+            self.pt_selected = pid
+            sph = vedo.Sphere(pos=pid, r=2.5, c=color_set)
+            if len(other_pt) > 0: 
+                line = vedo.Line(p0=other_pt, p1=pid, lw=3, c='limegreen')
+                line.name = 'line'
+                plt.remove('line').add(line)
             
-            plt = vedo.Plotter(axes=1)
-            plt.add_icon(logo, pos=(0.1,1), size=0.25)
-            plt.add_callback('mouse click', func) # add the callback function
-            plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.01,
-                            pos=[(0.92,0.25), (0.92,0.35)], c= 'limegreen', 
-                            title='Opacity ('+segm_name+')', title_size=txt_slider_size2)
-            plt.show(cut_cl_sphs, sub_mesh, txt0, msg, at=0, viewup='y')
+            txt = f"Point:  {vedo.precision(pid ,3)}" 
+            sph.name = 'silu'
+            plt.remove('silu').add(sph)
+            msg.text(txt)      
+
+        def sliderAlphaMeshOut(widget, event):
+            valueAlpha = widget.GetRepresentation().GetValue()
+            sub_mesh.alpha(valueAlpha)
+        
+        msg = vedo.Text2D(pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, alpha=0.8) # an empty text
+        ins0 = 'Setting the line segment to measure the orientation of the '+segm_name+'\n'
+        if init: 
+            inst = '>  An initial line segment has been created. \n-  Click anywhere in the mesh (or centreline) to redefine the position of the dark blue sphere.\n-  Close the window when you are done'
+        else: 
+            inst = '>  Now define the position of the dark red sphere to finish setting up the line segment for the '+segm_name+'.\n-  Close the window when you are done.'
+        txt0 = vedo.Text2D(ins0+inst,  c=txt_color, font=txt_font, s=txt_size)
+        txt_slider_size2 = 0.7
+        
+        plt = vedo.Plotter(axes=1)
+        plt.add_icon(logo, pos=(0.1,1), size=0.25)
+        plt.add_callback('mouse click', func) # add the callback function
+        plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.01,
+                        pos=[(0.92,0.25), (0.92,0.35)], c= 'limegreen', 
+                        title='Opacity ('+segm_name+')', title_size=txt_slider_size2)
+        plt.show(cut_cl_sphs, sub_mesh, sph, sph2, line, txt0, msg, at=0, viewup='y')
 
         print('self.pt_selected', self.pt_selected)
         return self.pt_selected

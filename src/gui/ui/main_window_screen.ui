@@ -1160,8 +1160,8 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-409</y>
-                      <width>382</width>
+                      <y>0</y>
+                      <width>372</width>
                       <height>1960</height>
                      </rect>
                     </property>
@@ -9354,8 +9354,8 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-240</y>
-                      <width>382</width>
+                      <y>0</y>
+                      <width>372</width>
                       <height>1960</height>
                      </rect>
                     </property>
@@ -17548,8 +17548,8 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-422</y>
-                      <width>382</width>
+                      <y>0</y>
+                      <width>372</width>
                       <height>1960</height>
                      </rect>
                     </property>
@@ -25742,7 +25742,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1115</y>
+                      <y>0</y>
                       <width>382</width>
                       <height>1960</height>
                      </rect>
@@ -35562,7 +35562,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-3390</y>
+                   <y>-3480</y>
                    <width>632</width>
                    <height>6128</height>
                   </rect>
@@ -64136,7 +64136,7 @@ background-color: rgb(255, 255, 255);</string>
                                           <item>
                                            <widget class="QPushButton" name="play_angle_dir1_cut1">
                                             <property name="enabled">
-                                             <bool>false</bool>
+                                             <bool>true</bool>
                                             </property>
                                             <property name="minimumSize">
                                              <size>
@@ -64457,7 +64457,7 @@ background-color: rgb(255, 255, 255);</string>
                                           <item>
                                            <widget class="QPushButton" name="play_angle_dir2_cut1">
                                             <property name="enabled">
-                                             <bool>false</bool>
+                                             <bool>true</bool>
                                             </property>
                                             <property name="minimumSize">
                                              <size>
@@ -64778,7 +64778,7 @@ background-color: rgb(255, 255, 255);</string>
                                           <item>
                                            <widget class="QPushButton" name="play_angle_dir3_cut1">
                                             <property name="enabled">
-                                             <bool>false</bool>
+                                             <bool>true</bool>
                                             </property>
                                             <property name="minimumSize">
                                              <size>
@@ -65766,7 +65766,7 @@ background-color: rgb(255, 255, 255);</string>
                                           <item>
                                            <widget class="QPushButton" name="play_angle_dir1_cut2">
                                             <property name="enabled">
-                                             <bool>false</bool>
+                                             <bool>true</bool>
                                             </property>
                                             <property name="minimumSize">
                                              <size>
@@ -66087,7 +66087,7 @@ background-color: rgb(255, 255, 255);</string>
                                           <item>
                                            <widget class="QPushButton" name="play_angle_dir2_cut2">
                                             <property name="enabled">
-                                             <bool>false</bool>
+                                             <bool>true</bool>
                                             </property>
                                             <property name="minimumSize">
                                              <size>
@@ -66408,7 +66408,7 @@ background-color: rgb(255, 255, 255);</string>
                                           <item>
                                            <widget class="QPushButton" name="play_angle_dir3_cut2">
                                             <property name="enabled">
-                                             <bool>false</bool>
+                                             <bool>true</bool>
                                             </property>
                                             <property name="minimumSize">
                                              <size>
