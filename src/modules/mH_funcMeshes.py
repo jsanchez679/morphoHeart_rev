@@ -3383,7 +3383,7 @@ def unit_vector(v):
 
     return np.asarray(v_unit)
 
-def order_pts (points):
+def order_pts(points):
     """
     Function that returns an ordered array of points
     """

@@ -1843,13 +1843,50 @@ def run_angles(controller, btn):
 
     #Get cube
     cubes = getattr(controller.organ, mtype+'_cube')
-    orient_cube = cubes['cube']
+    orient_cube = cubes['cube'].clone().alpha(0.001)
     clear_cube = cubes['clear']
+    cube_pts = orient_cube.points()
     #Get plane 
     pl_normal = controller.main_win.gui_orientation[mtype]['planar_views'][ax_selected]['pl_normal']
     id_cell = controller.main_win.gui_orientation[mtype]['planar_views'][ax_selected]['idcell']
     pl_centre = orient_cube.cell_centers()[id_cell]
-    plane = vedo.Plane(pos=pl_centre, normal = pl_normal)
+    sph = vedo.Sphere(pos = pl_centre, r=1, c='tomato')
+    plane = vedo.Plane(pos=pl_centre, normal = pl_normal, s=(300,300)).alpha(0.5)
+
+    #Get the corner closer to the 0,0,0
+    unique_corner_pts = np.unique(cube_pts, axis=0)
+    min_dist = 10000000
+    for n, pt in enumerate(unique_corner_pts):
+        dist = np.linalg.norm(pt)
+        print(pt, dist)
+        if dist < min_dist: 
+            min_dist = dist
+            nf = n
+
+    zero_corner = unique_corner_pts[nf]
+    sph_zero = vedo.Sphere(pos = zero_corner, r=3, c='orange')
+
+    #Create vector aligning to all axes of the rotated cube
+    min_dist = 1000000
+    for nn, pt in enumerate(unique_corner_pts): 
+        diff_v = pt - zero_corner
+        dist = np.linalg.norm(diff_v)
+        print(pt, dist)
+        if nn != nf and dist < min_dist: 
+            min_dist = dist
+            nff = nn
+    
+    pts4corners = []
+    for pt in unique_corner_pts: 
+        diff_v = pt - zero_corner
+        dist = np.linalg.norm(diff_v)
+        if min_dist*0.99 < dist and dist < min_dist*1.01:
+            pts4corners.append(pt) 
+
+    #Only create those arrows that are parallel to the face not perpendicular to be able to select from them
+    vect_0 = vedo.Arrow(start_pt=zero_corner, end_pt=pts4corners[0], s=0.1)
+    vect_1 = vedo.Arrow(start_pt=zero_corner, end_pt=pts4corners[1], s=0.1)
+    vect_2 = vedo.Arrow(start_pt=zero_corner, end_pt=pts4corners[2], s=0.1)
 
     #Get external mesh
     mesh_name = controller.main_win.gui_angles[cut]['mesh_to_use']
@@ -1866,12 +1903,31 @@ def run_angles(controller, btn):
         #Create the line 
         p0 = divs[div]['segment_pts']['start']
         p1 = divs[div]['segment_pts']['end']
+        sph_p0 = vedo.Sphere(pos = p0, r=2, c='black')
+        sph_p1 = vedo.Sphere(pos = p1, r=2, c='gold')
+        arrow_or = vedo.Arrow(start_pt=p1, end_pt=p0, c='darkred', s=0.1)
         line_or = vedo.Line(p0=p0, p1=p1, c='limegreen', lw=3)
 
-        proj_line = line_or.clone().project_on_plane(plane = plane).lw(3).color('darkpurple')
-        #find out where the plane is!
+        sph_proj_p0 = sph_p0.clone().project_on_plane(plane = plane).color('black').alpha(1)
+        proj_p0 = sph_proj_p0.center_of_mass()
+        sph_proj_p1 = sph_p1.clone().project_on_plane(plane = plane).color('gold').alpha(1)
+        proj_p1 = sph_proj_p1.center_of_mass()
+
+        proj_line = line_or.clone().project_on_plane(plane = plane)
+        proj_arrow_or = vedo.Arrow(start_pt=proj_p1, end_pt=proj_p0, s=0.1, c='darkpurple').alpha(1)
+
+        moved_proj_arrow_or = vedo.Arrow(start_pt = zero_corner, end_pt=zero_corner+proj_p0-proj_p1, s=0.1, c='darkpurple').alpha(1)
+
+        vector_zero = np.array((proj_p0-proj_p1, [0.0,0.0,0.0]))
+
         plt = vedo.Plotter(N=1, axes=1)
-        plt.show(sub_mesh, clear_cube, line_or, plane, proj_line, at=0, interactive=True)
+        plt.show(sub_mesh, sph, arrow_or, vect_0, vect_1, vect_2, sph_zero, clear_cube, plane, proj_arrow_or, moved_proj_arrow_or, sph_p0, sph_p1, sph_proj_p0, sph_proj_p1, at=0, interactive=True)
+
+        #Create a new line in the plane with which the segment can be measured
+
+
+
+
 
     print('')
     pass
