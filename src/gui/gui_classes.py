@@ -6520,6 +6520,80 @@ class MainWindow(QMainWindow):
         txt = [(0, self.organ.user_organName+' - Final S3s for Channel: '+im_ch.user_chName)]
         plot_grid(obj=meshes_out, txt=txt, zoom=1.5, axes=5)
 
+    def plot_angles(self, btn):
+
+        print('')
+        dir, cut = btn.split('_')
+        axes = self.gui_angles['ang_settings']['axes'].split(',')
+        ax_selected = axes[int(dir[-1])-1].strip()
+        mtype = self.gui_angles[cut]['axis_lab']
+        axis = getattr(self, 'angle_'+dir+'_'+cut).text()
+
+        #Get cube
+        cubes = getattr(self.organ, mtype+'_cube')
+        orient_cube = cubes['cube'].clone().alpha(0.1)
+        clear_cube = cubes['clear'].clone().alpha(0.1)
+
+        mesh_name = self.gui_angles[cut]['mesh_to_use']
+        angle_settings = self.gui_angles[cut]['axis_settings'][axis]
+
+        pl_normal = angle_settings['proj_plane']['pl_normal']
+        pl_centre = angle_settings['proj_plane']['pl_centre']
+        plane = vedo.Plane(pos=pl_centre, normal = pl_normal, s=(300,300)).alpha(0.5)
+
+        zero_corner = angle_settings['div1']['ref_vector_corner_box']['p0']
+        sph_zero = vedo.Sphere(pos = zero_corner, r=3, c='orange')
+        end_pt_ref_vector = angle_settings['div1']['ref_vector_corner_box']['p1']
+        ref_vector = vedo.Arrow(start_pt=zero_corner, end_pt= end_pt_ref_vector, s=0.25, c='yellowgreen')
+
+        segms =[]; line_or = []; proj_or = []; zero_or = []; capt = []; angle_txt = '-Measured angles-'
+        divs = [key for key in angle_settings.keys() if 'div' in key]
+        colors = ['tomato', 'limegreen', 'orange', 'deepskyblue', 'darkviolet']
+        for n, div, color in zip(count(), divs, colors): 
+            angle_txt = angle_txt+'\n'
+            div_set = angle_settings[div]
+            #Get segm 
+            segm_no = self.gui_angles[cut]['div'][div]['segm']
+            subm_name = cut.title()+'_'+mesh_name+'_'+segm_no
+            subsegm = self.organ.obj_subm[subm_name]
+            #Get the submesh
+            sub_mesh = subsegm.get_segm_mesh()
+            segms.append(sub_mesh)
+            _, _, segm_name = subsegm.sub_legend.split('_')
+
+            #Original vector
+            p0 = angle_settings[div]['original_line']['p0']
+            p1 = angle_settings[div]['original_line']['p1']
+            line_vect = vedo.Arrow(start_pt=p0, end_pt=p1, s=0.1, c=color).alpha(1)
+            line_or.append(line_vect)
+
+            #Proj vector
+            proj_p0 = angle_settings[div]['proj_line']['p0']
+            proj_p1 = angle_settings[div]['proj_line']['p1']
+            proj_arrow_or = vedo.Arrow(start_pt=proj_p1, end_pt=proj_p0, s=0.1, c=color).alpha(1)
+            proj_or.append(proj_arrow_or)
+
+            #Proj_vectors moved to corner box
+            zero_p0 = angle_settings[div]['proj_vect_corner_box']['p0']
+            zero_p1 = angle_settings[div]['proj_vect_corner_box']['p1']
+            moved_proj_arrow_or = vedo.Arrow(start_pt = zero_p0, end_pt=zero_p1, s=0.1, c=color).alpha(1)
+            zero_or.append(moved_proj_arrow_or)
+
+            angle = angle_settings[div]['angle']
+            angle_val = "%.1f" % angle
+            angle_txt = angle_txt+'-'+segm_name+': '+angle_val+' degrees'
+
+        cap = sph_zero.caption(angle_txt,
+                                point=zero_corner,
+                                size=(0.2, 0.1),
+                                justify='center',
+                                font=txt_font,
+                                alpha=1)
+        
+        plt = vedo.Plotter(N=1, axes=1)
+        plt.add_icon(logo, pos=(0.9,0.1), size=0.25)
+        plt.show(segms, line_or, proj_or, zero_or, plane, orient_cube, sph_zero, cap, ref_vector, at=0, viewup='y', zoom=0.8, interactive=True)
+        
     #Image thumbnails
     def add_thumbnail(self, function, params, name): 
         
@@ -7424,6 +7498,14 @@ class MainWindow(QMainWindow):
             self.set_angles_initial.clicked.connect(lambda: self.select_cl_angle_ellip())
             self.set_angles_cut1.clicked.connect(lambda: self.set_angles_ellip(cut = 'cut1', init=True))
             self.set_angles_cut2.clicked.connect(lambda: self.set_angles_ellip(cut = 'cut2', init=True))
+
+            #Plot angles
+            self.plot_angle_dir1_cut1.clicked.connect(lambda: self.plot_angles(btn='dir1_cut1'))
+            self.plot_angle_dir2_cut1.clicked.connect(lambda: self.plot_angles(btn='dir2_cut1'))
+            self.plot_angle_dir3_cut1.clicked.connect(lambda: self.plot_angles(btn='dir3_cut1'))
+            self.plot_angle_dir1_cut2.clicked.connect(lambda: self.plot_angles(btn='dir1_cut2'))
+            self.plot_angle_dir2_cut2.clicked.connect(lambda: self.plot_angles(btn='dir2_cut2'))
+            self.plot_angle_dir3_cut2.clicked.connect(lambda: self.plot_angles(btn='dir3_cut2'))
 
         else:
             self.widget_angles_ellips.setVisible(False)
@@ -8485,6 +8567,8 @@ class MainWindow(QMainWindow):
         
         else: 
             pass
+
+        if ''
     
     def user_sections(self):
         wf = self.organ.workflow['morphoHeart']['MeshesProc']['E-Sections']
@@ -9253,12 +9337,11 @@ class MainWindow(QMainWindow):
             for n, ax in enumerate(axes): 
                 getattr(self, 'angle_dir'+str(n+1)+'_'+cut).setText(ax.strip())
             getattr(self, 'widget_angle_meas_'+cut).setVisible(True)
-
-            if not init: 
-                # Update mH_settings
-                proc_set = ['wf_info']
-                update = self.gui_angles
-                self.organ.update_settings(proc_set, update, 'mH', add='gui_angles')
+            
+            # Update mH_settings
+            proc_set = ['wf_info']
+            update = self.gui_angles
+            self.organ.update_settings(proc_set, update, 'mH', add='gui_angles')
 
     def gui_angles_ellip(self, cut): 
         mesh2use = getattr(self, 'angles_mesh2use_'+cut).currentText()
@@ -9649,6 +9732,7 @@ class MainWindow(QMainWindow):
 
     def select_pts_orientation(self, sub_mesh, segm_name, cut_cl_sphs, init_pt, other_pt=[], init = False):
         
+        sub_meshf = sub_mesh.clone()
         if init: 
             color_set = 'darkblue'
             color_other = 'darkmagenta'
@@ -9701,7 +9785,7 @@ class MainWindow(QMainWindow):
 
         def sliderAlphaMeshOut(widget, event):
             valueAlpha = widget.GetRepresentation().GetValue()
-            sub_mesh.alpha(valueAlpha)
+            sub_meshf.alpha(valueAlpha)
         
         msg = vedo.Text2D(pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, alpha=0.8) # an empty text
         ins0 = 'Setting the line segment to measure the orientation of the '+segm_name+'\n'
@@ -9718,7 +9802,7 @@ class MainWindow(QMainWindow):
         plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.01,
                         pos=[(0.92,0.25), (0.92,0.35)], c= 'limegreen', 
                         title='Opacity ('+segm_name+')', title_size=txt_slider_size2)
-        plt.show(cut_cl_sphs, sub_mesh, sph, sph2, line, txt0, msg, at=0, viewup='y')
+        plt.show(cut_cl_sphs, sub_meshf, sph, sph2, line, txt0, msg, at=0, zoom=0.8, viewup='y')
 
         print('self.pt_selected', self.pt_selected)
         return self.pt_selected
@@ -10066,8 +10150,21 @@ class MainWindow(QMainWindow):
     #Results functions
     def fill_results(self): 
 
-        # if not hasattr(self, 'df_res'): 
         self.df_res = self.organ.mH_settings['df_res']
+        len_o = len(self.df_res)
+
+        #Remove Original Angle Measurements
+        ind2drop = []
+        for index, rowv in self.df_res.iterrows(): 
+            col0, _, col2 = index
+            if col0 == 'Angles: Segment':
+                ind2drop.append(index)
+
+        for item in ind2drop: 
+            self.df_res = self.df_res.drop(index=item)
+
+        len_f = len(self.df_res)
+        print('df_res >> len_o:', len_o, 'len_f:', len_f)
 
         #Set row count
         self.tabW_results.setRowCount(len(self.df_res))
@@ -12246,8 +12343,7 @@ class PlotWindow(QDialog):
         self.hLayout.addWidget(self.toolbar)
 
         # self.show()
-
-        
+    
 #%% Other classes GUI related - ########################################################
 class MyToggle(QtWidgets.QPushButton):
     #https://stackoverflow.com/questions/56806987/switch-button-in-pyqt

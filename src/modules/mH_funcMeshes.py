@@ -859,122 +859,7 @@ def create_CLs(organ, name, nPoints):#
     
     plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds())) 
 
-    return dict_clOpt      
-
-def create_CLs_old(organ, name, nPoints, same_plane):# to delete
-    """
-    Function that creates the centrelines using the points given as input in the dict_cl
-
-    """
-    cl_colors = {'Op1':'navy','Op2':'blueviolet','Op3':'deeppink',
-                    'Op4': 'orangered','Op5':'slategray', 'Op6':'maroon'}
-    
-    ch, cont, _ = name.split('_')
-    cl_data = load_vmtkCL(organ, ch, cont)
-    #Get cl points from vmtk
-    pts_cl = np.asarray(cl_data['Points'])
-    # Interpolate points of original centreline
-    pts_int_o = get_interpolated_pts(points=pts_cl, nPoints = nPoints)
-    # Last CL point
-    pt_m1 = pts_int_o[-1]
-    sph_m1 = vedo.Sphere(pos = pt_m1, r=4, c='black')
-    # Create kspline with original points
-    kspl_o = vedo.KSpline(pts_int_o, res = nPoints).color('gold').legend('CLo_'+ch+'_'+cont).lw(5)
-    # Create IFT and OFT spheres to show original points position
-    sph_inf_o = vedo.Sphere(pts_int_o[-1], r = 3, c='tomato')
-    sph_outf_o = vedo.Sphere(pts_int_o[0], r = 3, c='navy')
-    
-    # Get outflow point for that layer
-    pt2add_outf = organ.objects['Spheres']['cut4cl']['top'][ch+'_'+cont]['center']
-    pts_withOutf = np.insert(pts_cl, 0, np.transpose(pt2add_outf), axis=0)
-    
-    #Dictionary with kspl options
-    dict_clOpt = {}
-    #Get planes that cut meshes4cl
-    if same_plane: 
-        plane_info = organ.mH_settings['wf_info']['centreline']['SimplifyMesh']['plane_cuts']['bottom']['pl_dict']
-    else: 
-        plane_info = organ.mH_settings['wf_info']['centreline']['SimplifyMesh']['plane_cuts'][ch+'_'+cont]['bottom']['pl_dict']
-    
-    # Get inflow point for that layer (four options)
-    # - Option 1, use centroids of kspline cuts
-    pt2add_inf = organ.objects['Spheres']['cut4cl']['bottom'][ch+'_'+cont]['center']
-    pts_all_opt1 = np.insert(pts_withOutf, len(pts_withOutf), np.transpose(pt2add_inf), axis=0)
-
-    # Interpolate points
-    pts_int_opt1 = get_interpolated_pts(points=pts_all_opt1, nPoints = nPoints)
-    # Create kspline with points
-    kspl_opt1 = vedo.KSpline(pts_int_opt1, res = nPoints)
-    kspl_opt1.color(cl_colors['Op1']).legend('(Op1) CL_'+ch+'_'+cont).lw(5)
-    dict_clOpt['Option 1'] = {'kspl': kspl_opt1, 'sph_bot': sph_outf_o, 
-                                'sph_top': sph_inf_o, 'pt2add': pt2add_inf, 
-                                'description': 'Point in meshesCut4Cl'}
-
-    # - Option 2 (add point of extended original centreline)
-    num = -10
-    pts_int_opt2, pt2add2, sph_m2 = extend_CL(pts_int_o, pts_withOutf, num, nPoints, plane_info)
-    kspl_opt2 = vedo.KSpline(pts_int_opt2, res = nPoints)
-    kspl_opt2.color(cl_colors['Op2']).legend('(Op2) CL_'+ch+'_'+cont).lw(5)
-    dict_clOpt['Option 2'] = {'kspl': kspl_opt2, 'sph_bot': sph_m2, 
-                                'sph_top': sph_inf_o, 'pt2add': pt2add2, 
-                                'description': 'Unit vector extension (-1,'+str(num)+')'}
-    
-    # - Option 3 (add point of extended original centreline midline between chamber centre and in/outf tract)
-    num = -25
-    pts_int_opt3, pt2add3, sph_m3 = extend_CL(pts_int_o, pts_withOutf, num, nPoints, plane_info)
-    kspl_opt3 = vedo.KSpline(pts_int_opt3, res = nPoints)
-    kspl_opt3.color(cl_colors['Op3']).legend('(Op3) CL_'+ch+'_'+cont).lw(5)
-    dict_clOpt['Option 3'] = {'kspl': kspl_opt3, 'sph_bot': sph_m3, 
-                                'sph_top': sph_inf_o, 'pt2add': pt2add3, 
-                                'description': 'Unit vector extension (-1,'+str(num)+')'}
-    
-    # - Option 4 (add point of extended original centreline midline between chamber centre and in/outf tract)
-    num = -50
-    pts_int_opt4, pt2add4, sph_m4 = extend_CL(pts_int_o, pts_withOutf, num, nPoints, plane_info)
-    kspl_opt4 = vedo.KSpline(pts_int_opt4, res = nPoints)
-    kspl_opt4.color(cl_colors['Op4']).legend('(Op4) CL_'+ch+'_'+cont).lw(5)
-    dict_clOpt['Option 4'] = {'kspl': kspl_opt4, 'sph_bot': sph_m4, 
-                                'sph_top': sph_inf_o, 'pt2add': pt2add4,
-                                'description': 'Unit vector extension (-1,'+str(num)+')'}
-    
-    # - Option 5 (add point of extended original centreline midline between chamber centre and in/outf tract)
-    num = -60
-    pts_int_opt5, pt2add5, sph_m5 = extend_CL(pts_int_o, pts_withOutf, num, nPoints, plane_info)
-    kspl_opt5 = vedo.KSpline(pts_int_opt5, res = nPoints)
-    kspl_opt5.color(cl_colors['Op5']).legend('(Op5) CL_'+ch+'_'+cont).lw(5)
-    dict_clOpt['Option 5'] = {'kspl': kspl_opt5, 'sph_bot': sph_m5, 
-                                'sph_top': sph_inf_o, 'pt2add': pt2add5,
-                                'description': 'Unit vector extension (-1,'+str(num)+')'}
-    
-    # - Option 6 (add mid point between final point of original centreline and inf tract)
-    pt_m6 = pt_m1+(pt2add_inf-pt_m1)/2
-    sph_m6 = vedo.Sphere(pos = pt_m6, r=4, c='gold')
-
-    pts_all_opt6 = np.insert(pts_withOutf, len(pts_withOutf), np.transpose(pt_m6), axis=0)
-    pts_all_opt6f = np.insert(pts_all_opt6, len(pts_all_opt6), np.transpose(pt2add_inf), axis=0)
-
-    # Interpolate points
-    pts_int_opt6 = get_interpolated_pts(points=pts_all_opt6f, nPoints = nPoints)
-    # Create kspline with points
-    kspl_opt6 = vedo.KSpline(pts_int_opt6, res = nPoints)
-    kspl_opt6.color(cl_colors['Op6']).legend('(Op6) CL_'+ch+'_'+cont).lw(5)
-    dict_clOpt['Option 6'] = {'kspl': kspl_opt6, 'sph_bot': sph_m6, 
-                                'sph_top': sph_inf_o, 'pt2add': pt2add_inf,
-                                'description': 'Center point between last and meshesCut4Cl'}
-    
-    obj = []; txt = []
-    mesh = organ.obj_meshes[ch+'_'+cont].mesh.clone()
-    for num, opt in enumerate(dict_clOpt.keys()):
-        obj2add = (mesh.alpha(0.01), sph_m1, kspl_o, dict_clOpt[opt]['kspl'], dict_clOpt[opt]['sph_bot'], dict_clOpt[opt]['sph_top'])
-        obj.append(obj2add)
-        if num == 0: 
-            txt.append((num, organ.user_organName +' - '+opt))
-        else: 
-            txt.append((num, opt))
-    
-    plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(organ.get_maj_bounds())) 
-
-    return dict_clOpt      
+    return dict_clOpt     
 
 def extend_CL(pts_int_o, pts_withOutf, num, nPoints, plane_info):
     
@@ -1883,6 +1768,7 @@ def measure_submesh(organ, submesh, mesh):
     df_res = df_reset_index(df=df_res, mult_index= ['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
     organ.mH_settings['df_res'] = df_res
 
+
 #%% Points classification
 def classify_heart_pts(m_whole, obj_segm, data):
     """
@@ -2615,11 +2501,12 @@ def find_angle_btw_pts(pts1, pts2):
     """
     Function that returns the angle between two vectors on the input-plane
     """
-        
+    
+    #Get the magnitude of the vector
     mag_v1 = findDist(pts1[0],pts1[1])
     mag_v2 = findDist(pts2[0],pts2[1])
 
-    vect1 = pts1[0]-pts1[1]
+    vect1 = pts1[1]-pts1[0]
     vect2 = pts2[1]-pts2[0]
 
     dotProd = np.dot(vect1,vect2)

@@ -1659,9 +1659,9 @@ class Organ():
         
         plane_coord = {'XY': 2, 'YZ': 0, 'XZ': 1}
         if isinstance(ref_vect, str):
-            ref_vectAll = {'X+': np.array([[1,0,0],[0,0,0]]),
-                           'Y+': np.array([[0,1,0],[0,0,0]]),
-                           'Z+': np.array([[0,0,1],[0,0,0]])}
+            ref_vectAll = {'X+': np.array([[0,0,0],[1,0,0]]),
+                           'Y+': np.array([[0,0,0],[0,1,0]]),
+                           'Z+': np.array([[0,0,0],[0,0,1]])}
             ref_vectF = ref_vectAll[ref_vect]
             
         coord = plane_coord[plane]
