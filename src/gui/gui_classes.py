@@ -6520,80 +6520,6 @@ class MainWindow(QMainWindow):
         txt = [(0, self.organ.user_organName+' - Final S3s for Channel: '+im_ch.user_chName)]
         plot_grid(obj=meshes_out, txt=txt, zoom=1.5, axes=5)
 
-    def plot_angles(self, btn):
-
-        print('')
-        dir, cut = btn.split('_')
-        axes = self.gui_angles['ang_settings']['axes'].split(',')
-        ax_selected = axes[int(dir[-1])-1].strip()
-        mtype = self.gui_angles[cut]['axis_lab']
-        axis = getattr(self, 'angle_'+dir+'_'+cut).text()
-
-        #Get cube
-        cubes = getattr(self.organ, mtype+'_cube')
-        orient_cube = cubes['cube'].clone().alpha(0.1)
-        clear_cube = cubes['clear'].clone().alpha(0.1)
-
-        mesh_name = self.gui_angles[cut]['mesh_to_use']
-        angle_settings = self.gui_angles[cut]['axis_settings'][axis]
-
-        pl_normal = angle_settings['proj_plane']['pl_normal']
-        pl_centre = angle_settings['proj_plane']['pl_centre']
-        plane = vedo.Plane(pos=pl_centre, normal = pl_normal, s=(300,300)).alpha(0.5)
-
-        zero_corner = angle_settings['div1']['ref_vector_corner_box']['p0']
-        sph_zero = vedo.Sphere(pos = zero_corner, r=3, c='orange')
-        end_pt_ref_vector = angle_settings['div1']['ref_vector_corner_box']['p1']
-        ref_vector = vedo.Arrow(start_pt=zero_corner, end_pt= end_pt_ref_vector, s=0.25, c='yellowgreen')
-
-        segms =[]; line_or = []; proj_or = []; zero_or = []; capt = []; angle_txt = '-Measured angles-'
-        divs = [key for key in angle_settings.keys() if 'div' in key]
-        colors = ['tomato', 'limegreen', 'orange', 'deepskyblue', 'darkviolet']
-        for n, div, color in zip(count(), divs, colors): 
-            angle_txt = angle_txt+'\n'
-            div_set = angle_settings[div]
-            #Get segm 
-            segm_no = self.gui_angles[cut]['div'][div]['segm']
-            subm_name = cut.title()+'_'+mesh_name+'_'+segm_no
-            subsegm = self.organ.obj_subm[subm_name]
-            #Get the submesh
-            sub_mesh = subsegm.get_segm_mesh()
-            segms.append(sub_mesh)
-            _, _, segm_name = subsegm.sub_legend.split('_')
-
-            #Original vector
-            p0 = angle_settings[div]['original_line']['p0']
-            p1 = angle_settings[div]['original_line']['p1']
-            line_vect = vedo.Arrow(start_pt=p0, end_pt=p1, s=0.1, c=color).alpha(1)
-            line_or.append(line_vect)
-
-            #Proj vector
-            proj_p0 = angle_settings[div]['proj_line']['p0']
-            proj_p1 = angle_settings[div]['proj_line']['p1']
-            proj_arrow_or = vedo.Arrow(start_pt=proj_p1, end_pt=proj_p0, s=0.1, c=color).alpha(1)
-            proj_or.append(proj_arrow_or)
-
-            #Proj_vectors moved to corner box
-            zero_p0 = angle_settings[div]['proj_vect_corner_box']['p0']
-            zero_p1 = angle_settings[div]['proj_vect_corner_box']['p1']
-            moved_proj_arrow_or = vedo.Arrow(start_pt = zero_p0, end_pt=zero_p1, s=0.1, c=color).alpha(1)
-            zero_or.append(moved_proj_arrow_or)
-
-            angle = angle_settings[div]['angle']
-            angle_val = "%.1f" % angle
-            angle_txt = angle_txt+'-'+segm_name+': '+angle_val+' degrees'
-
-        cap = sph_zero.caption(angle_txt,
-                                point=zero_corner,
-                                size=(0.2, 0.1),
-                                justify='center',
-                                font=txt_font,
-                                alpha=1)
-        
-        plt = vedo.Plotter(N=1, axes=1)
-        plt.add_icon(logo, pos=(0.9,0.1), size=0.25)
-        plt.show(segms, line_or, proj_or, zero_or, plane, orient_cube, sph_zero, cap, ref_vector, at=0, viewup='y', zoom=0.8, interactive=True)
-        
     #Image thumbnails
     def add_thumbnail(self, function, params, name): 
         
@@ -8568,8 +8494,42 @@ class MainWindow(QMainWindow):
         else: 
             pass
 
-        if ''
-    
+        if 'segm_angles' in wf_info.keys():
+            print('wf_info[segm_angles]:', wf_info['segm_angles'])
+            getattr(self, 'angles_centreline2use').setCurrentText(wf_info['segm_angles']['ang_settings']['centreline'])
+            getattr(self, 'angles_nPoints').setValue(wf_info['segm_angles']['ang_settings']['nPoints'])
+            getattr(self, 'angles_cut1').setChecked(wf_info['segm_angles']['ang_settings']['cut1'])
+            getattr(self, 'angles_cut2').setChecked(wf_info['segm_angles']['ang_settings']['cut2'])
+            self.select_cl_angle_ellip()
+
+            for cut in ['cut1','cut2']: 
+                if wf_info['segm_angles']['ang_settings'][cut]:
+                    getattr(self, 'ang_ellip_'+cut).setVisible(True)
+                    axes = wf_info['segm_angles'][cut]['axes'].split(',')
+                    #Set values for each cut
+                    mesh2use = wf_info['segm_angles'][cut]['mesh_to_use']
+                    getattr(self, 'angles_mesh2use_'+cut).setCurrentText(mesh2use)
+                    axis_lab = wf_info['segm_angles'][cut]['axis_lab']
+                    getattr(self, 'angle_'+axis_lab+'_cut1')
+                    div_keys = wf_info['segm_angles'][cut]['div'].keys()
+                    for div in div_keys: 
+                        getattr(self, 'angle_'+cut+'_'+div).setChecked(True)
+                    getattr(self, 'set_angles_'+cut).setChecked(True)
+                    getattr(self, 'widget_angle_meas_'+cut).setVisible(True)
+                    #Check if measurements have already been acquired
+                    if 'axis_settings' in wf_info['segm_angles'][cut].keys():
+                        for n, dir in enumerate(['dir1', 'dir2', 'dir3']): 
+                            axis = axes[n].strip()
+                            if axis in wf_info['segm_angles'][cut]['axis_settings'].keys():
+                                getattr(self, 'play_angle_'+dir+'_'+cut).setChecked(True)
+                                getattr(self, 'plot_angle_'+dir+'_'+cut).setEnabled(True)
+            
+                    #Run Set Function 
+                    self.set_angles_ellip(cut = cut, init=True)
+
+        else: 
+            pass
+
     def user_sections(self):
         wf = self.organ.workflow['morphoHeart']['MeshesProc']['E-Sections']
         wf_info = self.organ.mH_settings['wf_info']
@@ -9333,15 +9293,15 @@ class MainWindow(QMainWindow):
             getattr(self, 'set_angles_'+cut).setChecked(True)
             print('self.gui_angles:',self.gui_angles)
             axes = wf_info['orientation'][self.gui_angles[cut]['axis_lab']]['axis'].split(',')
-            self.gui_angles['ang_settings']['axes'] = wf_info['orientation'][self.gui_angles[cut]['axis_lab']]['axis']
+            
             for n, ax in enumerate(axes): 
                 getattr(self, 'angle_dir'+str(n+1)+'_'+cut).setText(ax.strip())
             getattr(self, 'widget_angle_meas_'+cut).setVisible(True)
-            
+
             # Update mH_settings
             proc_set = ['wf_info']
             update = self.gui_angles
-            self.organ.update_settings(proc_set, update, 'mH', add='gui_angles')
+            self.organ.update_settings(proc_set, update, 'mH', add='segm_angles')
 
     def gui_angles_ellip(self, cut): 
         mesh2use = getattr(self, 'angles_mesh2use_'+cut).currentText()
@@ -9353,6 +9313,7 @@ class MainWindow(QMainWindow):
 
         gui_angles = {'mesh_to_use': mesh2use, 
                         'axis_lab': selected,
+                        'axes': self.organ.mH_settings['wf_info']['orientation'][selected]['axis'],
                         'div': getattr(self, 'div_'+cut)}
             
         print('gui_angles ('+cut+'): ', gui_angles)
@@ -9718,11 +9679,6 @@ class MainWindow(QMainWindow):
         set_bot_pt = self.select_pts_orientation(sub_mesh, segm_name, cut_cl_sphs, init_bot, other_pt=set_top_pt)
         print('set_top_pt:', set_top_pt)
         print('set_bot_pt:', set_bot_pt)
-
-        list_keys = list(getattr(self, 'div_'+cut)[div].keys())
-        for key in list_keys:
-            if key not in ['num_pts_range', 'segm', 'name']:
-                getattr(self, 'div_'+cut)[div].pop(key, None)
         
         getattr(self, 'div_'+cut)[div]['segment_pts'] = {'start': set_top_pt, 
                                                          'end': set_bot_pt}
@@ -10529,6 +10485,14 @@ class MainWindow(QMainWindow):
                                                         kspl_CLnew = kspl_CL, 
                                                         segm_cuts_info=segm_cuts_info, 
                                                         cut=cut.title(), init=True)
+                        for div in ordered_kspl.keys(): 
+                            key2del = []
+                            for key in ordered_kspl[div].keys(): 
+                                if key not in ['num_pts_range', 'segm', 'name']: 
+                                    key2del.append(key)
+                            for kk in key2del: 
+                                ordered_kspl[div].pop(kk, None)
+
                         setattr(self, 'div_'+cut, ordered_kspl)
                         for nn in range(1,6,1):
                             div = 'div'+str(nn)
@@ -11032,6 +10996,81 @@ class MainWindow(QMainWindow):
         else: 
             return cl_ribbon, kspl_ext
 
+    def plot_angles(self, btn):
+
+        dir, cut = btn.split('_')
+        axes = self.gui_angles[cut]['axes'].split(',')
+        ax_selected = axes[int(dir[-1])-1].strip()
+        mtype = self.gui_angles[cut]['axis_lab']
+        axis = getattr(self, 'angle_'+dir+'_'+cut).text()
+
+        #Get cube
+        cubes = getattr(self.organ, mtype+'_cube')
+        orient_cube = cubes['cube'].clone().alpha(0.1)
+        clear_cube = cubes['clear'].clone().alpha(0.1)
+
+        mesh_name = self.gui_angles[cut]['mesh_to_use']
+        angle_settings = self.gui_angles[cut]['axis_settings'][axis]
+
+        pl_normal = angle_settings['proj_plane']['pl_normal']
+        pl_centre = angle_settings['proj_plane']['pl_centre']
+        plane = vedo.Plane(pos=pl_centre, normal = pl_normal, s=(300,300)).alpha(0.5)
+
+        zero_corner = angle_settings['div1']['ref_vector_corner_box']['p0']
+        sph_zero = vedo.Sphere(pos = zero_corner, r=3, c='orange')
+        end_pt_ref_vector = angle_settings['div1']['ref_vector_corner_box']['p1']
+        ref_vector = vedo.Arrow(start_pt=zero_corner, end_pt= end_pt_ref_vector, s=0.25, c='yellowgreen')
+
+        segms =[]; line_or = []; proj_or = []; zero_or = []; capt = []; angle_txt = '-Measured angles-'
+        divs = [key for key in angle_settings.keys() if 'div' in key]
+        colors = ['tomato', 'limegreen', 'orange', 'deepskyblue', 'darkviolet']
+        for n, div, color in zip(count(), divs, colors): 
+            angle_txt = angle_txt+'\n'
+            div_set = angle_settings[div]
+            #Get segm 
+            segm_no = self.gui_angles[cut]['div'][div]['segm']
+            subm_name = cut.title()+'_'+mesh_name+'_'+segm_no
+            subsegm = self.organ.obj_subm[subm_name]
+            #Get the submesh
+            sub_mesh = subsegm.get_segm_mesh()
+            segms.append(sub_mesh)
+            _, _, segm_name = subsegm.sub_legend.split('_')
+
+            #Original vector
+            p0 = angle_settings[div]['original_line']['p0']
+            p1 = angle_settings[div]['original_line']['p1']
+            line_vect = vedo.Arrow(start_pt=p0, end_pt=p1, s=0.1, c=color).alpha(1)
+            line_or.append(line_vect)
+
+            #Proj vector
+            proj_p0 = angle_settings[div]['proj_line']['p0']
+            proj_p1 = angle_settings[div]['proj_line']['p1']
+            proj_arrow_or = vedo.Arrow(start_pt=proj_p0, end_pt=proj_p1, s=0.1, c=color).alpha(1)
+            proj_or.append(proj_arrow_or)
+
+            #Proj_vectors moved to corner box
+            zero_p0 = angle_settings[div]['proj_vect_corner_box']['p0']
+            zero_p1 = angle_settings[div]['proj_vect_corner_box']['p1']
+            moved_proj_arrow_or = vedo.Arrow(start_pt = zero_p0, end_pt=zero_p1, s=0.1, c=color).alpha(1)
+            zero_or.append(moved_proj_arrow_or)
+
+            angle = angle_settings[div]['angle']
+            angle_val = "%.1f" % angle
+            angle_txt = angle_txt+'-'+segm_name+': '+angle_val+' degrees'
+
+        cap = sph_zero.caption(angle_txt,
+                                point=zero_corner,
+                                size=(0.2, 0.1),
+                                justify='center',
+                                font=txt_font,
+                                vspacing=1.5,
+                                alpha=1)
+        
+        msg = vedo.Text2D(self.organ.user_organName+'\nMeasured Angles from the '+axis.upper()+' view', c=txt_color, font=txt_font, s=txt_size, alpha=0.8) # an empty text
+        plt = vedo.Plotter(N=1, axes=1)
+        plt.add_icon(logo, pos=(0.9,0.1), size=0.25)
+        plt.show(segms, line_or, proj_or, zero_or, plane, orient_cube, sph_zero, cap, ref_vector, msg, at=0, viewup='y', zoom=0.8, interactive=True)
+        
     #User specific plot settings
     def fill_comboBox_all_meshes(self): 
 

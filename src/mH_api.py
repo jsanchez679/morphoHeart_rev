@@ -1836,12 +1836,16 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
 # > Angles Segments
 def run_angles(controller, btn): 
 
+    #Maybe ask the user first to select the coordinate axis from which the anlges will be measured (do this when setting each cut)
+    # Then depending on each axis, anterior use z, ventral use x, and left use y so that the ref vectors are set from advance
+    # if the roi is selected and rotated identify the corresponding aristas that should be used in the rotated version of the cube
+    
     #Get df_res 
     df_res = fcM.df_reset_index(df = controller.organ.mH_settings['df_res'], mult_index=['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
     
     #Get direction of cut
     dir, cut = btn.split('_')
-    axes = controller.main_win.gui_angles['ang_settings']['axes'].split(',')
+    axes = controller.main_win.gui_angles[cut]['axes'].split(',')
     ax_selected = axes[int(dir[-1])-1].strip()
     mtype = controller.main_win.gui_angles[cut]['axis_lab']
     axis = getattr(controller.main_win, 'angle_'+dir+'_'+cut).text()
@@ -1969,7 +1973,7 @@ def run_angles(controller, btn):
         #Select the reference vector with which angle measurements will be made
         if controller.selected_vect == None: 
             msg = vedo.Text2D(pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, alpha=0.8) # an empty text
-            inst = 'Instructions: \n  -Select one of the orange spheres located in the corners of the enclosing cube to define\n   the reference vector that will be used to measure the angles from the '+axis.upper()+' view.\n   Close the window when you are done'
+            inst = 'Instructions: \n  -Select one of the spheres located in the corners of the enclosing cube to define\n   the reference vector that will be used to measure the angles from the '+axis.upper()+' view.\n   Close the window when you are done'
             txt0 = vedo.Text2D(inst,  c=txt_color, font=txt_font, s=txt_size)
 
             plt = vedo.Plotter(N=1, axes=1)
@@ -2011,12 +2015,16 @@ def run_angles(controller, btn):
     else: 
         controller.main_win.gui_angles[cut]['axis_settings'] = {axis : div_settings}
 
+    #Update organ mH_settings
+    proc_set = ['wf_info']
+    update = controller.main_win.gui_angles
+    controller.organ.update_settings(proc_set, update, 'mH', add='segm_angles')
+
     #Toggle button
     getattr(controller.main_win, 'play_angle_'+btn).setChecked(True)
     #Enable plot btn 
     getattr(controller.main_win, 'plot_angle_'+btn).setEnabled(True)
-    print(controller.main_win.gui_angles[cut]['axis_settings'])
-
+    
 # > SECTIONS
 def run_sections(controller, btn): 
 
