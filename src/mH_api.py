@@ -1835,7 +1835,13 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
 
 # > Angles Segments
 def run_angles(controller, btn): 
+    #when setting orientation of the stack and roi , check how the stack cube needs to be rotated to 
+    # get the roi cube and then what are the cooresponding faces
+    # if the top or bottom face (perpendicular to y axis) > z vector
+    # if the front and back face (perpendicular to z axis) > x vector
+    # if the front and back face (perpendicular to x axis) > y vector
 
+    #the assigne to each face a reference vector with which to measure rotations in that axis 
     #Maybe ask the user first to select the coordinate axis from which the anlges will be measured (do this when setting each cut)
     # Then depending on each axis, anterior use z, ventral use x, and left use y so that the ref vectors are set from advance
     # if the roi is selected and rotated identify the corresponding aristas that should be used in the rotated version of the cube

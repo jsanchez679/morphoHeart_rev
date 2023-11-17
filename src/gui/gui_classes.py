@@ -9269,6 +9269,8 @@ class MainWindow(QMainWindow):
                                 'nPoints': nPoints, 
                                 'cut1': ck_cut1, 
                                 'cut2': ck_cut2}
+
+            
             
             #Get values for current cut
             current_gui_angles_cut = self.gui_angles_ellip(cut)
