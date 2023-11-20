@@ -29,7 +29,7 @@ import seaborn as sns
 #%% morphoHeart Imports - ##################################################
 from ..gui.gui_classes import *
 from .mH_funcBasics import alert, make_Paths, make_tuples, get_by_path, set_by_path, rename_directory
-from .mH_funcMeshes import (unit_vector, plot_organCLs, find_angle_btw_pts, 
+from .mH_funcMeshes import (unit_vector, plot_organCLs, find_angle_btw_pts, new_normal_3DRot,
                             classify_segments_from_ext, create_subsegment, create_subsection, plot_grid)
 from ..gui.config import mH_config
 
@@ -1581,7 +1581,7 @@ class Organ():
         else:
             return False  
     
-    def get_orientation(self, views, colors, mtype:str, win):#CHECkk
+    def get_orientation(self, views, colors, mtype:str):#CHECkk
        
         im_orient = self.info['im_orientation']
         print('self.info[im_orientation]',im_orient)
@@ -1647,6 +1647,7 @@ class Organ():
                 planar_views, settings, roi_cube = self.orient_manual(views, colors)
         else: #No rotation
             planar_views, settings, roi_cube = self.get_orientation(views, colors, mtype='ROI')
+        planar_views = self.get_ref_vectors(planar_views, roi_cube)
 
         return planar_views, settings, roi_cube
 
@@ -1726,6 +1727,35 @@ class Organ():
     def orient_manual(self, views, colors): # to develop!
         print('orient_manual: Code under development!')
         return None
+
+    def get_ref_vectors(self, planar_views, roi_cube):
+
+        rotX = 0; rotY = 0; rotZ = 0
+        for view in planar_views: 
+            pl_normal_rot = planar_views[view]['pl_normal']
+            #Check the rotations that were made 
+            if 'rotate_x' in roi_cube.keys(): 
+                rotX = -roi_cube['rotate_x']
+            if 'rotate_y' in roi_cube.keys(): 
+                rotY = -roi_cube['rotate_y']
+            if 'rotate_z' in roi_cube.keys(): 
+                rotZ = -roi_cube['rotate_z']
+            #Get the unrotated normal
+            pl_normal_o = unit_vector(new_normal_3DRot(pl_normal_rot, [rotX], [rotY], [rotZ]))
+            #Find the axis of the unrotated normal and set a reference vector
+            index = np.argmax(pl_normal_o)
+            if index == 0: 
+                ref_vector = np.array([0.0, 1.0, 0.0])
+            elif index == 1: 
+                ref_vector = np.array([0.0, 0.0, 1.0])
+            else: 
+                ref_vector = np.array([1.0, 0.0, 0.0])
+            #Rotate the reference vector
+            #Get the unrotated normal
+            ref_vect_rot = new_normal_3DRot(ref_vector, [-rotX], [-rotY], [-rotZ])
+            planar_views[view]['ref_vector'] = ref_vect_rot
+
+        return planar_views
 
     def get_maj_bounds(self):
         x_b = 0; y_b = 0; z_b = 0

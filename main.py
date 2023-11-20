@@ -520,6 +520,9 @@ class Controller:
         self.main_win.play_angle_dir2_cut2.clicked.connect(lambda: self.run_angles(btn= 'dir2_cut2'))
         self.main_win.play_angle_dir3_cut2.clicked.connect(lambda: self.run_angles(btn= 'dir3_cut2'))
 
+        # Ellipsoids
+        self.main_win.ellipsoids_play.clicked.connect(lambda: self.run_ellipsoids())
+
         # SECTIONS
         # self.main_win.sections_play.clicked.connect(lambda: self.run_sections())
         #Cut 1
@@ -888,6 +891,11 @@ class Controller:
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 
+    def run_ellipsoids(self): 
+        mA.run_ellipsoids(controller=self)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False) 
+    
     def run_sections(self, btn=None):
         mA.run_sections(controller=self, btn=btn)
         if not mH_config.dev:

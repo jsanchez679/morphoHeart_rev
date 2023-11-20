@@ -254,7 +254,8 @@ def get_stack_orientation(organ, gui_orientation, win):#
     workflow = organ.workflow['morphoHeart']
     colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
     views = organ.mH_settings['setup']['orientation']['stack'].split(', ')
-    planar_views, stack_cube = organ.get_orientation(views, colors, mtype='STACK', win=win)
+    planar_views, stack_cube = organ.get_orientation(views, colors, mtype='STACK')
+    planar_views = get_ref_vectors(planar_views)
 
     #Update organ workflow
     process = ['MeshesProc', 'A-Set_Orientation']
@@ -340,6 +341,24 @@ def get_roi_orientation(organ, gui_orientation:dict, win):#
     print('organ.workflow:', workflow)
 
     return on_hold
+
+def get_ref_vectors(planar_views): 
+
+    for view in planar_views:
+        pl_normal = unit_vector(planar_views[view]['pl_normal'])
+        #Find the direction of the normal 
+        print(view, pl_normal)
+        index = np.argmax(pl_normal)
+        if index == 0: 
+            ref_vector = np.array([0.0, 1.0, 0.0])
+        elif index == 1: 
+            ref_vector = np.array([0.0, 0.0, 1.0])
+        else: 
+            ref_vector = np.array([1.0, 0.0, 0.0])
+
+        planar_views[view]['ref_vector'] = ref_vector
+    
+    return planar_views
 
 def extract_chNS(organ, rotateZ_90, win, plot_settings):#
     from .mH_classes_new import ImChannelNS
@@ -1768,7 +1787,6 @@ def measure_submesh(organ, submesh, mesh):
     df_res = df_reset_index(df=df_res, mult_index= ['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
     organ.mH_settings['df_res'] = df_res
 
-
 #%% Points classification
 def classify_heart_pts(m_whole, obj_segm, data):
     """
@@ -2709,7 +2727,8 @@ def get_plane_normals_to_proj_kspl(organ, no_planes, kspl, gui_heatmaps2d):
     return pl_normals, pl_centres
    
 #%% - Plotting functions
-def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',sc_side=350, azimuth = 0, elevation = 0, add_scale_cube=True):
+def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',
+              sc_side=350, azimuth = 0, elevation = 0, add_scale_cube=True):
     
     # Load logo
     path_logo = path_mHImages / 'logo-07.jpg'

@@ -1835,17 +1835,7 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
 
 # > Angles Segments
 def run_angles(controller, btn): 
-    #when setting orientation of the stack and roi , check how the stack cube needs to be rotated to 
-    # get the roi cube and then what are the cooresponding faces
-    # if the top or bottom face (perpendicular to y axis) > z vector
-    # if the front and back face (perpendicular to z axis) > x vector
-    # if the front and back face (perpendicular to x axis) > y vector
 
-    #the assigne to each face a reference vector with which to measure rotations in that axis 
-    #Maybe ask the user first to select the coordinate axis from which the anlges will be measured (do this when setting each cut)
-    # Then depending on each axis, anterior use z, ventral use x, and left use y so that the ref vectors are set from advance
-    # if the roi is selected and rotated identify the corresponding aristas that should be used in the rotated version of the cube
-    
     #Get df_res 
     df_res = fcM.df_reset_index(df = controller.organ.mH_settings['df_res'], mult_index=['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
     
@@ -1859,96 +1849,37 @@ def run_angles(controller, btn):
     #Get cube
     cubes = getattr(controller.organ, mtype+'_cube')
     orient_cube = cubes['cube'].clone().alpha(0.1)
-    clear_cube = cubes['clear'].clone().alpha(0.1)
+    # clear_cube = cubes['clear'].clone().alpha(0.1)
     cube_pts = orient_cube.points()
 
     #Get plane 
     pl_normal = controller.main_win.gui_orientation[mtype]['planar_views'][ax_selected]['pl_normal']
     id_cell = controller.main_win.gui_orientation[mtype]['planar_views'][ax_selected]['idcell']
     pl_centre = orient_cube.cell_centers()[id_cell]
-    sph = vedo.Sphere(pos = pl_centre, r=1, c='tomato')
+    # sph = vedo.Sphere(pos = pl_centre, r=1, c='tomato')
     plane = vedo.Plane(pos=pl_centre, normal = pl_normal, s=(300,300)).alpha(0.5)
+    if 'ref_vector' not in controller.main_win.gui_orientation[mtype]['planar_views'][ax_selected].keys(): 
+        controller.main_win.win_msg('*Please re-run the "Organ/ROI Axis Labels" section to update Reference Axes and come back to run this section!')
+        return
+    else:
+        ref_vector_cube = np.array(controller.main_win.gui_orientation[mtype]['planar_views'][ax_selected]['ref_vector'])
 
     #Get the corner closer to the 0,0,0
     unique_corner_pts = np.unique(cube_pts, axis=0)
     min_dist = 10000000
     for n, pt in enumerate(unique_corner_pts):
         dist = np.linalg.norm(pt)
-        print(pt, dist)
         if dist < min_dist: 
             min_dist = dist
             nf = n
 
     zero_corner = unique_corner_pts[nf]
-    sph_zero = vedo.Sphere(pos = zero_corner, r=3, c='orange')
-
-    #Create vector aligning to all axes of the rotated cube
-    min_dist = 1000000
-    for nn, pt in enumerate(unique_corner_pts): 
-        diff_v = pt - zero_corner
-        dist = np.linalg.norm(diff_v)
-        print(pt, dist)
-        if nn != nf and dist < min_dist: 
-            min_dist = dist
-            nff = nn
-    
-    pts4corners = []
-    for pt in unique_corner_pts: 
-        diff_v = pt - zero_corner
-        dist = np.linalg.norm(diff_v)
-        if min_dist*0.99 < dist and dist < min_dist*1.01:
-            pts4corners.append(pt) 
-
-    #Make the length of the vectors to be 50
-    controller.unit_vect_1 = fcM.unit_vector(pts4corners[0]-zero_corner)*50+zero_corner
-    controller.unit_vect_2 = fcM.unit_vector(pts4corners[1]-zero_corner)*50+zero_corner
-    controller.unit_vect_3 = fcM.unit_vector(pts4corners[2]-zero_corner)*50+zero_corner
-
-    #Only create those arrows that are parallel to the face not perpendicular to be able to select from them
-    controller.vect_1 = vedo.Arrow(start_pt=zero_corner, end_pt=controller.unit_vect_1, s=0.25, c='yellowgreen')
-    controller.vect_1.name = "Vector Nr.1"
-    sph_1 = vedo.Sphere(pos=pts4corners[0], r=5, c='yellowgreen')
-    sph_1.name = "Sphere Nr.1"
-    controller.vect_2 = vedo.Arrow(start_pt=zero_corner, end_pt=controller.unit_vect_2, s=0.25, c='dodgerblue')
-    controller.vect_2.name = "Vector Nr.2"
-    sph_2 = vedo.Sphere(pos=pts4corners[1], r=5, c='dodgerblue')
-    sph_2.name = "Sphere Nr.2"
-    controller.vect_3 = vedo.Arrow(start_pt=zero_corner, end_pt=controller.unit_vect_3, s=0.25, c='orange')
-    controller.vect_3.name = "Vector Nr.3"
-    sph_3 = vedo.Sphere(pos=pts4corners[2], r=5, c='orange')
-    sph_3.name = "Sphere Nr.3"
-
-    controller.selected_vect = None
-    #Functions to select 
-    def func(evt):
-        if not evt.actor: 
-            return
-        else: 
-            print(type(evt.actor), evt.actor.name)
-            if isinstance(evt.actor, vedo.mesh.Mesh): 
-                msh = evt.actor
-                sph_no = evt.actor.name
-                if 'Sphere Nr' in sph_no: 
-                    sil_sph = evt.actor.silhouette().linewidth(6).c('red5')
-                    sil_sph.name = 'silu_sph'
-                    vect_no = sph_no.split('.')[-1]
-                    sil_vect = getattr(controller, 'vect_'+vect_no).silhouette().linewidth(6).c('red5')
-                    sil_vect.name = 'silu_vect'
-                    plt.remove('silu_sph').add(sil_sph)
-                    plt.remove('silu_vect').add(sil_vect)
-                    print('vect_no:', vect_no)
-                    controller.selected_vect = 'vect_'+vect_no
-
-                    txt = 'You have selected Vector No.'+str(vect_no)
-                    msg.text(txt)   
-            else: 
-                return   
 
     #Get external mesh
     mesh_name = controller.main_win.gui_angles[cut]['mesh_to_use']
     #Get the segments and iterate through them
     divs = controller.main_win.gui_angles[cut]['div']
-    div_settings = {}
+    # div_settings = {}
     div_settings = {'proj_plane': {'pl_centre': pl_centre, 
                                     'pl_normal': pl_normal}}
     
@@ -1957,49 +1888,26 @@ def run_angles(controller, btn):
         subm_name = cut.title()+'_'+mesh_name+'_'+segm_no
         subsegm = controller.organ.obj_subm[subm_name]
 
-        #Get the submesh
-        sub_mesh = subsegm.get_segm_mesh()
-
         #Create the line 
         p0 = divs[div]['segment_pts']['start']
         p1 = divs[div]['segment_pts']['end']
         sph_p0 = vedo.Sphere(pos = p0, r=2, c='black')
         sph_p1 = vedo.Sphere(pos = p1, r=2, c='gold')
-        arrow_or = vedo.Arrow(start_pt=p1, end_pt=p0, c='darkred', s=0.1)
-        # line_or = vedo.Line(p0=p0, p1=p1, c='limegreen', lw=3)
 
         sph_proj_p0 = sph_p0.clone().project_on_plane(plane = plane).color('black').alpha(1)
         proj_p0 = sph_proj_p0.center_of_mass()
         sph_proj_p1 = sph_p1.clone().project_on_plane(plane = plane).color('gold').alpha(1)
         proj_p1 = sph_proj_p1.center_of_mass()
 
-        proj_arrow_or = vedo.Arrow(start_pt=proj_p1, end_pt=proj_p0, s=0.1, c='darkpurple').alpha(1)
-        moved_proj_arrow_or = vedo.Arrow(start_pt = zero_corner, end_pt=zero_corner+proj_p0-proj_p1, s=0.1, c='darkpurple').alpha(1)
-
-        #Select the reference vector with which angle measurements will be made
-        if controller.selected_vect == None: 
-            msg = vedo.Text2D(pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, alpha=0.8) # an empty text
-            inst = 'Instructions: \n  -Select one of the spheres located in the corners of the enclosing cube to define\n   the reference vector that will be used to measure the angles from the '+axis.upper()+' view.\n   Close the window when you are done'
-            txt0 = vedo.Text2D(inst,  c=txt_color, font=txt_font, s=txt_size)
-
-            plt = vedo.Plotter(N=1, axes=1)
-            plt.add_icon(logo, pos=(0.1,1), size=0.25)
-            plt.add_callback('mouse click', func)
-            plt.show(txt0, sub_mesh, sph, arrow_or, controller.vect_1, sph_1, controller.vect_2, sph_2, controller.vect_3, sph_3, 
-                    sph_zero, clear_cube, plane, proj_arrow_or, moved_proj_arrow_or, sph_p0, sph_p1, sph_proj_p0, sph_proj_p1, at=0, interactive=True)
-            
-            #Create a new line in the plane with which the segment can be measured
-            print('selected vector:', controller.selected_vect)
-        
         #Measure angles
         vector_zero = np.array(([0.0,0.0,0.0], proj_p0-proj_p1))
-        ref_vect = np.array(([0.0,0.0,0.0], getattr(controller, 'unit_'+controller.selected_vect)-zero_corner))
+        ref_vect = np.array(([0.0,0.0,0.0], ref_vector_cube))
         angle = find_angle_btw_pts(vector_zero, ref_vect)
 
         div_settings[div] = {'original_line' : {'p0': p1, 'p1': p0},
                                 'proj_line': {'p0': proj_p1, 'p1': proj_p0}, 
                                 'proj_vect_corner_box': {'p0': zero_corner, 'p1': zero_corner+proj_p0-proj_p1},
-                                'ref_vector_corner_box': {'p0': zero_corner, 'p1': getattr(controller, 'unit_'+controller.selected_vect)},
+                                'ref_vector_corner_box': {'p0': zero_corner, 'p1': zero_corner+(ref_vector_cube*50)},
                                 'vector_zero': vector_zero,
                                 'vector_ref': ref_vect, 
                                 'angle': angle} 
@@ -2009,6 +1917,22 @@ def run_angles(controller, btn):
         cont_dict = {'ext': 'external', 'int': 'internal', 'tiss': 'tissue'}
         index = ('Angles: Segment-'+axis.title(), cut.title()+'_'+mesh_name+'_'+segm_no+'_'+dir, cut.title()+': '+ tiss+'-'+cont_dict[cont]+' ('+segm+'-'+axis+')')
         df_res = fcB.df_add_value(df = df_res, index = index, value=angle)
+
+        #Get things to plot
+        if mH_config.dev: 
+            sub_mesh = subsegm.get_segm_mesh()
+            arrow_or = vedo.Arrow(start_pt=p1, end_pt=p0, c='darkred', s=0.1)
+            clear_cube = cubes['clear'].clone().alpha(0.1)
+            proj_arrow_or = vedo.Arrow(start_pt=proj_p1, end_pt=proj_p0, s=0.1, c='darkpurple').alpha(1)
+            moved_proj_arrow_or = vedo.Arrow(start_pt = zero_corner, end_pt=zero_corner+proj_p0-proj_p1, s=0.1, c='darkpurple').alpha(1)
+            col = controller.main_win.gui_orientation[mtype]['planar_views'][ax_selected]['color'][0:3]
+            ref_vector_corner = vedo.Arrow(start_pt = zero_corner, end_pt=zero_corner+(ref_vector_cube*50), s=0.1, c=col).alpha(1)
+
+            plt = vedo.Plotter(N=1, axes=1)
+            plt.add_icon(logo, pos=(0.1,1), size=0.25)
+            plt.show(sub_mesh, arrow_or, clear_cube, plane, proj_arrow_or, moved_proj_arrow_or, ref_vector_corner, 
+                    sph_p0, sph_p1, sph_proj_p0, sph_proj_p1, at=0, interactive=True)
+        
 
     print('div_settings:', div_settings)
     #Resave df_res 
@@ -2030,7 +1954,57 @@ def run_angles(controller, btn):
     getattr(controller.main_win, 'play_angle_'+btn).setChecked(True)
     #Enable plot btn 
     getattr(controller.main_win, 'plot_angle_'+btn).setEnabled(True)
-    
+    #Check to enable Ellipsoids 
+    controller.main_win.enable_ellipsoids()
+   
+def run_ellipsoids(controller):
+
+    print('')
+    segm_btns = controller.main_win.segm_btns
+    for btn in segm_btns.keys(): 
+        if segm_btns[btn]['play'].isChecked(): 
+            #Run Ellipsoid for this segm
+            controller.main_win.win_msg('Creating ellipsoids for segments comprising '+btn)
+            #Get segments
+            cut, ch_cont = btn.split(':')
+            ch, cont = ch_cont.split('_')
+            try: 
+                #get submesh from list buttons if it was saved in there...
+                meshes = segm_btns[btn]['meshes']
+                print('Meshes from try!')
+            except: 
+                print('Meshes from except!')
+                meshes = {}
+                for subm in controller.organ.mH_settings['setup']['segm'][cut]['name_segments'].keys():
+                    submesh_name = cut.title()+'_'+ch+'_'+cont+'_'+subm
+                    submesh = controller.organ.obj_subm[submesh_name]
+                    meshes[subm] = submesh.get_segm_mesh()
+            
+            divs = controller.main_win.gui_angles[cut.lower()]['div']
+            for segm in meshes: 
+                #Get mesh
+                mesh2rot = meshes[segm].clone()
+                #Find the corresponding div
+                for div in divs.keys(): 
+                    if divs[div]['segm'] == segm: 
+                        print('div:', div)
+                        break
+
+                #Get angles to rotate mesh
+                axis_set = controller.main_win.gui_angles[cut.lower()]['axis_settings']
+                for axis in axis_set.keys(): 
+                    
+
+                    v = vector(0.2, 1, 0)
+p = vector(1.0, 0, 0)  # axis passes through this point
+c2.rotate(90, axis=v, point=p)
+l = Line(p-v, p+v).c('red5').lw(3)
+                
+
+
+            
+
+
 # > SECTIONS
 def run_sections(controller, btn): 
 
