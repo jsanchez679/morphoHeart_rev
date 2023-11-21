@@ -934,6 +934,12 @@ class Controller:
             self.main_win = None
             self.load_proj_win.button_go_back.clicked.connect(lambda: self.clear_win_show_welcome(parent = 'load_proj_win'))
             self.load_proj_win.go_to_main_window.setChecked(False)
+            self.load_proj_win.organ_selected = None
+            self.load_proj_win.organs_2del = None
+            self.load_proj_win.multi_organ_checkboxes = None
+            self.load_proj_win.multi_organs_added = []
+            self.load_proj_win.added_organs_checkboxes = None
+            self.load_proj_win.load_proj_organs(proj = self.load_proj_win.proj)
             self.load_proj_win.show()
         
     def create_new_organ_same_project(self): 

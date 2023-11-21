@@ -4452,12 +4452,18 @@ class MainWindow(QMainWindow):
             # do custom stuff
             widget_name = widget.objectName()
             print ('focus out:', widget_name)
-            name = widget_name.split('_value')[0]
-            # ch = name.split('_')[-1]
-            if 'level' in widget_name: 
-                self.slider_changed(name, 'value', divider = 10)
-            else: 
-                self.slider_changed(name, 'value')
+            if '_value' in widget_name: 
+                name = widget_name.split('_value')[0]
+                # ch = name.split('_')[-1]
+                if 'level' in widget_name: 
+                    self.slider_changed(name, 'value', divider = 10)
+                else: 
+                    self.slider_changed(name, 'value')
+
+        elif (event.type() == QtCore.QEvent.Type.KeyPress and isinstance(widget, QLineEdit)):
+            key = event.key()
+            if key == QtCore.Qt.Key.Key_Return or key == QtCore.Qt.Key.Key_Enter:
+                self.setFocus()
 
         return super().eventFilter(widget, event)
         
@@ -4511,6 +4517,12 @@ class MainWindow(QMainWindow):
         self.q_min_cont_length_ch2.clicked.connect(lambda: self.help('min_contour_length'))
         self.q_min_cont_length_ch3.clicked.connect(lambda: self.help('min_contour_length'))
         self.q_min_cont_length_ch4.clicked.connect(lambda: self.help('min_contour_length'))
+
+        #Slice 
+        self.eg_slice_ch1.installEventFilter(self)
+        self.eg_slice_ch2.installEventFilter(self)
+        self.eg_slice_ch3.installEventFilter(self)
+        self.eg_slice_ch4.installEventFilter(self)
 
         #>> Plot
         self.plot_all_slices_with_contours_ch1.clicked.connect(lambda: self.plot_all_slices(ch = 'ch1'))
@@ -4574,6 +4586,17 @@ class MainWindow(QMainWindow):
         self.mask_with_npy_ch3.stateChanged.connect(lambda: self.enable_mask_npy('ch3'))
         self.mask_with_npy_ch4.stateChanged.connect(lambda: self.enable_mask_npy('ch4'))
 
+        #Slice 
+        self.start_npy_mask_ch1.installEventFilter(self)
+        self.start_npy_mask_ch2.installEventFilter(self)
+        self.start_npy_mask_ch3.installEventFilter(self)
+        self.start_npy_mask_ch4.installEventFilter(self)
+
+        self.end_npy_mask_ch1.installEventFilter(self)
+        self.end_npy_mask_ch2.installEventFilter(self)
+        self.end_npy_mask_ch3.installEventFilter(self)
+        self.end_npy_mask_ch4.installEventFilter(self)
+
         #Set Mask NPY
         self.set_npy_mask_ch1.clicked.connect(lambda: self.set_mask_npy('ch1'))
         self.set_npy_mask_ch2.clicked.connect(lambda: self.set_mask_npy('ch2'))
@@ -4629,6 +4652,17 @@ class MainWindow(QMainWindow):
         self.autom_close_ch2_open.clicked.connect(lambda: self.open_section(name='autom_close_ch2', ch_name = 'ch2'))
         self.autom_close_ch3_open.clicked.connect(lambda: self.open_section(name='autom_close_ch3', ch_name = 'ch3'))
         self.autom_close_ch4_open.clicked.connect(lambda: self.open_section(name='autom_close_ch4', ch_name = 'ch4'))
+
+        #Slice 
+        self.start_autom_ch1.installEventFilter(self)
+        self.start_autom_ch2.installEventFilter(self)
+        self.start_autom_ch3.installEventFilter(self)
+        self.start_autom_ch4.installEventFilter(self)
+
+        self.end_autom_ch1.installEventFilter(self)
+        self.end_autom_ch2.installEventFilter(self)
+        self.end_autom_ch3.installEventFilter(self)
+        self.end_autom_ch4.installEventFilter(self)
 
         # - Play
         self.autom_close_ch1_play.setStyleSheet(style_play)
@@ -4692,10 +4726,10 @@ class MainWindow(QMainWindow):
         self.autom_min_cont_length_ch4_value.installEventFilter(self)
 
         #>> min intensity value
-        self.autom_min_cont_length_ch1_value.installEventFilter(self)
-        self.autom_min_cont_length_ch2_value.installEventFilter(self)
-        self.autom_min_cont_length_ch3_value.installEventFilter(self)
-        self.autom_min_cont_length_ch4_value.installEventFilter(self)
+        self.autom_min_intensity_ch1_value.installEventFilter(self)
+        self.autom_min_intensity_ch2_value.installEventFilter(self)
+        self.autom_min_intensity_ch3_value.installEventFilter(self)
+        self.autom_min_intensity_ch4_value.installEventFilter(self)
 
         #>> mean intensity value
         self.autom_mean_intensity_ch1_value.installEventFilter(self)
@@ -4739,6 +4773,17 @@ class MainWindow(QMainWindow):
             self.organ.update_settings(proc_set, update, 'mH', add='autom_close_contours')
 
     def init_manual_close_contours(self): 
+
+        #Slice 
+        self.start_manual_ch1.installEventFilter(self)
+        self.start_manual_ch2.installEventFilter(self)
+        self.start_manual_ch3.installEventFilter(self)
+        self.start_manual_ch4.installEventFilter(self)
+
+        self.end_manual_ch1.installEventFilter(self)
+        self.end_manual_ch2.installEventFilter(self)
+        self.end_manual_ch3.installEventFilter(self)
+        self.end_manual_ch4.installEventFilter(self)
 
         #Prev and Next Slices/Tuples
         self.prev_slice_ch1.setEnabled(False)
@@ -4815,6 +4860,11 @@ class MainWindow(QMainWindow):
         self.manual_min_intensity_ch2_value.installEventFilter(self)
         self.manual_min_intensity_ch3_value.installEventFilter(self)
         self.manual_min_intensity_ch4_value.installEventFilter(self)
+
+        self.slices_to_close_ch1.installEventFilter(self)
+        self.slices_to_close_ch2.installEventFilter(self)
+        self.slices_to_close_ch3.installEventFilter(self)
+        self.slices_to_close_ch4.installEventFilter(self)
 
         # Regex for slices
         reg_ex = QRegularExpression("[0-9,-]+")
@@ -4914,6 +4964,57 @@ class MainWindow(QMainWindow):
         self.select_min_cont_length_ch2_value.installEventFilter(self)
         self.select_min_cont_length_ch3_value.installEventFilter(self)
         self.select_min_cont_length_ch4_value.installEventFilter(self)
+
+        #QLineEdit
+        self.num_slcs_per_group_ch1.installEventFilter(self)
+        self.num_slcs_per_group_ch2.installEventFilter(self)
+        self.num_slcs_per_group_ch3.installEventFilter(self)
+        self.num_slcs_per_group_ch4.installEventFilter(self)
+
+        self.first_slice_ch1.installEventFilter(self)
+        self.first_slice_ch2.installEventFilter(self)
+        self.first_slice_ch3.installEventFilter(self)
+        self.first_slice_ch4.installEventFilter(self)
+
+        self.num_int_cont_ch1.installEventFilter(self)
+        self.num_int_cont_ch2.installEventFilter(self)
+        self.num_int_cont_ch3.installEventFilter(self)
+        self.num_int_cont_ch4.installEventFilter(self)
+
+        self.num_ext_cont_ch1.installEventFilter(self)  
+        self.num_ext_cont_ch2.installEventFilter(self)  
+        self.num_ext_cont_ch3.installEventFilter(self)  
+        self.num_ext_cont_ch4.installEventFilter(self)
+
+        self.int_cont_ch1.installEventFilter(self)       
+        self.int_cont_ch2.installEventFilter(self)       
+        self.int_cont_ch3.installEventFilter(self)       
+        self.int_cont_ch4.installEventFilter(self)          
+        
+        self.ext_cont_ch1.installEventFilter(self)  
+        self.ext_cont_ch2.installEventFilter(self)  
+        self.ext_cont_ch3.installEventFilter(self)  
+        self.ext_cont_ch4.installEventFilter(self)       
+        
+        self.select_slice_ch1.installEventFilter(self)  
+        self.select_slice_ch2.installEventFilter(self)  
+        self.select_slice_ch3.installEventFilter(self)  
+        self.select_slice_ch4.installEventFilter(self)  
+
+        self.select_manually_slcs_ch1.installEventFilter(self)  
+        self.select_manually_slcs_ch2.installEventFilter(self)  
+        self.select_manually_slcs_ch3.installEventFilter(self)  
+        self.select_manually_slcs_ch4.installEventFilter(self)  
+
+        self.man_int_cont_ch1.installEventFilter(self)  
+        self.man_int_cont_ch2.installEventFilter(self)  
+        self.man_int_cont_ch3.installEventFilter(self)  
+        self.man_int_cont_ch4.installEventFilter(self)  
+
+        self.man_ext_cont_ch1.installEventFilter(self)  
+        self.man_ext_cont_ch2.installEventFilter(self)  
+        self.man_ext_cont_ch3.installEventFilter(self)  
+        self.man_ext_cont_ch4.installEventFilter(self)  
 
         # Regex for slices
         reg_ex3d = QRegularExpression(r"\d{1,3}") #3 digit number
@@ -5187,6 +5288,7 @@ class MainWindow(QMainWindow):
             if process == 'manual_close': 
                 self.organ.update_mHworkflow(sp_process2, update = 'DONE')
                 self.organ.update_mHworkflow(sp_process3, update = 'DONE')
+                getattr(self, 'close_tuples_'+ch_name+'_widget').setEnabled(False)
                 # self.close_draw_btns_widget.setVisible(False)
             elif process == 'select_contours':
                 self.organ.update_mHworkflow(sp_process1, update = 'DONE')

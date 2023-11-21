@@ -734,7 +734,7 @@ def enable_close_functions(controller, process, ch_name, widgets=True):
             getattr(controller.main_win, 'plot_final_s3s_'+ch_name).setEnabled(False)
             getattr(controller.main_win, 'plot_final_s3s_'+ch_name).setVisible(False)
             if getattr(controller.main_win, 'select_state_'+ch_name) != 'Finished': 
-                getattr(controller.main_win, 'next_group_'+ch_name).setShortcut("Ctrl+Right")
+                getattr(controller.main_win, 'next_group_'+ch_name).setShortcut("Ctrl+Shift+.")
                 #Close Buttons Section
                 controller.main_win.functions_btns_open.setChecked(True)
                 controller.main_win.open_section(name = 'functions_btns')
@@ -756,7 +756,10 @@ def enable_close_functions(controller, process, ch_name, widgets=True):
         widget_central = getattr(controller.main_win,'plot_slices_'+ch_name+'_widget')
     if not ignore:
         scrollArea.ensureWidgetVisible(widget_central)
-                
+    
+    #Shortcuts not working...
+    print('')
+
 #ANALYSIS TAB
 def run_keeplargest(controller):
     workflow = controller.organ.workflow
@@ -1960,7 +1963,9 @@ def run_angles(controller, btn):
 def run_ellipsoids(controller):
 
     print('')
+    # return
     segm_btns = controller.main_win.segm_btns
+
     for btn in segm_btns.keys(): 
         if segm_btns[btn]['play'].isChecked(): 
             #Run Ellipsoid for this segm
@@ -1968,6 +1973,10 @@ def run_ellipsoids(controller):
             #Get segments
             cut, ch_cont = btn.split(':')
             ch, cont = ch_cont.split('_')
+            mtype = controller.main_win.gui_angles[cut.lower()]['axis_lab']
+            #Get the cube
+            cubes = getattr(controller.organ, mtype+'_cube')
+            orient_cube = cubes['cube'].clone().alpha(0.1)
             try: 
                 #get submesh from list buttons if it was saved in there...
                 meshes = segm_btns[btn]['meshes']
@@ -1984,27 +1993,43 @@ def run_ellipsoids(controller):
             for segm in meshes: 
                 #Get mesh
                 mesh2rot = meshes[segm].clone()
+                com = mesh2rot.center_of_mass()
+                
                 #Find the corresponding div
                 for div in divs.keys(): 
                     if divs[div]['segm'] == segm: 
                         print('div:', div)
                         break
-
+                
                 #Get angles to rotate mesh
                 axis_set = controller.main_win.gui_angles[cut.lower()]['axis_settings']
+                rot_meshes = []
                 for axis in axis_set.keys(): 
-                    
+                    angle_settings = controller.main_win.gui_angles[cut.lower()]['axis_settings'][axis]
+                    p0 = angle_settings[div]['original_line']['p0']
+                    p1 = angle_settings[div]['original_line']['p1']
+                    line_vect = vedo.Arrow(start_pt=p0, end_pt=p1, s=0.1, c='violet').alpha(1)
 
-                    v = vector(0.2, 1, 0)
-p = vector(1.0, 0, 0)  # axis passes through this point
-c2.rotate(90, axis=v, point=p)
-l = Line(p-v, p+v).c('red5').lw(3)
+                    rot_ax = axis_set[axis]['proj_plane']['pl_normal']
+                    angle = axis_set[axis][div]['angle'] - 90
+                    print('angle: ', angle, '- axis:', rot_ax)
+                    rot = mesh2rot.clone().rotate(angle, axis=rot_ax, point=com, rad=False).color('gold').legend('Angle:'+str(angle))
+                    line_rot = line_vect.clone().rotate(angle, axis=rot_ax, point=com, rad=False).color('limegreen')
+                    rot_meshes.append(rot)
+
+                    plt = vedo.Plotter(N=1, axes=1)
+                    plt.add_icon(logo, pos=(0.1,1), size=0.25)
+                    plt.show(meshes[segm], rot, line_vect, line_rot, orient_cube, rot, at=0, interactive=True)
+
+                plt = vedo.Plotter(N=1, axes=1)
+                plt.add_icon(logo, pos=(0.1,1), size=0.25)
+                plt.show(meshes[segm], mesh2rot, orient_cube, rot, at=0, interactive=True)
+
+                # v = vector(0.2, 1, 0)
+                # p = vector(1.0, 0, 0)  # axis passes through this point
+                # c2.rotate(90, axis=v, point=p)
+                # l = Line(p-v, p+v).c('red5').lw(3)
                 
-
-
-            
-
-
 # > SECTIONS
 def run_sections(controller, btn): 
 

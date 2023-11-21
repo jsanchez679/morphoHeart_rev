@@ -30,7 +30,8 @@ import seaborn as sns
 from ..gui.gui_classes import *
 from .mH_funcBasics import alert, make_Paths, make_tuples, get_by_path, set_by_path, rename_directory
 from .mH_funcMeshes import (unit_vector, plot_organCLs, find_angle_btw_pts, new_normal_3DRot,
-                            classify_segments_from_ext, create_subsegment, create_subsection, plot_grid)
+                            classify_segments_from_ext, create_subsegment, create_subsection, plot_grid, 
+                            modify_cube)
 from ..gui.config import mH_config
 
 path_mHImages = mH_config.path_mHImages
@@ -1646,7 +1647,8 @@ class Organ():
             elif gui_orientation['roi']['method'] == 'Manual': 
                 planar_views, settings, roi_cube = self.orient_manual(views, colors)
         else: #No rotation
-            planar_views, settings, roi_cube = self.get_orientation(views, colors, mtype='ROI')
+            settings = None
+            planar_views, roi_cube = self.get_orientation(views, colors, mtype='ROI')
         planar_views = self.get_ref_vectors(planar_views, roi_cube)
 
         return planar_views, settings, roi_cube
@@ -1697,7 +1699,7 @@ class Organ():
         orient_cube.pos(pos)
         orient_cube_clear = orient_cube.clone().alpha(0.5)
         
-        txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select planar views in RIO (organ)...', c=txt_color, font=txt_font, s=txt_size)
+        txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select planar views in ROI (organ)...', c=txt_color, font=txt_font, s=txt_size)
         
         mks = []; sym = ['o']*len(views)
         for n, view, col in zip(count(), views, colors):
@@ -1725,8 +1727,98 @@ class Organ():
         return  vpt.planar_views, settings, roi_cube
 
     def orient_manual(self, views, colors): # to develop!
+
+        im_orient = self.info['im_orientation']
+        print('self.info[im_orientation]',im_orient)
+        rotateY = False
+        if im_orient == 'custom': 
+            cust_angle = self.info['custom_angle']
+            rotateY = True
+
+        ext_ch = self.get_ext_int_chs()
+        if isinstance(ext_ch, str) and ext_ch == 'independent':
+            ext_ch = self.obj_imChannels[list(self.obj_imChannels.keys())[0]]
+
+        mesh_ext = self.obj_meshes[ext_ch.channel_no+'_tiss']
+        pos = mesh_ext.mesh.center_of_mass()
+        # print('pos:', pos, type(pos))
+        side = max(self.get_maj_bounds())
+        color_o = [152,251,152,255]
+        orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
+        orient_cube.linewidth(1).force_opaque()
+        orient_cube_clear = orient_cube.clone().alpha(0.5)
+
+        stack_cube = {'pos': pos, 
+                        'side': side, 
+                        'color': color_o[:-1], 
+                        'rotateY': rotateY}
+        
+        if rotateY: 
+            orient_cube.rotate_y(cust_angle)
+            stack_cube['custom_angle'] = cust_angle
+
+        orient_cube_clear, rotX, rotY, rotZ = modify_cube(filename = self.user_organName,
+                                                            txt = 'set the ROI Orientation', 
+                                                            mesh = mesh_ext.mesh,
+                                                            orient_cube = orient_cube_clear,
+                                                            centre = pos, 
+                                                            option = [True,True,True,True,True,True,True],
+                                                            zoom=0.8)
+        
+        stack_cube['rotate_user'] = {'rotX': sum(rotX), 'rotY': sum(rotY), 'rotZ': sum(rotZ)}
+        
+        orient_cube_clear.pos(pos)
+
+        #Rotate the cube using the x y and z values 
+        orient_cube.rotate_x(sum(rotX)).rotate_y(sum(rotY)).rotate_z(sum(rotZ))
+        
+        txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select planar views in ROI (organ)...', c=txt_color, font=txt_font, s=txt_size)
+        
+        mks = []; sym = ['o']*len(views)
+        for n, view, col in zip(count(), views, colors):
+            mks.append(vedo.Marker('*').c(col[0:-1]).legend(view))
+        lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
+                            width=leg_width/1.5, height=leg_height/1.5)
+        
+        vpt = MyFaceSelectingPlotter(N=2, axes=1,colors=colors, color_o=color_o, 
+                                     views=views)
+        vpt.add_icon(logo, pos=(0.1,1), size=0.25)
+        vpt.add_callback("key press", vpt.on_key_press)
+        vpt.add_callback("mouse click", vpt.select_cube_face)
+        vpt.show(mesh_ext.mesh, orient_cube_clear, txt0, at=0)
+        vpt.show(orient_cube, lb, vpt.msg, vpt.msg_face, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)
+        
+        settings = {}
+        # 'proj_plane': plane, 
+        #             'ref_vect': ref_vect,
+        #             'ref_vectF': ref_vectF,
+        #             'orient_vect': pts,
+        #             'angle_deg': angle}
+        
+        self.roi_cube = {'cube': orient_cube,
+                           'clear': orient_cube_clear}
+
+
+        # Get new normal of rotated disc
+        pl_normal_corrected = fcM.new_normal_3DRot(normal = pl_normal, rotX = rotX, rotY = rotY, rotZ = rotZ)
+        normal_unit = fcM.unit_vector(pl_normal_corrected)*10
+        
+        print('')
+        return
+        roi_cube = {'pos': pos, 
+                    'side': side, 
+                    'color': color_o[:-1]}
+        
+        settings = {'proj_plane': plane, 
+                    'ref_vect': ref_vect,
+                    'ref_vectF': ref_vectF,
+                    'orient_vect': pts,
+                    'angle_deg': angle}
+
         print('orient_manual: Code under development!')
-        return None
+        planar_views = {}
+
+        return planar_views, settings, roi_cube
 
     def get_ref_vectors(self, planar_views, roi_cube):
 

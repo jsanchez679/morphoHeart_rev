@@ -38,6 +38,9 @@ from .mH_funcBasics import get_by_path, alert, df_reset_index, df_add_value
 
 # path_fcMeshes = os.path.abspath(__file__)
 path_mHImages = mH_config.path_mHImages
+# Load logo
+path_logo = path_mHImages / 'logo-07.jpg'
+logo = vedo.Picture(str(path_logo))
 
 #%% Set default fonts and sizes for plots
 txt_font = mH_config.txt_font
@@ -1271,10 +1274,6 @@ def classify_segments(meshes, dict_segm, colors_dict):
     mks = []; sym = ['o']*len(dict_segm)
     for segm in dict_segm:
         mks.append(vedo.Marker('*').c(colors_dict[segm]).legend(dict_segm[segm]['user_name']))
-        
-    # Load logo
-    path_logo = path_mHImages / 'logo-07.jpg'
-    logo = vedo.Picture(str(path_logo))
     
     txA = 'Instructions: Click each segment mesh until it is coloured according to the segment it belongs to.'
     txB = '\n[Note: Colours will loop for each mesh as you click it ]'
@@ -1497,8 +1496,7 @@ def select_ribMask(organ, cut, mask_cube_split, mesh_cl, kspl_ext):
     sym = ['o']
     lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
                         width=leg_width, height=leg_height/3)
-    path_logo = path_mHImages / 'logo-07.jpg'
-    logo = vedo.Picture(str(path_logo))
+
     msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
     selected_mesh = {'name': 'NS'}
     
@@ -2113,10 +2111,6 @@ def order_segms(organ, kspl_CLnew, num_pts, cut):
 def unloop_chamber(organ, mesh, kspl_CLnew, kspl_vSurf,
                                 df_classPts, labels, gui_heatmaps2d, kspl_data):
 
-    # Load logo
-    path_logo = path_mHImages / 'logo-07.jpg'
-    logo = vedo.Picture(str(path_logo))
-
     if gui_heatmaps2d['plot']['plot_planes']: 
         plotevery = gui_heatmaps2d['plot']['every_planes']
         print('- Plotting every X number of planes:', plotevery)
@@ -2730,10 +2724,6 @@ def get_plane_normals_to_proj_kspl(organ, no_planes, kspl, gui_heatmaps2d):
 def plot_grid(obj:list, txt=[], axes=1, zoom=1, lg_pos='top-left',
               sc_side=350, azimuth = 0, elevation = 0, add_scale_cube=True):
     
-    # Load logo
-    path_logo = path_mHImages / 'logo-07.jpg'
-    logo = vedo.Picture(str(path_logo))
-    
     # Create ScaleCube
     if add_scale_cube: 
         if isinstance(obj[0], tuple):
@@ -2878,10 +2868,6 @@ def get_plane(filename, txt:str, meshes:list, settings: dict, def_pl = None,
     Function that creates a plane defined by the user
     '''
     
-    # Load logo
-    path_logo = path_mHImages / 'logo-07.jpg'
-    logo = vedo.Picture(str(path_logo))
-    
     if all([isinstance(mesh, vedo.Mesh) for mesh in meshes]):
         meshes_mesh = meshes
     else: 
@@ -2922,10 +2908,6 @@ def get_plane_pos(filename, txt, meshes, settings, option,
     meshes: list (outer mesh in position 0, inner mesh in position 1 or 2)
 
     '''
-    
-    # Load logo
-    path_logo = path_mHImages / 'logo-07.jpg'
-    logo = vedo.Picture(str(path_logo))
     
     xmin, xmax, ymin, ymax, zmin, zmax = meshes[0].bounds()
     x_size = xmax - xmin; y_size = ymax - ymin; z_size = zmax - zmin
@@ -3055,10 +3037,6 @@ def modify_disc(filename, txt, mesh, option,
     Function that shows a plot so that the user can define a cylinder (disc)
 
     """
-
-    # Load logo
-    path_logo = path_mHImages / 'logo-07.jpg'
-    logo = vedo.Picture(str(path_logo))
     
     xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds()
     x_size = xmax - xmin; y_size = ymax - ymin; z_size = zmax - zmin
@@ -3154,6 +3132,95 @@ def modify_disc(filename, txt, mesh, option,
     vp.show(mesh, cyl_test, sph_cyl, lbox, txt, azimuth=45, elevation=45, zoom=zoom, interactive=True)
 
     return cyl_test, sph_cyl, rotX, rotY, rotZ
+
+def modify_cube(filename, txt, mesh, orient_cube, centre, option, zoom = 0.5):
+    """
+    Function that shows a plot so that the user can define a cylinder (disc)
+
+    """
+    xmin, xmax, ymin, ymax, zmin, zmax = orient_cube.bounds()
+    x_size = xmax - xmin; y_size = ymax - ymin; z_size = zmax - zmin
+
+    xval = sorted([xmin-0.3*x_size,xmax+0.3*x_size])
+    yval = sorted([ymin-0.3*y_size,ymax+0.3*y_size])
+    zval = sorted([zmin-0.3*z_size,zmax+0.3*z_size])
+
+    rotX = [0];    rotY = [0];    rotZ = [0]
+
+    # Functions to move and rotate cube
+    def sliderX(widget, event):
+        valueX = widget.GetRepresentation().GetValue()
+        orient_cube.x(valueX)
+
+    def sliderY(widget, event):
+        valueY = widget.GetRepresentation().GetValue()
+        orient_cube.y(valueY)
+
+    def sliderZ(widget, event):
+        valueZ = widget.GetRepresentation().GetValue()
+        orient_cube.z(valueZ)
+
+    def sliderRotX(widget, event):
+        valueRX = widget.GetRepresentation().GetValue()
+        rotX.append(valueRX)
+        orient_cube.rotateX(valueRX, rad=False)
+
+    def sliderRotY(widget, event):
+        valueRY = widget.GetRepresentation().GetValue()
+        rotY.append(valueRY)
+        orient_cube.rotateY(valueRY, rad=False)
+
+    def sliderRotZ(widget, event):
+        valueRZ = widget.GetRepresentation().GetValue()
+        rotZ.append(valueRZ)
+        orient_cube.rotateZ(valueRZ, rad=False)
+    
+    def sliderAlphaMeshOut(widget, event):
+        valueAlpha = widget.GetRepresentation().GetValue()
+        orient_cube.alpha(valueAlpha)
+
+    lbox = vedo.LegendBox([mesh], font=leg_font, width=leg_width, padding=1)
+    vp = vedo.Plotter(N=1, axes=8)
+    vp.add_icon(logo, pos=(0.85,0.75), size=0.10)
+
+    
+    if option[0]: #sliderX
+        vp.addSlider2D(sliderX, xval[0], xval[1], value=centre[0],
+                    pos=[(0.1,0.15), (0.3,0.15)], title='- > x position > +', 
+                    c='crimson', title_size=txt_slider_size)
+    if option[1]: #sliderY
+        vp.addSlider2D(sliderY, yval[0], yval[1], value=centre[1],
+                    pos=[(0.4,0.15), (0.6,0.15)], title='- > y position > +', 
+                    c='dodgerblue', title_size=txt_slider_size)
+    if option[2]: #sliderZ
+        vp.addSlider2D(sliderZ, zval[0], zval[1], value=centre[2],
+                    pos=[(0.7,0.15), (0.9,0.15)], title='- > z position > +', 
+                    c='limegreen', title_size=txt_slider_size)
+    if option[3]: #sliderRotX
+        vp.addSlider2D(sliderRotX, -1, +1, value=0,
+                    pos=[(0.1,0.05), (0.3,0.05)], title='- > x rotation > +', 
+                    c='deeppink', title_size=txt_slider_size)
+    if option[4]: #sliderRotX
+        vp.addSlider2D(sliderRotX, -1, +1, value=0,
+                    pos=[(0.1,0.05), (0.3,0.05)], title='- > x rotation > +', 
+                    c='deeppink', title_size=txt_slider_size)
+    if option[5]: #sliderRotY
+        vp.addSlider2D(sliderRotY, -1, +1, value=0,
+                    pos=[(0.4,0.05), (0.6,0.05)], title='- > y rotation > +', 
+                    c='gold', title_size=txt_slider_size)
+    if option[6]: #sliderRotZ
+        vp.addSlider2D(sliderRotZ, -1, +1, value=0,
+                    pos=[(0.7,0.05), (0.9,0.05)], title='- > z rotation > +', 
+                    c='teal', title_size=txt_slider_size)
+
+    vp.addSlider2D(sliderAlphaMeshOut, xmin=0.01, xmax=0.99, value=0.01,
+               pos=[(0.95,0.25), (0.95,0.45)], c="blue", title="Mesh Opacity")
+
+    text = filename+'\nDefine cube position to '+txt+'.\nClose the window when done.\n[Note: The initially defined cube position and orientation is the same set for the STACK.'
+    txt = vedo.Text2D(text, c=txt_color, font=txt_font, s=txt_size)
+    vp.show(mesh, orient_cube, lbox, txt, azimuth=45, elevation=45, zoom=zoom, interactive=True)
+
+    return orient_cube, rotX, rotY, rotZ
 
 #%% - Mesh Operations
 def get_pts_at_plane (points, pl_normal, pl_centre, tol=2, addData = []):
