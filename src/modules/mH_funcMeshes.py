@@ -19,6 +19,7 @@ import vmtk
 from vmtk import pypes, vmtkscripts
 from scipy.interpolate import splprep, splev, interpn
 from scipy.spatial.distance import cdist
+from scipy.spatial.transform import Rotation as R
 from time import perf_counter
 import copy
 from typing import Union
@@ -303,6 +304,9 @@ def get_roi_orientation(organ, gui_orientation:dict, win):#
                 win.win_msg('!Organ/ROI Orientation will be set once the centreline of the '+centreline+' has been obtained.')
         else: #Manual
             planar_views, settings, roi_cube = organ.get_ROI_orientation(gui_orientation, colors)
+            win.rotX.setText("%.1f" % roi_cube['rotate_user']['rotX']+'°')
+            win.rotY.setText("%.1f" % roi_cube['rotate_user']['rotY']+'°')
+            win.rotZ.setText("%.1f" % roi_cube['rotate_user']['rotZ']+'°')
             print('Method: Manual -', planar_views)
     else: 
         planar_views, settings, roi_cube = organ.get_ROI_orientation(gui_orientation, colors)
@@ -2522,9 +2526,21 @@ def find_angle_btw_pts(pts1, pts2):
     vect2 = pts2[1]-pts2[0]
 
     dotProd = np.dot(vect1,vect2)
-
     angle = math.degrees(math.acos(dotProd/(mag_v1*mag_v2)))
 
+    return angle
+
+def find_angle_btw_pts_atan(vref, vect, normal):
+    #https://stackoverflow.com/a/33920320
+    #atan2((Va x Vb) . Vn, Va . Vb)
+    va = vref
+    vb = vect
+
+    vaxvb = np.cross(va, vb)
+    dotvn = np.dot(vaxvb, normal)
+    vadotvb = np.dot(va, vb)
+    angle =  math.degrees(math.atan2(dotvn, vadotvb))
+    
     return angle
 
 def findDist(pt1, pt2):
@@ -2549,6 +2565,37 @@ def find_pt_idx_in_kspline(kspl, pt_in):
 
     return idx
      
+def find_euler_angles_rotation(p0, p1, ref_vect): 
+
+    vect_zero = p0-p1
+    vect_unit = unit_vector(vect_zero)
+    mat = rotation_matrix_from_vectors(vect_unit, ref_vect)
+    vec1_rot = mat.dot(vect_unit)
+    print('Assert rotation:', np.allclose(vec1_rot / np.linalg.norm(vec1_rot), ref_vect / np.linalg.norm(ref_vect)))
+    r = R.from_matrix(mat)
+    angles = r.as_euler("zyx",degrees=True)
+    ang_z = angles[0]
+    ang_y = angles[1]
+    ang_x = angles[2]
+
+    return ang_x, ang_y, ang_z
+
+def rotation_matrix_from_vectors(vec1, vec2):
+    #https://stackoverflow.com/a/59204638
+    """ Find the rotation matrix that aligns vec1 to vec2
+    :param vec1: A 3d "source" vector
+    :param vec2: A 3d "destination" vector
+    :return mat: A transform matrix (3x3) which when applied to vec1, aligns it with vec2.
+    """
+    a, b = (vec1 / np.linalg.norm(vec1)).reshape(3), (vec2 / np.linalg.norm(vec2)).reshape(3)
+    v = np.cross(a, b)
+    c = np.dot(a, b)
+    s = np.linalg.norm(v)
+    kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+    rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
+
+    return rotation_matrix
+
 def get_plane_normal2pt (pt_num, points):
     """
     Funtion that gets a plane normal to a point in a spline
@@ -3200,15 +3247,11 @@ def modify_cube(filename, txt, mesh, orient_cube, centre, option, zoom = 0.5):
         vp.addSlider2D(sliderRotX, -1, +1, value=0,
                     pos=[(0.1,0.05), (0.3,0.05)], title='- > x rotation > +', 
                     c='deeppink', title_size=txt_slider_size)
-    if option[4]: #sliderRotX
-        vp.addSlider2D(sliderRotX, -1, +1, value=0,
-                    pos=[(0.1,0.05), (0.3,0.05)], title='- > x rotation > +', 
-                    c='deeppink', title_size=txt_slider_size)
-    if option[5]: #sliderRotY
+    if option[4]: #sliderRotY
         vp.addSlider2D(sliderRotY, -1, +1, value=0,
                     pos=[(0.4,0.05), (0.6,0.05)], title='- > y rotation > +', 
                     c='gold', title_size=txt_slider_size)
-    if option[6]: #sliderRotZ
+    if option[5]: #sliderRotZ
         vp.addSlider2D(sliderRotZ, -1, +1, value=0,
                     pos=[(0.7,0.05), (0.9,0.05)], title='- > z rotation > +', 
                     c='teal', title_size=txt_slider_size)

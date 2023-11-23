@@ -50,7 +50,7 @@ from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours
                                        plot_props, plot_filled_contours, plot_group_filled_contours, 
                                        close_draw, close_box, close_user, reset_img, close_convex_hull, tuple_pairs, 
                                        mask_with_npy)
-from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap
+from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap, unit_vector, new_normal_3DRot
 from ..modules.mH_classes_new import Project, Organ, create_submesh
 from .config import mH_config
 
@@ -7551,6 +7551,8 @@ class MainWindow(QMainWindow):
         self.angle_cut2_div4.clicked.connect(lambda: self.set_segms_or(cut='cut2', div='div4'))
         self.angle_cut2_div5.clicked.connect(lambda: self.set_segms_or(cut='cut2', div='div5'))
 
+        self.ellip_set.clicked.connect(lambda: self.set_ellipsoid(init=True))
+
         #Initialise with user settings, if they exist!
         self.user_segments()
 
@@ -8226,7 +8228,10 @@ class MainWindow(QMainWindow):
                     self.vector_orient.setCurrentText(wf_info['orientation']['roi']['vector_orient']) 
                 else: 
                     self.radio_manual.setChecked(True)
-                    self.reorient_angles.setText(wf_info['orientation']['roi']['angles'])
+                    roi_cube = wf_info['orientation']['roi']['roi_cube']
+                    self.rotX.setText("%.1f" % roi_cube['rotate_user']['rotX']+'°')
+                    self.rotY.setText("%.1f" % roi_cube['rotate_user']['rotY']+'°')
+                    self.rotZ.setText("%.1f" % roi_cube['rotate_user']['rotZ']+'°')
 
             for item in ['Stack', 'ROI']:
                 if workflow[item] == 'DONE':
@@ -8893,13 +8898,20 @@ class MainWindow(QMainWindow):
         # print('Checked:', mtype)
         if self.radio_manual.isChecked(): 
             self.reorient_angles.setEnabled(True)
+            self.manual_angles.setVisible(True)
+            self.manual_angles.setEnabled(True)
+
             self.centreline_orientation.setEnabled(False)
             self.lab_plane.setEnabled(False)
             self.plane_orient.setEnabled(False)
             self.lab_vector.setEnabled(False)
             self.vector_orient.setEnabled(False)
+
         elif self.radio_centreline.isChecked(): 
             self.reorient_angles.setEnabled(False)
+            self.manual_angles.setVisible(False)
+            self.manual_angles.setEnabled(False)
+
             self.centreline_orientation.setEnabled(True)
             self.lab_plane.setEnabled(True)
             self.plane_orient.setEnabled(True)
@@ -9430,6 +9442,146 @@ class MainWindow(QMainWindow):
         print('gui_angles ('+cut+'): ', gui_angles)
         return gui_angles
     
+    def set_ellipsoid(self, init=False): 
+
+        wf_info = self.organ.mH_settings['wf_info']
+        if init: 
+            current_gui_ellips, cube_ellipsoids = self.gui_ellipsoids()
+            if 'ellipsoids' not in wf_info.keys():
+                self.gui_ellips = current_gui_ellips
+            else: 
+                gui_ellips_loaded = self.organ.mH_settings['wf_info']['ellipsoids']
+                self.gui_ellips, changed = update_gui_set(loaded = gui_ellips_loaded, 
+                                                        current = current_gui_ellips)
+                if changed: 
+                    self.win_msg("You have updated the settings to obtain ellipsoids. Please re-run this section!")
+            self.cube_ellipsoids = cube_ellipsoids
+        else: 
+            self.gui_ellips, self.cube_ellipsoids = self.gui_ellipsoids(load=True)
+
+        self.ellip_set.setChecked(True)
+        print('self.gui_ellips: ', self.gui_ellips)
+        self.ellipsoids_play.setEnabled(True)   
+
+        # Update mH_settings
+        proc_set = ['wf_info']
+        update = self.gui_ellips
+        self.organ.update_settings(proc_set, update, 'mH', add='ellipsoids')
+
+    def gui_ellipsoids(self, load=False): 
+        
+        #Get cube
+        for opt in ['roi', 'stack']:
+            if getattr(self, 'ellip_'+opt).isChecked():
+                axis_selected = opt
+                #Get the cube
+                cubes = getattr(self.organ, axis_selected+'_cube')
+                orient_cube = cubes['cube'].clone()
+                orient_cube_clear = cubes['clear']
+                break
+
+        #Get segments
+        ext_ch = self.organ.get_ext_int_chs().channel_no
+        com = self.organ.obj_meshes[ext_ch+'_ext'].mesh.center_of_mass()
+        ext_subsegm = self.organ.get_ext_subsgm(cut='Cut1')
+        segms = [ext_subsegm[seg].get_segm_mesh() for seg in ext_subsegm.keys()]
+
+        if axis_selected == 'roi': 
+            cube_rotations = self.organ.mH_settings['wf_info']['orientation'][axis_selected]['roi_cube']
+            planar_views = self.organ.mH_settings['wf_info']['orientation'][axis_selected]['planar_views']
+            rotX = 0; rotY = 0; rotZ = 0
+            if 'rotate_x' in cube_rotations.keys(): 
+                rotX = cube_rotations['rotate_x']
+            if 'rotate_y' in cube_rotations.keys(): 
+                rotY = cube_rotations['rotate_y']
+            if 'rotate_z' in cube_rotations.keys(): 
+                rotZ = cube_rotations['rotate_z']
+            if 'rotate_user' in cube_rotations.keys(): 
+                rotX = rotX + cube_rotations['rotate_user']['rotX']
+                rotY = rotY + cube_rotations['rotate_user']['rotY']
+                rotZ = rotZ + cube_rotations['rotate_user']['rotZ']
+            orient_cube_derot = orient_cube.clone().rotate_z(-rotZ).rotate_y(-rotY).rotate_x(-rotX)
+            pl_normals_derot = {}
+            for view in planar_views:
+                pl_normal_rot = planar_views[view]['pl_normal']
+                #Get the unrotated normal
+                pl_normal_o = unit_vector(new_normal_3DRot(pl_normal_rot, [-rotX], [-rotY], [-rotZ]))
+                pl_normals_derot[view] = pl_normal_o
+            
+            orient_cube = orient_cube.clone().rotate_z(-rotZ).rotate_y(-rotY).rotate_x(-rotX)
+            orient_cube_clear = orient_cube_clear.clone().rotate_z(-rotZ).rotate_y(-rotY).rotate_x(-rotX)
+
+        elif axis_selected == 'stack': 
+            pass
+
+        orient_cube.pos(com)
+        orient_cube_clear.pos(com)
+
+        side = self.gui_orientation[axis_selected][axis_selected+'_cube']['side']
+        color_o = 'white'
+        sph = vedo.Sphere(pos = com, r = side/12, c = color_o)
+        extend_dir = {'plane_no': None, 'plane_normal': None, 'plane_centre': None}
+
+        if not load: 
+            #Create arrows
+            arrows = []
+            for n, centre in enumerate(orient_cube.cell_centers()):
+                cells = orient_cube.cells()[n]
+                points = [orient_cube.points()[cell] for cell in cells]
+                plane_fit = vedo.fit_plane(points, signed=True)
+                normal = plane_fit.normal
+                end_pt = centre + (normal*side/3)
+                arrow = vedo.Arrow(start_pt=(centre), end_pt=end_pt, c='cyan').legend('No.'+str(n))
+                arrows.append(arrow)
+            
+            def select_cube_face(evt):
+                orient_cube = evt.actor
+                if not orient_cube:
+                    return
+                pt = evt.picked3d
+                idcell = orient_cube.closest_point(pt, return_cell_id=True)
+                print("You clicked (idcell):", idcell)
+
+                #Set arrow and sphere 
+                cell_centre = orient_cube.cell_centers()[int(idcell)]
+                sph.pos(cell_centre)
+                sil = arrows[idcell].silhouette().linewidth(6).c('gold')
+                sil.name = "silu" # give it a name so we can remove the old one
+                plt.remove('silu').add(sil)
+
+                #Get plane 
+                cells = orient_cube.cells()[idcell]
+                points = [orient_cube.points()[cell] for cell in cells]
+                plane_fit = vedo.fit_plane(points, signed=True)
+
+                msg.text("You selected face number: " + str(idcell))
+                extend_dir['plane_no'] = idcell
+                extend_dir['plane_normal'] = plane_fit.normal
+                extend_dir['plane_centre'] = orient_cube.cell_centers()[idcell]
+
+            msg = vedo.Text2D("", pos="bottom-center",  c=txt_color, font=txt_font, s=txt_size, alpha=0.8)
+            txt0 = vedo.Text2D('Reference cube and mesh to select the direction in which all the orienting line segments\n(defined in angles) will be aligned to measure segment mesh\nand create segment ellipsoid',  c=txt_color, font=txt_font, s=txt_size)
+            txt1 = vedo.Text2D('Select (click) the cube face whose normal vector corresponds to the direction all\n segments will be aligned and close the window when done.',  c=txt_color, font=txt_font, s=txt_size)
+
+            plt = vedo.Plotter(N=2, axes=1)
+            plt.add_callback("mouse click", select_cube_face)
+            plt.show(segms, orient_cube_clear, txt0, at=0)
+            plt.show(orient_cube, sph, arrows, msg, txt1, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)        
+
+            print('extend_dir:', extend_dir)
+            face_num = extend_dir['plane_no']
+            label_axis = getattr(self, 'ellip_normal_dir').setText('Face No.'+str(face_num))
+            setattr(self, 'ellip_ref_vector', extend_dir)
+
+            #Save the settings
+            gui_ellips = {'axis': axis_selected, 
+                            'extended_dir': extend_dir, 
+                            'face_num': face_num}
+        else: 
+            gui_ellips = self.organ.mH_settings['wf_info']['ellipsoids']
+        
+        return gui_ellips, orient_cube
+
     def set_sections(self, init=False): 
 
         sect_setup = self.organ.mH_settings['setup']['sect']
@@ -10639,7 +10791,7 @@ class MainWindow(QMainWindow):
         else: 
             error_txt = '*Please make sure you have already acquired the centreline you have selected to be able to continue.'
             self.win_msg(error_txt, getattr(self, 'set_angles_initial'))
-
+       
     #Plot 2D functions (Heatmaps 2D)    
     def plot_heatmap2d(self, btn): 
         print('Plotting heatmap2d: ', btn)
@@ -11030,14 +11182,14 @@ class MainWindow(QMainWindow):
 
         zero_corner = unique_corner_pts[nf]
         sph_zero = vedo.Sphere(pos = zero_corner, r=3, c='black')
-
+        print('zero_corner:', zero_corner)
         views = self.organ.mH_settings['setup']['orientation'][name].split(', ')
         colors = [[255,215,0,200],[0,0,205,200],[255,0,0,200]]
 
         ref_V = []
         #Plot the ref_vectors
         for n, view in enumerate(self.gui_orientation[name]['planar_views'].keys()): 
-            ref_vector = self.gui_orientation[name]['planar_views'][view]['ref_vector']
+            ref_vector = np.array(self.gui_orientation[name]['planar_views'][view]['ref_vector'])
             print(n, view, ref_vector)
             arrow = vedo.Arrow(start_pt=zero_corner, end_pt=zero_corner+(ref_vector*50), s=0.25, c=colors[n][0:3])
             ref_V.append(arrow)
@@ -11158,13 +11310,14 @@ class MainWindow(QMainWindow):
         pl_normal = angle_settings['proj_plane']['pl_normal']
         pl_centre = angle_settings['proj_plane']['pl_centre']
         plane = vedo.Plane(pos=pl_centre, normal = pl_normal, s=(300,300)).alpha(0.5)
+        arrow_normal = vedo.Arrow(start_pt=pl_centre, end_pt=pl_centre+(np.array(pl_normal)*50), c='fuchsia', s=0.25).legend('Plane Normal')
 
         zero_corner = angle_settings['div1']['ref_vector_corner_box']['p0']
         sph_zero = vedo.Sphere(pos = zero_corner, r=3, c='orange')
         end_pt_ref_vector = angle_settings['div1']['ref_vector_corner_box']['p1']
         ref_vector = vedo.Arrow(start_pt=zero_corner, end_pt= end_pt_ref_vector, s=0.25, c='yellowgreen').legend('Ref. Vector')
 
-        segms =[]; line_or = []; proj_or = []; zero_or = []; capt = []; angle_txt = '-Measured angles-'
+        segms =[ref_vector, arrow_normal]; line_or = []; proj_or = []; zero_or = []; capt = []; angle_txt = '-Measured angles-'
         divs = [key for key in angle_settings.keys() if 'div' in key]
         colors = ['tomato', 'limegreen', 'orange', 'deepskyblue', 'darkviolet']
         lbox = []
@@ -11200,7 +11353,7 @@ class MainWindow(QMainWindow):
 
             angle = angle_settings[div]['angle']
             angle_val = "%.1f" % angle
-            angle_txt = angle_txt+segm_name+': '+angle_val+' degrees'
+            angle_txt = angle_txt+segm_name+': '+angle_val+'°'
 
         cap = sph_zero.caption(angle_txt,
                                 point=zero_corner,
@@ -11210,13 +11363,12 @@ class MainWindow(QMainWindow):
                                 vspacing=1.5,
                                 alpha=1)
 
-
         lbox.append(vedo.LegendBox(segms+line_or, font=leg_font, width=leg_width))
 
         msg = vedo.Text2D(self.organ.user_organName+'\nMeasured Angles from the '+axis.upper()+' view', c=txt_color, font=txt_font, s=txt_size, alpha=0.8) # an empty text
         plt = vedo.Plotter(N=1, axes=1)
         plt.add_icon(logo, pos=(0.9,0.1), size=0.25)
-        plt.show(segms, line_or, proj_or, zero_or, plane, orient_cube, sph_zero, cap, ref_vector, lbox, msg, at=0, viewup='y', zoom=0.8, interactive=True)
+        plt.show(segms, line_or, proj_or, zero_or, plane, orient_cube, sph_zero, cap, lbox, msg, at=0, viewup='y', zoom=0.8, interactive=True)
         
     #User specific plot settings
     def fill_comboBox_all_meshes(self): 

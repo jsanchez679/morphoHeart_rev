@@ -1852,7 +1852,6 @@ def run_angles(controller, btn):
     #Get cube
     cubes = getattr(controller.organ, mtype+'_cube')
     orient_cube = cubes['cube'].clone().alpha(0.1)
-    # clear_cube = cubes['clear'].clone().alpha(0.1)
     cube_pts = orient_cube.points()
 
     #Get plane 
@@ -1886,6 +1885,7 @@ def run_angles(controller, btn):
     div_settings = {'proj_plane': {'pl_centre': pl_centre, 
                                     'pl_normal': pl_normal}}
     
+    orig_line = {}
     for div in divs: 
         segm_no = divs[div]['segm']
         subm_name = cut.title()+'_'+mesh_name+'_'+segm_no
@@ -1894,6 +1894,8 @@ def run_angles(controller, btn):
         #Create the line 
         p0 = divs[div]['segment_pts']['start']
         p1 = divs[div]['segment_pts']['end']
+        orig_line[div] = {'p0': p1, 'p1': p0}
+
         sph_p0 = vedo.Sphere(pos = p0, r=2, c='black')
         sph_p1 = vedo.Sphere(pos = p1, r=2, c='gold')
 
@@ -1905,24 +1907,28 @@ def run_angles(controller, btn):
         #Measure angles
         vector_zero = np.array(([0.0,0.0,0.0], proj_p0-proj_p1))
         ref_vect = np.array(([0.0,0.0,0.0], ref_vector_cube))
-        angle = find_angle_btw_pts(vector_zero, ref_vect)
+        angle = fcM.find_angle_btw_pts(ref_vect, vector_zero)
+        angle2 = fcM.find_angle_btw_pts_atan(vref = ref_vector_cube, 
+                                             vect = proj_p0-proj_p1, 
+                                             normal = pl_normal)
+        print('angle-acos: ', angle, ' - angle-atan2:', angle2)
 
-        div_settings[div] = {'original_line' : {'p0': p1, 'p1': p0},
-                                'proj_line': {'p0': proj_p1, 'p1': proj_p0}, 
+        div_settings[div] = {'proj_line': {'p0': proj_p1, 'p1': proj_p0}, 
                                 'proj_vect_corner_box': {'p0': zero_corner, 'p1': zero_corner+proj_p0-proj_p1},
                                 'ref_vector_corner_box': {'p0': zero_corner, 'p1': zero_corner+(ref_vector_cube*50)},
                                 'vector_zero': vector_zero,
                                 'vector_ref': ref_vect, 
-                                'angle': angle} 
+                                'angle': angle2} 
 
         #Add angle to the df
         tiss, cont, segm = subsegm.sub_legend.split('_')
         cont_dict = {'ext': 'external', 'int': 'internal', 'tiss': 'tissue'}
         index = ('Angles: Segment-'+axis.title(), cut.title()+'_'+mesh_name+'_'+segm_no+'_'+dir, cut.title()+': '+ tiss+'-'+cont_dict[cont]+' ('+segm+'-'+axis+')')
-        df_res = fcB.df_add_value(df = df_res, index = index, value=angle)
+        df_res = fcB.df_add_value(df = df_res, index = index, value=angle2)
 
         #Get things to plot
         if mH_config.dev: 
+            arrow_normal = vedo.Arrow(start_pt=pl_centre, end_pt=pl_centre+(np.array(pl_normal)*50), c='fuchsia', s=0.1)
             sub_mesh = subsegm.get_segm_mesh()
             arrow_or = vedo.Arrow(start_pt=p1, end_pt=p0, c='darkred', s=0.1)
             clear_cube = cubes['clear'].clone().alpha(0.1)
@@ -1933,15 +1939,16 @@ def run_angles(controller, btn):
 
             plt = vedo.Plotter(N=1, axes=1)
             plt.add_icon(logo, pos=(0.1,1), size=0.25)
-            plt.show(sub_mesh, arrow_or, clear_cube, plane, proj_arrow_or, moved_proj_arrow_or, ref_vector_corner, 
-                    sph_p0, sph_p1, sph_proj_p0, sph_proj_p1, at=0, interactive=True)
+            plt.show(sub_mesh, arrow_or, clear_cube, plane, arrow_normal, proj_arrow_or, moved_proj_arrow_or, ref_vector_corner, 
+                     sph_p0, sph_p1, sph_proj_p0, sph_proj_p1, at=0, interactive=True)
         
-
     print('div_settings:', div_settings)
     #Resave df_res 
     controller.organ.mH_settings['df_res'] = df_res
     #Fill-up results table
     controller.main_win.fill_results()
+    #Update original line
+    controller.main_win.gui_angles[cut]['original_line'] = orig_line
     #Update gui_angles 
     if 'axis_settings' in controller.main_win.gui_angles[cut].keys(): 
         controller.main_win.gui_angles[cut]['axis_settings'][axis] = div_settings
@@ -1962,21 +1969,57 @@ def run_angles(controller, btn):
    
 def run_ellipsoids(controller):
 
-    print('')
-    # return
     segm_btns = controller.main_win.segm_btns
+    for n, btn in enumerate(list(segm_btns.keys())): 
 
-    for btn in segm_btns.keys(): 
-        if segm_btns[btn]['play'].isChecked(): 
+        #Get Cube, Planes to project things
+        vect_ref = controller.main_win.gui_ellips['extended_dir']['plane_normal']
+        ref_vect = fcM.unit_vector(vect_ref)
+
+        #Get planar views
+        mtype = 'roi' # modify this!
+        planar_views = controller.organ.mH_settings['wf_info']['orientation'][mtype]['planar_views']
+        cube_rotations = controller.organ.mH_settings['wf_info']['orientation'][mtype]['roi_cube']
+        rotX = 0; rotY = 0; rotZ = 0
+
+        if mtype == 'roi': 
+            if 'rotate_x' in cube_rotations.keys(): 
+                rotX = cube_rotations['rotate_x']
+            if 'rotate_y' in cube_rotations.keys(): 
+                rotY = cube_rotations['rotate_y']
+            if 'rotate_z' in cube_rotations.keys(): 
+                rotZ = cube_rotations['rotate_z']
+            if 'rotate_user' in cube_rotations.keys(): 
+                rotX = rotX + cube_rotations['rotate_user']['rotX']
+                rotY = rotY + cube_rotations['rotate_user']['rotY']
+                rotZ = rotZ + cube_rotations['rotate_user']['rotZ']
+
+        proj_planes = {}
+        for view in planar_views:
+            pl_normal_rot = planar_views[view]['pl_normal']
+            idcell = planar_views[view]['idcell']
+            color = planar_views[view]['color'][0:3]
+            #Get the unrotated normal
+            pl_normal_o = unit_vector(new_normal_3DRot(pl_normal_rot, [-rotX], [-rotY], [-rotZ]))
+            pl_centre = controller.main_win.cube_ellipsoids.cell_centers()[idcell]
+            #Create plane to project 
+            print(view, pl_normal_o, pl_centre)
+            plane = vedo.Plane(pos = pl_centre, normal=pl_normal_o, s=(300, 300), c=color)
+            proj_planes[view] = plane
+
+        all_planes = [proj_planes[key] for key in proj_planes]
+        plt = vedo.Plotter(N=2, axes=1)
+        plt.add_icon(logo, pos=(0.1,1), size=0.25)
+        plt.show(controller.main_win.cube_ellipsoids, at=0)
+        plt.show(all_planes, controller.main_win.cube_ellipsoids, at=1,  interactive=True)
+
+
+        if segm_btns[btn]['play'].isChecked() and n==0: 
             #Run Ellipsoid for this segm
             controller.main_win.win_msg('Creating ellipsoids for segments comprising '+btn)
             #Get segments
             cut, ch_cont = btn.split(':')
             ch, cont = ch_cont.split('_')
-            mtype = controller.main_win.gui_angles[cut.lower()]['axis_lab']
-            #Get the cube
-            cubes = getattr(controller.organ, mtype+'_cube')
-            orient_cube = cubes['cube'].clone().alpha(0.1)
             try: 
                 #get submesh from list buttons if it was saved in there...
                 meshes = segm_btns[btn]['meshes']
@@ -1988,48 +2031,57 @@ def run_ellipsoids(controller):
                     submesh_name = cut.title()+'_'+ch+'_'+cont+'_'+subm
                     submesh = controller.organ.obj_subm[submesh_name]
                     meshes[subm] = submesh.get_segm_mesh()
-            
+
             divs = controller.main_win.gui_angles[cut.lower()]['div']
             for segm in meshes: 
-                #Get mesh
+                #Get mesh and rotate it if rotation has been set
                 mesh2rot = meshes[segm].clone()
                 com = mesh2rot.center_of_mass()
-                
+
                 #Find the corresponding div
                 for div in divs.keys(): 
                     if divs[div]['segm'] == segm: 
                         print('div:', div)
                         break
                 
-                #Get angles to rotate mesh
-                axis_set = controller.main_win.gui_angles[cut.lower()]['axis_settings']
-                rot_meshes = []
-                for axis in axis_set.keys(): 
-                    angle_settings = controller.main_win.gui_angles[cut.lower()]['axis_settings'][axis]
-                    p0 = angle_settings[div]['original_line']['p0']
-                    p1 = angle_settings[div]['original_line']['p1']
-                    line_vect = vedo.Arrow(start_pt=p0, end_pt=p1, s=0.1, c='violet').alpha(1)
-
-                    rot_ax = axis_set[axis]['proj_plane']['pl_normal']
-                    angle = axis_set[axis][div]['angle'] - 90
-                    print('angle: ', angle, '- axis:', rot_ax)
-                    rot = mesh2rot.clone().rotate(angle, axis=rot_ax, point=com, rad=False).color('gold').legend('Angle:'+str(angle))
-                    line_rot = line_vect.clone().rotate(angle, axis=rot_ax, point=com, rad=False).color('limegreen')
-                    rot_meshes.append(rot)
-
-                    plt = vedo.Plotter(N=1, axes=1)
-                    plt.add_icon(logo, pos=(0.1,1), size=0.25)
-                    plt.show(meshes[segm], rot, line_vect, line_rot, orient_cube, rot, at=0, interactive=True)
+                #Get original line
+                p0 = np.array(controller.main_win.gui_angles[cut.lower()]['original_line'][div]['p0'])
+                p1 = np.array(controller.main_win.gui_angles[cut.lower()]['original_line'][div]['p1'])
+                
+                ang_x, ang_y, ang_z = fcM.find_euler_angles_rotation(p0, p1, ref_vect)
+                new_mesh = mesh2rot.clone().rotate_x(ang_x).rotate_y(ang_y).rotate_z(ang_z).color('magenta')
+                
+                arrow_or = vedo.Arrow(start_pt=p1, end_pt=p0, c='darkred', s=0.1)
+                new_arrow = arrow_or.clone().rotate_x(ang_x).rotate_y(ang_y).rotate_z(ang_z).color('cyan')
 
                 plt = vedo.Plotter(N=1, axes=1)
                 plt.add_icon(logo, pos=(0.1,1), size=0.25)
-                plt.show(meshes[segm], mesh2rot, orient_cube, rot, at=0, interactive=True)
+                plt.show(meshes[segm], arrow_or, new_arrow, new_mesh,  at=0, interactive=True)
 
-                # v = vector(0.2, 1, 0)
-                # p = vector(1.0, 0, 0)  # axis passes through this point
-                # c2.rotate(90, axis=v, point=p)
-                # l = Line(p-v, p+v).c('red5').lw(3)
                 
+
+                print('')
+                plt = vedo.Plotter(N=1, axes=1)
+                plt.add_icon(logo, pos=(0.1,1), size=0.25)
+                plt.show(controller.main_win.cube_ellipsoids,  at=0, interactive=True)
+
+
+                # m_chRot_projX = m_chRot.clone().projectOnPlane(plane = pl_rotX).c('palegreen').alpha(0.05)
+                # m_chRot_projZ = m_chRot.clone().projectOnPlane(plane = pl_rotZ).c('skyblue').alpha(0.05)
+                # _, _, ya_min, ya_max, za_min, za_max = m_chRot_projX.bounds()
+                # xa_min, xa_max, _, _, _, _ = m_chRot_projZ.bounds()
+                # _, ya_pos, za_pos = m_chRot_projX.centerOfMass()
+                # xa_pos, _, _ = m_chRot_projZ.centerOfMass()
+
+                # ellip_ch = Ellipsoid(pos=(xa_pos, ya_pos, za_pos), axis1=(xa_max-xa_min, 0,0), axis2=(0, ya_max-ya_min, 0), axis3=(0, 0, za_max-za_min), c='salmon', alpha=0.5, res=24)
+                # dict_shapes['Ellipsoid_'+s_name] = {'pos': (xa_pos, ya_pos, za_pos), 'axis1': (xa_max-xa_min, 0,0),
+                #                                     'axis2': (0, ya_max-ya_min, 0), 'axis3': (0, 0, za_max-za_min)}
+
+                # width_ch = xa_max-xa_min
+                # length_ch = ya_max-ya_min
+                # depth_ch = za_max-za_min
+                
+      
 # > SECTIONS
 def run_sections(controller, btn): 
 

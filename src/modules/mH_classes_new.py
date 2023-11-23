@@ -1016,15 +1016,24 @@ class Organ():
             orient_cube_r = vedo.Cube(pos=pos_r, side=side_r, c=color_r)
             orient_cube_r.linewidth(1).force_opaque()
 
+            rot_x = 0; rot_y = 0; rot_z = 0
             if 'rotate_x' in roi_dict['roi_cube'].keys():
                 rot_x = roi_dict['roi_cube']['rotate_x']
-                orient_cube_r.rotate_x(rot_x)
+                
             if 'rotate_y' in roi_dict['roi_cube'].keys():
                 rot_y = roi_dict['roi_cube']['rotate_y']
-                orient_cube_r.rotate_y(rot_y)
+                
             if 'rotate_z' in roi_dict['roi_cube'].keys():
                 rot_z = roi_dict['roi_cube']['rotate_z']
-                orient_cube_r.rotate_z(rot_z)
+               
+            if 'rotate_user' in roi_dict['roi_cube'].keys(): 
+                rot_x = rot_x + roi_dict['roi_cube']['rotate_user']['rotX']
+                rot_y = rot_y + roi_dict['roi_cube']['rotate_user']['rotY']
+                rot_z = rot_z + roi_dict['roi_cube']['rotate_user']['rotZ']
+            
+            orient_cube_r.rotate_x(rot_x)
+            orient_cube_r.rotate_y(rot_y)
+            orient_cube_r.rotate_z(rot_z)
 
             orient_cube_r.pos(pos_r)
             orient_cube_clear_r = orient_cube_r.clone().alpha(0.5)
@@ -1033,6 +1042,7 @@ class Organ():
                                                 axis_dict = roi_dict)
             self.roi_cube = {'cube': orient_cube_rf, 
                                'clear': orient_cube_clear_r}
+
             
     def colour_cube(self, orient_cube, axis_dict): 
         normal_dict = {}
@@ -1726,7 +1736,7 @@ class Organ():
         
         return  vpt.planar_views, settings, roi_cube
 
-    def orient_manual(self, views, colors): # to develop!
+    def orient_manual(self, views, colors):
 
         im_orient = self.info['im_orientation']
         print('self.info[im_orientation]',im_orient)
@@ -1741,36 +1751,38 @@ class Organ():
 
         mesh_ext = self.obj_meshes[ext_ch.channel_no+'_tiss']
         pos = mesh_ext.mesh.center_of_mass()
-        # print('pos:', pos, type(pos))
+
         side = max(self.get_maj_bounds())
         color_o = [152,251,152,255]
         orient_cube = vedo.Cube(pos=pos, side=side, c=color_o[:-1])
         orient_cube.linewidth(1).force_opaque()
         orient_cube_clear = orient_cube.clone().alpha(0.5)
 
-        stack_cube = {'pos': pos, 
+        roi_cube = {'pos': pos, 
                         'side': side, 
                         'color': color_o[:-1], 
                         'rotateY': rotateY}
         
         if rotateY: 
             orient_cube.rotate_y(cust_angle)
-            stack_cube['custom_angle'] = cust_angle
+            roi_cube['custom_angle'] = cust_angle
 
         orient_cube_clear, rotX, rotY, rotZ = modify_cube(filename = self.user_organName,
                                                             txt = 'set the ROI Orientation', 
                                                             mesh = mesh_ext.mesh,
                                                             orient_cube = orient_cube_clear,
                                                             centre = pos, 
-                                                            option = [True,True,True,True,True,True,True],
-                                                            zoom=0.8)
+                                                            option = [True,True,True,True,True,True],
+                                                            zoom=0.5)
         
-        stack_cube['rotate_user'] = {'rotX': sum(rotX), 'rotY': sum(rotY), 'rotZ': sum(rotZ)}
+        roi_cube['rotate_user'] = {'rotX': sum(rotX), 
+                                     'rotY': sum(rotY), 
+                                     'rotZ': sum(rotZ)}
         
         orient_cube_clear.pos(pos)
 
         #Rotate the cube using the x y and z values 
-        orient_cube.rotate_x(sum(rotX)).rotate_y(sum(rotY)).rotate_z(sum(rotZ))
+        orient_cube.rotate_x(sum(rotX)).rotate_y(sum(rotY)).rotate_z(sum(rotZ)).pos(pos)
         
         txt0 = vedo.Text2D(self.user_organName+' - Reference cube and mesh to select planar views in ROI (organ)...', c=txt_color, font=txt_font, s=txt_size)
         
@@ -1789,53 +1801,34 @@ class Organ():
         vpt.show(orient_cube, lb, vpt.msg, vpt.msg_face, at=1, azimuth=45, elevation=30, zoom=0.8, interactive=True)
         
         settings = {}
-        # 'proj_plane': plane, 
-        #             'ref_vect': ref_vect,
-        #             'ref_vectF': ref_vectF,
-        #             'orient_vect': pts,
-        #             'angle_deg': angle}
         
         self.roi_cube = {'cube': orient_cube,
                            'clear': orient_cube_clear}
 
-
-        # Get new normal of rotated disc
-        pl_normal_corrected = fcM.new_normal_3DRot(normal = pl_normal, rotX = rotX, rotY = rotY, rotZ = rotZ)
-        normal_unit = fcM.unit_vector(pl_normal_corrected)*10
-        
-        print('')
-        return
-        roi_cube = {'pos': pos, 
-                    'side': side, 
-                    'color': color_o[:-1]}
-        
-        settings = {'proj_plane': plane, 
-                    'ref_vect': ref_vect,
-                    'ref_vectF': ref_vectF,
-                    'orient_vect': pts,
-                    'angle_deg': angle}
-
-        print('orient_manual: Code under development!')
-        planar_views = {}
-
-        return planar_views, settings, roi_cube
+        return vpt.planar_views, settings, roi_cube
 
     def get_ref_vectors(self, planar_views, roi_cube):
 
         rotX = 0; rotY = 0; rotZ = 0
+        #Check the rotations that were made 
+        if 'rotate_x' in roi_cube.keys(): 
+            rotX = roi_cube['rotate_x']
+        if 'rotate_y' in roi_cube.keys(): 
+            rotY = roi_cube['rotate_y']
+        if 'rotate_z' in roi_cube.keys(): 
+            rotZ = roi_cube['rotate_z']
+        print(rotX, rotY, rotZ)
+        if 'rotate_user' in roi_cube.keys(): 
+            rotX = rotX + roi_cube['rotate_user']['rotX']
+            rotY = rotY + roi_cube['rotate_user']['rotY']
+            rotZ = rotZ + roi_cube['rotate_user']['rotZ']
+
         for view in planar_views: 
             pl_normal_rot = planar_views[view]['pl_normal']
-            #Check the rotations that were made 
-            if 'rotate_x' in roi_cube.keys(): 
-                rotX = -roi_cube['rotate_x']
-            if 'rotate_y' in roi_cube.keys(): 
-                rotY = -roi_cube['rotate_y']
-            if 'rotate_z' in roi_cube.keys(): 
-                rotZ = -roi_cube['rotate_z']
             #Get the unrotated normal
-            pl_normal_o = unit_vector(new_normal_3DRot(pl_normal_rot, [rotX], [rotY], [rotZ]))
+            pl_normal_o = unit_vector(new_normal_3DRot(pl_normal_rot, [-rotX], [-rotY], [-rotZ]))
             #Find the axis of the unrotated normal and set a reference vector
-            index = np.argmax(pl_normal_o)
+            index = np.argmax(np.absolute(pl_normal_o))
             if index == 0: 
                 ref_vector = np.array([0.0, 1.0, 0.0])
             elif index == 1: 
@@ -1844,7 +1837,7 @@ class Organ():
                 ref_vector = np.array([1.0, 0.0, 0.0])
             #Rotate the reference vector
             #Get the unrotated normal
-            ref_vect_rot = new_normal_3DRot(ref_vector, [-rotX], [-rotY], [-rotZ])
+            ref_vect_rot = new_normal_3DRot(ref_vector, [rotX], [rotY], [rotZ])
             planar_views[view]['ref_vector'] = ref_vect_rot
 
         return planar_views
