@@ -1964,8 +1964,6 @@ def run_angles(controller, btn):
     getattr(controller.main_win, 'play_angle_'+btn).setChecked(True)
     #Enable plot btn 
     getattr(controller.main_win, 'plot_angle_'+btn).setEnabled(True)
-    #Check to enable Ellipsoids 
-    controller.main_win.enable_ellipsoids()
    
 def run_ellipsoids(controller):
 
@@ -1996,15 +1994,14 @@ def run_ellipsoids(controller):
 
         proj_planes = {}
         for view in planar_views:
-            pl_normal_rot = planar_views[view]['pl_normal']
+            pl_normal_unrot = planar_views[view]['normal_unrotated']
             idcell = planar_views[view]['idcell']
+            pl_centre_unrot = controller.main_win.cube_ellipsoids.cell_centers()[idcell]
             color = planar_views[view]['color'][0:3]
-            #Get the unrotated normal
-            pl_normal_o = unit_vector(new_normal_3DRot(pl_normal_rot, [-rotX], [-rotY], [-rotZ]))
-            pl_centre = controller.main_win.cube_ellipsoids.cell_centers()[idcell]
+            
             #Create plane to project 
-            print(view, pl_normal_o, pl_centre)
-            plane = vedo.Plane(pos = pl_centre, normal=pl_normal_o, s=(300, 300), c=color)
+            print(view, pl_normal_unrot, pl_centre_unrot)
+            plane = vedo.Plane(pos = pl_centre_unrot, normal=pl_normal_unrot, s=(300, 300), c=color)
             proj_planes[view] = plane
 
         all_planes = [proj_planes[key] for key in proj_planes]
@@ -2013,6 +2010,11 @@ def run_ellipsoids(controller):
         plt.show(controller.main_win.cube_ellipsoids, at=0)
         plt.show(all_planes, controller.main_win.cube_ellipsoids, at=1,  interactive=True)
 
+        #Something is wrong with the angles or the orientation of the planes... need to check this to make sure the 
+        #projections are right...
+        #Then continue here...
+        #Maybe add the axis in which the things need to be proj and then project them on thta plane, 
+        #rather than trying to reproduce the cube and get the planes and.. and ..and
 
         if segm_btns[btn]['play'].isChecked() and n==0: 
             #Run Ellipsoid for this segm

@@ -109,7 +109,7 @@ class Project():
                                     'stage': [],
                                     'genotype': [],
                                     'manipulation': [],
-                                    'im_orientation': ['ventral', 'lateral-left', 'lateral-right', 'dorsal'], 
+                                    'im_orientation': ['ventral', 'dorsal'], 
                                     'im_res_units': ['um', 'mm', 'cm', 'm']}
             try:
                 if proj_dict['heart_default']: 
@@ -1597,7 +1597,7 @@ class Organ():
         im_orient = self.info['im_orientation']
         print('self.info[im_orientation]',im_orient)
         rotateY = False
-        if im_orient == 'custom': 
+        if str(self.info['custom_angle']) != '0': 
             cust_angle = self.info['custom_angle']
             rotateY = True
 
@@ -1619,8 +1619,10 @@ class Organ():
                         'rotateY': rotateY}
         
         if rotateY: 
-            orient_cube.rotate_y(cust_angle)
-            stack_cube['custom_angle'] = cust_angle
+            orient_cube.rotate_y(-cust_angle)
+            stack_cube['custom_angle'] = -cust_angle
+        else: 
+            stack_cube['custom_angle'] = 0
         
         orient_cube.pos(pos)
         orient_cube_clear = orient_cube.clone().alpha(0.5)
@@ -1764,8 +1766,10 @@ class Organ():
                         'rotateY': rotateY}
         
         if rotateY: 
-            orient_cube.rotate_y(cust_angle)
-            roi_cube['custom_angle'] = cust_angle
+            orient_cube.rotate_y(-cust_angle)
+            roi_cube['custom_angle'] = -cust_angle
+        else: 
+            roi_cube['custom_angle'] = 0
 
         orient_cube_clear, rotX, rotY, rotZ = modify_cube(filename = self.user_organName,
                                                             txt = 'set the ROI Orientation', 
@@ -1827,6 +1831,8 @@ class Organ():
             pl_normal_rot = planar_views[view]['pl_normal']
             #Get the unrotated normal
             pl_normal_o = unit_vector(new_normal_3DRot(pl_normal_rot, [-rotX], [-rotY], [-rotZ]))
+            planar_views[view]['normal_unrotated'] = pl_normal_o
+            
             #Find the axis of the unrotated normal and set a reference vector
             index = np.argmax(np.absolute(pl_normal_o))
             if index == 0: 
@@ -3613,6 +3619,7 @@ class MyFaceSelectingPlotter(vedo.Plotter):
                 plane_fit = vedo.fit_plane(points, signed=True)
                 # print(plane_fit.normal, type(plane_fit.normal))
                 self.planar_views[planar_view]['pl_normal'] = plane_fit.normal
+                self.planar_views[planar_view]['pl_centre'] = orient_cube.cell_centers()[idcell]
         else: 
             vedo.printc('You are done, now close the window!', c='orange', invert=True)
         

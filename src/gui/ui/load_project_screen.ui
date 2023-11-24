@@ -838,12 +838,7 @@ background-color: rgb(232, 232, 232);
 border-color: rgb(158, 158, 158);
 color: rgb(125, 125, 125);
 }
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
+</string>
            </property>
            <property name="text">
             <string>Delete Organ</string>
@@ -896,12 +891,7 @@ background-color: rgb(232, 232, 232);
 border-color: rgb(158, 158, 158);
 color: rgb(125, 125, 125);
 }
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
+</string>
            </property>
            <property name="text">
             <string>Create New Organ</string>

@@ -2812,6 +2812,10 @@ class NewOrgan(QDialog):
         self.cB_manipulation.addItems(manip_it)
         self.cB_stack_orient.clear()
         imOr_it = list(['--select--']+proj.gui_custom_data['im_orientation']+['add'])
+        try: 
+            imOr_it.remove('lateral-left'); imOr_it.remove('lateral-right')
+        except: 
+            pass
         self.cB_stack_orient.addItems(imOr_it)
         self.cB_units.clear()
         units_it = list(['--select--']+proj.gui_custom_data['im_res_units']+['add'])
@@ -2896,15 +2900,15 @@ class NewOrgan(QDialog):
                 setattr(self, name, cB_data)
                 valid.append(True)
 
-        if self.cB_stack_orient.currentText() == 'custom':
-            if len(self.cust_angle.text()) == 0: 
-                error_txt = "*Please input custom angle for imaging orientation."
-                self.win_msg(error_txt, self.button_create_new_organ)
-                return
-            else: 
-                valid.append(True)
-        else: 
-            valid.append(True)
+        # if self.cB_stack_orient.currentText() == 'custom':
+        #     if len(self.cust_angle.text()) == 0: 
+        #         error_txt = "*Please input custom angle for imaging orientation."
+        #         self.win_msg(error_txt, self.button_create_new_organ)
+        #         return
+        #     else: 
+        #         valid.append(True)
+        # else: 
+        #     valid.append(True)
 
         #Get scaling
         valid_axis = []
@@ -8625,7 +8629,8 @@ class MainWindow(QMainWindow):
                         getattr(self, 'angle_'+cut+'_'+div).setChecked(True)
                     getattr(self, 'set_angles_'+cut).setChecked(True)
                     getattr(self, 'widget_angle_meas_'+cut).setVisible(True)
-
+                    done_dirs.append(True)
+                    
                     #Check if measurements have already been acquired
                     if 'axis_settings' in wf_info['segm_angles'][cut].keys():
                         for n, dir in enumerate(['dir1', 'dir2', 'dir3']): 
@@ -8633,15 +8638,16 @@ class MainWindow(QMainWindow):
                             if axis in wf_info['segm_angles'][cut]['axis_settings'].keys():
                                 getattr(self, 'play_angle_'+dir+'_'+cut).setChecked(True)
                                 getattr(self, 'plot_angle_'+dir+'_'+cut).setEnabled(True)
-                                done_dirs.append(True)
-                            else: 
-                                done_dirs.append(False)
-            
+                    
                     #Run Set Function 
                     self.set_angles_ellip(cut = cut, init=True)
+
+                else: 
+                    done_dirs.append(False)
                 
             if all(done_dirs) and self.organ.mH_settings['setup']['segm']['measure']['Ellip']: 
-                self.ellipsoids_play.setEnabled(True)
+                pass
+                # self.ellipsoids_play.setEnabled(True)
 
         else: 
             pass
@@ -9444,6 +9450,12 @@ class MainWindow(QMainWindow):
     
     def set_ellipsoid(self, init=False): 
 
+        for cut in ['cut1', 'cut2']: 
+            if getattr(self, 'angles_'+cut).isVisible() and getattr(self, 'angles_'+cut).isChecked():
+                if not getattr(self, 'set_angles_'+cut).isChecked():
+                    self.win_msg('*Please set the segments for '+cut.title()+'to be able to continue setting the ellipsoids.', self.ellip_set)
+                    return
+
         wf_info = self.organ.mH_settings['wf_info']
         if init: 
             current_gui_ellips, cube_ellipsoids = self.gui_ellipsoids()
@@ -9575,8 +9587,7 @@ class MainWindow(QMainWindow):
 
             #Save the settings
             gui_ellips = {'axis': axis_selected, 
-                            'extended_dir': extend_dir, 
-                            'face_num': face_num}
+                            'extended_dir': extend_dir}
         else: 
             gui_ellips = self.organ.mH_settings['wf_info']['ellipsoids']
         
@@ -10025,18 +10036,6 @@ class MainWindow(QMainWindow):
 
         print('self.pt_selected', self.pt_selected)
         return self.pt_selected
-    
-    def enable_ellipsoids(self): 
-        
-        if self.organ.mH_settings['setup']['segm']['measure']['Ellip']:
-            for cut in ['cut1', 'cut2']: 
-                if getattr(self, 'angles_'+cut).isChecked(): 
-                    for dir in ['dir1', 'dir2', 'dir3']: 
-                        if not getattr(self, 'play_angle_'+dir+'_'+cut).isChecked():
-                            return 
-            getattr(self, 'ellipsoids_play').setEnabled(True)
-        else: 
-            return
 
     def update_segm_sect_play(self):
 
@@ -11334,8 +11333,8 @@ class MainWindow(QMainWindow):
             _, _, segm_name = subsegm.sub_legend.split('_')
 
             #Original vector
-            p0 = angle_settings[div]['original_line']['p0']
-            p1 = angle_settings[div]['original_line']['p1']
+            p0 = self.gui_angles[cut]['original_line'][div]['p0']
+            p1 = self.gui_angles[cut]['original_line'][div]['p1']
             line_vect = vedo.Arrow(start_pt=p0, end_pt=p1, s=0.1, c=color).alpha(1).legend('Line Segment ('+segm_name+')')
             line_or.append(line_vect)
 

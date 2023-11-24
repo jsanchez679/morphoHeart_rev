@@ -192,10 +192,13 @@ class Controller:
             self.init_new_organ_win(parent_win=parent_win)
         self.new_organ_win.show()
 
-    def show_parent(self, parent:str):
+    def show_parent(self, win:str, parent:str):
         try:
             parent_win = getattr(self, parent)
             parent_win.show()
+            getattr(self, win).close()
+            setattr(self, win, None)
+
         except: 
             self.clear_win_show_welcome(parent=None)
 
@@ -327,7 +330,7 @@ class Controller:
     def init_new_organ_win(self, parent_win=None): 
         #Connect Buttons
         # -Go Back 
-        self.new_organ_win.button_go_back.clicked.connect(lambda: self.show_parent(parent_win))
+        self.new_organ_win.button_go_back.clicked.connect(lambda: self.show_parent(win='new_organ_win', parent=parent_win))
         # - Create New Organ
         self.new_organ_win.button_create_new_organ.clicked.connect(lambda: self.new_organ())
         # -Go to main_window
@@ -689,8 +692,6 @@ class Controller:
                 if self.new_organ_win.check_shapes(self.proj): 
                     self.new_organ_win.button_create_new_organ.setChecked(True)
                     self.new_organ_win.win_msg('Creating organ "'+self.new_organ_win.lineEdit_organ_name.text()+'"')
-                    # self.new_organ_win.button_create_new_organ.setDisabled(True)
-
                     name = self.new_organ_win.lineEdit_organ_name.text().strip()
                     notes = self.new_organ_win.textEdit_ref_notes.toPlainText().strip()
                     strain = self.new_organ_win.cB_strain.currentText()
