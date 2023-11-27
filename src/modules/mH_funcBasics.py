@@ -249,7 +249,7 @@ def make_Paths(load_dict):
     
     flat_dict = flatdict.FlatDict(copy.deepcopy(load_dict))
     # Make all paths into Path
-    dir_keys = [key.split(':') for key in flat_dict.keys() if 'dir' in key and 'direction' not in key]
+    dir_keys = [key.split(':') for key in flat_dict.keys() if 'dir' in key and 'direction' not in key and 'extended_dir' not in key]
     # print(dir_keys)
     for key in dir_keys:
         # print('key:', key)

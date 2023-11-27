@@ -633,7 +633,8 @@ class Project():
 
         #Add values from Ellipsoids
         if 'Ellip(segm)' in vars: 
-            key_ellip = {'ell_width': 'Width', 'ell_length': 'Length', 'ell_depth': 'Depth', 'ell_asphericity': 'Asphericity'}
+            # key_ellip = {'ell_width': 'Width', 'ell_length': 'Length', 'ell_depth': 'Depth', 'ell_asphericity': 'Asphericity'}
+            key_ellip = {'ell_width': 'X-dim', 'ell_length': 'Y-dim', 'ell_depth': 'Z-dim', 'ell_asphericity': 'Asphericity'}
             dict_ellip = {}
             df_ellip = df_melt.loc[['Ellipsoid: Segment']]
             for index, row in df_ellip.iterrows():
@@ -1837,14 +1838,19 @@ class Organ():
             index = np.argmax(np.absolute(pl_normal_o))
             if index == 0: 
                 ref_vector = np.array([0.0, 1.0, 0.0])
+                proj_plane = 'x'
             elif index == 1: 
                 ref_vector = np.array([0.0, 0.0, 1.0])
+                proj_plane = 'y'
             else: 
                 ref_vector = np.array([1.0, 0.0, 0.0])
+                proj_plane = 'z'
+
             #Rotate the reference vector
             #Get the unrotated normal
             ref_vect_rot = new_normal_3DRot(ref_vector, [rotX], [rotY], [rotZ])
             planar_views[view]['ref_vector'] = ref_vect_rot
+            planar_views[view]['proj_plane'] = proj_plane
 
         return planar_views
 

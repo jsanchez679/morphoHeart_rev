@@ -1967,121 +1967,72 @@ def run_angles(controller, btn):
    
 def run_ellipsoids(controller):
 
+    #Get df_res 
+    df_res = fcM.df_reset_index(df = controller.organ.mH_settings['df_res'], mult_index=['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
+        
+    #Get Cube, Planes to project things
+    vect_ref = controller.main_win.gui_ellips['extended_dir']['plane_normal']
+    ref_vect = fcM.unit_vector(vect_ref)
+    mtype_cube = controller.main_win.gui_ellips['axis']
+
+    #Get planar views
+    planar_views = controller.organ.mH_settings['wf_info']['orientation'][mtype_cube]['planar_views']
+
     segm_btns = controller.main_win.segm_btns
-    for n, btn in enumerate(list(segm_btns.keys())): 
-
-        #Get Cube, Planes to project things
-        vect_ref = controller.main_win.gui_ellips['extended_dir']['plane_normal']
-        ref_vect = fcM.unit_vector(vect_ref)
-
-        #Get planar views
-        mtype = 'roi' # modify this!
-        planar_views = controller.organ.mH_settings['wf_info']['orientation'][mtype]['planar_views']
-        cube_rotations = controller.organ.mH_settings['wf_info']['orientation'][mtype]['roi_cube']
-        rotX = 0; rotY = 0; rotZ = 0
-
-        if mtype == 'roi': 
-            if 'rotate_x' in cube_rotations.keys(): 
-                rotX = cube_rotations['rotate_x']
-            if 'rotate_y' in cube_rotations.keys(): 
-                rotY = cube_rotations['rotate_y']
-            if 'rotate_z' in cube_rotations.keys(): 
-                rotZ = cube_rotations['rotate_z']
-            if 'rotate_user' in cube_rotations.keys(): 
-                rotX = rotX + cube_rotations['rotate_user']['rotX']
-                rotY = rotY + cube_rotations['rotate_user']['rotY']
-                rotZ = rotZ + cube_rotations['rotate_user']['rotZ']
-
-        proj_planes = {}
-        for view in planar_views:
-            pl_normal_unrot = planar_views[view]['normal_unrotated']
-            idcell = planar_views[view]['idcell']
-            pl_centre_unrot = controller.main_win.cube_ellipsoids.cell_centers()[idcell]
-            color = planar_views[view]['color'][0:3]
-            
-            #Create plane to project 
-            print(view, pl_normal_unrot, pl_centre_unrot)
-            plane = vedo.Plane(pos = pl_centre_unrot, normal=pl_normal_unrot, s=(300, 300), c=color)
-            proj_planes[view] = plane
-
-        all_planes = [proj_planes[key] for key in proj_planes]
-        plt = vedo.Plotter(N=2, axes=1)
-        plt.add_icon(logo, pos=(0.1,1), size=0.25)
-        plt.show(controller.main_win.cube_ellipsoids, at=0)
-        plt.show(all_planes, controller.main_win.cube_ellipsoids, at=1,  interactive=True)
-
-        #Something is wrong with the angles or the orientation of the planes... need to check this to make sure the 
-        #projections are right...
-        #Then continue here...
-        #Maybe add the axis in which the things need to be proj and then project them on thta plane, 
-        #rather than trying to reproduce the cube and get the planes and.. and ..and
-
-        if segm_btns[btn]['play'].isChecked() and n==0: 
+    segm_ellips = []
+    cont_dict = {'ext': 'external', 'int': 'internal', 'tiss': 'tissue'}
+    for btn in list(segm_btns.keys()): 
+        if segm_btns[btn]['play'].isChecked() and '_ext' in btn: 
             #Run Ellipsoid for this segm
             controller.main_win.win_msg('Creating ellipsoids for segments comprising '+btn)
             #Get segments
             cut, ch_cont = btn.split(':')
             ch, cont = ch_cont.split('_')
-            try: 
-                #get submesh from list buttons if it was saved in there...
-                meshes = segm_btns[btn]['meshes']
-                print('Meshes from try!')
-            except: 
-                print('Meshes from except!')
-                meshes = {}
-                for subm in controller.organ.mH_settings['setup']['segm'][cut]['name_segments'].keys():
-                    submesh_name = cut.title()+'_'+ch+'_'+cont+'_'+subm
-                    submesh = controller.organ.obj_subm[submesh_name]
-                    meshes[subm] = submesh.get_segm_mesh()
-
             divs = controller.main_win.gui_angles[cut.lower()]['div']
-            for segm in meshes: 
-                #Get mesh and rotate it if rotation has been set
-                mesh2rot = meshes[segm].clone()
-                com = mesh2rot.center_of_mass()
-
-                #Find the corresponding div
-                for div in divs.keys(): 
-                    if divs[div]['segm'] == segm: 
-                        print('div:', div)
-                        break
+            
+            for subm in controller.organ.mH_settings['setup']['segm'][cut]['name_segments'].keys():
+                submesh_name = cut.title()+'_'+ch+'_'+cont+'_'+subm
+                submesh = controller.organ.obj_subm[submesh_name]
+                mesh_segm = submesh.get_segm_mesh()
+                tiss, cont, segm_name = submesh.sub_legend.split('_')
+                print(tiss, cont, segm_name)
+                segm_name = controller.organ.mH_settings['setup']['segm'][cut]['name_segments'][subm]
+                dims= fcM.measure_ellipse(organ = controller.organ, 
+                                          mesh_segm = mesh_segm, segm_no = subm, 
+                                            planar_views = planar_views, divs = divs, 
+                                            cut = cut.lower(), ref_vect = ref_vect, 
+                                            gui_angles = controller.main_win.gui_angles, 
+                                            name = submesh.sub_legend,
+                                            plot = False)
                 
-                #Get original line
-                p0 = np.array(controller.main_win.gui_angles[cut.lower()]['original_line'][div]['p0'])
-                p1 = np.array(controller.main_win.gui_angles[cut.lower()]['original_line'][div]['p1'])
-                
-                ang_x, ang_y, ang_z = fcM.find_euler_angles_rotation(p0, p1, ref_vect)
-                new_mesh = mesh2rot.clone().rotate_x(ang_x).rotate_y(ang_y).rotate_z(ang_z).color('magenta')
-                
-                arrow_or = vedo.Arrow(start_pt=p1, end_pt=p0, c='darkred', s=0.1)
-                new_arrow = arrow_or.clone().rotate_x(ang_x).rotate_y(ang_y).rotate_z(ang_z).color('cyan')
+                print('Ellipsoid '+tiss+'-'+cont+'-'+segm_name+':',dims)
+                segm_ellips.append(cut.title()+': '+ch_cont+'_'+subm+' ('+segm_name+')')
+                for val in dims.keys(): 
+                    ind_param = 'Ellipsoid: '+val
+                    ind_tiss = cut.title()+'_'+ch_cont+'_'+subm
+                    ind_tiss_user = cut.title()+': '+ tiss +'-'+cont_dict[cont]+' ('+segm_name+')'
+                    index = (ind_param, ind_tiss, ind_tiss_user)
+                    print(index)
+                    df_res = fcB.df_add_value(df = df_res, index = index, value=dims[val])
+    
+    #Fill comboBox with measured ellipsoids
+    controller.main_win.view_ellipsoid.clear()
+    controller.main_win.view_ellipsoid.addItems(['----']+segm_ellips)
+    controller.main_win.view_ellipsoid.setEnabled(True)
+    #Resave df_res 
+    controller.organ.mH_settings['df_res'] = df_res
+    #Fill-up results table
+    controller.main_win.fill_results()
+    #Update organ mH_settings
+    controller.main_win.gui_ellips['segm_ellips'] = segm_ellips
+    proc_set = ['wf_info']
+    update = controller.main_win.gui_ellips
+    controller.organ.update_settings(proc_set, update, 'mH', add='gui_ellips')
 
-                plt = vedo.Plotter(N=1, axes=1)
-                plt.add_icon(logo, pos=(0.1,1), size=0.25)
-                plt.show(meshes[segm], arrow_or, new_arrow, new_mesh,  at=0, interactive=True)
-
-                
-
-                print('')
-                plt = vedo.Plotter(N=1, axes=1)
-                plt.add_icon(logo, pos=(0.1,1), size=0.25)
-                plt.show(controller.main_win.cube_ellipsoids,  at=0, interactive=True)
-
-
-                # m_chRot_projX = m_chRot.clone().projectOnPlane(plane = pl_rotX).c('palegreen').alpha(0.05)
-                # m_chRot_projZ = m_chRot.clone().projectOnPlane(plane = pl_rotZ).c('skyblue').alpha(0.05)
-                # _, _, ya_min, ya_max, za_min, za_max = m_chRot_projX.bounds()
-                # xa_min, xa_max, _, _, _, _ = m_chRot_projZ.bounds()
-                # _, ya_pos, za_pos = m_chRot_projX.centerOfMass()
-                # xa_pos, _, _ = m_chRot_projZ.centerOfMass()
-
-                # ellip_ch = Ellipsoid(pos=(xa_pos, ya_pos, za_pos), axis1=(xa_max-xa_min, 0,0), axis2=(0, ya_max-ya_min, 0), axis3=(0, 0, za_max-za_min), c='salmon', alpha=0.5, res=24)
-                # dict_shapes['Ellipsoid_'+s_name] = {'pos': (xa_pos, ya_pos, za_pos), 'axis1': (xa_max-xa_min, 0,0),
-                #                                     'axis2': (0, ya_max-ya_min, 0), 'axis3': (0, 0, za_max-za_min)}
-
-                # width_ch = xa_max-xa_min
-                # length_ch = ya_max-ya_min
-                # depth_ch = za_max-za_min
+    #Toggle button
+    getattr(controller.main_win, 'ellipsoids_play').setChecked(True)
+    #Enable plot btn 
+    getattr(controller.main_win, 'plot_ellipsoid').setEnabled(True)
                 
       
 # > SECTIONS

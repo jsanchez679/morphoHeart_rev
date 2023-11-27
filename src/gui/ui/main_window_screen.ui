@@ -1160,7 +1160,7 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-546</y>
+                      <y>0</y>
                       <width>382</width>
                       <height>1960</height>
                      </rect>
@@ -9357,8 +9357,8 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1053</y>
-                      <width>382</width>
+                      <y>0</y>
+                      <width>372</width>
                       <height>1960</height>
                      </rect>
                     </property>
@@ -17551,8 +17551,8 @@ QScrollBar::handle:vertical:hover {
                     <property name="geometry">
                      <rect>
                       <x>0</x>
-                      <y>-1142</y>
-                      <width>382</width>
+                      <y>0</y>
+                      <width>372</width>
                       <height>1960</height>
                      </rect>
                     </property>
@@ -25746,7 +25746,7 @@ QScrollBar::handle:vertical:hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>382</width>
+                      <width>372</width>
                       <height>1960</height>
                      </rect>
                     </property>
@@ -35565,7 +35565,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-3431</y>
+                   <y>-3646</y>
                    <width>632</width>
                    <height>6158</height>
                   </rect>
@@ -66936,13 +66936,13 @@ border-color: rgb(115, 115, 115)}
                                         </property>
                                         <property name="minimumSize">
                                          <size>
-                                          <width>150</width>
+                                          <width>200</width>
                                           <height>20</height>
                                          </size>
                                         </property>
                                         <property name="maximumSize">
                                          <size>
-                                          <width>150</width>
+                                          <width>200</width>
                                           <height>20</height>
                                          </size>
                                         </property>

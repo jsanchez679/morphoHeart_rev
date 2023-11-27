@@ -59,69 +59,6 @@ class Controller:
         self.welcome_win.button_new_proj_from_template.clicked.connect(lambda: self.button_clicked())
         # -Multi-project analysis
         self.welcome_win.button_multi_proj.clicked.connect(lambda: self.show_multi_proj())
-    
-    def button_clicked(self): 
-        # #Message
-        # title = 'This is the title!'
-        # msg = 'Message goes here!'
-        # self.prompt = Prompt_ok_cancel(title, msg, parent=self.welcome_win)
-        # self.prompt.exec()
-        # print('output:',self.prompt.output, '\n')
-
-        #Radio Buttons
-        # items = {0: {'opt': 'Option0', 'lineEdit': True, 'regEx': 'all'}, 1: {'opt': 'Option1', 'lineEdit': False}, 2: {'opt': 'Option2', 'lineEdit': True, 'regEx': 'num'} }
-        # title = 'This is the title!'
-        # msg = 'Message goes here!'
-        # self.prompt = Prompt_ok_cancel_radio(title, msg, items, parent=self.welcome_win)
-        # self.prompt.exec()
-        # print('output:',self.prompt.output, '\n')
-
-        # #Checkboxes 
-        # items = {0: {'opt': 'Option0'}, 1: {'opt': 'Option1'}, 2: {'opt': 'Option2'} }
-        # title = 'This is the title!'
-        # msg = 'Message goes here!'
-        # title = 'Select process(ess) to re-run'
-        # msg = 'Select the process(es) you want to run:'
-        # # items = {0: {'opt': 'Mask Stack'}, 1: {'opt': 'Close Contours Automatically'}, 
-        # #             2: {'opt': 'Close Contours manually'}, 3: {'opt': 'Close Inflow/Outflow Tract'}}
-        # items = {'A-MaskChannel': {'opt': 'Mask Stack'},
-        #         'A-Autom': {'opt': 'Close Contours Automatically'},
-        #         'B-Manual': {'opt': 'Close Contours Manually'},
-        #         'C-CloseInOut': {'opt': 'Close Inflow/Outflow Tract(s)'}}
-        # self.prompt = Prompt_ok_cancel_checkbox(title, msg, items, parent=self.welcome_win)
-        # self.prompt.exec()
-        # print('output:',self.prompt.output, '\n')
-
-        #Sounds
-        # print(mH_config.gui_sound)
-        # fcB.alert('error')
-        # fcB.alert('woohoo')
-        # fcB.alert('jump')
-        # fcB.alert('connection')
-
-        #Save all
-        # msg = ["Do you want to save the changes to this Organ and Project before closing?","If you don't save your changes will be lost."]
-        # self.prompt = Prompt_save_all(msg, info=[], parent=self.welcome_win)
-        # self.prompt.exec()
-        # print('output:',self.prompt.output, '\n')
-
-        #User input
-        # msg = 'Enter the centreline point number you want to use to initialise the disc to divide the tissue into segments '#+user_names+':'
-        # title = 'Centreline point number to initialise disc'
-        # prompt = Prompt_user_input(msg = msg, title = title, info = (0,300), parent = self.welcome_win)
-        # prompt.exec()
-        # print('prompt.output:', prompt.output)
-
-        # disc_radius = 60; n =1; user_names = 'A/V'
-        # items = {0: {'opt': 'no, I would like to define a new position for the disc'}, 
-        #         1: {'opt': 'yes, but I would like to redefine the disc radius', 'lineEdit': True, 'regEx': "int3d"}, 
-        #         2: {'opt': 'yes, I am happy with both, disc position and radius'}}
-        # title = 'Happy with the defined Disc '+str(n)+'?'
-        # msg = 'Are you happy with the position of the disc [radius: '+str(disc_radius)+'um] to cut tissue into segments  '+user_names+'?'
-        # prompt = Prompt_ok_cancel_radio(title, msg, items, parent = self.welcome_win)
-        # prompt.exec()
-        # print(prompt.output)
-        pass
 
     def show_create_new_proj(self):
         #Close welcome window

@@ -354,17 +354,20 @@ def get_ref_vectors(planar_views):
     for view in planar_views:
         pl_normal = unit_vector(planar_views[view]['pl_normal'])
         #Find the direction of the normal 
-        print(view, pl_normal)
         index = np.argmax(pl_normal)
         if index == 0: 
             ref_vector = np.array([0.0, 1.0, 0.0])
+            proj_plane = 'x'
         elif index == 1: 
             ref_vector = np.array([0.0, 0.0, 1.0])
+            proj_plane = 'y'
         else: 
             ref_vector = np.array([1.0, 0.0, 0.0])
-
+            proj_plane = 'z'
+        print(view, pl_normal, proj_plane)
         planar_views[view]['ref_vector'] = ref_vector
-    
+        planar_views[view]['proj_plane'] = proj_plane
+
     return planar_views
 
 def extract_chNS(organ, rotateZ_90, win, plot_settings):#
@@ -1789,7 +1792,92 @@ def measure_submesh(organ, submesh, mesh):
     df_res = df_reset_index(df=df_res, mult_index= ['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
     organ.mH_settings['df_res'] = df_res
 
-#%% Points classification
+def measure_ellipse(organ, mesh_segm, segm_no, planar_views, divs, cut, ref_vect, gui_angles, name, plot): 
+
+    #Get mesh and rotate it if rotation has been set
+    mesh2rot = mesh_segm.clone()
+
+    #Find the corresponding div
+    for div in divs.keys(): 
+        if divs[div]['segm'] == segm_no: 
+            print('div:', div)
+            break
+    
+    #Get original line
+    p0 = np.array(gui_angles[cut]['original_line'][div]['p0'])
+    p1 = np.array(gui_angles[cut]['original_line'][div]['p1'])
+    
+    ang_x, ang_y, ang_z = find_euler_angles_rotation(p0, p1, ref_vect)
+    new_mesh = mesh2rot.clone().rotate_x(ang_x).rotate_y(ang_y).rotate_z(ang_z).color('magenta')
+    
+    if plot: 
+        arrow_or = vedo.Arrow(start_pt=p1, end_pt=p0, c='darkred', s=0.1)
+        new_arrow = arrow_or.clone().rotate_x(ang_x).rotate_y(ang_y).rotate_z(ang_z).color('cyan')
+
+    x_min = []; x_max=[]; y_min=[]; y_max=[]; z_min=[]; z_max=[]
+    segm_projts = {}
+    for view in planar_views:
+        proj_plane = planar_views[view]['proj_plane']
+        color = planar_views[view]['color'][0:3]
+        
+        segm_proj = new_mesh.clone().project_on_plane(plane = proj_plane).c(color).alpha(0.05)
+        segm_proj.legend('Proj '+proj_plane.upper())
+        xa_min, xa_max, ya_min, ya_max, za_min, za_max = segm_proj.bounds()
+        x_min.append(xa_min); x_max.append(xa_max)
+        y_min.append(ya_min); y_max.append(ya_max)
+        z_min.append(za_min); z_max.append(za_max)
+
+        segm_projts[proj_plane] = segm_proj
+
+    x_min = list(set([i for i in x_min if i != 0.0]))[0]
+    y_min = list(set([i for i in y_min if i != 0.0]))[0]
+    z_min = list(set([i for i in z_min if i != 0.0]))[0]
+    x_max = list(set([i for i in x_max if i != 0.0]))[0]
+    y_max = list(set([i for i in y_max if i != 0.0]))[0]
+    z_max = list(set([i for i in z_max if i != 0.0]))[0]
+
+    x_dim = x_max-x_min; 
+    y_dim = y_max-y_min; 
+    z_dim = z_max-z_min; 
+
+    x_pos = x_min+x_dim/2
+    y_pos = y_min+y_dim/2
+    z_pos = z_min+z_dim/2
+
+    ellip_ch = vedo.Ellipsoid(pos=(x_pos, y_pos, z_pos), 
+                            axis1=(x_dim, 0,0), 
+                            axis2=(0, y_dim, 0), 
+                            axis3=(0, 0, z_dim), 
+                            c='limegreen', alpha=0.5, res=24)
+    ellip_ch.legend('Ellipsoid '+name)
+    
+    dims = {'X-dim': x_dim, 'Y-dim': y_dim, 'Z-dim': z_dim, 'Asphericity': ellip_ch.asphericity()}
+    
+    val = 80; segm_projts_f = []
+    for ax in segm_projts.keys():
+        if ax == 'x': 
+            segm_projts[ax].x(x_min-val)
+        elif ax == 'y': 
+            segm_projts[ax].y(y_min-val)
+        else: #proj_plane == 'z': 
+            segm_projts[ax].z(z_min-val)
+        segm_projts_f.append(segm_projts[ax])
+
+    if plot: 
+        m2 = tuple([ellip_ch, new_mesh]+segm_projts_f)
+        # obj = [(mesh_segm, arrow_or, new_arrow, new_mesh), m2]
+        # txt = [(0, organ.user_organName), (1, 'Ellipsoid created for '+name)]
+        # plot_grid(obj=obj, txt=txt, axes=1, sc_side=max(organ.get_maj_bounds()))
+
+        obj = [m2]
+        txt = [(0, organ.user_organName+' > Ellipsoid created for '+name)]
+        plot_grid(obj=obj, txt=txt, axes=1, sc_side=max(organ.get_maj_bounds()))
+
+    else: 
+        return dims
+
+
+#%% - Points classification
 def classify_heart_pts(m_whole, obj_segm, data):
     """
     Function that classifies the points that make up a mesh as atrium/ventricle, dorsal/ventral and left/right

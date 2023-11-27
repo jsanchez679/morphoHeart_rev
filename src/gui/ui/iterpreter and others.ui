@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>550</width>
+    <width>715</width>
     <height>892</height>
    </rect>
   </property>
@@ -211,43 +211,6 @@ color: rgb(234, 234, 234);
    </property>
    <property name="text">
     <string/>
-   </property>
-  </widget>
-  <widget class="QLabel" name="view_angle_dir1_cut1">
-   <property name="geometry">
-    <rect>
-     <x>25</x>
-     <y>245</y>
-     <width>100</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>100</width>
-     <height>20</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>100</width>
-     <height>20</height>
-    </size>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-   </property>
-   <property name="text">
-    <string>xxxx</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
    </property>
   </widget>
   <widget class="QLabel" name="view_angle_dir2_cut1">

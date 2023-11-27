@@ -50,7 +50,8 @@ from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours
                                        plot_props, plot_filled_contours, plot_group_filled_contours, 
                                        close_draw, close_box, close_user, reset_img, close_convex_hull, tuple_pairs, 
                                        mask_with_npy)
-from ..modules.mH_funcMeshes import plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap, unit_vector, new_normal_3DRot
+from ..modules.mH_funcMeshes import (plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap, 
+                                     unit_vector, new_normal_3DRot, measure_ellipse)
 from ..modules.mH_classes_new import Project, Organ, create_submesh
 from .config import mH_config
 
@@ -7540,6 +7541,9 @@ class MainWindow(QMainWindow):
             self.plot_angle_dir2_cut2.clicked.connect(lambda: self.plot_angles(btn='dir2_cut2'))
             self.plot_angle_dir3_cut2.clicked.connect(lambda: self.plot_angles(btn='dir3_cut2'))
 
+            #Plot ellipsoids: 
+            self.plot_ellipsoid.clicked.connect(lambda: self.plot_ellipsoids())
+
         else:
             self.widget_angles_ellips.setVisible(False)
 
@@ -8645,10 +8649,13 @@ class MainWindow(QMainWindow):
                 else: 
                     done_dirs.append(False)
                 
-            if all(done_dirs) and self.organ.mH_settings['setup']['segm']['measure']['Ellip']: 
-                pass
-                # self.ellipsoids_play.setEnabled(True)
-
+            if self.organ.mH_settings['setup']['segm']['measure']['Ellip'] and 'ellipsoids' in wf_info.keys():
+                self.set_ellipsoid()
+                if 'segm_ellips' in wf_info['ellipsoids'].keys(): 
+                    self.ellipsoids_play.setChecked(True)
+                    self.view_ellipsoid.addItems(wf_info['ellipsoids']['segm_ellips'])
+                    self.view_ellipsoid.setEnabled(True)
+                    self.plot_ellipsoid.setEnabled(True)
         else: 
             pass
 
@@ -10380,7 +10387,17 @@ class MainWindow(QMainWindow):
     #Results functions
     def fill_results(self): 
 
-        self.df_res = self.organ.mH_settings['df_res']
+        df_res = self.organ.mH_settings['df_res']
+        df_res = df_res.reset_index()
+        ellip_rename = {'Ellipsoid: Depth': 'Ellipsoid: Z-dim', 'Ellipsoid: Width': 'Ellipsoid: X-dim', 'Ellipsoid: Length': 'Ellipsoid: Y-dim' }
+        for index, rowv in df_res.iterrows(): 
+            if 'Ellipsoid' in rowv['Parameter']: 
+                if rowv['Parameter'] in ellip_rename.keys(): 
+                    print(rowv['Parameter'])
+                    df_res.loc[index, 'Parameter'] = ellip_rename[rowv['Parameter']]
+        self.df_res = df_res.set_index(['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
+        
+        self.organ.mH_settings['df_res'] = self.df_res
         len_o = len(self.df_res)
 
         #Remove Original Angle Measurements
@@ -10402,7 +10419,7 @@ class MainWindow(QMainWindow):
         for index, rowv in self.df_res.iterrows(): 
             col0, _, col2 = index
             value = rowv['Value']
-            if isinstance(value, float): 
+            if isinstance(value, float) or isinstance(value, np.float32): 
                 valuef = "%.2f" % value
             elif isinstance(value, str): 
                 valuef = value
@@ -11369,6 +11386,35 @@ class MainWindow(QMainWindow):
         plt.add_icon(logo, pos=(0.9,0.1), size=0.25)
         plt.show(segms, line_or, proj_or, zero_or, plane, orient_cube, sph_zero, cap, lbox, msg, at=0, viewup='y', zoom=0.8, interactive=True)
         
+    def plot_ellipsoids(self): 
+
+        segm_plot = self.view_ellipsoid.currentText()
+        if segm_plot != '----': 
+            cut, ch_cont_segm = segm_plot.split(': ')
+            ch_cont_segm = ch_cont_segm.split(' (')[0]
+            ch, cont, subm = ch_cont_segm.split('_')
+
+            submesh_name = cut.title()+'_'+ch+'_'+cont+'_'+subm
+            submesh = self.organ.obj_subm[submesh_name]
+            mesh_segm = submesh.get_segm_mesh()
+
+            #Get Cube, Planes to project things
+            vect_ref = self.gui_ellips['extended_dir']['plane_normal']
+            ref_vect = unit_vector(vect_ref)
+            mtype_cube = self.gui_ellips['axis']
+
+            #Get planar views
+            planar_views = self.organ.mH_settings['wf_info']['orientation'][mtype_cube]['planar_views']
+            divs = self.gui_angles[cut.lower()]['div']
+
+            measure_ellipse(organ = self.organ, mesh_segm = mesh_segm, segm_no = subm, 
+                                planar_views = planar_views, divs = divs, 
+                                cut = cut.lower(), ref_vect = ref_vect, 
+                                gui_angles = self.gui_angles, 
+                                name = submesh.sub_legend, plot = True)
+        else: 
+            self.win_msg('*Please select a segment from which to plot the created ellipsoids.')
+
     #User specific plot settings
     def fill_comboBox_all_meshes(self): 
 
