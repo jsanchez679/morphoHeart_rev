@@ -602,7 +602,7 @@ class Process_ongoing(QDialog):
         gui_thball = win.gui_thickness_ballooning
         hm2filt = {}
         for hm in win.hm_btns: 
-            if win.hm_btns[hm]['play2d'].isEnabled():
+            if win.hm_btns[hm]['play2d'].isEnabled() and win.hm_btns[hm]['plot2d'].isEnabled():
                 dirs_df = gui_thball[hm]['hm2d_dirs']
                 hm2filt[hm] = dirs_df
         
@@ -8040,6 +8040,7 @@ class MainWindow(QMainWindow):
         self.add_mesh.clicked.connect(lambda: self.add_mesh_to_plot())
         self.set_plot.clicked.connect(lambda: self.set_plot_settings())
         self.btn_user_plot.clicked.connect(lambda: self.create_user_plot())
+        self.btn_save_video.clicked.connect(lambda: self.create_user_video())
         self.plot_clear_All.clicked.connect(lambda: self.update_plot('del', 'all'))
         self.combo_axes.setCurrentText('13')
 
@@ -9926,6 +9927,10 @@ class MainWindow(QMainWindow):
     def set_segms_or(self, cut, div):
 
         mesh2use = getattr(self, 'angles_mesh2use_'+cut).currentText()
+        if mesh2use == '----': 
+            self.win_msg('*Select the mesh you would like to use to define the orientation segment for each segment.',getattr(self, 'set_angles_'+cut))
+            return  
+
         segm_btn_name = cut.title()+':'+mesh2use
         if not self.segm_btns[segm_btn_name]['plot'].isEnabled(): 
             self.win_msg('*The segments for the selected mesh -'+mesh2use+'- have not been obtained yet. Please extract the segments first to be able to set the angle settings.',getattr(self, 'set_angles_'+cut))
@@ -10034,7 +10039,7 @@ class MainWindow(QMainWindow):
         txt_slider_size2 = 0.7
         
         plt = vedo.Plotter(axes=1)
-        plt.add_icon(logo, pos=(0.1,1), size=0.25)
+        plt.add_icon(logo, pos=(0.1,0.1), size=0.25)
         plt.add_callback('mouse click', func) # add the callback function
         plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.01,
                         pos=[(0.92,0.25), (0.92,0.35)], c= 'limegreen', 
@@ -11560,7 +11565,7 @@ class MainWindow(QMainWindow):
                 plot_no.setEnabled(False)
                 del_mesh.setEnabled(False)
             
-    def create_user_plot(self): 
+    def create_user_plot(self, video=False): 
         if len(self.plot_meshes_user) < 1: 
             self.win_msg('*No meshes have been added to the table.')
         else:
@@ -11571,6 +11576,21 @@ class MainWindow(QMainWindow):
 
             for plot in range(1,self.plot_settings['no_plots']+1,1): 
                 setattr(self, 'items_plot'+str(plot), [])
+            
+            if self.plot_settings['reorient']: 
+                roi_cube = self.organ.mH_settings['wf_info']['orientation']['roi']['roi_cube']
+                rotX = 0; rotY = 0; rotZ = 0
+                if 'rotate_x' in roi_cube.keys(): 
+                    rotX = roi_cube['rotate_x']
+                if 'rotate_y' in roi_cube.keys(): 
+                    rotY = roi_cube['rotate_y']
+                if 'rotate_z' in roi_cube.keys(): 
+                    rotZ = roi_cube['rotate_z']
+                print(rotX, rotY, rotZ)
+                if 'rotate_user' in roi_cube.keys(): 
+                    rotX = rotX + roi_cube['rotate_user']['rotX']
+                    rotY = rotY + roi_cube['rotate_user']['rotY']
+                    rotZ = rotZ + roi_cube['rotate_user']['rotZ']
 
             # print('self.all_meshes:', self.all_meshes)
             # print('self.plot_meshes_user:', self.plot_meshes_user)
@@ -11588,7 +11608,7 @@ class MainWindow(QMainWindow):
                         scut, rcut, ch, cont, segm, sect = mesh_name.split('_')
                         name_btn = scut+'_o_'+rcut+':'+ch+'_'+cont
                         if 'meshes' in self.segm_sect_btns[name_btn].keys(): 
-                            mesh2add = self.segm_sect_btns[name_btn]['meshes'][sect][segm]
+                            mesh2add = self.segm_sect_btns[name_btn]['meshes'][sect][segm].clone()
                         else: 
                             seg_cut = mesh_name[1:5]
                             mesh2add = submesh.get_sect_segm_mesh(seg_cut = seg_cut)
@@ -11597,14 +11617,14 @@ class MainWindow(QMainWindow):
                             scut, ch, cont, segm = mesh_name.split('_')
                             name_btn = scut+':'+ch+'_'+cont
                             if 'meshes' in self.segm_btns[name_btn].keys(): 
-                                mesh2add = self.segm_btns[name_btn]['meshes'][segm]
+                                mesh2add = self.segm_btns[name_btn]['meshes'][segm].clone()
                             else: 
                                 mesh2add = submesh.get_segm_mesh()
                         else: #'sect' in segm
                             rcut, ch, cont, sect = mesh_name.split('_')
                             name_btn = rcut+':'+ch+'_'+cont
                             if 'meshes' in self.sect_btns[name_btn].keys(): 
-                                mesh2add = self.sect_btns[name_btn]['meshes'][sect]
+                                mesh2add = self.sect_btns[name_btn]['meshes'][sect].clone()
                             else: 
                                 mesh2add = submesh.get_sect_mesh()
                 else: #method == 'mesh_meas':
@@ -11616,7 +11636,13 @@ class MainWindow(QMainWindow):
                     title = self.all_meshes[item['mesh']]['title']
                     mesh2add = self.set_scalebar(mesh=mesh2add, name = name, proc = proc, title = title)
 
+                mesh2add2 = mesh2add.clone()
                 #Update alpha and add it to the list
+                if self.plot_settings['reorient']: 
+                    mesh2add.rotate_x(-rotX+90)
+                    mesh2add.rotate_y(-rotY)
+                    mesh2add.rotate_z(-rotZ)
+
                 mesh2add.alpha(item['alpha'])
                 getattr(self, 'items_plot'+str(plot_no)).append(mesh2add)
             
@@ -11627,18 +11653,109 @@ class MainWindow(QMainWindow):
                 delattr(self, 'items_plot'+str(plot))
             print('obj:', obj)
 
-            axes = self.plot_settings['axes']
-            zoom = self.plot_settings['zoom']
-            elev = self.plot_settings['elev']
-            azim = self.plot_settings['azim']
-            txt = [(0, self.organ.user_organName)]
+            if not video: 
+                axes = self.plot_settings['axes']
+                zoom = self.plot_settings['zoom']
+                elev = self.plot_settings['elev']
+                azim = self.plot_settings['azim']
+                txt = [(0, self.organ.user_organName)]
 
-            plot_grid(obj=obj, txt=txt, axes=axes, sc_side=max(self.organ.get_maj_bounds()), 
-                       zoom=zoom, azimuth = azim, elevation =elev, add_scale_cube=add_scale_cube)
-            
+                plot_grid(obj=obj, txt=txt, axes=axes, sc_side=max(self.organ.get_maj_bounds()), 
+                        zoom=zoom, azimuth = azim, elevation =elev, add_scale_cube=add_scale_cube)
+
+            else: 
+                return obj
 
         self.btn_user_plot.setChecked(False)
 
+    def create_user_video(self): 
+
+        self.win_msg('!Code under development!')
+        alert('error_beep')
+        return
+
+        if self.video_filename.text() != '': 
+
+            if self.check_scalecube_plot.isChecked():
+                add_scale_cube = True
+            else: 
+                add_scale_cube = False
+
+            axes = self.plot_settings['axes']
+            zoom = self.plot_settings['zoom']
+            txt = [(0, self.organ.user_organName)]
+            
+            obj = self.create_user_plot(video=True)
+
+            #Scale cube
+            if add_scale_cube: 
+                sc_side = max(self.organ.get_maj_bounds())
+                if isinstance(obj[0], tuple):
+                    scale_cube = vedo.Cube(pos=obj[0][0].center_of_mass(), side=sc_side, c='white', alpha=0.01).legend('ScaleCube')
+                else: 
+                    scale_cube = vedo.Cube(pos=obj[0].center_of_mass(), side=sc_side, c='white', alpha=0.01).legend('ScaleCube')
+            else: 
+                scale_cube = []
+
+            n_obj = len(obj)
+            # Create tuples for text
+            post = [tup[0] for tup in txt]; txt_out = []; n = 0
+            for num in range(n_obj):
+                if num in post:
+                    txt_out.append(vedo.Text2D(txt[n][1], c=txt_color, font=txt_font, s=txt_size))
+                    n += 1
+                else: 
+                    txt_out.append(vedo.Text2D('', c=txt_color, font=txt_font, s=txt_size))
+
+            # Add scale_cube to last plot
+            if isinstance(obj[n_obj-1], tuple):
+                obj_list = list(obj[n_obj-1])
+                obj_list.append(scale_cube)
+                obj_f = tuple(obj_list)
+            else: #vedo.mesh.Mesh
+                obj_f = (obj[n_obj-1], scale_cube)
+            obj[n_obj-1] = obj_f
+
+            # Set logo position
+            if len(obj)>5:
+                pos = (0.1,3)
+            elif len(obj)>3:
+                pos = (0.1,2)
+            else:
+                pos = (0.1,1)
+
+            #Video info
+            video_name =  self.video_filename.text()+".mp4"
+            duration = self.spin_video_duration.value()
+            video_path = self.organ.dir_res('imgs_videos') / video_name
+            print(video_path)
+
+            # Now plot
+            lbox = []
+            vp = vedo.Plotter(N=len(obj), axes=axes, offscreen=True)
+            # vp.add_icon(logo, pos=pos, size=0.25)
+            for num in range(len(obj)):
+                if isinstance(obj[num], tuple):
+                    try: 
+                        lbox.append(vedo.LegendBox(list(obj[num]), font=leg_font, width=leg_width))
+                    except: 
+                        lbox.append('')
+                else:
+                    lbox.append(vedo.LegendBox([obj[num]], font=leg_font, width=leg_width))
+                if num != len(obj)-1:
+                    vp.show(obj[num], lbox[num], txt_out[num], at=num, zoom=zoom)
+                else: # num == len(obj)-1
+                    vp.show(obj[num], lbox[num], txt_out[num], at=num, zoom=zoom)
+
+            video = vedo.Video(video_name, duration=duration, backend='opencv')
+            for i in range(180):
+                vp.show(elevation=0, azimuth=2, zoom = zoom)  # render the scene
+                video.addFrame()
+            video.close()
+        
+        else: 
+            self.win_msg('*Please provide a name to save the video.')
+    
     #OTHER all Tabs
     def n_slices(self, process):
         cB = getattr(self, process+'_plot2d')

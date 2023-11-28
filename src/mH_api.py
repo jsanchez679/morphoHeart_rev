@@ -2034,7 +2034,6 @@ def run_ellipsoids(controller):
     #Enable plot btn 
     getattr(controller.main_win, 'plot_ellipsoid').setEnabled(True)
                 
-      
 # > SECTIONS
 def run_sections(controller, btn): 
 
