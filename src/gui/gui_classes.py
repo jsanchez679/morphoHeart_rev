@@ -730,24 +730,24 @@ class CreateNewProj(QDialog):
         #Initial set-up objects
         # -- Channels
         #Ch1
-        self.fillcolor_ch1_int_btn.clicked.connect(lambda: self.color_picker('ch1_int'))
-        self.fillcolor_ch1_tiss_btn.clicked.connect(lambda: self.color_picker('ch1_tiss'))
-        self.fillcolor_ch1_ext_btn.clicked.connect(lambda: self.color_picker('ch1_ext'))
+        self.fillcolor_ch1_int.clicked.connect(lambda: self.color_picker('ch1_int'))
+        self.fillcolor_ch1_tiss.clicked.connect(lambda: self.color_picker('ch1_tiss'))
+        self.fillcolor_ch1_ext.clicked.connect(lambda: self.color_picker('ch1_ext'))
         #Ch2
         self.tick_ch2.stateChanged.connect(lambda: self.add_channel('ch2'))
-        self.fillcolor_ch2_int_btn.clicked.connect(lambda: self.color_picker('ch2_int'))
-        self.fillcolor_ch2_tiss_btn.clicked.connect(lambda: self.color_picker('ch2_tiss'))
-        self.fillcolor_ch2_ext_btn.clicked.connect(lambda: self.color_picker('ch2_ext'))
+        self.fillcolor_ch2_int.clicked.connect(lambda: self.color_picker('ch2_int'))
+        self.fillcolor_ch2_tiss.clicked.connect(lambda: self.color_picker('ch2_tiss'))
+        self.fillcolor_ch2_ext.clicked.connect(lambda: self.color_picker('ch2_ext'))
         #Ch3
         self.tick_ch3.stateChanged.connect(lambda: self.add_channel('ch3'))
-        self.fillcolor_ch3_int_btn.clicked.connect(lambda: self.color_picker('ch3_int'))
-        self.fillcolor_ch3_tiss_btn.clicked.connect(lambda: self.color_picker('ch3_tiss'))
-        self.fillcolor_ch3_ext_btn.clicked.connect(lambda: self.color_picker('ch3_ext'))
+        self.fillcolor_ch3_int.clicked.connect(lambda: self.color_picker('ch3_int'))
+        self.fillcolor_ch3_tiss.clicked.connect(lambda: self.color_picker('ch3_tiss'))
+        self.fillcolor_ch3_ext.clicked.connect(lambda: self.color_picker('ch3_ext'))
         #Ch4
         self.tick_ch4.stateChanged.connect(lambda: self.add_channel('ch4'))
-        self.fillcolor_ch4_int_btn.clicked.connect(lambda: self.color_picker('ch4_int'))
-        self.fillcolor_ch4_tiss_btn.clicked.connect(lambda: self.color_picker('ch4_tiss'))
-        self.fillcolor_ch4_ext_btn.clicked.connect(lambda: self.color_picker('ch4_ext'))
+        self.fillcolor_ch4_int.clicked.connect(lambda: self.color_picker('ch4_int'))
+        self.fillcolor_ch4_tiss.clicked.connect(lambda: self.color_picker('ch4_tiss'))
+        self.fillcolor_ch4_ext.clicked.connect(lambda: self.color_picker('ch4_ext'))
 
         #Default colors (Channels)
         self.ck_def_colors.stateChanged.connect(lambda: self.default_colors('ch'))
@@ -778,9 +778,9 @@ class CreateNewProj(QDialog):
         # -- Channel NS
         self.set_chNS.setDisabled(True)
         self.set_chNS.setVisible(False)
-        self.fillcolor_chNS_int_btn.clicked.connect(lambda: self.color_picker('chNS_int'))
-        self.fillcolor_chNS_tiss_btn.clicked.connect(lambda: self.color_picker('chNS_tiss'))
-        self.fillcolor_chNS_ext_btn.clicked.connect(lambda: self.color_picker('chNS_ext'))
+        self.fillcolor_chNS_int.clicked.connect(lambda: self.color_picker('chNS_int'))
+        self.fillcolor_chNS_tiss.clicked.connect(lambda: self.color_picker('chNS_tiss'))
+        self.fillcolor_chNS_ext.clicked.connect(lambda: self.color_picker('chNS_ext'))
 
         #Buttons
         # -Set ChNS
@@ -877,7 +877,39 @@ class CreateNewProj(QDialog):
         self.button_set_segm_sect.clicked.connect(lambda: self.validate_segm_sect())
 
     def init_mCell_tab(self):
-        pass
+        #Initial set-up objects
+        # -- Channels
+        self.fillcolor_chA.clicked.connect(lambda: self.color_picker('chA'))
+        self.fillcolor_chB.clicked.connect(lambda: self.color_picker('chB'))
+        self.fillcolor_chC.clicked.connect(lambda: self.color_picker('chC'))
+        self.fillcolor_chD.clicked.connect(lambda: self.color_picker('chD'))
+
+        self.tick_chB.stateChanged.connect(lambda: self.add_channel('chB'))
+        self.tick_chC.stateChanged.connect(lambda: self.add_channel('chC'))
+        self.tick_chD.stateChanged.connect(lambda: self.add_channel('chD'))
+
+        self.ck_def_colors_mC.stateChanged.connect(lambda: self.default_colors('mC'))
+
+        #Set validator
+        self.chA_username.setValidator(QRegularExpressionValidator(self.reg_ex_spaces, self.chA_username))
+        self.chB_username.setValidator(QRegularExpressionValidator(self.reg_ex_spaces, self.chB_username))
+        self.chC_username.setValidator(QRegularExpressionValidator(self.reg_ex_spaces, self.chC_username))
+        self.chD_username.setValidator(QRegularExpressionValidator(self.reg_ex_spaces, self.chD_username))
+
+        #Validate initial settings
+        self.button_set_initial_set_mC.clicked.connect(lambda: self.validate_initial_settings_mC())
+
+        #Set processes
+        self.set_processes_mC.setEnabled(False)
+        self.button_set_processes_mC.clicked.connect(lambda: self.set_selected_processes(info='mC'))
+
+        self.tick_segm_mC.stateChanged.connect(lambda: self.reset_set_processes(info='mC'))
+        self.tick_sect_mC.stateChanged.connect(lambda: self.reset_set_processes(info='mC'))
+
+        self.cB_use_mH_tiss_chB.stateChanged.connect(lambda: self.add_mH_chs('chB'))
+        self.cB_use_mH_tiss_chC.stateChanged.connect(lambda: self.add_mH_chs('chC'))
+        self.cB_use_mH_tiss_chD.stateChanged.connect(lambda: self.add_mH_chs('chD'))
+
 
     #Functions for General Project Settings   
     def get_proj_dir(self):
@@ -967,7 +999,11 @@ class CreateNewProj(QDialog):
             self.mH_methods = None
             
         if self.checked_analysis['morphoCell']:
-            self.mC_settings = {}
+            self.mC_settings = {'no_chs': 0,
+                                'name_chs': 0,
+                                'from_mH': 0,
+                                'mH_ch': 0,
+                                'color_chs': 0,}
         else: 
             self.mC_settings = None
             self.mC_user_params = None
@@ -980,6 +1016,21 @@ class CreateNewProj(QDialog):
             self.tabWidget.setCurrentIndex(0)
         else: 
             self.tabWidget.setCurrentIndex(1)
+        
+        #Disable things in mC tab that are related to mH if mH is not selected
+        if not self.checked_analysis['morphoHeart'] and self.checked_analysis['morphoCell']:
+            self.label_use_mH_chs.setEnabled(False)
+            self.cB_use_mH_tiss_chB.setEnabled(False)
+            self.cB_use_mH_tiss_chC.setEnabled(False)
+            self.cB_use_mH_tiss_chD.setEnabled(False)
+            self.lab_select_mH_ch.setEnabled(False)
+            self.chB_select.setEnabled(False)
+            self.chC_select.setEnabled(False)
+            self.chD_select.setEnabled(False)
+            self.tick_sect_mC.setEnabled(False)
+            self.tick_mH_segm.setEnabled(False)
+            self.set_sect_mC.setVisible(False)
+            self.set_segm_sect_mC.setVisible(False)
 
     #Functions for Initial Set-up 
     # -- Functions for orientation
@@ -1026,82 +1077,126 @@ class CreateNewProj(QDialog):
 
     # -- Functions for channels
     def add_channel(self, name):
-        tick = getattr(self, 'tick_'+name)
 
+        tick = getattr(self, 'tick_'+name)
         user_name = getattr(self, name+'_username')
-        fill_int = getattr(self, 'fillcolor_'+name+'_int')
-        btn_int = getattr(self, 'fillcolor_'+name+'_int_btn')
-        fill_tiss = getattr(self, 'fillcolor_'+name+'_tiss')
-        btn_tiss = getattr(self, 'fillcolor_'+name+'_tiss_btn')
-        fill_ext = getattr(self, 'fillcolor_'+name+'_ext')
-        btn_ext = getattr(self, 'fillcolor_'+name+'_ext_btn')
-        ck_mask = getattr(self, name+'_mask')
-        cB_dist = getattr(self, 'cB_'+name)
+        if name not in ['chA', 'chB', 'chC', 'chD']: 
+            fill_int = getattr(self, 'fillcolor_'+name+'_int')
+            fill_tiss = getattr(self, 'fillcolor_'+name+'_tiss')
+            fill_ext = getattr(self, 'fillcolor_'+name+'_ext')
+            ck_mask = getattr(self, name+'_mask')
+            cB_dist = getattr(self, 'cB_'+name)
+            mH = True
+            def_col = 'ch'
+            ck = 'ck_def_colors'
+        else: 
+            mH = False
+            use_mH_channel = getattr(self, 'cB_use_mH_tiss_'+name)
+            mH_ch = getattr(self, name+'_select')
+            fill = getattr(self, 'fillcolor_'+name)
+            def_col = 'mC'
+            ck = 'ck_def_colors_mC'
         
         if tick.isChecked():
             #Activate all widgets
             user_name.setEnabled(True)
-            fill_int.setEnabled(True)
-            btn_int.setEnabled(True)
-            fill_tiss.setEnabled(True)
-            btn_tiss.setEnabled(True)
-            fill_ext.setEnabled(True)
-            btn_ext.setEnabled(True)
-            ck_mask.setEnabled(True)
-            cB_dist.setEnabled(True)
-            if self.ck_def_colors.isChecked():
-                self.default_colors('ch')
+            if mH: 
+                fill_int.setEnabled(True)
+                fill_tiss.setEnabled(True)
+                fill_ext.setEnabled(True)
+                ck_mask.setEnabled(True)
+                cB_dist.setEnabled(True)
+            else: 
+                use_mH_channel.setEnabled(True)
+                mH_ch.setEnabled(True)
+                fill.setEnabled(True)
+
+            if getattr(self, ck).isChecked():
+                self.default_colors(def_col)
         else: 
             #Deactivate all widgets
             user_name.setEnabled(False)
-            fill_int.setEnabled(False)
-            btn_int.setEnabled(False)
-            fill_tiss.setEnabled(False)
-            btn_tiss.setEnabled(False)
-            fill_ext.setEnabled(False)
-            btn_ext.setEnabled(False)
-            ck_mask.setEnabled(False)
-            cB_dist.setEnabled(False)
-            # color_txt = "background-color: rgb(255, 255, 255); color: rgb(255, 255, 255); font: 25 2pt 'Calibri Light'"
-            for cont in ['int', 'tiss', 'ext']:
-                fill = getattr(self, 'fillcolor_'+name+'_'+cont)
+            if mH: 
+                fill_int.setEnabled(False)
+                fill_tiss.setEnabled(False)
+                fill_ext.setEnabled(False)
+                ck_mask.setEnabled(False)
+                cB_dist.setEnabled(False)
+                for cont in ['int', 'tiss', 'ext']:
+                    fill = getattr(self, 'fillcolor_'+name+'_'+cont)
+                    color_btn(btn = fill, color = 'rgb(255, 255, 255)')
+                    fill.setText('rgb(255, 255, 255)')
+            else: 
+                use_mH_channel.setEnabled(False)
+                mH_ch.setEnabled(False)
+                fill.setEnabled(False)
                 color_btn(btn = fill, color = 'rgb(255, 255, 255)')
-                # fill.setStyleSheet(color_txt)
                 fill.setText('rgb(255, 255, 255)')
+            
+            if getattr(self, ck).isChecked():
+                self.default_colors(def_col)
+
+    def add_mH_chs(self, name): 
+        tick = getattr(self, 'cB_use_mH_tiss_'+name)
+        if tick.isChecked(): 
+            #Get channels from mH
+            if self.button_set_initial_set.isChecked(): 
+                # if self.mH_settings['name_chs']
+                print(self.mH_settings)
+                #Verify things here...
+                names = self.mH_settings['name_chs']
+                cb_names = []
+                getattr(self, name+'_select').addItems(cb_names)
+            else: 
+                self.win_msg('*Channels have not yet been set in the -Morphological (morphoHeart)- Tab. Please set them first to be able to use them in this analysis.')
+                tick.setChecked(False)
+                return
+        else: 
+            getattr(self, name+'_select').clear()
+        getattr(self, name+'_select').addItems(['----'])
 
     def color_picker(self, name):
         color = QColorDialog.getColor()
         if color.isValid():
-            # print('The selected color is: ', color.name())
             fill = getattr(self, 'fillcolor_'+name)
             red, green, blue, _ = color.getRgb() #[red, green, blue]
             color_btn(btn = fill, color = color.name())
-            # fill.setStyleSheet("background-color: "+color.name()+"; color: "+color.name()+"; font: 25 2pt 'Calibri Light'")#+"; border: 1px solid "+color.name())
             fill.setText(str([red, green, blue]))
             print('Color:', fill.text())
-        getattr(self, 'fillcolor_'+name+'_btn').setChecked(False)
             
     def default_colors(self, name):
-        if self.ck_def_colors.isChecked():
+        if name in ['ch', 'chNS']: 
+            ck = 'ck_def_colors'
+        else: 
+            ck= 'ck_def_colors_mC'
+
+        if getattr(self, ck).isChecked():
             if name == 'ch': 
                 df_colors = {'ch1': {'int': 'gold', 'tiss': 'lightseagreen', 'ext':'crimson'},
-                            'ch2': {'int': 'deepskyblue', 'tiss': 'darkmagenta', 'ext':'deeppink'},
-                            'ch3': {'int': 'cyan', 'tiss': 'indigo', 'ext':'hotpink'},
-                            'ch4': {'int': 'chocolate', 'tiss': 'seagreen', 'ext':'salmon'}}
+                                'ch2': {'int': 'deepskyblue', 'tiss': 'darkmagenta', 'ext':'deeppink'},
+                                'ch3': {'int': 'cyan', 'tiss': 'indigo', 'ext':'hotpink'},
+                                'ch4': {'int': 'chocolate', 'tiss': 'seagreen', 'ext':'salmon'}}
             elif name == 'chNS':
                 df_colors = {'chNS': {'int': 'greenyellow', 'tiss': 'darkorange', 'ext':'powderblue'}}
+            elif name == 'mC': 
+                df_colors = {'chA': {'tiss': 'deeppink'},
+                                'chB': {'tiss': 'lightseagreen'},
+                                'chC': {'tiss': 'indigo'},
+                                'chD': {'tiss': 'gold'}}
                              
             for ch in df_colors:
                 if getattr(self, 'tick_'+ch).isChecked():
                     for cont in df_colors[ch]:
                         color = df_colors[ch][cont]
-                        fill = getattr(self, 'fillcolor_'+ch+'_'+cont)
+                        if name in ['ch', 'chNS']: 
+                            fill = getattr(self, 'fillcolor_'+ch+'_'+cont)
+                        else: 
+                            fill = getattr(self, 'fillcolor_'+ch)
                         color_btn(btn = fill, color = color)
-                        # fill.setStyleSheet("background-color: "+color+"; color: "+color+"; font: 25 2pt 'Calibri Light'")#+"; border: 1px solid "+color.name())
                         fill.setText(color)
 
     def checked(self, stype):
-        # print('self.mH_settings (checked):', self.mH_settings)
+
         ck_type = getattr(self, 'tick_'+stype)
         s_set = getattr(self, 'set_'+stype)
         if ck_type.isChecked():
@@ -1133,7 +1228,7 @@ class CreateNewProj(QDialog):
             return False
     
     def validate_initial_settings(self):
-        valid = []; error_txt = ''
+
         self.tick_ch1.setChecked(True)
         # Get ticked channels:
         ch_ticked = [self.tick_ch1.isChecked(), self.tick_ch2.isChecked(), 
@@ -1142,8 +1237,6 @@ class CreateNewProj(QDialog):
             error_txt = '*Please select at least one channel.'
             self.win_msg(error_txt, self.button_set_initial_set)
             return
-        else: 
-            valid.append(True)
 
         #Check names
         names_valid = []
@@ -1156,25 +1249,16 @@ class CreateNewProj(QDialog):
                     error_txt = '*Active channels must have a name with at least three (3) characters.'
                     self.win_msg(error_txt, self.button_set_initial_set)
                     return
-                elif validate_txt(ch_name) != None:
-                    error_txt = "*Please avoid using invalid characters in the channel's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
-                    self.win_msg(error_txt, self.button_set_initial_set)
-                    return
                 else: 
                     names.append(ch_name)
                     names_valid.append(True)
-
-        if all(names_valid):
-            valid.append(True)
 
         #Check names are different
         if len(names) > len(set(names)):
             error_txt = '*The names given to the selected channels need to be unique.'
             self.win_msg(error_txt, self.button_set_initial_set)
             return
-        else: 
-            valid.append(True)
-
+        
         # Check colors
         all_colors = []
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
@@ -1182,13 +1266,11 @@ class CreateNewProj(QDialog):
             if tick.isChecked(): 
                 for cont in ['int', 'tiss', 'ext']:
                     all_colors.append(getattr(self, 'fillcolor_'+ch+'_'+cont).text() != '')
-        # print(all_colors)
+
         if not all(all_colors):
             error_txt = '*Make sure you have selected colors for all the active channel contours.'
             self.win_msg(error_txt, self.button_set_initial_set)
             return
-        else: 
-            valid.append(True)
         
         #Check relation
         ch_relation = []
@@ -1210,15 +1292,14 @@ class CreateNewProj(QDialog):
                     error_txt = '*Please define the active channel as external.'
                     self.win_msg(error_txt, self.button_set_initial_set)
                     return
-                else: 
-                    valid.append(True)
+                
             elif sum(ch_ticked) == 2: 
                 if internal_count != 1 or external_count != 1:
                     error_txt = '*One channel needs to be selected as the internal layer and other as the external.'
                     self.win_msg(error_txt, self.button_set_initial_set)
                     return
                 elif internal_count == 1 and external_count == 1:
-                    valid.append(True)
+                    pass
 
             elif sum(ch_ticked) > 2: 
                 if internal_count != 1 or external_count != 1:
@@ -1226,33 +1307,25 @@ class CreateNewProj(QDialog):
                     self.win_msg(error_txt, self.button_set_initial_set)
                     return
                 elif internal_count == 1 and external_count == 1:
-                    valid.append(True)
+                    pass
         else: 
             if sum(ch_ticked) == 1: 
                 if indep_count != 1: 
                     error_txt = '*Please define the active channel as independent layer.'
                     self.win_msg(error_txt, self.button_set_initial_set)
                     return
-                else: 
-                    valid.append(True)
+
             elif blank_count != 0: 
                 error_txt = '*Please define the channel organisation for all channels.'
                 self.win_msg(error_txt, self.button_set_initial_set)
                 return
-            else: 
-                valid.append(True)
 
         if sum(ch_ticked) == 1 and self.tick_chNS.isChecked() and (self.ck_chs_contained.isChecked() or self.ck_chs_allcontained.isChecked()):
             error_txt = '*At least an external channel and an internal channel need to be selected to create a tissue from the negative space.'
             self.win_msg(error_txt, self.button_set_initial_set)
-        else: 
-            valid.append(True)
 
-        if all(valid):
-            self.win_msg('All done!... Press -Set Initial Settings- to continue.')
-            self.set_initial_settings()
-        else: 
-            return False
+        self.win_msg('All done!... Press -Set Initial Settings- to continue.')
+        self.set_initial_settings()
 
     def set_initial_settings(self):
         self.set_processes.setEnabled(True)
@@ -1305,62 +1378,117 @@ class CreateNewProj(QDialog):
 
         return True
     
-    def set_selected_processes(self): 
-        #Get info from checked boxes
-        __ = self.checked('chNS')
-        self.button_set_chNS.setEnabled(True)
-        #---- Segments
-        segm_bool = self.checked('segm')   
-        #---- Sections
-        sect_bool = self.checked('sect')
+    def validate_initial_settings_mC(self): 
+        
+        self.tick_chA.setChecked(True)
+        ch_ticked = [self.tick_chA.isChecked(), self.tick_chB.isChecked(), 
+                     self.tick_chC.isChecked(), self.tick_chD.isChecked()]
 
-        #Set Table for Segments and Sections
-        for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
-            for cont in ['int', 'tiss', 'ext']:
-                for stype in ['segm', 'sect']:
-                    for cut in ['Cut1', 'Cut2']:
-                        if ch in self.ch_selected:
-                            getattr(self, 'label_'+stype+'_'+ch).setEnabled(True)
-                            getattr(self, 'label_'+stype+'_'+ch+'_'+cont).setEnabled(True)
-                            if cut == 'Cut1':
-                                getattr(self, 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont).setEnabled(True) 
-                            else: 
-                                getattr(self, 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont).setEnabled(False) 
-                        else: 
-                            getattr(self, 'label_'+stype+'_'+ch).setVisible(False)
-                            getattr(self, 'label_'+stype+'_'+ch+'_'+cont).setVisible(False)
-                            getattr(self, 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont).setVisible(False)
+        #Check names
+        names_valid = []
+        names = []
+        for ch in ['chA', 'chB', 'chC', 'chD']:
+            tick = getattr(self, 'tick_'+ch)
+            if tick.isChecked(): 
+                ch_name = getattr(self, ch+'_username').text().strip()
+                if len(ch_name) < 3:
+                    error_txt = '*Active channels must have a name with at least three (3) characters.'
+                    self.win_msg(error_txt, self.button_set_initial_set_mC)
+                    return
+                else: 
+                    names.append(ch_name)
+                    names_valid.append(True)
 
-        #Set Table for Segments-Sections
-        if segm_bool and sect_bool: 
-            self.set_segm_sect.setEnabled(True)
-            self.set_segm_sect.setVisible(True)
+        #Check names are different
+        if len(names) > len(set(names)):
+            error_txt = '*The names given to the selected channels need to be unique.'
+            self.win_msg(error_txt, self.button_set_initial_set_mC)
+            return
 
+        #Check if mH channels is selected, a name in the comboBox is
+
+        
+        # Check colors
+        all_colors = []
+        for ch in ['chA', 'chB', 'chC', 'chD']:
+            tick = getattr(self, 'tick_'+ch)
+            if tick.isChecked(): 
+                all_colors.append(getattr(self, 'fillcolor_'+ch).text() != '')
+
+        if not all(all_colors):
+            error_txt = '*Make sure you have selected colors for all the active channel contours.'
+            self.win_msg(error_txt, self.button_set_initial_set_mC)
+            return
+        
+        print('')
+
+    def set_selected_processes(self, info=None): 
+        if info == None: 
+            #Get info from checked boxes
+            __ = self.checked('chNS')
+            self.button_set_chNS.setEnabled(True)
+            #---- Segments
+            segm_bool = self.checked('segm')   
+            #---- Sections
+            sect_bool = self.checked('sect')
+
+            #Set Table for Segments and Sections
             for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
                 for cont in ['int', 'tiss', 'ext']:
-                    for cut_segm in ['sCut1', 'sCut2']: # segments
-                        for cut_sect in ['Cut1', 'Cut2']: #sections
+                    for stype in ['segm', 'sect']:
+                        for cut in ['Cut1', 'Cut2']:
                             if ch in self.ch_selected:
-                                getattr(self, 'label_'+cut_segm+'_'+ch).setEnabled(True)
-                                getattr(self, 'label_'+cut_segm+'_'+ch+'_'+cont).setEnabled(True)
-                                getattr(self, 'cB_'+cut_segm+'_'+cut_sect+'_'+ch+'_'+cont).setEnabled(True) #cB_sCut1_Cut1_ch1_int
+                                getattr(self, 'label_'+stype+'_'+ch).setEnabled(True)
+                                getattr(self, 'label_'+stype+'_'+ch+'_'+cont).setEnabled(True)
+                                if cut == 'Cut1':
+                                    getattr(self, 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont).setEnabled(True) 
+                                else: 
+                                    getattr(self, 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont).setEnabled(False) 
                             else: 
-                                getattr(self, 'label_'+cut_segm+'_'+ch).setVisible(False)
-                                getattr(self, 'label_'+cut_segm+'_'+ch+'_'+cont).setVisible(False)
-                                getattr(self, 'cB_'+cut_segm+'_'+cut_sect+'_'+ch+'_'+cont).setVisible(False)
+                                getattr(self, 'label_'+stype+'_'+ch).setVisible(False)
+                                getattr(self, 'label_'+stype+'_'+ch+'_'+cont).setVisible(False)
+                                getattr(self, 'cB_'+stype+'_'+cut+'_'+ch+'_'+cont).setVisible(False)
+
+            #Set Table for Segments-Sections
+            if segm_bool and sect_bool: 
+                self.set_segm_sect.setEnabled(True)
+                self.set_segm_sect.setVisible(True)
+
+                for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
+                    for cont in ['int', 'tiss', 'ext']:
+                        for cut_segm in ['sCut1', 'sCut2']: # segments
+                            for cut_sect in ['Cut1', 'Cut2']: #sections
+                                if ch in self.ch_selected:
+                                    getattr(self, 'label_'+cut_segm+'_'+ch).setEnabled(True)
+                                    getattr(self, 'label_'+cut_segm+'_'+ch+'_'+cont).setEnabled(True)
+                                    getattr(self, 'cB_'+cut_segm+'_'+cut_sect+'_'+ch+'_'+cont).setEnabled(True) #cB_sCut1_Cut1_ch1_int
+                                else: 
+                                    getattr(self, 'label_'+cut_segm+'_'+ch).setVisible(False)
+                                    getattr(self, 'label_'+cut_segm+'_'+ch+'_'+cont).setVisible(False)
+                                    getattr(self, 'cB_'+cut_segm+'_'+cut_sect+'_'+ch+'_'+cont).setVisible(False)
+            
+            else: 
+                self.set_segm_sect.setEnabled(False)
+                self.set_segm_sect.setVisible(False)
+            
+            self.button_set_processes.setChecked(True)
+
+            #Enable measurement parameters now to know whether regions was selected
+            self.set_meas_param_all.setEnabled(True)
+            self.set_meas_param_all.setChecked(False)
         
+        else: #info == 'mC
+            #Get info from checked boxes
+            #---- Segments
+            segm_bool = self.checked('segm_mC')   
+            #---- Sections
+            sect_bool = self.checked('sect_mC')
+
+    def reset_set_processes(self, info='mH'): 
+        if info== 'mH':
+            self.button_set_processes.setChecked(False)
         else: 
-            self.set_segm_sect.setEnabled(False)
-            self.set_segm_sect.setVisible(False)
-        
-        self.button_set_processes.setChecked(True)
-
-        #Enable measurement parameters now to know whether regions was selected
-        self.set_meas_param_all.setEnabled(True)
-        self.set_meas_param_all.setChecked(False)
-
-    def reset_set_processes(self): 
-        self.button_set_processes.setChecked(False)
+            self.button_set_processes_mC.setChecked(False)
 
     # -- Functions for ChannelNS
     def validate_chNS_settings(self): 
@@ -1616,11 +1744,11 @@ class CreateNewProj(QDialog):
             print('Aja? - segments')
 
     def validate_sections(self): 
-        valid_all = []
+
         stype = 'sect'
         cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
         for cut in cuts_sel.keys(): 
-            valid = []; error_txt = ''
+            error_txt = ''
             if cuts_sel[cut]:
                 cut_no = cut[-1]
                 #Get values
@@ -1631,9 +1759,9 @@ class CreateNewProj(QDialog):
                         names_sect.remove('')
                 names_sect = [name.strip() for name in names_sect]
 
-                #Check values
+                #Check name values
                 if len(names_sect) != 2:
-                    error_txt = "*"+cut+":  Sections cut only produce two objects. Please provide two section names."
+                    error_txt = "*"+cut+":  Sections cut only produce two objects. Please provide two region names."
                     self.win_msg(error_txt, self.button_set_sect)
                     return
                 elif len(set(names_sect)) != 2:
@@ -1641,15 +1769,23 @@ class CreateNewProj(QDialog):
                     self.win_msg(error_txt, self.button_set_sect)
                     return
                 else: 
-                    valid.append(True)
-
+                    pass
+                
+                cl_params = [self.mH_user_params['CL'][key] for key in self.mH_user_params['CL'].keys()]
+                if all(flag==False for flag in cl_params): 
+                    error_txt = '*'+cut+": At least one centreline needs to be created to cut organ into regions. Go back and select one in 'Set Measurement Parameters."
+                    self.win_msg(error_txt, self.button_set_sect)
+                    return
+                else: 
+                    pass
+                
                 #Get checkboxes
                 self.check_checkBoxes(self.ch_selected, 'sect')
                 bool_cB = [val for (key,val) in self.dict_sect.items() if cut in key]
                 if any(bool_cB): 
-                    valid.append(True)
+                    pass
                 else: 
-                    error_txt = '*'+cut+": At least one channel contour needs to be selected for this section cut."
+                    error_txt = '*'+cut+": At least one channel contour needs to be selected for this region cut."
                     self.win_msg(error_txt, self.button_set_sect)
                     return
                 
@@ -1657,20 +1793,14 @@ class CreateNewProj(QDialog):
                 meas_vol = getattr(self, 'cB_volume_'+stype).isChecked()
                 meas_area = getattr(self, 'cB_area_'+stype).isChecked()
                 if any([meas_vol, meas_area]):
-                    valid.append(True)
+                    pass
                 else: 
                     error_txt = "*Please select the measurement parameter(s) (e.g. volume, surface area) you want to extract from the sections"
                     self.win_msg(error_txt, self.button_set_sect)
                     return
-                
-            if len(valid) == 3 and all(valid): 
-                valid_all.append(True)
         
-        if all(valid_all): 
-            self.win_msg('All good! Regions have been set (1).')
-            self.set_sect_settings()
-        else: 
-            print('Aja? - sections')
+        self.win_msg('All good! Regions have been set (1).')
+        self.set_sect_settings()
 
     def validate_segm_sect(self): 
         valid = []
@@ -1960,7 +2090,7 @@ class CreateNewProj(QDialog):
             else: 
                 label_segm.setEnabled(False)
             label_segm.setText(sname)
-
+        
         for n, rcut in enumerate([1, 2]): 
             rname = 'Cut'+str(rcut)
             label_sect = getattr(self, 'lab_sect'+str(rcut))
@@ -1973,8 +2103,10 @@ class CreateNewProj(QDialog):
         #Enable or disable Segm
         if not self.tick_segm2.isChecked(): 
             bool_segm = False
+            self.segm_reg_cut2.setVisible(False)
         else: 
             bool_segm = True
+            self.segm_reg_cut2.setVisible(True)
 
         getattr(self, 'lab_segm2').setEnabled(bool_segm)        
         for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
@@ -2414,13 +2546,22 @@ class SetMeasParam(QDialog):
                 param_abbr_line = param_abbr.replace(' ', '_')
             
             if self.rB_categorical.isChecked(): 
-                try: 
-                    param_categs = split_str(param_categ)
-                    valid.append(True)
-                except: 
-                    error_txt = "*Please check the values introduced in Parameter Classes."
+                if len(param_categ) == 0: 
+                    error_txt = "*Please provide the categorical classes for this new parameter."
                     self.win_msg(error_txt, self.button_add_param)
                     return
+                elif len(split_str(param_categ))<=1:
+                    error_txt = "*The categories provided need to be at least two. Please check to continue."
+                    self.win_msg(error_txt, self.button_add_param)
+                    return
+                else: 
+                    try: 
+                        param_categs = split_str(param_categ)
+                        valid.append(True)
+                    except: 
+                        error_txt = "*Please check the values introduced in the Parameter Categories."
+                        self.win_msg(error_txt, self.button_add_param)
+                        return
             else: 
                 param_categs = []
                 valid.append(True)
@@ -11776,18 +11917,41 @@ class MainWindow(QMainWindow):
     
     #Save functions
     def save_results(self): 
+
+        #Add organ info
+        project_name = self.organ.info['project']['user']
+        organ_name = self.organ.info['user_organName']
+        strain = self.organ.info['strain']
+        stage = self.organ.info['stage']
+        genotype = self.organ.info['genotype']
+        manipulation = self.organ.info['manipulation']
+        date_created = self.organ.info['date_created']
+        organ_notes = self.organ.info['user_organNotes']
+
+        data = [{'Parameter': 'Project Name', 'Tissue-Contour': '-', 'User (Tissue-Contour)': '-', 'Value': project_name}, 
+                {'Parameter': 'Organ Name', 'Tissue-Contour': '-', 'User (Tissue-Contour)': '-', 'Value': organ_name},
+                {'Parameter': 'Strain', 'Tissue-Contour': '-', 'User (Tissue-Contour)': '-', 'Value': strain},
+                {'Parameter': 'Stage', 'Tissue-Contour': '-', 'User (Tissue-Contour)': '-', 'Value': stage},
+                {'Parameter': 'Genotype', 'Tissue-Contour': '-', 'User (Tissue-Contour)': '-', 'Value': genotype},
+                {'Parameter': 'Manipulation', 'Tissue-Contour': '-', 'User (Tissue-Contour)': '-', 'Value': manipulation},
+                {'Parameter': 'Date Created', 'Tissue-Contour': '-', 'User (Tissue-Contour)': '-', 'Value': date_created},
+                {'Parameter': 'Organ Notes', 'Tissue-Contour': '-', 'User (Tissue-Contour)': '-', 'Value': organ_notes}]
+
+        df_info = pd.DataFrame(data) 
+        df_data = self.df_res.reset_index()
+        df_out = pd.concat([df_info, df_data], ignore_index=True)
+        df_out = df_out.set_index(['Parameter', 'Tissue-Contour', 'User (Tissue-Contour)'])
+    
         if self.cB_transpose.isChecked():
-            df_final = self.df_res.T
-        else: 
-            df_final = self.df_res
+            df_out = df_out.T
         
         ext = self.cB_extension.currentText()
         filename = self.organ.folder+'_results'+ext
         df_dir = self.organ.dir_res() / filename
         if ext == '.csv': 
-            df_final.to_csv(df_dir, index=True) 
+            df_out.to_csv(df_dir, index=True) 
         elif ext == '.xlsx':
-            df_final.to_excel(df_dir) 
+            df_out.to_excel(df_dir) 
         alert('countdown') 
         self.win_msg('Results file  -'+ filename + '  was succesfully saved!')
 
@@ -11826,7 +11990,8 @@ class MainWindow(QMainWindow):
         self.organ.save_organ(alert_on)
         self.proj.add_organ(self.organ)
         self.proj.save_project(alert_on)
-        self.win_msg('Project  -'+ self.proj.user_projName + '-  and Organ  -'+ self.organ.user_organName +'-  were succesfully saved!')
+        if alert_on: 
+            self.win_msg('Project  -'+ self.proj.user_projName + '-  and Organ  -'+ self.organ.user_organName +'-  were succesfully saved!')
 
     def go_to_welcome_pressed(self): 
         print('Go to Welcome was pressed')
@@ -12975,9 +13140,9 @@ def color_btn(btn, color, small=True):
         pt = "25 10pt 'Calibri Light'"
 
     if isinstance(btn, QPushButton):#QLineEdit):
-        color_txt = "QPushButton{border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+str(color)+"; font: "+pt+"} QPushButton:hover{border-color: rgb(255, 255, 255)}"
+        color_txt = "QPushButton{border-width: 1px; border-style: outset; border-color: rgb(66, 66, 66); background-color: "+str(color)+"; color: "+str(color)+"; font: "+pt+"} QPushButton:hover{border-color: rgb(255, 255, 255)}"
     else: 
-        color_txt = "background-color: "+color+"; border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset; font: "+pt+"; color: "+color+";"
+        color_txt = "background-color: "+color+"; border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset; font: "+pt+"; color: "+str(color)+";"
 
     btn.setStyleSheet(color_txt)
 
@@ -13015,12 +13180,12 @@ def split_str(input_str):
 
 def validate_txt(input_str):
     inv_chars = ['(',')', ':', '-', '/', '\\', '.']
+    error = None
     for char in inv_chars:
         if input_str.find(char) != -1:
             error = char
             break
-        else:
-            error = None
+            
     return error
 
 # QTextEdit label and size

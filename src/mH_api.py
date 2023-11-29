@@ -1862,7 +1862,7 @@ def run_angles(controller, btn):
     plane = vedo.Plane(pos=pl_centre, normal = pl_normal, s=(300,300)).alpha(0.5)
     if 'ref_vector' not in controller.main_win.gui_orientation[mtype]['planar_views'][ax_selected].keys(): 
         controller.main_win.win_msg('*Please re-run the "Organ/ROI Axis Labels" section to update Reference Axes and come back to run this section!')
-        return
+        return False
     else:
         ref_vector_cube = np.array(controller.main_win.gui_orientation[mtype]['planar_views'][ax_selected]['ref_vector'])
 
@@ -1965,6 +1965,8 @@ def run_angles(controller, btn):
     #Enable plot btn 
     getattr(controller.main_win, 'plot_angle_'+btn).setEnabled(True)
    
+    return True
+
 def run_ellipsoids(controller):
 
     #Get df_res 

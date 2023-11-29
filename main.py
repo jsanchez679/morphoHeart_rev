@@ -825,8 +825,8 @@ class Controller:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     def run_angles(self, btn=None): 
-        mA.run_angles(controller=self, btn=btn)
-        if not mH_config.dev:
+        done = mA.run_angles(controller=self, btn=btn)
+        if not mH_config.dev and done:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 
     def run_ellipsoids(self): 

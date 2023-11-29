@@ -1161,7 +1161,7 @@ QScrollBar::handle:vertical:hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>382</width>
+                      <width>372</width>
                       <height>1960</height>
                      </rect>
                     </property>
@@ -34342,8 +34342,8 @@ QScrollBar::handle:vertical:hover {
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>153</width>
-                     <height>179</height>
+                     <width>141</width>
+                     <height>18</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_86"/>
@@ -35565,7 +35565,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-3687</y>
+                   <y>0</y>
                    <width>632</width>
                    <height>6158</height>
                   </rect>
