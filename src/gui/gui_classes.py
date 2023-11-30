@@ -7995,12 +7995,12 @@ class MainWindow(QMainWindow):
         self.reset_sides_cut2.clicked.connect(lambda: self.reset_sect_sides('Cut2'))
 
         #Filling method 
-        self.radio_cut1_dir1.pressed.connect(lambda: self.reset_sections('cut1'))
-        self.radio_cut1_dir2.pressed.connect(lambda: self.reset_sections('cut1'))
-        self.radio_cut1_dir3.pressed.connect(lambda: self.reset_sections('cut1'))
-        self.radio_cut2_dir1.pressed.connect(lambda: self.reset_sections('cut2'))
-        self.radio_cut2_dir2.pressed.connect(lambda: self.reset_sections('cut2'))
-        self.radio_cut2_dir3.pressed.connect(lambda: self.reset_sections('cut2'))
+        self.radio_cut1_dir1.pressed.connect(lambda: self.reset_sections('Cut1', '1'))
+        self.radio_cut1_dir2.pressed.connect(lambda: self.reset_sections('Cut1', '2'))
+        self.radio_cut1_dir3.pressed.connect(lambda: self.reset_sections('Cut1', '3'))
+        self.radio_cut2_dir1.pressed.connect(lambda: self.reset_sections('Cut2', '1'))
+        self.radio_cut2_dir2.pressed.connect(lambda: self.reset_sections('Cut2', '2'))
+        self.radio_cut2_dir3.pressed.connect(lambda: self.reset_sections('Cut2', '3'))
 
         #Initialise with user settings, if they exist!
         self.user_sections()
@@ -10379,11 +10379,11 @@ class MainWindow(QMainWindow):
         self.update_segm_sect.setChecked(False)
 
     def reset_sect_sides(self, cut): 
-
+        
         title = 'Reset Masks for Region '+cut+'...'
         sect_set = self.organ.mH_settings['setup']['sect'][cut]['name_sections']
         name_sects = '-'.join([sect_set[key] for key in sect_set])
-        msg = 'Do you want to recreate the mask for '+name_sects+' regions cut?! If so, select  -OK- and a new mask will be created next time you start a cut. Else select  -Cancel- and the current setting will remain unchanged.'
+        msg = 'Do you want to recreate the mask for '+name_sects+' regions cut? If so, select  -OK- and a new mask will be created next time you start a cut. Else select  -Cancel- and the current setting will remain unchanged.'
         prompt = Prompt_ok_cancel(title, msg, parent=self)
         prompt.exec()
         print('output:', prompt.output)
@@ -10406,15 +10406,27 @@ class MainWindow(QMainWindow):
                 self.organ.update_mHworkflow(process = proc_wft, update = 'NI')
 
             self.update_workflow_progress()
+            return True
         else: 
-            pass
+            return False
 
-    def reset_sections(self, cut): 
+    def reset_sections(self, cut, no): 
         if self.sections_set.isChecked(): 
-            self.sections_set.setChecked(False)
-            
-            self.win_msg('!Remember to re-set the settings for this '+cut.title()+' to make sure all the changes are applied.')
-            alert('bubble')
+            done = [self.sect_btns[key]['play'].isChecked() for key in self.sect_btns.keys() if cut in key]
+            if any(done): 
+                changed = self.reset_sect_sides(cut=cut)
+                if changed: 
+                    getattr(self, 'radio_'+cut.lower()+'_dir'+no).setChecked(True)
+                    self.sections_set.setChecked(False)
+                    self.win_msg('!Remember to re-set the settings for this '+cut+' to make sure all the changes are applied.')
+                    alert('bubble')
+                else:
+                    old_fm = self.gui_sect[cut]['filling_method'][-1]
+                    getattr(self, 'radio_'+cut.lower()+'_dir'+old_fm).setChecked(True)
+            else: 
+                self.sections_set.setChecked(False)
+                self.win_msg('!Remember to re-set the settings for this '+cut+' to make sure all the changes are applied.')
+                alert('bubble')
 
     #Workflow functions   
     #>> Init Ch Progress Table
