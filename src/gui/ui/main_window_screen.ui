@@ -1161,7 +1161,7 @@ QScrollBar::handle:vertical:hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>372</width>
+                      <width>382</width>
                       <height>1960</height>
                      </rect>
                     </property>
@@ -9358,7 +9358,7 @@ QScrollBar::handle:vertical:hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>372</width>
+                      <width>382</width>
                       <height>1960</height>
                      </rect>
                     </property>
@@ -17552,7 +17552,7 @@ QScrollBar::handle:vertical:hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>372</width>
+                      <width>382</width>
                       <height>1960</height>
                      </rect>
                     </property>
@@ -25746,7 +25746,7 @@ QScrollBar::handle:vertical:hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>372</width>
+                      <width>382</width>
                       <height>1960</height>
                      </rect>
                     </property>
@@ -34342,8 +34342,8 @@ QScrollBar::handle:vertical:hover {
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>141</width>
-                     <height>18</height>
+                     <width>153</width>
+                     <height>179</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_86"/>
@@ -35565,7 +35565,7 @@ QScrollBar::handle:vertical:hover {
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>0</y>
+                   <y>-4251</y>
                    <width>632</width>
                    <height>6158</height>
                   </rect>
@@ -35874,13 +35874,13 @@ border-color: rgb(0,0, 0);</string>
                                 <widget class="QPushButton" name="fillcolor_ch4_int">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -35904,13 +35904,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch4_tiss">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -35934,13 +35934,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch4_ext">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -36538,13 +36538,13 @@ background-color:rgb(203, 203, 203);
                                 <widget class="QPushButton" name="fillcolor_ch3_int">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -36568,13 +36568,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch3_tiss">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -36598,13 +36598,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch3_ext">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -36658,13 +36658,13 @@ background-color: rgb(255, 255, 255);</string>
                                 <widget class="QPushButton" name="fillcolor_ch2_int">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -36688,13 +36688,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch2_tiss">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -36718,13 +36718,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch2_ext">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -37060,13 +37060,13 @@ background-color: rgb(255, 255, 255);</string>
                                 <widget class="QPushButton" name="fillcolor_ch1_int">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -37090,13 +37090,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch1_tiss">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -37120,13 +37120,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch1_ext">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -37461,13 +37461,13 @@ background-color:rgb(203, 203, 203);
                                  </property>
                                  <property name="minimumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>0</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>16777215</height>
                                   </size>
                                  </property>
@@ -37493,13 +37493,13 @@ background-color: rgb(255, 255, 255);</string>
                                  </property>
                                  <property name="minimumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>0</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>16777215</height>
                                   </size>
                                  </property>
@@ -37525,13 +37525,13 @@ background-color: rgb(255, 255, 255);</string>
                                  </property>
                                  <property name="minimumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>0</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>16777215</height>
                                   </size>
                                  </property>
@@ -44644,13 +44644,13 @@ background-color: rgb(255, 255, 255);</string>
                                  </property>
                                  <property name="minimumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>0</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>16777215</height>
                                   </size>
                                  </property>
@@ -44676,13 +44676,13 @@ background-color: rgb(255, 255, 255);</string>
                                  </property>
                                  <property name="minimumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>0</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>16777215</height>
                                   </size>
                                  </property>
@@ -44708,13 +44708,13 @@ background-color: rgb(255, 255, 255);</string>
                                  </property>
                                  <property name="minimumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>0</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>16777215</height>
                                   </size>
                                  </property>
@@ -44902,13 +44902,13 @@ background-color: rgb(255, 255, 255);</string>
                                 <widget class="QPushButton" name="fillcolor_chNS_int">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -44932,13 +44932,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_chNS_tiss">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -44962,13 +44962,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_chNS_ext">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -45578,13 +45578,13 @@ background-color:rgb(203, 203, 203);
                                 <widget class="QPushButton" name="fillcolor_ch4_intf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -45608,13 +45608,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch4_tissf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -45638,13 +45638,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch4_extf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -45792,13 +45792,13 @@ background-color:rgb(203, 203, 203);
                                 <widget class="QPushButton" name="fillcolor_chNS_intf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -45822,13 +45822,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_chNS_tissf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -45852,13 +45852,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_chNS_extf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -46024,13 +46024,13 @@ background-color:rgb(203, 203, 203);
                                 <widget class="QPushButton" name="fillcolor_ch2_intf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -46054,13 +46054,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch2_tissf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -46084,13 +46084,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch2_extf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -46180,13 +46180,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch3_intf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -46210,13 +46210,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch3_tissf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -46240,13 +46240,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch3_extf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -46274,13 +46274,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch1_intf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -46304,13 +46304,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch1_tissf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -46334,13 +46334,13 @@ border-color: rgb(255, 255, 255)
                                 <widget class="QPushButton" name="fillcolor_ch1_extf">
                                  <property name="minimumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>15</width>
+                                   <width>30</width>
                                    <height>15</height>
                                   </size>
                                  </property>
@@ -46447,13 +46447,13 @@ background-color: rgb(255, 255, 255);</string>
                                  </property>
                                  <property name="minimumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>0</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>16777215</height>
                                   </size>
                                  </property>
@@ -46479,13 +46479,13 @@ background-color: rgb(255, 255, 255);</string>
                                  </property>
                                  <property name="minimumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>0</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>16777215</height>
                                   </size>
                                  </property>
@@ -46511,13 +46511,13 @@ background-color: rgb(255, 255, 255);</string>
                                  </property>
                                  <property name="minimumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>0</height>
                                   </size>
                                  </property>
                                  <property name="maximumSize">
                                   <size>
-                                   <width>20</width>
+                                   <width>30</width>
                                    <height>16777215</height>
                                   </size>
                                  </property>
@@ -71150,6 +71150,104 @@ border-color: rgb(255, 255, 255)
                                 </layout>
                                </item>
                                <item>
+                                <layout class="QHBoxLayout" name="horizontalLayout_474">
+                                 <item>
+                                  <widget class="QLabel" name="lab_colors_cut1_2">
+                                   <property name="sizePolicy">
+                                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                     <horstretch>0</horstretch>
+                                     <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                   </property>
+                                   <property name="minimumSize">
+                                    <size>
+                                     <width>85</width>
+                                     <height>20</height>
+                                    </size>
+                                   </property>
+                                   <property name="maximumSize">
+                                    <size>
+                                     <width>80</width>
+                                     <height>20</height>
+                                    </size>
+                                   </property>
+                                   <property name="styleSheet">
+                                    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                                   </property>
+                                   <property name="text">
+                                    <string>Filling method: </string>
+                                   </property>
+                                   <property name="alignment">
+                                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                   </property>
+                                   <property name="indent">
+                                    <number>2</number>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item>
+                                  <widget class="QWidget" name="widget" native="true">
+                                   <layout class="QHBoxLayout" name="horizontalLayout_473">
+                                    <property name="leftMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="topMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="rightMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="bottomMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <item>
+                                     <widget class="QRadioButton" name="radio_cut1_dir1">
+                                      <property name="enabled">
+                                       <bool>true</bool>
+                                      </property>
+                                      <property name="styleSheet">
+                                       <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
+                                      </property>
+                                      <property name="text">
+                                       <string>#1</string>
+                                      </property>
+                                      <property name="checked">
+                                       <bool>true</bool>
+                                      </property>
+                                     </widget>
+                                    </item>
+                                    <item>
+                                     <widget class="QRadioButton" name="radio_cut1_dir2">
+                                      <property name="enabled">
+                                       <bool>true</bool>
+                                      </property>
+                                      <property name="styleSheet">
+                                       <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
+                                      </property>
+                                      <property name="text">
+                                       <string>#2</string>
+                                      </property>
+                                     </widget>
+                                    </item>
+                                    <item>
+                                     <widget class="QRadioButton" name="radio_cut1_dir3">
+                                      <property name="enabled">
+                                       <bool>true</bool>
+                                      </property>
+                                      <property name="styleSheet">
+                                       <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
+                                      </property>
+                                      <property name="text">
+                                       <string>#3</string>
+                                      </property>
+                                     </widget>
+                                    </item>
+                                   </layout>
+                                  </widget>
+                                 </item>
+                                </layout>
+                               </item>
+                               <item>
                                 <layout class="QHBoxLayout" name="horizontalLayout_428">
                                  <item alignment="Qt::AlignHCenter">
                                   <widget class="QPushButton" name="reset_sides_cut1">
@@ -71188,12 +71286,7 @@ background-color: rgb(232, 232, 232);
 border-color: rgb(158, 158, 158);
 color: rgb(125, 125, 125);
 }
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
+</string>
                                    </property>
                                    <property name="text">
                                     <string>Re-Designate Regions</string>
@@ -72090,6 +72183,104 @@ border-color: rgb(255, 255, 255)
                                 </layout>
                                </item>
                                <item>
+                                <layout class="QHBoxLayout" name="horizontalLayout_475">
+                                 <item>
+                                  <widget class="QLabel" name="lab_colors_cut1_3">
+                                   <property name="sizePolicy">
+                                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                     <horstretch>0</horstretch>
+                                     <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                   </property>
+                                   <property name="minimumSize">
+                                    <size>
+                                     <width>80</width>
+                                     <height>20</height>
+                                    </size>
+                                   </property>
+                                   <property name="maximumSize">
+                                    <size>
+                                     <width>80</width>
+                                     <height>20</height>
+                                    </size>
+                                   </property>
+                                   <property name="styleSheet">
+                                    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                                   </property>
+                                   <property name="text">
+                                    <string>Filling method: </string>
+                                   </property>
+                                   <property name="alignment">
+                                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                   </property>
+                                   <property name="margin">
+                                    <number>2</number>
+                                   </property>
+                                  </widget>
+                                 </item>
+                                 <item>
+                                  <widget class="QWidget" name="widget_10" native="true">
+                                   <layout class="QHBoxLayout" name="horizontalLayout_476">
+                                    <property name="leftMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="topMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="rightMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <property name="bottomMargin">
+                                     <number>0</number>
+                                    </property>
+                                    <item>
+                                     <widget class="QRadioButton" name="radio_cut2_dir1">
+                                      <property name="enabled">
+                                       <bool>true</bool>
+                                      </property>
+                                      <property name="styleSheet">
+                                       <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
+                                      </property>
+                                      <property name="text">
+                                       <string>#1</string>
+                                      </property>
+                                      <property name="checked">
+                                       <bool>true</bool>
+                                      </property>
+                                     </widget>
+                                    </item>
+                                    <item>
+                                     <widget class="QRadioButton" name="radio_cut2_dir2">
+                                      <property name="enabled">
+                                       <bool>true</bool>
+                                      </property>
+                                      <property name="styleSheet">
+                                       <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
+                                      </property>
+                                      <property name="text">
+                                       <string>#2</string>
+                                      </property>
+                                     </widget>
+                                    </item>
+                                    <item>
+                                     <widget class="QRadioButton" name="radio_cut2_dir3">
+                                      <property name="enabled">
+                                       <bool>true</bool>
+                                      </property>
+                                      <property name="styleSheet">
+                                       <string notr="true">font: 25 italic 10pt &quot;Calibri Light&quot;;</string>
+                                      </property>
+                                      <property name="text">
+                                       <string>#3</string>
+                                      </property>
+                                     </widget>
+                                    </item>
+                                   </layout>
+                                  </widget>
+                                 </item>
+                                </layout>
+                               </item>
+                               <item>
                                 <layout class="QHBoxLayout" name="horizontalLayout_429">
                                  <item alignment="Qt::AlignHCenter">
                                   <widget class="QPushButton" name="reset_sides_cut2">
@@ -72128,12 +72319,7 @@ background-color: rgb(232, 232, 232);
 border-color: rgb(158, 158, 158);
 color: rgb(125, 125, 125);
 }
-
-QPushButton:checked{
-background-color: rgb(107, 0, 80);
-border-color: rgb(76, 0, 57);
-color: rgb(234, 234, 234);
-}</string>
+</string>
                                    </property>
                                    <property name="text">
                                     <string>Re-Designate Regions</string>

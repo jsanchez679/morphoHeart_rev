@@ -1384,7 +1384,7 @@ def get_stack_clRibbon(organ, s3_shape, mesh_cl, cl_ribbon, win):
     
     return s3_filledCube, test_rib
 
-def get_cube_clRibbon(organ, s3_shape, cut, s3_filledCube, res, pl_normal):
+def get_cube_clRibbon(organ, s3_shape, cut, s3_filledCube, res, pl_normal, filling_method):
 
     # #Load stack shape
     xdim, ydim, zdims = s3_shape
@@ -1401,9 +1401,28 @@ def get_cube_clRibbon(organ, s3_shape, cut, s3_filledCube, res, pl_normal):
     ext_dir_absf = list(ext_dir_abs)
     max_ext_dir = max(ext_dir_abs)
     coord_dir = ext_dir_absf.index(max_ext_dir)
-    print('pl_normal:', pl_normal, '\nref_vect:', ref_vect, '\next_dir:', ext_dir, '\ncoord_dir:', coord_dir)
-    
+    methodA = False; methodB = False; methodC = False
     if coord_dir == 0: 
+        method_def = 'methodA'
+        if filling_method == 'No.1':
+            methodA = True
+        elif filling_method == 'No.2': 
+            methodB = True
+        else: #'No.3'
+            methodC = True
+    else:# coord_dir == 1 or coord_dir == 2: 
+        method_def = 'methodB'
+        if filling_method == 'No.1':
+            methodB = True
+        elif filling_method == 'No.2': 
+            methodC = True
+        else: #'No.3'
+            methodA = True
+
+    print('pl_normal:', pl_normal, '\nref_vect:', ref_vect, '\next_dir:', ext_dir, '\ncoord_dir:', coord_dir)
+    print('method_def: ', method_def, '>> Selected: A: ', methodA, '- B: ', methodB, '- C: ', methodC)
+    
+    if methodA: #coord_dir == 0: 
         print('Extending cube in the x? direction')
         for xpos in range(0,xdim):
             for zpos in range(0,zdim+2): 
@@ -1414,7 +1433,7 @@ def get_cube_clRibbon(organ, s3_shape, cut, s3_filledCube, res, pl_normal):
                 if len(index_y) > 0:
                     s3_filledCube[xpos,index_y[0]:ydim,zpos] = 0
         
-    elif coord_dir == 1 or coord_dir == 2:
+    elif methodB: #coord_dir == 1 or coord_dir == 2:
         print('Extending cube in the y direction - check!!!')
         for ypos in range(0,ydim):
             for zpos in range(0,zdim+2): 
@@ -1425,7 +1444,7 @@ def get_cube_clRibbon(organ, s3_shape, cut, s3_filledCube, res, pl_normal):
                 if len(index_x) > 0:
                     s3_filledCube[index_x[-1]:xdim,ypos,zpos] = 0
 
-    else:# coord_dir == 2: 
+    elif methodC:# coord_dir == 2: 
         print('Extending cube in the z direction')
         for xpos in range(0,xdim):
             for ypos in range(0,ydim): 

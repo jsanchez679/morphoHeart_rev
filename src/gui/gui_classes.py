@@ -675,6 +675,9 @@ class CreateNewProj(QDialog):
         self.init_segm_sect_group()
         #- morphoCell
         self.init_mCell_tab()
+        self.init_mC_segments_group()
+        self.init_mC_regions_group()
+        self.init_mC_segm_reg_group()
 
         #Project template
         self.cB_proj_as_template.stateChanged.connect(lambda: self.save_as_template())
@@ -718,6 +721,9 @@ class CreateNewProj(QDialog):
         self.button_select_proj_dir.clicked.connect(lambda: self.get_proj_dir())
         #Validate and Create Initial Project (proj_name, analysis_pipeline, proj_dir)
         self.button_create_initial_proj.clicked.connect(lambda: self.validate_new_proj())
+
+        #Initialise in mH tab
+        self.tabWidget.setCurrentIndex(0)
 
     def init_analysis_tabs(self): 
         #Set Tab Widgets
@@ -796,9 +802,9 @@ class CreateNewProj(QDialog):
         self.chNS_operation.addItems(['----', 'AND-XOR'])
 
     def init_segments_group(self):
+
         self.use_semgs_improve_hm2D = False
         # -- Segments
-        self.set_segm.setDisabled(True)
         self.set_segm.setVisible(False)
         #Segm 1
         self.tick_segm1.setEnabled(True)
@@ -828,16 +834,12 @@ class CreateNewProj(QDialog):
         self.names_segm2.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_segm2))
 
         #Buttons
-        # self.apply_segm.clicked.connect(lambda: )
         self.button_set_segm.clicked.connect(lambda: self.validate_segments())
-
-        self.tick_segm1.stateChanged.connect(lambda: always_checked(self.tick_segm1))
-
         self.improve_hm2D.clicked.connect(lambda: self.improve2DHM())
 
     def init_sections_group(self):
+
         # -- Sections
-        self.set_sect.setDisabled(True)
         self.set_sect.setVisible(False)
         #Sect1
         self.tick_sect1.setEnabled(True)
@@ -862,8 +864,6 @@ class CreateNewProj(QDialog):
         #Buttons
         # self.apply_sect.clicked.connect(lambda: )
         self.button_set_sect.clicked.connect(lambda: self.validate_sections())
-
-        self.tick_sect1.stateChanged.connect(lambda: always_checked(self.tick_sect1))
 
     def init_segm_sect_group(self): 
         # -- Segments/Sections
@@ -910,7 +910,56 @@ class CreateNewProj(QDialog):
         self.cB_use_mH_tiss_chC.stateChanged.connect(lambda: self.add_mH_chs('chC'))
         self.cB_use_mH_tiss_chD.stateChanged.connect(lambda: self.add_mH_chs('chD'))
 
+        self.chB_select.currentTextChanged.connect(lambda: self.default_colors('mC'))
+        self.chC_select.currentTextChanged.connect(lambda: self.default_colors('mC'))
+        self.chD_select.currentTextChanged.connect(lambda: self.default_colors('mC'))
 
+    def init_mC_segments_group(self): 
+
+        self.set_segm_mC.setVisible(False)
+        list_obj_segm = ['Plane']
+        for cB in [self.cB_obj_segm1_mC, self.cB_obj_segm2_mC]:
+            for obj in list_obj_segm: 
+                cB.addItem(obj)
+        for sB in [self.sB_no_segm1_mC, self.sB_no_segm2_mC, self.sB_segm_noObj1_mC, self.sB_segm_noObj2_mC]:
+            sB.setMinimum(1)
+            sB.setMaximum(5)
+        
+        # if cut2
+        self.tick_segm2_mC.stateChanged.connect(lambda: self.add_segm_sect(stype='segm', mC=True))
+    
+        #Set validator
+        self.names_segm1_mC.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_segm1_mC))
+        self.names_segm2_mC.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_segm2_mC))
+        
+        #Buttons
+        self.tick_mH_segm.stateChanged.connect(lambda: self.use_mH_settings('segm'))
+        self.button_set_segm_mC.clicked.connect(lambda: self.validate_mC_segments())
+
+    def init_mC_regions_group(self):
+
+        self.set_sect_mC.setVisible(False)
+
+
+    def init_mC_segm_reg_group(self): 
+
+        self.set_segm_sect_mC.setVisible(False)
+
+        # if cut2
+        self.tick_sect2_mC.stateChanged.connect(lambda: self.add_segm_sect(stype='sect', mC=True))
+        list_obj_sect = ['Centreline']#, 'Plane']
+        for cB in [self.cB_obj_sect1_mC, self.cB_obj_sect1_mC]:
+            for obj in list_obj_sect: 
+                cB.addItem(obj)
+        
+        #Set validator
+        self.names_sect1_mC.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_sect1_mC))
+        self.names_sect2_mC.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_sect2_mC))
+
+        #Buttons
+        self.tick_mH_reg.stateChanged.connect(lambda: self.use_mH_settings('sect'))
+        self.button_set_sect_mC.clicked.connect(lambda: self.validate_mC_sections())
+        
     #Functions for General Project Settings   
     def get_proj_dir(self):
         self.button_create_initial_proj.setChecked(False)
@@ -1001,8 +1050,6 @@ class CreateNewProj(QDialog):
         if self.checked_analysis['morphoCell']:
             self.mC_settings = {'no_chs': 0,
                                 'name_chs': 0,
-                                'from_mH': 0,
-                                'mH_ch': 0,
                                 'color_chs': 0,}
         else: 
             self.mC_settings = None
@@ -1138,22 +1185,22 @@ class CreateNewProj(QDialog):
 
     def add_mH_chs(self, name): 
         tick = getattr(self, 'cB_use_mH_tiss_'+name)
+        getattr(self, name+'_select').clear()
+        getattr(self, name+'_select').addItems(['----'])
         if tick.isChecked(): 
             #Get channels from mH
             if self.button_set_initial_set.isChecked(): 
-                # if self.mH_settings['name_chs']
-                print(self.mH_settings)
-                #Verify things here...
+                getattr(self, name+'_select').setEnabled(True)
                 names = self.mH_settings['name_chs']
-                cb_names = []
+                cb_names = [key+' ('+names[key]+')' for key in names.keys()]
                 getattr(self, name+'_select').addItems(cb_names)
             else: 
+                getattr(self, name+'_select').setEnabled(False)
                 self.win_msg('*Channels have not yet been set in the -Morphological (morphoHeart)- Tab. Please set them first to be able to use them in this analysis.')
                 tick.setChecked(False)
                 return
         else: 
-            getattr(self, name+'_select').clear()
-        getattr(self, name+'_select').addItems(['----'])
+            getattr(self, name+'_select').setEnabled(False)
 
     def color_picker(self, name):
         color = QColorDialog.getColor()
@@ -1167,8 +1214,10 @@ class CreateNewProj(QDialog):
     def default_colors(self, name):
         if name in ['ch', 'chNS']: 
             ck = 'ck_def_colors'
+            mC = False
         else: 
             ck= 'ck_def_colors_mC'
+            mC = True
 
         if getattr(self, ck).isChecked():
             if name == 'ch': 
@@ -1187,7 +1236,17 @@ class CreateNewProj(QDialog):
             for ch in df_colors:
                 if getattr(self, 'tick_'+ch).isChecked():
                     for cont in df_colors[ch]:
-                        color = df_colors[ch][cont]
+                        if ch != 'chA': 
+                            if mC and getattr(self, 'cB_use_mH_tiss_'+ch).isChecked():
+                                if getattr(self, ch+'_select').currentText() not in ['----', '']: 
+                                    mHch = getattr(self, ch+'_select').currentText().split(' (')[0]
+                                    color = self.mH_settings['color_chs'][mHch]['tiss']
+                                else: 
+                                    color = df_colors[ch][cont]
+                            else: 
+                                color = df_colors[ch][cont]
+                        else: 
+                            color = df_colors[ch][cont]
                         if name in ['ch', 'chNS']: 
                             fill = getattr(self, 'fillcolor_'+ch+'_'+cont)
                         else: 
@@ -1209,9 +1268,14 @@ class CreateNewProj(QDialog):
                 getattr(self, 'button_set_'+stype).setEnabled(False)
                 return True
             else: 
-                s_set.setVisible(True)
-                s_set.setEnabled(True)
-                self.mH_settings[stype] = {}
+                if 'mC' in stype: 
+                    s_set.setVisible(True)
+                    s_set.setEnabled(True)
+                    self.mC_settings[stype] = {}
+                else: 
+                    s_set.setVisible(True)
+                    s_set.setEnabled(True)
+                    self.mH_settings[stype] = {}
                 return True
         else: 
             if stype == 'chNS': 
@@ -1220,11 +1284,17 @@ class CreateNewProj(QDialog):
             if stype in list(self.mH_settings.keys()):
                 self.mH_settings.pop(stype, None)
                 getattr(self, 'button_set_'+stype).setChecked(False)
+            if stype in list(self.mC_settings.keys()):
+                self.mC_settings.pop(stype, None)
+                getattr(self, 'button_set_'+stype).setChecked(False)
             if stype in self.mH_settings['name_chs']: 
                 self.mH_settings['name_chs'].pop('chNS', None)
             s_set.setVisible(False)
             s_set.setEnabled(False)
-            self.mH_settings[stype] = False
+            if 'mC' in stype:
+                self.mC_settings[stype] = False
+            else:
+                self.mH_settings[stype] = False
             return False
     
     def validate_initial_settings(self):
@@ -1324,16 +1394,13 @@ class CreateNewProj(QDialog):
             error_txt = '*At least an external channel and an internal channel need to be selected to create a tissue from the negative space.'
             self.win_msg(error_txt, self.button_set_initial_set)
 
-        self.win_msg('All done!... Press -Set Initial Settings- to continue.')
         self.set_initial_settings()
 
     def set_initial_settings(self):
         self.set_processes.setEnabled(True)
         self.button_set_initial_set.setChecked(True)
-        self.tick_ch1.setChecked(True)
 
         #Get data from initial settings
-        # Get data form ticked channels:
         ch_ticked = [self.tick_ch1.isChecked(), self.tick_ch2.isChecked(), 
                     self.tick_ch3.isChecked(), self.tick_ch4.isChecked()]
         
@@ -1405,8 +1472,16 @@ class CreateNewProj(QDialog):
             self.win_msg(error_txt, self.button_set_initial_set_mC)
             return
 
-        #Check if mH channels is selected, a name in the comboBox is
-
+        #Check if mH channels is selected, a name in the comboBox is given
+        for ch in ['chB', 'chC', 'chD']:
+            tick = getattr(self, 'tick_'+ch).isChecked()
+            mH_ch = getattr(self, 'cB_use_mH_tiss_'+ch).isChecked()
+            if tick and mH_ch: 
+                ch_sel = getattr(self, ch+'_select').currentText()
+                if ch_sel == '----': 
+                    error_txt = '*Please select the morphoHeart channel that corresponds to '+ch+'.'
+                    self.win_msg(error_txt, self.button_set_initial_set_mC)
+                    return
         
         # Check colors
         all_colors = []
@@ -1420,10 +1495,42 @@ class CreateNewProj(QDialog):
             self.win_msg(error_txt, self.button_set_initial_set_mC)
             return
         
-        print('')
+        self.set_initial_settings_mC()
+    
+    def set_initial_settings_mC(self):
 
-    def set_selected_processes(self, info=None): 
-        if info == None: 
+        self.set_processes_mC.setEnabled(True)
+        self.button_set_initial_set_mC.setChecked(True)
+
+        #Get data from initial settings
+        ch_ticked = [self.tick_chA.isChecked(), self.tick_chB.isChecked(), 
+                    self.tick_chC.isChecked(), self.tick_chD.isChecked()]
+        
+        self.mC_settings['no_chs'] = sum(ch_ticked)
+        user_name = {}
+        color_chs = {}
+        mH_channel = {}
+        ch_selected = []
+        for ch in ['chA', 'chB', 'chC', 'chD']:
+            tick = getattr(self, 'tick_'+ch)
+            if tick.isChecked(): 
+                ch_selected.append(ch)
+                user_name[ch] = getattr(self, ch+'_username').text().strip()
+                color_chs[ch] = getattr(self, 'fillcolor_'+ch).text()
+                if ch != 'chA': 
+                    if getattr(self, 'cB_use_mH_tiss_'+ch).isChecked():
+                        mH_channel[ch] = getattr(self, ch+'_select').currentText()
+                    else: 
+                        mH_channel[ch] = False
+
+        self.mC_settings['name_chs'] = user_name
+        self.mC_settings['color_chs'] = color_chs
+        self.mC_settings['mH_channel'] = mH_channel
+
+        self.ch_selected_mC = ch_selected
+
+    def set_selected_processes(self, info='mH'): 
+        if info == 'mH': 
             #Get info from checked boxes
             __ = self.checked('chNS')
             self.button_set_chNS.setEnabled(True)
@@ -1586,29 +1693,35 @@ class CreateNewProj(QDialog):
         self.mH_settings['chNS'] = chNS_settings
 
     # -- Functions for segments and sections
-    def add_segm_sect(self, stype):
-        tick = getattr(self, 'tick_'+stype+'2')
-        obj_type = getattr(self, 'cB_obj_'+stype+'2')
-        name_stype = getattr(self, 'names_'+stype+'2')
+    def add_segm_sect(self, stype, mC=False):
+        if mC: 
+            add = '_mC'
+        else: 
+            add = ''
+        tick = getattr(self, 'tick_'+stype+'2'+add)
+        obj_type = getattr(self, 'cB_obj_'+stype+'2'+add)
+        name_stype = getattr(self, 'names_'+stype+'2'+add)
 
         if tick.isChecked(): 
             obj_type.setEnabled(True)
             name_stype.setEnabled(True)
             if stype == 'segm': 
-                self.sB_no_segm2.setEnabled(True)
-                self.sB_segm_noObj2.setEnabled(True)
-            for ch in self.ch_selected:
-                for cont in ['int', 'tiss', 'ext']:
-                    getattr(self, 'cB_'+stype+'_Cut2_'+ch+'_'+cont).setEnabled(True) 
+                getattr(self, 'sB_no_segm2'+add).setEnabled(True)
+                getattr(self, 'sB_segm_noObj2'+add).setEnabled(True)
+            if not mC: 
+                for ch in self.ch_selected:
+                    for cont in ['int', 'tiss', 'ext']:
+                        getattr(self, 'cB_'+stype+'_Cut2_'+ch+'_'+cont).setEnabled(True) 
         else: 
             obj_type.setEnabled(False)
             name_stype.setEnabled(False)
             if stype == 'segm': 
-                self.sB_no_segm2.setEnabled(False)
-                self.sB_segm_noObj2.setEnabled(False)
-            for ch in self.ch_selected:
-                for cont in ['int', 'tiss', 'ext']:
-                    getattr(self, 'cB_'+stype+'_Cut2_'+ch+'_'+cont).setDisabled(True) 
+                getattr(self, 'sB_no_segm2'+add).setEnabled(False)
+                getattr(self, 'sB_segm_noObj2'+add).setEnabled(False)
+            if not mC: 
+                for ch in self.ch_selected:
+                    for cont in ['int', 'tiss', 'ext']:
+                        getattr(self, 'cB_'+stype+'_Cut2_'+ch+'_'+cont).setDisabled(True) 
     
     def check_checkBoxes(self, ch_selected, stype):
         dict_stype = {}
@@ -1833,6 +1946,12 @@ class CreateNewProj(QDialog):
             self.set_segm_sect_settings()
         else: 
             print('Aja? - Segment-Region')
+
+    def validate_mC_segments(self):
+        pass
+
+    def validate_mC_sections(self):
+        pass
 
     def set_segm_settings(self): 
         valid_all = []
@@ -2191,6 +2310,38 @@ class CreateNewProj(QDialog):
         else: 
             print('Something wrong; validate_set_all')
             return False
+
+    def use_mH_settings(self, mtype): 
+        if mtype == 'segm': 
+            if self.button_set_segm.isChecked(): 
+                self.tick_segm1_mC.setChecked(self.tick_segm1.isChecked())
+                self.sB_no_segm1_mC.setValue(self.sB_no_segm1.value())
+                self.cB_obj_segm1_mC.setCurrentText(self.cB_obj_segm1.currentText())
+                self.sB_segm_noObj1_mC.setValue(self.sB_segm_noObj1.value())
+                self.names_segm1_mC.setText(self.names_segm1.text())
+
+                self.tick_segm2_mC.setChecked(self.tick_segm2.isChecked())
+                self.sB_no_segm2_mC.setValue(self.sB_no_segm2.value())
+                self.cB_obj_segm2_mC.setCurrentText(self.cB_obj_segm2.currentText())
+                self.sB_segm_noObj2_mC.setValue(self.sB_segm_noObj2.value())
+                self.names_segm2_mC.setText(self.names_segm2.text())
+            else: 
+                self.win_msg('*Segments have not yet been set in the -Morphological (morphoHeart)- Tab. Please set them first to be able to use them in this analysis.')
+                self.tick_mH_segm.setChecked(False)
+                return
+        else: 
+            if self.button_set_sect .isChecked(): 
+                self.tick_sect1_mC.setChecked(self.tick_sect1.isChecked())
+                self.cB_obj_sect1_mC.setCurrentText(self.cB_obj_sect1.currentText())
+                self.names_sect1_mC.setText(self.names_sect1.text())
+
+                self.tick_sect2_mC.setChecked(self.tick_sect2.isChecked())
+                self.cB_obj_sect2_mC.setCurrentText(self.cB_obj_sect2.currentText())
+                self.names_sect2_mC.setText(self.names_sect2.text())
+            else: 
+                self.win_msg('*Regions have not yet been set in the -Morphological (morphoHeart)- Tab. Please set them first to be able to use them in this analysis.')
+                self.tick_mH_reg.setChecked(False)
+                return
 
     # -- Functions Set Measurement Parameters
     def check_to_set_params(self): 
@@ -7843,6 +7994,14 @@ class MainWindow(QMainWindow):
         self.reset_sides_cut1.clicked.connect(lambda: self.reset_sect_sides('Cut1'))
         self.reset_sides_cut2.clicked.connect(lambda: self.reset_sect_sides('Cut2'))
 
+        #Filling method 
+        self.radio_cut1_dir1.pressed.connect(lambda: self.reset_sections('cut1'))
+        self.radio_cut1_dir2.pressed.connect(lambda: self.reset_sections('cut1'))
+        self.radio_cut1_dir3.pressed.connect(lambda: self.reset_sections('cut1'))
+        self.radio_cut2_dir1.pressed.connect(lambda: self.reset_sections('cut2'))
+        self.radio_cut2_dir2.pressed.connect(lambda: self.reset_sections('cut2'))
+        self.radio_cut2_dir3.pressed.connect(lambda: self.reset_sections('cut2'))
+
         #Initialise with user settings, if they exist!
         self.user_sections()
 
@@ -8816,7 +8975,12 @@ class MainWindow(QMainWindow):
                 nRes = wf_info['sections'][cut]['nRes']
                 axis = wf_info['sections'][cut]['axis_lab'].lower()
                 direction = wf_info['sections'][cut]['direction']
-
+                try: 
+                    filling_method = wf_info['sections'][cut]['filling_method']
+                except: 
+                    filling_method = 'No.1'
+                    wf_info['sections'][cut]['filling_method'] = filling_method
+                
                 cut = ct.lower()
                 getattr(self, 'sect_cl_'+cut).setCurrentText(centreline)
                 getattr(self, 'sect_nPoints_'+cut).setValue(nPoints)
@@ -8826,6 +8990,7 @@ class MainWindow(QMainWindow):
                 set_btn = getattr(self, 'dir_sect_'+cut)
                 set_btn.setChecked(True)
                 setattr(self, 'extend_dir_'+cut, direction)
+                getattr(self, 'radio_'+cut+'_dir'+filling_method[-1]).setChecked(True)
 
                 if 'mask_name' in self.organ.mH_settings['wf_info']['sections'][cut.title()].keys(): 
                     mask_name = self.organ.mH_settings['wf_info']['sections'][cut.title()]['mask_name']
@@ -9799,11 +9964,16 @@ class MainWindow(QMainWindow):
                 gui_sect[cutb]['nRes'] = getattr(self, 'sect_nRes_cut'+optcut).value()
                 for reg in ['roi', 'stack']: 
                     if getattr(self, 'radio_'+reg+'_cut'+optcut).isChecked(): 
-                        selected = reg
+                        selected_reg = reg
                         break
-                gui_sect[cutb]['axis_lab'] = selected.title()
+                gui_sect[cutb]['axis_lab'] = selected_reg.title()
                 direction = getattr(self, 'extend_dir_cut'+optcut)
                 gui_sect[cutb]['direction'] = direction
+                for mth in ['1', '2', '3']: 
+                    if getattr(self, 'radio_cut'+optcut+'_dir'+mth).isChecked(): 
+                        selected_mth = mth
+                        break
+                gui_sect[cutb]['filling_method'] = 'No.'+selected_mth
 
         same_extCL = self.reg_same_centreline.isChecked()
         gui_sect['same_extCL'] = same_extCL
@@ -10238,6 +10408,13 @@ class MainWindow(QMainWindow):
             self.update_workflow_progress()
         else: 
             pass
+
+    def reset_sections(self, cut): 
+        if self.sections_set.isChecked(): 
+            self.sections_set.setChecked(False)
+            
+            self.win_msg('!Remember to re-set the settings for this '+cut.title()+' to make sure all the changes are applied.')
+            alert('bubble')
 
     #Workflow functions   
     #>> Init Ch Progress Table
@@ -13145,13 +13322,6 @@ def color_btn(btn, color, small=True):
         color_txt = "background-color: "+color+"; border-color: rgb(0, 0, 0); border-width: 1px; border-style: outset; font: "+pt+"; color: "+str(color)+";"
 
     btn.setStyleSheet(color_txt)
-
-def always_checked(tick):
-    tick.setChecked(True)
-    if tick.isChecked():
-        tick.setChecked(True)
-    else: 
-        tick.setChecked(True)
 
 #String validation
 def split_str(input_str):

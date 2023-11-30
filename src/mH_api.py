@@ -2038,204 +2038,209 @@ def run_ellipsoids(controller):
                 
 # > SECTIONS
 def run_sections(controller, btn): 
-
-    set_process(controller, 'regions')
-    workflow = controller.organ.workflow['morphoHeart']
-    sect_list = list(controller.main_win.sect_btns.keys())
-    if btn != None: 
-        cut, num = btn.split('_')
-        for key in sect_list: 
-            cut_key = key.split(':')[0]
-            num_key = controller.main_win.sect_btns[key]['num']
-            if cut_key == cut and int(num_key) == int(num): 
-                sect2cut = key
-                break
-        sect_set = [sect2cut] 
-    else: 
-        sect_set = sect_list
-    print('sect_set:',sect_set)
-
-    #Setup everything to cut
-    clRib_type = 'ext2sides'
-    sect_settings = controller.organ.mH_settings['wf_info']['sections']
-
-    #Loop through all the tissues that are going to be sectioned
-    for sect in sect_set: 
-        #Find cut
-        cut, ch_cont = sect.split(':')
-        ch, cont = ch_cont.split('_')
-        #Extract info for cut
-        colors_all = controller.organ.mH_settings['setup']['sect'][cut]['colors']
-        palette = [colors_all[key] for key in colors_all.keys()]
-        sect_names = controller.organ.mH_settings['setup']['sect'][cut]['name_sections']
-        
-        #Find mesh to cut
-        mesh2cut = controller.organ.obj_meshes[ch+'_'+cont]
-
-        #Check if the mask has already been saved
-        if 'mask_name' in sect_settings[cut.title()].keys(): 
-            #Add mask_name as attribute to organ in case it is not
-            mask_name = sect_settings[cut.title()]['mask_name']
-            if not hasattr(controller.organ, 'mask_sect_'+cut.lower()): 
-                setattr(controller.organ, 'mask_sect_'+cut.lower(), mask_name)
+    if controller.main_win.sections_set.isChecked(): 
+        set_process(controller, 'regions')
+        workflow = controller.organ.workflow['morphoHeart']
+        sect_list = list(controller.main_win.sect_btns.keys())
+        if btn != None: 
+            cut, num = btn.split('_')
+            for key in sect_list: 
+                cut_key = key.split(':')[0]
+                num_key = controller.main_win.sect_btns[key]['num']
+                if cut_key == cut and int(num_key) == int(num): 
+                    sect2cut = key
+                    break
+            sect_set = [sect2cut] 
         else: 
-            #Find centreline and settings to cut
-            cl_name = controller.main_win.gui_sect[cut]['centreline'].split('(')[1][:-1]
-            nPoints = controller.main_win.gui_sect[cut]['nPoints']
-            mesh_cl = controller.organ.obj_meshes[cl_name]
-            nRes = controller.main_win.gui_sect[cut]['nRes']
-            #Create mask_cube and save
-            ext_plane = getattr(controller.main_win, 'extend_dir_'+cut.lower())['plane_normal']
-            # -> Create ribbon
-            if controller.main_win.reg_same_centreline.isChecked(): 
-                #Find if the othe KSpline extended has already been created
-                if cut == 'Cut1':
-                    cuto = 'Cut2'
-                else: 
-                    cuto = 'Cut1'
-                if 'ext_nPoints' in controller.main_win.gui_sect[cuto].keys(): 
-                    ext_points = controller.main_win.gui_sect[cuto]['ext_pts']
-                    use_prev = True
+            sect_set = sect_list
+        print('sect_set:',sect_set)
+
+        #Setup everything to cut
+        clRib_type = 'ext2sides'
+        sect_settings = controller.organ.mH_settings['wf_info']['sections']
+
+        #Loop through all the tissues that are going to be sectioned
+        for sect in sect_set: 
+            #Find cut
+            cut, ch_cont = sect.split(':')
+            ch, cont = ch_cont.split('_')
+            #Extract info for cut
+            colors_all = controller.organ.mH_settings['setup']['sect'][cut]['colors']
+            palette = [colors_all[key] for key in colors_all.keys()]
+            sect_names = controller.organ.mH_settings['setup']['sect'][cut]['name_sections']
+            
+            #Find mesh to cut
+            mesh2cut = controller.organ.obj_meshes[ch+'_'+cont]
+
+            #Check if the mask has already been saved
+            if 'mask_name' in sect_settings[cut.title()].keys(): 
+                #Add mask_name as attribute to organ in case it is not
+                mask_name = sect_settings[cut.title()]['mask_name']
+                if not hasattr(controller.organ, 'mask_sect_'+cut.lower()): 
+                    setattr(controller.organ, 'mask_sect_'+cut.lower(), mask_name)
+            else: 
+                #Find centreline and settings to cut
+                cl_name = controller.main_win.gui_sect[cut]['centreline'].split('(')[1][:-1]
+                nPoints = controller.main_win.gui_sect[cut]['nPoints']
+                mesh_cl = controller.organ.obj_meshes[cl_name]
+                nRes = controller.main_win.gui_sect[cut]['nRes']
+                filling_method = controller.main_win.gui_sect[cut]['filling_method']
+
+                #Create mask_cube and save
+                ext_plane = getattr(controller.main_win, 'extend_dir_'+cut.lower())['plane_normal']
+                # -> Create ribbon
+                if controller.main_win.reg_same_centreline.isChecked(): 
+                    #Find if the othe KSpline extended has already been created
+                    if cut == 'Cut1':
+                        cuto = 'Cut2'
+                    else: 
+                        cuto = 'Cut1'
+                    if 'ext_nPoints' in controller.main_win.gui_sect[cuto].keys(): 
+                        ext_points = controller.main_win.gui_sect[cuto]['ext_pts']
+                        use_prev = True
+                    else: 
+                        ext_points = None
+                        use_prev = False
                 else: 
                     ext_points = None
                     use_prev = False
-            else: 
-                ext_points = None
-                use_prev = False
+                    
+                #test this for a case in which the same centreline is used for both cuts
+                #  (is it asking for happy the second time around?)
+                happy = False
+                while not happy: 
+                    cl_ribbon, kspl_ext = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
+                                                                pl_normal=ext_plane, clRib_type=clRib_type, 
+                                                                use_prev=use_prev, ext_points = ext_points)
+                    
+                    title = 'Check extended centreline...'
+                    msg = 'Are you happy with the extended centreline/ribbon created?! \n If so, select  -OK-, else select  -Cancel- and redefine extended centreline.'
+                    prompt = Prompt_ok_cancel(title, msg, parent=controller.main_win)
+                    prompt.exec()
+                    print('output:', prompt.output)
+                    happy = prompt.output
                 
-            #test this for a case in which the same centreline is used for both cuts
-            #  (is it asking for happy the second time around?)
-            happy = False
-            while not happy: 
-                cl_ribbon, kspl_ext = mesh_cl.get_clRibbon(nPoints=nPoints, nRes=nRes, 
-                                                            pl_normal=ext_plane, clRib_type=clRib_type, 
-                                                            use_prev=use_prev, ext_points = ext_points)
+                controller.main_win.gui_sect[cut]['ext_pts'] = kspl_ext.points()
+                # proc_kspl_ext = ['wf_info', 'sections', cut, 'ext_pts']
+                # controller.organ.update_settings(proc_kspl_ext, kspl_ext.points(), 'mH')
+
+                # obj = [(mesh2cut.mesh, cl_ribbon)]
+                # txt = [(0, controller.organ.user_organName+'- Extended Centreline Ribbon to cut organ into sections')]
+                # plot_grid(obj=obj, txt=txt, axes=8, sc_side=max(controller.organ.get_maj_bounds()))
                 
-                title = 'Check extended centreline...'
-                msg = 'Are you happy with the extended centreline/ribbon created?! \n If so, select  -OK-, else select  -Cancel- and redefine extended centreline.'
-                prompt = Prompt_ok_cancel(title, msg, parent=controller.main_win)
-                prompt.exec()
-                print('output:', prompt.output)
-                happy = prompt.output
-            
-            controller.main_win.gui_sect[cut]['ext_pts'] = kspl_ext.points()
-            # proc_kspl_ext = ['wf_info', 'sections', cut, 'ext_pts']
-            # controller.organ.update_settings(proc_kspl_ext, kspl_ext.points(), 'mH')
-
-            # obj = [(mesh2cut.mesh, cl_ribbon)]
-            # txt = [(0, controller.organ.user_organName+'- Extended Centreline Ribbon to cut organ into sections')]
-            # plot_grid(obj=obj, txt=txt, axes=8, sc_side=max(controller.organ.get_maj_bounds()))
-            
-            # -> Create high resolution ribbon
-            controller.main_win.win_msg('Creating high resolution centreline ribbon for '+cut.title())
-            controller.organ.obj_imChannels[ch].load_chS3s([cont])
-            s3_shape = getattr(controller.organ.obj_imChannels[ch], 's3_'+cont).shape_s3
-            s3_filledCube, test_rib = fcM.get_stack_clRibbon(organ = controller.organ,
-                                                                s3_shape = s3_shape, 
-                                                                mesh_cl = mesh_cl, 
-                                                                cl_ribbon = cl_ribbon, 
-                                                                win=controller.main_win)
-            
-            # obj = [(test_rib, mesh_cl.mesh)]
-            # txt = [(0, controller.organ.user_organName)]
-            # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
-
-            # -> Create cube of ribbon and mask one side
-            print('Creating cube sections for masking ('+cut.title()+')')
-            controller.main_win.win_msg('Creating cube sections for masking ('+cut.title()+')')
-            mask_cube_split, s3_filledCubes = fcM.get_cube_clRibbon(organ = controller.organ,
+                # -> Create high resolution ribbon
+                controller.main_win.win_msg('Creating high resolution centreline ribbon for '+cut.title())
+                controller.organ.obj_imChannels[ch].load_chS3s([cont])
+                s3_shape = getattr(controller.organ.obj_imChannels[ch], 's3_'+cont).shape_s3
+                s3_filledCube, test_rib = fcM.get_stack_clRibbon(organ = controller.organ,
                                                                     s3_shape = s3_shape, 
-                                                                    cut = cut,  
-                                                                    s3_filledCube = s3_filledCube,
-                                                                    res = mesh_cl.resolution,  
-                                                                    pl_normal = ext_plane)
-            
-            # obj = [(mask_cube_split[0], mask_cube_split[1], test_rib, mesh_cl.mesh)]
-            # txt = [(0, controller.organ.user_organName)]
-            # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
-            
-            #Select the side of the ribbon that corresponds to section 1
-            selected_side = fcM.select_ribMask(controller.organ, cut, mask_cube_split, mesh_cl.mesh, kspl_ext)
-            
-            if selected_side['name'] == 'NS': 
-                name_sect1 = controller.organ.mH_settings['setup']['sect'][cut.title()]['name_sections']['sect1']
-                title = name_sect1.title()+' section not selected!' 
-                msg = 'Select the mesh that corresponds to Section No.1 ('+name_sect1.upper()+'):'
-                items = {0: {'opt':'dark blue mesh (A)'}, 1: {'opt':'light blue mesh (B)'}}
-                prompt = Prompt_ok_cancel_radio(title, msg, items, parent=controller.main_win)
-                prompt.exec()
-                print('output:', prompt.output, '\n')  
-                if prompt.output[0] == 0: 
-                    selected_side = {'name': 'Filled CLRibbon SideA'}
-                else: #prompt.output[0] == 1: 
-                    selected_side = {'name': 'Filled CLRibbon SideB'}
-
-            else: 
-                pass
-            print('final selected_mesh:', selected_side)
-
-            fcM.save_ribMask_side(organ = controller.organ, 
-                                    cut = cut, 
-                                    selected_side=selected_side, 
-                                    s3_filledCubes = s3_filledCubes)
+                                                                    mesh_cl = mesh_cl, 
+                                                                    cl_ribbon = cl_ribbon, 
+                                                                    win=controller.main_win)
                 
-            #Enable plot button for centreline extension
-            cl_ext_btn = getattr(controller.main_win, 'cl_ext_'+cut.lower()).setEnabled(True)
+                # obj = [(test_rib, mesh_cl.mesh)]
+                # txt = [(0, controller.organ.user_organName)]
+                # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
+
+                # -> Create cube of ribbon and mask one side
+                print('Creating cube sections for masking ('+cut.title()+')')
+                controller.main_win.win_msg('Creating cube sections for masking ('+cut.title()+')')
+                mask_cube_split, s3_filledCubes = fcM.get_cube_clRibbon(organ = controller.organ,
+                                                                        s3_shape = s3_shape, 
+                                                                        cut = cut,  
+                                                                        s3_filledCube = s3_filledCube,
+                                                                        res = mesh_cl.resolution,  
+                                                                        pl_normal = ext_plane, 
+                                                                        filling_method = filling_method)
+                
+                # obj = [(mask_cube_split[0], mask_cube_split[1], test_rib, mesh_cl.mesh)]
+                # txt = [(0, controller.organ.user_organName)]
+                # plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(controller.organ.get_maj_bounds()))
+                
+                #Select the side of the ribbon that corresponds to section 1
+                selected_side = fcM.select_ribMask(controller.organ, cut, mask_cube_split, mesh_cl.mesh, kspl_ext)
+                
+                if selected_side['name'] == 'NS': 
+                    name_sect1 = controller.organ.mH_settings['setup']['sect'][cut.title()]['name_sections']['sect1']
+                    title = name_sect1.title()+' section not selected!' 
+                    msg = 'Select the mesh that corresponds to Section No.1 ('+name_sect1.upper()+'):'
+                    items = {0: {'opt':'dark blue mesh (A)'}, 1: {'opt':'light blue mesh (B)'}}
+                    prompt = Prompt_ok_cancel_radio(title, msg, items, parent=controller.main_win)
+                    prompt.exec()
+                    print('output:', prompt.output, '\n')  
+                    if prompt.output[0] == 0: 
+                        selected_side = {'name': 'Filled CLRibbon SideA'}
+                    else: #prompt.output[0] == 1: 
+                        selected_side = {'name': 'Filled CLRibbon SideB'}
+
+                else: 
+                    pass
+                print('final selected_mesh:', selected_side)
+
+                fcM.save_ribMask_side(organ = controller.organ, 
+                                        cut = cut, 
+                                        selected_side=selected_side, 
+                                        s3_filledCubes = s3_filledCubes)
+                    
+                #Enable plot button for centreline extension
+                cl_ext_btn = getattr(controller.main_win, 'cl_ext_'+cut.lower()).setEnabled(True)
+            
+            #Cut input tissue into sections
+            print(type(mesh2cut))
+            meshes_sect = fcM.get_sections(controller.organ, mesh2cut, cut, 
+                                            sect_names, palette, win=controller.main_win)
+            
+            #Save meshes temporarily within section buttons
+            controller.main_win.sect_btns[sect]['meshes'] = meshes_sect
+            print(controller.main_win.sect_btns)
+            print('meshes_sect: ',meshes_sect)
+            print(controller.main_win.sect_btns[sect])
+
+            #Enable Plot Buttons
+            btn = controller.main_win.sect_btns[sect]['plot']
+            btn.setEnabled(True)
+            print('wf:', controller.organ.workflow['morphoHeart']['MeshesProc'])
+
+            #Update progress in main_win
+            controller.main_win.update_workflow_progress()
+            #Fill-up results table
+            controller.main_win.fill_results()
+            #Check button 
+            controller.main_win.sect_btns[sect]['play'].setChecked(True)
+            #Check segm-sections
+            if hasattr(controller.main_win, 'segm_sect_btns'):
+                btn_final = 'NA'
+                for btn_ss in controller.main_win.segm_sect_btns:
+                    if '_o_'+cut.title() in btn_ss and ch_cont in btn_ss:
+                        btn_final = btn_ss
+                        break
+                if btn_final != 'NA': 
+                    seg_cut = btn_final.split('_o_')[0][1:]
+                    seg_btn = seg_cut+':'+ch_cont
+                    if controller.main_win.segm_btns[seg_btn]['plot'].isEnabled(): 
+                        controller.main_win.segm_sect_btns[btn_final]['play'].setEnabled(True)
         
-        #Cut input tissue into sections
-        print(type(mesh2cut))
-        meshes_sect = fcM.get_sections(controller.organ, mesh2cut, cut, 
-                                        sect_names, palette, win=controller.main_win)
-        
-        #Save meshes temporarily within section buttons
-        controller.main_win.sect_btns[sect]['meshes'] = meshes_sect
-        print(controller.main_win.sect_btns)
-        print('meshes_sect: ',meshes_sect)
-        print(controller.main_win.sect_btns[sect])
+        # Update organ workflow and GUI Status
+        flat_sect_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Sections']))
+        all_done = []
+        for key in flat_sect_wf.keys(): 
+            key_split = key.split(':')
+            if len(key_split) > 1: 
+                all_done.append(flat_sect_wf[key])
 
-        #Enable Plot Buttons
-        btn = controller.main_win.sect_btns[sect]['plot']
-        btn.setEnabled(True)
-        print('wf:', controller.organ.workflow['morphoHeart']['MeshesProc'])
+        proc_wft = ['MeshesProc', 'E-Sections', 'Status']
+        if all(flag == 'DONE' for flag in all_done): 
+            controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
+        elif any(flag == 'DONE' for flag in all_done): 
+            controller.organ.update_mHworkflow(process = proc_wft, update = 'Initialised')
+        else: 
+            pass
+        controller.main_win.update_status(workflow, proc_wft, controller.main_win.sections_status)
 
-        #Update progress in main_win
-        controller.main_win.update_workflow_progress()
-        #Fill-up results table
-        controller.main_win.fill_results()
-        #Check button 
-        controller.main_win.sect_btns[sect]['play'].setChecked(True)
-        #Check segm-sections
-        if hasattr(controller.main_win, 'segm_sect_btns'):
-            btn_final = 'NA'
-            for btn_ss in controller.main_win.segm_sect_btns:
-                if '_o_'+cut.title() in btn_ss and ch_cont in btn_ss:
-                    btn_final = btn_ss
-                    break
-            if btn_final != 'NA': 
-                seg_cut = btn_final.split('_o_')[0][1:]
-                seg_btn = seg_cut+':'+ch_cont
-                if controller.main_win.segm_btns[seg_btn]['plot'].isEnabled(): 
-                    controller.main_win.segm_sect_btns[btn_final]['play'].setEnabled(True)
-    
-    # Update organ workflow and GUI Status
-    flat_sect_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Sections']))
-    all_done = []
-    for key in flat_sect_wf.keys(): 
-        key_split = key.split(':')
-        if len(key_split) > 1: 
-            all_done.append(flat_sect_wf[key])
-
-    proc_wft = ['MeshesProc', 'E-Sections', 'Status']
-    if all(flag == 'DONE' for flag in all_done): 
-        controller.organ.update_mHworkflow(process = proc_wft, update = 'DONE')
-    elif any(flag == 'DONE' for flag in all_done): 
-        controller.organ.update_mHworkflow(process = proc_wft, update = 'Initialised')
+        #Add meshes to plot_user
+        controller.main_win.fill_comboBox_all_meshes()
     else: 
-        pass
-    controller.main_win.update_status(workflow, proc_wft, controller.main_win.sections_status)
-
-    #Add meshes to plot_user
-    controller.main_win.fill_comboBox_all_meshes()
+        controller.main_win.win_msg('*You need to re-set the settings of the regions to be able to run this process.')
 
 # > SEGM-SECT
 def run_segm_sect(controller, btn): 
