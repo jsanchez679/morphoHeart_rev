@@ -912,7 +912,7 @@ def main():
     controller = Controller()
     controller.show_welcome()
     try: 
-        sys.exit(app.exec())
+            sys.exit(app.exec())
     except: 
         print('Exiting')
 

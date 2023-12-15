@@ -745,7 +745,7 @@ color: rgb(234, 234, 234);
       <string notr="true">font: 25 italic 9pt &quot;Calibri Light&quot;;</string>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_mHeart">
       <attribute name="title">
@@ -798,7 +798,7 @@ QScrollBar::handle:vertical:hover {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-624</y>
+            <y>-784</y>
             <width>948</width>
             <height>1394</height>
            </rect>
@@ -4969,7 +4969,7 @@ Cutters:</string>
                        </property>
                        <property name="text">
                         <string>Segments' name
-(separated by comma ',')</string>
+(separated by a comma ',')</string>
                        </property>
                        <property name="alignment">
                         <set>Qt::AlignCenter</set>
@@ -7742,7 +7742,7 @@ used to cut:</string>
                        </property>
                        <property name="text">
                         <string>Regions' name
-(separated by comma ',')</string>
+(separated by a comma ',')</string>
                        </property>
                        <property name="alignment">
                         <set>Qt::AlignCenter</set>
@@ -15371,7 +15371,7 @@ QScrollBar::handle:vertical:hover {
             <x>0</x>
             <y>0</y>
             <width>948</width>
-            <height>605</height>
+            <height>729</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_28">
@@ -16572,6 +16572,37 @@ background-color: rgb(255, 255, 255);</string>
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_71">
                 <item>
+                 <widget class="QLabel" name="lab_no_segm_10">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QLabel" name="label_18">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -16600,7 +16631,7 @@ background-color: rgb(255, 255, 255);</string>
                  <widget class="QCheckBox" name="tick_segm_mC">
                   <property name="minimumSize">
                    <size>
-                    <width>160</width>
+                    <width>175</width>
                     <height>20</height>
                    </size>
                   </property>
@@ -16655,10 +16686,23 @@ border-color: #672146
                  </widget>
                 </item>
                 <item>
+                 <spacer name="horizontalSpacer_10">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
                  <widget class="QCheckBox" name="tick_sect_mC">
                   <property name="minimumSize">
                    <size>
-                    <width>150</width>
+                    <width>165</width>
                     <height>20</height>
                    </size>
                   </property>
@@ -16709,6 +16753,108 @@ border-color: #672146
                   </property>
                   <property name="text">
                    <string>?</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_14">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="tick_sect_mC_2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>160</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>150</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="layoutDirection">
+                   <enum>Qt::LeftToRight</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                  </property>
+                  <property name="text">
+                   <string>Classify cells into XXXX?</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="q_sect_3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>18</width>
+                    <height>18</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>18</width>
+                    <height>18</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
+                  </property>
+                  <property name="text">
+                   <string>?</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="lab_no_segm_11">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
                   </property>
                  </widget>
                 </item>
@@ -16831,6 +16977,212 @@ background-color: rgb(255, 255, 255);</string>
                    </item>
                    <item>
                     <layout class="QGridLayout" name="grid_segm_2">
+                     <item row="2" column="0">
+                      <layout class="QHBoxLayout" name="cut2_settings_segm_2">
+                       <property name="spacing">
+                        <number>4</number>
+                       </property>
+                       <property name="sizeConstraint">
+                        <enum>QLayout::SetFixedSize</enum>
+                       </property>
+                       <item>
+                        <widget class="QCheckBox" name="tick_segm2_mC">
+                         <property name="enabled">
+                          <bool>true</bool>
+                         </property>
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="layoutDirection">
+                          <enum>Qt::LeftToRight</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Cut2</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <property name="checked">
+                          <bool>false</bool>
+                         </property>
+                         <property name="tristate">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QSpinBox" name="sB_no_segm2_mC">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                         <property name="minimum">
+                          <number>1</number>
+                         </property>
+                         <property name="maximum">
+                          <number>5</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QComboBox" name="cB_obj_segm2_mC">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>80</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>80</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                         </property>
+                         <property name="frame">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QSpinBox" name="sB_segm_noObj2_mC">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QLineEdit" name="names_segm2_mC">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>125</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="maxLength">
+                          <number>50</number>
+                         </property>
+                         <property name="placeholderText">
+                          <string>Segment names</string>
+                         </property>
+                         <property name="clearButtonEnabled">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
                      <item row="1" column="0">
                       <layout class="QHBoxLayout" name="cut1_settings_segm_2">
                        <property name="spacing">
@@ -17219,7 +17571,7 @@ Cutters:</string>
                          </property>
                          <property name="text">
                           <string>Segments' name
-(separated by comma ',')</string>
+(separated by a comma ',')</string>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
@@ -17228,19 +17580,96 @@ Cutters:</string>
                        </item>
                       </layout>
                      </item>
-                     <item row="2" column="0">
-                      <layout class="QHBoxLayout" name="cut2_settings_segm_2">
-                       <property name="spacing">
-                        <number>4</number>
+                     <item row="1" column="1" alignment="Qt::AlignHCenter">
+                      <widget class="QCheckBox" name="cB_use_mH_tiss_chB_2">
+                       <property name="enabled">
+                        <bool>true</bool>
                        </property>
-                       <property name="sizeConstraint">
-                        <enum>QLayout::SetFixedSize</enum>
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
                        </property>
+                       <property name="minimumSize">
+                        <size>
+                         <width>15</width>
+                         <height>18</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>15</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                       <property name="layoutDirection">
+                        <enum>Qt::LeftToRight</enum>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                       <property name="checkable">
+                        <bool>true</bool>
+                       </property>
+                       <property name="checked">
+                        <bool>false</bool>
+                       </property>
+                       <property name="tristate">
+                        <bool>false</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1" alignment="Qt::AlignHCenter">
+                      <widget class="QCheckBox" name="cB_use_mH_tiss_chB_3">
+                       <property name="enabled">
+                        <bool>true</bool>
+                       </property>
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="minimumSize">
+                        <size>
+                         <width>15</width>
+                         <height>18</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>15</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                       <property name="layoutDirection">
+                        <enum>Qt::LeftToRight</enum>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                       <property name="checkable">
+                        <bool>true</bool>
+                       </property>
+                       <property name="checked">
+                        <bool>false</bool>
+                       </property>
+                       <property name="tristate">
+                        <bool>false</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <layout class="QHBoxLayout" name="horizontalLayout_54">
                        <item>
-                        <widget class="QCheckBox" name="tick_segm2_mC">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
+                        <widget class="QLabel" name="lab_proj_name_19">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                            <horstretch>0</horstretch>
@@ -17249,140 +17678,21 @@ Cutters:</string>
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>50</width>
-                           <height>18</height>
+                           <width>20</width>
+                           <height>30</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
-                           <width>50</width>
-                           <height>16777215</height>
+                           <width>20</width>
+                           <height>30</height>
                           </size>
                          </property>
-                         <property name="layoutDirection">
-                          <enum>Qt::LeftToRight</enum>
-                         </property>
                          <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                          <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;</string>
                          </property>
                          <property name="text">
-                          <string>Cut2</string>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                         <property name="checked">
-                          <bool>false</bool>
-                         </property>
-                         <property name="tristate">
-                          <bool>false</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QSpinBox" name="sB_no_segm2_mC">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>16777215</height>
-                          </size>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignCenter</set>
-                         </property>
-                         <property name="minimum">
-                          <number>1</number>
-                         </property>
-                         <property name="maximum">
-                          <number>5</number>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QComboBox" name="cB_obj_segm2_mC">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>16777215</height>
-                          </size>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                         </property>
-                         <property name="frame">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QSpinBox" name="sB_segm_noObj2_mC">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>50</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>50</width>
-                           <height>16777215</height>
-                          </size>
+                          <string>mH</string>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
@@ -17390,45 +17700,35 @@ QComboBox QAbstractItemView {
                         </widget>
                        </item>
                        <item>
-                        <widget class="QLineEdit" name="names_segm2_mC">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
+                        <widget class="QPushButton" name="q_segm_3">
                          <property name="minimumSize">
                           <size>
-                           <width>125</width>
+                           <width>18</width>
                            <height>18</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
-                           <width>16777215</width>
-                           <height>16777215</height>
+                           <width>18</width>
+                           <height>18</height>
                           </size>
                          </property>
                          <property name="styleSheet">
-                          <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QLineEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
+                          <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
                          </property>
                          <property name="text">
-                          <string/>
-                         </property>
-                         <property name="maxLength">
-                          <number>50</number>
-                         </property>
-                         <property name="placeholderText">
-                          <string>Segment names</string>
-                         </property>
-                         <property name="clearButtonEnabled">
-                          <bool>false</bool>
+                          <string>?</string>
                          </property>
                         </widget>
                        </item>
@@ -17714,7 +18014,169 @@ QComboBox QAbstractItemView {
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>125</width>
+                           <width>90</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="maxLength">
+                          <number>50</number>
+                         </property>
+                         <property name="placeholderText">
+                          <string>Region names</string>
+                         </property>
+                         <property name="clearButtonEnabled">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                     <item row="1" column="0">
+                      <layout class="QHBoxLayout" name="cut1_settings_sect_2">
+                       <property name="spacing">
+                        <number>4</number>
+                       </property>
+                       <property name="sizeConstraint">
+                        <enum>QLayout::SetFixedSize</enum>
+                       </property>
+                       <item>
+                        <widget class="QCheckBox" name="tick_sect1_mC">
+                         <property name="enabled">
+                          <bool>true</bool>
+                         </property>
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>50</width>
+                           <height>18</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>50</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="sizeIncrement">
+                          <size>
+                           <width>50</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="baseSize">
+                          <size>
+                           <width>50</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="layoutDirection">
+                          <enum>Qt::LeftToRight</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>Cut1</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <property name="checked">
+                          <bool>true</bool>
+                         </property>
+                         <property name="tristate">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QComboBox" name="cB_obj_sect1_mC">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>80</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>80</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QComboBox {
+    border: 1px solid gray;
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+     background: rgb(255, 255, 255);
+}
+
+/* QComboBox gets the &quot;on&quot; state when the popup is open */
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+    background:rgba(170, 0, 127, 100);
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid darkgray;
+    selection-background-color:  rgba(162, 0, 122,180);
+	font: 25 10pt &quot;Calibri Light&quot;;
+}
+</string>
+                         </property>
+                         <property name="frame">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QLineEdit" name="names_sect1_mC">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>90</width>
                            <height>18</height>
                           </size>
                          </property>
@@ -17854,7 +18316,7 @@ used to cut:</string>
                          </property>
                          <property name="text">
                           <string>Regions' name
-(separated by comma ',')</string>
+(separated by a comma ',')</string>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
@@ -17863,19 +18325,10 @@ used to cut:</string>
                        </item>
                       </layout>
                      </item>
-                     <item row="1" column="0">
-                      <layout class="QHBoxLayout" name="cut1_settings_sect_2">
-                       <property name="spacing">
-                        <number>4</number>
-                       </property>
-                       <property name="sizeConstraint">
-                        <enum>QLayout::SetFixedSize</enum>
-                       </property>
+                     <item row="0" column="1">
+                      <layout class="QHBoxLayout" name="horizontalLayout_56">
                        <item>
-                        <widget class="QCheckBox" name="tick_sect1_mC">
-                         <property name="enabled">
-                          <bool>true</bool>
-                         </property>
+                        <widget class="QLabel" name="lab_proj_name_20">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                            <horstretch>0</horstretch>
@@ -17884,146 +18337,147 @@ used to cut:</string>
                          </property>
                          <property name="minimumSize">
                           <size>
-                           <width>50</width>
+                           <width>20</width>
+                           <height>30</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>20</width>
+                           <height>30</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;</string>
+                         </property>
+                         <property name="text">
+                          <string>mH</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="q_segm_4">
+                         <property name="minimumSize">
+                          <size>
+                           <width>18</width>
                            <height>18</height>
                           </size>
                          </property>
                          <property name="maximumSize">
                           <size>
-                           <width>50</width>
-                           <height>16777215</height>
-                          </size>
-                         </property>
-                         <property name="sizeIncrement">
-                          <size>
-                           <width>50</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="baseSize">
-                          <size>
-                           <width>50</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="layoutDirection">
-                          <enum>Qt::LeftToRight</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-                         </property>
-                         <property name="text">
-                          <string>Cut1</string>
-                         </property>
-                         <property name="checkable">
-                          <bool>true</bool>
-                         </property>
-                         <property name="checked">
-                          <bool>true</bool>
-                         </property>
-                         <property name="tristate">
-                          <bool>false</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QComboBox" name="cB_obj_sect1_mC">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>80</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>80</width>
-                           <height>16777215</height>
-                          </size>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true">QComboBox {
-    border: 1px solid gray;
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-
-QComboBox:editable {
-    background: white;
-}
-
-QComboBox:!editable, QComboBox::drop-down:editable {
-     background: rgb(255, 255, 255);
-}
-
-/* QComboBox gets the &quot;on&quot; state when the popup is open */
-QComboBox:!editable:on, QComboBox::drop-down:editable:on {
-    background:rgba(170, 0, 127, 100);
-}
-
-QComboBox QAbstractItemView {
-    border: 1px solid darkgray;
-    selection-background-color:  rgba(162, 0, 122,180);
-	font: 25 10pt &quot;Calibri Light&quot;;
-}
-</string>
-                         </property>
-                         <property name="frame">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QLineEdit" name="names_sect1_mC">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="minimumSize">
-                          <size>
-                           <width>125</width>
+                           <width>18</width>
                            <height>18</height>
                           </size>
                          </property>
-                         <property name="maximumSize">
-                          <size>
-                           <width>16777215</width>
-                           <height>16777215</height>
-                          </size>
-                         </property>
                          <property name="styleSheet">
-                          <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
-border: 1px solid rgb(156, 156, 156);
-font: 25 10pt &quot;Calibri Light&quot;;
-font-family: &quot;Calibri Light&quot;;
-}
-QLineEdit:focus { border: 1px solid #eb6fbd;}
-					</string>
+                          <string notr="true">QPushButton{border-radius:9px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgba(162, 0, 122,180);
+color: rgb(255, 255, 255);
+font: 9pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgb(0, 0, 0);
+border-color: #672146
+}</string>
                          </property>
                          <property name="text">
-                          <string/>
-                         </property>
-                         <property name="maxLength">
-                          <number>50</number>
-                         </property>
-                         <property name="placeholderText">
-                          <string>Region names</string>
-                         </property>
-                         <property name="clearButtonEnabled">
-                          <bool>false</bool>
+                          <string>?</string>
                          </property>
                         </widget>
                        </item>
                       </layout>
+                     </item>
+                     <item row="1" column="1" alignment="Qt::AlignHCenter">
+                      <widget class="QCheckBox" name="cB_use_mH_tiss_chB_5">
+                       <property name="enabled">
+                        <bool>true</bool>
+                       </property>
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="minimumSize">
+                        <size>
+                         <width>15</width>
+                         <height>18</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>15</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                       <property name="layoutDirection">
+                        <enum>Qt::LeftToRight</enum>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                       <property name="checkable">
+                        <bool>true</bool>
+                       </property>
+                       <property name="checked">
+                        <bool>false</bool>
+                       </property>
+                       <property name="tristate">
+                        <bool>false</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1" alignment="Qt::AlignHCenter">
+                      <widget class="QCheckBox" name="cB_use_mH_tiss_chB_4">
+                       <property name="enabled">
+                        <bool>true</bool>
+                       </property>
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="minimumSize">
+                        <size>
+                         <width>15</width>
+                         <height>18</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>15</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                       <property name="layoutDirection">
+                        <enum>Qt::LeftToRight</enum>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                       <property name="checkable">
+                        <bool>true</bool>
+                       </property>
+                       <property name="checked">
+                        <bool>false</bool>
+                       </property>
+                       <property name="tristate">
+                        <bool>false</bool>
+                       </property>
+                      </widget>
                      </item>
                     </layout>
                    </item>
@@ -18165,6 +18619,225 @@ text-decoration: underline;
                    </property>
                    <property name="text">
                     <string>Do you want to classify your cells further into the intersection between segments and regions?</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="set_segm_sect_mC_2">
+                <property name="styleSheet">
+                 <string notr="true">QGroupBox#set_segm_sect_mC{
+font: 25 italic 10pt &quot;Calibri Light&quot;;
+text-decoration: underline;
+}
+
+</string>
+                </property>
+                <property name="title">
+                 <string>XXXX</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_37">
+                 <item>
+                  <layout class="QGridLayout" name="gridLayout_6">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="lab_no_segm_12">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>80</width>
+                       <height>30</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>80</width>
+                       <height>30</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;</string>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLabel" name="lab_proj_name_21">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>200</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="sizeIncrement">
+                      <size>
+                       <width>125</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="baseSize">
+                      <size>
+                       <width>125</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">font: 25 9pt &quot;Calibri Light&quot;;</string>
+                     </property>
+                     <property name="text">
+                      <string>XXXXs' name (separated by a comma ',')</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="names_sect1_2">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>200</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QLineEdit {background-color: rgba(0,0,0,0);
+border: 1px solid rgb(156, 156, 156);
+font: 25 10pt &quot;Calibri Light&quot;;
+font-family: &quot;Calibri Light&quot;;
+}
+QLineEdit:focus { border: 1px solid #eb6fbd;}
+					</string>
+                     </property>
+                     <property name="text">
+                      <string/>
+                     </property>
+                     <property name="maxLength">
+                      <number>50</number>
+                     </property>
+                     <property name="placeholderText">
+                      <string notr="true">XXXX names</string>
+                     </property>
+                     <property name="clearButtonEnabled">
+                      <bool>false</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="lab_no_ch_43">
+                     <property name="minimumSize">
+                      <size>
+                       <width>50</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;
+background-color: rgb(255, 255, 255);</string>
+                     </property>
+                     <property name="text">
+                      <string>XXXX</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item alignment="Qt::AlignRight">
+                  <widget class="QPushButton" name="button_set_sect_mC_2">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>120</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>120</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="autoFillBackground">
+                    <bool>false</bool>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">QPushButton{border-radius:10px;
+border-width: 1px;
+border-style: outset;
+border-color: rgb(66, 66, 66);
+background-color: rgb(211, 211, 211);
+color: rgb(39, 39, 39);
+font: 10pt &quot;Calibri Light&quot;;}
+
+QPushButton:hover{
+background-color: rgba(167, 0, 125, 200);
+border-color: #672146;
+color: rgb(234, 234, 234);
+}
+
+QPushButton:disabled{
+background-color: rgb(232, 232, 232);
+border-color: rgb(158, 158, 158);
+color: rgb(125, 125, 125);
+}
+
+QPushButton:checked{
+background-color: rgb(107, 0, 80);
+border-color: rgb(76, 0, 57);
+color: rgb(234, 234, 234);
+}</string>
+                   </property>
+                   <property name="text">
+                    <string>Set XXXX</string>
+                   </property>
+                   <property name="checkable">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
