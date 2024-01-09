@@ -678,6 +678,8 @@ class CreateNewProj(QDialog):
         self.init_mC_segments_group()
         self.init_mC_regions_group()
         self.init_mC_segm_reg_group()
+        self.init_mC_zones_group()
+        self.default_colors('mC')
 
         #Project template
         self.cB_proj_as_template.stateChanged.connect(lambda: self.save_as_template())
@@ -871,7 +873,6 @@ class CreateNewProj(QDialog):
         self.set_segm_sect.setVisible(False)
         self.widget_segm_sect.setVisible(False)
         self.tick_segm_sect_2.setEnabled(False)
-
         self.tick_segm_sect_2.stateChanged.connect(lambda: self.open_sect_segm())
         #Buttons
         self.button_set_segm_sect.clicked.connect(lambda: self.validate_segm_sect())
@@ -904,15 +905,12 @@ class CreateNewProj(QDialog):
         self.button_set_processes_mC.clicked.connect(lambda: self.set_selected_processes(info='mC'))
 
         self.tick_segm_mC.stateChanged.connect(lambda: self.reset_set_processes(info='mC'))
-        self.tick_sect_mC.stateChanged.connect(lambda: self.reset_set_processes(info='mC'))
+        self.tick_sect_mC.stateChanged.connect(lambda: self.check_segm_mH())
+        self.tick_zone_mC.stateChanged.connect(lambda: self.reset_set_processes(info='mC'))
 
         self.cB_use_mH_tiss_chB.stateChanged.connect(lambda: self.add_mH_chs('chB'))
         self.cB_use_mH_tiss_chC.stateChanged.connect(lambda: self.add_mH_chs('chC'))
         self.cB_use_mH_tiss_chD.stateChanged.connect(lambda: self.add_mH_chs('chD'))
-
-        self.chB_select.currentTextChanged.connect(lambda: self.default_colors('mC'))
-        self.chC_select.currentTextChanged.connect(lambda: self.default_colors('mC'))
-        self.chD_select.currentTextChanged.connect(lambda: self.default_colors('mC'))
 
     def init_mC_segments_group(self): 
 
@@ -933,32 +931,48 @@ class CreateNewProj(QDialog):
         self.names_segm2_mC.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_segm2_mC))
         
         #Buttons
-        self.tick_mH_segm.stateChanged.connect(lambda: self.use_mH_settings('segm'))
+        self.cB_use_mH_segm1.stateChanged.connect(lambda: self.use_mH_settings('segm1'))
+        self.cB_use_mH_segm2.stateChanged.connect(lambda: self.use_mH_settings('segm2'))
+
         self.button_set_segm_mC.clicked.connect(lambda: self.validate_mC_segments())
 
     def init_mC_regions_group(self):
 
         self.set_sect_mC.setVisible(False)
 
-
-    def init_mC_segm_reg_group(self): 
-
-        self.set_segm_sect_mC.setVisible(False)
+        list_obj_sect = ['Centreline']#, 'Plane']
+        for cB in [self.cB_obj_sect1_mC, self.cB_obj_sect2_mC]:
+            for obj in list_obj_sect: 
+                cB.addItem(obj)
 
         # if cut2
         self.tick_sect2_mC.stateChanged.connect(lambda: self.add_segm_sect(stype='sect', mC=True))
-        list_obj_sect = ['Centreline']#, 'Plane']
-        for cB in [self.cB_obj_sect1_mC, self.cB_obj_sect1_mC]:
-            for obj in list_obj_sect: 
-                cB.addItem(obj)
-        
+
         #Set validator
         self.names_sect1_mC.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_sect1_mC))
         self.names_sect2_mC.setValidator(QRegularExpressionValidator(self.reg_ex_comma, self.names_sect2_mC))
 
         #Buttons
-        self.tick_mH_reg.stateChanged.connect(lambda: self.use_mH_settings('sect'))
+        self.cB_use_mH_sect1.stateChanged.connect(lambda: self.use_mH_settings('sect1'))
+        self.cB_use_mH_sect2.stateChanged.connect(lambda: self.use_mH_settings('sect2'))
+
         self.button_set_sect_mC.clicked.connect(lambda: self.validate_mC_sections())
+
+    def init_mC_segm_reg_group(self): 
+        self.set_segm_sect_mC.setVisible(False)
+        self.widget_segm_sect_mC.setVisible(False)
+        self.tick_segm_sect_mC.setEnabled(False)
+        self.tick_segm_sect_mC.stateChanged.connect(lambda: self.open_sect_segm(info='mC'))
+
+        self.button_set_segm_sect_mC.clicked.connect(lambda: self.validate_mC_segm_sect())
+        
+    def init_mC_zones_group(self): 
+
+        self.set_zone_mC.setVisible(False)
+        self.tick_zones_no2.stateChanged.connect(lambda: self.enable_zone(num='2'))
+        self.tick_zones_no3.stateChanged.connect(lambda: self.enable_zone(num='3'))
+
+        self.button_set_zone_mC.clicked.connect(lambda: self.validate_mC_zones())
         
     #Functions for General Project Settings   
     def get_proj_dir(self):
@@ -1155,7 +1169,6 @@ class CreateNewProj(QDialog):
                 cB_dist.setEnabled(True)
             else: 
                 use_mH_channel.setEnabled(True)
-                mH_ch.setEnabled(True)
                 fill.setEnabled(True)
 
             if getattr(self, ck).isChecked():
@@ -1194,13 +1207,31 @@ class CreateNewProj(QDialog):
                 names = self.mH_settings['name_chs']
                 cb_names = [key+' ('+names[key]+')' for key in names.keys()]
                 getattr(self, name+'_select').addItems(cb_names)
+                getattr(self, name+'_select').currentTextChanged.connect(lambda: self.mH_ch_selected(name))
             else: 
                 getattr(self, name+'_select').setEnabled(False)
-                self.win_msg('*Channels have not yet been set in the -Morphological (morphoHeart)- Tab. Please set them first to be able to use them in this analysis.')
+                self.win_msg('*Channels have not yet been set in the -Morphological [morphoHeart]- Tab. Please set them first to be able to use them in this analysis.')
                 tick.setChecked(False)
                 return
         else: 
             getattr(self, name+'_select').setEnabled(False)
+
+    def mH_ch_selected(self, name):
+        tick = getattr(self, 'cB_use_mH_tiss_'+name)
+        text_name = getattr(self, name+'_username')
+        if tick.isChecked():
+            name_selected = getattr(self, name+'_select').currentText()
+            if name_selected != '----':
+                name_selected = name_selected.split(' (')[0]
+                names = self.mH_settings['name_chs']
+                ch_name = names[name_selected]
+                text_name.setEnabled(False)
+                text_name.setText(ch_name)
+                #Set default colors
+                self.default_colors('mC')
+        else: 
+            text_name.setEnabled(True)
+            getattr(self, name+'_select').setCurrentText('----')
 
     def color_picker(self, name):
         color = QColorDialog.getColor()
@@ -1228,10 +1259,10 @@ class CreateNewProj(QDialog):
             elif name == 'chNS':
                 df_colors = {'chNS': {'int': 'greenyellow', 'tiss': 'darkorange', 'ext':'powderblue'}}
             elif name == 'mC': 
-                df_colors = {'chA': {'tiss': 'deeppink'},
-                                'chB': {'tiss': 'lightseagreen'},
-                                'chC': {'tiss': 'indigo'},
-                                'chD': {'tiss': 'gold'}}
+                df_colors = {'chA': {'tiss': 'yellow'},
+                                'chB': {'tiss': 'yellowgreen'},
+                                'chC': {'tiss': 'mediumblue'},
+                                'chD': {'tiss': 'hotpink'}}
                              
             for ch in df_colors:
                 if getattr(self, 'tick_'+ch).isChecked():
@@ -1271,11 +1302,14 @@ class CreateNewProj(QDialog):
                 if 'mC' in stype: 
                     s_set.setVisible(True)
                     s_set.setEnabled(True)
-                    self.mC_settings[stype] = {}
+                    if stype not in self.mC_settings.keys():
+                        self.mC_settings[stype] = {}
                 else: 
                     s_set.setVisible(True)
                     s_set.setEnabled(True)
-                    self.mH_settings[stype] = {}
+                    if stype not in self.mH_settings.keys():
+                        self.mH_settings[stype] = {}
+
                 return True
         else: 
             if stype == 'chNS': 
@@ -1295,6 +1329,7 @@ class CreateNewProj(QDialog):
                 self.mC_settings[stype] = False
             else:
                 self.mH_settings[stype] = False
+
             return False
     
     def validate_initial_settings(self):
@@ -1528,6 +1563,30 @@ class CreateNewProj(QDialog):
         self.mC_settings['mH_channel'] = mH_channel
 
         self.ch_selected_mC = ch_selected
+        print('self.mC_settings:', self.mC_settings)
+
+    def check_segm_mH(self): 
+        if self.tick_sect_mC.isChecked(): 
+            if self.checkBox_mH.isChecked(): 
+                if self.button_set_processes.isChecked(): 
+                    if self.button_set_sect.isChecked():
+                        self.tick_sect_mC.setChecked(True)
+                    else: 
+                        error_txt = '*To be able to set cell classification into regions, please set first the Regions analysis in the -Morphological [morphoHeart]- Tab.'
+                        self.win_msg(error_txt, self.tick_sect_mC)
+                        self.tick_sect_mC.setChecked(False)
+                else: 
+                    error_txt = '*To be able to set cell classification into regions, please set first the processes to run in the -Morphological [morphoHeart]- Tab.'
+                    self.win_msg(error_txt, self.tick_sect_mC)
+                    self.tick_sect_mC.setChecked(False)
+            else: 
+                error_txt = '*To be able to classify cells into regions, Morphological (morphoHeart) analysis needs to be included in the project analysis workflow!'
+                self.win_msg(error_txt, self.tick_sect_mC)
+                self.tick_sect_mC.setChecked(False)
+        else: 
+            self.tick_sect_mC.setChecked(False)
+        
+        self.reset_set_processes(info='mC')
 
     def set_selected_processes(self, info='mH'): 
         if info == 'mH': 
@@ -1590,6 +1649,15 @@ class CreateNewProj(QDialog):
             segm_bool = self.checked('segm_mC')   
             #---- Sections
             sect_bool = self.checked('sect_mC')
+            #---- Zones
+            zones_bool = self.checked('zone_mC')
+
+            if segm_bool and sect_bool: 
+                #init segm_sect
+                self.set_segm_sect_mC.setVisible(True)
+                self.mC_settings['segm-sect_mC'] = {}
+            else: 
+                self.mC_settings['segm-sect_mC'] = False
 
     def reset_set_processes(self, info='mH'): 
         if info== 'mH':
@@ -1599,7 +1667,7 @@ class CreateNewProj(QDialog):
 
     # -- Functions for ChannelNS
     def validate_chNS_settings(self): 
-        valid = []; error_txt = ''
+        error_txt = ''
         #Check name
         name_chNS = self.chNS_username.text().strip()
         names_ch = [self.mH_settings['name_chs'][key] for key in self.mH_settings['name_chs'].keys()]
@@ -1607,18 +1675,18 @@ class CreateNewProj(QDialog):
         if len(name_chNS)< 3: 
             error_txt = '*Channel from the negative space must have a name with at least three (3) characters.'
             self.win_msg(error_txt, self.button_set_chNS)
-            return
+            return False
         elif validate_txt(name_chNS) != None:
             error_txt = "*Please avoid using invalid characters in the chNS's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
             self.win_msg(error_txt, self.button_set_chNS)
-            return
+            return False
         else: 
             if name_chNS not in names_ch:
-                valid.append(True)
+                pass
             else:
                 error_txt = '*The name given to the channel obtained from the negative space needs to be different to that of the other channels.'
                 self.win_msg(error_txt, self.button_set_chNS)
-                return
+                return False
             
         #Check colors
         all_colors = []
@@ -1628,9 +1696,7 @@ class CreateNewProj(QDialog):
         if not all(all_colors):
             error_txt = '*Make sure you have selected colors for the channel obtained from the negative space.'
             self.win_msg(error_txt, self.button_set_chNS)
-            return
-        else: 
-            valid.append(True)
+            return False
         
         #Check int and ext channel and cont selection
         ch_ext = self.ext_chNS.currentText()
@@ -1644,31 +1710,25 @@ class CreateNewProj(QDialog):
             if ch_ext == ch_int: 
                 error_txt = '*To extract a channel from the negative space, the external and internal channels need to be different. Please check.'
                 self.win_msg(error_txt, self.button_set_chNS)
-                return
-            else: 
-                valid.append(True)
+                return False
         else: 
             error_txt = '*Please select the internal and external channels and contours that need to be used to extract the channel from the negative space.'
             self.win_msg(error_txt, self.button_set_chNS)
-            return
+            return False
         
         #Check operation
         chNS_operation = self.chNS_operation.currentText()
         if chNS_operation != '----': 
-            valid.append(True)
+            pass
         else: 
             error_txt = '*Please select an operation to extract the channel from the negative space.'
             self.win_msg(error_txt, self.button_set_chNS)
-            return
-            
-        if all(valid): # and len(valid)== 4 
-            self.win_msg('All done setting ChannelNS!...')
-            self.button_set_chNS.setChecked(True)
-            self.set_chNS_settings()
-            return True
-        else: 
-            self.button_set_chNS.setChecked(False)
             return False
+       
+        self.win_msg('All done setting ChannelNS!...')
+        self.button_set_chNS.setChecked(True)
+        self.set_chNS_settings()
+        return True
 
     def set_chNS_settings(self):
         ch_ext = self.ext_chNS.currentText()
@@ -1723,12 +1783,22 @@ class CreateNewProj(QDialog):
                     for cont in ['int', 'tiss', 'ext']:
                         getattr(self, 'cB_'+stype+'_Cut2_'+ch+'_'+cont).setDisabled(True) 
     
+    def enable_zone(self, num):
+        num_zone = getattr(self, 'sB_no_zones'+num+'_mC')
+        name_zone = getattr(self, 'names_zones'+num )
+        if getattr(self, 'tick_zones_no'+num).isChecked(): 
+            num_zone.setEnabled(True)
+            name_zone.setEnabled(True)
+        else: 
+            num_zone.setEnabled(False)
+            name_zone.setEnabled(False)
+
     def check_checkBoxes(self, ch_selected, stype):
         dict_stype = {}
         #Get Cuts selected
         cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
         for cut in cuts_sel.keys(): 
-            valid = []; error_txt = ''
+            error_txt = ''
             if cuts_sel[cut]:
                 for ch in ch_selected:
                     #Get relation
@@ -1772,11 +1842,10 @@ class CreateNewProj(QDialog):
                 self.controller.meas_param_win.improve_hm2D.setChecked(False)
 
     def validate_segments(self): 
-        valid_all = []
         stype = 'segm'
         cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
         for cut in cuts_sel.keys(): 
-            valid = []; error_txt = ''
+
             if cuts_sel[cut]:
                 cut_no = cut[-1]
                 #Get values
@@ -1799,8 +1868,6 @@ class CreateNewProj(QDialog):
                     error_txt = '*'+cut+": Segment names need to be different."
                     self.win_msg(error_txt, self.button_set_segm)
                     return
-                else: 
-                    valid.append(True)
                 
                 #Check that the number of discs is at least number of segm -1
                 if int(no_discs) < int(no_segm)-1:
@@ -1817,7 +1884,7 @@ class CreateNewProj(QDialog):
                 self.check_checkBoxes(self.ch_selected, 'segm')
                 bool_cB = [val for (key,val) in self.dict_segm.items() if cut in key]
                 if any(bool_cB): 
-                    valid.append(True)
+                    pass
                 else: 
                     error_txt = '*'+cut+": At least one channel contour needs to be selected for each segment cut."
                     self.win_msg(error_txt, self.button_set_segm)
@@ -1829,39 +1896,32 @@ class CreateNewProj(QDialog):
                 meas_ellip = getattr(self, 'cB_ellip_'+stype).isChecked()
                 meas_angles = getattr(self, 'cB_angles_'+stype).isChecked()
                 if any([meas_vol, meas_area, meas_ellip, meas_angles]):
-                    valid.append(True)
+                    pass
                 else: 
                     error_txt = "*Please select the measurement parameter(s) (e.g. volume, surface area) you want to extract from the segments"
                     self.win_msg(error_txt, self.button_set_segm)
                     return
-
-            if len(valid) == 3 and all(valid): 
-                valid_all.append(True)
         
-        if all(valid_all): 
-            self.win_msg('All good! Segments have been set (1).')
-            if self.improve_hm2D.isChecked(): 
-                title = 'Segments for improving 3D heatmaps unrolling into 2D'
-                msg = 'Make sure you have selected all the required segments to aid the unrolling of the 3D heatmaps into 2D. If you are happy with your selection press  -Ok-, else press  -Cancel- and change your selection.' 
-                prompt = Prompt_ok_cancel(title, msg, parent=self)
-                prompt.exec()
-                print('output:',prompt.output, '\n')
-                if prompt.output: 
-                    self.set_segm_settings()
-                    self.button_set_segm.setChecked(True)
-                else: 
-                    self.button_set_segm.setChecked(False)
-            else: 
+        self.win_msg('All good! Segments have been set (1).')
+        if self.improve_hm2D.isChecked(): 
+            title = 'Segments for improving 3D heatmaps unrolling into 2D'
+            msg = 'Make sure you have selected all the required segments to aid the unrolling of the 3D heatmaps into 2D. If you are happy with your selection press  -Ok-, else press  -Cancel- and change your selection.' 
+            prompt = Prompt_ok_cancel(title, msg, parent=self)
+            prompt.exec()
+            print('output:',prompt.output, '\n')
+            if prompt.output: 
                 self.set_segm_settings()
+                self.button_set_segm.setChecked(True)
+            else: 
+                self.button_set_segm.setChecked(False)
         else: 
-            print('Aja? - segments')
+            self.set_segm_settings()
 
     def validate_sections(self): 
 
         stype = 'sect'
         cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
         for cut in cuts_sel.keys(): 
-            error_txt = ''
             if cuts_sel[cut]:
                 cut_no = cut[-1]
                 #Get values
@@ -1881,16 +1941,12 @@ class CreateNewProj(QDialog):
                     error_txt = '*'+cut+": Section names need to be different."
                     self.win_msg(error_txt, self.button_set_sect)
                     return
-                else: 
-                    pass
                 
                 cl_params = [self.mH_user_params['CL'][key] for key in self.mH_user_params['CL'].keys()]
                 if all(flag==False for flag in cl_params): 
                     error_txt = '*'+cut+": At least one centreline needs to be created to cut organ into regions. Go back and select one in 'Set Measurement Parameters."
                     self.win_msg(error_txt, self.button_set_sect)
                     return
-                else: 
-                    pass
                 
                 #Get checkboxes
                 self.check_checkBoxes(self.ch_selected, 'sect')
@@ -1916,7 +1972,7 @@ class CreateNewProj(QDialog):
         self.set_sect_settings()
 
     def validate_segm_sect(self): 
-        valid = []
+
         #Get checkboxes
         at_least_one = False
         for cB_item in self.list_segm_sect: 
@@ -1925,7 +1981,7 @@ class CreateNewProj(QDialog):
                 break
         
         if at_least_one: 
-            valid.append(True)
+            pass
         else: 
             error_txt = "*At least one channel contour needs to be selected for the segment-region intersection cuts."
             self.win_msg(error_txt, self.button_set_segm_sect)
@@ -1935,26 +1991,144 @@ class CreateNewProj(QDialog):
         meas_vol = getattr(self, 'cB_volume_segm_sect').isChecked()
         meas_area = getattr(self, 'cB_area_segm_sect').isChecked()
         if any([meas_vol, meas_area]):
-            valid.append(True)
+            pass
         else: 
             error_txt = "*Please select the measurement parameter(s) (e.g. volume, surface area) you want to extract from the segment-region intersection cuts"
             self.win_msg(error_txt, self.button_set_segm_sect)
             return
 
-        if all(valid): 
-            self.win_msg('All good! Segment-Region Intersections have been set.')
-            self.set_segm_sect_settings()
-        else: 
-            print('Aja? - Segment-Region')
+        self.win_msg('All good! Segment-Region Intersections have been set.')
+        self.set_segm_sect_settings()
 
     def validate_mC_segments(self):
-        pass
+
+        stype = 'segm'
+        cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1_mC').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2_mC').isChecked()}
+        for cut in cuts_sel.keys(): 
+            if cuts_sel[cut]:
+                cut_no = cut[-1]
+                #Get values
+                no_segm = getattr(self, 'sB_no_segm'+cut_no+'_mC').value()
+                names_segm = getattr(self, 'names_segm'+cut_no+'_mC').text()
+                names_segm = names_segm.split(',')
+                no_discs = getattr(self, 'sB_segm_noObj'+cut_no+'_mC').value()
+                for xx, nam in enumerate(names_segm):
+                    if nam == '':
+                        names_segm.remove('')
+                names_segm = [name.strip() for name in names_segm]
+
+                #Check values
+                if len(names_segm) != int(no_segm):
+                    error_txt = "*"+cut+": The number of segments need to match the number of segment names given."
+                    self.win_msg(error_txt, self.button_set_segm_mC)
+                    return
+                elif len(set(names_segm)) != int(no_segm):
+                    error_txt = '*'+cut+": Segment names need to be different."
+                    self.win_msg(error_txt, self.button_set_segm_mC)
+                    return
+                
+                #Check that the number of discs is at least number of segm -1
+                if int(no_discs) < int(no_segm)-1:
+                    title = 'Are you sure?'
+                    msg = 'Are you sure you only need '+str(no_discs)+' disc(s) to obtain '+str(no_segm)+' segment(s)? If you are happy with these settings press  -Ok-, else press  -Cancel- and change them.'
+                    prompt = Prompt_ok_cancel(title, msg, parent=self)
+                    prompt.exec()
+                    print('output:', prompt.output)
+                    if not prompt.output: 
+                        self.button_set_segm_mC.setChecked(False)
+                        return
+        
+        self.win_msg('All good! morphoCell Segments have been set (1).')
+        self.set_mC_segm_settings()
 
     def validate_mC_sections(self):
-        pass
+        
+        if self.button_set_sect.isChecked(): 
+            stype = 'sect'
+            cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'_mC').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2_mC').isChecked()}
+            for cut in cuts_sel.keys(): 
+                if cuts_sel[cut]:
+                    cut_no = cut[-1]
+                    #Get values
+                    names_sect = getattr(self, 'names_sect'+cut_no+'_mC').text()
+                    names_sect = names_sect.split(',')
+                    for xx, nam in enumerate(names_sect):
+                        if nam == '':
+                            names_sect.remove('')
+                    names_sect = [name.strip() for name in names_sect]
+
+                    #Check name values
+                    if len(names_sect) != 2:
+                        error_txt = "*"+cut+":  Sections cut only produce two classifications. Please provide two region names."
+                        self.win_msg(error_txt, self.button_set_sect_mC)
+                        return
+                    elif len(set(names_sect)) != 2:
+                        error_txt = '*'+cut+": Section names need to be different."
+                        self.win_msg(error_txt, self.button_set_sect_mC)
+                        return
+                    
+                    cl_params = [self.mH_user_params['CL'][key] for key in self.mH_user_params['CL'].keys()]
+                    if all(flag==False for flag in cl_params): 
+                        error_txt = '*'+cut+": At least one centreline needs to be created to be able to classify cells into distinct regions. Go to the Morphological Tab and select one centreline in 'Set Measurement Parameters."
+                        self.win_msg(error_txt, self.button_set_sect_mC)
+                        return
+            
+            self.win_msg('All good! morphoCell Regions have been set (1).')
+            self.set_mC_sect_settings()
+        
+        else: 
+            error_txt = '*Please set first the Regions in the -Morphological [morphoHeart]- Tab to be able to continue.'
+            self.win_msg(error_txt, self.button_set_sect_mC)
+            return
+
+    def validate_mC_segm_sect(self):
+        at_least_one = False
+        for cB_item in self.list_segm_sect_mC: 
+            if getattr(self, cB_item).isEnabled() and getattr(self, cB_item).isChecked(): 
+                at_least_one = True
+                break
+        
+        if at_least_one: 
+            pass
+        else: 
+            error_txt = "*At least one intersection needs to be selected for the segment-region intersection cuts."
+            self.win_msg(error_txt, self.button_set_segm_sect_mC)
+            return
+
+        self.win_msg('All good! morphoCell Segment-Region Intersections have been set.')
+        self.set_mC_segm_sect_settings()
+
+    def validate_mC_zones(self): 
+
+        zones_sel = {'Zone1': getattr(self, 'tick_zones_no1').isChecked(), 'Zone2': getattr(self, 'tick_zones_no2').isChecked(), 
+                     'Zone3': getattr(self, 'tick_zones_no3').isChecked()}
+        
+        for zone in zones_sel.keys(): 
+            if zones_sel[zone]:
+                zone_no = zone[-1]
+                #Get values
+                no_zones = getattr(self, 'sB_no_zones'+zone_no+'_mC').value()
+                names_zone = getattr(self, 'names_zones'+zone_no).text()
+                names_zone = names_zone.split(',')
+                for xx, nam in enumerate(names_zone):
+                    if nam == '':
+                        names_zone.remove('')
+                names_zone = [name.strip() for name in names_zone]
+
+                #Check values
+                if len(names_zone) != int(no_zones):
+                    error_txt = "*"+zone+": The number of zones need to match the number of zone names given."
+                    self.win_msg(error_txt, self.button_set_zone_mC)
+                    return
+                elif len(set(names_zone)) != int(no_zones):
+                    error_txt = '*'+zone+": Zone names need to be different."
+                    self.win_msg(error_txt, self.button_set_zone_mC)
+                    return
+                
+        self.win_msg('All good! morphoCell Zones have been set (1).')
+        self.set_mC_zones_settings()
 
     def set_segm_settings(self): 
-        valid_all = []
         segm_settings = {'cutLayersIn2Segments': True}
         stype = 'segm'
         cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
@@ -2008,7 +2182,6 @@ class CreateNewProj(QDialog):
                             'ch_segments': ch_segments}
                             
                 segm_settings[cut] = dict_cut
-                valid_all.append(True)
 
         segm_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area, 'Ellip': meas_ellip, 'Angles': meas_angles}
         segm_settings['improve_hm2d'] = improve_hm2d
@@ -2042,11 +2215,8 @@ class CreateNewProj(QDialog):
 
         self.mH_user_params = selected_params
         self.mH_settings['segm'] = segm_settings
-        if all(valid_all):
-            self.button_set_segm.setChecked(True)
-            self.win_msg('All good! Segments have been set.')
-        else: 
-            self.button_set_segm.setChecked(False)
+        self.button_set_segm.setChecked(True)
+        self.win_msg('All good! Segments have been set.')
 
         if self.set_segm_sect.isVisible(): 
             if self.button_set_segm.isChecked() and self.button_set_sect.isChecked():
@@ -2054,7 +2224,7 @@ class CreateNewProj(QDialog):
                 self.tick_segm_sect_2.setEnabled(True)
 
     def set_sect_settings(self): 
-        valid_all = []
+
         sect_settings = {'cutLayersIn2Sections': True}
         stype = 'sect'
         cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2').isChecked()}
@@ -2101,7 +2271,6 @@ class CreateNewProj(QDialog):
                             'ch_sections': ch_sections}
                             
                 sect_settings[cut] = dict_cut
-                valid_all.append(True)
 
         sect_settings['measure'] = {'Vol': meas_vol, 'SA': meas_area}
         print('sect_settings:', sect_settings)
@@ -2126,11 +2295,9 @@ class CreateNewProj(QDialog):
         self.mH_user_params = selected_params
         self.mH_settings['sect'] = sect_settings
         # print('self.mH_settings (set_sect_settings):',self.mH_settings)
-        if all(valid_all):
-            self.button_set_sect.setChecked(True)
-            self.win_msg('All good! Regions have been set.')
-        else: 
-            self.button_set_sect.setChecked(False)
+
+        self.button_set_sect.setChecked(True)
+        self.win_msg('All good! Regions have been set.')
 
         if self.set_segm_sect.isVisible(): 
             if self.button_set_segm.isChecked() and self.button_set_sect.isChecked():
@@ -2190,157 +2357,354 @@ class CreateNewProj(QDialog):
         self.button_set_segm_sect.setChecked(True)
         self.win_msg('All good! Segment-Region Intersections have been set.')
 
-    def open_sect_segm(self): 
-        if self.tick_segm_sect_2.isChecked(): 
-            self.widget_segm_sect.setVisible(True)
-            self.mH_settings['segm-sect'] = True
-        else: 
-            self.mH_settings['segm-sect'] = False
-            self.widget_segm_sect.setVisible(False)
-        self.button_set_segm_sect.setChecked(False)
+    def set_mC_segm_settings(self):
 
-    def fill_segm_sect(self): 
+        segm_settings = {'cutCellsIn2Segments': True}
+        stype = 'segm'
+        cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1_mC').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2_mC').isChecked()}
+
+        for cut in cuts_sel.keys(): 
+            if cuts_sel[cut]:
+                cut_no = cut[-1]
+                #Get values
+                no_segm = getattr(self, 'sB_no_segm'+cut_no+'_mC').value()
+                obj_type = getattr(self, 'cB_obj_segm'+cut_no+'_mC').currentText()
+                no_obj = getattr(self, 'sB_segm_noObj'+cut_no+'_mC').value()
+                names_segm = getattr(self, 'names_segm'+cut_no+'_mC').text()
+                names_segm = split_str(names_segm)
+                names_segm = [name.strip() for name in names_segm]
+            
+                #Get names
+                names_segmF = {}
+                for dd in range(int(no_segm)): 
+                    segm_no = 'segm'+str(dd+1)
+                    names_segmF[segm_no] = names_segm[dd]
+                
+                mH_set = getattr(self, 'cB_use_mH_segm'+cut_no).isChecked()
+
+                dict_cut = {'no_segments': no_segm,
+                            'obj_segm': obj_type,
+                            'no_cuts_4segments': no_obj,
+                            'name_segments': names_segmF,
+                            'use_mH_settings': mH_set}
+                            
+                segm_settings[cut] = dict_cut
+        
+        print('mC segm_settings:', segm_settings)
+        self.mC_settings['segm_mC'] = segm_settings
+        self.button_set_segm_mC.setChecked(True)
+        self.win_msg('All good! morphoCell Segments have been set.')
+
+        if self.set_segm_sect_mC.isVisible(): 
+            if self.button_set_segm_mC.isChecked() and self.button_set_sect_mC.isChecked():
+                self.fill_segm_sect(info = 'mC')
+                self.tick_segm_sect_mC.setEnabled(True)
+
+    def set_mC_sect_settings(self): 
+
+        sect_settings = {'cutCellsIn2Sections': True}
+        stype = 'sect'
+        cuts_sel = {'Cut1': getattr(self, 'tick_'+stype+'1_mC').isChecked(), 'Cut2':getattr(self, 'tick_'+stype+'2_mC').isChecked()}
+        for cut in cuts_sel.keys(): 
+            if cuts_sel[cut]:
+                cut_no = cut[-1]
+                #Get values
+                obj_type = getattr(self, 'cB_obj_sect'+cut_no+'_mC').currentText()
+                names_sect = getattr(self, 'names_sect'+cut_no+'_mC').text()
+                names_sect = split_str(names_sect)
+                names_sect = [name.strip() for name in names_sect]
+
+                #Get names
+                names_sectF = {}
+                for dd in range(2): 
+                    sect_no = 'sect'+str(dd+1)
+                    names_sectF[sect_no] = names_sect[dd]
+                
+                mH_set = getattr(self, 'cB_use_mH_sect'+cut_no).isChecked()
+
+                dict_cut = {'no_sections': 2,
+                            'obj_sect': obj_type,
+                            'name_sections': names_sectF,
+                            'use_mH_settings': mH_set}
+                            
+                sect_settings[cut] = dict_cut
+
+        print('mC sect_settings:', sect_settings)
+        self.mC_settings['sect_mC'] = sect_settings
+        self.button_set_sect_mC.setChecked(True)
+        self.win_msg('All good! morphoCell Regions have been set.')
+
+        if self.set_segm_sect_mC.isVisible(): 
+            if self.button_set_segm_mC.isChecked() and self.button_set_sect_mC.isChecked():
+                self.fill_segm_sect(info = 'mC')
+                self.tick_segm_sect_mC.setEnabled(True)
+
+    def set_mC_segm_sect_settings(self): 
+        segm_sect_settings = {'cutCellsIn2SegmSect': True}
+
+        #Get selected contours
+        for scut in ['sCut1', 'sCut2']:
+            scut_list = [item for item in self.list_segm_sect_mC if scut in item]
+            if len(scut_list)> 0:
+                segm_sect_settings[scut] = {}
+                for rcut in ['_Cut1', '_Cut2']: 
+                    rcut_list = [item for item in scut_list if rcut in item]
+                    if len(rcut_list)> 0: 
+                        segm_sect_settings[scut][rcut[1:]] = []
+                        for cB_item in rcut_list: 
+                            if getattr(self, cB_item).isChecked(): 
+                                segm_sect_settings[scut][rcut[1:]].append('cells')
+
+        print('mC segm_sect_settings:', segm_sect_settings)
+        self.mC_settings['segm-sect_mC'] = segm_sect_settings
+        self.button_set_segm_sect_mC.setChecked(True)
+        self.win_msg('All good! morphoCell Segment-Region Intersections have been set.')
+
+    def set_mC_zones_settings(self):
+        
+        zone_settings = {'cutCellsIn2Zones': True}
+        zones_sel = {'Zone1': getattr(self, 'tick_zones_no1').isChecked(), 'Zone2': getattr(self, 'tick_zones_no2').isChecked(), 
+                     'Zone3': getattr(self, 'tick_zones_no3').isChecked()}
+        
+        for zone in zones_sel.keys(): 
+            if zones_sel[zone]:
+                zone_no = zone[-1]
+                #Get values
+                no_zones = getattr(self, 'sB_no_zones'+zone_no+'_mC').value()
+                names_zone = getattr(self, 'names_zones'+zone_no).text()
+                names_zone = names_zone.split(',')
+
+                #Get names
+                names_zoneF = {}
+                for dd in range(int(no_zones)): 
+                    zone_no = 'zone'+str(dd+1)
+                    names_zoneF[zone_no] = names_zone[dd]
+
+                dict_cut = {'no_zones': no_zones,
+                            'name_zones': names_zoneF}
+                            
+                zone_settings[zone] = dict_cut
+        
+        print('mC zone_settings:', zone_settings)
+        self.mC_settings['zone_mC'] = zone_settings
+        self.button_set_zone_mC.setChecked(True)
+        self.win_msg('All good! morphoCell Zones have been set.')
+
+    def open_sect_segm(self, info='mH'): 
+        if info == 'mH': 
+            if self.tick_segm_sect_2.isChecked(): 
+                self.widget_segm_sect.setVisible(True)
+                self.mH_settings['segm-sect'] = True
+            else: 
+                self.mH_settings['segm-sect'] = False
+                self.widget_segm_sect.setVisible(False)
+            self.button_set_segm_sect.setChecked(False)
+        else: 
+            if self.tick_segm_sect_mC.isChecked(): 
+                self.widget_segm_sect_mC.setVisible(True)
+                self.mC_settings['segm-sect_mC'] = True
+            else: 
+                self.mH_settings['segm-sect_mC'] = False
+                self.widget_segm_sect_mC.setVisible(False)
+            self.button_set_segm_sect_mC.setChecked(False)
+
+    def fill_segm_sect(self, info='mH'): 
         # Create Segment Labels
+        add = ''
+        if info == 'mC': 
+            add = '_mC' 
+
         for n, scut in enumerate([1, 2]): 
             sname = 'Cut'+str(scut)
-            label_segm = getattr(self, 'lab_segm'+str(scut))
-            if getattr(self, 'tick_segm'+str(scut)).isChecked():
-                sname = sname+': '+getattr(self, 'names_segm'+str(scut)).text()
+            label_segm = getattr(self, 'lab_segm'+str(scut)+add)
+            if getattr(self, 'tick_segm'+str(scut)+add).isChecked():
+                sname = sname+': '+getattr(self, 'names_segm'+str(scut)+add).text()
             else: 
                 label_segm.setEnabled(False)
             label_segm.setText(sname)
         
         for n, rcut in enumerate([1, 2]): 
             rname = 'Cut'+str(rcut)
-            label_sect = getattr(self, 'lab_sect'+str(rcut))
-            if getattr(self, 'tick_sect'+str(rcut)).isChecked():
-                rname = rname+': '+getattr(self, 'names_sect'+str(rcut)).text()
+            label_sect = getattr(self, 'lab_sect'+str(rcut)+add)
+            if getattr(self, 'tick_sect'+str(rcut)+add).isChecked():
+                rname = rname+': '+getattr(self, 'names_sect'+str(rcut)+add).text()
             else: 
                 label_sect.setEnabled(False)
             label_sect.setText(rname)
 
         #Enable or disable Segm
-        if not self.tick_segm2.isChecked(): 
-            bool_segm = False
-            self.segm_reg_cut2.setVisible(False)
-        else: 
-            bool_segm = True
-            self.segm_reg_cut2.setVisible(True)
-
-        getattr(self, 'lab_segm2').setEnabled(bool_segm)        
-        for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
-            for cont in ['int', 'tiss', 'ext']:
-                getattr(self, 'label_'+'sCut2'+'_'+ch).setEnabled(bool_segm)
-                getattr(self, 'label_'+'sCut2'+'_'+ch+'_'+cont).setEnabled(bool_segm)
-                for cut_sect in ['Cut1', 'Cut2']: #sections
-                    getattr(self, 'cB_'+'sCut1'+'_'+cut_sect+'_'+ch+'_'+cont).setEnabled(False)
-                    getattr(self, 'cB_'+'sCut2'+'_'+cut_sect+'_'+ch+'_'+cont).setEnabled(False)
+        if info == 'mH':  
+            if not getattr(self, 'tick_segm2'+add).isChecked(): 
+                bool_segm = False
+                self.segm_reg_cut2.setVisible(False)
+            else: 
+                bool_segm = True
+                self.segm_reg_cut2.setVisible(True)
+            
+            getattr(self, 'lab_segm2'+add).setEnabled(bool_segm)      
+            for ch in ['ch1', 'ch2', 'ch3', 'ch4', 'chNS']:
+                for cont in ['int', 'tiss', 'ext']:
+                    getattr(self, 'label_'+'sCut2'+'_'+ch).setEnabled(bool_segm)
+                    getattr(self, 'label_'+'sCut2'+'_'+ch+'_'+cont).setEnabled(bool_segm)
+                    for cut_sect in ['Cut1', 'Cut2']: #sections
+                        getattr(self, 'cB_'+'sCut1'+'_'+cut_sect+'_'+ch+'_'+cont).setEnabled(False)
+                        getattr(self, 'cB_'+'sCut2'+'_'+cut_sect+'_'+ch+'_'+cont).setEnabled(False)
         
-        #Enable or disable sect
-        if not self.tick_sect2.isChecked():
-            bool_sect = False
+            #Enable or disable sect
+            if not getattr(self, 'tick_sect2'+add).isChecked():
+                bool_sect = False
+            else: 
+                bool_sect = True
+
+            getattr(self, 'lab_sect2'+add).setEnabled(bool_sect)
+            
+            list_segm = [key.split('cB_segm_')[1] for key in self.dict_segm.keys() if self.dict_segm[key]]
+            list_sect = [key.split('cB_sect_')[1] for key in self.dict_sect.keys() if self.dict_sect[key]]
+
+            self.list_segm_sect = []
+            for scut in ['Cut1', 'Cut2']:
+                list_segm_noCut = sorted(list(set([ch_cont[5:] for ch_cont in list_segm if scut in ch_cont])))
+                print(scut,'- segm:', list_segm_noCut)
+                for rcut in ['Cut1', 'Cut2']: 
+                    list_sect_noCut = sorted(list(set([ch_cont[5:] for ch_cont in list_sect if rcut in ch_cont])))
+                    print(rcut,'- sect:', list_sect_noCut)
+                    set_segm = set(list_segm_noCut)
+                    intersect = set_segm.intersection(set(list_sect_noCut))
+                    print('intersect:',intersect)
+                    for item in intersect: 
+                        getattr(self, 'cB_s'+scut+'_'+rcut+'_'+item).setEnabled(True)
+                        self.list_segm_sect.append('cB_s'+scut+'_'+rcut+'_'+item)
+
+            print('self.list_segm_sect:',self.list_segm_sect)
+
         else: 
-            bool_sect = True
-        getattr(self, 'lab_sect2').setEnabled(bool_sect)
+            self.list_segm_sect_mC = []
+            for scut in ['Cut1', 'Cut2']:
+                if getattr(self, 'tick_segm'+scut[-1]+'_mC').isChecked(): 
+                    segm_bool = True
+                else: 
+                    segm_bool = False
 
-        list_segm = [key.split('cB_segm_')[1] for key in self.dict_segm.keys() if self.dict_segm[key]]
-        list_sect = [key.split('cB_sect_')[1] for key in self.dict_sect.keys() if self.dict_sect[key]]
+                for rcut in ['Cut1', 'Cut2']:
+                    if getattr(self, 'tick_sect'+rcut[-1]+'_mC').isChecked(): 
+                        sect_bool = True
+                    else: 
+                        sect_bool = False
 
-        self.list_segm_sect = []
-        for scut in ['Cut1', 'Cut2']:
-            list_segm_noCut = sorted(list(set([ch_cont[5:] for ch_cont in list_segm if scut in ch_cont])))
-            print(scut,'- segm:', list_segm_noCut)
-            for rcut in ['Cut1', 'Cut2']: 
-                list_sect_noCut = sorted(list(set([ch_cont[5:] for ch_cont in list_sect if rcut in ch_cont])))
-                print(rcut,'- sect:', list_sect_noCut)
-                set_segm = set(list_segm_noCut)
-                intersect = set_segm.intersection(set(list_sect_noCut))
-                print('intersect:',intersect)
-                for item in intersect: 
-                    getattr(self, 'cB_s'+scut+'_'+rcut+'_'+item).setEnabled(True)
-                    self.list_segm_sect.append('cB_s'+scut+'_'+rcut+'_'+item)
-
-        print('self.list_segm_sect:',self.list_segm_sect)
-
+                    if segm_bool and sect_bool: 
+                        self.list_segm_sect_mC.append('cB_s'+scut+'_'+rcut)
+                        getattr(self, 'cB_s'+scut+'_'+rcut).setEnabled(True)
+                    else: 
+                        getattr(self, 'cB_s'+scut+'_'+rcut).setEnabled(False)
+            
+            print('self.list_segm_sect_mC:',self.list_segm_sect_mC)
+            
     def validate_set_all(self): 
         print('\n\nValidating Project!')
-        valid = []
-        if self.mH_user_params != None and self.set_meas_param_all.isChecked():
-            valid.append(True)
-        else: 
-            error_txt = '*You need to set the parameters you want to extract from the segmented tissues before creating the new project.'
-            self.win_msg(error_txt, self.button_new_proj)
-            return
-
-        if self.checked('segm'): 
-            if self.button_set_segm.isChecked():
-                valid.append(True)
+        if self.checkBox_mH.isChecked(): 
+            if self.mH_user_params != None and self.set_meas_param_all.isChecked():
+                pass
             else: 
-                error_txt = '*You need to set segments settings before creating the new project.'
+                error_txt = '*You need to set the parameters you want to extract from the segmented tissues before creating the new project.'
                 self.win_msg(error_txt, self.button_new_proj)
-                return
+                return False
+
+            if self.checked('segm'): 
+                if self.button_set_segm.isChecked():
+                    pass
+                else: 
+                    error_txt = '*You need to set segments settings before creating the new project.'
+                    self.win_msg(error_txt, self.button_new_proj)
+                    return False
+                
+            if self.checked('sect'): 
+                CL_meas = self.mH_user_params['CL']
+                dict_CL = [CL_meas[key] for key in CL_meas.keys()]
+                if all(not x for x in dict_CL):
+                    error_txt = '*To create region divisions, at least one centreline needs to be created. Go back to  -Set Measurement Parameters-  and select at least one centreline.'
+                    self.win_msg(error_txt, self.button_new_proj)
+                    return False
+                elif self.button_set_sect.isChecked():
+                    pass
+                else: 
+                    error_txt = '*You need to set sections settings before creating the new project.'
+                    self.win_msg(error_txt, self.button_new_proj)
+                    return False
             
-        if self.checked('sect'): 
-            CL_meas = self.mH_user_params['CL']
-            dict_CL = [CL_meas[key] for key in CL_meas.keys()]
-            if all(not x for x in dict_CL):
-                error_txt = '*To create region divisions, at least one centreline needs to be created. Go back to  -Set Measurement Parameters-  and select at least one centreline.'
-                self.win_msg(error_txt, self.button_new_proj)
-                return 
-            elif self.button_set_sect.isChecked():
-                valid.append(True)
+            if self.tick_segm_sect_2.isChecked():
+                if self.button_set_segm_sect.isChecked(): 
+                    pass
+                else: 
+                    error_txt = '*You need to set segment-region intersection settings before creating the new project.'
+                    self.win_msg(error_txt, self.button_new_proj)
+                    return False
             else: 
-                error_txt = '*You need to set sections settings before creating the new project.'
-                self.win_msg(error_txt, self.button_new_proj)
-                return
+                self.mH_settings['segm-sect'] = False
         
-        if self.tick_segm_sect_2.isChecked():
-            if self.button_set_segm_sect.isChecked(): 
-                valid.append(True)
+        if self.checkBox_mC.isChecked(): 
+            if self.button_set_processes_mC.isChecked(): 
+                pass
             else: 
-                error_txt = '*You need to set segment-region intersection settings before creating the new project.'
+                error_txt = '*You need to set the processes you want to run with the extracted cells (-Cellular [morphoCell]- Tab) before creating the new project.'
                 self.win_msg(error_txt, self.button_new_proj)
-                return
-        else: 
-            self.mH_settings['segm-sect'] = False
-            valid.append(True)
+                return False
 
-        if all(valid): 
-            return True
-        else: 
-            print('Something wrong; validate_set_all')
-            return False
+            if self.checked('segm_mC'): 
+                if self.button_set_segm_mC.isChecked():
+                    pass
+                else: 
+                    error_txt = '*You need to set morphoCell segments settings before creating the new project.'
+                    self.win_msg(error_txt, self.button_new_proj)
+                    return False
+        
+            if self.checked('sect_mC'): 
+                if self.button_set_sect_mC.isChecked():
+                    pass
+                else: 
+                    error_txt = '*You need to set morphoCell sections settings before creating the new project.'
+                    self.win_msg(error_txt, self.button_new_proj)
+                    return False
+                
+            if self.checked('zone_mC'): 
+                if self.button_set_zone_mC.isChecked():
+                    pass
+                else: 
+                    error_txt = '*You need to set morphoCell zones settings before creating the new project.'
+                    self.win_msg(error_txt, self.button_new_proj)
+                    return False
+                
+        return True
 
     def use_mH_settings(self, mtype): 
-        if mtype == 'segm': 
-            if self.button_set_segm.isChecked(): 
-                self.tick_segm1_mC.setChecked(self.tick_segm1.isChecked())
-                self.sB_no_segm1_mC.setValue(self.sB_no_segm1.value())
-                self.cB_obj_segm1_mC.setCurrentText(self.cB_obj_segm1.currentText())
-                self.sB_segm_noObj1_mC.setValue(self.sB_segm_noObj1.value())
-                self.names_segm1_mC.setText(self.names_segm1.text())
-
-                self.tick_segm2_mC.setChecked(self.tick_segm2.isChecked())
-                self.sB_no_segm2_mC.setValue(self.sB_no_segm2.value())
-                self.cB_obj_segm2_mC.setCurrentText(self.cB_obj_segm2.currentText())
-                self.sB_segm_noObj2_mC.setValue(self.sB_segm_noObj2.value())
-                self.names_segm2_mC.setText(self.names_segm2.text())
+        if 'segm' in mtype: 
+            if self.button_set_segm.isChecked():
+                if getattr(self, 'tick_'+mtype).isChecked():  
+                    getattr(self, 'tick_'+mtype+'_mC').setChecked(getattr(self, 'tick_'+mtype).isChecked())
+                    getattr(self, 'sB_no_'+mtype+'_mC').setValue(getattr(self, 'sB_no_'+mtype).value())
+                    getattr(self, 'cB_obj_'+mtype+'_mC').setCurrentText(getattr(self, 'cB_obj_'+mtype).currentText())
+                    getattr(self, 'sB_segm_noObj'+mtype[-1]+'_mC').setValue(getattr(self, 'sB_segm_noObj'+mtype[-1]).value())
+                    getattr(self, 'names_'+mtype+'_mC').setText(getattr(self, 'names_'+mtype).text())
+                else: 
+                    self.win_msg('*Segment Cut '+mtype[-1]+' has not yet been set in the  -Morphological [morphoHeart]- Tab. Please set them first to be able to use them in this analysis.')
+                    getattr(self, 'cB_use_mH_'+mtype).setChecked(False)
+                    return
             else: 
-                self.win_msg('*Segments have not yet been set in the -Morphological (morphoHeart)- Tab. Please set them first to be able to use them in this analysis.')
-                self.tick_mH_segm.setChecked(False)
+                self.win_msg('*Segments have not yet been set in the -Morphological [morphoHeart]- Tab. Please set them first to be able to use them in this analysis.')
+                getattr(self, 'cB_use_mH_'+mtype).setChecked(False)
                 return
         else: 
             if self.button_set_sect .isChecked(): 
-                self.tick_sect1_mC.setChecked(self.tick_sect1.isChecked())
-                self.cB_obj_sect1_mC.setCurrentText(self.cB_obj_sect1.currentText())
-                self.names_sect1_mC.setText(self.names_sect1.text())
-
-                self.tick_sect2_mC.setChecked(self.tick_sect2.isChecked())
-                self.cB_obj_sect2_mC.setCurrentText(self.cB_obj_sect2.currentText())
-                self.names_sect2_mC.setText(self.names_sect2.text())
+                if getattr(self, 'tick_'+mtype).isChecked(): 
+                    getattr(self, 'tick_'+mtype+'_mC').setChecked(getattr(self, 'tick_'+mtype).isChecked())
+                    getattr(self, 'cB_obj_'+mtype+'_mC').setCurrentText(getattr(self, 'cB_obj_'+mtype).currentText())
+                    getattr(self, 'names_'+mtype+'_mC').setText(getattr(self, 'names_'+mtype).text())
+                else: 
+                    self.win_msg('*Region Cut '+mtype[-1]+' has not yet been set in the -Morphological [morphoHeart]- Tab. Please set them first to be able to use them in this analysis.')
+                    getattr(self, 'cB_use_mH_'+mtype).setChecked(False)
+                    return
             else: 
-                self.win_msg('*Regions have not yet been set in the -Morphological (morphoHeart)- Tab. Please set them first to be able to use them in this analysis.')
-                self.tick_mH_reg.setChecked(False)
+                self.win_msg('*Regions have not yet been set in the -Morphological [morphoHeart]- Tab. Please set them first to be able to use them in this analysis.')
+                getattr(self, 'cB_use_mH_'+mtype).setChecked(False)
                 return
 
     # -- Functions Set Measurement Parameters
@@ -3049,6 +3413,11 @@ class NewOrgan(QDialog):
         self.browse_ch3.clicked.connect(lambda: self.get_file('ch3'))
         self.browse_ch4.clicked.connect(lambda: self.get_file('ch4'))
 
+        self.browse_chA.clicked.connect(lambda: self.get_file('chA'))
+        self.browse_chB.clicked.connect(lambda: self.get_file('chB'))
+        self.browse_chC.clicked.connect(lambda: self.get_file('chC'))
+        self.browse_chD.clicked.connect(lambda: self.get_file('chD'))
+
         self.browse_mask_ch1.clicked.connect(lambda: self.get_file_mask('ch1'))
         self.browse_mask_ch2.clicked.connect(lambda: self.get_file_mask('ch2'))
         self.browse_mask_ch3.clicked.connect(lambda: self.get_file_mask('ch3'))
@@ -3075,9 +3444,15 @@ class NewOrgan(QDialog):
         if proj.analysis['morphoHeart']: 
             self.tab_mHeart.setEnabled(True)
             self.tab_mHeart.setVisible(True)
+            self.tabWidget.setCurrentIndex(0)
+            self.tabWidget.setCurrentIndex(1)
+            self.tabWidget.setCurrentIndex(0)
         else: 
             self.tab_mHeart.setEnabled(False)
             self.tab_mHeart.setVisible(False)
+            self.tabWidget.setCurrentIndex(1)
+            self.tabWidget.setCurrentIndex(0)
+            self.tabWidget.setCurrentIndex(1)
 
         if proj.analysis['morphoCell']: 
             self.tab_mCell.setEnabled(True)
@@ -3109,12 +3484,14 @@ class NewOrgan(QDialog):
             imOr_it.remove('lateral-left'); imOr_it.remove('lateral-right')
         except: 
             pass
+
         self.cB_stack_orient.addItems(imOr_it)
         self.cB_units.clear()
         units_it = list(['--select--']+proj.gui_custom_data['im_res_units']+['add'])
         self.cB_units.addItems(units_it)
 
         #Change channels
+        #-mH
         mH_channels = proj.mH_channels
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']: 
             label = getattr(self, 'lab_'+ch) 
@@ -3142,6 +3519,24 @@ class NewOrgan(QDialog):
                     check_mk.setEnabled(False)
                 self.img_dirs[ch] = {}
     
+        #-mC
+        mC_channels = proj.mC_channels
+        for ch in ['chA', 'chB', 'chC', 'chD']: 
+            label = getattr(self, 'lab_'+ch) 
+            name = getattr(self, 'lab_filled_name_'+ch)
+            brw_ch = getattr(self, 'browse_'+ch)
+            dir_ch = getattr(self, 'lab_filled_dir_'+ch)
+            check_ch = getattr(self, 'check_'+ch)
+            if ch not in mC_channels.keys():
+                label.setVisible(False)
+                name.setVisible(False)
+                brw_ch.setVisible(False)
+                dir_ch.setVisible(False)
+                check_ch.setVisible(False)
+            else: 
+                name.setText(proj.mC_channels[ch])
+                self.img_dirs[ch] = {}
+        
     def custom_data(self, name:str, gui_name:str):
         user_data = getattr(self,'cB_'+name).currentText()
         if name == 'stack_orient': 
@@ -3234,29 +3629,48 @@ class NewOrgan(QDialog):
         # print('resolution: ', self.resolution)
 
     def get_file(self, ch):
-        self.win_msg('Loading '+ch+'... Wait for the indicator to turn green, then continue.')
+        self.win_msg('Loading file for '+ch+'... Wait for the indicator to turn green, then continue.')
         btn_file = getattr(self, 'browse_'+ch)
         title = 'Import images for '+ch
         if hasattr(self, 'user_dir'):
             cwd = self.user_dir
         else: 
             cwd = Path().absolute()
-        file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image File (*.tif *.tiff)")
+
+        if ch != 'chA': 
+            file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image File (*.tif *.tiff)")
+        else: 
+            file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Data File (*.xlsx *.csv)")
+
         if Path(file_name).is_file(): 
+            images_o = io.imread(str(file_name))
+            #Save files img_dirs
+            self.img_dirs[ch]['image'] = {}
+            self.img_dirs[ch]['image']['dir'] = Path(file_name)
+
+            if ch != 'chA': 
+                #Check shape
+                zdim, xdim, ydim = images_o.shape
+                if xdim != ydim: 
+                    error_txt = '*The dimensions of the loaded images for '+ch+' are not square. Please make sure the images fit this requirement to continue.'
+                    self.win_msg(error_txt, getattr(self, 'browse_'+ch))
+                    return 
+                
+                self.img_dirs[ch]['image']['shape'] = images_o.shape
+            self.user_dir = Path(file_name).parent
+            getattr(self, 'browse_'+ch).setChecked(True)
+
             label = getattr(self, 'lab_filled_dir_'+ch)
             label.setText(str(file_name))
             check = getattr(self, 'check_'+ch)
             check.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(0, 255, 0); color: rgb(0, 255, 0); font: 25 2pt 'Calibri Light'")
             check.setText('Done')
-            images_o = io.imread(str(file_name))
-            #Save files img_dirs
-            self.img_dirs[ch]['image'] = {}
-            self.img_dirs[ch]['image']['dir'] = Path(file_name)
-            self.img_dirs[ch]['image']['shape'] = images_o.shape
-            self.user_dir = Path(file_name).parent
-            getattr(self, 'browse_'+ch).setChecked(True)
+
         else: 
-            error_txt = '*Something went wrong importing the images for '+ch+'. Please try again.'
+            if ch != 'chA':
+                error_txt = '*Something went wrong loading the images for '+ch+'. Please try again.'
+            else: 
+                error_txt = '*Something went wrong loading the file for '+ch+'. Please try again.'
             self.win_msg(error_txt, getattr(self, 'browse_'+ch))
             return
 

@@ -235,22 +235,53 @@ class Project():
 
     def set_mC_settings(self, mC_settings:dict, mC_params:dict):# 
         
-        # mC_set = {}
-        # mC_channels = []
-        # mC_segments = []
-        self.mC_settings = {}
         if self.analysis['morphoCell']:
+            self.mC_settings = {}
+            #Add setup dict containing all mC_settings for the new project
             self.mC_settings['setup'] = mC_settings
-            self.mC_channels = {}
-            self.mC_segments = {}
-            self.mC_sections = {}
-            self.mC_methods = {}
+
+            #Add empty dict to save info related to the user-selected processes
+            self.mC_settings['wf_info'] = {}
+
+            #Add attribute with information of channels
+            self.mC_channels = mC_settings['name_chs']
+
+            #Add attribute with info regarding segments
+            if isinstance(mC_settings['segm_mC'], dict):
+                self.mC_segments = {}
+                for key in mC_settings['segm_mC']: 
+                    if 'Cut' in key:
+                        self.mC_segments[key]= mC_settings['segm_mC'][key]['name_segments']
+            else: 
+                 self.mC_segments = False
+
+            #Add attribute with info regarding sections
+            if isinstance(mC_settings['segm-sect_mC'], dict): 
+                self.mC_sections = {}
+                for key in mC_settings['sect_mC']: 
+                    if 'Cut' in key:
+                        self.mC_sections[key]= mC_settings['sect_mC'][key]['name_sections']
+            else: 
+                self.mC_sections = False
+
+            #Add attribute with info regarding zones
+            if isinstance(mC_settings['zone_mC'], dict): 
+                self.mC_zones = {}
+                for key in mC_settings['zone_mC']: 
+                    if 'Cut' in key:
+                        self.mC_zones[key]= mC_settings['zone_mC'][key]['name_zones']
+            else: 
+                self.mC_zones = False
+
         else: 
             self.mC_settings = None
             self.mC_channels = None
             self.mC_segments = None
             self.mC_sections = None
+            self.mC_zones = None
             self.mC_methods = None
+
+        self.set_mC_methods()
         
     def clean_False(self, user_param:dict):#
 
@@ -290,6 +321,20 @@ class Project():
         
         self.mH_methods = methods
 
+    def set_mC_methods(self): 
+        methods = ['A-Set_Orientation', 'A-SetExtraChs', 'A-CleanCells']
+        if self.mC_segments != None: 
+            methods.append('B-Segments')
+        if self.mC_sections != None: 
+            methods.append('B-Regions')
+        if isinstance(self.mC_settings['setup']['segm-sect_mC'], dict):
+            methods.append('B-Segments_Sections')
+        if self.mC_zones != None: 
+            methods.append('B-Zones')
+        methods.append('C-Measure')
+        
+        self.mC_methods = methods
+
     def create_proj_dir(self):#
         self.dir_proj.mkdir(parents=True, exist_ok=True)
         if self.dir_proj.is_dir():
@@ -306,7 +351,7 @@ class Project():
         '''
         workflow = dict()
         dict_mH = dict()
-        dict_cell = dict()
+        dict_mC = dict()
         mH_param2meas = self.mH_settings['measure']
        
         if self.analysis['morphoHeart']: 
@@ -546,10 +591,36 @@ class Project():
             self.create_df_res()
         
         if self.analysis['morphoCell']:
-            pass
+            mC_channels = sorted(self.mC_channels)
+
+            dict_mC['Status'] = 'NI'
+            for met in self.mC_methods: 
+                dict_mC[met] = {'Status': 'NI'}
+
+            #Project Status
+            for ch in mC_channels: 
+                dict_mC['A-SetExtraChs'][ch] = {'Status': 'NI'}
+
+            #Segments
+            if 'B-Segments' in self.mC_methods: 
+                for cuts in self.mC_settings['setup']['segm_mC'].keys():
+                    if 'Cut' in cuts and not 'In2' in cuts:
+                        dict_mC['B-Segments'][cuts] = {'Status': 'NI'}
+
+            #Regions
+            if 'B-Regions' in self.mC_methods: 
+                for cuts in self.mC_settings['setup']['sect_mC'].keys():
+                    if 'Cut' in cuts and not 'In2' in cuts:
+                        dict_mC['B-Regions'][cuts] = {'Status': 'NI'}
+            
+            #Zones
+            if 'B-Zones' in self.mC_methods: 
+                for cuts in self.mC_settings['setup']['zone_mC'].keys():
+                    if 'Cut' in cuts and not 'In2' in cuts:
+                        dict_mC['B-Zones'][cuts] = {'Status': 'NI'}
         
         workflow['morphoHeart'] = dict_mH
-        workflow['morphoCell'] = dict_cell
+        workflow['morphoCell'] = dict_mC
         self.workflow = workflow
     
     def create_df_res(self): 
@@ -677,7 +748,7 @@ class Project():
 
         user_tiss_cont = []
         for index, _ in df_final.iterrows(): 
-            print(index)
+            # print(index)
             param, tiss_cont = index
             split_name = tiss_cont.split('_')
             if len(split_name) == 1 and tiss_cont == 'roi': 
