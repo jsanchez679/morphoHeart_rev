@@ -844,7 +844,7 @@ class Project():
             dict_organ.pop('project', None)
             dict_organ['dir_res'] = organ.dir_res()
             #Get current workflow
-            wf_so_far = self.get_current_wf(organ)
+            wf_so_far = self.get_current_wf(organ) #ABC check what exactly this creates
             dict_organ['workflow'] = wf_so_far
             print(' organ wf_so_far:', wf_so_far)
             #Add organ to project's organs
@@ -966,11 +966,15 @@ class Organ():
                     self.objects['KSplines']['cut4cl'] = {'bottom': {}, 'top':{}}
                     self.objects['Spheres']['cut4cl'] = {'bottom': {}, 'top':{}}
                     self.objects['Centreline'] = {}
-            if self.analysis['morphoCell']:
+            if self.analysis['morphoCell']: #ABC 
                 self.mC_settings = copy.deepcopy(project.mC_settings)
-            self.workflow = copy.deepcopy(project.workflow)
-            self.create_folders()
-            self.create_channels()
+                self.imChannelsMC = {}
+                self.obj_imChannelsMC = {}
+                self.meshesMC = {}
+
+            self.workflow = copy.deepcopy(project.workflow) #ABC Check workflow at this point
+            self.create_folders(project.analysis) #ABC Check what analysis has (mH and mC:True?) 
+            self.create_channels(project.analysis) #ABC create cells and channels others than those shared wth mH
         else: 
             print('\nLoading organ!')
             load_dict = organ_dict['load_dict']
@@ -980,10 +984,19 @@ class Organ():
         now_str = datetime.now().strftime('%Y%m%d%H%M')
         self.mH_organName = 'mH_Organ-'+now_str
 
-    def create_channels(self): 
-        channels = [key for key in self.parent_project.mH_channels.keys() if 'NS' not in key]
-        for ch_name in channels:
-            im_ch = self.create_ch(ch_name=ch_name)
+    def create_channels(self, analysis): 
+        if analysis['morphoHeart']: 
+            channels = [key for key in self.parent_project.mH_channels.keys() if 'NS' not in key]
+            for ch_name in channels:
+                im_ch = self.create_ch(ch_name=ch_name)
+
+        if analysis['morphoCell']: #ABC
+            channelsMC = [key for key in self.parent_project.mC_channels.keys()]
+            for ch_nameMC in channelsMC:
+                if channelsMC != 'chA':
+                    im_chMC = self.create_mCch(ch_name=ch_nameMC)
+                else:
+                    cells_ch = self.create_cells(ch_name=ch_nameMC)
 
     def load_organ(self, load_dict:dict):#
         load_dict = make_Paths(load_dict)
@@ -1115,7 +1128,6 @@ class Organ():
             self.roi_cube = {'cube': orient_cube_rf, 
                                'clear': orient_cube_clear_r}
 
-            
     def colour_cube(self, orient_cube, axis_dict): 
         normal_dict = {}
         for pt in orient_cube.cell_centers(): 
@@ -1210,14 +1222,21 @@ class Organ():
                 submesh = obj_segm.create_segm_sect(segm_sect = segm_sect, cuts = cutsf, color = color)
                 self.obj_subm[subm] = submesh
 
-    def create_folders(self):#
-        dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'centreline', 'settings']
+    def create_folders(self, analysis):#
+        if analysis['morphoHeart']: #ABC
+            dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'centreline', 'settings']
+        else:
+            if analysis['morphoCell']:
+                dirResults = ['meshes', 'csv_all', 'imgs_videos', 's3_numpy', 'settings']
+            else:
+                dirResults = []
+
         organ_folder = self.user_organName
         for direc in dirResults:
             dir2create = Path(self.parent_project.dir_proj) / organ_folder / direc
             dir2create.mkdir(parents=True, exist_ok=True)
             if dir2create.is_dir():
-                self.info['dirs'][direc] = True#dir2create
+                self.info['dirs'][direc] = True #dir2create
             else: 
                 print('>> Error: Directory ', organ_folder, '/', direc, ' could not be created!')
                 alert('error_beep')
@@ -1273,6 +1292,7 @@ class Organ():
             if hasattr(imChannel, 'shape_s3'):
                 self.imChannels[imChannel.channel_no]['shape_s3'] = imChannel.shape_s3
                 self.info['shape_s3'] = imChannel.shape_s3
+
         self.obj_imChannels[imChannel.channel_no] = imChannel
         
     def add_channelNS(self, imChannelNS):
@@ -1410,6 +1430,33 @@ class Organ():
                 self.objects['Spheres'][proc][class_name] = {'center': obj.center, 
                                                                    'color': obj.color()}
 
+    def add_channel_mC(self, imChannelMC): 
+        # Check first if the channel has been already added to the organ
+        new = False
+        if imChannelMC.channel_no not in self.imChannelsMC.keys():
+            new = True
+
+        if new: 
+            print('>> Adding morphoCell Channel - ', imChannelMC.channel_no)
+            channel_dict = {}
+            channel_dict['parent_organ_name'] = imChannelMC.parent_organ_name
+            channel_dict['channel_no'] = imChannelMC.channel_no
+            channel_dict['user_chName'] = imChannelMC.user_chName
+            channel_dict['mH_channel'] = imChannelMC.mH_channel
+            channel_dict['resolution'] = imChannelMC.resolution
+            channel_dict['dir_cho'] = imChannelMC.dir_cho
+            channel_dict['shape'] = imChannelMC.shape
+            channel_dict['process'] = imChannelMC.process
+
+            self.imChannelsMC[imChannelMC.channel_no] = channel_dict
+
+        else:
+            if hasattr(imChannelMC, 'shape_s3'):
+                self.imChannels[imChannelMC.channel_no]['shape_s3'] = imChannelMC.shape_s3
+            pass
+
+        self.obj_imChannelsMC[imChannelMC.channel_no] = imChannelMC
+
     def load_objTemp(self, proc, key, ch_cont, obj_temp): 
 
         if proc == 'centreline':
@@ -1449,6 +1496,16 @@ class Organ():
         print('---- Creating channel ('+ch_name+')! ----')
         image = ImChannel(organ=self, ch_name=ch_name)#,new=True
         return image
+    
+    def create_mCch(self, ch_name:str):
+        print('---- Creating morphoCell channel ('+ch_name+')! ----')
+        imageMC = ImChannelMC(organ=self, ch_name=ch_name)#,new=True
+        return imageMC
+
+    def create_cells(self, ch_name:str):
+        print('---- Creating Cells for morphoCell analysis ('+ch_name+')! ----')
+        cells = Cells(organ=self)#,new=True
+        return cellsa
 
     def save_organ(self, alert_on=True):#
         print('Saving organ')
@@ -1489,8 +1546,14 @@ class Organ():
             all_info['obj_temp'] = obj_temp
             
         if self.analysis['morphoCell']:
+            #ABC what else is there to save from MC 
             all_info['mC_settings'] = self.mC_settings
-        
+
+            image_dictMC = copy.deepcopy(self.imChannelMC)
+            for chMC in image_dictMC.keys():
+                image_dictMC[chMC].pop('parent_organ', None)
+            all_info['imChannelMC'] = image_dictMC
+
         all_info['workflow'] = self.workflow
 
         self.dir_info = Path('settings') / jsonDict_name
@@ -3592,6 +3655,118 @@ class SubMesh():
         
     def get_color(self):
         return self.parent_mesh.parent_organ.submeshes[self.sub_name_all]['color'] 
+
+class ImChannelMC():
+    def __init__(self, organ:Organ, ch_name:str):#
+        
+        self.parent_organ = organ
+        self.parent_organ_name = organ.user_organName
+        self.channel_no = ch_name
+        self.user_chName = organ.mC_settings['setup']['name_chs'][ch_name]
+        self.mH_channel = organ.mC_settings['setup']['mH_channel'][ch_name]
+
+        if self.mH_channel != False:
+            print('Create/Load a mC Channel')
+            #self.mH_channel = organ.imChannels[]
+            if self.channel_no not in organ.imChannels.keys():   
+                print('>> New Channel-', self.channel_no)
+                self.new_imChannelMC()
+            else: 
+                print('>> Loading Channel-', self.channel_no)
+                self.load_imChannelMC()
+
+        else: 
+            print('Connect to a mH ImChannel')
+    
+    def new_imChannelMC(self):
+        organ = self.parent_organ
+        ch_name = self.channel_no
+
+        self.resolution = organ.info['resolution']
+        self.dir_cho = organ.img_dirs[ch_name]['image']['dir']       
+        self.shape = self.im().shape
+        self.process = ['Init']
+        
+        #organ.mC_settings['setup']['alpha'][ch_name] = {}
+
+        self.save_channel(im_proc=self.im_proc(new=True))
+        organ.add_channel_mC(imChannelMC=self)
+
+    def im(self):#
+        im = io.imread(str(self.dir_cho))
+        if not isinstance(im, np.ndarray):
+            print('>> Error: morphoHeart was unable to load tiff.\n>> Directory: ',str(self.dir_cho))
+            alert('error_beep')
+        else: 
+            return im
+        
+    def save_channel(self, im_proc):
+        organ_name = self.parent_organ.user_organName
+        im_name = organ_name + '_StckProc_' + self.channel_no + '.npy'
+        im_dir = self.parent_organ.dir_res(dir='s3_numpy') / im_name
+        np.save(im_dir, im_proc)
+        if not im_dir.is_file():
+            print('>> Error: Processed channel was not saved correctly!\n>> File: '+im_name)
+            alert('error_beep')
+        else: 
+            print('>> Processed channel saved correctly! - ', im_name)
+            alert('countdown')
+            self.dir_stckproc = im_name
+        
+class Cells():
+    def __init__(self, organ:Organ):
+
+        self.parent_organ = organ
+        self.parent_organ_name = organ.user_organName
+        self.channel_no = 'chA'
+        self.user_chName = organ.mC_settings['setup']['name_chs']['chA']
+
+        if self.channel_no not in organ.imChannelsMC.keys():  
+            print('>> New Cells Channel-', self.channel_no)
+            self.new_Cells()
+        else: 
+            print('>> Loading Channel-', self.channel_no)
+            self.load_Cells()
+            
+    def new_Cells(self): 
+        organ = self.parent_organ
+        ch_name = self.channel_no
+
+        self.resolution = organ.info['resolution']
+        self.dir_cho = organ.img_dirs[ch_name]['image']['dir'] 
+        ext =   Path(self.dir_cho).suffix
+
+        #Check the extension of the file
+        if ext == '.xlsx' or ext == '.xls':
+            cells_position = pd.read_excel(self.dir_cho, header = 3, 
+                                    usecols = ['Position X','Position Y','Position Z', 'ID'], index_col=3) 
+        else: #'.csv'
+            cells_position = pd.read_csv(self.dir_cho, header = 3, 
+                                         usecols = ['Position X','Position Y','Position Z', 'ID'], index_col=3)
+        
+        print('cells_position:', cells_position)
+        sphs_pos = cells_position.copy()
+        sphs_pos['Position Y'] = -cells_position['Position Y']+stack_shape[1]*xy_Scaling_um
+        sphs_pos_tuple = list(sphs_pos.itertuples(index=False, name=None))
+        cols = range(len(sphs_pos_tuple))
+        
+        sphs = []
+        for i, pos in enumerate(sphs_pos_tuple):
+            s = vedo.Sphere(r=2).pos(pos).color(cols[i])
+            s.name = f"Cell Nr.{i}"
+            sphs.append(s)
+        
+        vp = vedo.Plotter(N=1, axes = 1)
+        vp.show(myoc, sphs, at=0)
+        
+    return sphs, sphs_pos_tuple, sphs_pos
+
+        pass
+    
+    def load_Cells(self): 
+        pass
+
+        
 
 class MyFaceSelectingPlotter(vedo.Plotter):
     def __init__(self, colors, color_o, views, **kwargs):

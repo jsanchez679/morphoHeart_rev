@@ -3423,6 +3423,8 @@ class NewOrgan(QDialog):
         self.browse_mask_ch3.clicked.connect(lambda: self.get_file_mask('ch3'))
         self.browse_mask_ch4.clicked.connect(lambda: self.get_file_mask('ch4'))
 
+        self.browse_mask_chA.clicked.connect(lambda: self.get_file_mask('chA'))
+
     def win_msg(self, msg, btn=None): 
         if msg[0] == '*':
             self.tE_validate.setStyleSheet(error_style)
@@ -3445,13 +3447,9 @@ class NewOrgan(QDialog):
             self.tab_mHeart.setEnabled(True)
             self.tab_mHeart.setVisible(True)
             self.tabWidget.setCurrentIndex(0)
-            self.tabWidget.setCurrentIndex(1)
-            self.tabWidget.setCurrentIndex(0)
         else: 
             self.tab_mHeart.setEnabled(False)
             self.tab_mHeart.setVisible(False)
-            self.tabWidget.setCurrentIndex(1)
-            self.tabWidget.setCurrentIndex(0)
             self.tabWidget.setCurrentIndex(1)
 
         if proj.analysis['morphoCell']: 
@@ -3521,12 +3519,15 @@ class NewOrgan(QDialog):
     
         #-mC
         mC_channels = proj.mC_channels
+        mH_ch = proj.mC_settings['setup']['mH_channel']
+        print('mH_ch:', mH_ch)
         for ch in ['chA', 'chB', 'chC', 'chD']: 
             label = getattr(self, 'lab_'+ch) 
             name = getattr(self, 'lab_filled_name_'+ch)
             brw_ch = getattr(self, 'browse_'+ch)
             dir_ch = getattr(self, 'lab_filled_dir_'+ch)
             check_ch = getattr(self, 'check_'+ch)
+
             if ch not in mC_channels.keys():
                 label.setVisible(False)
                 name.setVisible(False)
@@ -3534,8 +3535,17 @@ class NewOrgan(QDialog):
                 dir_ch.setVisible(False)
                 check_ch.setVisible(False)
             else: 
+                if ch != 'chA':
+                    if mH_ch[ch] != False: #ABC
+                        label.setEnabled(False)
+                        name.setEnabled(False)
+                        brw_ch.setEnabled(False)
+                        dir_ch.setEnabled(False)
+                        check_ch.setEnabled(False)
+
                 name.setText(proj.mC_channels[ch])
                 self.img_dirs[ch] = {}
+        print('self.img_dirs:',self.img_dirs)
         
     def custom_data(self, name:str, gui_name:str):
         user_data = getattr(self,'cB_'+name).currentText()
@@ -3553,29 +3563,26 @@ class NewOrgan(QDialog):
             pass 
 
     def validate_organ(self, proj):
-        valid = []; error_txt = ''
-        #Check the name is unique within the project
-        organ_name = self.lineEdit_organ_name.text().strip()
-        organ_dir = Path(proj.dir_proj) / organ_name 
-        if organ_dir.is_dir(): 
-            error_txt = '*There is already an organ within this project with the same name. Please give this organ a new name to continue.'
-            self.win_msg(error_txt, self.button_create_new_organ)
-            return
-        else: 
-            valid.append(True)
 
         #Get organ name
+        organ_name = self.lineEdit_organ_name.text().strip()
         if len(organ_name)<5:
             error_txt = '*Organ name needs to be longer than five (5) characters'
             self.win_msg(error_txt, self.button_create_new_organ)
-            return
+            return False
         elif validate_txt(organ_name) != None:
             error_txt = "*Please avoid using invalid characters in the project's name e.g.['(',')', ':', '-', '/', '\', '.', ',']"
             self.win_msg(error_txt, self.button_create_new_organ)
-            return
+            return False
         else: 
             self.organ_name = organ_name
-            valid.append(True)
+
+        #Check the name is unique within the project
+        organ_dir = Path(proj.dir_proj) / organ_name 
+        if organ_dir.is_dir(): 
+            error_txt = '*There is already an organ within this project with the same name. Please give this organ a unique name to continue.'
+            self.win_msg(error_txt, self.button_create_new_organ)
+            return False
         
         #Get Strain, stage and genotype
         for name in ['strain', 'stage', 'genotype', 'manipulation','stack_orient', 'units']:
@@ -3583,10 +3590,9 @@ class NewOrgan(QDialog):
             if cB_data == '--select--':
                 error_txt = "*Please select the organ's "+name.upper()+"."
                 self.win_msg(error_txt, self.button_create_new_organ)
-                return
+                return False
             else: 
                 setattr(self, name, cB_data)
-                valid.append(True)
 
         # if self.cB_stack_orient.currentText() == 'custom':
         #     if len(self.cust_angle.text()) == 0: 
@@ -3605,20 +3611,16 @@ class NewOrgan(QDialog):
             if scaling == '': 
                 error_txt = "*Please enter the scaling value for "+axis+"."
                 self.win_msg(error_txt, self.button_create_new_organ)
-                return
+                return False
             else: 
                 valid_axis.append(True)
 
         if all(valid_axis): 
             self.set_resolution()
-            valid.append(True)
         
-        if all(valid):
-            self.win_msg('All good. Continue setting up new organ.') 
-            return True   
-        else: 
-            return False
-        
+        self.win_msg('All good. Continue setting up new organ.') 
+        return True   
+
     def set_resolution(self): 
         resolution = {}
         units = getattr(self, 'cB_units').currentText()
@@ -3626,12 +3628,17 @@ class NewOrgan(QDialog):
             res = getattr(self, 'scaling_'+axis).text()
             resolution[axis] = {'scaling': float(res), 'units': units}
         self.resolution = resolution
-        # print('resolution: ', self.resolution)
+        print('resolution: ', self.resolution)
 
     def get_file(self, ch):
+
         self.win_msg('Loading file for '+ch+'... Wait for the indicator to turn green, then continue.')
         btn_file = getattr(self, 'browse_'+ch)
-        title = 'Import images for '+ch
+        if ch != 'chA':
+            title = 'Import images for '+ch
+        else: 
+            title = 'Import cell positions data for '+ch
+
         if hasattr(self, 'user_dir'):
             cwd = self.user_dir
         else: 
@@ -3640,23 +3647,24 @@ class NewOrgan(QDialog):
         if ch != 'chA': 
             file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image File (*.tif *.tiff)")
         else: 
-            file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Data File (*.xlsx *.csv)")
+            file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Data File (*.xlsx *.xls *.csv)")
 
         if Path(file_name).is_file(): 
-            images_o = io.imread(str(file_name))
             #Save files img_dirs
             self.img_dirs[ch]['image'] = {}
-            self.img_dirs[ch]['image']['dir'] = Path(file_name)
 
             if ch != 'chA': 
+                images_o = io.imread(str(file_name))
                 #Check shape
-                zdim, xdim, ydim = images_o.shape
+                _, xdim, ydim = images_o.shape
                 if xdim != ydim: 
                     error_txt = '*The dimensions of the loaded images for '+ch+' are not square. Please make sure the images fit this requirement to continue.'
                     self.win_msg(error_txt, getattr(self, 'browse_'+ch))
                     return 
-                
                 self.img_dirs[ch]['image']['shape'] = images_o.shape
+            
+            self.img_dirs[ch]['image']['dir'] = Path(file_name)
+
             self.user_dir = Path(file_name).parent
             getattr(self, 'browse_'+ch).setChecked(True)
 
@@ -3670,14 +3678,20 @@ class NewOrgan(QDialog):
             if ch != 'chA':
                 error_txt = '*Something went wrong loading the images for '+ch+'. Please try again.'
             else: 
-                error_txt = '*Something went wrong loading the file for '+ch+'. Please try again.'
+                error_txt = '*Something went wrong loading the data file for '+ch+'. Please try again.'
+
             self.win_msg(error_txt, getattr(self, 'browse_'+ch))
             return
 
         btn_file.setChecked(True)
 
     def get_file_mask(self, ch):
-        self.win_msg('Loading mask for '+ch+'... Wait for the indicator to turn green, then continue.')
+        if ch != 'chA': 
+            self.win_msg('Loading mask for '+ch+'... Wait for the indicator to turn green, then continue.')
+        else: 
+            #ABC ACAAA
+            self.win_msg('Loading images for '+ch+'... Wait for the indicator to turn green, then continue.')
+            
         btn_file = getattr(self, 'browse_mask_'+ch)
         if 'image' not in self.img_dirs[ch].keys(): 
             error_txt = '*Please select first the images for '+ch+', then select their corresponding mask.'
@@ -3714,9 +3728,17 @@ class NewOrgan(QDialog):
         btn_file.setChecked(True)
 
     def check_selection(self, proj): 
+
         paths_chs = []
         paths = []
+        txt = '('
         for ch in proj.mH_channels.keys():
+            txt = txt+'morphoHeart'
+            if len(self.img_dirs[ch]) < 1: 
+                error_txt = "*Please load the images (and masks) for all the organ's channels (morphoHeart)."
+                self.win_msg(error_txt, self.button_create_new_organ)
+                return False
+            
             if ch != 'chNS': 
                 paths_chs.append(self.img_dirs[ch]['image']['dir'])
                 paths.append(self.img_dirs[ch]['image']['dir'])
@@ -3724,32 +3746,69 @@ class NewOrgan(QDialog):
                     paths.append(self.img_dirs[ch]['mask']['dir'])
             else: 
                 pass
+        
+        mH_ch = proj.mC_settings['setup']['mH_channel']
+        for ch in proj.mC_channels.keys(): 
+            if len(self.img_dirs[ch]) < 1: 
+                if ch != 'chA':
+                    if mH_ch[ch] != False:
+                        mH_ch2use = mH_ch[ch].split(' (')[0]
+                        dir2use = self.img_dirs[mH_ch2use]
+                        self.img_dirs[ch] = dir2use
+                    else: 
+                        error_txt = "*Please load the images (and masks) for all the organ's channels (morphoCell)."
+                        self.win_msg(error_txt, self.button_create_new_organ)
+                        return False
+                else: 
+                    error_txt = "*Please load the cell positions data file for chA (morphoCell)."
+                    self.win_msg(error_txt, self.button_create_new_organ)
+                    return False
+            
+            if len(txt) > 1: 
+                txt = txt + ' & morphoCell)'
+            else: 
+                txt = txt + 'morphoCell'
+
+            if ch != 'chA':
+                if mH_ch[ch] != False: #ABC
+                    pass
+                else:  # == False
+                    paths_chs.append(self.img_dirs[ch]['image']['dir'])
+                    paths.append(self.img_dirs[ch]['image']['dir'])
+            else:  # ch == chA
+                paths_chs.append(self.img_dirs[ch]['image']['dir'])
+                paths.append(self.img_dirs[ch]['image']['dir'])
+
+        txt = txt + ').'
         valid = [val.is_file() for val in paths]
         set_paths_chs = set(paths_chs)
+
         # print('Valid checking channel selection: ', valid)
         if not all(valid): 
-            error_txt = "*Please load the images (and masks) for all the organ's channels."
+            error_txt = "*Please load the images (and masks) for all the organ's channels "+ txt
             self.win_msg(error_txt, self.button_create_new_organ)
-            return
+            return False
         elif len(set_paths_chs) != len(paths_chs):
             error_txt = "*The image files loaded for each channel needs to be different. Please check and retry."
             self.win_msg(error_txt, self.button_create_new_organ)
-            for ch in proj.mH_channels.keys():
+            all_chs = [ch for ch in proj.mH_channels.keys()]+[ch for ch in proj.mC_channels.keys()]
+            for ch in all_chs:
                 getattr(self, 'browse_'+ch).setChecked(False)
                 getattr(self, 'lab_filled_dir_'+ch).clear()
                 check_ch = getattr(self, 'check_'+ch)
                 check_ch.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(255, 255, 255); color: rgb(0, 255, 0); font: 25 2pt 'Calibri Light'")
                 check_ch.setText('')
-            return
+            return False
         else: 
             return True
 
     def check_shapes(self, proj): 
         shapes = []
         for ch in self.img_dirs:
-            for im in ['image','mask']: 
-                if im in self.img_dirs[ch].keys():
-                    shapes.append(self.img_dirs[ch][im]['shape'])
+            if ch != 'chA':
+                for im in ['image','mask']: 
+                    if im in self.img_dirs[ch].keys():
+                        shapes.append(self.img_dirs[ch][im]['shape'])
 
         if len(set(shapes)) == 1: 
             print('All files have same shape!')

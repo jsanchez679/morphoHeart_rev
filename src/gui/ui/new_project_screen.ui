@@ -15369,7 +15369,7 @@ QScrollBar::handle:vertical:hover {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-201</y>
+            <y>-339</y>
             <width>948</width>
             <height>932</height>
            </rect>
@@ -19578,7 +19578,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                       <number>1</number>
                      </property>
                      <property name="maximum">
-                      <number>5</number>
+                      <number>15</number>
                      </property>
                     </widget>
                    </item>
@@ -19612,7 +19612,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                       <number>1</number>
                      </property>
                      <property name="maximum">
-                      <number>5</number>
+                      <number>15</number>
                      </property>
                     </widget>
                    </item>
@@ -19646,7 +19646,7 @@ QLineEdit:focus { border: 1px solid #eb6fbd;}
                       <number>1</number>
                      </property>
                      <property name="maximum">
-                      <number>5</number>
+                      <number>15</number>
                      </property>
                     </widget>
                    </item>
