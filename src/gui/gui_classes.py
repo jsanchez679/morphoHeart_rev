@@ -3651,8 +3651,7 @@ class NewOrgan(QDialog):
 
         if Path(file_name).is_file(): 
             #Save files img_dirs
-            self.img_dirs[ch]['image'] = {}
-
+            
             if ch != 'chA': 
                 images_o = io.imread(str(file_name))
                 #Check shape
@@ -3661,9 +3660,13 @@ class NewOrgan(QDialog):
                     error_txt = '*The dimensions of the loaded images for '+ch+' are not square. Please make sure the images fit this requirement to continue.'
                     self.win_msg(error_txt, getattr(self, 'browse_'+ch))
                     return 
+                
+                self.img_dirs[ch]['image'] = {}
                 self.img_dirs[ch]['image']['shape'] = images_o.shape
-            
-            self.img_dirs[ch]['image']['dir'] = Path(file_name)
+                self.img_dirs[ch]['image']['dir'] = Path(file_name)
+            else: 
+                self.img_dirs[ch]['data'] = {}
+                self.img_dirs[ch]['data']['dir'] = Path(file_name)
 
             self.user_dir = Path(file_name).parent
             getattr(self, 'browse_'+ch).setChecked(True)
@@ -3689,16 +3692,19 @@ class NewOrgan(QDialog):
         if ch != 'chA': 
             self.win_msg('Loading mask for '+ch+'... Wait for the indicator to turn green, then continue.')
         else: 
-            #ABC ACAAA
             self.win_msg('Loading images for '+ch+'... Wait for the indicator to turn green, then continue.')
             
         btn_file = getattr(self, 'browse_mask_'+ch)
-        if 'image' not in self.img_dirs[ch].keys(): 
+        if ch != 'chA' and 'image' not in self.img_dirs[ch].keys(): 
             error_txt = '*Please select first the images for '+ch+', then select their corresponding mask.'
             self.win_msg(error_txt, getattr(self, 'browse_mask_'+ch))
             return
         else: 
-            title = 'Import mask images for '+ch
+            if ch != 'chA': 
+                title = 'Import mask images for '+ch
+            else: 
+                title = 'Import images for '+ch
+
             if hasattr(self, 'user_dir'):
                 cwd = self.user_dir
             else: 
@@ -3709,19 +3715,29 @@ class NewOrgan(QDialog):
                 label.setText(str(file_name))
                 check = getattr(self, 'check_mask_'+ch)
                 mask_o = io.imread(str(file_name))
-                if mask_o.shape != self.img_dirs[ch]['image']['shape']:
+                if ch != 'chA' and mask_o.shape != self.img_dirs[ch]['image']['shape']:
                     error_txt = '*The mask selected does not match the shape of the selected images (image shape: '+self.img_dirs[ch]['image']['shape']+', mask shape: '+mask_o.shape+'). Check and try again.'
                     self.win_msg(error_txt, getattr(self, 'browse_mask_'+ch))
                     return
                 else: 
-                    self.img_dirs[ch]['mask'] = {}
-                    self.img_dirs[ch]['mask']['dir'] = Path(file_name)
-                    self.img_dirs[ch]['mask']['shape'] = mask_o.shape
+                    if ch != 'chA': 
+                        self.img_dirs[ch]['mask'] = {}
+                        self.img_dirs[ch]['mask']['dir'] = Path(file_name)
+                        self.img_dirs[ch]['mask']['shape'] = mask_o.shape
+                    else: 
+                        self.img_dirs[ch]['image'] = {}
+                        self.img_dirs[ch]['image']['dir'] = Path(file_name)
+                        self.img_dirs[ch]['image']['shape'] = mask_o.shape
+
                     check.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(0, 255, 0); color: rgb(0, 255, 0); font: 25 2pt 'Calibri Light'")
                     check.setText('Done')
                     getattr(self, 'browse_mask_'+ch).setChecked(True)
             else: 
-                error_txt = '*Something went wrong importing the mask images for '+ch+'. Please try again.'
+                if ch != 'chA':
+                    error_txt = '*Something went wrong importing the mask images for '+ch+'. Please try again.'
+                else: 
+                    error_txt = '*Something went wrong importing the images for '+ch+'. Please try again.'
+
                 self.win_msg(error_txt, getattr(self, 'browse_mask_'+ch))
                 return
                 
@@ -3764,10 +3780,11 @@ class NewOrgan(QDialog):
                     self.win_msg(error_txt, self.button_create_new_organ)
                     return False
             
-            if len(txt) > 1: 
-                txt = txt + ' & morphoCell)'
-            else: 
-                txt = txt + 'morphoCell'
+            if 'morphoCell' not in txt: 
+                if len(txt) > 1: 
+                    txt = txt + ' & morphoCell)'
+                else: 
+                    txt = txt + 'morphoCell'
 
             if ch != 'chA':
                 if mH_ch[ch] != False: #ABC
@@ -3805,10 +3822,9 @@ class NewOrgan(QDialog):
     def check_shapes(self, proj): 
         shapes = []
         for ch in self.img_dirs:
-            if ch != 'chA':
-                for im in ['image','mask']: 
-                    if im in self.img_dirs[ch].keys():
-                        shapes.append(self.img_dirs[ch][im]['shape'])
+            for im in ['image','mask']: 
+                if im in self.img_dirs[ch].keys():
+                    shapes.append(self.img_dirs[ch][im]['shape'])
 
         if len(set(shapes)) == 1: 
             print('All files have same shape!')

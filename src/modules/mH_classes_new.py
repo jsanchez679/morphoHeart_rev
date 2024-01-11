@@ -971,6 +971,7 @@ class Organ():
                 self.imChannelsMC = {}
                 self.obj_imChannelsMC = {}
                 self.meshesMC = {}
+                self.cellsMC = {}
 
             self.workflow = copy.deepcopy(project.workflow) #ABC Check workflow at this point
             self.create_folders(project.analysis) #ABC Check what analysis has (mH and mC:True?) 
@@ -993,7 +994,7 @@ class Organ():
         if analysis['morphoCell']: #ABC
             channelsMC = [key for key in self.parent_project.mC_channels.keys()]
             for ch_nameMC in channelsMC:
-                if channelsMC != 'chA':
+                if ch_nameMC != 'chA':
                     im_chMC = self.create_mCch(ch_name=ch_nameMC)
                 else:
                     cells_ch = self.create_cells(ch_name=ch_nameMC)
@@ -1505,7 +1506,7 @@ class Organ():
     def create_cells(self, ch_name:str):
         print('---- Creating Cells for morphoCell analysis ('+ch_name+')! ----')
         cells = Cells(organ=self)#,new=True
-        return cellsa
+        return cells
 
     def save_organ(self, alert_on=True):#
         print('Saving organ')
@@ -3733,14 +3734,15 @@ class Cells():
         ch_name = self.channel_no
 
         self.resolution = organ.info['resolution']
-        self.dir_cho = organ.img_dirs[ch_name]['image']['dir'] 
-        ext =   Path(self.dir_cho).suffix
+        self.dir_cho = organ.img_dirs[ch_name]['data']['dir'] 
+        ext = Path(self.dir_cho).suffix
 
         #Check the extension of the file
         if ext == '.xlsx' or ext == '.xls':
             cells_position = pd.read_excel(self.dir_cho, header = 3, 
                                     usecols = ['Position X','Position Y','Position Z', 'ID'], index_col=3) 
         else: #'.csv'
+            #ACAAA check loading of csv file!
             cells_position = pd.read_csv(self.dir_cho, header = 3, 
                                          usecols = ['Position X','Position Y','Position Z', 'ID'], index_col=3)
         
@@ -3756,12 +3758,12 @@ class Cells():
             s.name = f"Cell Nr.{i}"
             sphs.append(s)
         
-        vp = vedo.Plotter(N=1, axes = 1)
-        vp.show(myoc, sphs, at=0)
+    #     vp = vedo.Plotter(N=1, axes = 1)
+    #     vp.show(myoc, sphs, at=0)
         
-    return sphs, sphs_pos_tuple, sphs_pos
+    # return sphs, sphs_pos_tuple, sphs_pos
 
-        pass
+    #     pass
     
     def load_Cells(self): 
         pass

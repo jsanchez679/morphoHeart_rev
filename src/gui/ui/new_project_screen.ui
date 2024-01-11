@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>984</width>
-    <height>911</height>
+    <width>976</width>
+    <height>882</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -799,7 +799,7 @@ QScrollBar::handle:vertical:hover {
            <rect>
             <x>0</x>
             <y>-801</y>
-            <width>948</width>
+            <width>940</width>
             <height>1394</height>
            </rect>
           </property>
@@ -15369,7 +15369,7 @@ QScrollBar::handle:vertical:hover {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-339</y>
+            <y>-19</y>
             <width>948</width>
             <height>932</height>
            </rect>
