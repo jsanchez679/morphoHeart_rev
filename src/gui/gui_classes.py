@@ -3538,9 +3538,9 @@ class NewOrgan(QDialog):
                 if ch != 'chA':
                     if mH_ch[ch] != False: #ABC
                         label.setEnabled(False)
-                        name.setEnabled(False)
                         brw_ch.setEnabled(False)
                         dir_ch.setEnabled(False)
+                        dir_ch.setText('Channel loaded from Morphological (morphoHeart)\t\t\t')
                         check_ch.setEnabled(False)
 
                 name.setText(proj.mC_channels[ch])
@@ -4051,6 +4051,7 @@ class LoadProj(QDialog):
         
 def get_proj_wf(proj): 
     flat_wf = flatdict.FlatDict(copy.deepcopy(proj.workflow))
+    #Make sure keep keys works for morphoCell
     keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))== 4 and 'Status' in key]
     # print('flat_wf.keys():', flat_wf.keys())
     for key in flat_wf.keys(): 
@@ -4100,16 +4101,27 @@ def fill_table_with_organs(win, proj, table, blind_cB, notes_cB):
 
     keys_wf = {}
     for wf_key in wf_flat.keys():
-        nn,proc,sp,_ = wf_key.split(':')
-        if 'Sections' in sp: 
-            sp = sp.replace('Sections', 'Regions')
-        keys_wf[sp] = ['workflow']+wf_key.split(':')
+        if 'morphoHeart' in wf_key: 
+            nn,proc,sp,_ = wf_key.split(':')
+            if 'Sections' in sp: 
+                sp = sp.replace('Sections', 'Regions')
+            keys_wf[sp] = ['workflow']+wf_key.split(':')
+        else: 
+            nn,proc,sp,_ = wf_key.split(':')
+            keys_wf[proc] = ['workflow']+wf_key.split(':')
 
     # Workflow
     # - Get morphoHeart Labels
     mH_keys = [num+len(name_keys) for num, key in enumerate(list(keys_wf.keys())) if 'morphoHeart' in keys_wf[key]]
     # - Get morphoCell Labels
-    mC_keys = [num+len(name_keys)+len(mH_keys) for num, key in enumerate(list(keys_wf.keys())) if 'morphoCell' in keys_wf[key]]
+    mC_keys = []; print(len(name_keys)); print(len(mH_keys))
+    num = 0
+    for _, key in enumerate(list(keys_wf.keys())):
+        # print(num); 
+        if 'morphoCell' in keys_wf[key]:
+            # print(key)
+            mC_keys.append(num+len(name_keys)+len(mH_keys))
+            num+=1
 
     #Changing big and small labels: 
     big_labels = ['General Info']
@@ -4517,6 +4529,7 @@ class Load_S3s(QDialog):
                 self.user_dir = Path(file_name).parent
                 check.setStyleSheet("border-color: rgb(0, 0, 0); background-color: rgb(0, 255, 0); color: rgb(0, 255, 0); font: 25 2pt 'Calibri Light'")
                 check.setText('Done')
+                
             else: 
                 self.win_msg('*The selected file is not a numpy array. Please select a valid file.', getattr(self, 'browse_'+ch_cont))
 
@@ -5018,7 +5031,7 @@ class MainWindow(QMainWindow):
     
     def tab_changed(self): 
         
-        if self.current_tab == 0 and self.tabWidget.currentIndex()== 1:
+        if self.current_tab == 0 and self.tabWidget.currentIndex()== 1 or self.current_tab == 2 and self.tabWidget.currentIndex()== 1:
             print('Warning!')
             #Get the status of all ImProc
             wf = self.organ.workflow['morphoHeart']['ImProc']
@@ -5029,9 +5042,8 @@ class MainWindow(QMainWindow):
                 prompt = Prompt_ok(title, msg, parent=self)
                 prompt.exec()
                 print('output:',prompt.output, '\n')
-                self.tabWidget.setCurrentIndex(0)
+                self.tabWidget.setCurrentIndex(self.current_tab)
                 return
-        
         print('Tab was changed to '+str(self.tabWidget.currentIndex()))
         self.current_tab = self.tabWidget.currentIndex()
 

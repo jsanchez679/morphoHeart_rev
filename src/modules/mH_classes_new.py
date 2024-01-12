@@ -161,8 +161,6 @@ class Project():
             self.mH_methods = load_dict['mH_methods']
             self.mC_methods = load_dict['mC_methods']
             self.organs = load_dict['organs']
-            
-            self.cellGroups = load_dict['cellGroups']
 
             self.gui_custom_data = load_dict['gui_custom_data']
           
@@ -328,7 +326,7 @@ class Project():
         if self.mC_sections != None: 
             methods.append('B-Regions')
         if isinstance(self.mC_settings['setup']['segm-sect_mC'], dict):
-            methods.append('B-Segments_Sections')
+            methods.append('B-Segments_Regions')
         if self.mC_zones != None: 
             methods.append('B-Zones')
         methods.append('C-Measure')
@@ -807,7 +805,6 @@ class Project():
         
         all_info['workflow'] = self.workflow#
         all_info['organs'] = self.organs#
-        all_info['cellGroups'] = self.cellGroups#
         all_info['gui_custom_data'] = self.gui_custom_data#
         
         if not json2save_par.is_dir():
@@ -973,8 +970,8 @@ class Organ():
                 self.meshesMC = {}
                 self.cellsMC = {}
 
-            self.workflow = copy.deepcopy(project.workflow) #ABC Check workflow at this point
-            self.create_folders(project.analysis) #ABC Check what analysis has (mH and mC:True?) 
+            self.workflow = copy.deepcopy(project.workflow) 
+            self.create_folders(project.analysis) 
             self.create_channels(project.analysis) #ABC create cells and channels others than those shared wth mH
         else: 
             print('\nLoading organ!')
@@ -1438,7 +1435,7 @@ class Organ():
             new = True
 
         if new: 
-            print('>> Adding morphoCell Channel - ', imChannelMC.channel_no)
+            print('>> Adding morphoCell extra Channel - ', imChannelMC.channel_no)
             channel_dict = {}
             channel_dict['parent_organ_name'] = imChannelMC.parent_organ_name
             channel_dict['channel_no'] = imChannelMC.channel_no
@@ -1451,12 +1448,26 @@ class Organ():
 
             self.imChannelsMC[imChannelMC.channel_no] = channel_dict
 
-        else:
-            if hasattr(imChannelMC, 'shape_s3'):
-                self.imChannels[imChannelMC.channel_no]['shape_s3'] = imChannelMC.shape_s3
-            pass
-
         self.obj_imChannelsMC[imChannelMC.channel_no] = imChannelMC
+
+    def add_cells_mC(self, cells): 
+        new = False
+        if 'chA' not in self.cellsMC.keys(): 
+            new = True
+        
+        if new: 
+            print('>> Adding morphoCell Cells - ', cells.channel_no)
+            cells_dict = {}
+            cells_dict['parent_organ_name'] = cells.parent_organ_name
+            cells_dict['channel_no'] = cells.channel_no
+            cells_dict['user_chName'] = cells.user_chName
+            cells_dict['resolution'] = cells.resolution
+            cells_dict['dir_cho'] = cells.dir_cho
+            cells_dict['dir_cells'] = self.dir_cells
+
+            cells_dict['shape'] = cells.shape
+
+            self.cellsMC[cells.channel_no] = cells_dict
 
     def load_objTemp(self, proc, key, ch_cont, obj_temp): 
 
@@ -1550,7 +1561,7 @@ class Organ():
             #ABC what else is there to save from MC 
             all_info['mC_settings'] = self.mC_settings
 
-            image_dictMC = copy.deepcopy(self.imChannelMC)
+            image_dictMC = copy.deepcopy(self.imChannelsMC)
             for chMC in image_dictMC.keys():
                 image_dictMC[chMC].pop('parent_organ', None)
             all_info['imChannelMC'] = image_dictMC
@@ -3664,20 +3675,18 @@ class ImChannelMC():
         self.parent_organ_name = organ.user_organName
         self.channel_no = ch_name
         self.user_chName = organ.mC_settings['setup']['name_chs'][ch_name]
-        self.mH_channel = organ.mC_settings['setup']['mH_channel'][ch_name]
-
-        if self.mH_channel != False:
-            print('Create/Load a mC Channel')
-            #self.mH_channel = organ.imChannels[]
-            if self.channel_no not in organ.imChannels.keys():   
-                print('>> New Channel-', self.channel_no)
-                self.new_imChannelMC()
-            else: 
-                print('>> Loading Channel-', self.channel_no)
-                self.load_imChannelMC()
-
+        if organ.mC_settings['setup']['mH_channel'][ch_name] != False: 
+            self.mH_channel = organ.mC_settings['setup']['mH_channel'][ch_name].split(' (')[0]
         else: 
-            print('Connect to a mH ImChannel')
+            self.mH_channel = False
+
+        print('Create/Load a mC Channel')
+        if self.channel_no not in organ.imChannelsMC.keys():   
+            print('>> New Channel-', self.channel_no)
+            self.new_imChannelMC()
+        else: 
+            print('>> Loading Channel-', self.channel_no)
+            self.load_imChannelMC()
     
     def new_imChannelMC(self):
         organ = self.parent_organ
@@ -3687,16 +3696,27 @@ class ImChannelMC():
         self.dir_cho = organ.img_dirs[ch_name]['image']['dir']       
         self.shape = self.im().shape
         self.process = ['Init']
-        
+    
         #organ.mC_settings['setup']['alpha'][ch_name] = {}
-
-        self.save_channel(im_proc=self.im_proc(new=True))
+        if self.mH_channel == False: 
+            self.save_channel(im_proc=self.im())
+        else: 
+            #Connect to ImChannel
+            self.imChannel = self.parent_organ.obj_imChannels[self.mH_channel]
         organ.add_channel_mC(imChannelMC=self)
 
+    def load_imChannelMC(self): 
+        pass
+
     def im(self):#
-        im = io.imread(str(self.dir_cho))
+        if hasattr(self, 'dir_stckproc'):
+            dir_stck = self.parent_organ.dir_res(dir='s3_numpy') / self.dir_stckproc
+            im = np.load(str(dir_stck))
+        else: 
+            im = io.imread(str(self.dir_cho))
+
         if not isinstance(im, np.ndarray):
-            print('>> Error: morphoHeart was unable to load tiff.\n>> Directory: ',str(self.dir_cho))
+            print('>> Error: morphoCell was unable to load tiff.\n>> Directory: ',str(self.dir_cho))
             alert('error_beep')
         else: 
             return im
@@ -3740,15 +3760,18 @@ class Cells():
         #Check the extension of the file
         if ext == '.xlsx' or ext == '.xls':
             cells_position = pd.read_excel(self.dir_cho, header = 3, 
-                                    usecols = ['Position X','Position Y','Position Z', 'ID'], index_col=3) 
+                            usecols = ['Position X','Position Y','Position Z', 'ID'], index_col=3) 
         else: #'.csv'
-            #ACAAA check loading of csv file!
-            cells_position = pd.read_csv(self.dir_cho, header = 3, 
+            cells_position = pd.read_csv(self.dir_cho, header = 2, 
                                          usecols = ['Position X','Position Y','Position Z', 'ID'], index_col=3)
         
         print('cells_position:', cells_position)
         sphs_pos = cells_position.copy()
-        sphs_pos['Position Y'] = -cells_position['Position Y']+stack_shape[1]*xy_Scaling_um
+        #Get the shape of the imported cells
+        self.dir_image = organ.img_dirs[ch_name]['image']['dir'] 
+        stack_shape = io.imread(str(self.dir_image)).shape
+        self.shape = stack_shape
+        sphs_pos['Position Y'] = -cells_position['Position Y']+stack_shape[1]*self.resolution[1]
         sphs_pos_tuple = list(sphs_pos.itertuples(index=False, name=None))
         cols = range(len(sphs_pos_tuple))
         
@@ -3757,18 +3780,32 @@ class Cells():
             s = vedo.Sphere(r=2).pos(pos).color(cols[i])
             s.name = f"Cell Nr.{i}"
             sphs.append(s)
-        
-    #     vp = vedo.Plotter(N=1, axes = 1)
-    #     vp.show(myoc, sphs, at=0)
-        
-    # return sphs, sphs_pos_tuple, sphs_pos
 
-    #     pass
+        self.cells = sphs
+        self.save_cells(cells = cells_position)
+        organ.add_cells_mC(cells=self)
     
     def load_Cells(self): 
         pass
 
-        
+    def save_cells(self, cells): 
+        #Add a deleted row
+        n_cells = len(cells)
+        deleted = ['NO']*n_cells
+        cells['deleted'] = deleted
+
+        organ_name = self.parent_organ.user_organName
+        cells_name = organ_name + '_CellsProc_' + self.channel_no + '.csv'
+        cells_dir = self.parent_organ.dir_res(dir='s3_numpy') / cells_name
+        cells.to_csv(cells_dir, index=True) 
+        if not cells_dir.is_file():
+            print('>> Error: Cell positions file was not saved correctly!\n>> File: '+cells_name)
+            alert('error_beep')
+        else: 
+            print('>> Processed channel saved correctly! - ', cells_name)
+            alert('countdown')
+            self.dir_cells = cells_name
+
 
 class MyFaceSelectingPlotter(vedo.Plotter):
     def __init__(self, colors, color_o, views, **kwargs):
