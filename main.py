@@ -280,6 +280,7 @@ class Controller:
         self.main_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.main_win))
         self.init_segmentation_tab()
         self.init_morphoHeart_tab()
+        self.init_morphoCell_tab()
 
         #Action buttons
         self.main_win.actionOpen_a_new_Project_and_Organ.triggered.connect(self.open_new_organ_and_project)
@@ -550,6 +551,14 @@ class Controller:
         self.main_win.scut2_cut2_play_sect11.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_11'))
         self.main_win.scut2_cut2_play_sect12.clicked.connect(lambda: self.run_segm_sect(btn='sCut2_o_Cut2_12'))
 
+    def init_morphoCell_tab(self): 
+        #Isosurface
+        self.main_win.chB_play.clicked.connect(lambda: self.run_isosurface('chB'))
+        self.main_win.chC_play.clicked.connect(lambda: self.run_isosurface('chC'))
+        self.main_win.chD_play.clicked.connect(lambda: self.run_isosurface('chD'))
+
+        self.main_win.remove_cells_play.clicked.connect(lambda: self.run_remove_cells())
+        
     def init_multip_analysis_win(self): 
 
         self.multip_analysis_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.main_win))
@@ -841,6 +850,14 @@ class Controller:
     
     def run_segm_sect(self, btn=None): 
         mA.run_segm_sect(controller=self, btn=btn)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
+
+    def run_isosurface(self, btn): 
+        mA.run_isosurface(controller=self, btn=btn)
+
+    def run_remove_cells(self): 
+        mA.run_remove_cells(controller=self)
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 

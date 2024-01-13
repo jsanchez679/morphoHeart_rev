@@ -2395,3 +2395,35 @@ def run_measure(controller):
     
     else: 
         controller.main_win.win_msg('*To measure whole tissue make sure you have at least run the  -Keep Largest-  section.')
+
+#MORPHOCELL TAB
+def run_isosurface(controller, btn): 
+
+    workflow = controller.organ.workflow['morphoCell']
+    fcM.create_iso_volume(organ = controller.organ, ch = btn)
+
+    proc = ['A-SetExtraChs', btn, 'Status']
+    controller.main_win.organ.update_mCworkflow(process = proc, update = 'DONE')
+
+    getattr(controller.main_win, btn+'_play').setChecked(True)
+    all_done = []
+    for ch in ['chB', 'chC', 'chD']: 
+        btn_o = getattr(controller.main_win, ch+'_play')
+        all_done.append(btn_o.isVisible() and btn_o.isChecked())
+    
+    proc_wft = ['A-SetExtraChs', 'Status']
+    if all(all_done):
+        controller.organ.update_mCworkflow(process = proc_wft, update = 'DONE')
+    elif any(all_done): 
+        controller.organ.update_mCworkflow(process = proc_wft, update = 'DONE')
+    else: 
+        pass
+    controller.main_win.update_status(workflow, proc_wft, controller.main_win.isosurface_status)    
+
+def run_remove_cells(controller): 
+    
+    workflow = controller.organ.workflow['morphoCell']
+    
+
+    print('AAAA')
+    

@@ -1737,6 +1737,29 @@ def create_subsegment(organ, subsgm, cut, cut_masked, stype, sp_dict_segm, color
     # final_segm_mesh: instance of mesh (vedo)
     return final_segm_mesh
 
+def create_iso_volume(organ, ch):
+
+    #Open image for channel btn
+    img_dir = organ.img_dirs[ch]['image']['dir']
+    color = organ.mC_settings['setup']['color_chs'][ch]
+    res = organ.get_resolution()
+    threshold = organ.mC_settings['wf_info']['isosurface'][ch]['threshold']
+    alpha = organ.mC_settings['wf_info']['isosurface'][ch]['alpha']
+    vol = vedo.Volume(str(img_dir), spacing = res).isosurface(int(threshold)).alpha(float(alpha))
+    vol.color(color)
+    # vol.rotateX(-90)
+
+    if hasattr(organ, 'vol_iso'): 
+        organ.vol_iso[ch] = vol
+    else: 
+        organ.vol_iso = {ch: vol}
+
+    txtf = organ.user_organName+' \n - Isosurface volume reconstruction for Ch'+ch[-1]+': '+organ.mC_settings['setup']['name_chs'][ch]+' [threshold: '+str(threshold)+']'
+    txt = vedo.Text2D(txtf,  c=txt_color, font=txt_font, s=txt_size)
+    vp = vedo.Plotter(N=1, axes = 1)
+    vp.add_icon(logo, pos=(0.1,0.0), size=0.25)
+    vp.show(vol, txt, at=0, interactive=True)
+
 #%% - Measuring functions
 def measure_centreline(organ, nPoints):
     

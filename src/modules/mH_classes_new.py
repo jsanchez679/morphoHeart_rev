@@ -597,7 +597,8 @@ class Project():
 
             #Project Status
             for ch in mC_channels: 
-                dict_mC['A-SetExtraChs'][ch] = {'Status': 'NI'}
+                if ch != 'chA':
+                    dict_mC['A-SetExtraChs'][ch] = {'Status': 'NI'}
 
             #Segments
             if 'B-Segments' in self.mC_methods: 
@@ -888,10 +889,12 @@ class Project():
         print('self.organs:',self.organs)
 
     def get_current_wf(self, organ): #
+
         flat_wf = flatdict.FlatDict(copy.deepcopy(organ.workflow))
-        keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))==4 and 'Status' in key]
+        keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))== 4 and 'Status' in key and 'morphoHeart' in key]
+        keep_keys_mC = [key for key in flat_wf.keys() if len(key.split(':'))== 3 and 'morphoCell' in key]
         for key in flat_wf.keys(): 
-            if key not in keep_keys: 
+            if key not in keep_keys+keep_keys_mC: 
                 flat_wf.pop(key, None)
         out_dict = flat_wf.as_dict()
         for keyi in out_dict: 
@@ -967,7 +970,6 @@ class Organ():
                 self.mC_settings = copy.deepcopy(project.mC_settings)
                 self.imChannelsMC = {}
                 self.obj_imChannelsMC = {}
-                self.meshesMC = {}
                 self.cellsMC = {}
 
             self.workflow = copy.deepcopy(project.workflow) 
@@ -1062,6 +1064,11 @@ class Organ():
         if self.analysis['morphoCell']:
             # mC_Settings
             self.mC_settings = load_dict['mC_settings']
+
+            self.imChannelsMC = load_dict['imChannelMC']
+            self.load_objImChannelMC()
+            self.cellsMC = load_dict['cells_MC']
+            self.load_objCells()
         
         if 'orientation' in self.mH_settings['wf_info'].keys():
             self.load_orient_cubes()
@@ -1152,7 +1159,7 @@ class Organ():
         self.obj_imChannels = {}
         if len(self.imChannels) > 0:
             for imCh in self.imChannels:
-                im_ch = ImChannel(organ=self, ch_name=imCh)#, new=False)
+                im_ch = ImChannel(organ=self, ch_name=imCh)
                 self.obj_imChannels[imCh] = im_ch
         
     def load_objImChannelNS(self):
@@ -1219,6 +1226,18 @@ class Organ():
                 color = submeshes_dict[subm]['color']
                 submesh = obj_segm.create_segm_sect(segm_sect = segm_sect, cuts = cutsf, color = color)
                 self.obj_subm[subm] = submesh
+
+    def load_objImChannelMC(self): 
+        self.obj_imChannelsMC = {}
+        if len(self.imChannelsMC) > 0:
+            for imCh in self.imChannelsMC:
+                im_ch = ImChannelMC(organ=self, ch_name=imCh)
+                self.obj_imChannelsMC[imCh] = im_ch
+
+    def load_objCells(self): 
+        
+        cells = Cells(organ=self)
+        self.cellsMC = {'chA': cells}
 
     def create_folders(self, analysis):#
         if analysis['morphoHeart']: #ABC
@@ -1463,8 +1482,7 @@ class Organ():
             cells_dict['user_chName'] = cells.user_chName
             cells_dict['resolution'] = cells.resolution
             cells_dict['dir_cho'] = cells.dir_cho
-            cells_dict['dir_cells'] = self.dir_cells
-
+            cells_dict['dir_cells'] = cells.dir_cells
             cells_dict['shape'] = cells.shape
 
             self.cellsMC[cells.channel_no] = cells_dict
@@ -1566,6 +1584,11 @@ class Organ():
                 image_dictMC[chMC].pop('parent_organ', None)
             all_info['imChannelMC'] = image_dictMC
 
+            cells_MC = copy.deepcopy(self.cellsMC)
+            for ch in cells_MC.keys():
+                cells_MC[ch].pop('parent_organ', None)
+            all_info['cells_MC'] = cells_MC
+
         all_info['workflow'] = self.workflow
 
         self.dir_info = Path('settings') / jsonDict_name
@@ -1631,6 +1654,11 @@ class Organ():
 
     def update_mHworkflow(self, process, update):#
         workflow = self.workflow['morphoHeart']
+        set_by_path(workflow, process, update)
+        print('> Update:', process, get_by_path(workflow, process))   
+
+    def update_mCworkflow(self, process, update):#
+        workflow = self.workflow['morphoCell']
         set_by_path(workflow, process, update)
         print('> Update:', process, get_by_path(workflow, process))       
 
@@ -3706,7 +3734,13 @@ class ImChannelMC():
         organ.add_channel_mC(imChannelMC=self)
 
     def load_imChannelMC(self): 
-        pass
+        organ = self.parent_organ
+        ch_name = self.channel_no
+        
+        self.resolution = organ.imChannelsMC[ch_name]['resolution']
+        self.dir_cho = Path(organ.imChannelsMC[ch_name]['dir_cho'])
+        self.shape = tuple(organ.imChannelsMC[ch_name]['shape'])
+        self.process = organ.imChannelsMC[ch_name]['process']
 
     def im(self):#
         if hasattr(self, 'dir_stckproc'):
@@ -3742,7 +3776,7 @@ class Cells():
         self.channel_no = 'chA'
         self.user_chName = organ.mC_settings['setup']['name_chs']['chA']
 
-        if self.channel_no not in organ.imChannelsMC.keys():  
+        if self.channel_no not in organ.cellsMC.keys():  
             print('>> New Cells Channel-', self.channel_no)
             self.new_Cells()
         else: 
@@ -3786,7 +3820,32 @@ class Cells():
         organ.add_cells_mC(cells=self)
     
     def load_Cells(self): 
-        pass
+        organ = self.parent_organ
+        ch_name = self.channel_no
+
+        self.resolution = organ.cellsMC[ch_name]['resolution']
+        self.dir_cho = organ.cellsMC[ch_name]['dir_cho']
+        self.dir_cells = organ.cellsMC[ch_name]['dir_cells']
+        self.shape = organ.cellsMC[ch_name]['shape']
+        cells_dir = self.parent_organ.dir_res(dir='s3_numpy') / self.dir_cells
+
+        cells_position = pd.read_csv(cells_dir, index_col=0)
+
+        sphs_pos = cells_position.copy()
+        sphs_pos['Position Y'] = -cells_position['Position Y']+self.shape[1]*self.resolution[1]
+
+        sphs_pos = sphs_pos[sphs_pos['deleted'] == 'NO'] 
+        sphs_pos = sphs_pos[["Position X", "Position Y", "Position Z"]]
+        sphs_pos_tuple = list(sphs_pos.itertuples(index=False, name=None))
+        cols = range(len(sphs_pos_tuple))
+        
+        sphs = []
+        for i, pos in enumerate(sphs_pos_tuple):
+            s = vedo.Sphere(r=2).pos(pos).color(cols[i])
+            s.name = f"Cell Nr.{i}"
+            sphs.append(s)
+        
+        self.cells = sphs
 
     def save_cells(self, cells): 
         #Add a deleted row
@@ -3802,10 +3861,9 @@ class Cells():
             print('>> Error: Cell positions file was not saved correctly!\n>> File: '+cells_name)
             alert('error_beep')
         else: 
+            self.dir_cells = cells_name
             print('>> Processed channel saved correctly! - ', cells_name)
             alert('countdown')
-            self.dir_cells = cells_name
-
 
 class MyFaceSelectingPlotter(vedo.Plotter):
     def __init__(self, colors, color_o, views, **kwargs):

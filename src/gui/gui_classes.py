@@ -3642,7 +3642,7 @@ class NewOrgan(QDialog):
         if hasattr(self, 'user_dir'):
             cwd = self.user_dir
         else: 
-            cwd = Path().absolute()
+            cwd = Path().absolute().home()
 
         if ch != 'chA': 
             file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), "Image File (*.tif *.tiff)")
@@ -3708,7 +3708,8 @@ class NewOrgan(QDialog):
             if hasattr(self, 'user_dir'):
                 cwd = self.user_dir
             else: 
-                cwd = Path().absolute()
+                cwd = Path().absolute().home()
+
             file_name, _ = QFileDialog.getOpenFileName(self, title, str(cwd), 'Image Files (*.tif *.tiff)')
             if Path(file_name).is_file(): 
                 label = getattr(self, 'lab_filled_dir_mask_'+ch)
@@ -4052,10 +4053,11 @@ class LoadProj(QDialog):
 def get_proj_wf(proj): 
     flat_wf = flatdict.FlatDict(copy.deepcopy(proj.workflow))
     #Make sure keep keys works for morphoCell
-    keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))== 4 and 'Status' in key]
+    keep_keys = [key for key in flat_wf.keys() if len(key.split(':'))== 4 and 'Status' in key and 'morphoHeart' in key]
+    keep_keys_mC = [key for key in flat_wf.keys() if len(key.split(':'))== 3 and 'morphoCell' in key]
     # print('flat_wf.keys():', flat_wf.keys())
     for key in flat_wf.keys(): 
-        if key not in keep_keys: 
+        if key not in keep_keys+keep_keys_mC: 
             flat_wf.pop(key, None)
     out_dict = flat_wf.as_dict()
     for keyi in out_dict: 
@@ -4107,7 +4109,7 @@ def fill_table_with_organs(win, proj, table, blind_cB, notes_cB):
                 sp = sp.replace('Sections', 'Regions')
             keys_wf[sp] = ['workflow']+wf_key.split(':')
         else: 
-            nn,proc,sp,_ = wf_key.split(':')
+            nn,proc,sp = wf_key.split(':')
             keys_wf[proc] = ['workflow']+wf_key.split(':')
 
     # Workflow
@@ -4115,7 +4117,7 @@ def fill_table_with_organs(win, proj, table, blind_cB, notes_cB):
     mH_keys = [num+len(name_keys) for num, key in enumerate(list(keys_wf.keys())) if 'morphoHeart' in keys_wf[key]]
     # - Get morphoCell Labels
     mC_keys = []; print(len(name_keys)); print(len(mH_keys))
-    num = 0
+    num = 1
     for _, key in enumerate(list(keys_wf.keys())):
         # print(num); 
         if 'morphoCell' in keys_wf[key]:
@@ -4514,7 +4516,7 @@ class Load_S3s(QDialog):
         if hasattr(self, 'user_dir'):
             cwd = self.user_dir
         else: 
-            cwd = Path().absolute()
+            cwd = Path().absolute().home()
 
         file_name, aaa = QFileDialog.getOpenFileName(self, title, str(cwd), "Numpy Arrays (*.npy)")
         if Path(file_name).is_file(): 
@@ -4880,7 +4882,7 @@ class MainWindow(QMainWindow):
         #Setting up tabs
         self.init_segment_tab()
         self.init_pandq_tab()
-        # self.init_morphoCell_tab()
+        self.init_morphoCell_tab()
 
         # Init Tabs
         self.init_tabs()
@@ -4978,12 +4980,9 @@ class MainWindow(QMainWindow):
             self.tabWidget.setTabVisible(1, False)
             if self.organ.analysis['morphoCell']:
                 self.tabWidget.setCurrentIndex(2)
-            else: 
-                self.tabWidget.setCurrentIndex(3)
         
         if self.organ.analysis['morphoCell']:
             pass
-            # self.tabWidget.setCurrentIndex(2)
         else: 
             self.tabWidget.setTabVisible(2, False)
 
@@ -7537,17 +7536,8 @@ class MainWindow(QMainWindow):
     ############################################################################################
     #- Init PROCESS AND ANALYSE Tab
     def init_pandq_tab(self): 
-
-        #All Group box
-        self.segmentationAll_play.setStyleSheet(style_play)
-        self.segmentationAll_play.setEnabled(False)
-        self.segmentationAll_play.clicked.connect(lambda: self.run_segmentationAll())
-        self.centreline_thicknessAll_play.setStyleSheet(style_play)
-        self.centreline_thicknessAll_play.setEnabled(False)
-        # self.centreline_thicknessAll_play.clicked.connect(lambda: self.())
-        self.segments_sectionsAll_play.setStyleSheet(style_play)
-        self.segments_sectionsAll_play.setEnabled(False)
-        # self.segments_sectionsAll_play.clicked.connect(lambda: self.())
+        
+        print('Setting up Process and Analyse Tab')
 
         #Keep largest
         self.init_keeplargest()
@@ -7652,7 +7642,7 @@ class MainWindow(QMainWindow):
                 getattr(self, 'kl_label_'+chk).setText(chk.title()+': '+self.channels[chk].title())
                 for contk in ['int', 'tiss', 'ext']:
                     color = self.organ.mH_settings['setup']['color_chs'][chk][contk]
-                    print(chk, contk, '- color:', color)
+                    # print(chk, contk, '- color:', color)
                     btn_color = getattr(self, 'fillcolor_'+chk+'_'+contk)
                     color_btn(btn = btn_color, color = color)
 
@@ -10543,6 +10533,178 @@ class MainWindow(QMainWindow):
 
         return gui_user_params
     
+    ############################################################################################
+    #- Init morphoCell Tab
+    #>> Initialise all modules of morphoCell Tab
+    def init_morphoCell_tab(self):
+        print('Setting up morphoCell Tab')
+
+        if len(self.organ.mC_settings['setup']['mH_channel'])>0:
+            self.init_isosurf_cells_ch()
+        else: 
+            self.isosurf_cells_all_widget.setVisible(False)
+        self.init_remove_cells()
+
+    def init_isosurf_cells_ch(self): 
+        #Buttons
+        self.fillcolor_chB.clicked.connect(lambda: self.color_picker(name = 'chB'))
+        self.fillcolor_chC.clicked.connect(lambda: self.color_picker(name = 'chC'))
+        self.fillcolor_chD.clicked.connect(lambda: self.color_picker(name = 'chD'))
+
+        self.isosurf_set.clicked.connect(lambda: self.set_isosuface())
+
+        # - Threshold
+        self.threshold_chB_value.installEventFilter(self)
+        self.threshold_chC_value.installEventFilter(self)
+        self.threshold_chD_value.installEventFilter(self)
+
+        self.threshold_chB_slider.valueChanged.connect(lambda: self.slider_changed('threshold_chB','slider'))
+        self.threshold_chC_slider.valueChanged.connect(lambda: self.slider_changed('threshold_chC','slider'))
+        self.threshold_chD_slider.valueChanged.connect(lambda: self.slider_changed('threshold_chD','slider'))
+
+        # - Run isosurface
+        # self.chB_play.clicked.connect(lambda: self.create_isosurf('chB'))
+        # self.chC_play.clicked.connect(lambda: self.create_isosurf('chC'))
+        # self.chD_play.clicked.connect(lambda: self.create_isosurf('chD'))
+
+        # - Plot isosurface
+        # self.mH_plot_chB.clicked.connect(lambda: self.plot_mH_ch('chB'))
+        # self.mH_plot_chC.clicked.connect(lambda: self.plot_mH_ch('chC'))
+        # self.mH_plot_chD.clicked.connect(lambda: self.plot_mH_ch('chD'))
+
+        for ch in ['chB', 'chC', 'chD']: 
+            label = getattr(self, 'iso_label_'+ch)
+            btn_color = getattr(self, 'fillcolor_'+ch)
+            if ch not in self.organ.mC_settings['setup']['name_chs']: 
+                label.setVisible(False)
+                btn_color.setVisible(False)
+                getattr(self, 'threshold_'+ch+'_slider').setVisible(False)
+                getattr(self, 'threshold_'+ch+'_value').setVisible(False)
+                getattr(self, 'alpha_'+ch).setVisible(False)
+                getattr(self, ch+'_play').setVisible(False)
+                getattr(self, 'mH_plot_'+ch).setVisible(False)
+            else: 
+                label.setText('Ch'+ch[-1]+': '+self.organ.mC_settings['setup']['name_chs'][ch])
+                color = self.organ.mC_settings['setup']['color_chs'][ch]
+                color_btn(btn = btn_color, color = color)
+                if self.organ.mC_settings['setup']['mH_channel'][ch] != False: 
+                    print('check if segmented already')
+
+        #Initialise with user settings, if they exist!
+        self.user_isosuf()
+
+    def init_remove_cells(self): 
+        #Buttons
+        self.fillcolor_chA.clicked.connect(lambda: self.color_picker(name = 'chA'))
+        self.remove_cells_set.clicked.connect(lambda: self.set_remove_cells())
+        self.reset_remove_cells.clicked.connect(lambda: self.reset_cells_to_original())
+
+        label = getattr(self, 'rem_label_chA')
+        label.setText('ChA: '+self.organ.mC_settings['setup']['name_chs']['chA'])
+        btn_color = getattr(self, 'fillcolor_chA')
+        color = self.organ.mC_settings['setup']['color_chs']['chA']
+        color_btn(btn = btn_color, color = color)
+
+        at_least_one = False
+        for ch in ['chB', 'chC', 'chD']: 
+            if ch not in self.organ.mC_settings['setup']['name_chs']: 
+                getattr(self, 'add_'+ch).setVisible(False)
+                at_least_one = True
+
+        if not at_least_one: 
+            getattr(self, 'lab_add_isosurf').setVisible(False)
+
+        self.cells_plot_chA.clicked.connect(lambda: self.plot_cells())
+
+        #Initialise with user settings, if they exist!
+        self.user_remove_cells()
+
+    #Functions to fill sections according to user's selections
+    def user_isosuf(self):
+        pass
+
+    def user_remove_cells(self): 
+        pass
+
+    #Set Buttons
+    def set_isosuface(self): 
+        wf_info = self.organ.mC_settings['wf_info']
+        current_gui_isosurface = self.gui_isosurface_n()
+
+        if 'isosurface' not in wf_info.keys():
+            self.gui_isosurface = current_gui_isosurface
+        else: 
+            gui_isosurface_loaded = self.organ.mC_settings['wf_info']['isosurface']
+            self.gui_isosurface, changed  = update_gui_set(loaded = gui_isosurface_loaded, 
+                                                                current = current_gui_isosurface)
+            if changed:
+                self.update_status(None, 're-run', self.isosurface_status, override=True)
+
+        self.isosurf_set.setChecked(True)
+        print('self.gui_isosurface:',self.gui_isosurface)
+        for ch in self.organ.mC_settings['setup']['mH_channel']: 
+            getattr(self, ch+'_play').setEnabled(True)
+
+        # Update mH_settings
+        proc_set = ['wf_info']
+        update = self.gui_isosurface
+        self.organ.update_settings(proc_set, update, 'mC', add='isosurface')
+
+    def gui_isosurface_n(self): 
+        gui_isosurface = {}
+        for ch in self.organ.mC_settings['setup']['name_chs']: 
+            if ch != 'chA': 
+                threshold = getattr(self, 'threshold_'+ch+'_value').text()
+                alpha = getattr(self, 'alpha_'+ch).value()
+                gui_isosurface[ch] = {'threshold': threshold, 
+                                        'alpha': alpha}
+        
+        return gui_isosurface
+
+    def set_remove_cells(self):
+        wf_info = self.organ.mC_settings['wf_info']
+        current_gui_remove_cells = self.gui_remove_cells_n()
+
+        if current_gui_remove_cells != None: 
+            if 'remove_cells' not in wf_info.keys():
+                self.gui_remove_cells = current_gui_remove_cells
+            else: 
+                gui_remove_cells_loaded = self.organ.mC_settings['wf_info']['remove_cells']
+                self.gui_remove_cells, changed  = update_gui_set(loaded = gui_remove_cells_loaded, 
+                                                                    current = current_gui_remove_cells)
+                if changed:
+                    self.update_status(None, 're-run', self.remove_cells_status, override=True)
+
+            self.remove_cells_set.setChecked(True)
+            print('self.gui_remove_cells:',self.gui_remove_cells)
+            self.remove_cells_play.setEnabled(True)
+
+            # Update mH_settings
+            proc_set = ['wf_info']
+            update = self.gui_remove_cells
+            self.organ.update_settings(proc_set, update, 'mC', add='remove_cells')
+    
+    def gui_remove_cells_n(self): 
+        gui_remove_cells = {'add_ch': {}}
+        for ch in self.organ.mC_settings['setup']['name_chs']: 
+            if ch != 'chA': 
+                add_ch = getattr(self, 'add_'+ch).isChecked()
+                if add_ch: 
+                    if (not getattr(self, ch+'_play').isChecked()) or getattr(self, 'mH_plot_'+ch).isEnabled(): 
+                        error_txt = '*To be able to run this process using any of the extra channels, please make sure you have either created its Isosurface or Segmented its volume through morphoHeart.'
+                        self.win_msg(error_txt, self.remove_cells_set)
+                        return None
+                    else: 
+                        pass
+                else: 
+                    pass
+                gui_remove_cells['add_ch'][ch] = add_ch
+        
+        return gui_remove_cells
+
+    def reset_cells_to_original(self): 
+        pass
+
     #Functions specific to gui functionality
     def open_section(self, name, ch_name=None): 
         #Get button
@@ -10588,32 +10750,36 @@ class MainWindow(QMainWindow):
                 pass
             
             #Update colour in mH_settings
-            name_split = name.split('_')
-            if len(name_split) == 2: 
-                chk, contk = name_split
-                if chk != 'chNS' and contk in ['int', 'ext', 'tiss']: 
-                    self.organ.mH_settings['setup']['color_chs'][chk][contk] = [red, green, blue]
-                    try: 
-                        self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])
-                    except: 
-                        pass
-                elif chk == 'chNS': 
-                    self.organ.mH_settings['setup'][chk]['color_chns'][contk] = [red, green, blue]#color.name()
-                    try: 
-                        self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])#color.name())
-                    except: 
-                        pass
-                else: # 'cut1_sect1' or 'cut1_segm1'
-                    if 'segm' in contk: 
-                        stype = 'segm'
-                    else: 
-                        stype = 'sect'
-                    self.organ.mH_settings['setup'][stype][chk.title()]['colors'][contk] = [red, green, blue]#color.name()
+            if name in ['chA', 'chB', 'chC', 'chD']: 
+                print('AA')
+
             else: 
-                print('name:', name) #sCut1_Cut1_segm1_sect1
-                scut, rcut, segm, sect = name_split
-                self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors'][segm+'_'+sect] = [red, green, blue]
-   
+                name_split = name.split('_')
+                if len(name_split) == 2: 
+                    chk, contk = name_split
+                    if chk != 'chNS' and contk in ['int', 'ext', 'tiss']: 
+                        self.organ.mH_settings['setup']['color_chs'][chk][contk] = [red, green, blue]
+                        try: 
+                            self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])
+                        except: 
+                            pass
+                    elif chk == 'chNS': 
+                        self.organ.mH_settings['setup'][chk]['color_chns'][contk] = [red, green, blue]#color.name()
+                        try: 
+                            self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])#color.name())
+                        except: 
+                            pass
+                    else: # 'cut1_sect1' or 'cut1_segm1'
+                        if 'segm' in contk: 
+                            stype = 'segm'
+                        else: 
+                            stype = 'sect'
+                        self.organ.mH_settings['setup'][stype][chk.title()]['colors'][contk] = [red, green, blue]#color.name()
+                else: 
+                    print('name:', name) #sCut1_Cut1_segm1_sect1
+                    scut, rcut, segm, sect = name_split
+                    self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors'][segm+'_'+sect] = [red, green, blue]
+    
     def update_alpha(self, name): 
         alpha_value = getattr(self, 'alpha_'+name+'f').value()
         # print('The updated alpha value for '+name+' is: '+ str(alpha_value))
@@ -12251,6 +12417,25 @@ class MainWindow(QMainWindow):
         else: 
             self.win_msg('*Please select a segment from which to plot the created ellipsoids.')
 
+    def plot_cells(self): 
+        
+        chs = []
+        add_ch = self.organ.mC_settings['wf_info']['remove_cells']['add_ch']
+        for ch in ['chB', 'chC', 'chD']: 
+            if ch in self.organ.mC_settings['setup']['mH_channel']: 
+                if getattr(self, ch+'_play').isChecked(): 
+                    chs.append(self.organ.vol_iso[ch])
+
+        cells = self.organ.cellsMC['chA'].cells
+
+        txtf = self.organ.user_organName+' \n - ChA: '+self.organ.mC_settings['setup']['name_chs']['chA']
+        txt = vedo.Text2D(txtf,  c=txt_color, font=txt_font, s=txt_size)
+
+        vp = vedo.Plotter(N=1, axes=1)
+        vp.add_icon(logo, pos=(0.1,1), size=0.25)
+        vp.show(chs, cells, txt, at=0, interactive=True)
+
+
     #User specific plot settings
     def fill_comboBox_all_meshes(self): 
 
@@ -12601,9 +12786,6 @@ class MainWindow(QMainWindow):
     #Help functions
     def help(self, process): 
         print('User clicked help '+process)
-
-    def run_segmentationAll(self): 
-        print('Running segmentation All!')
     
     #Save functions
     def save_results(self): 
@@ -12646,8 +12828,6 @@ class MainWindow(QMainWindow):
         self.win_msg('Results file  -'+ filename + '  was succesfully saved!')
 
     #Functions for all tabs
-    def init_morphoCell_tab(self): 
-        print('Setting up morphoCell Tab')
 
     #Menu functions / Saving functions
     def save_closed_channel(self, ch, print_txt=False, s3s=False):
