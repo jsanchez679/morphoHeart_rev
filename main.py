@@ -140,7 +140,7 @@ class Controller:
             self.clear_win_show_welcome(parent=None)
 
     def show_main_window(self, parent_win:str):
-        #Close new organ or load organ window window
+        #Close new organ or load organ window 
         win = getattr(self, parent_win)
         if parent_win == 'new_organ_win':
             if self.new_organ_win.button_create_new_organ.isChecked():

@@ -10579,11 +10579,6 @@ class MainWindow(QMainWindow):
         self.threshold_chC_slider.valueChanged.connect(lambda: self.slider_changed('threshold_chC','slider'))
         self.threshold_chD_slider.valueChanged.connect(lambda: self.slider_changed('threshold_chD','slider'))
 
-        # - Run isosurface
-        # self.chB_play.clicked.connect(lambda: self.create_isosurf('chB'))
-        # self.chC_play.clicked.connect(lambda: self.create_isosurf('chC'))
-        # self.chD_play.clicked.connect(lambda: self.create_isosurf('chD'))
-
         # - Plot isosurface
         # self.mH_plot_chB.clicked.connect(lambda: self.plot_mH_ch('chB'))
         # self.mH_plot_chC.clicked.connect(lambda: self.plot_mH_ch('chC'))
@@ -10729,7 +10724,15 @@ class MainWindow(QMainWindow):
         return gui_remove_cells
 
     def reset_cells_to_original(self): 
-        pass
+
+        cells = self.organ.cellsMC['chA']
+        cells_dir = self.organ.dir_res(dir='s3_numpy') / cells.dir_cells
+        cells_position = pd.read_csv(cells_dir, index_col=0)
+
+        n_cells = len(cells_position)
+        deleted = ['NO']*n_cells
+        cells_position['deleted'] = deleted
+        cells.save_cells(cells_position)
 
     #Functions specific to gui functionality
     def open_section(self, name, ch_name=None): 
