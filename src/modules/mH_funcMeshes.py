@@ -23,7 +23,7 @@ from scipy.spatial.transform import Rotation as R
 from time import perf_counter
 import copy
 from typing import Union
-from skimage import measure
+from skimage import measure, io
 import seaborn as sns
 import random
 import pandas as pd
@@ -1745,9 +1745,10 @@ def create_iso_volume(organ, ch):
     res = organ.get_resolution()
     threshold = organ.mC_settings['wf_info']['isosurface'][ch]['threshold']
     alpha = organ.mC_settings['wf_info']['isosurface'][ch]['alpha']
+    # Invert stack
+    res[1] = -res[1]
     vol = vedo.Volume(str(img_dir), spacing = res).isosurface(int(threshold)).alpha(float(alpha))
     vol.color(color)
-    # vol.rotateX(-90)
 
     if hasattr(organ, 'vol_iso'): 
         organ.vol_iso[ch] = vol
@@ -1759,6 +1760,88 @@ def create_iso_volume(organ, ch):
     vp = vedo.Plotter(N=1, axes = 1)
     vp.add_icon(logo, pos=(0.1,0.0), size=0.25)
     vp.show(vol, txt, at=0, interactive=True)
+
+def remove_cells(organ, vol_iso): 
+
+    vols = []; names = []; colors = []
+    for ch in vol_iso: 
+        vols.append(vol_iso[ch])
+        names.append(organ.mC_settings['setup']['name_chs'][ch])
+        colors.append(organ.mC_settings['setup']['color_chs'][ch])
+
+    sphs = organ.cellsMC['chA'].cells
+    cells2remove = []
+    silcont = [None]
+    def remove_cells(evt):
+        if not evt.actor: return
+        if isinstance(evt.actor, vedo.shapes.Sphere): 
+            sil = evt.actor.silhouette().lineWidth(6).c('red')
+            print("You clicked: "+evt.actor.name)
+            msg.text("You clicked: Sphere "+evt.actor.name)
+            cell_no = evt.actor.name
+            cell_no = int(cell_no.split('.')[-1])
+            if cell_no < 1000000: # remove
+                cells2remove.append(cell_no)
+                sphs[cell_no].color('black')
+                new_no = 1000000+cell_no
+                sphs[cell_no].name = f"Cell Nr.{new_no}"
+            else: # add back
+                ind2rem = cells2remove.index(cell_no-1000000)
+                cells2remove.pop(ind2rem)
+                old_no = cell_no-1000000
+                sphs[old_no].color('gold')
+                sphs[old_no].name = f"Cell Nr.{old_no}"
+                
+            plt.remove(silcont.pop()).add(sil)
+            silcont.append(sil)
+
+    if len(vol_iso) >= 1: 
+        def sliderAlphaMeshOut(widget, event):
+            valueAlpha = widget.GetRepresentation().GetValue()
+            vols[0].alpha(valueAlpha)
+    if len(vol_iso) >= 2: 
+        def sliderAlphaMeshOut2(widget, event):
+            valueAlpha = widget.GetRepresentation().GetValue()
+            vols[1].alpha(valueAlpha)
+    if len(vol_iso) >= 3: 
+        def sliderAlphaMeshOut3(widget, event):
+            valueAlpha = widget.GetRepresentation().GetValue()
+            vols[2].alpha(valueAlpha)
+    
+    txt_slider_size2 = 0.7
+    
+    msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
+    txtf = organ.user_organName+' - Removing cells \n -Click in the cells you would like to remove from the analysis, and close the window when done.' 
+    txt = vedo.Text2D(txtf,  c=txt_color, font=txt_font, s=txt_size)
+    plt = vedo.Plotter(axes=1)
+    plt.add_icon(logo, pos=(0.1,0.0), size=0.25)
+    if len(vol_iso) >= 1: 
+        plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.05,
+               pos=[(0.92,0.25), (0.92,0.35)], c= colors[0], 
+               title='Opacity\n'+ names[0].title(), title_size=txt_slider_size2)
+    if len(vol_iso) >=2:
+        plt.addSlider2D(sliderAlphaMeshOut2, xmin=0, xmax=0.99, value=0.05,
+               pos=[(0.92,0.40), (0.92,0.50)], c=colors[1], 
+               title='Opacity\n'+ names[1].title(), title_size=txt_slider_size2)
+    if len(vol_iso) >=3:
+        plt.addSlider2D(sliderAlphaMeshOut3, xmin=0, xmax=0.99, value=0.05,
+               pos=[(0.72,0.25), (0.72,0.35)], c=colors[2],
+               title='Opacity\n'+ names[2].title(), title_size=txt_slider_size2)
+        
+    plt.addCallback('mouse click', remove_cells)
+    plt.show(sphs, vols, msg, txt, zoom=1.2)
+    
+    # Read file
+    cells_dir = organ.dir_res(dir='s3_numpy') / organ.cellsMC['chA'].dir_cells
+    cells_position = pd.read_csv(cells_dir, index_col=0)
+    deleted = cells_position['deleted']
+
+    for cell in cells2remove: 
+        deleted[cell] = 'YES'
+    
+    cells_position['deleted'] = deleted
+    organ.cellsMC['chA'].save_cells(cells_position)
+
 
 #%% - Measuring functions
 def measure_centreline(organ, nPoints):

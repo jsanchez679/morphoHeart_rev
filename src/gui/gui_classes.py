@@ -10544,6 +10544,23 @@ class MainWindow(QMainWindow):
         else: 
             self.isosurf_cells_all_widget.setVisible(False)
         self.init_remove_cells()
+        
+        if self.organ.mC_settings['setup']['segm_mC']['cutCellsIn2Segments']: 
+            self.init_segments_mC()
+        else:
+            self.cell_segments_all_widget.setVisible(False)
+
+        if self.organ.mC_settings['setup']['sect_mC']['cutCellsIn2Sections']: 
+            self.init_sections_mC()
+        else:
+            self.cell_sections_all_widget.setVisible(False)
+        
+        if self.organ.mC_settings['setup']['zone_mC']['cutCellsIn2Zones']: 
+            self.init_zones_mC()
+        else:
+            self.cell_zones_all_widget.setVisible(False)
+
+        print()
 
     def init_isosurf_cells_ch(self): 
         #Buttons
@@ -10618,6 +10635,15 @@ class MainWindow(QMainWindow):
 
         #Initialise with user settings, if they exist!
         self.user_remove_cells()
+
+    def init_segments_mC(self):
+        pass
+
+    def init_sections_mC(self):
+        pass
+
+    def init_zones_mC(self):
+        pass
 
     #Functions to fill sections according to user's selections
     def user_isosuf(self):

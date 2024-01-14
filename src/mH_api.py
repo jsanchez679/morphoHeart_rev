@@ -2399,6 +2399,7 @@ def run_measure(controller):
 #MORPHOCELL TAB
 def run_isosurface(controller, btn): 
 
+    #set_process(controller, 'isosurface_mC')
     workflow = controller.organ.workflow['morphoCell']
     fcM.create_iso_volume(organ = controller.organ, ch = btn)
 
@@ -2421,9 +2422,32 @@ def run_isosurface(controller, btn):
     controller.main_win.update_status(workflow, proc_wft, controller.main_win.isosurface_status)    
 
 def run_remove_cells(controller): 
-    
-    workflow = controller.organ.workflow['morphoCell']
-    
 
-    print('AAAA')
+    #set_process(controller, 'remove_cells_mC')
+    workflow = controller.organ.workflow['morphoCell']
+    # Check which channels want to be seen
+    vol_iso = controller.organ.vol_iso
+    fcM.remove_cells(controller.organ, vol_iso)
     
+    getattr(controller.main_win, 'remove_cells_play').setChecked(True)
+    proc_wft = ['A-CleanCells', 'Status']
+    controller.organ.update_mCworkflow(process = proc_wft, update = 'DONE')
+    controller.main_win.update_status(workflow, proc_wft, controller.main_win.remove_cells_status)    
+
+def run_segments_mC(controller, btn): 
+
+    #set_process(controller, 'segments_mC')
+    workflow = controller.organ.workflow['morphoCell']
+    segm_list = list(controller.main_win.segm_btns.keys())
+    if btn != None: 
+        cut, num = btn.split('_')
+        for key in segm_list: 
+            cut_key = key.split(':')[0]
+            num_key = controller.main_win.segm_btns[key]['num']
+            if cut_key == cut and int(num_key) == int(num): 
+                segm2cut = key
+                break
+        segm_set = [segm2cut] #[segm_list[int(num)-1]]
+    else: 
+        segm_set = segm_list
+    print('segm_set:',segm_set)

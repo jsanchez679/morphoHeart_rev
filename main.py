@@ -861,6 +861,11 @@ class Controller:
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 
+    def run_segments_mC(self, bnt): 
+        mA.run_segments_mC(controller=self, btn=btn)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
+
     #Actions Main Win
     def open_new_organ_and_project(self): 
         #Close welcome window

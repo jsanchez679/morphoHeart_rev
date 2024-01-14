@@ -1584,9 +1584,14 @@ class Organ():
                 image_dictMC[chMC].pop('parent_organ', None)
             all_info['imChannelMC'] = image_dictMC
 
-            cells_MC = copy.deepcopy(self.cellsMC)
-            for ch in cells_MC.keys():
-                cells_MC[ch].pop('parent_organ', None)
+            cells_MC = {'chA': {'parent_organ_name': self.cellsMC['chA'].parent_organ_name, 
+                                'channel_no': self.cellsMC['chA'].channel_no, 
+                                'user_chName': self.cellsMC['chA'].user_chName,
+                                'dir_cells': self.cellsMC['chA'].dir_cells,
+                                'dir_cho': self.cellsMC['chA'].dir_cho,
+                                'resolution': self.cellsMC['chA'].resolution, 
+                                'shape': self.cellsMC['chA'].shape}}
+
             all_info['cells_MC'] = cells_MC
 
         all_info['workflow'] = self.workflow
@@ -3805,18 +3810,19 @@ class Cells():
         self.dir_image = organ.img_dirs[ch_name]['image']['dir'] 
         stack_shape = io.imread(str(self.dir_image)).shape
         self.shape = stack_shape
-        sphs_pos['Position Y'] = -cells_position['Position Y']+stack_shape[1]*self.resolution[1]
+        sphs_pos['Position Y'] = -cells_position['Position Y']#+stack_shape[1]*self.resolution[1]
+        cell_ids = list(sphs_pos.index)
         sphs_pos_tuple = list(sphs_pos.itertuples(index=False, name=None))
         cols = range(len(sphs_pos_tuple))
         
         sphs = []
-        for i, pos in enumerate(sphs_pos_tuple):
+        for i, pos, id in zip(count(), sphs_pos_tuple, cell_ids):
             s = vedo.Sphere(r=2).pos(pos).color(cols[i])
-            s.name = f"Cell Nr.{i}"
+            s.name = f"Cell Nr.{id}"
             sphs.append(s)
 
         self.cells = sphs
-        self.save_cells(cells = cells_position)
+        self.save_cells(cells = cells_position, init=True)
         organ.add_cells_mC(cells=self)
     
     def load_Cells(self): 
@@ -3832,26 +3838,28 @@ class Cells():
         cells_position = pd.read_csv(cells_dir, index_col=0)
 
         sphs_pos = cells_position.copy()
-        sphs_pos['Position Y'] = -cells_position['Position Y']+self.shape[1]*self.resolution[1]
+        sphs_pos['Position Y'] = -cells_position['Position Y']#+self.shape[1]*self.resolution[1]
 
         sphs_pos = sphs_pos[sphs_pos['deleted'] == 'NO'] 
+        cell_ids = list(sphs_pos.index)
         sphs_pos = sphs_pos[["Position X", "Position Y", "Position Z"]]
         sphs_pos_tuple = list(sphs_pos.itertuples(index=False, name=None))
         cols = range(len(sphs_pos_tuple))
         
         sphs = []
-        for i, pos in enumerate(sphs_pos_tuple):
+        for i, pos, id in zip(count(), sphs_pos_tuple, cell_ids):
             s = vedo.Sphere(r=2).pos(pos).color(cols[i])
-            s.name = f"Cell Nr.{i}"
+            s.name = f"Cell Nr.{id}"
             sphs.append(s)
         
         self.cells = sphs
 
-    def save_cells(self, cells): 
+    def save_cells(self, cells, init=False): 
         #Add a deleted row
-        n_cells = len(cells)
-        deleted = ['NO']*n_cells
-        cells['deleted'] = deleted
+        if init:
+            n_cells = len(cells)
+            deleted = ['NO']*n_cells
+            cells['deleted'] = deleted
 
         organ_name = self.parent_organ.user_organName
         cells_name = organ_name + '_CellsProc_' + self.channel_no + '.csv'
