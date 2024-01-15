@@ -4880,9 +4880,11 @@ class MainWindow(QMainWindow):
         self.prog_bar_reset()
 
         #Setting up tabs
-        self.init_segment_tab()
-        self.init_pandq_tab()
-        self.init_morphoCell_tab()
+        if self.organ.analysis['morphoHeart']: 
+            self.init_segment_tab()
+            self.init_pandq_tab()
+        if self.organ.analysis['morphoCell']:
+            self.init_morphoCell_tab()
 
         # Init Tabs
         self.init_tabs()
@@ -8200,7 +8202,7 @@ class MainWindow(QMainWindow):
                         getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn)).setVisible(False)
                     else: 
                         if not colors_initialised: 
-                            color = palette[5*(int(optcut)-1)+(nn-1)]
+                            color = list(palette[5*(int(optcut)-1)+(nn-1)])
                             self.organ.mH_settings['setup']['segm'][cutb]['colors']['segm'+str(nn)] = color
                         else: 
                             color = self.organ.mH_settings['setup']['segm'][cutb]['colors']['segm'+str(nn)]
@@ -8385,7 +8387,7 @@ class MainWindow(QMainWindow):
                 getattr(self, 'sect_cl_'+cutl).addItems(self.items_centreline)
                 for nn in range(1,3,1):
                     if not colors_initialised: 
-                        color = palette[2*(int(optcut)-1)+(nn-1)]
+                        color = list(palette[2*(int(optcut)-1)+(nn-1)])
                         self.organ.mH_settings['setup']['sect'][cutb]['colors']['sect'+str(nn)] = color
                     else: 
                         color = self.organ.mH_settings['setup']['sect'][cutb]['colors']['sect'+str(nn)]
@@ -8599,12 +8601,12 @@ class MainWindow(QMainWindow):
                                         getattr(self, 'fillcolor_'+scut+'_'+rcut+'_segm'+str(ns)+'_sect'+str(nr)).setVisible(False)
                                     else:
                                         if not colors_initialised: 
-                                            color = palette[num-1]
+                                            color = list(palette[num-1])
                                             self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors']['segm'+str(ns)+'_sect'+str(nr)] = color
                                         else: 
                                             color = self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors']['segm'+str(ns)+'_sect'+str(nr)]
                                         btn_color = getattr(self, 'fillcolor_'+scut+'_'+rcut+'_segm'+str(ns)+'_sect'+str(nr))
-                                        print('color:', color)
+                                        # print('color:', color)
                                         color_btn(btn = btn_color, color = color)
                                     num+=1
 
@@ -10554,6 +10556,12 @@ class MainWindow(QMainWindow):
             self.init_sections_mC()
         else:
             self.cell_sections_all_widget.setVisible(False)
+
+        if self.organ.mC_settings['setup']['segm-sect_mC']['cutCellsIn2SegmSect']: 
+            self.init_segm_sect_mC()
+        else:
+            self.cell_sections_all_widget.setVisible(False)
+        
         
         if self.organ.mC_settings['setup']['zone_mC']['cutCellsIn2Zones']: 
             self.init_zones_mC()
@@ -10564,11 +10572,13 @@ class MainWindow(QMainWindow):
 
     def init_isosurf_cells_ch(self): 
         #Buttons
+        self.isosurface_cells_open.clicked.connect(lambda: self.open_section(name='isosurface_cells'))
         self.fillcolor_chB.clicked.connect(lambda: self.color_picker(name = 'chB'))
         self.fillcolor_chC.clicked.connect(lambda: self.color_picker(name = 'chC'))
         self.fillcolor_chD.clicked.connect(lambda: self.color_picker(name = 'chD'))
 
         self.isosurf_set.clicked.connect(lambda: self.set_isosuface())
+        self.q_isosurface.clicked.connect(lambda: self.help('isosurface'))
 
         # - Threshold
         self.threshold_chB_value.installEventFilter(self)
@@ -10607,9 +10617,13 @@ class MainWindow(QMainWindow):
 
     def init_remove_cells(self): 
         #Buttons
+        self.remove_cells_open.clicked.connect(lambda: self.open_section(name='remove_cells'))
         self.fillcolor_chA.clicked.connect(lambda: self.color_picker(name = 'chA'))
         self.remove_cells_set.clicked.connect(lambda: self.set_remove_cells())
         self.reset_remove_cells.clicked.connect(lambda: self.reset_cells_to_original())
+        self.remove_cells_play.setStyleSheet(style_play)
+        self.remove_cells_play.setEnabled(False)
+        self.q_remove_cells.clicked.connect(lambda: self.help('remove_cells'))
 
         label = getattr(self, 'rem_label_chA')
         label.setText('ChA: '+self.organ.mC_settings['setup']['name_chs']['chA'])
@@ -10632,19 +10646,128 @@ class MainWindow(QMainWindow):
         self.user_remove_cells()
 
     def init_segments_mC(self):
-        pass
+        #Buttons
+        self.cell_segments_open.clicked.connect(lambda: self.open_section(name='cell_segments'))
+        self.cell_segments_play.setStyleSheet(style_play)
+        self.cell_segments_play.setEnabled(False)
+        self.q_cell_segments.clicked.connect(lambda: self.help('cell_segments'))
+        self.cell_segments_set.clicked.connect(lambda: self.set_cell_segsments())
+
+        #Fill color
+        self.fillcolor_cut1_segm1_cell.clicked.connect(lambda: self.color_picker(name = 'cut1_segm1_cell'))
+        self.fillcolor_cut1_segm2_cell.clicked.connect(lambda: self.color_picker(name = 'cut1_segm2_cell'))
+        self.fillcolor_cut1_segm3_cell.clicked.connect(lambda: self.color_picker(name = 'cut1_segm3_cell'))
+        self.fillcolor_cut1_segm4_cell.clicked.connect(lambda: self.color_picker(name = 'cut1_segm4_cell'))
+        self.fillcolor_cut1_segm5_cell.clicked.connect(lambda: self.color_picker(name = 'cut1_segm5_cell'))
+
+        self.fillcolor_cut2_segm1_cell.clicked.connect(lambda: self.color_picker(name = 'cut2_segm1_cell'))
+        self.fillcolor_cut2_segm2_cell.clicked.connect(lambda: self.color_picker(name = 'cut2_segm2_cell'))
+        self.fillcolor_cut2_segm3_cell.clicked.connect(lambda: self.color_picker(name = 'cut2_segm3_cell'))
+        self.fillcolor_cut2_segm4_cell.clicked.connect(lambda: self.color_picker(name = 'cut2_segm4_cell'))
+        self.fillcolor_cut2_segm5_cell.clicked.connect(lambda: self.color_picker(name = 'cut2_segm5_cell'))
+
+        cell_segm_setup = self.organ.mC_settings['setup']['segm_mC']
+        no_cuts = [key for key in cell_segm_setup.keys() if 'Cut' in key]
+        palette =  palette_rbg("husl", 10)
+        self.cell_segm_btns = {}
+
+        for optcut in ['1','2']:
+            cutl = 'cut'+optcut
+            cutb = 'Cut'+optcut
+            if cutb in no_cuts: 
+                if 'colors' not in cell_segm_setup[cutb].keys():
+                    colors_initialised = False
+                    cell_segm_setup[cutb]['colors'] = {}
+                else: 
+                    colors_initialised = True
+                
+                lab_names_segm = getattr(self, 'names_segm_'+cutl+'_cell')
+                bb = set_qtextedit_text(lab_names_segm, cell_segm_setup[cutb]['name_segments'], 'segm')
+                set_qtextedit_size(lab_names_segm, (100, (bb+1)*25))
+
+                for nn in range(1,6,1):
+                    if nn > bb+1:
+                        getattr(self, 'label_'+cutl+'_segm'+str(nn)+'_cell').setVisible(False)
+                        getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn)+'_cell').setVisible(False)
+                    else: 
+                        if not colors_initialised: 
+                            color = list(palette[5*(int(optcut)-1)+(nn-1)])
+                            cell_segm_setup[cutb]['colors']['segm'+str(nn)] = color
+                        else: 
+                            color = self.organ.mH_settings['setup']['segm_mC'][cutb]['colors']['segm'+str(nn)]
+                            # print(cutb, str(nn), '- color:', color)
+                        btn_color = getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn)+'_cell')
+                        color_btn(btn = btn_color, color = color)
+
+                self.cell_segm_btns[cutb+':chA'] = {'play': getattr(self, cutl+'_segm_cell_play'),
+                                                    'plot': getattr(self, cutl+'_segm_cell_plot')}
+                # if using morphoHeart settings
+                #Check if the cut has been done in morphoHeart and if so
+                status_cut = getattr(self, 'mH_segm_'+cutl+'_done')
+                if self.organ.mC_settings['setup']['segm_mC'][cutb]['use_mH_settings']: 
+                    try: 
+                        status_mH = self.organ.workflow['morphoHeart']['MeshesProc']['E-Segments']['Status']
+                        if status_mH in ['Initialised', 'DONE']:
+                            cut_info = self.organ.mH_settings['wf_info']['segments']['setup'][cutb]['cut_info']
+                            if len(cut_info['Disc No.0'])>0: 
+                                res = 'DONE'
+                            else: 
+                                res = 'NI'
+                        else: 
+                            res = 'NI'
+                    except: 
+                            res = 'N/A'
+                            status_cut.setEnabled(False)
+                    print('res:', res)
+                    self.update_status(None, res, status_cut, override=True)
+                else: 
+                    status_cut.setEnabled(False)
+                    self.update_status(None, res, status_cut, override=True)
+                
+            else: 
+                getattr(self, 'label_segm_'+cutl+'_cell').setVisible(False)
+                getattr(self, 'names_segm_'+cutl+'_cell').setVisible(False)
+                getattr(self, 'mH_segm_'+cutl+'_done').setVisible(False)
+                for nn in range(1,6,1):
+                    getattr(self, 'label_'+cutl+'_segm'+str(nn)+'_cell').setVisible(False)
+                    getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn)+'_cell').setVisible(False)
+                
+                getattr(self, cutl+'_segm_cell_play').setVisible(False)
+                getattr(self, cutl+'_segm_cell_plot').setVisible(False)
+            
+        if len(no_cuts) == 1: 
+            for aa in range(1,5,1): 
+                getattr(self, 'segm_line'+str(aa)+'_cell').setVisible(False)
+
+        print('cell_segm_btns:', self.cell_segm_btns)
+
+        #Plot buttons
+        self.cut1_segm_cell_plot.clicked.connect(lambda: self.plot_segm_sect_cells(btn='cut1_segm_cells'))
+        self.cut2_segm_cell_plot.clicked.connect(lambda: self.plot_segm_sect_cells(btn='cut2_segm_cells'))
+
+        #Initialise with user settings, if they exist!
+        self.user_segments_cells()
 
     def init_sections_mC(self):
-        pass
+        #Buttons
+        self.cell_sections_open.clicked.connect(lambda: self.open_section(name='cell_sections'))
+
+    def init_segm_sect_mC(self):
+        #Buttons
+        self.cell_segm_sect_open.clicked.connect(lambda: self.open_section(name='cell_segm_sect'))
 
     def init_zones_mC(self):
-        pass
+        #Buttons
+        self.cell_zones_open.clicked.connect(lambda: self.open_section(name='cell_zones'))
 
     #Functions to fill sections according to user's selections
     def user_isosuf(self):
         pass
 
     def user_remove_cells(self): 
+        pass
+
+    def user_segments_cells(self): 
         pass
 
     #Set Buttons
@@ -10659,7 +10782,7 @@ class MainWindow(QMainWindow):
             self.gui_isosurface, changed  = update_gui_set(loaded = gui_isosurface_loaded, 
                                                                 current = current_gui_isosurface)
             if changed:
-                self.update_status(None, 're-run', self.isosurface_status, override=True)
+                self.update_status(None, 're-run', self.isosurface_cells_status, override=True)
 
         self.isosurf_set.setChecked(True)
         print('self.gui_isosurface:',self.gui_isosurface)
@@ -10706,6 +10829,7 @@ class MainWindow(QMainWindow):
             self.organ.update_settings(proc_set, update, 'mC', add='remove_cells')
     
     def gui_remove_cells_n(self): 
+
         gui_remove_cells = {'add_ch': {}}
         for ch in self.organ.mC_settings['setup']['name_chs']: 
             if ch != 'chA': 
@@ -10725,14 +10849,71 @@ class MainWindow(QMainWindow):
 
     def reset_cells_to_original(self): 
 
+        title = 'Reset cells to default?'
+        msg = 'Are you sure you want to reset the cells to default as when the organ was fist created? If so press  -Ok-, else press  -Cancel- and no changes will be made.'
+        prompt = Prompt_ok_cancel(title, msg, parent=self)
+        prompt.exec()
+        print('output:', prompt.output)
+        if not prompt.output: 
+            self.reset_remove_cells.setChecked(False)
+            return
+        
         cells = self.organ.cellsMC['chA']
-        cells_dir = self.organ.dir_res(dir='s3_numpy') / cells.dir_cells
-        cells_position = pd.read_csv(cells_dir, index_col=0)
+        cells_position = cells.load_cells_df()
 
         n_cells = len(cells_position)
         deleted = ['NO']*n_cells
         cells_position['deleted'] = deleted
         cells.save_cells(cells_position)
+        
+        self.organ.cellsMC['chA'].set_cells(cells_position)
+
+    def set_cell_segsments(self): 
+
+        wf_info = self.organ.mC_settings['wf_info']
+        current_gui_segm_cells = self.gui_segments_cells_n()
+        if 'segments_cells' not in wf_info.keys():
+            self.gui_segm_cells = current_gui_segm_cells
+        else: 
+            gui_segm_cells_loaded = self.organ.mC_settings['wf_info']['segments_cells']
+            self.gui_segm_cells, changed = update_gui_set(loaded = gui_segm_cells_loaded, 
+                                                            current = current_gui_segm_cells)
+            if changed: 
+                self.update_status(None, 're-run', self.cell_segments_status, override=True)
+
+        self.cell_segments_set.setChecked(True)
+        print('self.gui_segm_cells: ', self.gui_segm_cells)
+        self.cell_segments_play.setEnabled(True) 
+
+        for cut in self.organ.mC_settings['setup']['segm_mC'].keys(): 
+            if 'Cut' in cut: 
+                getattr(self, cut.lower()+'_segm_cell_play').setEnabled(True)  
+
+        # Update mH_settings
+        proc_set = ['wf_info']
+        update = self.gui_segm_cells
+        self.organ.update_settings(proc_set, update, 'mC', add='segments_cells')
+
+    def gui_segments_cells_n(self): 
+
+        gui_segm_cells = {}
+        for cut in self.organ.mC_settings['setup']['segm_mC'].keys(): 
+            if 'Cut' in cut: 
+                gui_segm_cells[cut] = {'cut_info': {}}
+                #Check if the cut has been done in morphoHeart and if so
+                if self.organ.mC_settings['setup']['segm_mC'][cut]['use_mH_settings']: 
+                    status_mH = self.organ.workflow['morphoHeart']['MeshesProc']['E-Segments']['Status']
+                    if status_mH in ['Initialised', 'DONE']:
+                        cut_info = self.organ.mH_settings['wf_info']['segments']['setup'][cut]['cut_info']
+                        for disc in cut_info.keys(): 
+                            gui_segm_cells[cut]['cut_info'][disc] = {'normal_unit': cut_info[disc]['normal_unit'], 
+                                                                     'pl_centre': cut_info[disc]['pl_centre']}
+                    else: 
+                        pass
+                else: 
+                    pass
+        
+        return gui_segm_cells
 
     #Functions specific to gui functionality
     def open_section(self, name, ch_name=None): 
@@ -10780,35 +10961,48 @@ class MainWindow(QMainWindow):
             
             #Update colour in mH_settings
             if name in ['chA', 'chB', 'chC', 'chD']: 
-                print('AA')
+                self.organ.mC_settings['setup']['color_chs'][name] = [red, green, blue]
 
             else: 
-                name_split = name.split('_')
-                if len(name_split) == 2: 
-                    chk, contk = name_split
-                    if chk != 'chNS' and contk in ['int', 'ext', 'tiss']: 
-                        self.organ.mH_settings['setup']['color_chs'][chk][contk] = [red, green, blue]
-                        try: 
-                            self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])
-                        except: 
-                            pass
-                    elif chk == 'chNS': 
-                        self.organ.mH_settings['setup'][chk]['color_chns'][contk] = [red, green, blue]#color.name()
-                        try: 
-                            self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])#color.name())
-                        except: 
-                            pass
-                    else: # 'cut1_sect1' or 'cut1_segm1'
-                        if 'segm' in contk: 
-                            stype = 'segm'
-                        else: 
-                            stype = 'sect'
-                        self.organ.mH_settings['setup'][stype][chk.title()]['colors'][contk] = [red, green, blue]#color.name()
+                if 'cell' in name: 
+                    name_split = name.split('_')
+                    if 'segm' in name and 'sect' in name: 
+                        pass
+                    elif 'segm' in name: 
+                        cut, segm, _ = name_split
+                        self.organ.mC_settings['setup']['segm_mC'][cut.title()]['colors'][segm] = [red, green, blue]
+                    elif 'sect' in name: 
+                        cut, sect, _ = name_split
+                        self.organ.mC_settings['setup']['sect_mC'][cut.title()]['colors'][sect] = [red, green, blue]
+                    else: #zones
+                        pass
                 else: 
-                    print('name:', name) #sCut1_Cut1_segm1_sect1
-                    scut, rcut, segm, sect = name_split
-                    self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors'][segm+'_'+sect] = [red, green, blue]
-    
+                    name_split = name.split('_')
+                    if len(name_split) == 2: 
+                        chk, contk = name_split
+                        if chk != 'chNS' and contk in ['int', 'ext', 'tiss']: 
+                            self.organ.mH_settings['setup']['color_chs'][chk][contk] = [red, green, blue]
+                            try: 
+                                self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])
+                            except: 
+                                pass
+                        elif chk == 'chNS': 
+                            self.organ.mH_settings['setup'][chk]['color_chns'][contk] = [red, green, blue]#color.name()
+                            try: 
+                                self.organ.obj_meshes[chk+'_'+contk].set_color([red, green, blue])#color.name())
+                            except: 
+                                pass
+                        else: # 'cut1_sect1' or 'cut1_segm1'
+                            if 'segm' in contk: 
+                                stype = 'segm'
+                            else: 
+                                stype = 'sect'
+                            self.organ.mH_settings['setup'][stype][chk.title()]['colors'][contk] = [red, green, blue]#color.name()
+                    else: 
+                        print('name:', name) #sCut1_Cut1_segm1_sect1
+                        scut, rcut, segm, sect = name_split
+                        self.organ.mH_settings['setup']['segm-sect'][scut][rcut]['colors'][segm+'_'+sect] = [red, green, blue]
+        
     def update_alpha(self, name): 
         alpha_value = getattr(self, 'alpha_'+name+'f').value()
         # print('The updated alpha value for '+name+' is: '+ str(alpha_value))
@@ -12198,6 +12392,9 @@ class MainWindow(QMainWindow):
 
         obj = [tuple(obj_meshes)]
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
+
+    def plot_segm_sect_cells(self, bnt): 
+        pass
 
     def plot_orient(self, name): 
 

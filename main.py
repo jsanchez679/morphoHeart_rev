@@ -558,6 +558,9 @@ class Controller:
         self.main_win.chD_play.clicked.connect(lambda: self.run_isosurface('chD'))
 
         self.main_win.remove_cells_play.clicked.connect(lambda: self.run_remove_cells())
+
+        self.main_win.cut1_segm_cell_play.clicked.connect(lambda: self.run_segments_mC('Cut1'))
+        self.main_win.cut2_segm_cell_play.clicked.connect(lambda: self.run_segments_mC('Cut2'))
         
     def init_multip_analysis_win(self): 
 
@@ -861,7 +864,7 @@ class Controller:
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 
-    def run_segments_mC(self, bnt): 
+    def run_segments_mC(self, btn): 
         mA.run_segments_mC(controller=self, btn=btn)
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)

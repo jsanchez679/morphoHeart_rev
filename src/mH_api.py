@@ -1662,6 +1662,11 @@ def run_segments(controller, btn):
                 if controller.main_win.sect_btns[reg_btn]['plot'].isEnabled(): 
                     controller.main_win.segm_sect_btns[btn_final]['play'].setEnabled(True)
         
+        if controller.organ.analysis['morphoCell']: 
+            if controller.organ.mC_settings['setup']['segm_mC'] != False: 
+                if controller.organ.mC_settings['setup']['segm_mC'][cut]['use_mH_settings']:
+                    controller.main_win.update_status(None, 'DONE', getattr(controller.main_win, 'mH_segm_'+cut.lower()+'_done'), override=True)
+        
     # Update organ workflow and GUI Status
     flat_semg_wf = flatdict.FlatDict(copy.deepcopy(workflow['MeshesProc']['E-Segments']))
     all_done = []
@@ -1678,7 +1683,7 @@ def run_segments(controller, btn):
     else: 
         pass
     controller.main_win.update_status(workflow, proc_wft, controller.main_win.segments_status)
-
+    
     #Add meshes to plot_user
     controller.main_win.fill_comboBox_all_meshes()
 
@@ -1753,7 +1758,7 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
             # Modify (rotate and move cylinder/disc)
             radius = organ.mH_settings['wf_info']['segments']['radius'][cut]
             cyl_test, sph_test, rotX, rotY, rotZ = fcM.modify_disc(filename = organ.user_organName,
-                                                                txt = 'cut tissues into segments '+user_names, 
+                                                                txt = 'cut tissues into segments '+user_names+' - Disc No.'+str(n)+'/'+str(no_cuts_4segments), 
                                                                 mesh = mesh2cut.mesh,
                                                                 option = [True,True,True,True,True,True],
                                                                 def_pl = {'pl_normal': pl_normal, 'pl_centre': pl_centre},
@@ -2419,7 +2424,7 @@ def run_isosurface(controller, btn):
         controller.organ.update_mCworkflow(process = proc_wft, update = 'DONE')
     else: 
         pass
-    controller.main_win.update_status(workflow, proc_wft, controller.main_win.isosurface_status)    
+    controller.main_win.update_status(workflow, proc_wft, controller.main_win.isosurface_cells_status)    
 
 def run_remove_cells(controller): 
 
@@ -2438,16 +2443,94 @@ def run_segments_mC(controller, btn):
 
     #set_process(controller, 'segments_mC')
     workflow = controller.organ.workflow['morphoCell']
-    segm_list = list(controller.main_win.segm_btns.keys())
+    segm_cell_list = list(controller.main_win.cell_segm_btns.keys())
     if btn != None: 
-        cut, num = btn.split('_')
-        for key in segm_list: 
-            cut_key = key.split(':')[0]
-            num_key = controller.main_win.segm_btns[key]['num']
-            if cut_key == cut and int(num_key) == int(num): 
-                segm2cut = key
-                break
-        segm_set = [segm2cut] #[segm_list[int(num)-1]]
+        segm_cell_set = [btn+':chA']
     else: 
-        segm_set = segm_list
-    print('segm_set:',segm_set)
+        segm_cell_set = segm_cell_list
+    print('segm_cell_set:',segm_cell_set)
+
+    #Loop through all the tissues that are going to be segmented
+    for segm in segm_cell_set: 
+        print('Cutting segm_cell:', segm)
+        cut, ch = segm.split(':')
+        #Extract info for cut
+        colors_all = controller.organ.mC_settings['setup']['segm_mC'][cut]['colors']
+        palette = [colors_all[key] for key in colors_all.keys()]
+        segm_names = controller.organ.mC_settings['setup']['segm_mC'][cut]['name_segments']
+
+        #Get usernames string
+        user_names = '('+', '.join([segm_names[val] for val in segm_names])+')'
+        print('\n- Dividing Cells into segments '+user_names)
+        controller.main_win.win_msg('Dividing Cells into segments '+user_names)
+        
+        if len(controller.organ.mC_settings['wf_info']['segments_cells'][cut]['cut_info']) > 0: 
+            #Use settings from mH
+            pass
+        else: 
+            get_segm_planes(organ = controller.organ, cut = cut, win = controller.main_win)
+
+        print('A')
+        # #Get all points at one side of mesh
+        # cells_class = np.empty(len(sphs_pos_tuple), dtype='object')
+        # # Find all the d values of pix_um
+        # d_pts = np.dot(np.subtract(sphs_pos_tuple,np.array(pl_centre)),np.array(pl_normal))
+        # pos_A = np.where(d_pts >= 0)[0]
+        # pos_B = np.where(d_pts < 0)[0]
+        
+        # # Remove the points that belong to the other side
+        # cells_class[pos_A] = 'atrium'
+        # cells_class[pos_B] = 'ventricle'
+        # sphs = colour_cells(sphs, cells_class)
+            
+
+def get_segm_planes(organ, cut, win): 
+
+    # Get user segment names
+    dict_names = organ.mC_settings['setup']['segm_mC'][cut]['name_segments']
+    user_names = '('+', '.join([dict_names[val] for val in dict_names])+')'
+
+    # Number of discs expected to be created
+    no_cuts_4segments = organ.mC_settings['setup']['segm_mC'][cut]['no_cuts_4segments']
+
+    #Get iso_vols
+    iso_vols = []; settings = {}
+    if hasattr(organ, 'vol_iso'): 
+        for n, vol in enumerate(organ.vol_iso.keys()):
+            iso_vols.append(organ.vol_iso[vol])
+            name = vol+': '+organ.mC_settings['setup']['name_chs'][vol]
+            color = organ.mC_settings['setup']['color_chs'][vol]
+            settings = {'color': {n: color}, 'name':{n: name}}
+    
+    for n in range(no_cuts_4segments):
+        happyWithPlane = False
+        win.win_msg('Creating Plane No.'+str(n)+' for cutting tissues into segments!')
+
+        while not happyWithPlane:
+            pl_centre = iso_vols[0].center_of_mass()
+            pl_normal = (1,0,0)
+            def_pl = {'pl_normal': pl_normal, 'pl_centre': pl_centre}
+
+            plane, pl_dict = fcM.get_plane(filename = organ.user_organName, 
+                                            txt = 'cut cells into segments '+user_names+' - Plane No.'+str(n)+'/'+str(no_cuts_4segments), 
+                                            meshes = iso_vols, 
+                                            settings = settings, 
+                                            def_pl = def_pl)
+            
+            items = {0: {'opt': 'no, I would like to define a new position for the plane'}, 
+                        1: {'opt': 'yes, I am happy with the defined plane'}}
+            title = 'Happy with the defined Plane No.'+str(n)+'?'
+            msg = 'Are you happy with the position of the plane to cut cells into segments  '+user_names+'?'
+            prompt = Prompt_ok_cancel_radio(title, msg, items, parent = win)
+            prompt.exec()
+            happyWithPlane = prompt.output
+            
+        plane_name = 'Disc No.'+str(n)
+        plane.legend(plane_name)
+        
+        # Create new key in mC_settings to save disc info
+        proc = ['wf_info', 'segments_cells', cut, 'cut_info']
+        if 'cut_info' not in organ.mC_settings['wf_info']['segments_cells'][cut].keys():
+            organ.update_settings(proc, update = {}, mH = 'mC')
+        organ.update_settings(proc+[plane_name], update = pl_dict, mH = 'mC')
+        print('wf_info:', organ.mC_settings['wf_info']['segments_cells'][cut])

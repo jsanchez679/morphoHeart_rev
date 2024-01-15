@@ -3805,27 +3805,17 @@ class Cells():
                                          usecols = ['Position X','Position Y','Position Z', 'ID'], index_col=3)
         
         print('cells_position:', cells_position)
-        sphs_pos = cells_position.copy()
         #Get the shape of the imported cells
-        self.dir_image = organ.img_dirs[ch_name]['image']['dir'] 
-        stack_shape = io.imread(str(self.dir_image)).shape
-        self.shape = stack_shape
-        sphs_pos['Position Y'] = -cells_position['Position Y']#+stack_shape[1]*self.resolution[1]
-        cell_ids = list(sphs_pos.index)
-        sphs_pos_tuple = list(sphs_pos.itertuples(index=False, name=None))
-        cols = range(len(sphs_pos_tuple))
-        
-        sphs = []
-        for i, pos, id in zip(count(), sphs_pos_tuple, cell_ids):
-            s = vedo.Sphere(r=2).pos(pos).color(cols[i])
-            s.name = f"Cell Nr.{id}"
-            sphs.append(s)
+        # self.dir_image = organ.img_dirs[ch_name]['image']['dir'] 
+        # stack_shape = io.imread(str(self.dir_image)).shape
+        # self.shape = stack_shape
 
-        self.cells = sphs
+        self.set_cells(cells_position)
         self.save_cells(cells = cells_position, init=True)
         organ.add_cells_mC(cells=self)
     
     def load_Cells(self): 
+
         organ = self.parent_organ
         ch_name = self.channel_no
 
@@ -3833,22 +3823,27 @@ class Cells():
         self.dir_cho = organ.cellsMC[ch_name]['dir_cho']
         self.dir_cells = organ.cellsMC[ch_name]['dir_cells']
         self.shape = organ.cellsMC[ch_name]['shape']
-        cells_dir = self.parent_organ.dir_res(dir='s3_numpy') / self.dir_cells
+        
+        cells = self.load_cells_df()
+        self.set_cells(cells)
 
-        cells_position = pd.read_csv(cells_dir, index_col=0)
+    def set_cells(self, cells, init=False): 
 
-        sphs_pos = cells_position.copy()
-        sphs_pos['Position Y'] = -cells_position['Position Y']#+self.shape[1]*self.resolution[1]
+        sphs_pos = cells.copy()
+        sphs_pos['Position Y'] = -cells['Position Y']#+self.shape[1]*self.resolution[1]
 
-        sphs_pos = sphs_pos[sphs_pos['deleted'] == 'NO'] 
+        if not init: 
+            sphs_pos = sphs_pos[sphs_pos['deleted'] == 'NO'] 
+
         cell_ids = list(sphs_pos.index)
         sphs_pos = sphs_pos[["Position X", "Position Y", "Position Z"]]
         sphs_pos_tuple = list(sphs_pos.itertuples(index=False, name=None))
         cols = range(len(sphs_pos_tuple))
+        color = self.parent_organ.mC_settings['setup']['color_chs']['chA']
         
         sphs = []
         for i, pos, id in zip(count(), sphs_pos_tuple, cell_ids):
-            s = vedo.Sphere(r=2).pos(pos).color(cols[i])
+            s = vedo.Sphere(r=2).pos(pos).color(color)#cols[i])
             s.name = f"Cell Nr.{id}"
             sphs.append(s)
         
@@ -3865,6 +3860,7 @@ class Cells():
         cells_name = organ_name + '_CellsProc_' + self.channel_no + '.csv'
         cells_dir = self.parent_organ.dir_res(dir='s3_numpy') / cells_name
         cells.to_csv(cells_dir, index=True) 
+
         if not cells_dir.is_file():
             print('>> Error: Cell positions file was not saved correctly!\n>> File: '+cells_name)
             alert('error_beep')
@@ -3872,6 +3868,13 @@ class Cells():
             self.dir_cells = cells_name
             print('>> Processed channel saved correctly! - ', cells_name)
             alert('countdown')
+
+    def load_cells_df(self): 
+
+        cells_dir = self.parent_organ.dir_res(dir='s3_numpy') / self.dir_cells
+        cells = pd.read_csv(cells_dir, index_col=0)
+
+        return cells
 
 class MyFaceSelectingPlotter(vedo.Plotter):
     def __init__(self, colors, color_o, views, **kwargs):

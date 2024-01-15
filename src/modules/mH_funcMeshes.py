@@ -1829,11 +1829,10 @@ def remove_cells(organ, vol_iso):
                title='Opacity\n'+ names[2].title(), title_size=txt_slider_size2)
         
     plt.addCallback('mouse click', remove_cells)
-    plt.show(sphs, vols, msg, txt, zoom=1.2)
+    plt.show(sphs, vols, msg, txt, zoom=0.8)
     
     # Read file
-    cells_dir = organ.dir_res(dir='s3_numpy') / organ.cellsMC['chA'].dir_cells
-    cells_position = pd.read_csv(cells_dir, index_col=0)
+    cells_position = organ.cellsMC['chA'].load_cells_df()
     deleted = cells_position['deleted']
 
     for cell in cells2remove: 
@@ -1841,7 +1840,7 @@ def remove_cells(organ, vol_iso):
     
     cells_position['deleted'] = deleted
     organ.cellsMC['chA'].save_cells(cells_position)
-
+    organ.cellsMC['chA'].set_cells(cells_position)
 
 #%% - Measuring functions
 def measure_centreline(organ, nPoints):
@@ -3502,6 +3501,62 @@ def get_pts_at_plane (points, pl_normal, pl_centre, tol=2, addData = []):
     data_cut = np.asarray(data_cut)
 
     return pts_cut, data_cut
+
+def get_cells_within_planes(organ): 
+
+    #Check if cells_position has already negative y pos
+    cells_position = organ.cellsMC['chA'].load_cells_df()
+    sphs_pos = cells_position.copy()
+    sphs_pos['Position Y'] = -cells_position['Position Y']
+    cell_ids = list(sphs_pos.index)
+    sphs_pos = sphs_pos[["Position X", "Position Y", "Position Z"]]
+    sphs_pos_tuple = list(sphs_pos.itertuples(index=False, name=None))
+    cols = range(len(sphs_pos_tuple))
+
+    #Get all points at one side of mesh
+    cells_class = np.empty(len(sphs_pos_tuple), dtype='object')
+    # Find all the d values of pix_um
+    d_pts = np.dot(np.subtract(sphs_pos_tuple,np.array(pl_centre)),np.array(pl_normal))
+    pos_A = np.where(d_pts >= 0)[0]
+    pos_B = np.where(d_pts < 0)[0]
+    
+    # Remove the points that belong to the other side
+    cells_class[pos_A] = 'atrium'
+    cells_class[pos_B] = 'ventricle'
+    sphs = colour_cells(sphs, cells_class)
+    
+    vp = Plotter(N=1, axes = 1)
+    vp.show(myoc, sphs, plane, at=0, zoom = 1, interactive = True)
+    
+    happy = False
+    while not happy: 
+        def classify_cells_into_chambers(evt):
+            if not evt.actor: return
+            if isinstance(evt.actor, shapes.Sphere): 
+                sil = evt.actor.silhouette().lineWidth(6).c('red')
+                print("You clicked: "+evt.actor.name)
+                cell_no = evt.actor.name
+                cell_no = int(cell_no.split('.')[-1])
+                if cells_class[cell_no] == 'atrium':
+                    cells_class[cell_no] = 'ventricle'
+                    sphs[cell_no].color('lime')
+                elif cells_class[cell_no] == 'ventricle':
+                    cells_class[cell_no] = 'atrium'
+                    sphs[cell_no].color('gold')
+                plt.remove(silcont.pop()).add(sil)
+                silcont.append(sil)
+        silcont = [None]
+        
+        plt = Plotter(axes=1)
+        plt.addCallback('mouse click', classify_cells_into_chambers)
+        plt.show(sphs, zoom=1.2).close()
+        
+        sphs = colour_cells(sphs, cells_class)
+        vp = Plotter(N=1, axes = 1)
+        vp.show(myoc, sphs, at=0, zoom = 1, interactive = True)
+        
+        happy = ask4input('Happy?', bool)
+
 
 #%% - Math operations 
 def new_normal_3DRot (normal, rotX, rotY, rotZ):
