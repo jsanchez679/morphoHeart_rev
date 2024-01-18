@@ -3805,13 +3805,11 @@ class Cells():
                                          usecols = ['Position X','Position Y','Position Z', 'ID'], index_col=3)
         
         print('cells_position:', cells_position)
-        #Get the shape of the imported cells
-        # self.dir_image = organ.img_dirs[ch_name]['image']['dir'] 
-        # stack_shape = io.imread(str(self.dir_image)).shape
-        # self.shape = stack_shape
+        sphs_pos = cells_position.copy()
+        sphs_pos['Position Y'] = -cells_position['Position Y']
 
-        self.set_cells(cells_position)
-        self.save_cells(cells = cells_position, init=True)
+        self.set_cells(sphs_pos, init=True)
+        self.save_cells(cells = sphs_pos, init=True)
         organ.add_cells_mC(cells=self)
     
     def load_Cells(self): 
@@ -3827,13 +3825,7 @@ class Cells():
         cells = self.load_cells_df()
         self.set_cells(cells)
 
-    def set_cells(self, cells, init=False): 
-
-        sphs_pos = cells.copy()
-        sphs_pos['Position Y'] = -cells['Position Y']#+self.shape[1]*self.resolution[1]
-
-        if not init: 
-            sphs_pos = sphs_pos[sphs_pos['deleted'] == 'NO'] 
+    def set_cells(self, sphs_pos, init=False): 
 
         cell_ids = list(sphs_pos.index)
         sphs_pos = sphs_pos[["Position X", "Position Y", "Position Z"]]
@@ -3848,6 +3840,24 @@ class Cells():
             sphs.append(s)
         
         self.cells = sphs
+
+    def colour_cells(self, sphs_pos, color_class):
+
+        cell_ids = list(sphs_pos.index)
+        deleted = sphs_pos['deleted']
+        sphs_pos = sphs_pos[["Position X", "Position Y", "Position Z"]]
+        sphs_pos_tuple = list(sphs_pos.itertuples(index=False, name=None))
+
+        sphs = []
+        for i, pos, id, bool_del, color in zip(count(), sphs_pos_tuple, cell_ids, deleted, color_class):
+            if bool_del == 'NO': 
+                s = vedo.Sphere(r=2).pos(pos).color(color)
+                s.name = f"Cell Nr.{id}"
+                sphs.append(s)
+        
+        self.cells = sphs
+
+        return sphs
 
     def save_cells(self, cells, init=False): 
         #Add a deleted row
@@ -3869,12 +3879,16 @@ class Cells():
             print('>> Processed channel saved correctly! - ', cells_name)
             alert('countdown')
 
-    def load_cells_df(self): 
+    def load_cells_df(self, filter=True): 
 
         cells_dir = self.parent_organ.dir_res(dir='s3_numpy') / self.dir_cells
         cells = pd.read_csv(cells_dir, index_col=0)
+        sphs_pos = cells.copy()
 
-        return cells
+        if filter: 
+            sphs_pos = sphs_pos[sphs_pos['deleted'] == 'NO'] 
+
+        return sphs_pos
 
 class MyFaceSelectingPlotter(vedo.Plotter):
     def __init__(self, colors, color_o, views, **kwargs):

@@ -1758,7 +1758,7 @@ def get_segm_discs(organ, cut, ch, cont, cl_spheres, win):
             # Modify (rotate and move cylinder/disc)
             radius = organ.mH_settings['wf_info']['segments']['radius'][cut]
             cyl_test, sph_test, rotX, rotY, rotZ = fcM.modify_disc(filename = organ.user_organName,
-                                                                txt = 'cut tissues into segments '+user_names+' - Disc No.'+str(n)+'/'+str(no_cuts_4segments), 
+                                                                txt = 'cut tissues into segments '+user_names+' - Disc No.'+str(n+1)+'/'+str(no_cuts_4segments), 
                                                                 mesh = mesh2cut.mesh,
                                                                 option = [True,True,True,True,True,True],
                                                                 def_pl = {'pl_normal': pl_normal, 'pl_centre': pl_centre},
@@ -2406,8 +2406,12 @@ def run_isosurface(controller, btn):
 
     #set_process(controller, 'isosurface_mC')
     workflow = controller.organ.workflow['morphoCell']
-    fcM.create_iso_volume(organ = controller.organ, ch = btn)
-
+    res = fcM.create_iso_volume(organ = controller.organ, ch = btn)
+    if not res: 
+        controller.main_win.win_msg('*Somthing went wrong when loading image file for '+btn.title()+'. Please check to continue.')
+        getattr(controller.main_win, btn+'_play').setChecked(False)
+        return 
+    
     proc = ['A-SetExtraChs', btn, 'Status']
     controller.main_win.organ.update_mCworkflow(process = proc, update = 'DONE')
 
@@ -2450,38 +2454,63 @@ def run_segments_mC(controller, btn):
         segm_cell_set = segm_cell_list
     print('segm_cell_set:',segm_cell_set)
 
-    #Loop through all the tissues that are going to be segmented
+    #Loop through all the cuts that can be done
     for segm in segm_cell_set: 
         print('Cutting segm_cell:', segm)
         cut, ch = segm.split(':')
         #Extract info for cut
-        colors_all = controller.organ.mC_settings['setup']['segm_mC'][cut]['colors']
-        palette = [colors_all[key] for key in colors_all.keys()]
         segm_names = controller.organ.mC_settings['setup']['segm_mC'][cut]['name_segments']
-
         #Get usernames string
         user_names = '('+', '.join([segm_names[val] for val in segm_names])+')'
         print('\n- Dividing Cells into segments '+user_names)
         controller.main_win.win_msg('Dividing Cells into segments '+user_names)
         
+        cells_position = controller.organ.cellsMC['chA'].load_cells_df(filter=False)
+        column_name = 'Segment-'+cut
+        run_all = False; run_reclass = False; cells_out = None
         if len(controller.organ.mC_settings['wf_info']['segments_cells'][cut]['cut_info']) > 0: 
-            #Use settings from mH
-            pass
+            if column_name in list(cells_position.columns): 
+                #Ask if the used wants to re-run process: 
+                items = {0: {'opt': 'I would like to redefine the plane and continue from there'}, 
+                            1: {'opt': 'I would like to only re-classify some cells that are still misclassified'}}
+                title = 'Cells have already been classified for '+cut+'...'
+                msg = 'The cells from this organ have already been classified for '+cut+': '+user_names[1:-1]+'. Select from which process you would like to re-run cell classification:'
+                prompt = Prompt_ok_cancel_radio(title, msg, items, parent = controller.main_win)
+                prompt.exec()
+                print(prompt.output)
+                if prompt.output[0] == 0: 
+                    run_all = True
+                else: 
+                    run_all = False
+                    run_reclass = True
+            else: 
+                run_all = True
         else: 
-            get_segm_planes(organ = controller.organ, cut = cut, win = controller.main_win)
-
-        print('A')
-        # #Get all points at one side of mesh
-        # cells_class = np.empty(len(sphs_pos_tuple), dtype='object')
-        # # Find all the d values of pix_um
-        # d_pts = np.dot(np.subtract(sphs_pos_tuple,np.array(pl_centre)),np.array(pl_normal))
-        # pos_A = np.where(d_pts >= 0)[0]
-        # pos_B = np.where(d_pts < 0)[0]
+            run_all = True
         
-        # # Remove the points that belong to the other side
-        # cells_class[pos_A] = 'atrium'
-        # cells_class[pos_B] = 'ventricle'
-        # sphs = colour_cells(sphs, cells_class)
+        if run_all: 
+            get_segm_planes(organ = controller.organ, cut = cut, win = controller.main_win)
+            cells_out, segm_class = fcM.get_cells_within_planes(controller = controller, 
+                                                                organ = controller.organ,
+                                                                cells_position = cells_position, 
+                                                                cut=cut)
+        
+        if run_all or run_reclass: 
+            if cells_out == None: 
+                segm_class = cells_position['Segment-'+cut]
+                color_class = fcM.get_colour_class(controller.organ, cut, mtype='segm')
+                cells_out = controller.organ.cellsMC['chA'].colour_cells(sphs_pos = cells_position, 
+                                                                        color_class = color_class)
+            
+            cells_out, segm_classf = fcM.modify_cell_class(organ = controller.organ, 
+                                                            cells = cells_out, cut=cut, 
+                                                            cells_class = segm_class)
+            
+            controller.organ.cellsMC['chA'].cells = cells_out
+            cells_position['Segment-'+cut] = segm_classf
+            controller.organ.cellsMC['chA'].save_cells(cells_position)
+
+            # fcM.count_cells(cells_position, cut) 
             
 
 def get_segm_planes(organ, cut, win): 
@@ -2492,15 +2521,8 @@ def get_segm_planes(organ, cut, win):
 
     # Number of discs expected to be created
     no_cuts_4segments = organ.mC_settings['setup']['segm_mC'][cut]['no_cuts_4segments']
-
     #Get iso_vols
-    iso_vols = []; settings = {}
-    if hasattr(organ, 'vol_iso'): 
-        for n, vol in enumerate(organ.vol_iso.keys()):
-            iso_vols.append(organ.vol_iso[vol])
-            name = vol+': '+organ.mC_settings['setup']['name_chs'][vol]
-            color = organ.mC_settings['setup']['color_chs'][vol]
-            settings = {'color': {n: color}, 'name':{n: name}}
+    iso_vols, vol_settings = fcM.organ_vol_iso(organ)
     
     for n in range(no_cuts_4segments):
         happyWithPlane = False
@@ -2510,11 +2532,10 @@ def get_segm_planes(organ, cut, win):
             pl_centre = iso_vols[0].center_of_mass()
             pl_normal = (1,0,0)
             def_pl = {'pl_normal': pl_normal, 'pl_centre': pl_centre}
-
-            plane, pl_dict = fcM.get_plane(filename = organ.user_organName, 
-                                            txt = 'cut cells into segments '+user_names+' - Plane No.'+str(n)+'/'+str(no_cuts_4segments), 
+            _, pl_dict = fcM.get_plane(filename = organ.user_organName, 
+                                            txt = 'cut cells into segments '+user_names+' - Plane No.'+str(n+1)+'/'+str(no_cuts_4segments), 
                                             meshes = iso_vols, 
-                                            settings = settings, 
+                                            settings = vol_settings, 
                                             def_pl = def_pl)
             
             items = {0: {'opt': 'no, I would like to define a new position for the plane'}, 
@@ -2526,7 +2547,6 @@ def get_segm_planes(organ, cut, win):
             happyWithPlane = prompt.output
             
         plane_name = 'Disc No.'+str(n)
-        plane.legend(plane_name)
         
         # Create new key in mC_settings to save disc info
         proc = ['wf_info', 'segments_cells', cut, 'cut_info']

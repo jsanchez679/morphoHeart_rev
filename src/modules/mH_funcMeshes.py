@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 
 #%% morphoHeart Imports - ##################################################
 from ..gui.config import mH_config
-from .mH_funcBasics import get_by_path, alert, df_reset_index, df_add_value
+from .mH_funcBasics import get_by_path, alert, df_reset_index, df_add_value, palette_rbg
 
 # path_fcMeshes = os.path.abspath(__file__)
 path_mHImages = mH_config.path_mHImages
@@ -1277,6 +1277,7 @@ def classify_segments(meshes, dict_segm, colors_dict):
             evt.actor.color(colors[1])
             mesh_classif[1].append(mesh_no)
             msg.text("You clicked Mesh "+mesh_no+' to classify it as '+names[1])
+        print(mesh_classif)
         
     mks = []; sym = ['o']*len(dict_segm)
     for segm in dict_segm:
@@ -1747,7 +1748,11 @@ def create_iso_volume(organ, ch):
     alpha = organ.mC_settings['wf_info']['isosurface'][ch]['alpha']
     # Invert stack
     res[1] = -res[1]
-    vol = vedo.Volume(str(img_dir), spacing = res).isosurface(int(threshold)).alpha(float(alpha))
+    try: 
+        vol = vedo.Volume(str(img_dir), spacing = res).isosurface(int(threshold)).alpha(float(alpha))
+    except:
+        return False
+    
     vol.color(color)
 
     if hasattr(organ, 'vol_iso'): 
@@ -1760,6 +1765,8 @@ def create_iso_volume(organ, ch):
     vp = vedo.Plotter(N=1, axes = 1)
     vp.add_icon(logo, pos=(0.1,0.0), size=0.25)
     vp.show(vol, txt, at=0, interactive=True)
+
+    return True
 
 def remove_cells(organ, vol_iso): 
 
@@ -3502,60 +3509,301 @@ def get_pts_at_plane (points, pl_normal, pl_centre, tol=2, addData = []):
 
     return pts_cut, data_cut
 
-def get_cells_within_planes(organ): 
+def get_cells_within_planes(controller, organ, cells_position, cut): 
 
-    #Check if cells_position has already negative y pos
-    cells_position = organ.cellsMC['chA'].load_cells_df()
-    sphs_pos = cells_position.copy()
-    sphs_pos['Position Y'] = -cells_position['Position Y']
-    cell_ids = list(sphs_pos.index)
-    sphs_pos = sphs_pos[["Position X", "Position Y", "Position Z"]]
+    sphs_pos = cells_position[["Position X", "Position Y", "Position Z"]]
     sphs_pos_tuple = list(sphs_pos.itertuples(index=False, name=None))
-    cols = range(len(sphs_pos_tuple))
+    color_segm = organ.mC_settings['setup']['segm_mC'][cut]['colors']
 
-    #Get all points at one side of mesh
-    cells_class = np.empty(len(sphs_pos_tuple), dtype='object')
-    # Find all the d values of pix_um
-    d_pts = np.dot(np.subtract(sphs_pos_tuple,np.array(pl_centre)),np.array(pl_normal))
-    pos_A = np.where(d_pts >= 0)[0]
-    pos_B = np.where(d_pts < 0)[0]
-    
-    # Remove the points that belong to the other side
-    cells_class[pos_A] = 'atrium'
-    cells_class[pos_B] = 'ventricle'
-    sphs = colour_cells(sphs, cells_class)
-    
-    vp = Plotter(N=1, axes = 1)
-    vp.show(myoc, sphs, plane, at=0, zoom = 1, interactive = True)
-    
-    happy = False
-    while not happy: 
-        def classify_cells_into_chambers(evt):
-            if not evt.actor: return
-            if isinstance(evt.actor, shapes.Sphere): 
-                sil = evt.actor.silhouette().lineWidth(6).c('red')
-                print("You clicked: "+evt.actor.name)
-                cell_no = evt.actor.name
-                cell_no = int(cell_no.split('.')[-1])
-                if cells_class[cell_no] == 'atrium':
-                    cells_class[cell_no] = 'ventricle'
-                    sphs[cell_no].color('lime')
-                elif cells_class[cell_no] == 'ventricle':
-                    cells_class[cell_no] = 'atrium'
-                    sphs[cell_no].color('gold')
-                plt.remove(silcont.pop()).add(sil)
-                silcont.append(sil)
-        silcont = [None]
+    #Classify cells based on defined plane(s)
+    sp_pos_classes = []
+    for n, plane in enumerate(organ.mC_settings['wf_info']['segments_cells'][cut]['cut_info']): 
+        sp_cells_class = np.empty(len(sphs_pos_tuple), dtype='object')
+        pl_normal = organ.mC_settings['wf_info']['segments_cells'][cut]['cut_info'][plane]['pl_normal']
+        pl_centre = organ.mC_settings['wf_info']['segments_cells'][cut]['cut_info'][plane]['pl_centre']
         
-        plt = Plotter(axes=1)
-        plt.addCallback('mouse click', classify_cells_into_chambers)
-        plt.show(sphs, zoom=1.2).close()
+        # Find all the d values of pix_um
+        d_pts = np.dot(np.subtract(sphs_pos_tuple,np.array(pl_centre)),np.array(pl_normal))
+        pos_A = np.where(d_pts >= 0)[0]
+        pos_B = np.where(d_pts < 0)[0]
+    
+        # Remove the points that belong to the other side
+        sp_cells_class[pos_A] = 1+n
+        sp_cells_class[pos_B] = 2+n
+
+        sp_pos_classes.append(sp_cells_class)
         
-        sphs = colour_cells(sphs, cells_class)
-        vp = Plotter(N=1, axes = 1)
-        vp.show(myoc, sphs, at=0, zoom = 1, interactive = True)
+        if len(sp_pos_classes)>1:
+            #Here decide where each cell goes 
+            pass
+        else: 
+            sp_pos_classes = sp_pos_classes[0]
+
+
+    cells_position['Segment-'+cut] = sp_pos_classes
+    #Get mean spheres so user can define which segment is which
+    # - Create mean spheres
+    sphs_mean = create_mean_sphs(cells_position, sp_pos_classes, color_segm, 
+                                 mtype = 'segm', cut=cut)    
+    #Classify mean spheres
+    sphs_classf = get_segm_mean_sph(controller, organ, cut, sphs_mean, color_segm)
+
+    final_class = {}
+    for num_class in list(set(sp_pos_classes)): 
+        #Find group name 
+        for segm in sphs_classf: 
+            if num_class == int(sphs_classf[segm]['class'].split('Group No.')[1]): 
+                final_class[num_class] = {'segm': segm, 
+                                        'name': sphs_classf[segm]['name'], 
+                                        'color': color_segm[segm]}
+
+    segm_class = np.empty(len(sphs_pos_tuple), dtype='object')
+    color_class = np.empty(len(sphs_pos_tuple), dtype='object')
+    for n, val in enumerate(sp_pos_classes): 
+        segm_class[n] = final_class[val]['segm']+':'+final_class[val]['name']
+        color_class[n] = color_segm[final_class[val]['segm']]
+
+    cells_position['Segment-'+cut] = segm_class
+    cells_out = organ.cellsMC['chA'].colour_cells(sphs_pos = cells_position, 
+                                                    color_class = color_class)
+
+    organ.cellsMC['chA'].cells = cells_out
+    cells_position['Segment-'+cut] = segm_class
+    organ.cellsMC['chA'].save_cells(cells_position)
+    
+    return cells_out, segm_class
         
-        happy = ask4input('Happy?', bool)
+def create_mean_sphs(cells_position, sp_pos_classes, color_segm, mtype, cut):
+
+    if mtype == 'segm': 
+        col_name = 'Segment-'+cut
+
+    sphs_mean = []
+    colors_init = palette_rbg('Set1', len(color_segm))
+    all_given_num = list(set(sp_pos_classes))
+    all_given_num.sort()
+    for given_num in all_given_num:
+        filt_segm = cells_position[cells_position[col_name] == given_num] 
+        filt_segm = filt_segm[["Position X", "Position Y", "Position Z"]]
+        mean = list(filt_segm.mean())
+
+        sph_mean = vedo.Sphere(pos = mean, r=10, c=colors_init[given_num-1])
+        sph_mean.legend('Group No.'+str(given_num))
+        sphs_mean.append(sph_mean)
+
+    return sphs_mean
+
+def get_segm_mean_sph(controller, organ, cut, sphs_mean, color_segm): 
+
+    segm_names = organ.mC_settings['setup']['segm_mC'][cut]['name_segments']
+    colors = [color_segm[key] for key in color_segm]
+    names = [segm_names[key] for key in segm_names]
+    sph_classif = [[] for key in segm_names]
+    
+    done = False
+    while not done:     
+        # vols, names_iso, colors_vols
+        iso_vols, vol_settings = organ_vol_iso(organ)
+
+        def func(evt):
+            if not evt.actor:
+                return
+            if isinstance(evt.actor, vedo.shapes.Sphere): 
+                group_no = evt.actor.info['legend']
+                group_color = evt.actor.color()
+                group_color = np.round(evt.actor.color()*255,0)
+                print(group_no, '- group_color:',group_color, type(group_color))
+                is_in_list = np.any(np.all(group_color == colors, axis=1))
+                if is_in_list:
+                    bool_list = np.all(group_color == colors, axis=1)
+                    ind = np.where(bool_list == True)[0][0]#n_out#  
+                    ind_plus1 = ind+1
+                    new_ind = (ind_plus1)%len(colors)
+                    new_color = colors[new_ind]
+                    evt.actor.color(new_color)
+                    sph_classif[ind].remove(group_no)
+                    sph_classif[new_ind].append(group_no)
+                    msg.text("You clicked Sphere "+group_no+' to classify it as '+names[new_ind].upper())
+                else: 
+                    evt.actor.color(colors[0])
+                    sph_classif[0].append(group_no)
+                    msg.text("You clicked Sphere "+group_no+' to classify it as '+names[0].upper())
+                print(sph_classif)
+            
+        mks = []; sym = ['o']*len(segm_names)
+        for segm in segm_names:
+            mks.append(vedo.Marker('*').c(color_segm[segm]).legend(segm_names[segm]))
+        
+        if len(iso_vols) >= 1: 
+            def sliderAlphaMeshOut(widget, event):
+                valueAlpha = widget.GetRepresentation().GetValue()
+                iso_vols[0].alpha(valueAlpha)
+        if len(iso_vols) >= 2: 
+            def sliderAlphaMeshOut2(widget, event):
+                valueAlpha = widget.GetRepresentation().GetValue()
+                iso_vols[1].alpha(valueAlpha)
+        if len(iso_vols) >= 3: 
+            def sliderAlphaMeshOut3(widget, event):
+                valueAlpha = widget.GetRepresentation().GetValue()
+                iso_vols[2].alpha(valueAlpha)
+
+        txA = 'Instructions: Click each coloured sphere until it is coloured according to the segment it belongs to.'
+        txB = '\n[Note: Colours will loop for each sphere as you click it ]'
+        txt0 = vedo.Text2D(txA+txB, c=txt_color, font=txt_font, s=txt_size)
+        lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
+                            width=leg_width/1.5, height=leg_height/1.5)
+        
+        txt_slider_size2 = 0.7
+        msg = vedo.Text2D("", pos="bottom-center", c=txt_color, 
+                          font=txt_font, s=txt_size, bg='red', alpha=0.2)
+        
+        plt = vedo.Plotter(axes=5, bg='white')
+        plt.add_icon(logo, pos=(0.1,1), size=0.25)
+        if len(iso_vols) >= 1: 
+            plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.05,
+                pos=[(0.92,0.25), (0.92,0.35)], c= vol_settings['color'][0], 
+                title='Opacity\n'+ vol_settings['name'][0].title(), title_size=txt_slider_size2)
+        if len(iso_vols) >=2:
+            plt.addSlider2D(sliderAlphaMeshOut2, xmin=0, xmax=0.99, value=0.05,
+                pos=[(0.92,0.40), (0.92,0.50)], c=vol_settings['color'][1], 
+                title='Opacity\n'+ vol_settings['name'][1].title(), title_size=txt_slider_size2)
+        if len(iso_vols) >=3:
+            plt.addSlider2D(sliderAlphaMeshOut3, xmin=0, xmax=0.99, value=0.05,
+                pos=[(0.72,0.25), (0.72,0.35)], c=vol_settings['color'][2],
+                title='Opacity\n'+ vol_settings['name'][2].title(), title_size=txt_slider_size2)
+            
+        plt.add_callback('mouse click', func)
+        plt.show(iso_vols, sphs_mean, msg, lb, txt0, zoom=1.2)
+
+        done_sp = [len(sp_class) == 1 for sp_class in sph_classif]
+          
+        if all(done_sp): 
+            done = True
+        else:
+            controller.main_win.win_msg('*Please classify one sphere per segment.')
+
+    sphs_classf = {}
+    for n, segm in enumerate(segm_names.keys()):
+        sphs_classf[segm] = {'name': segm_names[segm], 
+                             'class': sph_classif[n][0]}
+
+    return sphs_classf
+
+def modify_cell_class(organ, cells, cut, cells_class): 
+
+    segm_names = organ.mC_settings['setup']['segm_mC'][cut]['name_segments']
+    segm_colors = organ.mC_settings['setup']['segm_mC'][cut]['colors']
+    cells_class = list(cells_class)
+    segm_no = []; colors = []
+    for segm in segm_names: 
+        segm_no.append(segm+':'+segm_names[segm])
+        colors.append(segm_colors[segm])
+    
+    iso_vols, vol_settings = organ_vol_iso(organ)
+
+    def classify_cells_into_chambers(evt):
+        if not evt.actor: 
+            return
+        if isinstance(evt.actor, vedo.shapes.Sphere): 
+            sil = evt.actor.silhouette().lineWidth(6).c('red')
+            #Get cell number (cell id)
+            cell_no = evt.actor.name
+            cell_no = int(cell_no.split('.')[-1])
+            current_class = cells_class[cell_no]
+            for n, ss in enumerate(segm_no): 
+                if current_class == ss: 
+                    ind = n
+                    break
+            # ind = np.where(segm_no == current_class)[0]
+            ind_plus1 = ind+1
+            new_ind = (ind_plus1)%len(colors)
+            new_color = colors[new_ind]
+            evt.actor.color(new_color)
+            cells_class[cell_no] = segm_no[new_ind]
+            msg.text("Sphere "+ evt.actor.name +' is now classified as part of '+segm_no[new_ind])
+            plt.remove(silcont.pop()).add(sil)
+            silcont.append(sil)
+
+    silcont = [None]
+
+    if len(iso_vols) >= 1: 
+        def sliderAlphaMeshOut(widget, event):
+            valueAlpha = widget.GetRepresentation().GetValue()
+            iso_vols[0].alpha(valueAlpha)
+    if len(iso_vols) >= 2: 
+        def sliderAlphaMeshOut2(widget, event):
+            valueAlpha = widget.GetRepresentation().GetValue()
+            iso_vols[1].alpha(valueAlpha)
+    if len(iso_vols) >= 3: 
+        def sliderAlphaMeshOut3(widget, event):
+            valueAlpha = widget.GetRepresentation().GetValue()
+            iso_vols[2].alpha(valueAlpha)
+    
+    txt_slider_size2 = 0.7
+    msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
+
+    plt = vedo.Plotter(N=1, axes=1)
+    plt.add_icon(logo, pos=(0.1,1), size=0.25)
+    if len(iso_vols) >= 1: 
+        plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.05,
+               pos=[(0.92,0.25), (0.92,0.35)], c= vol_settings['color'][0], 
+               title='Opacity\n'+ vol_settings['name'][0].title(), title_size=txt_slider_size2)
+    if len(iso_vols) >=2:
+        plt.addSlider2D(sliderAlphaMeshOut2, xmin=0, xmax=0.99, value=0.05,
+               pos=[(0.92,0.40), (0.92,0.50)], c=vol_settings['color'][1], 
+               title='Opacity\n'+ vol_settings['name'][1].title(), title_size=txt_slider_size2)
+    if len(iso_vols) >=3:
+        plt.addSlider2D(sliderAlphaMeshOut3, xmin=0, xmax=0.99, value=0.05,
+               pos=[(0.72,0.25), (0.72,0.35)], c=vol_settings['color'][2],
+               title='Opacity\n'+ vol_settings['name'][2].title(), title_size=txt_slider_size2)
+        
+    plt.addCallback('mouse click', classify_cells_into_chambers)
+    plt.show(cells, iso_vols, msg, zoom=1.2)
+
+    return cells, cells_class
+
+def organ_vol_iso(organ): 
+
+    iso_vols = []; vol_settings = {}
+    if hasattr(organ, 'vol_iso'): 
+        for n, vol in enumerate(organ.vol_iso.keys()):
+            iso_vols.append(organ.vol_iso[vol])
+            name = vol+': '+organ.mC_settings['setup']['name_chs'][vol]
+            color = organ.mC_settings['setup']['color_chs'][vol]
+            vol_settings = {'color': {n: color}, 'name':{n: name}}
+    
+    return iso_vols, vol_settings
+
+def get_colour_class(organ, cut, mtype): 
+
+    if mtype == 'segm': 
+        col_name = 'Segment-'+cut
+        type_name = 'segm_mC'
+
+    cells_position = organ.cellsMC['chA'].load_cells_df(filter=False)
+    segm_colors = organ.mC_settings['setup'][type_name][cut]['colors']
+    segm_class = cells_position[col_name]
+    color_class = np.empty(len(cells_position), dtype='object')
+
+    for n, val in enumerate(segm_class): 
+        segm, _  = val.split(':')
+        color_class[n] = segm_colors[segm]
+
+    return color_class
+
+def count_cells(organ, cells_position, cut): 
+
+    segm_names = organ.mC_settings['setup']['segm_mC'][cut]['name_segments']
+    segm_colors = organ.mC_settings['setup']['segm_mC'][cut]['colors']
+    segm_no = []; colors = []
+    for segm in segm_names: 
+        segm_no.append(segm+':'+segm_names[segm])
+        colors.append(segm_colors[segm])
+
+    counts_cells = cells_position['Segment-'+cut].value_counts()
+    for sp in segm_names: 
+        segm_name = final_class[sp]['segm']+':'+final_class[sp]['name']
+        count_sp = counts_cells[segm_name]
 
 
 #%% - Math operations 

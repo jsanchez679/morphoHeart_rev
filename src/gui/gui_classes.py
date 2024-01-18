@@ -10694,7 +10694,7 @@ class MainWindow(QMainWindow):
                             color = list(palette[5*(int(optcut)-1)+(nn-1)])
                             cell_segm_setup[cutb]['colors']['segm'+str(nn)] = color
                         else: 
-                            color = self.organ.mH_settings['setup']['segm_mC'][cutb]['colors']['segm'+str(nn)]
+                            color = cell_segm_setup[cutb]['colors']['segm'+str(nn)]
                             # print(cutb, str(nn), '- color:', color)
                         btn_color = getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn)+'_cell')
                         color_btn(btn = btn_color, color = color)
@@ -10704,7 +10704,7 @@ class MainWindow(QMainWindow):
                 # if using morphoHeart settings
                 #Check if the cut has been done in morphoHeart and if so
                 status_cut = getattr(self, 'mH_segm_'+cutl+'_done')
-                if self.organ.mC_settings['setup']['segm_mC'][cutb]['use_mH_settings']: 
+                if cell_segm_setup[cutb]['use_mH_settings']: 
                     try: 
                         status_mH = self.organ.workflow['morphoHeart']['MeshesProc']['E-Segments']['Status']
                         if status_mH in ['Initialised', 'DONE']:
@@ -12649,7 +12649,7 @@ class MainWindow(QMainWindow):
         add_ch = self.organ.mC_settings['wf_info']['remove_cells']['add_ch']
         for ch in ['chB', 'chC', 'chD']: 
             if ch in self.organ.mC_settings['setup']['mH_channel']: 
-                if getattr(self, ch+'_play').isChecked(): 
+                if getattr(self, ch+'_play').isChecked() and hasattr(self.organ, 'vol_iso'): 
                     chs.append(self.organ.vol_iso[ch])
 
         cells = self.organ.cellsMC['chA'].cells
