@@ -10640,7 +10640,7 @@ class MainWindow(QMainWindow):
         if not at_least_one: 
             getattr(self, 'lab_add_isosurf').setVisible(False)
 
-        self.cells_plot_chA.clicked.connect(lambda: self.plot_cells())
+        self.cells_plot_chA.clicked.connect(lambda: self.plot_cells('remove_cells'))
 
         #Initialise with user settings, if they exist!
         self.user_remove_cells()
@@ -10742,8 +10742,8 @@ class MainWindow(QMainWindow):
         print('cell_segm_btns:', self.cell_segm_btns)
 
         #Plot buttons
-        self.cut1_segm_cell_plot.clicked.connect(lambda: self.plot_segm_sect_cells(btn='cut1_segm_cells'))
-        self.cut2_segm_cell_plot.clicked.connect(lambda: self.plot_segm_sect_cells(btn='cut2_segm_cells'))
+        self.cut1_segm_cell_plot.clicked.connect(lambda: self.plot_cells(process='cut1_segm_cells'))
+        self.cut2_segm_cell_plot.clicked.connect(lambda: self.plot_cells(process='cut2_segm_cells'))
 
         #Initialise with user settings, if they exist!
         self.user_segments_cells()
@@ -10859,7 +10859,7 @@ class MainWindow(QMainWindow):
             return
         
         cells = self.organ.cellsMC['chA']
-        cells_position = cells.load_cells_df()
+        cells_position = cells.df_cells()
 
         n_cells = len(cells_position)
         deleted = ['NO']*n_cells
@@ -12643,7 +12643,7 @@ class MainWindow(QMainWindow):
         else: 
             self.win_msg('*Please select a segment from which to plot the created ellipsoids.')
 
-    def plot_cells(self): 
+    def plot_cells(self, process): 
         
         chs = []
         add_ch = self.organ.mC_settings['wf_info']['remove_cells']['add_ch']
@@ -12652,15 +12652,31 @@ class MainWindow(QMainWindow):
                 if getattr(self, ch+'_play').isChecked() and hasattr(self.organ, 'vol_iso'): 
                     chs.append(self.organ.vol_iso[ch])
 
-        cells = self.organ.cellsMC['chA'].cells
+        cells_position = self.organ.cellsMC['chA'].df_cells()
+        if process == 'remove_cells': 
+            color = self.organ.mC_settings['setup']['color_chs']['chA']
+            color_class = [color]*len(cells_position)
+            txtf = self.organ.user_organName+' \n - ChA: '+self.organ.mC_settings['setup']['name_chs']['chA']
 
-        txtf = self.organ.user_organName+' \n - ChA: '+self.organ.mC_settings['setup']['name_chs']['chA']
+        elif process in ['cut1_segm_cells', 'cut2_segm_cells']:
+            cut = process.split('_')[0].title()
+            segm_names = self.organ.mC_settings['setup']['segm_mC'][cut]['name_segments']
+            user_names = '('+', '.join([segm_names[val] for val in segm_names])+')'
+            color_class = self.organ.cellsMC['chA'].get_colour_class(cut = cut, mtype = 'segm')
+            txtf = self.organ.user_organName+' \n - ChA: '+cut+' '+user_names
+
+        else: 
+            print('process not defined')
+            pass
+
+        cells = self.organ.cellsMC['chA'].colour_cells(sphs_pos = cells_position, 
+                                                        color_class = color_class)
+
+        #Add spheres that have segm names
         txt = vedo.Text2D(txtf,  c=txt_color, font=txt_font, s=txt_size)
-
         vp = vedo.Plotter(N=1, axes=1)
         vp.add_icon(logo, pos=(0.1,1), size=0.25)
         vp.show(chs, cells, txt, at=0, interactive=True)
-
 
     #User specific plot settings
     def fill_comboBox_all_meshes(self): 

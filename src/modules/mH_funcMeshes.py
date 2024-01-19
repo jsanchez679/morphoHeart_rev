@@ -1839,7 +1839,7 @@ def remove_cells(organ, vol_iso):
     plt.show(sphs, vols, msg, txt, zoom=0.8)
     
     # Read file
-    cells_position = organ.cellsMC['chA'].load_cells_df()
+    cells_position = organ.cellsMC['chA'].df_cells()
     deleted = cells_position['deleted']
 
     for cell in cells2remove: 
@@ -3539,8 +3539,7 @@ def get_cells_within_planes(controller, organ, cells_position, cut):
         else: 
             sp_pos_classes = sp_pos_classes[0]
 
-
-    cells_position['Segment-'+cut] = sp_pos_classes
+    cells_position = organ.cellsMC['chA'].assign_class(cells_position, sp_pos_classes, col_name = 'Segment-'+cut)
     #Get mean spheres so user can define which segment is which
     # - Create mean spheres
     sphs_mean = create_mean_sphs(cells_position, sp_pos_classes, color_segm, 
@@ -3563,12 +3562,12 @@ def get_cells_within_planes(controller, organ, cells_position, cut):
         segm_class[n] = final_class[val]['segm']+':'+final_class[val]['name']
         color_class[n] = color_segm[final_class[val]['segm']]
 
-    cells_position['Segment-'+cut] = segm_class
+    cells_position = organ.cellsMC['chA'].assign_class(cells_position, segm_class, col_name = 'Segment-'+cut)
     cells_out = organ.cellsMC['chA'].colour_cells(sphs_pos = cells_position, 
                                                     color_class = color_class)
 
     organ.cellsMC['chA'].cells = cells_out
-    cells_position['Segment-'+cut] = segm_class
+
     organ.cellsMC['chA'].save_cells(cells_position)
     
     return cells_out, segm_class
@@ -3603,7 +3602,7 @@ def get_segm_mean_sph(controller, organ, cut, sphs_mean, color_segm):
     done = False
     while not done:     
         # vols, names_iso, colors_vols
-        iso_vols, vol_settings = organ_vol_iso(organ)
+        iso_vols, vol_settings = organ.organ_vol_iso()
 
         def func(evt):
             if not evt.actor:
@@ -3693,13 +3692,13 @@ def modify_cell_class(organ, cells, cut, cells_class):
 
     segm_names = organ.mC_settings['setup']['segm_mC'][cut]['name_segments']
     segm_colors = organ.mC_settings['setup']['segm_mC'][cut]['colors']
-    cells_class = list(cells_class)
+
     segm_no = []; colors = []
     for segm in segm_names: 
         segm_no.append(segm+':'+segm_names[segm])
         colors.append(segm_colors[segm])
     
-    iso_vols, vol_settings = organ_vol_iso(organ)
+    iso_vols, vol_settings = organ.organ_vol_iso()
 
     def classify_cells_into_chambers(evt):
         if not evt.actor: 
@@ -3708,8 +3707,9 @@ def modify_cell_class(organ, cells, cut, cells_class):
             sil = evt.actor.silhouette().lineWidth(6).c('red')
             #Get cell number (cell id)
             cell_no = evt.actor.name
+            print(cell_no)
             cell_no = int(cell_no.split('.')[-1])
-            current_class = cells_class[cell_no]
+            current_class = cells_class.at[cell_no]
             for n, ss in enumerate(segm_no): 
                 if current_class == ss: 
                     ind = n
@@ -3719,7 +3719,7 @@ def modify_cell_class(organ, cells, cut, cells_class):
             new_ind = (ind_plus1)%len(colors)
             new_color = colors[new_ind]
             evt.actor.color(new_color)
-            cells_class[cell_no] = segm_no[new_ind]
+            cells_class.at[cell_no] = segm_no[new_ind]
             msg.text("Sphere "+ evt.actor.name +' is now classified as part of '+segm_no[new_ind])
             plt.remove(silcont.pop()).add(sil)
             silcont.append(sil)
@@ -3762,48 +3762,24 @@ def modify_cell_class(organ, cells, cut, cells_class):
 
     return cells, cells_class
 
-def organ_vol_iso(organ): 
-
-    iso_vols = []; vol_settings = {}
-    if hasattr(organ, 'vol_iso'): 
-        for n, vol in enumerate(organ.vol_iso.keys()):
-            iso_vols.append(organ.vol_iso[vol])
-            name = vol+': '+organ.mC_settings['setup']['name_chs'][vol]
-            color = organ.mC_settings['setup']['color_chs'][vol]
-            vol_settings = {'color': {n: color}, 'name':{n: name}}
-    
-    return iso_vols, vol_settings
-
-def get_colour_class(organ, cut, mtype): 
+def count_cells(organ, cells_position, cut, mtype, col_name): 
 
     if mtype == 'segm': 
-        col_name = 'Segment-'+cut
-        type_name = 'segm_mC'
+        settings_name = 'name_segments'
 
-    cells_position = organ.cellsMC['chA'].load_cells_df(filter=False)
-    segm_colors = organ.mC_settings['setup'][type_name][cut]['colors']
-    segm_class = cells_position[col_name]
-    color_class = np.empty(len(cells_position), dtype='object')
+    names = organ.mC_settings['setup'][mtype+'_mC'][cut][settings_name]
+    colors = organ.mC_settings['setup'][mtype+'_mC'][cut]['colors']
 
-    for n, val in enumerate(segm_class): 
-        segm, _  = val.split(':')
-        color_class[n] = segm_colors[segm]
+    segm_no = []; 
+    for name in names: 
+        segm_no.append(name+':'+names[name])
 
-    return color_class
+    counts_cells = cells_position[col_name].value_counts()
+    for sp in segm_no: 
+        count_sp = counts_cells[sp]
+        print(sp, ':', count_sp)
 
-def count_cells(organ, cells_position, cut): 
-
-    segm_names = organ.mC_settings['setup']['segm_mC'][cut]['name_segments']
-    segm_colors = organ.mC_settings['setup']['segm_mC'][cut]['colors']
-    segm_no = []; colors = []
-    for segm in segm_names: 
-        segm_no.append(segm+':'+segm_names[segm])
-        colors.append(segm_colors[segm])
-
-    counts_cells = cells_position['Segment-'+cut].value_counts()
-    for sp in segm_names: 
-        segm_name = final_class[sp]['segm']+':'+final_class[sp]['name']
-        count_sp = counts_cells[segm_name]
+    print('Save this values somewhere!!!')
 
 
 #%% - Math operations 

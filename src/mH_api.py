@@ -2435,8 +2435,7 @@ def run_remove_cells(controller):
     #set_process(controller, 'remove_cells_mC')
     workflow = controller.organ.workflow['morphoCell']
     # Check which channels want to be seen
-    vol_iso = controller.organ.vol_iso
-    fcM.remove_cells(controller.organ, vol_iso)
+    controller.organ.cellsMC['chA'].remove_cells()
     
     getattr(controller.main_win, 'remove_cells_play').setChecked(True)
     proc_wft = ['A-CleanCells', 'Status']
@@ -2465,7 +2464,7 @@ def run_segments_mC(controller, btn):
         print('\n- Dividing Cells into segments '+user_names)
         controller.main_win.win_msg('Dividing Cells into segments '+user_names)
         
-        cells_position = controller.organ.cellsMC['chA'].load_cells_df(filter=False)
+        cells_position = controller.organ.cellsMC['chA'].df_cells()
         column_name = 'Segment-'+cut
         run_all = False; run_reclass = False; cells_out = None
         if len(controller.organ.mC_settings['wf_info']['segments_cells'][cut]['cut_info']) > 0: 
@@ -2498,7 +2497,7 @@ def run_segments_mC(controller, btn):
         if run_all or run_reclass: 
             if cells_out == None: 
                 segm_class = cells_position['Segment-'+cut]
-                color_class = fcM.get_colour_class(controller.organ, cut, mtype='segm')
+                color_class = controller.organ.cellsMC['chA'].get_colour_class(cut, mtype='segm')
                 cells_out = controller.organ.cellsMC['chA'].colour_cells(sphs_pos = cells_position, 
                                                                         color_class = color_class)
             
@@ -2507,12 +2506,34 @@ def run_segments_mC(controller, btn):
                                                             cells_class = segm_class)
             
             controller.organ.cellsMC['chA'].cells = cells_out
-            cells_position['Segment-'+cut] = segm_classf
+            cells_position = controller.organ.cellsMC['chA'].assign_class(cells_position, segm_classf, col_name = 'Segment-'+cut)
             controller.organ.cellsMC['chA'].save_cells(cells_position)
 
-            # fcM.count_cells(cells_position, cut) 
-            
+            fcM.count_cells(controller.organ, cells_position, cut, mtype = 'segm', col_name = 'Segment-'+cut)
 
+            #Update workflow
+            controller.main_win.cell_segm_btns[segm]['play'].setChecked(True)
+            proc_wf = ['B-Segments', cut,'Status']
+            controller.organ.update_mCworkflow(process = proc_wf, update = 'DONE')
+
+            #Enable Plot Buttons
+            controller.main_win.cell_segm_btns[segm]['plot'].setEnabled(True)
+    
+    all_done = []
+    for cut in workflow['B-Segments'].keys(): 
+        if cut != 'Status':
+            all_done.append(workflow['B-Segments'][cut]['Status'])
+    
+    proc_wft = ['B-Segments','Status']
+    if all(flag == 'DONE' for flag in all_done): 
+        controller.organ.update_mCworkflow(process = proc_wft, update = 'DONE')
+    elif any(flag == 'DONE' for flag in all_done): 
+        controller.organ.update_mCworkflow(process = proc_wft, update = 'Initialised')
+    else:
+        controller.organ.update_mCworkflow(process = proc_wft, update = 'NI')
+
+    controller.main_win.update_status(workflow, proc_wft, controller.main_win.cell_segments_status)
+            
 def get_segm_planes(organ, cut, win): 
 
     # Get user segment names
@@ -2522,14 +2543,20 @@ def get_segm_planes(organ, cut, win):
     # Number of discs expected to be created
     no_cuts_4segments = organ.mC_settings['setup']['segm_mC'][cut]['no_cuts_4segments']
     #Get iso_vols
-    iso_vols, vol_settings = fcM.organ_vol_iso(organ)
+    iso_vols, vol_settings = organ.organ_vol_iso()
     
     for n in range(no_cuts_4segments):
         happyWithPlane = False
         win.win_msg('Creating Plane No.'+str(n)+' for cutting tissues into segments!')
 
         while not happyWithPlane:
-            pl_centre = iso_vols[0].center_of_mass()
+            try: 
+                pl_centre = iso_vols[0].center_of_mass()
+            except: # this except doesn't work - find the boundaries of the spheres in get_plane?
+                cells_position = organ.cellsMC['chA'].df_cells()
+                filt_segm = cells_position[["Position X", "Position Y", "Position Z"]]
+                pl_centre = list(filt_segm.mean())
+
             pl_normal = (1,0,0)
             def_pl = {'pl_normal': pl_normal, 'pl_centre': pl_centre}
             _, pl_dict = fcM.get_plane(filename = organ.user_organName, 

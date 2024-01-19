@@ -2047,6 +2047,18 @@ class Organ():
                 
         return [x_b, y_b, z_b]
         
+    def organ_vol_iso(self): 
+
+        iso_vols = []; vol_settings = {}
+        if hasattr(self, 'vol_iso'): 
+            for n, vol in enumerate(self.vol_iso.keys()):
+                iso_vols.append(self.vol_iso[vol])
+                name = vol+': '+self.mC_settings['setup']['name_chs'][vol]
+                color = self.mC_settings['setup']['color_chs'][vol]
+                vol_settings = {'color': {n: color}, 'name':{n: name}}
+        
+        return iso_vols, vol_settings
+
     #Get all the set mH variables in __init__
     def get_notes(self):
         return self.info['user_organNotes']
@@ -3822,24 +3834,133 @@ class Cells():
         self.dir_cells = organ.cellsMC[ch_name]['dir_cells']
         self.shape = organ.cellsMC[ch_name]['shape']
         
-        cells = self.load_cells_df()
+        cells = self.df_cells()
         self.set_cells(cells)
+    
+    def df_cells(self): 
+
+        cells_dir = self.parent_organ.dir_res(dir='s3_numpy') / self.dir_cells
+        self.cells_position = pd.read_csv(cells_dir, index_col=0)
+
+        return self.cells_position
 
     def set_cells(self, sphs_pos, init=False): 
 
         cell_ids = list(sphs_pos.index)
-        sphs_pos = sphs_pos[["Position X", "Position Y", "Position Z"]]
-        sphs_pos_tuple = list(sphs_pos.itertuples(index=False, name=None))
-        cols = range(len(sphs_pos_tuple))
+        deleted = sphs_pos['deleted']
+        pos_x = sphs_pos['Position X']
+        pos_y = sphs_pos['Position Y']
+        pos_z = sphs_pos['Position Z']
+
+        cols = range(len(sphs_pos))
         color = self.parent_organ.mC_settings['setup']['color_chs']['chA']
         
         sphs = []
-        for i, pos, id in zip(count(), sphs_pos_tuple, cell_ids):
-            s = vedo.Sphere(r=2).pos(pos).color(color)#cols[i])
-            s.name = f"Cell Nr.{id}"
-            sphs.append(s)
+        for i, x, y, z, id, bool_del in zip(count(), pos_x, pos_y, pos_z, cell_ids, deleted):
+            if bool_del == 'NO': 
+                pos = (x, y, z)
+                s = vedo.Sphere(r=2).pos(pos).color(color)#cols[i])
+                s.name = f"Cell Nr.{id}"
+                sphs.append(s)
+            else: 
+                print('sph deleted no:', id)
         
         self.cells = sphs
+
+    def remove_cells(self): 
+
+        vol_iso, vol_settings = self.parent_organ.organ_vol_iso()
+
+        sphs = self.cells
+        cells2remove = []
+        silcont = [None]
+        def remove_cells(evt):
+            if not evt.actor: return
+            if isinstance(evt.actor, vedo.shapes.Sphere): 
+                sil = evt.actor.silhouette().lineWidth(6).c('red')
+                print("You clicked: "+evt.actor.name)
+                msg.text("You clicked: Sphere "+evt.actor.name)
+                cell_no = evt.actor.name
+                cell_no = int(cell_no.split('.')[-1])
+                if cell_no < 1000000: # remove
+                    cells2remove.append(cell_no)
+                    evt.actor.color('black')
+                    new_no = 1000000+cell_no
+                    evt.actor.name = f"Cell Nr.{new_no}"
+                else: # add back
+                    ind2rem = cells2remove.index(cell_no-1000000)
+                    cells2remove.pop(ind2rem)
+                    old_no = cell_no-1000000
+                    evt.actor.color('gold')
+                    evt.actor.name = f"Cell Nr.{old_no}"
+                    
+                plt.remove(silcont.pop()).add(sil)
+                silcont.append(sil)
+
+        if len(vol_iso) >= 1: 
+            def sliderAlphaMeshOut(widget, event):
+                valueAlpha = widget.GetRepresentation().GetValue()
+                vol_iso[0].alpha(valueAlpha)
+        if len(vol_iso) >= 2: 
+            def sliderAlphaMeshOut2(widget, event):
+                valueAlpha = widget.GetRepresentation().GetValue()
+                vol_iso[1].alpha(valueAlpha)
+        if len(vol_iso) >= 3: 
+            def sliderAlphaMeshOut3(widget, event):
+                valueAlpha = widget.GetRepresentation().GetValue()
+                vol_iso[2].alpha(valueAlpha)
+        
+        txt_slider_size2 = 0.7
+        
+        msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
+        txtf = self.parent_organ.user_organName+' - Removing cells \n -Click in the cells you would like to remove from the analysis, and close the window when done.' 
+        txt = vedo.Text2D(txtf,  c=txt_color, font=txt_font, s=txt_size)
+        plt = vedo.Plotter(axes=1)
+        plt.add_icon(logo, pos=(0.1,0.0), size=0.25)
+        if len(vol_iso) >= 1: 
+            plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.05,
+                pos=[(0.92,0.25), (0.92,0.35)], c= vol_settings['color'][0], 
+                title='Opacity\n'+ vol_settings['name'][0].title(), title_size=txt_slider_size2)
+        if len(vol_iso) >=2:
+            plt.addSlider2D(sliderAlphaMeshOut2, xmin=0, xmax=0.99, value=0.05,
+                pos=[(0.92,0.40), (0.92,0.50)], c=vol_settings['color'][1], 
+                title='Opacity\n'+ vol_settings['name'][1].title(), title_size=txt_slider_size2)
+        if len(vol_iso) >=3:
+            plt.addSlider2D(sliderAlphaMeshOut3, xmin=0, xmax=0.99, value=0.05,
+                pos=[(0.72,0.25), (0.72,0.35)], c=vol_settings['color'][2],
+                title='Opacity\n'+ vol_settings['name'][2].title(), title_size=txt_slider_size2)
+            
+        plt.addCallback('mouse click', remove_cells)
+        plt.show(sphs, vol_iso, msg, txt, zoom=0.8)
+        
+        # Read file
+        cells_position = self.df_cells()
+        deleted = cells_position['deleted']
+
+        for cell in cells2remove: 
+            deleted.at[cell] = 'YES'
+        
+        cells_position['deleted'] = deleted
+        self.save_cells(cells_position)
+        self.set_cells(cells_position)
+
+    def get_colour_class(self, cut, mtype): 
+
+        if mtype == 'segm': 
+            col_name = 'Segment-'+cut
+            type_name = 'segm_mC'
+
+        cells_position = self.parent_organ.cellsMC['chA'].df_cells()
+        segm_colors = self.parent_organ.mC_settings['setup'][type_name][cut]['colors']
+        segm_class = cells_position[col_name]
+        color_class = np.empty(len(cells_position), dtype='object')
+
+        for n, val in enumerate(segm_class): 
+            if isinstance(val, str):
+                segm, _  = val.split(':')
+                color_class[n] = segm_colors[segm]
+
+        return color_class
 
     def colour_cells(self, sphs_pos, color_class):
 
@@ -3878,18 +3999,21 @@ class Cells():
             self.dir_cells = cells_name
             print('>> Processed channel saved correctly! - ', cells_name)
             alert('countdown')
+    
+    def assign_class(self, cells_position, sp_class, col_name,):
 
-    def load_cells_df(self, filter=True): 
+        deleted = cells_position['deleted']
+        sp_classf = []
+        for i, cl, bool_del in zip(count(), sp_class, deleted): 
+            if bool_del == 'YES':
+                sp_classf.append('NA')
+            else: 
+                sp_classf.append(cl)
+        
+        cells_position[col_name] = sp_classf
 
-        cells_dir = self.parent_organ.dir_res(dir='s3_numpy') / self.dir_cells
-        cells = pd.read_csv(cells_dir, index_col=0)
-        sphs_pos = cells.copy()
-
-        if filter: 
-            sphs_pos = sphs_pos[sphs_pos['deleted'] == 'NO'] 
-
-        return sphs_pos
-
+        return cells_position
+        
 class MyFaceSelectingPlotter(vedo.Plotter):
     def __init__(self, colors, color_o, views, **kwargs):
         
