@@ -51,7 +51,7 @@ from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours
                                        close_draw, close_box, close_user, reset_img, close_convex_hull, tuple_pairs, 
                                        mask_with_npy)
 from ..modules.mH_funcMeshes import (plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap, 
-                                     unit_vector, new_normal_3DRot, measure_ellipse)
+                                     unit_vector, new_normal_3DRot, measure_ellipse, create_iso_volume)
 from ..modules.mH_classes_new import Project, Organ, create_submesh
 from .config import mH_config
 
@@ -10562,7 +10562,6 @@ class MainWindow(QMainWindow):
         else:
             self.cell_sections_all_widget.setVisible(False)
         
-        
         if self.organ.mC_settings['setup']['zone_mC']['cutCellsIn2Zones']: 
             self.init_zones_mC()
         else:
@@ -10590,9 +10589,9 @@ class MainWindow(QMainWindow):
         self.threshold_chD_slider.valueChanged.connect(lambda: self.slider_changed('threshold_chD','slider'))
 
         # - Plot isosurface
-        # self.mH_plot_chB.clicked.connect(lambda: self.plot_mH_ch('chB'))
-        # self.mH_plot_chC.clicked.connect(lambda: self.plot_mH_ch('chC'))
-        # self.mH_plot_chD.clicked.connect(lambda: self.plot_mH_ch('chD'))
+        self.iso_plot_chB.clicked.connect(lambda: self.plot_iso_ch('chB'))
+        self.iso_plot_chC.clicked.connect(lambda: self.plot_iso_ch('chC'))
+        self.iso_plot_chD.clicked.connect(lambda: self.plot_iso_ch('chD'))
 
         for ch in ['chB', 'chC', 'chD']: 
             label = getattr(self, 'iso_label_'+ch)
@@ -10605,6 +10604,7 @@ class MainWindow(QMainWindow):
                 getattr(self, 'alpha_'+ch).setVisible(False)
                 getattr(self, ch+'_play').setVisible(False)
                 getattr(self, 'mH_plot_'+ch).setVisible(False)
+                getattr(self, 'iso_plot_'+ch).setVisible(False)
             else: 
                 label.setText('Ch'+ch[-1]+': '+self.organ.mC_settings['setup']['name_chs'][ch])
                 color = self.organ.mC_settings['setup']['color_chs'][ch]
@@ -10613,7 +10613,7 @@ class MainWindow(QMainWindow):
                     print('check if segmented already')
 
         #Initialise with user settings, if they exist!
-        self.user_isosuf()
+        self.user_isosurf()
 
     def init_remove_cells(self): 
         #Buttons
@@ -10650,8 +10650,12 @@ class MainWindow(QMainWindow):
         self.cell_segments_open.clicked.connect(lambda: self.open_section(name='cell_segments'))
         self.cell_segments_play.setStyleSheet(style_play)
         self.cell_segments_play.setEnabled(False)
+
+        self.ind_segments_play.setStyleSheet(style_play)
+        self.ind_segments_play.setEnabled(False)
         self.q_cell_segments.clicked.connect(lambda: self.help('cell_segments'))
-        self.cell_segments_set.clicked.connect(lambda: self.set_cell_segsments())
+        self.cell_segments_set.clicked.connect(lambda: self.set_cell_segments())
+        self.cell_ind_segments_set.clicked.connect(lambda: self.set_ind_cell_segments())
 
         #Fill color
         self.fillcolor_cut1_segm1_cell.clicked.connect(lambda: self.color_picker(name = 'cut1_segm1_cell'))
@@ -10689,6 +10693,8 @@ class MainWindow(QMainWindow):
                     if nn > bb+1:
                         getattr(self, 'label_'+cutl+'_segm'+str(nn)+'_cell').setVisible(False)
                         getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn)+'_cell').setVisible(False)
+                        getattr(self, 'lab_'+cutl+'_segm'+str(nn)).setVisible(False)
+                        getattr(self, 'n_cells_'+cutl+'_segm'+str(nn)).setVisible(False)
                     else: 
                         if not colors_initialised: 
                             color = list(palette[5*(int(optcut)-1)+(nn-1)])
@@ -10734,6 +10740,7 @@ class MainWindow(QMainWindow):
                 
                 getattr(self, cutl+'_segm_cell_play').setVisible(False)
                 getattr(self, cutl+'_segm_cell_plot').setVisible(False)
+                getattr(self, 'widget_segm_'+cutl).setVisible(False)
             
         if len(no_cuts) == 1: 
             for aa in range(1,5,1): 
@@ -10761,15 +10768,76 @@ class MainWindow(QMainWindow):
         self.cell_zones_open.clicked.connect(lambda: self.open_section(name='cell_zones'))
 
     #Functions to fill sections according to user's selections
-    def user_isosuf(self):
-        pass
+    def user_isosurf(self):
+
+        wf = self.organ.workflow['morphoCell']['A-SetExtraChs']
+        wf_info = self.organ.mC_settings['wf_info']
+        if 'isosurface' in wf_info.keys():
+            print('wf_info[isosurface]:', wf_info['isosurface'])
+            for ch in wf_info['isosurface']: 
+                threshold = wf_info['isosurface'][ch]['threshold']
+                getattr(self, 'threshold_'+ch+'_value').setText(str(threshold))
+                self.slider_changed('threshold_'+ch, 'value')
+                alpha = wf_info['isosurface'][ch]['alpha']
+                getattr(self, 'alpha_'+ch).setValue(float(alpha))
+
+                if get_by_path(wf, [ch,'Status']) == 'DONE':
+                    getattr(self, ch+'_play').setEnabled(True)
+                    create_iso_volume(organ = self.organ, ch=ch, plot=False)
+                    getattr(self, ch+'_play').setChecked(True)
+                    getattr(self, 'iso_plot_'+ch).setEnabled(True)
+
+            #Update Status in GUI
+            self.update_status(wf, ['Status'], self.isosurface_cells_status)
+
+            #Run Set Function 
+            self.set_isosuface()
 
     def user_remove_cells(self): 
-        pass
+
+        wf = self.organ.workflow['morphoCell']['A-CleanCells']
+        wf_info = self.organ.mC_settings['wf_info']
+        if 'remove_cells' in wf_info.keys():
+            print('wf_info[remove_cells]:', wf_info['remove_cells'])
+            for ch in wf_info['remove_cells']['add_ch']: 
+                getattr(self, 'add_'+ch).setChecked(wf_info['remove_cells']['add_ch'][ch])
+
+            if wf['Status'] == 'DONE': 
+                self.cells_plot_chA.setEnabled(True)
+                self.remove_cells_play.setChecked(True)
+            
+            #Update Status in GUI
+            self.update_status(wf, ['Status'], self.remove_cells_status)
+
+            #Run Set Function 
+            self.set_remove_cells()
 
     def user_segments_cells(self): 
-        pass
 
+        wf = self.organ.workflow['morphoCell']['B-Segments']
+        wf_info = self.organ.mC_settings['wf_info']
+        if 'segments_cells' in wf_info.keys():
+            print('wf_info[segments_cells]:', wf_info['segments_cells'])
+            all_done = []
+            for cut in wf_info['segments_cells']: 
+                if len(wf_info['segments_cells'][cut]['cut_info']) > 0 and wf[cut]['Status'] == 'DONE': 
+                    getattr(self, cut.lower()+'_segm_cell_play').setChecked(True)
+                    getattr(self, cut.lower()+'_segm_cell_plot').setEnabled(True)
+                    all_done.append(True)
+                    self.ind_segments_play.setEnabled(True)
+                else: 
+                    all_done.append(False)
+            
+            if all(all_done) and wf['Status'] == 'DONE':
+                self.cell_segments_play.setChecked(True)
+            
+
+            #Update Status in GUI
+            self.update_status(wf, ['Status'], self.cell_segments_status)
+
+            #Run Set Function 
+            self.set_cell_segments()
+        
     #Set Buttons
     def set_isosuface(self): 
         wf_info = self.organ.mC_settings['wf_info']
@@ -10868,7 +10936,7 @@ class MainWindow(QMainWindow):
         
         self.organ.cellsMC['chA'].set_cells(cells_position)
 
-    def set_cell_segsments(self): 
+    def set_cell_segments(self): 
 
         wf_info = self.organ.mC_settings['wf_info']
         current_gui_segm_cells = self.gui_segments_cells_n()
@@ -10914,6 +10982,49 @@ class MainWindow(QMainWindow):
                     pass
         
         return gui_segm_cells
+
+    def set_ind_cell_segments(self): 
+
+        if self.organ.workflow['morphoCell']['B-Segments']['Status'] != 'NI': 
+
+            wf_info = self.organ.mC_settings['wf_info']
+            current_gui_ind_segm_cells = self.gui_ind_segments_cells_n()
+            if 'ind_segments_cells' not in wf_info.keys():
+                self.gui_ind_segm_cells = current_gui_ind_segm_cells
+            else: 
+                gui_ind_segm_cells_loaded = self.organ.mC_settings['wf_info']['segments_cells']
+                self.gui_ind_segm_cells, changed = update_gui_set(loaded = gui_ind_segm_cells_loaded, 
+                                                                current = current_gui_ind_segm_cells)
+
+            self.cell_ind_segments_set.setChecked(True)
+            print('self.gui_ind_segm_cells: ', self.gui_ind_segm_cells)
+            self.ind_segments_play.setEnabled(True) 
+
+            for cut in self.organ.mC_settings['setup']['segm_mC'].keys(): 
+                if 'Cut' in cut: 
+                    getattr(self, cut.lower()+'_segm_cell_play').setEnabled(True)  
+
+            # Update mH_settings
+            proc_set = ['wf_info']
+            update = self.gui_ind_segm_cells
+            self.organ.update_settings(proc_set, update, 'mC', add='ind_segments_cells')
+        
+        else: 
+            self.win_msg("*Please run at least one of the segments' cuts to be able to set these settings.", self.cell_ind_segments_set)
+
+    
+    def gui_ind_segments_cells_n(self): 
+        gui_ind_segm_cells = {}
+        for cut in self.organ.mC_settings['setup']['segm_mC'].keys(): 
+            if 'Cut' in cut: 
+                gui_ind_segm_cells[cut] = {}
+                for nn in range(1,6,1):
+                    spin_n_cells = getattr(self, 'n_cells_'+cut.lower()+'_segm'+str(nn))
+                    if spin_n_cells.isVisible(): 
+                        gui_ind_segm_cells[cut]['segm'+str(nn)] = getattr(self, 'n_cells_'+cut.lower()+'_segm'+str(nn)).value()
+        
+        return gui_ind_segm_cells
+
 
     #Functions specific to gui functionality
     def open_section(self, name, ch_name=None): 
@@ -12643,6 +12754,19 @@ class MainWindow(QMainWindow):
         else: 
             self.win_msg('*Please select a segment from which to plot the created ellipsoids.')
 
+    def plot_iso_ch(self, ch): 
+
+        vol = self.organ.vol_iso[ch]
+        color = self.organ.mC_settings['setup']['color_chs'][ch]
+        vol.color(color)
+
+        txtf = self.organ.user_organName+' \n - Isosurface volume reconstruction for Ch'+ch[-1]+': '+self.organ.mC_settings['setup']['name_chs'][ch]
+        txt = vedo.Text2D(txtf,  c=txt_color, font=txt_font, s=txt_size)
+        vp = vedo.Plotter(N=1, axes = 1)
+        vp.add_icon(logo, pos=(0.1,0.0), size=0.25)
+        vp.show(vol, txt, at=0, interactive=True)
+    
+    
     def plot_cells(self, process): 
         
         chs = []

@@ -2581,3 +2581,37 @@ def get_segm_planes(organ, cut, win):
             organ.update_settings(proc, update = {}, mH = 'mC')
         organ.update_settings(proc+[plane_name], update = pl_dict, mH = 'mC')
         print('wf_info:', organ.mC_settings['wf_info']['segments_cells'][cut])
+
+def run_IND_segm(controller): 
+
+    print('AAA')
+    wf_info = controller.organ.mC_settings['wf_info']['ind_segments_cells']
+    measure = controller.organ.mC_settings['measure']['mC_segm']
+    for cut in measure: 
+        print('cut:', cut)
+        for segm in measure[cut]:
+            ss, user_name = segm.split(':')
+            cell_distances = controller.organ.cellsMC['chA'].df_cells()
+            df_segm = cell_distances[cell_distances['Segment-'+cut] == segm]
+
+            # Find euclidian distance beteen all cells in chamber
+            dists = fcM.find_dist_btw_all_cells(df_segm)
+        
+            # # Get the n closest cells per cell and record its distance
+            n_closest_cells = wf_info[cut][ss]
+            segm_count = measure[cut][segm]['total']
+            index_closestCells, min_dist_to_cells = fcM.get_N_closest_cells(n_closest_cells, segm_count, dists, df_segm)
+        
+            # Get average minimum distance to the n closest cells 
+            avg_min_dist = [np.mean(cell_dist) for cell_dist in min_dist_to_cells]
+            
+            #Cluster cells in groups with n neighbours 
+            centre_cells, neighb_cells, ind_orgCells, selected_cells = fcM.option_cluster_number(controller.organ.user_organName, n_closest_cells, 
+                                                                                                 avg_min_dist, index_closestCells)
+
+
+            #Select clusters
+            df_clusters, sphs_distColour = fcM.cluster_segm_cells(controller.organ, n_closest_cells, selected_cells, 
+                                                                    min_dist_to_cells, avg_min_dist, df_segm, segm)
+
+

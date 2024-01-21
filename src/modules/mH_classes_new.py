@@ -52,7 +52,9 @@ txt_slider_size = mH_config.txt_slider_size
 # Definition of class to save dictionary
 class NumpyArrayEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, int):
+        if isinstance(obj, int): 
+            return int(obj)
+        elif isinstance(obj, np.int64): 
             return int(obj)
         elif isinstance(obj, float):
             return float(obj)
@@ -67,7 +69,7 @@ class NumpyArrayEncoder(json.JSONEncoder):
         elif isinstance(obj, pd.DataFrame): 
             return obj.to_json(orient='table')
         else:
-            print('type object: ', type(obj))
+            print('type object: ', type(obj), obj)
             return super(NumpyArrayEncoder, self).default(obj)
 
 class Project(): 
@@ -270,6 +272,8 @@ class Project():
                         self.mC_zones[key]= mC_settings['zone_mC'][key]['name_zones']
             else: 
                 self.mC_zones = False
+            
+            self.mC_settings['measure'] = {}
 
         else: 
             self.mC_settings = None
@@ -279,6 +283,7 @@ class Project():
             self.mC_zones = None
             self.mC_methods = None
 
+        
         self.set_mC_methods()
         
     def clean_False(self, user_param:dict):#
@@ -1064,6 +1069,8 @@ class Organ():
         if self.analysis['morphoCell']:
             # mC_Settings
             self.mC_settings = load_dict['mC_settings']
+            if 'measure' not in self.mC_settings: 
+                self.mC_settings['measure'] = {} 
 
             self.imChannelsMC = load_dict['imChannelMC']
             self.load_objImChannelMC()

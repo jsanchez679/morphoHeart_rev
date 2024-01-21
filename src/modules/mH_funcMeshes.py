@@ -1738,7 +1738,7 @@ def create_subsegment(organ, subsgm, cut, cut_masked, stype, sp_dict_segm, color
     # final_segm_mesh: instance of mesh (vedo)
     return final_segm_mesh
 
-def create_iso_volume(organ, ch):
+def create_iso_volume(organ, ch, plot=True):
 
     #Open image for channel btn
     img_dir = organ.img_dirs[ch]['image']['dir']
@@ -1746,8 +1746,9 @@ def create_iso_volume(organ, ch):
     res = organ.get_resolution()
     threshold = organ.mC_settings['wf_info']['isosurface'][ch]['threshold']
     alpha = organ.mC_settings['wf_info']['isosurface'][ch]['alpha']
+
     # Invert stack
-    res[1] = -res[1]
+    # res[1] = -res[1]
     try: 
         vol = vedo.Volume(str(img_dir), spacing = res).isosurface(int(threshold)).alpha(float(alpha))
     except:
@@ -1760,11 +1761,12 @@ def create_iso_volume(organ, ch):
     else: 
         organ.vol_iso = {ch: vol}
 
-    txtf = organ.user_organName+' \n - Isosurface volume reconstruction for Ch'+ch[-1]+': '+organ.mC_settings['setup']['name_chs'][ch]+' [threshold: '+str(threshold)+']'
-    txt = vedo.Text2D(txtf,  c=txt_color, font=txt_font, s=txt_size)
-    vp = vedo.Plotter(N=1, axes = 1)
-    vp.add_icon(logo, pos=(0.1,0.0), size=0.25)
-    vp.show(vol, txt, at=0, interactive=True)
+    if plot: 
+        txtf = organ.user_organName+' \n - Isosurface volume reconstruction for Ch'+ch[-1]+': '+organ.mC_settings['setup']['name_chs'][ch]+' [threshold: '+str(threshold)+']'
+        txt = vedo.Text2D(txtf,  c=txt_color, font=txt_font, s=txt_size)
+        vp = vedo.Plotter(N=1, axes = 1)
+        vp.add_icon(logo, pos=(0.1,0.0), size=0.25)
+        vp.show(vol, txt, at=0, interactive=True)
 
     return True
 
@@ -3766,22 +3768,29 @@ def count_cells(organ, cells_position, cut, mtype, col_name):
 
     if mtype == 'segm': 
         settings_name = 'name_segments'
+        mC_name = 'mC_segm'
 
     names = organ.mC_settings['setup'][mtype+'_mC'][cut][settings_name]
-    colors = organ.mC_settings['setup'][mtype+'_mC'][cut]['colors']
 
     segm_no = []; 
     for name in names: 
         segm_no.append(name+':'+names[name])
 
     counts_cells = cells_position[col_name].value_counts()
+    if mC_name not in organ.mC_settings['measure']: 
+        organ.mC_settings['measure'][mC_name] = {}
+    if cut not in organ.mC_settings['measure'][mC_name]:
+        organ.mC_settings['measure'][mC_name][cut] = {}
+    
     for sp in segm_no: 
         count_sp = counts_cells[sp]
         print(sp, ':', count_sp)
+        if sp not in organ.mC_settings['measure'][mC_name][cut]:
+            organ.mC_settings['measure'][mC_name][cut][sp] = {}
 
-    print('Save this values somewhere!!!')
+        organ.mC_settings['measure'][mC_name][cut][sp]['total'] = count_sp
 
-
+    
 #%% - Math operations 
 def new_normal_3DRot (normal, rotX, rotY, rotZ):
     '''
@@ -3941,6 +3950,214 @@ def get_interpolated_pts(points, nPoints):
     pts_interp = np.c_[xnew, ynew, znew]
 
     return pts_interp
+
+def find_dist_btw_all_cells(df_segm): 
+
+    sphs_all = df_segm[df_segm['deleted'] == 'NO'] 
+    sphs_pos_val = sphs_all[['Position X', 'Position Y', 'Position Z']].to_numpy()
+    dists = cdist(sphs_pos_val, sphs_pos_val)
+
+    return dists
+
+def get_N_closest_cells(n_closestCells, count, dists, df_cellsChamber):
+    
+    cell_ids = list(df_cellsChamber.index)
+    
+    # Get the n closest cells per cell and record its distance
+    index_closest_cells = []
+    min_dist_to_cells = []
+    for cell in range(count):
+        dist_cell = dists[:,cell]
+        index = np.argsort(dist_cell)
+        # print(index[0:n_closestCells])
+        list_index = []
+        for ind in index[0:n_closestCells]:
+            list_index.append(cell_ids[ind])
+        # print(list_index)
+        index_closest_cells.append(list_index)
+        min_dist_to_cells.append(np.sort(dist_cell)[1:n_closestCells])
+        
+    return index_closest_cells, min_dist_to_cells
+
+def option_cluster_number(filename, n_closestCells, avg_min_dist, index_closest_cells):
+
+    num_cells = len(avg_min_dist)
+    # Sort the average distance to sort clustering 
+    index_sortedCells = list(np.argsort(avg_min_dist))*2
+
+    num_clusters = []
+    all_selected_index = []
+    all_firstCell_sel_index = []
+    all_group_sel_index = []
+    all_indexes_org_cells = []
+    
+    for starting_cell in list(range(num_cells)):
+        # print(starting_cell)
+        selected_index = []
+        firstCell_sel_index = []
+        group_sel_index = []
+        #Cluster cells in groups with n neighbours 
+        num_group = 0
+        indexes_org_cells = index_sortedCells[starting_cell:starting_cell+num_cells]
+        for j, org_ind in enumerate(indexes_org_cells):
+            # print(j, org_ind)
+            # Cells indexes of revising group
+            indg = index_closest_cells[org_ind]
+            first_cell_index = indg[0]
+            # print('Cells indexes of revising group (indg):', indg)
+            not_intersect = set(firstCell_sel_index)^set(indg)
+            # print('not_intersect',not_intersect)
+            if len(not_intersect) == len(firstCell_sel_index)+ n_closestCells:
+                firstCell_sel_index.append(first_cell_index)
+                group_sel_index.append(indg)
+                # print('-> First cell number ', first_cell_index, ' added!')
+                # print('-  Cells indexes of revising group (indg):', indg)
+                for k, indx in enumerate(indg):
+                    selected_index.append(indx)
+                    # print(indx)
+                num_group+=1
+                
+        num_clusters.append(num_group)
+        all_selected_index.append(selected_index)
+        all_firstCell_sel_index.append(firstCell_sel_index)
+        all_group_sel_index.append(group_sel_index)
+        all_indexes_org_cells.append(indexes_org_cells)
+        
+    #Get the indexes of the groups that have more clusters in them
+    index_cells_max_num_clusters = [i for i, j in enumerate(num_clusters) if j == max(num_clusters)]
+    selected_index_max_cluster = [all_selected_index[i] for i in index_cells_max_num_clusters]
+    firstCell_max_clusters = [all_firstCell_sel_index[i] for i in index_cells_max_num_clusters]
+    group_max_clusters = [all_group_sel_index[i] for i in index_cells_max_num_clusters]
+    indexes_org_cells_max_clusters = [all_indexes_org_cells[i] for i in index_cells_max_num_clusters]
+    
+    # #Compare now all the possible groups/clusters to make sure they are different
+    # num_possible_clusters = 0
+    # central_cells_of_all_diff_selected_clusters = []
+    # selected_cells_of_all_diff_selected_clusters = []
+    # indexes_org_cells_of_all_diff_selected_clusters = []
+    # for m, sel_ind_max_cluster, ind_org_max_cluster in zip(count(), selected_index_max_cluster, indexes_org_cells_max_clusters):
+    #     central_max = sel_ind_max_cluster[::n_closestCells]
+    #     diff_sets = []
+    #     for f, central in enumerate(central_cells_of_all_diff_selected_clusters):
+    #         cells_diff = set(central_max)^set(central)
+    #         diff_sets.append(len(cells_diff))
+    #     # print('diff_sets:',diff_sets)
+    #     if not 0 in diff_sets or m == 0:
+    #         # print('added:', m, '-', central_max[0])
+    #         num_possible_clusters +=1
+    #         central_cells_of_all_diff_selected_clusters.append(central_max)
+    #         indexes_org_cells_of_all_diff_selected_clusters.append(ind_org_max_cluster)
+    #         selected_cells_of_all_diff_selected_clusters.append(sel_ind_max_cluster)
+    
+    # print('- Number of possible group options (maximizing cluster number): ', len(indexes_org_cells_of_all_diff_selected_clusters))
+    
+    # if len(indexes_org_cells_of_all_diff_selected_clusters) > 3:
+    #     indexes_org_cells_of_all_diff_selected_clusters = indexes_org_cells_of_all_diff_selected_clusters[0:3]
+    #     selected_cells_of_all_diff_selected_clusters = selected_cells_of_all_diff_selected_clusters[0:3]
+    #     central_cells_of_all_diff_selected_clusters = central_cells_of_all_diff_selected_clusters[0:3]
+    
+    #return indexes_org_cells_of_all_diff_selected_clusters, selected_cells_of_all_diff_selected_clusters#, central_cells_of_all_diff_selected_clusters
+    return firstCell_max_clusters, group_max_clusters, indexes_org_cells_max_clusters, selected_index_max_cluster
+
+
+def cluster_segm_cells(organ, n_closestCells, selected_cells, mindist2Cells, avg_min_dist, 
+                        df_cellsChamber, chamber):
+    
+    vols, settings = organ.organ_vol_iso()
+
+    # Define cluster colours 
+    centre_cell = ['maroon','darkorange','goldenrod','yellowgreen','limegreen','aqua','skyblue','mediumblue',
+                   'blueviolet','magenta', 'deeppink', 'sandybrown','dimgray']*50
+    neighbour_cell = ['crimson','coral','gold','lawngreen','palegreen','teal','dodgerblue','navy',
+                      'purple', 'mediumvioletred', 'pink','sienna', 'silver']*50
+    directions = [(1,0,0),(0,1,0),(0,0,1),(1,1,0),(0,1,1),(1,0,1),(1,1,1)]*50
+    
+    df_clusters_ALL = []
+    sphs_distColour_ALL = []
+    sil_distColour_ALL = []
+    for sel_cells in selected_cells:
+        # print('New Set')
+        list_ind_cellsCentre = []
+        list_ind_cellsNeighbours = []
+        list_averageDist = []
+        list_allDistances = []
+        num_group = 0
+        sphs_distColour = create_segm_cells_from_df(df_cellsChamber, chamber)
+        sil_group = [] 
+        cell_groups = [sel_cells[x:x+n_closestCells] for x in range(0, len(sel_cells), n_closestCells)]
+        for cell_group in cell_groups:
+            # print(cell_group)
+            for i, cell_no in enumerate(cell_group):
+                if i == 0: 
+                    # print(cell_no)
+                    sphs_distColour[cell_no].color(centre_cell[num_group]).scale(1.5)
+                    list_ind_cellsCentre.append(cell_no)
+                    list_averageDist.append(avg_min_dist[cell_no])
+                    list_allDistances.append(mindist2Cells[cell_no])
+                else: 
+                    # sphs_distColour[cell_no].color(neighbour_cell[num_group])
+                    sil = sphs_distColour[cell_no].silhouette(directions[num_group]).lineWidth(6).c(neighbour_cell[num_group])
+                    sil_group.append(sil)
+            list_ind_cellsNeighbours.append(cell_group)
+            num_group+=1
+                
+        df_clusters = pd.DataFrame()
+        df_clusters['Cluster_No'] = list(range(len(list_ind_cellsCentre)))
+        df_clusters['Index_CentralCell'] = list_ind_cellsCentre
+        df_clusters['AverageDist'] = list_averageDist
+        df_clusters['Index_NeighbourCells'] = list_ind_cellsNeighbours
+        df_clusters['Distances']= list_allDistances
+        df_clusters['No_NeighbourCells'] = n_closestCells-1
+        df_clusters = df_clusters.set_index('Cluster_No')
+        
+        df_clusters_ALL.append(df_clusters)
+        sphs_distColour_ALL.append(sphs_distColour)
+        sil_distColour_ALL.append(sil_group)
+        # print(num_group)
+    
+    n_options = len(selected_cells)
+    vp = vedo.Plotter(N=n_options, axes = 4)
+    for i in range(n_options):
+        text = 'Clustering option No. '+str(i)
+        txt = vedo.Text2D(text, c=txt_color, font=txt_font)
+        if i != n_options-1:
+            vp.show(vols[0].alpha(0.1), sphs_distColour_ALL[i], sil_distColour_ALL[i], txt, at=i, zoom = 1)
+        else: 
+            vp.show(vols[0].alpha(0.1), sphs_distColour_ALL[i], sil_distColour_ALL[i],txt, at=i, zoom = 1, interactive = True)
+            
+    # vp = Plotter(N=1, axes = 4)
+    # vp.show(myoc.alpha(0.1), sphs_distColour_ALL[1], sil_distColour_ALL[1],txt, at=0, azimuth = 0, zoom = 1, interactive = True)
+    # vp = Plotter(N=1, axes = 4)
+    # vp.show(myoc.alpha(0.1), sphs_distColour_ALL[1], sil_distColour_ALL[1],txt, at=0, azimuth = 90, zoom = 1, interactive = True)
+    # vp = Plotter(N=1, axes = 4)
+    # vp.show(myoc.alpha(0.1), sphs_distColour_ALL[1], sil_distColour_ALL[1],txt, at=0, azimuth = -90, zoom = 1, interactive = True)
+    
+    if n_options > 1:
+        pass#sel_option = ask4input('Select preferred clustering option [0-'+str(n_options-1)+']: ', int)
+    else: 
+        sel_option = 0
+        
+    return df_clusters_ALL[sel_option], sphs_distColour_ALL[sel_option]
+
+def create_segm_cells_from_df(df_cellsChamber, chamber):
+
+    cell_ids = list(df_cellsChamber.index)
+    deleted = df_cellsChamber['deleted']
+    pos_x = df_cellsChamber['Position X']
+    pos_y = df_cellsChamber['Position Y']
+    pos_z = df_cellsChamber['Position Z']
+
+    sphs = []
+    for i, x, y, z, id, bool_del in zip(count(), pos_x, pos_y, pos_z, cell_ids, deleted):
+        if bool_del == 'NO': 
+            pos = (x, y, z)
+            s = vedo.Sphere(r=2).pos(pos).color('black')
+            s.name = f"Cell Nr.{id}"
+            sphs.append(s)
+        else: 
+            print('sph deleted no:', id)
+        
+    return sphs
 
 #%% Module loaded
 print('morphoHeart! - Loaded funcMeshes')

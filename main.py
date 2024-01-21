@@ -561,6 +561,8 @@ class Controller:
 
         self.main_win.cut1_segm_cell_play.clicked.connect(lambda: self.run_segments_mC('Cut1'))
         self.main_win.cut2_segm_cell_play.clicked.connect(lambda: self.run_segments_mC('Cut2'))
+
+        self.main_win.ind_segments_play.clicked.connect(lambda: self.run_IND_segm())
         
     def init_multip_analysis_win(self): 
 
@@ -866,6 +868,11 @@ class Controller:
 
     def run_segments_mC(self, btn): 
         mA.run_segments_mC(controller=self, btn=btn)
+        if not mH_config.dev:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
+
+    def run_IND_segm(self): 
+        mA.run_IND_segm(controller=self)
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 
