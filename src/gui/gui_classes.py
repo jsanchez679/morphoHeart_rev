@@ -51,7 +51,8 @@ from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours
                                        close_draw, close_box, close_user, reset_img, close_convex_hull, tuple_pairs, 
                                        mask_with_npy)
 from ..modules.mH_funcMeshes import (plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap, 
-                                     unit_vector, new_normal_3DRot, measure_ellipse, create_iso_volume)
+                                     unit_vector, new_normal_3DRot, measure_ellipse, create_iso_volume, 
+                                     extract_segm_IND)
 from ..modules.mH_classes_new import Project, Organ, create_submesh
 from .config import mH_config
 
@@ -10695,6 +10696,7 @@ class MainWindow(QMainWindow):
                         getattr(self, 'fillcolor_'+cutl+'_'+'segm'+str(nn)+'_cell').setVisible(False)
                         getattr(self, 'lab_'+cutl+'_segm'+str(nn)).setVisible(False)
                         getattr(self, 'n_cells_'+cutl+'_segm'+str(nn)).setVisible(False)
+                        getattr(self, cutl+'_IND_segm'+str(nn)+'_plot').setVisible(False)
                     else: 
                         if not colors_initialised: 
                             color = list(palette[5*(int(optcut)-1)+(nn-1)])
@@ -10751,6 +10753,18 @@ class MainWindow(QMainWindow):
         #Plot buttons
         self.cut1_segm_cell_plot.clicked.connect(lambda: self.plot_cells(process='cut1_segm_cells'))
         self.cut2_segm_cell_plot.clicked.connect(lambda: self.plot_cells(process='cut2_segm_cells'))
+        #IND
+        self.cut1_IND_segm1_plot.clicked.connect(lambda: self.plot_IND(process= 'cut1_IND_segm1'))
+        self.cut1_IND_segm2_plot.clicked.connect(lambda: self.plot_IND(process= 'cut1_IND_segm2'))
+        self.cut1_IND_segm3_plot.clicked.connect(lambda: self.plot_IND(process= 'cut1_IND_segm3'))
+        self.cut1_IND_segm4_plot.clicked.connect(lambda: self.plot_IND(process= 'cut1_IND_segm4'))
+        self.cut1_IND_segm5_plot.clicked.connect(lambda: self.plot_IND(process= 'cut1_IND_segm5'))
+
+        self.cut2_IND_segm1_plot.clicked.connect(lambda: self.plot_IND(process= 'cut2_IND_segm1'))
+        self.cut2_IND_segm2_plot.clicked.connect(lambda: self.plot_IND(process= 'cut2_IND_segm2'))
+        self.cut2_IND_segm3_plot.clicked.connect(lambda: self.plot_IND(process= 'cut2_IND_segm3'))
+        self.cut2_IND_segm4_plot.clicked.connect(lambda: self.plot_IND(process= 'cut2_IND_segm4'))
+        self.cut2_IND_segm5_plot.clicked.connect(lambda: self.plot_IND(process= 'cut2_IND_segm5'))
 
         #Initialise with user settings, if they exist!
         self.user_segments_cells()
@@ -10758,14 +10772,156 @@ class MainWindow(QMainWindow):
     def init_sections_mC(self):
         #Buttons
         self.cell_sections_open.clicked.connect(lambda: self.open_section(name='cell_sections'))
+        self.cell_sections_open.setChecked(True)
+        self.open_section(name='cell_sections')
 
     def init_segm_sect_mC(self):
         #Buttons
         self.cell_segm_sect_open.clicked.connect(lambda: self.open_section(name='cell_segm_sect'))
+        self.cell_segm_sect_open.setChecked(True)
+        self.open_section(name='cell_segm_sect')
 
     def init_zones_mC(self):
         #Buttons
         self.cell_zones_open.clicked.connect(lambda: self.open_section(name='cell_zones'))
+        self.cell_zones_play.setStyleSheet(style_play)
+        self.cell_zones_play.setEnabled(False)
+
+        self.q_cell_zones.clicked.connect(lambda: self.help('cell_zones'))
+        self.cell_zones_set.clicked.connect(lambda: self.set_cell_zones())
+
+        #Fill color
+        self.fillcolor_zone1_no1.clicked.connect(lambda: self.color_picker(name = 'zone1_no1_cell'))
+        self.fillcolor_zone1_no2.clicked.connect(lambda: self.color_picker(name = 'zone1_no2_cell'))
+        self.fillcolor_zone1_no3.clicked.connect(lambda: self.color_picker(name = 'zone1_no3_cell'))
+        self.fillcolor_zone1_no4.clicked.connect(lambda: self.color_picker(name = 'zone1_no4_cell'))
+        self.fillcolor_zone1_no5.clicked.connect(lambda: self.color_picker(name = 'zone1_no5_cell'))
+        self.fillcolor_zone1_no6.clicked.connect(lambda: self.color_picker(name = 'zone1_no6_cell'))
+        self.fillcolor_zone1_no7.clicked.connect(lambda: self.color_picker(name = 'zone1_no7_cell'))
+        self.fillcolor_zone1_no8.clicked.connect(lambda: self.color_picker(name = 'zone1_no8_cell'))
+        self.fillcolor_zone1_no9.clicked.connect(lambda: self.color_picker(name = 'zone1_no9_cell'))
+        self.fillcolor_zone1_no10.clicked.connect(lambda: self.color_picker(name = 'zone1_no10_cell'))
+        self.fillcolor_zone1_no11.clicked.connect(lambda: self.color_picker(name = 'zone1_no11_cell'))
+        self.fillcolor_zone1_no12.clicked.connect(lambda: self.color_picker(name = 'zone1_no12_cell'))
+        self.fillcolor_zone1_no13.clicked.connect(lambda: self.color_picker(name = 'zone1_no13_cell'))
+        self.fillcolor_zone1_no14.clicked.connect(lambda: self.color_picker(name = 'zone1_no14_cell'))
+        self.fillcolor_zone1_no15.clicked.connect(lambda: self.color_picker(name = 'zone1_no15_cell'))
+
+        self.fillcolor_zone2_no1.clicked.connect(lambda: self.color_picker(name = 'zone2_no1_cell'))
+        self.fillcolor_zone2_no2.clicked.connect(lambda: self.color_picker(name = 'zone2_no2_cell'))
+        self.fillcolor_zone2_no3.clicked.connect(lambda: self.color_picker(name = 'zone2_no3_cell'))
+        self.fillcolor_zone2_no4.clicked.connect(lambda: self.color_picker(name = 'zone2_no4_cell'))
+        self.fillcolor_zone2_no5.clicked.connect(lambda: self.color_picker(name = 'zone2_no5_cell'))
+        self.fillcolor_zone2_no6.clicked.connect(lambda: self.color_picker(name = 'zone2_no6_cell'))
+        self.fillcolor_zone2_no7.clicked.connect(lambda: self.color_picker(name = 'zone2_no7_cell'))
+        self.fillcolor_zone2_no8.clicked.connect(lambda: self.color_picker(name = 'zone2_no8_cell'))
+        self.fillcolor_zone2_no9.clicked.connect(lambda: self.color_picker(name = 'zone2_no9_cell'))
+        self.fillcolor_zone2_no10.clicked.connect(lambda: self.color_picker(name = 'zone2_no10_cell'))
+        self.fillcolor_zone2_no11.clicked.connect(lambda: self.color_picker(name = 'zone2_no11_cell'))
+        self.fillcolor_zone2_no12.clicked.connect(lambda: self.color_picker(name = 'zone2_no12_cell'))
+        self.fillcolor_zone2_no13.clicked.connect(lambda: self.color_picker(name = 'zone2_no13_cell'))
+        self.fillcolor_zone2_no14.clicked.connect(lambda: self.color_picker(name = 'zone2_no14_cell'))
+        self.fillcolor_zone2_no15.clicked.connect(lambda: self.color_picker(name = 'zone2_no15_cell'))
+
+        self.fillcolor_zone3_no1.clicked.connect(lambda: self.color_picker(name = 'zone3_no1_cell'))
+        self.fillcolor_zone3_no2.clicked.connect(lambda: self.color_picker(name = 'zone3_no2_cell'))
+        self.fillcolor_zone3_no3.clicked.connect(lambda: self.color_picker(name = 'zone3_no3_cell'))
+        self.fillcolor_zone3_no4.clicked.connect(lambda: self.color_picker(name = 'zone3_no4_cell'))
+        self.fillcolor_zone3_no5.clicked.connect(lambda: self.color_picker(name = 'zone3_no5_cell'))
+        self.fillcolor_zone3_no6.clicked.connect(lambda: self.color_picker(name = 'zone3_no6_cell'))
+        self.fillcolor_zone3_no7.clicked.connect(lambda: self.color_picker(name = 'zone3_no7_cell'))
+        self.fillcolor_zone3_no8.clicked.connect(lambda: self.color_picker(name = 'zone3_no8_cell'))
+        self.fillcolor_zone3_no9.clicked.connect(lambda: self.color_picker(name = 'zone3_no9_cell'))
+        self.fillcolor_zone3_no10.clicked.connect(lambda: self.color_picker(name = 'zone3_no10_cell'))
+        self.fillcolor_zone3_no11.clicked.connect(lambda: self.color_picker(name = 'zone3_no11_cell'))
+        self.fillcolor_zone3_no12.clicked.connect(lambda: self.color_picker(name = 'zone3_no12_cell'))
+        self.fillcolor_zone3_no13.clicked.connect(lambda: self.color_picker(name = 'zone3_no13_cell'))
+        self.fillcolor_zone3_no14.clicked.connect(lambda: self.color_picker(name = 'zone3_no14_cell'))
+        self.fillcolor_zone3_no15.clicked.connect(lambda: self.color_picker(name = 'zone3_no15_cell'))
+
+        #Activate comboboxes
+        self.use_ind_zone1.stateChanged.connect(lambda: self.segm_for_zones(zone='zone1'))
+        self.use_ind_zone2.stateChanged.connect(lambda: self.segm_for_zones(zone='zone2'))
+        self.use_ind_zone3.stateChanged.connect(lambda: self.segm_for_zones(zone='zone3'))
+
+        cell_zone_setup = self.organ.mC_settings['setup']['zone_mC']
+        no_cuts = [key for key in cell_zone_setup.keys() if 'In2Zone' not in key]
+        palettes = []; palette_names = ['Accent','Dark2', 'Set1']
+        for n, cuts in enumerate(no_cuts): 
+            palettes.append(palette_rbg(palette_names[n], 15))
+        self.cell_zone_btns = {}
+
+        cut_opt = []
+        if len(self.organ.mC_settings['setup']['segm_mC'])>0: 
+            segm_settings = self.organ.mC_settings['setup']['segm_mC']
+            if segm_settings['cutCellsIn2Segments']:
+                #Get all possible cuts
+                for cut in segm_settings: 
+                    if 'Cut' in cut: 
+                        names = [segm_settings[cut]['name_segments'][segm] for segm in segm_settings[cut]['name_segments']]
+                        for name in names: 
+                            cut_opt.append(cut+':'+name)
+                        cut_opt.append(cut+':'+', '.join(names))
+
+        for num, optcut in enumerate(['1','2', '3']):
+            cutl = 'zone'+optcut
+            cutb = 'Zone'+optcut
+            if cutb in no_cuts: 
+                if 'colors' not in cell_zone_setup[cutb].keys():
+                    colors_initialised = False
+                    cell_zone_setup[cutb]['colors'] = {}
+                else: 
+                    colors_initialised = True
+
+                lab_names_segm = getattr(self, 'names_'+cutl)
+                bb = set_qtextedit_text(lab_names_segm, cell_zone_setup[cutb]['name_zones'], 'zone')
+                set_qtextedit_size(lab_names_segm, (100, (bb+1)*28))
+
+                segm_combo = getattr(self, 'ind_'+cutl+'_combo')
+                if len(cut_opt) > 0:
+                    segm_combo.addItems(cut_opt)
+                else: 
+                    segm_combo.setEnabled(False)
+                    getattr(self, 'use_ind_'+cutl).setEnabled(False)
+
+                for nn in range(1,16,1):
+                    if nn > bb+1:
+                        getattr(self, 'label_'+cutl+'_no'+str(nn)).setVisible(False)
+                        getattr(self, 'fillcolor_'+cutl+'_no'+str(nn)).setVisible(False)
+                    else: 
+                        if not colors_initialised: 
+                            color = list(palettes[num][15*(int(optcut)-1)+(nn-1)])
+                            cell_zone_setup[cutb]['colors']['zone'+str(nn)] = color
+                        else: 
+                            color = cell_zone_setup[cutb]['colors']['zone'+str(nn)]
+                            # print(cutb, str(nn), '- color:', color)
+                        btn_color = getattr(self, 'fillcolor_'+cutl+'_no'+str(nn))
+                        color_btn(btn = btn_color, color = color)
+
+                self.cell_zone_btns[cutb+':chA'] = {'play': getattr(self, cutl+'_cell_play'),
+                                                    'plot': getattr(self, cutl+'_cell_plot')}
+            
+            else: 
+                getattr(self, 'label_'+cutl).setVisible(False)
+                getattr(self, 'names_'+cutl).setVisible(False)
+                getattr(self, 'label_colors_'+cutl).setVisible(False)
+                getattr(self, 'use_ind_'+cutl).setVisible(False)
+                getattr(self, 'ind_'+cutl+'_combo').setVisible(False)
+                for nn in range(1,16,1):
+                    getattr(self, 'label_'+cutl+'_no'+str(nn)).setVisible(False)
+                    getattr(self, 'fillcolor_'+cutl+'_no'+str(nn)).setVisible(False)
+                
+                getattr(self, cutl+'_cell_play').setVisible(False)
+                getattr(self, cutl+'_cell_plot').setVisible(False)
+
+                for nl in [1,2,3,4]: 
+                    getattr(self, cutl+'_line'+str(nl)).setVisible(False)
+    
+        print('cell_zone_btns:', self.cell_zone_btns)
+
+        #Initialise with user settings, if they exist!
+        self.user_zones_cells()
+                
 
     #Functions to fill sections according to user's selections
     def user_isosurf(self):
@@ -10786,6 +10942,8 @@ class MainWindow(QMainWindow):
                     create_iso_volume(organ = self.organ, ch=ch, plot=False)
                     getattr(self, ch+'_play').setChecked(True)
                     getattr(self, 'iso_plot_'+ch).setEnabled(True)
+                    self.isosurface_cells_open.setChecked(True)
+                    self.open_section(name = 'isosurface_cells')
 
             #Update Status in GUI
             self.update_status(wf, ['Status'], self.isosurface_cells_status)
@@ -10805,6 +10963,8 @@ class MainWindow(QMainWindow):
             if wf['Status'] == 'DONE': 
                 self.cells_plot_chA.setEnabled(True)
                 self.remove_cells_play.setChecked(True)
+                self.remove_cells_open.setChecked(True)
+                self.open_section(name = 'remove_cells')
             
             #Update Status in GUI
             self.update_status(wf, ['Status'], self.remove_cells_status)
@@ -10824,20 +10984,81 @@ class MainWindow(QMainWindow):
                     getattr(self, cut.lower()+'_segm_cell_play').setChecked(True)
                     getattr(self, cut.lower()+'_segm_cell_plot').setEnabled(True)
                     all_done.append(True)
-                    self.ind_segments_play.setEnabled(True)
                 else: 
                     all_done.append(False)
             
             if all(all_done) and wf['Status'] == 'DONE':
                 self.cell_segments_play.setChecked(True)
+                # self.cell_segments_open.setChecked(True)
+                # self.open_section(name = 'cell_segments')
             
-
             #Update Status in GUI
             self.update_status(wf, ['Status'], self.cell_segments_status)
 
             #Run Set Function 
             self.set_cell_segments()
+
+        if 'ind_segments_cells' in wf_info.keys(): 
+            print('wf_info[ind_segments_cells]:', wf_info['ind_segments_cells'])
+            for cut in wf_info['ind_segments_cells']:
+                if 'Cut'  in cut: 
+                    for segm in wf_info['ind_segments_cells'][cut]: 
+                        if 'segm' in segm: 
+                            getattr(self, 'n_cells_'+cut.lower()+'_'+segm).setValue(wf_info['ind_segments_cells'][cut][segm])
+                    if 'cluster_group' in wf_info['ind_segments_cells']:
+                        if cut in wf_info['ind_segments_cells']['cluster_group']: 
+                            for segm_cut in wf_info['ind_segments_cells']['cluster_group'][cut]:
+                                #Add spheres as attr
+                                segm_name = self.organ.mC_settings['setup']['segm_mC'][cut]['name_segments'][segm_cut]
+                                n_closest_cells = self.organ.mC_settings['wf_info']['ind_segments_cells'][cut][segm_cut]
+                                segm_count = self.organ.mC_settings['measure']['mC_segm'][cut][segm_cut+':'+segm_name]['total']
+                                df_clusters_ALL, sphs_distColour_ALL, sil_distColour_ALL = extract_segm_IND(self.organ, cut, segm_cut+':'+segm_name, 
+                                                                                                            n_closest_cells, segm_count, plot=False)
+                                sel_option = wf_info['ind_segments_cells']['cluster_group'][cut][segm_cut]
+                                self.organ.mC_settings['measure']['mC_segm'][cut][segm_cut+':'+segm_name]['IND'] = df_clusters_ALL[sel_option]
+                                if not hasattr(self.organ, 'ind'): 
+                                    self.organ.ind = {'mC_segm':{cut:{segm_cut: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}}}
+                                else: 
+                                    if 'mC_segm' not in self.organ.ind:
+                                        self.organ.ind['mC_segm'] = {cut:{segm_cut: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}}
+                                    else: 
+                                        if cut not in self.organ.ind['mC_segm']:
+                                            self.organ.ind['mC_segm'][cut] = {segm_cut: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}
+                                        else: 
+                                            self.organ.ind['mC_segm'][cut][segm_cut] = sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]
+                
+                                getattr(self, cut.lower()+'_IND_'+segm_cut+'_plot').setEnabled(True)
+            
+            #Run Set Function 
+            self.set_ind_cell_segments()
+
+    def user_zones_cells(self): 
         
+        wf = self.organ.workflow['morphoCell']['B-Zones']
+        wf_info = self.organ.mC_settings['wf_info']
+
+        if 'zone_cells' in wf_info.keys():
+            print('wf_info[zone_cells]:', wf_info['zone_cells'])
+            for zone in wf_info['zone_cells']: 
+                use_segm = getattr(self, 'use_ind_'+zone.lower())
+                combo_segm = getattr(self, 'ind_'+zone.lower()+'_combo')
+                if wf_info['zone_cells'][zone]['use_segm']: 
+                    use_segm.setChecked(True)
+                    combo_segm.setCurrentText(wf_info['zone_cells'][zone]['ind_segm'])
+                else: 
+                    use_segm.setChecked(False)
+                    combo_segm.setCurrentText('----')
+
+                #Enable buttons? 
+            if wf['Status'] == 'DONE': 
+                getattr(self, 'cell_zones_play').setChecked(True)
+            
+            #Update Status in GUI
+            self.update_status(wf, ['Status'], self.cell_zones_status)
+
+            #Run Set Function 
+            self.set_cell_zones()
+
     #Set Buttons
     def set_isosuface(self): 
         wf_info = self.organ.mC_settings['wf_info']
@@ -10992,7 +11213,7 @@ class MainWindow(QMainWindow):
             if 'ind_segments_cells' not in wf_info.keys():
                 self.gui_ind_segm_cells = current_gui_ind_segm_cells
             else: 
-                gui_ind_segm_cells_loaded = self.organ.mC_settings['wf_info']['segments_cells']
+                gui_ind_segm_cells_loaded = self.organ.mC_settings['wf_info']['ind_segments_cells']
                 self.gui_ind_segm_cells, changed = update_gui_set(loaded = gui_ind_segm_cells_loaded, 
                                                                 current = current_gui_ind_segm_cells)
 
@@ -11012,7 +11233,6 @@ class MainWindow(QMainWindow):
         else: 
             self.win_msg("*Please run at least one of the segments' cuts to be able to set these settings.", self.cell_ind_segments_set)
 
-    
     def gui_ind_segments_cells_n(self): 
         gui_ind_segm_cells = {}
         for cut in self.organ.mC_settings['setup']['segm_mC'].keys(): 
@@ -11025,6 +11245,53 @@ class MainWindow(QMainWindow):
         
         return gui_ind_segm_cells
 
+    def set_cell_zones(self): 
+
+        wf_info = self.organ.mC_settings['wf_info']
+        current_gui_zone_cells = self.gui_zones_cells_n()
+        if current_gui_zone_cells != None:
+
+            if 'zone_cells' not in wf_info.keys():
+                self.gui_zone_cells = current_gui_zone_cells
+            else: 
+                gui_zone_cells_loaded = self.organ.mC_settings['wf_info']['zone_cells']
+                self.gui_zone_cells, changed = update_gui_set(loaded = gui_zone_cells_loaded, 
+                                                                current = current_gui_zone_cells)
+                # if changed: 
+                #     self.update_status(None, 're-run', self.cell_segments_status, override=True)
+
+            self.cell_zones_set.setChecked(True)
+            print('self.gui_zone_cells: ', self.gui_zone_cells)
+            self.cell_zones_play.setEnabled(True) 
+            for num in ['zone1', 'zone2', 'zone3']: 
+                if num.title() in self.gui_zone_cells:
+                    getattr(self, num+'_cell_play').setEnabled(True)
+
+            for cut in self.organ.mC_settings['setup']['segm_mC'].keys(): 
+                if 'Cut' in cut: 
+                    getattr(self, cut.lower()+'_segm_cell_play').setEnabled(True)  
+
+            # Update mH_settings
+            proc_set = ['wf_info']
+            update = self.gui_zone_cells
+            self.organ.update_settings(proc_set, update, 'mC', add='zone_cells')
+        else: 
+            pass
+
+    def gui_zones_cells_n(self): 
+
+        gui_zone_cells = {}
+        for cut in self.organ.mC_settings['setup']['zone_mC'].keys(): 
+            if '2Zones' not in cut: 
+                combo = getattr(self, 'ind_'+cut.lower()+'_combo').currentText()
+                if combo != '----':
+                    gui_zone_cells[cut] = {'use_segm': getattr(self, 'use_ind_'+cut.lower()).isChecked(), 
+                                            'ind_segm': combo}
+                else: 
+                    self.win_msg('*Please select the IND classification you would like to use to define '+cut+' to be able to continue.', self.cell_zones_set)
+                    return None
+
+        return gui_zone_cells
 
     #Functions specific to gui functionality
     def open_section(self, name, ch_name=None): 
@@ -11086,7 +11353,8 @@ class MainWindow(QMainWindow):
                         cut, sect, _ = name_split
                         self.organ.mC_settings['setup']['sect_mC'][cut.title()]['colors'][sect] = [red, green, blue]
                     else: #zones
-                        pass
+                        cut, zone, _ = name_split
+                        self.organ.mC_settings['setup']['zone_mC'][cut.title()]['colors'][zone] = [red, green, blue]
                 else: 
                     name_split = name.split('_')
                     if len(name_split) == 2: 
@@ -11858,6 +12126,15 @@ class MainWindow(QMainWindow):
             self.segm_centreline2use.setEnabled(True)
         else: 
             self.segm_centreline2use.setEnabled(False)
+    
+    def segm_for_zones(self, zone): 
+        use_segm = getattr(self, 'use_ind_'+zone)
+        segm_combo = getattr(self, 'ind_'+zone+'_combo')
+        if use_segm.isChecked(): 
+            segm_combo.setEnabled(True)
+        else: 
+            segm_combo.setEnabled(False)
+            
 
     def select_extension_plane(self, cut): 
         #Section names
@@ -12766,7 +13043,6 @@ class MainWindow(QMainWindow):
         vp.add_icon(logo, pos=(0.1,0.0), size=0.25)
         vp.show(vol, txt, at=0, interactive=True)
     
-    
     def plot_cells(self, process): 
         
         chs = []
@@ -12801,6 +13077,31 @@ class MainWindow(QMainWindow):
         vp = vedo.Plotter(N=1, axes=1)
         vp.add_icon(logo, pos=(0.1,1), size=0.25)
         vp.show(chs, cells, txt, at=0, interactive=True)
+    
+    def plot_IND(self, process): 
+
+        cut, _, segm = process.split('_')
+        vols, settings = self.organ.organ_vol_iso()
+        if hasattr(self.organ, 'ind'): 
+            found = False
+            if 'mC_segm' in self.organ.ind:
+                if cut.title() in self.organ.ind['mC_segm']:
+                    for ss in self.organ.ind['mC_segm'][cut.title()]: 
+                        if segm in ss: 
+                            found = True
+                            sname = ss
+                            break
+                    if found: 
+                        sphs = self.organ.ind['mC_segm'][cut.title()][ss]
+        else: 
+            print('Load values!')
+
+        segm_name = self.organ.mC_settings['setup']['segm_mC'][cut.title()]['name_segments'][segm]
+        vp = vedo.Plotter(N=1, axes = 4)
+        text = 'Clustering for '+cut.title()+' - '+sname.title()
+        txt = vedo.Text2D(text, c=txt_color, font=txt_font) 
+        vp.show(vols, sphs, txt, at=0, zoom = 1, interactive = True) 
+                
 
     #User specific plot settings
     def fill_comboBox_all_meshes(self): 
@@ -14502,7 +14803,8 @@ mH_icon, mH_big, mH_top_corner = mH_images
 play_bw, play_gw, play_gb, play_btn = play_colors
 error_style, note_style, msg_style = tE_styles
 roman_num ={'sect': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'], 
-            'segm': ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']}
+            'segm': ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], 
+            'zone': ['i','ii','iii','iv', 'v', 'vi','vii','viii','ix','x','xi','xii','xiii','xiv','xv']}
 html_style = '</style></head><body style=" font-family:"Calibri Light"; font-size:10pt; font-weight:24; font-style:normal;">'
 html_beg = '<p align="center" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">'
 html_end = '</p>'

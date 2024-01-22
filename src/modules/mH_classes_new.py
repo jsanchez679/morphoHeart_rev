@@ -171,7 +171,7 @@ class Project():
             self.info['dir_proj'] = self.dir_proj
             self.info['dir_info'] = self.dir_info
             # print(self.dir_info)
-            
+
         else: 
             print('>> Error: No project with name ',load_dict['name'],' was found!\n Directory: ',str(json2open_dir))
             alert('error_beep')
@@ -617,7 +617,7 @@ class Project():
                     if 'Cut' in cuts and not 'In2' in cuts:
                         dict_mC['B-Regions'][cuts] = {'Status': 'NI'}
             
-            #Zones
+            #Zones #check if status: NI are being created for all zones
             if 'B-Zones' in self.mC_methods: 
                 for cuts in self.mC_settings['setup']['zone_mC'].keys():
                     if 'Cut' in cuts and not 'In2' in cuts:
@@ -1076,6 +1076,14 @@ class Organ():
             self.load_objImChannelMC()
             self.cellsMC = load_dict['cells_MC']
             self.load_objCells()
+
+            if 'B-Zones' in self.workflow['morphoCell']: 
+                if len(self.workflow['morphoCell']['B-Zones']) == 1: 
+                    print('Adding wf to Zones')
+                    #Get all zones and add Status NI to all
+                    zone_all = [zone for zone in self.mC_settings['setup']['zone_mC'] if '2Zones' not in zone]
+                    for zone in zone_all: 
+                        self.workflow['morphoCell']['B-Zones'][zone] = {'Status': 'NI'}
         
         if 'orientation' in self.mH_settings['wf_info'].keys():
             self.load_orient_cubes()
@@ -1489,6 +1497,7 @@ class Organ():
             cells_dict['user_chName'] = cells.user_chName
             cells_dict['resolution'] = cells.resolution
             cells_dict['dir_cho'] = cells.dir_cho
+            cells_dict['dir_img'] = cells.dir_img
             cells_dict['dir_cells'] = cells.dir_cells
             cells_dict['shape'] = cells.shape
 
@@ -1591,11 +1600,24 @@ class Organ():
                 image_dictMC[chMC].pop('parent_organ', None)
             all_info['imChannelMC'] = image_dictMC
 
-            cells_MC = {'chA': {'parent_organ_name': self.cellsMC['chA'].parent_organ_name, 
+            try: 
+                cells_MC = {'chA': {'parent_organ_name': self.cellsMC['chA']['parent_organ_name'], 
+                                    'channel_no': self.cellsMC['chA']['channel_no'], 
+                                    'user_chName': self.cellsMC['chA']['user_chName'],
+                                    'dir_cells': self.cellsMC['chA']['dir_cells'],
+                                    'dir_cho': self.cellsMC['chA']['dir_cho'],
+                                    'dir_img': self.cellsMC['chA']['dir_img'],
+                                    'resolution': self.cellsMC['chA']['resolution'], 
+                                    'shape': self.cellsMC['chA']['shape']}}
+                print('try saving cells')
+            except:
+                print('except saving cells')
+                cells_MC = {'chA': {'parent_organ_name': self.cellsMC['chA'].parent_organ_name,
                                 'channel_no': self.cellsMC['chA'].channel_no, 
                                 'user_chName': self.cellsMC['chA'].user_chName,
                                 'dir_cells': self.cellsMC['chA'].dir_cells,
                                 'dir_cho': self.cellsMC['chA'].dir_cho,
+                                'dir_img': self.cellsMC['chA'].dir_img,
                                 'resolution': self.cellsMC['chA'].resolution, 
                                 'shape': self.cellsMC['chA'].shape}}
 
@@ -3813,6 +3835,8 @@ class Cells():
 
         self.resolution = organ.info['resolution']
         self.dir_cho = organ.img_dirs[ch_name]['data']['dir'] 
+        self.dir_img = organ.img_dirs[ch_name]['image']['dir'] 
+        self.shape =  io.imread(str(self.dir_img)).shape
         ext = Path(self.dir_cho).suffix
 
         #Check the extension of the file
@@ -3838,6 +3862,10 @@ class Cells():
 
         self.resolution = organ.cellsMC[ch_name]['resolution']
         self.dir_cho = organ.cellsMC[ch_name]['dir_cho']
+        try: 
+            self.dir_img = organ.cellsMC[ch_name]['dir_img']
+        except: 
+            self.dir_img = organ.img_dirs['chA']['image']
         self.dir_cells = organ.cellsMC[ch_name]['dir_cells']
         self.shape = organ.cellsMC[ch_name]['shape']
         
@@ -3854,7 +3882,10 @@ class Cells():
     def set_cells(self, sphs_pos, init=False): 
 
         cell_ids = list(sphs_pos.index)
-        deleted = sphs_pos['deleted']
+        try:
+            deleted = sphs_pos['deleted']
+        except: 
+            deleted = ['NO']*len(sphs_pos)
         pos_x = sphs_pos['Position X']
         pos_y = sphs_pos['Position Y']
         pos_z = sphs_pos['Position Z']

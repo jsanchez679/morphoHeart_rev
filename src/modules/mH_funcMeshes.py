@@ -3722,7 +3722,7 @@ def modify_cell_class(organ, cells, cut, cells_class):
             new_color = colors[new_ind]
             evt.actor.color(new_color)
             cells_class.at[cell_no] = segm_no[new_ind]
-            msg.text("Sphere "+ evt.actor.name +' is now classified as part of '+segm_no[new_ind])
+            msg.text("Cell "+ evt.actor.name +' is now classified as part of '+segm_no[new_ind])
             plt.remove(silcont.pop()).add(sil)
             silcont.append(sil)
 
@@ -3951,6 +3951,7 @@ def get_interpolated_pts(points, nPoints):
 
     return pts_interp
 
+#%% - morphoCell
 def find_dist_btw_all_cells(df_segm): 
 
     sphs_all = df_segm[df_segm['deleted'] == 'NO'] 
@@ -4061,22 +4062,21 @@ def option_cluster_number(filename, n_closestCells, avg_min_dist, index_closest_
 
 
 def cluster_segm_cells(organ, n_closestCells, selected_cells, mindist2Cells, avg_min_dist, 
-                        df_cellsChamber, chamber):
+                        df_cellsChamber, chamber, plot):
     
+    #Add names of vols to plot
     vols, settings = organ.organ_vol_iso()
 
     # Define cluster colours 
     centre_cell = ['maroon','darkorange','goldenrod','yellowgreen','limegreen','aqua','skyblue','mediumblue',
-                   'blueviolet','magenta', 'deeppink', 'sandybrown','dimgray']*50
-    neighbour_cell = ['crimson','coral','gold','lawngreen','palegreen','teal','dodgerblue','navy',
-                      'purple', 'mediumvioletred', 'pink','sienna', 'silver']*50
-    directions = [(1,0,0),(0,1,0),(0,0,1),(1,1,0),(0,1,1),(1,0,1),(1,1,1)]*50
+                   'blueviolet','magenta', 'deeppink', 'sandybrown','dimgray','crimson','coral','gold','lawngreen',
+                   'palegreen','teal','dodgerblue','navy','purple', 'mediumvioletred', 'pink','sienna', 'silver']*150
+    directions = [(1,0,0),(0,1,0),(0,0,1),(1,1,0),(0,1,1),(1,0,1),(1,1,1)]*150
     
     df_clusters_ALL = []
     sphs_distColour_ALL = []
     sil_distColour_ALL = []
     for sel_cells in selected_cells:
-        # print('New Set')
         list_ind_cellsCentre = []
         list_ind_cellsNeighbours = []
         list_averageDist = []
@@ -4088,15 +4088,20 @@ def cluster_segm_cells(organ, n_closestCells, selected_cells, mindist2Cells, avg
         for cell_group in cell_groups:
             # print(cell_group)
             for i, cell_no in enumerate(cell_group):
+                #Find the sphere whose name is cell_no
+                for n, cell in enumerate(sphs_distColour):
+                    if int(cell.name.split('Cell Nr.')[1]) == cell_no:
+                        ind_cell = n
+                        break
                 if i == 0: 
                     # print(cell_no)
-                    sphs_distColour[cell_no].color(centre_cell[num_group]).scale(1.5)
+                    cell.color(centre_cell[num_group]).scale(1.5)
                     list_ind_cellsCentre.append(cell_no)
-                    list_averageDist.append(avg_min_dist[cell_no])
-                    list_allDistances.append(mindist2Cells[cell_no])
+                    list_averageDist.append(avg_min_dist[ind_cell])
+                    list_allDistances.append(mindist2Cells[ind_cell])
                 else: 
                     # sphs_distColour[cell_no].color(neighbour_cell[num_group])
-                    sil = sphs_distColour[cell_no].silhouette(directions[num_group]).lineWidth(6).c(neighbour_cell[num_group])
+                    sil = cell.silhouette(directions[num_group]).lineWidth(6).c(centre_cell[num_group])
                     sil_group.append(sil)
             list_ind_cellsNeighbours.append(cell_group)
             num_group+=1
@@ -4115,29 +4120,18 @@ def cluster_segm_cells(organ, n_closestCells, selected_cells, mindist2Cells, avg
         sil_distColour_ALL.append(sil_group)
         # print(num_group)
     
-    n_options = len(selected_cells)
-    vp = vedo.Plotter(N=n_options, axes = 4)
-    for i in range(n_options):
-        text = 'Clustering option No. '+str(i)
-        txt = vedo.Text2D(text, c=txt_color, font=txt_font)
-        if i != n_options-1:
-            vp.show(vols[0].alpha(0.1), sphs_distColour_ALL[i], sil_distColour_ALL[i], txt, at=i, zoom = 1)
-        else: 
-            vp.show(vols[0].alpha(0.1), sphs_distColour_ALL[i], sil_distColour_ALL[i],txt, at=i, zoom = 1, interactive = True)
+    if plot:
+        n_options = len(selected_cells)
+        vp = vedo.Plotter(N=n_options, axes = 4)
+        for i in range(n_options):
+            text = 'Clustering option No. '+str(i+1)
+            txt = vedo.Text2D(text, c=txt_color, font=txt_font)
+            if i != n_options-1:
+                vp.show(vols[0].alpha(0.1), sphs_distColour_ALL[i], sil_distColour_ALL[i], txt, at=i, zoom = 1)
+            else: 
+                vp.show(vols[0].alpha(0.1), sphs_distColour_ALL[i], sil_distColour_ALL[i],txt, at=i, zoom = 1, interactive = True) 
             
-    # vp = Plotter(N=1, axes = 4)
-    # vp.show(myoc.alpha(0.1), sphs_distColour_ALL[1], sil_distColour_ALL[1],txt, at=0, azimuth = 0, zoom = 1, interactive = True)
-    # vp = Plotter(N=1, axes = 4)
-    # vp.show(myoc.alpha(0.1), sphs_distColour_ALL[1], sil_distColour_ALL[1],txt, at=0, azimuth = 90, zoom = 1, interactive = True)
-    # vp = Plotter(N=1, axes = 4)
-    # vp.show(myoc.alpha(0.1), sphs_distColour_ALL[1], sil_distColour_ALL[1],txt, at=0, azimuth = -90, zoom = 1, interactive = True)
-    
-    if n_options > 1:
-        pass#sel_option = ask4input('Select preferred clustering option [0-'+str(n_options-1)+']: ', int)
-    else: 
-        sel_option = 0
-        
-    return df_clusters_ALL[sel_option], sphs_distColour_ALL[sel_option]
+    return df_clusters_ALL, sphs_distColour_ALL, sil_distColour_ALL
 
 def create_segm_cells_from_df(df_cellsChamber, chamber):
 
@@ -4158,6 +4152,178 @@ def create_segm_cells_from_df(df_cellsChamber, chamber):
             print('sph deleted no:', id)
         
     return sphs
+
+def extract_segm_IND(organ, cut, segm, n_closest_cells, segm_count, plot, process = 'IND'):
+
+    cell_distances = organ.cellsMC['chA'].df_cells()
+    df_segm = cell_distances[cell_distances['Segment-'+cut] == segm]
+
+    # Find euclidian distance beteen all cells in chamber
+    dists = find_dist_btw_all_cells(df_segm)
+
+    # # Get the n closest cells per cell and record its distance
+    index_closestCells, min_dist_to_cells = get_N_closest_cells(n_closest_cells, segm_count, dists, df_segm)
+
+    # Get average minimum distance to the n closest cells 
+    avg_min_dist = [np.mean(cell_dist) for cell_dist in min_dist_to_cells]
+    
+    #Cluster cells in groups with n neighbours 
+    centre_cells, neighb_cells, ind_orgCells, selected_cells = option_cluster_number(organ.user_organName, n_closest_cells, 
+                                                                                        avg_min_dist, index_closestCells)
+
+    #Select clusters
+    df_clusters_ALL, sphs_distColour_ALL, sil_distColour_ALL = cluster_segm_cells(organ, n_closest_cells, 
+                                                                                  selected_cells, min_dist_to_cells, 
+                                                                                  avg_min_dist, df_segm, segm, plot)
+    if process == 'IND': 
+        return df_clusters_ALL, sphs_distColour_ALL, sil_distColour_ALL
+    else: #process == 'zones':
+        return index_closestCells, min_dist_to_cells, avg_min_dist
+
+
+def select_cell_for_zones(organ, cut, zone, segm_names, all_data):
+    
+    iso_vols, vol_settings = organ.organ_vol_iso()
+    zones = organ.mC_settings['setup']['zone_mC'][zone]['name_zones']
+    sil_color = organ.mC_settings['setup']['zone_mC'][zone]['colors']
+
+    sphs = 'sphs_distColour'
+    index = 'index_closest_cells'
+    avg_dist = 'avg_min_dist'
+    min_dist = 'min_dist_to_cells'
+
+    all_sphs = [all_data[segm][sphs] for segm in all_data]
+    all_sphsf = sum(all_sphs,[])
+
+    #Find the numbers of cells per segment
+    df_cells = organ.cellsMC['chA'].df_cells()
+    col_name = 'Segment-'+cut
+    
+    segm_cells = {}; segm_ids = {}
+    for segm, uname in segm_names.items(): 
+        segm_cells[segm] = df_cells[df_cells[col_name] == uname]
+        segm_ids[segm] = list(segm_cells[segm].index)
+    
+    happy = False
+    while not happy: 
+        list_ind_cellsCentreB = []
+        list_ind_cellsNeighboursB = []
+        list_averageDistB = []
+        list_allDistancesB = []
+        list_region = []
+        
+        selected_cells = []
+
+        sil_final =[]
+        for i, zz in zip(count(), zones): 
+            print('>>>', i, zz)
+            sphs_distColour_copy = all_sphsf.copy()
+            cells_region = []
+            silcont = []
+            def select_cells_per_chamber_region(evt):
+                if not evt.actor: return
+                if isinstance(evt.actor, vedo.shapes.Sphere): 
+                    cell_no = evt.actor.name
+                    cell_no = int(cell_no.split('.')[-1])
+                    if cell_no not in selected_cells:
+                        #If the cell wants fo be deselected
+                        if cell_no in cells_region: 
+                            ind_cell = cells_region.index(cell_no)
+                            sil2rem = silcont[ind_cell]
+                            plt.remove(sil2rem)
+                            cells_region.pop(ind_cell)
+                            silcont.pop(ind_cell)
+                        else: 
+                            sil = evt.actor.silhouette().lineWidth(15).c(sil_color[zz])
+                            sil.legend('No.'+str(cell_no))
+                            msg.text("You clicked: "+evt.actor.name)
+                            cells_region.append(cell_no)
+                            plt.add(sil) #plt.remove(silcont.pop()).add(sil)
+                            silcont.append(sil)
+                        print('cells_region:',cells_region)
+                        print('silcont:', silcont)
+                    else: 
+                        msg.text(evt.actor.name+' has already been selected for another zone. \n\t Please select another cell for -'+zones[zz])
+                
+            text = 'Select cells in the Zone: '+zones[zz]
+            txt = vedo.Text2D(text, c=txt_color, font= txt_font)
+
+            if len(iso_vols) >= 1: 
+                def sliderAlphaMeshOut(widget, event):
+                    valueAlpha = widget.GetRepresentation().GetValue()
+                    iso_vols[0].alpha(valueAlpha)
+            if len(iso_vols) >= 2: 
+                def sliderAlphaMeshOut2(widget, event):
+                    valueAlpha = widget.GetRepresentation().GetValue()
+                    iso_vols[1].alpha(valueAlpha)
+            if len(iso_vols) >= 3: 
+                def sliderAlphaMeshOut3(widget, event):
+                    valueAlpha = widget.GetRepresentation().GetValue()
+                    iso_vols[2].alpha(valueAlpha)
+            
+            txt_slider_size2 = 0.7
+            msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
+
+            plt = vedo.Plotter(N=1, axes=1)
+            plt.add_icon(logo, pos=(0.1,1), size=0.25)
+            if len(iso_vols) >= 1: 
+                plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.05,
+                    pos=[(0.92,0.25), (0.92,0.35)], c= vol_settings['color'][0], 
+                    title='Opacity\n'+ vol_settings['name'][0].title(), title_size=txt_slider_size2)
+            if len(iso_vols) >=2:
+                plt.addSlider2D(sliderAlphaMeshOut2, xmin=0, xmax=0.99, value=0.05,
+                    pos=[(0.92,0.40), (0.92,0.50)], c=vol_settings['color'][1], 
+                    title='Opacity\n'+ vol_settings['name'][1].title(), title_size=txt_slider_size2)
+            if len(iso_vols) >=3:
+                plt.addSlider2D(sliderAlphaMeshOut3, xmin=0, xmax=0.99, value=0.05,
+                    pos=[(0.72,0.25), (0.72,0.35)], c=vol_settings['color'][2],
+                    title='Opacity\n'+ vol_settings['name'][2].title(), title_size=txt_slider_size2)
+                
+            plt.addCallback('mouse click', select_cells_per_chamber_region)
+            plt.show(all_sphsf, iso_vols, sil_final, txt, msg, zoom=1.2)
+                
+            for i, cell_no in enumerate(cells_region): 
+                #Find the segm the cell is part of
+                for ss in segm_ids: 
+                    if cell_no in segm_ids[ss]: 
+                        cell_is_part_of = ss
+                        print('cell_is_part_of:', cell_is_part_of)
+                        break
+                #Find the index where the info of that cell is stored within lists of data
+                for ii, aa in enumerate(all_data[cell_is_part_of][index]):
+                    if cell_no in aa: 
+                        iif = ii
+                        print(iif)
+                        break
+
+                list_ind_cellsCentreB.append(cell_no)
+                list_ind_cellsNeighboursB.append(all_data[cell_is_part_of][index][iif])#index_closestCells[cell_no])
+                list_averageDistB.append(all_data[cell_is_part_of][avg_dist][iif])#avg_min_dist[cell_no])
+                list_allDistancesB.append(all_data[cell_is_part_of][min_dist][iif])#mindist2Cells[cell_no])
+                list_region.append(zones[zz])
+                selected_cells.append(cell_no)
+                sil_final.append(silcont[i])
+        
+        #remove solhouettes from IND clustering to make the class easier
+                #add legend box with names for each zone and color
+                #use export button to export all df
+                
+        text3 = 'CHECKING: Final selection of cells for ALL zones'
+        txt3= vedo.Text2D(text3, c="white", font= txt_font)
+        vp = vedo.Plotter(axes = 1, bg='black')
+        vp.show(sphs_distColour_copy, silcont, sil_final, iso_vols, txt3,  zoom=1.2, interactive = True)
+                
+        # happy = ask4input('Are you satisfied with the final selected cells for All the zones? ', bool)
+
+    df_zones = pd.DataFrame()
+    df_zones['Index_CentralCell'] = list_ind_cellsCentreB
+    df_zones['AverageDist'] = list_averageDistB
+    df_zones['Index_NeighbourCells'] = list_ind_cellsNeighboursB
+    df_zones['Distances']= list_allDistancesB
+    df_zones['Region']= list_region
+        
+    return df_zones
+
 
 #%% Module loaded
 print('morphoHeart! - Loaded funcMeshes')

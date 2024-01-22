@@ -563,7 +563,11 @@ class Controller:
         self.main_win.cut2_segm_cell_play.clicked.connect(lambda: self.run_segments_mC('Cut2'))
 
         self.main_win.ind_segments_play.clicked.connect(lambda: self.run_IND_segm())
-        
+
+        self.main_win.zone1_cell_play.clicked.connect(lambda: self.run_zones('Zone1'))
+        self.main_win.zone2_cell_play.clicked.connect(lambda: self.run_zones('Zone2'))
+        self.main_win.zone3_cell_play.clicked.connect(lambda: self.run_zones('Zone3'))
+                
     def init_multip_analysis_win(self): 
 
         self.multip_analysis_win.button_see_proj_settings.clicked.connect(lambda: self.show_proj_settings(parent_win=self.main_win))
@@ -876,6 +880,12 @@ class Controller:
         if not mH_config.dev:
             self.main_win.save_project_and_organ_pressed(alert_on = False)
 
+    def run_zones(self, zone):
+        res = mA.run_zones(controller=self, zone=zone)
+        if not mH_config.dev and res != None:
+            self.main_win.save_project_and_organ_pressed(alert_on = False)
+
+
     #Actions Main Win
     def open_new_organ_and_project(self): 
         #Close welcome window
@@ -913,7 +923,8 @@ class Controller:
             self.load_proj_win.show()
         
     def create_new_organ_same_project(self): 
-        self.new_organ_win = None
+        if hasattr(self, 'new_organ_win'):
+            delattr(self, 'new_organ_win')
         self.main_win.close()
         if self.main_win.prompt.output in ['Discard', 'Save All']: 
             self.main_win = None

@@ -2582,36 +2582,136 @@ def get_segm_planes(organ, cut, win):
         organ.update_settings(proc+[plane_name], update = pl_dict, mH = 'mC')
         print('wf_info:', organ.mC_settings['wf_info']['segments_cells'][cut])
 
-def run_IND_segm(controller): 
+def run_IND_segm(controller, plot=True): 
 
-    print('AAA')
     wf_info = controller.organ.mC_settings['wf_info']['ind_segments_cells']
     measure = controller.organ.mC_settings['measure']['mC_segm']
+
+    if 'cluster_group' not in wf_info.keys(): 
+        wf_info['cluster_group'] = {}
+
     for cut in measure: 
         print('cut:', cut)
         for segm in measure[cut]:
             ss, user_name = segm.split(':')
-            cell_distances = controller.organ.cellsMC['chA'].df_cells()
-            df_segm = cell_distances[cell_distances['Segment-'+cut] == segm]
-
-            # Find euclidian distance beteen all cells in chamber
-            dists = fcM.find_dist_btw_all_cells(df_segm)
-        
-            # # Get the n closest cells per cell and record its distance
             n_closest_cells = wf_info[cut][ss]
             segm_count = measure[cut][segm]['total']
-            index_closestCells, min_dist_to_cells = fcM.get_N_closest_cells(n_closest_cells, segm_count, dists, df_segm)
-        
-            # Get average minimum distance to the n closest cells 
-            avg_min_dist = [np.mean(cell_dist) for cell_dist in min_dist_to_cells]
             
-            #Cluster cells in groups with n neighbours 
-            centre_cells, neighb_cells, ind_orgCells, selected_cells = fcM.option_cluster_number(controller.organ.user_organName, n_closest_cells, 
-                                                                                                 avg_min_dist, index_closestCells)
+            df_clusters_ALL, sphs_distColour_ALL, sil_distColour_ALL = fcM.extract_segm_IND(controller.organ, cut, segm, 
+                                                                                            n_closest_cells, segm_count, plot)
 
+        
+            #Add prompt that asks which option to select
+            if len(df_clusters_ALL) > 1:
+                items = {}
+                for opt in range(len(df_clusters_ALL)): 
+                    items[opt] = {'opt': 'Option '+str(opt+1)}
+                title = 'Clustering Options for '+cut+'-'+segm.title()
+                msg = 'Select preferred clustering option for cells in '+cut+'-'+segm.title()
+                prompt = Prompt_ok_cancel_radio(title, msg, items, parent = controller.main_win)
+                prompt.exec()
 
-            #Select clusters
-            df_clusters, sphs_distColour = fcM.cluster_segm_cells(controller.organ, n_closest_cells, selected_cells, 
-                                                                    min_dist_to_cells, avg_min_dist, df_segm, segm)
+                sel_option = int(prompt.output[0])
+            else: 
+                sel_option = 0
+            
+            #Add selected option to wf_info
+            if cut not in wf_info['cluster_group']: 
+                wf_info['cluster_group'][cut] = {ss: sel_option}
+            else: 
+                wf_info['cluster_group'][cut][ss] = sel_option
+            
+            #Save results in df?
+            df_clusterf = df_clusters_ALL[sel_option]
+            controller.organ.mC_settings['measure']['mC_segm'][cut][segm]['IND'] = df_clusterf
 
+            if not hasattr(controller.organ, 'ind'): 
+                controller.organ.ind = {'mC_segm':{cut:{segm: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}}}
+            else: 
+                if 'mC_segm' not in controller.organ.ind:
+                    controller.organ.ind['mC_segm'] = {cut:{segm: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}}
+                else: 
+                    if cut not in controller.organ.ind['mC_segm']:
+                        controller.organ.ind['mC_segm'][cut] = {segm: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}
+                    else: 
+                        controller.organ.ind['mC_segm'][cut][segm] = sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]
+            
+            #Enable plot button
+            getattr(controller.main_win, cut.lower()+'_IND_'+segm.split(':')[0]+'_plot').setEnabled(True)
 
+def run_zones(controller, zone): 
+    
+    # set_process(controller, 'segments')
+    workflow = controller.organ.workflow['morphoCell']
+    zone_cell_list = list(controller.main_win.cell_zone_btns.keys())
+    if zone != None: 
+        zone_cell_set = [zone+':chA']
+    else: 
+        zone_cell_set = zone_cell_list
+    print('zone_cell_set:',zone_cell_set)
+    #Loop through all the cuts that can be done
+    for zone in zone_cell_set: 
+        print('Adding cells to '+zone)
+        zz, ch = zone.split(':')
+        #Get setings for that zone
+        zone_set = controller.organ.mC_settings['wf_info']['zone_cells'][zz]
+        if zone_set['use_segm']: 
+            segm_cut_info = zone_set['ind_segm']
+            cut, names = segm_cut_info.split(':')
+            #Check if the cut has been run
+            if getattr(controller.main_win, cut.lower()+'_segm_cell_play').isChecked():
+                #Get all names
+                dict_names = controller.organ.mC_settings['setup']['segm_mC'][cut]['name_segments']
+                segm_names = {}
+                for key, item in dict_names.items():
+                    segm_names[key] = key+':'+item
+                #See if the segms selected are more than one
+                all_names = names.split(', ')
+                #Create an empty dictionary where values of all segm will be saved
+                all_data_to_run = {}
+
+                dict_sp = controller.organ.mC_settings['measure']['mC_segm'][cut]
+                #Option 1: Use all segments for cut
+                if len(all_names) > 1:
+                    #Using all segments - check if they have been obtained 
+                    for segm in segm_names: 
+                        print(segm)
+                        if 'IND' in dict_sp[segm_names[segm]]:
+                            all_data_to_run[segm] = {}
+                        else: 
+                            controller.main_win.win_msg('*Extract the IND values for '+cut+':'+segm_names[segm].title()+' to run this process.', 
+                                                        getattr(controller.main_win, zz.lower()+'_cell_play'))
+                            return None
+                        
+                #Option 2: Only one segment
+                else: 
+                    #Get the segm that will be used
+                    for ss in dict_names: 
+                        if all_names[0] == dict_names[ss]: 
+                            segm = ss
+                            break
+                    if 'IND' in dict_sp[segm_names[segm]]:
+                        all_data_to_run[segm] = {}
+                    else: 
+                        controller.main_win.win_msg('*Extract the IND values for '+cut+':'+segm_names[segm].title()+' to run this process.', 
+                                                    getattr(controller.main_win, zz.lower()+'_cell_play'))
+
+                for ss in all_data_to_run: 
+                    #Run a for for all the segm in all_data_to_run
+                    n_closest_cells = controller.organ.mC_settings['wf_info']['ind_segments_cells'][cut][ss]
+                    segm_count = controller.organ.mC_settings['measure']['mC_segm'][cut][segm_names[ss]]['total']
+                    index_closest_cells, min_dist_to_cells, avg_min_dist = extract_segm_IND(controller.organ, cut, 
+                                                                                            segm_names[ss], n_closest_cells, 
+                                                                                            segm_count, plot=False, 
+                                                                                            process = 'zones')
+                    sphs_distColour = controller.organ.ind['mC_segm'][cut][ss]
+                    all_data_to_run[ss]['index_closest_cells'] = index_closest_cells
+                    all_data_to_run[ss]['min_dist_to_cells'] = min_dist_to_cells
+                    all_data_to_run[ss]['avg_min_dist'] = avg_min_dist
+                    all_data_to_run[ss]['sphs_distColour'] = sphs_distColour
+
+                df_zones = fcM.select_cell_for_zones(controller.organ, cut = cut, zone = zz, 
+                                                     segm_names = segm_names, all_data = all_data_to_run)
+
+            else: 
+                controller.main_win.win_msg('*Please run the  -Segments-  module to be able to use its settings.')
