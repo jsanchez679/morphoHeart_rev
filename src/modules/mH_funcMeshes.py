@@ -1748,7 +1748,9 @@ def create_iso_volume(organ, ch, plot=True):
     alpha = organ.mC_settings['wf_info']['isosurface'][ch]['alpha']
 
     # Invert stack
-    # res[1] = -res[1]
+    if organ.mC_settings['wf_info']['isosurface']['invert']: 
+        res[1] = -res[1]
+
     try: 
         vol = vedo.Volume(str(img_dir), spacing = res).isosurface(int(threshold)).alpha(float(alpha))
     except:
@@ -3564,9 +3566,11 @@ def get_cells_within_planes(controller, organ, cells_position, cut):
         segm_class[n] = final_class[val]['segm']+':'+final_class[val]['name']
         color_class[n] = color_segm[final_class[val]['segm']]
 
-    cells_position = organ.cellsMC['chA'].assign_class(cells_position, segm_class, col_name = 'Segment-'+cut)
+    col_name = 'Segment-'+cut
+    cells_position = organ.cellsMC['chA'].assign_class(cells_position, segm_class, col_name = col_name)
     cells_out = organ.cellsMC['chA'].colour_cells(sphs_pos = cells_position, 
                                                     color_class = color_class)
+    segm_class = cells_position[col_name]
 
     organ.cellsMC['chA'].cells = cells_out
 
@@ -3789,8 +3793,7 @@ def count_cells(organ, cells_position, cut, mtype, col_name):
             organ.mC_settings['measure'][mC_name][cut][sp] = {}
 
         organ.mC_settings['measure'][mC_name][cut][sp]['total'] = count_sp
-
-    
+   
 #%% - Math operations 
 def new_normal_3DRot (normal, rotX, rotY, rotZ):
     '''
@@ -4060,7 +4063,6 @@ def option_cluster_number(filename, n_closestCells, avg_min_dist, index_closest_
     #return indexes_org_cells_of_all_diff_selected_clusters, selected_cells_of_all_diff_selected_clusters#, central_cells_of_all_diff_selected_clusters
     return firstCell_max_clusters, group_max_clusters, indexes_org_cells_max_clusters, selected_index_max_cluster
 
-
 def cluster_segm_cells(organ, n_closestCells, selected_cells, mindist2Cells, avg_min_dist, 
                         df_cellsChamber, chamber, plot):
     
@@ -4180,13 +4182,83 @@ def extract_segm_IND(organ, cut, segm, n_closest_cells, segm_count, plot, proces
     else: #process == 'zones':
         return index_closestCells, min_dist_to_cells, avg_min_dist
 
+def create_zone(organ, zone, df_zone): 
+
+    zones = organ.mC_settings['setup']['zone_mC'][zone]['name_zones']
+    sil_color = organ.mC_settings['setup']['zone_mC'][zone]['colors']
+    directions = [(1,0,0),(0,1,0),(0,0,1),(1,1,0),(0,1,1),(1,0,1),(1,1,1)]*3
+
+    #First get the cells from the zone the user wants to use
+    if organ.mC_settings['wf_info']['zone_cells'][zone]['use_segm']: 
+        segm_cut_info = organ.mC_settings['wf_info']['zone_cells'][zone]['ind_segm']
+        cut, names = segm_cut_info.split(':')
+        #Get all names
+        dict_names = organ.mC_settings['setup']['segm_mC'][cut]['name_segments']
+        segm_names = {}
+        for key, item in dict_names.items():
+            segm_names[key] = key+':'+item
+        #See if the segms selected are more than one
+        all_names = names.split(', ')
+        #Create an empty dictionary where values of all segm will be saved
+        all_data_to_run = {}
+
+        #Option 1: Use all segments for cut
+        if len(all_names) > 1:
+            #Using all segments
+            for segm in segm_names: 
+                all_data_to_run[segm] = {}
+        else: 
+            #Get the segm that will be used
+            for ss in dict_names: 
+                if all_names[0] == dict_names[ss]: 
+                    segm = ss
+                    break
+            all_data_to_run[segm] = {} 
+
+        sphs_all = []
+        for ss in all_data_to_run: 
+            sphs_all.append(organ.ind['mC_segm'][cut.title()][ss][0])
+        sphs_allf = sum(sphs_all, [])
+        sphs_zones = sphs_allf.copy()
+        sil_zones = []
+        num_cells_zone = {}
+        for zz in zones: 
+            num_cells_zone[zones[zz]] = []
+
+        #Modify cells according to info in df
+        for ind, row in df_zone.iterrows():
+            cell_no = row['Index_CentralCell']
+            zone = row['Zone']
+            # print(cell_no, zone)
+            #Find cell within sphs
+            found = False
+            for sph in sphs_zones: 
+                sph_name = sph.name.split('Cell Nr.')[1]
+                if int(sph_name) == cell_no: 
+                    found = True
+                    break
+            if found: 
+                #Find zone number
+                for zz in zones:
+                    if zones[zz] == zone: 
+                        break 
+                sil = sph.silhouette((1,0,0)).lineWidth(20).c(sil_color[zz]).alpha(1)
+                sil_zones.append(sil)
+                num_cells_zone[zone].append(cell_no)
+    
+    return sphs_zones, sil_zones
 
 def select_cell_for_zones(organ, cut, zone, segm_names, all_data):
     
     iso_vols, vol_settings = organ.organ_vol_iso()
     zones = organ.mC_settings['setup']['zone_mC'][zone]['name_zones']
     sil_color = organ.mC_settings['setup']['zone_mC'][zone]['colors']
+    bkgd = organ.mC_settings['wf_info']['zone_cells']['background']
 
+    mks = []; sym = ['o']*len(zones)
+    for zn in zones:
+        mks.append(vedo.Marker('*').c(sil_color[zn]).legend(zones[zn]))
+    
     sphs = 'sphs_distColour'
     index = 'index_closest_cells'
     avg_dist = 'avg_min_dist'
@@ -4203,127 +4275,139 @@ def select_cell_for_zones(organ, cut, zone, segm_names, all_data):
     for segm, uname in segm_names.items(): 
         segm_cells[segm] = df_cells[df_cells[col_name] == uname]
         segm_ids[segm] = list(segm_cells[segm].index)
+
+    list_ind_cellsCentreB = []
+    list_ind_cellsNeighboursB = []
+    list_averageDistB = []
+    list_allDistancesB = []
+    list_region = []
+    selected_cells = []
+    sil_final =[]
+    msg_zone = []
     
-    happy = False
-    while not happy: 
-        list_ind_cellsCentreB = []
-        list_ind_cellsNeighboursB = []
-        list_averageDistB = []
-        list_allDistancesB = []
-        list_region = []
-        
-        selected_cells = []
-
-        sil_final =[]
-        for i, zz in zip(count(), zones): 
-            print('>>>', i, zz)
-            sphs_distColour_copy = all_sphsf.copy()
-            cells_region = []
-            silcont = []
-            def select_cells_per_chamber_region(evt):
-                if not evt.actor: return
-                if isinstance(evt.actor, vedo.shapes.Sphere): 
-                    cell_no = evt.actor.name
-                    cell_no = int(cell_no.split('.')[-1])
-                    if cell_no not in selected_cells:
-                        #If the cell wants fo be deselected
-                        if cell_no in cells_region: 
-                            ind_cell = cells_region.index(cell_no)
-                            sil2rem = silcont[ind_cell]
-                            plt.remove(sil2rem)
-                            cells_region.pop(ind_cell)
-                            silcont.pop(ind_cell)
-                        else: 
-                            sil = evt.actor.silhouette().lineWidth(15).c(sil_color[zz])
-                            sil.legend('No.'+str(cell_no))
-                            msg.text("You clicked: "+evt.actor.name)
-                            cells_region.append(cell_no)
-                            plt.add(sil) #plt.remove(silcont.pop()).add(sil)
-                            silcont.append(sil)
-                        print('cells_region:',cells_region)
-                        print('silcont:', silcont)
+    for i, zz in zip(count(), zones): 
+        print('>>>', i, zz)
+        sphs_distColour_copy = all_sphsf.copy()
+        cells_region = []
+        silcont = []
+        def select_cells_per_chamber_region(evt):
+            if not evt.actor: return
+            if isinstance(evt.actor, vedo.shapes.Sphere): 
+                cell_no = evt.actor.name
+                cell_no = int(cell_no.split('.')[-1])
+                if cell_no not in selected_cells:
+                    #If the cell wants fo be deselected
+                    if cell_no in cells_region: 
+                        ind_cell = cells_region.index(cell_no)
+                        sil2rem = silcont[ind_cell]
+                        plt.remove(sil2rem)
+                        cells_region.pop(ind_cell)
+                        msg.text('You removed '+evt.actor.name+' from '+zones[zz].upper()+'\n(Number of cells selected so far: '+str(len(cells_region))+')')
+                        silcont.pop(ind_cell)
                     else: 
-                        msg.text(evt.actor.name+' has already been selected for another zone. \n\t Please select another cell for -'+zones[zz])
-                
-            text = 'Select cells in the Zone: '+zones[zz]
-            txt = vedo.Text2D(text, c=txt_color, font= txt_font)
+                        sil = evt.actor.silhouette().lineWidth(20).c(sil_color[zz]).alpha(1)
+                        sil.legend('No.'+str(cell_no))
+                        cells_region.append(cell_no)
+                        msg.text('You seleced '+evt.actor.name+' as part of '+zones[zz].upper()+'\n(Number of cells selected so far: '+str(len(cells_region))+')')
+                        plt.add(sil) #plt.remove(silcont.pop()).add(sil)
+                        silcont.append(sil)
+                    print('cells_region:',cells_region)
+                    # print('silcont:', silcont)
+                else: 
+                    msg.text(evt.actor.name+' has already been selected for another zone. \n\t Please select another cell for -'+zones[zz])
 
-            if len(iso_vols) >= 1: 
-                def sliderAlphaMeshOut(widget, event):
-                    valueAlpha = widget.GetRepresentation().GetValue()
-                    iso_vols[0].alpha(valueAlpha)
-            if len(iso_vols) >= 2: 
-                def sliderAlphaMeshOut2(widget, event):
-                    valueAlpha = widget.GetRepresentation().GetValue()
-                    iso_vols[1].alpha(valueAlpha)
-            if len(iso_vols) >= 3: 
-                def sliderAlphaMeshOut3(widget, event):
-                    valueAlpha = widget.GetRepresentation().GetValue()
-                    iso_vols[2].alpha(valueAlpha)
-            
-            txt_slider_size2 = 0.7
-            msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
-
-            plt = vedo.Plotter(N=1, axes=1)
-            plt.add_icon(logo, pos=(0.1,1), size=0.25)
-            if len(iso_vols) >= 1: 
-                plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.05,
-                    pos=[(0.92,0.25), (0.92,0.35)], c= vol_settings['color'][0], 
-                    title='Opacity\n'+ vol_settings['name'][0].title(), title_size=txt_slider_size2)
-            if len(iso_vols) >=2:
-                plt.addSlider2D(sliderAlphaMeshOut2, xmin=0, xmax=0.99, value=0.05,
-                    pos=[(0.92,0.40), (0.92,0.50)], c=vol_settings['color'][1], 
-                    title='Opacity\n'+ vol_settings['name'][1].title(), title_size=txt_slider_size2)
-            if len(iso_vols) >=3:
-                plt.addSlider2D(sliderAlphaMeshOut3, xmin=0, xmax=0.99, value=0.05,
-                    pos=[(0.72,0.25), (0.72,0.35)], c=vol_settings['color'][2],
-                    title='Opacity\n'+ vol_settings['name'][2].title(), title_size=txt_slider_size2)
-                
-            plt.addCallback('mouse click', select_cells_per_chamber_region)
-            plt.show(all_sphsf, iso_vols, sil_final, txt, msg, zoom=1.2)
-                
-            for i, cell_no in enumerate(cells_region): 
-                #Find the segm the cell is part of
-                for ss in segm_ids: 
-                    if cell_no in segm_ids[ss]: 
-                        cell_is_part_of = ss
-                        print('cell_is_part_of:', cell_is_part_of)
-                        break
-                #Find the index where the info of that cell is stored within lists of data
-                for ii, aa in enumerate(all_data[cell_is_part_of][index]):
-                    if cell_no in aa: 
-                        iif = ii
-                        print(iif)
-                        break
-
-                list_ind_cellsCentreB.append(cell_no)
-                list_ind_cellsNeighboursB.append(all_data[cell_is_part_of][index][iif])#index_closestCells[cell_no])
-                list_averageDistB.append(all_data[cell_is_part_of][avg_dist][iif])#avg_min_dist[cell_no])
-                list_allDistancesB.append(all_data[cell_is_part_of][min_dist][iif])#mindist2Cells[cell_no])
-                list_region.append(zones[zz])
-                selected_cells.append(cell_no)
-                sil_final.append(silcont[i])
+        text = 'Select cells in the Zone: '+zones[zz]+'\n Instructions: \n-Click cells that are part of the zone of interest and a silhouette\nwith the corresponding zone color will appear around the selected cell\n-Play with the mesh opacity to be able to select cells that are within the isovolume \n-If you wish to deselect a cell, click the cell again\n-Close the window when you are done to continue selecting cells for the next zone.'
+        txt = vedo.Text2D(text, c=txt_color, font= txt_font)
+        lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
+                    width=leg_width/1.5, height=leg_height)
         
-        #remove solhouettes from IND clustering to make the class easier
-                #add legend box with names for each zone and color
-                #use export button to export all df
-                
-        text3 = 'CHECKING: Final selection of cells for ALL zones'
-        txt3= vedo.Text2D(text3, c="white", font= txt_font)
-        vp = vedo.Plotter(axes = 1, bg='black')
-        vp.show(sphs_distColour_copy, silcont, sil_final, iso_vols, txt3,  zoom=1.2, interactive = True)
-                
-        # happy = ask4input('Are you satisfied with the final selected cells for All the zones? ', bool)
+        if len(iso_vols) >= 1: 
+            def sliderAlphaMeshOut(widget, event):
+                valueAlpha = widget.GetRepresentation().GetValue()
+                iso_vols[0].alpha(valueAlpha)
+        if len(iso_vols) >= 2: 
+            def sliderAlphaMeshOut2(widget, event):
+                valueAlpha = widget.GetRepresentation().GetValue()
+                iso_vols[1].alpha(valueAlpha)
+        if len(iso_vols) >= 3: 
+            def sliderAlphaMeshOut3(widget, event):
+                valueAlpha = widget.GetRepresentation().GetValue()
+                iso_vols[2].alpha(valueAlpha)
+        
+        txt_slider_size2 = 0.7
+        msg = vedo.Text2D("", pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
+
+        plt = vedo.Plotter(N=1, axes=1, bg=bkgd)
+        plt.add_icon(logo, pos=(0.1,0.1), size=0.25)
+        if len(iso_vols) >= 1: 
+            plt.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.05,
+                pos=[(0.92,0.25), (0.92,0.35)], c= vol_settings['color'][0], 
+                title='Opacity\n'+ vol_settings['name'][0].title(), title_size=txt_slider_size2)
+        if len(iso_vols) >=2:
+            plt.addSlider2D(sliderAlphaMeshOut2, xmin=0, xmax=0.99, value=0.05,
+                pos=[(0.92,0.40), (0.92,0.50)], c=vol_settings['color'][1], 
+                title='Opacity\n'+ vol_settings['name'][1].title(), title_size=txt_slider_size2)
+        if len(iso_vols) >=3:
+            plt.addSlider2D(sliderAlphaMeshOut3, xmin=0, xmax=0.99, value=0.05,
+                pos=[(0.72,0.25), (0.72,0.35)], c=vol_settings['color'][2],
+                title='Opacity\n'+ vol_settings['name'][2].title(), title_size=txt_slider_size2)
+            
+        plt.addCallback('mouse click', select_cells_per_chamber_region)
+        plt.show(all_sphsf, iso_vols, sil_final, txt, msg, lb, zoom=1.2)
+
+        for i, cell_no in enumerate(cells_region): 
+            #Find the segm the cell is part of
+            for ss in segm_ids: 
+                if cell_no in segm_ids[ss]: 
+                    cell_is_part_of = ss
+                    print('cell_is_part_of:', cell_is_part_of)
+                    break
+            #Find the index where the info of that cell is stored within lists of data
+            for ii, aa in enumerate(all_data[cell_is_part_of][index]):
+                if cell_no in aa: 
+                    iif = ii
+                    print(iif)
+                    break
+
+            list_ind_cellsCentreB.append(cell_no)
+            list_ind_cellsNeighboursB.append(all_data[cell_is_part_of][index][iif])#index_closestCells[cell_no])
+            list_averageDistB.append(all_data[cell_is_part_of][avg_dist][iif])#avg_min_dist[cell_no])
+            list_allDistancesB.append(all_data[cell_is_part_of][min_dist][iif])#mindist2Cells[cell_no])
+            list_region.append(zones[zz].strip())
+            selected_cells.append(cell_no)
+            sil_final.append(silcont[i])
+        
+        msg_zone.append(zones[zz]+':'+str(len(cells_region)))
+
+    msg_zonef = ', '.join(msg_zone)
+    txt_msg = ' -- Total number of cells selected per zone --\n' + msg_zonef
+    msg = vedo.Text2D(txt_msg, pos="bottom-center", c=txt_color, font=txt_font, s=txt_size, bg='red', alpha=0.2)
+    text3 = 'CHECKING: Final selection of cells for ALL zones'
+    txt3= vedo.Text2D(text3, font=txt_font)
+    vp = vedo.Plotter(axes = 1, bg=bkgd)
+    vp.add_icon(logo, pos=(0.1,0.1), size=0.25)
+    if len(iso_vols) >= 1: 
+        vp.addSlider2D(sliderAlphaMeshOut, xmin=0, xmax=0.99, value=0.05,
+            pos=[(0.92,0.25), (0.92,0.35)], c= vol_settings['color'][0], 
+            title='Opacity\n'+ vol_settings['name'][0].title(), title_size=txt_slider_size2)
+    if len(iso_vols) >=2:
+        vp.addSlider2D(sliderAlphaMeshOut2, xmin=0, xmax=0.99, value=0.05,
+            pos=[(0.92,0.40), (0.92,0.50)], c=vol_settings['color'][1], 
+            title='Opacity\n'+ vol_settings['name'][1].title(), title_size=txt_slider_size2)
+    if len(iso_vols) >=3:
+        vp.addSlider2D(sliderAlphaMeshOut3, xmin=0, xmax=0.99, value=0.05,
+            pos=[(0.72,0.25), (0.72,0.35)], c=vol_settings['color'][2],
+            title='Opacity\n'+ vol_settings['name'][2].title(), title_size=txt_slider_size2)
+    vp.show(sphs_distColour_copy, sil_final, iso_vols, lb, txt3, msg, zoom=1.2, interactive = True)#silcont
 
     df_zones = pd.DataFrame()
     df_zones['Index_CentralCell'] = list_ind_cellsCentreB
     df_zones['AverageDist'] = list_averageDistB
     df_zones['Index_NeighbourCells'] = list_ind_cellsNeighboursB
     df_zones['Distances']= list_allDistancesB
-    df_zones['Region']= list_region
+    df_zones['Zone']= list_region
         
-    return df_zones
-
+    return df_zones, sphs_distColour_copy, sil_final
 
 #%% Module loaded
 print('morphoHeart! - Loaded funcMeshes')

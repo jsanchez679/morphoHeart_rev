@@ -52,7 +52,7 @@ from ..modules.mH_funcContours import (checkWfCloseCont, ImChannel, get_contours
                                        mask_with_npy)
 from ..modules.mH_funcMeshes import (plot_grid, s3_to_mesh, kspl_chamber_cut, get_unlooped_heatmap, 
                                      unit_vector, new_normal_3DRot, measure_ellipse, create_iso_volume, 
-                                     extract_segm_IND)
+                                     extract_segm_IND, create_zone)
 from ..modules.mH_classes_new import Project, Organ, create_submesh
 from .config import mH_config
 
@@ -2474,6 +2474,10 @@ class CreateNewProj(QDialog):
                 no_zones = getattr(self, 'sB_no_zones'+zone_no+'_mC').value()
                 names_zone = getattr(self, 'names_zones'+zone_no).text()
                 names_zone = names_zone.split(',')
+                for xx, nam in enumerate(names_zone):
+                    if nam == '':
+                        names_zone.remove('')
+                names_zone = [name.strip() for name in names_zone]
 
                 #Get names
                 names_zoneF = {}
@@ -10548,25 +10552,27 @@ class MainWindow(QMainWindow):
             self.isosurf_cells_all_widget.setVisible(False)
         self.init_remove_cells()
         
-        if self.organ.mC_settings['setup']['segm_mC']['cutCellsIn2Segments']: 
+        if isinstance(self.organ.mC_settings['setup']['segm_mC'], dict):
             self.init_segments_mC()
         else:
             self.cell_segments_all_widget.setVisible(False)
 
-        if self.organ.mC_settings['setup']['sect_mC']['cutCellsIn2Sections']: 
+        if isinstance(self.organ.mC_settings['setup']['sect_mC'], dict):
             self.init_sections_mC()
         else:
             self.cell_sections_all_widget.setVisible(False)
 
-        if self.organ.mC_settings['setup']['segm-sect_mC']['cutCellsIn2SegmSect']: 
+        if isinstance(self.organ.mC_settings['setup']['segm-sect_mC'], dict):
             self.init_segm_sect_mC()
         else:
             self.cell_sections_all_widget.setVisible(False)
         
-        if self.organ.mC_settings['setup']['zone_mC']['cutCellsIn2Zones']: 
+        if isinstance(self.organ.mC_settings['setup']['zone_mC'], dict): 
             self.init_zones_mC()
         else:
             self.cell_zones_all_widget.setVisible(False)
+        
+        self.init_results_cell_table()
 
         print()
 
@@ -10919,9 +10925,26 @@ class MainWindow(QMainWindow):
     
         print('cell_zone_btns:', self.cell_zone_btns)
 
+        #Plot buttons
+        self.zone1_cell_plot.clicked.connect(lambda: self.plot_zone(zone='Zone1'))
+        self.zone2_cell_plot.clicked.connect(lambda: self.plot_zone(zone='Zone2'))
+        self.zone3_cell_plot.clicked.connect(lambda: self.plot_zone(zone='Zone3'))
+
         #Initialise with user settings, if they exist!
         self.user_zones_cells()
                 
+    def init_results_cell_table(self): 
+        self.results_cell_open.clicked.connect(lambda: self.open_section(name = 'results_cell'))
+
+        #Setup results
+        # self.fill_results()
+        self.results_cell_save.clicked.connect(lambda: self.save_cell_results())
+
+        # #Get variable names
+        # self.get_var_names()
+
+        # #Init measure_status
+        # self.user_measure_whole()
 
     #Functions to fill sections according to user's selections
     def user_isosurf(self):
@@ -10931,19 +10954,25 @@ class MainWindow(QMainWindow):
         if 'isosurface' in wf_info.keys():
             print('wf_info[isosurface]:', wf_info['isosurface'])
             for ch in wf_info['isosurface']: 
-                threshold = wf_info['isosurface'][ch]['threshold']
-                getattr(self, 'threshold_'+ch+'_value').setText(str(threshold))
-                self.slider_changed('threshold_'+ch, 'value')
-                alpha = wf_info['isosurface'][ch]['alpha']
-                getattr(self, 'alpha_'+ch).setValue(float(alpha))
+                if 'ch' in ch: 
+                    threshold = wf_info['isosurface'][ch]['threshold']
+                    getattr(self, 'threshold_'+ch+'_value').setText(str(threshold))
+                    self.slider_changed('threshold_'+ch, 'value')
+                    alpha = wf_info['isosurface'][ch]['alpha']
+                    getattr(self, 'alpha_'+ch).setValue(float(alpha))
 
-                if get_by_path(wf, [ch,'Status']) == 'DONE':
-                    getattr(self, ch+'_play').setEnabled(True)
-                    create_iso_volume(organ = self.organ, ch=ch, plot=False)
-                    getattr(self, ch+'_play').setChecked(True)
-                    getattr(self, 'iso_plot_'+ch).setEnabled(True)
-                    self.isosurface_cells_open.setChecked(True)
-                    self.open_section(name = 'isosurface_cells')
+                    if get_by_path(wf, [ch,'Status']) == 'DONE':
+                        getattr(self, ch+'_play').setEnabled(True)
+                        create_iso_volume(organ = self.organ, ch=ch, plot=False)
+                        getattr(self, ch+'_play').setChecked(True)
+                        getattr(self, 'iso_plot_'+ch).setEnabled(True)
+                        self.isosurface_cells_open.setChecked(True)
+                        self.open_section(name = 'isosurface_cells')
+
+            if 'invert' in wf_info['isosurface']:
+                getattr(self, 'iso_invert').setChecked(wf_info['isosurface']['invert'])
+            else: 
+                wf_info['isosurface']['invert'] = False
 
             #Update Status in GUI
             self.update_status(wf, ['Status'], self.isosurface_cells_status)
@@ -11017,17 +11046,22 @@ class MainWindow(QMainWindow):
                                 sel_option = wf_info['ind_segments_cells']['cluster_group'][cut][segm_cut]
                                 self.organ.mC_settings['measure']['mC_segm'][cut][segm_cut+':'+segm_name]['IND'] = df_clusters_ALL[sel_option]
                                 if not hasattr(self.organ, 'ind'): 
-                                    self.organ.ind = {'mC_segm':{cut:{segm_cut: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}}}
+                                    self.organ.ind = {'mC_segm':{cut:{segm_cut: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}}}
                                 else: 
                                     if 'mC_segm' not in self.organ.ind:
-                                        self.organ.ind['mC_segm'] = {cut:{segm_cut: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}}
+                                        self.organ.ind['mC_segm'] = {cut:{segm_cut: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}}
                                     else: 
                                         if cut not in self.organ.ind['mC_segm']:
-                                            self.organ.ind['mC_segm'][cut] = {segm_cut: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}
+                                            self.organ.ind['mC_segm'][cut] = {segm_cut: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}
                                         else: 
-                                            self.organ.ind['mC_segm'][cut][segm_cut] = sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]
+                                            self.organ.ind['mC_segm'][cut][segm_cut] = [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]
                 
                                 getattr(self, cut.lower()+'_IND_'+segm_cut+'_plot').setEnabled(True)
+
+            if 'background' in wf_info['ind_segments_cells']:
+                getattr(self, 'ind_background').setCurrentText(wf_info['ind_segments_cells']['background'])
+            else: 
+                wf_info['ind_segments_cells']['background'] = 'silver'
             
             #Run Set Function 
             self.set_ind_cell_segments()
@@ -11039,17 +11073,46 @@ class MainWindow(QMainWindow):
 
         if 'zone_cells' in wf_info.keys():
             print('wf_info[zone_cells]:', wf_info['zone_cells'])
-            for zone in wf_info['zone_cells']: 
-                use_segm = getattr(self, 'use_ind_'+zone.lower())
-                combo_segm = getattr(self, 'ind_'+zone.lower()+'_combo')
-                if wf_info['zone_cells'][zone]['use_segm']: 
-                    use_segm.setChecked(True)
-                    combo_segm.setCurrentText(wf_info['zone_cells'][zone]['ind_segm'])
-                else: 
-                    use_segm.setChecked(False)
-                    combo_segm.setCurrentText('----')
+            for zone in wf_info['zone_cells']:
+                if 'background' not in zone:  
+                    use_segm = getattr(self, 'use_ind_'+zone.lower())
+                    combo_segm = getattr(self, 'ind_'+zone.lower()+'_combo')
+                    if wf_info['zone_cells'][zone]['use_segm']: 
+                        use_segm.setChecked(True)
+                        combo_segm.setCurrentText(wf_info['zone_cells'][zone]['ind_segm'])
+                    else: 
+                        use_segm.setChecked(False)
+                        combo_segm.setCurrentText('----')
+                    
+                    if wf[zone]['Status'] == 'DONE':
+                        #Add sphs as attr
+                        #Transform dataframe from json to pandas
+                        loaded_str = self.organ.mC_settings['measure']['mC_zone'][zone]
+                        df_transf = pd.read_json(loaded_str,orient='table')
+                        try: 
+                            df_transf = df_transf.rename(columns={"Region": "Zone"})
+                        except: 
+                            pass
+                        self.organ.mC_settings['measure']['mC_zone'][zone] = df_transf
+                        sphs_zones, sil_zones = create_zone(self.organ, zone, df_transf) 
 
-                #Enable buttons? 
+                        if not hasattr(self.organ, 'ind'): 
+                            self.organ.ind = {'mC_zone':{zone: [sphs_zones, sil_zones]}}
+                        else: 
+                            if 'mC_zone' not in self.organ.ind:
+                                self.organ.ind['mC_zone'] = {zone: [sphs_zones, sil_zones]}
+                            else: 
+                                self.organ.ind['mC_zone'][zone] = [sphs_zones, sil_zones]
+
+                        getattr(self, zone.lower()+'_cell_play').setChecked(True)
+                        getattr(self, zone.lower()+'_cell_plot').setEnabled(True)
+            
+            if 'background' in wf_info['zone_cells']:
+                getattr(self, 'zones_background').setCurrentText(wf_info['zone_cells']['background'])
+            else: 
+                wf_info['zone_cells']['background'] = 'silver'
+
+            #Enable buttons? 
             if wf['Status'] == 'DONE': 
                 getattr(self, 'cell_zones_play').setChecked(True)
             
@@ -11091,6 +11154,8 @@ class MainWindow(QMainWindow):
                 alpha = getattr(self, 'alpha_'+ch).value()
                 gui_isosurface[ch] = {'threshold': threshold, 
                                         'alpha': alpha}
+        
+        gui_isosurface['invert'] = getattr(self, 'iso_invert').isChecked()
         
         return gui_isosurface
 
@@ -11243,6 +11308,8 @@ class MainWindow(QMainWindow):
                     if spin_n_cells.isVisible(): 
                         gui_ind_segm_cells[cut]['segm'+str(nn)] = getattr(self, 'n_cells_'+cut.lower()+'_segm'+str(nn)).value()
         
+        gui_ind_segm_cells['background'] = getattr(self, 'ind_background').currentText()
+
         return gui_ind_segm_cells
 
     def set_cell_zones(self): 
@@ -11290,8 +11357,95 @@ class MainWindow(QMainWindow):
                 else: 
                     self.win_msg('*Please select the IND classification you would like to use to define '+cut+' to be able to continue.', self.cell_zones_set)
                     return None
+                
+        gui_zone_cells['background'] = getattr(self, 'zones_background').currentText()
 
         return gui_zone_cells
+
+    #Functions morphoCell
+    def save_cell_results(self): 
+
+        ext = self.cB_cells_extension.currentText()
+        filename = self.organ.folder+'_cellCounts'+ext
+        df_dir = self.organ.dir_res() / filename
+
+        #First sheet contains info about organ
+        #Add organ info
+        project_name = self.organ.info['project']['user']
+        organ_name = self.organ.info['user_organName']
+        strain = self.organ.info['strain']
+        stage = self.organ.info['stage']
+        genotype = self.organ.info['genotype']
+        manipulation = self.organ.info['manipulation']
+        date_created = self.organ.info['date_created']
+        organ_notes = self.organ.info['user_organNotes']
+
+        data = [{'Parameter': 'Project Name', 'Value': project_name}, 
+                {'Parameter': 'Organ Name', 'Value': organ_name},
+                {'Parameter': 'Strain', 'Value': strain},
+                {'Parameter': 'Stage', 'Value': stage},
+                {'Parameter': 'Genotype', 'Value': genotype},
+                {'Parameter': 'Manipulation', 'Value': manipulation},
+                {'Parameter': 'Date Created', 'Value': date_created},
+                {'Parameter': 'Organ Notes', 'Value': organ_notes}]
+
+        df_info = pd.DataFrame(data) 
+        df2save = {0: {'name': 'Organ_info', 
+                       'df': df_info}}
+        num = 1
+
+        #Segments and IND
+        if isinstance(self.organ.mC_settings['setup']['segm_mC'], dict):
+            name = 'Segm'
+            cells_position = self.organ.cellsMC['chA'].df_cells()
+            #Get df_segm / segm
+            for cut in self.organ.mC_settings['measure']['mC_segm']: 
+                col_name = 'Segment-'+cut
+                for segm in self.organ.mC_settings['measure']['mC_segm'][cut]:
+                    df_filt = cells_position[cells_position[col_name] == segm]
+                    tab_name = name+'-'+cut+':'+segm.title()
+                    df2save[num] = {'name': tab_name.replace(':', '_'), 
+                                    'df': df_filt}
+                    num+=1
+            # Get IND
+            name = 'Segm_IND'
+            for cuti in self.organ.mC_settings['measure']['mC_segm']:
+                for ss in self.organ.mC_settings['measure']['mC_segm'][cuti]:
+                    df2add = self.organ.mC_settings['measure']['mC_segm'][cuti][ss]['IND']
+                    tab_name = name+'-'+cut+':'+ss.title()
+                    df2save[num] = {'name': tab_name.replace(':', '_'), 
+                                    'df': df2add}
+                    num+=1
+
+        # if isinstance(self.organ.mC_settings['setup']['sect_mC'], dict):
+        #     names_df2save.append('Sect')
+        #     names_df2save.append('Sect_IND')
+        # if isinstance(self.organ.mC_settings['setup']['segm-sect_mC'], dict):
+        #     names_df2save.append('Segm-Sect')
+        #     names_df2save.append('Segm-Sect_IND')
+                    
+        #Zones and IND
+        if isinstance(self.organ.mC_settings['setup']['zone_mC'], dict): 
+            for zz in self.organ.mC_settings['measure']['mC_zone']:
+                df2addz = self.organ.mC_settings['measure']['mC_zone'][zz]
+                tab_name = zz.title()
+                df2save[num] = {'name': tab_name.replace(':', '_'), 
+                                'df': df2addz}
+                num+=1
+
+        #Write excel
+        for i, item in df2save.items():
+            name = item['name']
+            df = item['df']
+            if i == 0:
+                with pd.ExcelWriter(df_dir) as writer:  
+                    df.to_excel(writer, sheet_name=name)
+            else: 
+                with pd.ExcelWriter(df_dir, mode='a') as writer: 
+                    df.to_excel(writer, sheet_name=name)
+
+        alert('countdown') 
+        self.win_msg('Results file  -'+ filename + '  was succesfully saved!')
 
     #Functions specific to gui functionality
     def open_section(self, name, ch_name=None): 
@@ -13046,11 +13200,14 @@ class MainWindow(QMainWindow):
     def plot_cells(self, process): 
         
         chs = []
-        add_ch = self.organ.mC_settings['wf_info']['remove_cells']['add_ch']
-        for ch in ['chB', 'chC', 'chD']: 
-            if ch in self.organ.mC_settings['setup']['mH_channel']: 
-                if getattr(self, ch+'_play').isChecked() and hasattr(self.organ, 'vol_iso'): 
-                    chs.append(self.organ.vol_iso[ch])
+        try: 
+            add_ch = self.organ.mC_settings['wf_info']['remove_cells']['add_ch']
+            for ch in ['chB', 'chC', 'chD']: 
+                if ch in self.organ.mC_settings['setup']['mH_channel']: 
+                    if getattr(self, ch+'_play').isChecked() and hasattr(self.organ, 'vol_iso'): 
+                        chs.append(self.organ.vol_iso[ch])
+        except: 
+            pass
 
         cells_position = self.organ.cellsMC['chA'].df_cells()
         if process == 'remove_cells': 
@@ -13092,16 +13249,45 @@ class MainWindow(QMainWindow):
                             sname = ss
                             break
                     if found: 
-                        sphs = self.organ.ind['mC_segm'][cut.title()][ss]
+                        sphs = self.organ.ind['mC_segm'][cut.title()][ss][0]
+                        sils = self.organ.ind['mC_segm'][cut.title()][ss][1]
         else: 
             print('Load values!')
 
         segm_name = self.organ.mC_settings['setup']['segm_mC'][cut.title()]['name_segments'][segm]
-        vp = vedo.Plotter(N=1, axes = 4)
+        bkgd = self.organ.mC_settings['wf_info']['ind_segments_cells']['background']
+        vp = vedo.Plotter(N=1, axes = 4, bg=bkgd)
+        vp.add_icon(logo, pos=(0.1,1), size=0.25)
         text = 'Clustering for '+cut.title()+' - '+sname.title()
         txt = vedo.Text2D(text, c=txt_color, font=txt_font) 
-        vp.show(vols, sphs, txt, at=0, zoom = 1, interactive = True) 
-                
+        vp.show(vols, sphs, sils, txt, at=0, zoom = 1, interactive = True) 
+    
+    def plot_zone(self, zone): 
+
+        if hasattr(self.organ, 'ind'): 
+            found = False
+            if 'mC_zone' in self.organ.ind:
+                if zone in self.organ.ind['mC_zone']:
+                    sphs = self.organ.ind['mC_zone'][zone][0]
+                    sils = self.organ.ind['mC_zone'][zone][1]
+                    iso_vols, vol_settings = self.organ.organ_vol_iso()
+        else: 
+            print('Load values!')
+
+        zones = self.organ.mC_settings['setup']['zone_mC'][zone]['name_zones']
+        sil_color = self.organ.mC_settings['setup']['zone_mC'][zone]['colors']
+        bkgd = self.organ.mC_settings['wf_info']['zone_cells']['background']
+
+        mks = []; sym = ['o']*len(zones)
+        for zn in zones:
+            mks.append(vedo.Marker('*').c(sil_color[zn]).legend(zones[zn]))
+        lb = vedo.LegendBox(mks, markers=sym, font=txt_font, 
+                    width=leg_width/1.5, height=leg_height)
+        vp = vedo.Plotter(N=1, axes=4, bg=bkgd)
+        vp.add_icon(logo, pos=(0.1,1), size=0.25)
+        text = self.organ.user_organName+'\nCells Selected for '+zone
+        txt = vedo.Text2D(text, c=txt_color, font=txt_font) 
+        vp.show(iso_vols, sphs, sils, txt, lb, at=0, zoom = 1, interactive = True) 
 
     #User specific plot settings
     def fill_comboBox_all_meshes(self): 

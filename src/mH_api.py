@@ -783,7 +783,7 @@ def run_keeplargest(controller):
     else: 
         title = 'Channels not closed / Contours not selected!'
         msg = 'You are not done closing/selecting the contours of the input channels! \nPlease go back to  -mH: Segment Channels-  Tab and continue processing the channels before running the processes in this tab'
-        prompt = Prompt_ok_cancel(title, msg, parent=controller.welcome_win)
+        prompt = Prompt_ok(title, msg, parent=controller.welcome_win)
         prompt.exec()
         print('output:', prompt.output)
         return
@@ -2416,6 +2416,7 @@ def run_isosurface(controller, btn):
     controller.main_win.organ.update_mCworkflow(process = proc, update = 'DONE')
 
     getattr(controller.main_win, btn+'_play').setChecked(True)
+    getattr(controller.main_win, 'iso_plot_'+btn).setEnabled(True)
     all_done = []
     for ch in ['chB', 'chC', 'chD']: 
         btn_o = getattr(controller.main_win, ch+'_play')
@@ -2626,15 +2627,15 @@ def run_IND_segm(controller, plot=True):
             controller.organ.mC_settings['measure']['mC_segm'][cut][segm]['IND'] = df_clusterf
 
             if not hasattr(controller.organ, 'ind'): 
-                controller.organ.ind = {'mC_segm':{cut:{segm: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}}}
+                controller.organ.ind = {'mC_segm':{cut:{segm: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}}}
             else: 
                 if 'mC_segm' not in controller.organ.ind:
-                    controller.organ.ind['mC_segm'] = {cut:{segm: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}}
+                    controller.organ.ind['mC_segm'] = {cut:{segm: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}}
                 else: 
                     if cut not in controller.organ.ind['mC_segm']:
-                        controller.organ.ind['mC_segm'][cut] = {segm: sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]}
+                        controller.organ.ind['mC_segm'][cut] = {segm: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}
                     else: 
-                        controller.organ.ind['mC_segm'][cut][segm] = sphs_distColour_ALL[sel_option]+sil_distColour_ALL[sel_option]
+                        controller.organ.ind['mC_segm'][cut][segm] = [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]
             
             #Enable plot button
             getattr(controller.main_win, cut.lower()+'_IND_'+segm.split(':')[0]+'_plot').setEnabled(True)
@@ -2695,6 +2696,7 @@ def run_zones(controller, zone):
                     else: 
                         controller.main_win.win_msg('*Extract the IND values for '+cut+':'+segm_names[segm].title()+' to run this process.', 
                                                     getattr(controller.main_win, zz.lower()+'_cell_play'))
+                        return None
 
                 for ss in all_data_to_run: 
                     #Run a for for all the segm in all_data_to_run
@@ -2704,14 +2706,62 @@ def run_zones(controller, zone):
                                                                                             segm_names[ss], n_closest_cells, 
                                                                                             segm_count, plot=False, 
                                                                                             process = 'zones')
-                    sphs_distColour = controller.organ.ind['mC_segm'][cut][ss]
+                    sphs_distColour = controller.organ.ind['mC_segm'][cut][ss][0]
                     all_data_to_run[ss]['index_closest_cells'] = index_closest_cells
                     all_data_to_run[ss]['min_dist_to_cells'] = min_dist_to_cells
                     all_data_to_run[ss]['avg_min_dist'] = avg_min_dist
                     all_data_to_run[ss]['sphs_distColour'] = sphs_distColour
 
-                df_zones = fcM.select_cell_for_zones(controller.organ, cut = cut, zone = zz, 
-                                                     segm_names = segm_names, all_data = all_data_to_run)
+                happy = False
+                while not happy: 
+                    df_zones, sphs_zones, sil_zones = fcM.select_cell_for_zones(controller.organ, cut = cut, zone = zz, 
+                                                        segm_names = segm_names, all_data = all_data_to_run)
+                    title = 'Happy?'
+                    msg = 'Are you happy with the selected cells/zone? If so, select  -OK-,  else select  -Cancel-  and select again the cells for all zones' 
+                    prompt = Prompt_ok_cancel(title, msg, parent=controller.main_win)
+                    prompt.exec()
+                    print('output:',prompt.output, '\n')
+                    if prompt.output: 
+                        happy = True
+
+                #Save results in df?
+                if 'mC_zone' not in controller.organ.mC_settings['measure']:
+                    controller.organ.mC_settings['measure']['mC_zone'] = {zz: df_zones}
+                else: 
+                    if zz not in controller.organ.mC_settings['measure']['mC_zone']:
+                        controller.organ.mC_settings['measure']['mC_zone'][zz] = df_zones
+
+                if not hasattr(controller.organ, 'ind'): 
+                    controller.organ.ind = {'mC_zone':{zz: [sphs_zones, sil_zones]}}
+                else: 
+                    if 'mC_zone' not in controller.organ.ind:
+                        controller.organ.ind['mC_zone'] = {zz: [sphs_zones, sil_zones]}
+                    else: 
+                        controller.organ.ind['mC_zone'][zz] = [sphs_zones, sil_zones]
+
+                #Update workflow
+                controller.main_win.cell_zone_btns[zz+':chA']['play'].setChecked(True)
+                proc_wf = ['B-Zones', zz,'Status']
+                controller.organ.update_mCworkflow(process = proc_wf, update = 'DONE')
+
+                #Enable plot button
+                controller.main_win.cell_zone_btns[zz+':chA']['plot'].setEnabled(True)
 
             else: 
                 controller.main_win.win_msg('*Please run the  -Segments-  module to be able to use its settings.')
+
+    all_done = []
+    for zzn in workflow['B-Zones'].keys(): 
+        if zzn != 'Status':
+            all_done.append(workflow['B-Zones'][zzn]['Status'])
+    
+    proc_wft = ['B-Zones','Status']
+    if all(flag == 'DONE' for flag in all_done): 
+        controller.organ.update_mCworkflow(process = proc_wft, update = 'DONE')
+    elif any(flag == 'DONE' for flag in all_done): 
+        controller.organ.update_mCworkflow(process = proc_wft, update = 'Initialised')
+    else:
+        controller.organ.update_mCworkflow(process = proc_wft, update = 'NI')
+
+    controller.main_win.update_status(workflow, proc_wft, controller.main_win.cell_zones_status)
+            
