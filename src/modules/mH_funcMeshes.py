@@ -4124,8 +4124,12 @@ def cluster_segm_cells(organ, n_closestCells, selected_cells, mindist2Cells, avg
     
     if plot:
         n_options = len(selected_cells)
-        vp = vedo.Plotter(N=n_options, axes = 4)
-        for i in range(n_options):
+        if n_options > 6: 
+            sphs_distColour_ALL = sphs_distColour_ALL[0:6]
+            sil_distColour_ALL = sil_distColour_ALL[0:6]
+
+        vp = vedo.Plotter(N=len(sphs_distColour_ALL), axes = 4)
+        for i in range(len(sphs_distColour_ALL)):
             text = 'Clustering option No. '+str(i+1)
             txt = vedo.Text2D(text, c=txt_color, font=txt_font)
             if i != n_options-1:

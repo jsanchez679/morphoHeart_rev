@@ -3967,7 +3967,8 @@ class LoadProj(QDialog):
         #https://www.pythonguis.com/faq/qtablewidget-for-list-of-dict/
         if len(proj.organs) > 0: 
             cBs = fill_table_with_organs(win = self, proj = proj, table = self.tabW_select_organ, 
-                                         blind_cB = self.cB_blind, notes_cB = self.cB_notes)
+                                         blind_cB = self.cB_blind, notes_cB = self.cB_notes, 
+                                         mH_cB = self.cB_mH_hide)
             self.organ_checkboxes = cBs
             self.button_load_organs.setChecked(True)
             self.go_to_main_window.setEnabled(True)
@@ -4090,13 +4091,18 @@ def load_proj_organs_comb(win, proj):
         win.multi_organ_checkboxes = cBs
         win.button_load_organs_comb.setChecked(True)
 
-def fill_table_with_organs(win, proj, table, blind_cB, notes_cB): 
+def fill_table_with_organs(win, proj, table, blind_cB, notes_cB, mH_cB=False): 
 
     cBs = []
     table.clear()
     wf_flat = get_proj_wf(proj)
     blind = blind_cB.isChecked()
     notes = notes_cB.isChecked()
+    if mH_cB != False: 
+        mH_hide = mH_cB.isChecked()
+    else: 
+        mH_hide = False
+
     table.setRowCount(len(proj.organs)+2)
     keys = {'-':['select'],'Name': ['user_organName'], 'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
             'Genotype':['genotype'], 'Manipulation': ['manipulation']}
@@ -4109,11 +4115,12 @@ def fill_table_with_organs(win, proj, table, blind_cB, notes_cB):
     keys_wf = {}
     for wf_key in wf_flat.keys():
         if 'morphoHeart' in wf_key: 
-            nn,proc,sp,_ = wf_key.split(':')
-            if 'Sections' in sp: 
-                sp = sp.replace('Sections', 'Regions')
-            keys_wf[sp] = ['workflow']+wf_key.split(':')
-        else: 
+            if not mH_hide: 
+                nn,proc,sp,_ = wf_key.split(':')
+                if 'Sections' in sp: 
+                    sp = sp.replace('Sections', 'Regions')
+                keys_wf[sp] = ['workflow']+wf_key.split(':')
+        else: #morphoCell
             nn,proc,sp = wf_key.split(':')
             keys_wf[proc] = ['workflow']+wf_key.split(':')
 
@@ -13244,11 +13251,6 @@ class MainWindow(QMainWindow):
             if 'mC_segm' in self.organ.ind:
                 if cut.title() in self.organ.ind['mC_segm']:
                     for ss in self.organ.ind['mC_segm'][cut.title()]: 
-                        if segm in ss: 
-                            found = True
-                            sname = ss
-                            break
-                    if found: 
                         sphs = self.organ.ind['mC_segm'][cut.title()][ss][0]
                         sils = self.organ.ind['mC_segm'][cut.title()][ss][1]
         else: 
@@ -13258,7 +13260,7 @@ class MainWindow(QMainWindow):
         bkgd = self.organ.mC_settings['wf_info']['ind_segments_cells']['background']
         vp = vedo.Plotter(N=1, axes = 4, bg=bkgd)
         vp.add_icon(logo, pos=(0.1,1), size=0.25)
-        text = 'Clustering for '+cut.title()+' - '+sname.title()
+        text = 'Clustering for '+cut.title()+' - '+ss.title()
         txt = vedo.Text2D(text, c=txt_color, font=txt_font) 
         vp.show(vols, sphs, sils, txt, at=0, zoom = 1, interactive = True) 
     

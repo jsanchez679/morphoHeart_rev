@@ -2627,18 +2627,18 @@ def run_IND_segm(controller, plot=True):
             controller.organ.mC_settings['measure']['mC_segm'][cut][segm]['IND'] = df_clusterf
 
             if not hasattr(controller.organ, 'ind'): 
-                controller.organ.ind = {'mC_segm':{cut:{segm: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}}}
+                controller.organ.ind = {'mC_segm':{cut:{ss: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}}}
             else: 
                 if 'mC_segm' not in controller.organ.ind:
-                    controller.organ.ind['mC_segm'] = {cut:{segm: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}}
+                    controller.organ.ind['mC_segm'] = {cut:{ss: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}}
                 else: 
                     if cut not in controller.organ.ind['mC_segm']:
-                        controller.organ.ind['mC_segm'][cut] = {segm: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}
+                        controller.organ.ind['mC_segm'][cut] = {ss: [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]}
                     else: 
-                        controller.organ.ind['mC_segm'][cut][segm] = [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]
+                        controller.organ.ind['mC_segm'][cut][ss] = [sphs_distColour_ALL[sel_option],sil_distColour_ALL[sel_option]]
             
             #Enable plot button
-            getattr(controller.main_win, cut.lower()+'_IND_'+segm.split(':')[0]+'_plot').setEnabled(True)
+            getattr(controller.main_win, cut.lower()+'_IND_'+ss+'_plot').setEnabled(True)
 
 def run_zones(controller, zone): 
     
