@@ -1749,10 +1749,12 @@ def create_iso_volume(organ, ch, plot=True):
 
     # Invert stack
     if organ.mC_settings['wf_info']['isosurface']['invert']: 
-        res[1] = -res[1]
+        res_copy = copy.deepcopy(res)
+        res_copy[1] = -res_copy[1]
+        print('res_copy:', res_copy)
 
     try: 
-        vol = vedo.Volume(str(img_dir), spacing = res).isosurface(int(threshold)).alpha(float(alpha))
+        vol = vedo.Volume(str(img_dir), spacing = res_copy).isosurface(int(threshold)).alpha(float(alpha))
     except:
         return False
     
@@ -3710,7 +3712,7 @@ def modify_cell_class(organ, cells, cut, cells_class):
         if not evt.actor: 
             return
         if isinstance(evt.actor, vedo.shapes.Sphere): 
-            sil = evt.actor.silhouette().lineWidth(6).c('red')
+            sil = evt.actor.silhouette().lineWidth(20).c('red')
             #Get cell number (cell id)
             cell_no = evt.actor.name
             print(cell_no)
@@ -4227,13 +4229,13 @@ def create_zone(organ, zone, df_zone):
         sil_zones = []
         num_cells_zone = {}
         for zz in zones: 
-            num_cells_zone[zones[zz]] = []
+            num_cells_zone[zones[zz].strip()] = []
 
         #Modify cells according to info in df
         for ind, row in df_zone.iterrows():
             cell_no = row['Index_CentralCell']
-            zone = row['Zone']
-            # print(cell_no, zone)
+            zone = row['Zone'].strip()
+            print(ind, cell_no, zone)
             #Find cell within sphs
             found = False
             for sph in sphs_zones: 
@@ -4244,7 +4246,7 @@ def create_zone(organ, zone, df_zone):
             if found: 
                 #Find zone number
                 for zz in zones:
-                    if zones[zz] == zone: 
+                    if zones[zz].strip() == zone: 
                         break 
                 sil = sph.silhouette((1,0,0)).lineWidth(20).c(sil_color[zz]).alpha(1)
                 sil_zones.append(sil)

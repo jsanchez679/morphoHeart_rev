@@ -275,6 +275,8 @@ class Project():
             
             self.mC_settings['measure'] = {}
 
+            self.set_mC_methods()
+
         else: 
             self.mC_settings = None
             self.mC_channels = None
@@ -282,9 +284,7 @@ class Project():
             self.mC_sections = None
             self.mC_zones = None
             self.mC_methods = None
-
         
-        self.set_mC_methods()
         
     def clean_False(self, user_param:dict):#
 
@@ -1069,6 +1069,15 @@ class Organ():
         if self.analysis['morphoCell']:
             # mC_Settings
             self.mC_settings = load_dict['mC_settings']
+            try: 
+                zz_names = {}
+                for zii in self.mC_settings['setup']['zone_mC']['Zone1']['name_zones']: 
+                    zz_names[zii] = self.mC_settings['setup']['zone_mC']['Zone1']['name_zones'][zii].strip()
+                self.mC_settings['setup']['zone_mC']['Zone1']['name_zones'] = zz_names
+                print('Modified mC_settings - name_zones')
+            except:
+                pass
+
             if 'measure' not in self.mC_settings: 
                 self.mC_settings['measure'] = {} 
 
