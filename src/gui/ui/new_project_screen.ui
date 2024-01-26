@@ -6,13 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>983</width>
+    <width>990</width>
     <height>882</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="minimumSize">
    <size>
-    <width>125</width>
+    <width>990</width>
     <height>0</height>
    </size>
   </property>
@@ -99,7 +105,7 @@
       <bool>true</bool>
      </property>
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -799,7 +805,7 @@ QScrollBar::handle:vertical:hover {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>947</width>
+            <width>954</width>
             <height>1394</height>
            </rect>
           </property>
@@ -15369,9 +15375,9 @@ QScrollBar::handle:vertical:hover {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-366</y>
-            <width>947</width>
-            <height>930</height>
+            <y>0</y>
+            <width>954</width>
+            <height>932</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_28">

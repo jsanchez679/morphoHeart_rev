@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>796</width>
-    <height>746</height>
+    <width>800</width>
+    <height>780</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -93,7 +93,7 @@
       <bool>true</bool>
      </property>
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -746,7 +746,7 @@ color: rgb(234, 234, 234);
        <item>
         <widget class="QTableWidget" name="tabW_select_organ">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -760,7 +760,7 @@ color: rgb(234, 234, 234);
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>300</height>
+           <height>16777215</height>
           </size>
          </property>
          <property name="styleSheet">
@@ -1241,7 +1241,7 @@ background-color: rgb(255, 255, 255);</string>
            <item>
             <widget class="QTableWidget" name="tabW_select_organs">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -1255,7 +1255,7 @@ background-color: rgb(255, 255, 255);</string>
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>340</height>
+               <height>16777215</height>
               </size>
              </property>
              <property name="styleSheet">
@@ -1467,7 +1467,7 @@ background-color: rgb(255, 255, 255);</string>
            <item>
             <widget class="QTableWidget" name="tabW_organs_final">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -1481,7 +1481,7 @@ background-color: rgb(255, 255, 255);</string>
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>340</height>
+               <height>16777215</height>
               </size>
              </property>
              <property name="styleSheet">

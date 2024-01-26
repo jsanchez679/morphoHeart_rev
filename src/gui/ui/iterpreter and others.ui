@@ -2803,54 +2803,6 @@ color: rgb(100, 100, 100);</string>
     </item>
    </layout>
   </widget>
-  <widget class="QLabel" name="label_colors_zone1">
-   <property name="geometry">
-    <rect>
-     <x>255</x>
-     <y>325</y>
-     <width>230</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>230</width>
-     <height>20</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>230</width>
-     <height>20</height>
-    </size>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
-   </property>
-   <property name="text">
-    <string>Colours:</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QWidget" name="horizontalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>410</y>
-     <width>160</width>
-     <height>80</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout"/>
-  </widget>
  </widget>
  <resources/>
  <connections/>

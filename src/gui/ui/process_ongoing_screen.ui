@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>378</width>
-    <height>215</height>
+    <height>238</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -62,7 +62,7 @@
    <item>
     <widget class="QTextEdit" name="tE_validate">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -70,13 +70,13 @@
      <property name="minimumSize">
       <size>
        <width>360</width>
-       <height>50</height>
+       <height>70</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>390</width>
-       <height>50</height>
+       <width>16777215</width>
+       <height>16777215</height>
       </size>
      </property>
      <property name="styleSheet">
