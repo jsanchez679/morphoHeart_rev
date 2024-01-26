@@ -3493,63 +3493,65 @@ class NewOrgan(QDialog):
         units_it = list(['--select--']+proj.gui_custom_data['im_res_units']+['add'])
         self.cB_units.addItems(units_it)
 
-        #Change channels
-        #-mH
-        mH_channels = proj.mH_channels
-        for ch in ['ch1', 'ch2', 'ch3', 'ch4']: 
-            label = getattr(self, 'lab_'+ch) 
-            name = getattr(self, 'lab_filled_name_'+ch)
-            brw_ch = getattr(self, 'browse_'+ch)
-            dir_ch = getattr(self, 'lab_filled_dir_'+ch)
-            check_ch = getattr(self, 'check_'+ch)
-            brw_mk = getattr(self, 'browse_mask_'+ch)
-            dir_mk = getattr(self, 'lab_filled_dir_mask_'+ch)
-            check_mk = getattr(self, 'check_mask_'+ch)
-            if ch not in mH_channels.keys():
-                label.setVisible(False)
-                name.setVisible(False)
-                brw_ch.setVisible(False)
-                dir_ch.setVisible(False)
-                check_ch.setVisible(False)
-                brw_mk.setVisible(False)
-                dir_mk.setVisible(False)
-                check_mk.setVisible(False)
-            else: 
-                name.setText(proj.mH_channels[ch])
-                if not proj.mH_settings['setup']['mask_ch'][ch]:
-                    brw_mk.setEnabled(False)
-                    dir_mk.setEnabled(False)
-                    check_mk.setEnabled(False)
-                self.img_dirs[ch] = {}
-    
-        #-mC
-        mC_channels = proj.mC_channels
-        mH_ch = proj.mC_settings['setup']['mH_channel']
-        print('mH_ch:', mH_ch)
-        for ch in ['chA', 'chB', 'chC', 'chD']: 
-            label = getattr(self, 'lab_'+ch) 
-            name = getattr(self, 'lab_filled_name_'+ch)
-            brw_ch = getattr(self, 'browse_'+ch)
-            dir_ch = getattr(self, 'lab_filled_dir_'+ch)
-            check_ch = getattr(self, 'check_'+ch)
+        if proj.analysis['morphoHeart']: 
+            #Change channels
+            #-mH
+            mH_channels = proj.mH_channels
+            for ch in ['ch1', 'ch2', 'ch3', 'ch4']: 
+                label = getattr(self, 'lab_'+ch) 
+                name = getattr(self, 'lab_filled_name_'+ch)
+                brw_ch = getattr(self, 'browse_'+ch)
+                dir_ch = getattr(self, 'lab_filled_dir_'+ch)
+                check_ch = getattr(self, 'check_'+ch)
+                brw_mk = getattr(self, 'browse_mask_'+ch)
+                dir_mk = getattr(self, 'lab_filled_dir_mask_'+ch)
+                check_mk = getattr(self, 'check_mask_'+ch)
+                if ch not in mH_channels.keys():
+                    label.setVisible(False)
+                    name.setVisible(False)
+                    brw_ch.setVisible(False)
+                    dir_ch.setVisible(False)
+                    check_ch.setVisible(False)
+                    brw_mk.setVisible(False)
+                    dir_mk.setVisible(False)
+                    check_mk.setVisible(False)
+                else: 
+                    name.setText(proj.mH_channels[ch])
+                    if not proj.mH_settings['setup']['mask_ch'][ch]:
+                        brw_mk.setEnabled(False)
+                        dir_mk.setEnabled(False)
+                        check_mk.setEnabled(False)
+                    self.img_dirs[ch] = {}
 
-            if ch not in mC_channels.keys():
-                label.setVisible(False)
-                name.setVisible(False)
-                brw_ch.setVisible(False)
-                dir_ch.setVisible(False)
-                check_ch.setVisible(False)
-            else: 
-                if ch != 'chA':
-                    if mH_ch[ch] != False: #ABC
-                        label.setEnabled(False)
-                        brw_ch.setEnabled(False)
-                        dir_ch.setEnabled(False)
-                        dir_ch.setText('Channel loaded from Morphological (morphoHeart)\t\t\t')
-                        check_ch.setEnabled(False)
+        if proj.analysis['morphoCell']: 
+            #-mC
+            mC_channels = proj.mC_channels
+            mH_ch = proj.mC_settings['setup']['mH_channel']
+            print('mH_ch:', mH_ch)
+            for ch in ['chA', 'chB', 'chC', 'chD']: 
+                label = getattr(self, 'lab_'+ch) 
+                name = getattr(self, 'lab_filled_name_'+ch)
+                brw_ch = getattr(self, 'browse_'+ch)
+                dir_ch = getattr(self, 'lab_filled_dir_'+ch)
+                check_ch = getattr(self, 'check_'+ch)
 
-                name.setText(proj.mC_channels[ch])
-                self.img_dirs[ch] = {}
+                if ch not in mC_channels.keys():
+                    label.setVisible(False)
+                    name.setVisible(False)
+                    brw_ch.setVisible(False)
+                    dir_ch.setVisible(False)
+                    check_ch.setVisible(False)
+                else: 
+                    if ch != 'chA':
+                        if mH_ch[ch] != False: #ABC
+                            label.setEnabled(False)
+                            brw_ch.setEnabled(False)
+                            dir_ch.setEnabled(False)
+                            dir_ch.setText('Channel loaded from Morphological (morphoHeart)\t\t\t')
+                            check_ch.setEnabled(False)
+
+                    name.setText(proj.mC_channels[ch])
+                    self.img_dirs[ch] = {}
         print('self.img_dirs:',self.img_dirs)
         
     def custom_data(self, name:str, gui_name:str):
@@ -10960,6 +10962,8 @@ class MainWindow(QMainWindow):
         wf_info = self.organ.mC_settings['wf_info']
         if 'isosurface' in wf_info.keys():
             print('wf_info[isosurface]:', wf_info['isosurface'])
+            if 'invert' not in self.organ.mC_settings['wf_info']['isosurface'].keys(): 
+                self.organ.mC_settings['wf_info']['isosurface']['invert'] = False
             for ch in wf_info['isosurface']: 
                 if 'ch' in ch: 
                     threshold = wf_info['isosurface'][ch]['threshold']
