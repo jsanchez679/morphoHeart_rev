@@ -1081,10 +1081,12 @@ class Organ():
             if 'measure' not in self.mC_settings: 
                 self.mC_settings['measure'] = {} 
 
-            self.imChannelsMC = load_dict['imChannelMC']
-            self.load_objImChannelMC()
-            self.cellsMC = load_dict['cells_MC']
-            self.load_objCells()
+            if 'imChannelMC' in load_dict.keys():
+                self.imChannelsMC = load_dict['imChannelMC']
+                self.load_objImChannelMC()
+            if 'cells_MC' in load_dict.keys(): 
+                self.cellsMC = load_dict['cells_MC']
+                self.load_objCells()
 
             if 'B-Zones' in self.workflow['morphoCell']: 
                 if len(self.workflow['morphoCell']['B-Zones']) == 1: 

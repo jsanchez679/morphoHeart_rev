@@ -618,7 +618,9 @@ class Controller:
                 self.new_proj_win.win_msg("New project '"+self.new_proj_win.lineEdit_proj_name.text()+"' has been created and saved! Continue by creating an organ as part of this project. ")
         
     def load_proj(self, parent_win):
-        path_folder = QFileDialog.getExistingDirectory(self.load_proj_win, caption="Select the Project's directory")
+        cwd = Path().absolute().home()
+        path_folder = QFileDialog.getExistingDirectory(self.load_proj_win, directory=str(cwd), 
+                                                       caption="Select the Project's directory")
         proj_name = str(Path(path_folder).name)[2:] #Removing the R_
         proj_name_us = proj_name.replace(' ', '_')
         json_name = 'mH_'+proj_name_us+'_project.json'

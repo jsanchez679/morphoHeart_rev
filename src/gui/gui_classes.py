@@ -12,7 +12,8 @@ from PyQt6.QtWidgets import (QDialog, QApplication, QMainWindow, QWidget, QFileD
                               QGridLayout, QVBoxLayout, QHBoxLayout, QLayout, QLabel, QPushButton, QLineEdit,
                               QColorDialog, QTableWidgetItem, QCheckBox, QTreeWidgetItem, QSpacerItem, QSizePolicy, 
                               QDialogButtonBox, QMessageBox, QHeaderView, QStyle)
-from PyQt6.QtGui import QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush, QTextCharFormat
+from PyQt6.QtGui import (QPixmap, QIcon, QFont, QRegularExpressionValidator, QColor, QPainter, QPen, QBrush, 
+                         QTextCharFormat, QStandardItem)
 from qtwidgets import Toggle, AnimatedToggle
 # import qtawesome as qta
 from pathlib import Path
@@ -3886,9 +3887,8 @@ class LoadProj(QDialog):
 
         #Blind analysis
         self.cB_blind.stateChanged.connect(lambda: self.reload_table(atype = 'single'))
-        self.cB_notes.stateChanged.connect(lambda: self.reload_table(atype = 'single'))
-        self.cB_blind_comb.stateChanged.connect(lambda: self.reload_table(atype = 'comb'))
-        self.cB_notes_comb.stateChanged.connect(lambda: self.reload_table(atype = 'comb'))
+        self.cB_blind_comb.stateChanged.connect(lambda: self.reload_data(obj = self.filter_cB_comb, 
+                                                                            atype = 'comb'))  
 
         # -Delete Organ
         self.button_delete_organ.clicked.connect(lambda: self.delete_organ(proj = self.proj))
@@ -3899,6 +3899,31 @@ class LoadProj(QDialog):
 
         #Init window in tab 0
         self.tab_select_organs.setCurrentIndex(0)
+
+        self.set_filter_table()
+        self.filter_cB.model().dataChanged.connect(lambda: self.reload_data(obj = self.filter_cB, 
+                                                                                atype = 'single'))
+        self.set_filter_table_comb()
+        self.filter_cB_comb.model().dataChanged.connect(lambda: self.reload_data(obj = self.filter_cB_comb, 
+                                                                                    atype = 'comb'))
+        
+    def reload_data(self, obj, atype): 
+        obj.updateLineEditField()
+        self.reload_table(atype = atype)
+
+        if atype == 'comb': 
+            all_cB = {'Strain': 'Strain' in self.filter_cB_comb.lineEdit().text(),
+                        'Stage': 'Stage' in self.filter_cB_comb.lineEdit().text(),
+                        'Date Created': 'Date Created' in self.filter_cB_comb.lineEdit().text(),
+                        'Notes': 'Notes' in self.filter_cB_comb.lineEdit().text()}
+
+            if len(self.multi_organs_added) > 0: 
+                fill_table_selected_organs(win=self, table = self.tabW_organs_final, 
+                                            blind_cB=self.cB_blind_comb, all_cB=all_cB, 
+                                            single_proj=True)
+            else: 
+                self.tabW_organs_final.clear()
+                self.tabW_organs_final.setRowCount(0)
 
     def win_msg(self, msg, btn=None): 
         if msg[0] == '*':
@@ -3934,6 +3959,18 @@ class LoadProj(QDialog):
         self.button_browse_proj.setChecked(True)
         self.button_see_proj_settings.setEnabled(True)
     
+    def set_filter_table(self): 
+        filter_opt = {'Strain': True, 'Stage':True, 'Date Created':True, 'Notes':False, 'morphoHeart':True}
+        self.filter_cB = Checkable_ComboBox()
+        self.filter_cB.addItems(filter_opt)
+        self.hlayout_filter.addWidget(self.filter_cB)
+
+    def set_filter_table_comb(self): 
+        filter_opt = {'Strain': True, 'Stage':True, 'Date Created':True, 'Notes':False, 'morphoHeart':True}
+        self.filter_cB_comb = Checkable_ComboBox()
+        self.filter_cB_comb.addItems(filter_opt)
+        self.hlayout_filter_comb.addWidget(self.filter_cB_comb)
+
     def init_tables(self, load):
         if load: 
             #Single Organ Analysis
@@ -3968,9 +4005,15 @@ class LoadProj(QDialog):
         #https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/
         #https://www.pythonguis.com/faq/qtablewidget-for-list-of-dict/
         if len(proj.organs) > 0: 
+            print('AAA:', self.filter_cB.lineEdit().text())
+            all_cB = {'Strain': 'Strain' in self.filter_cB.lineEdit().text(),
+                        'Stage': 'Stage' in self.filter_cB.lineEdit().text(),
+                        'Date Created': 'Date Created' in self.filter_cB.lineEdit().text(),
+                        'Notes': 'Notes' in self.filter_cB.lineEdit().text(),
+                        'mH' : 'morphoHeart' in self.filter_cB.lineEdit().text()}
+
             cBs = fill_table_with_organs(win = self, proj = proj, table = self.tabW_select_organ, 
-                                         blind_cB = self.cB_blind, notes_cB = self.cB_notes, 
-                                         mH_cB = self.cB_mH_hide)
+                                         blind_cB = self.cB_blind, all_cB = all_cB)
             self.organ_checkboxes = cBs
             self.button_load_organs.setChecked(True)
             self.go_to_main_window.setEnabled(True)
@@ -3990,9 +4033,15 @@ class LoadProj(QDialog):
         else: # == 'comb'
             if self.button_load_organs_comb.isChecked(): 
                 load_proj_organs_comb(win=self, proj=self.proj)
+
+                all_cB = {'Strain': 'Strain' in self.filter_cB_comb.lineEdit().text(),
+                        'Stage': 'Stage' in self.filter_cB_comb.lineEdit().text(),
+                        'Date Created': 'Date Created' in self.filter_cB_comb.lineEdit().text(),
+                        'Notes': 'Notes' in self.filter_cB_comb.lineEdit().text(),
+                        'mH' : 'morphoHeart' in self.filter_cB_comb.lineEdit().text()}
+
                 fill_table_selected_organs(win=self, table = self.tabW_organs_final, 
-                                            blind_cB=self.cB_blind_comb, 
-                                            notes_cB=self.cB_notes_comb, single_proj=True)
+                                            blind_cB=self.cB_blind_comb, all_cB=all_cB, single_proj=True)
     
     def check_unique_organ_selected(self, proj): 
         print('self.organ_checkboxes:',self.organ_checkboxes)
@@ -4079,8 +4128,16 @@ def load_proj_organs_comb(win, proj):
         #https://www.pythonguis.com/faq/qtablewidget-for-list-of-dict/
         
         if len(proj.organs) > 0: 
+            print('AAA:', win.filter_cB_comb.lineEdit().text())
+            all_cB = {'Strain': 'Strain' in win.filter_cB_comb.lineEdit().text(),
+                        'Stage': 'Stage' in win.filter_cB_comb.lineEdit().text(),
+                        'Date Created': 'Date Created' in win.filter_cB_comb.lineEdit().text(),
+                        'Notes': 'Notes' in win.filter_cB_comb.lineEdit().text(),
+                        'mH' : 'morphoHeart' in win.filter_cB_comb.lineEdit().text()}
+            
             cBs = fill_table_with_organs(win = win, proj = proj, table = win.tabW_select_organs, 
-                                         blind_cB = win.cB_blind_comb, notes_cB = win.cB_notes_comb)
+                                         blind_cB = win.cB_blind_comb, all_cB = all_cB)
+            
             win.add_organ.setEnabled(True)
             win.remove_organ.setEnabled(True)
         else: 
@@ -4093,25 +4150,30 @@ def load_proj_organs_comb(win, proj):
         win.multi_organ_checkboxes = cBs
         win.button_load_organs_comb.setChecked(True)
 
-def fill_table_with_organs(win, proj, table, blind_cB, notes_cB, mH_cB=False): 
+def fill_table_with_organs(win, proj, table, blind_cB, all_cB):#notes_cB, mH_cB=False): 
 
     cBs = []
     table.clear()
     wf_flat = get_proj_wf(proj)
     blind = blind_cB.isChecked()
-    notes = notes_cB.isChecked()
-    if mH_cB != False: 
-        mH_hide = mH_cB.isChecked()
+    if 'mH' in all_cB.keys(): 
+        if all_cB['mH']:
+            mH_hide = False
+        else: 
+            mH_hide = True
     else: 
         mH_hide = False
 
     table.setRowCount(len(proj.organs)+2)
-    keys = {'-':['select'],'Name': ['user_organName'], 'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
-            'Genotype':['genotype'], 'Manipulation': ['manipulation']}
+    keys = {'-':['select'],'Name': ['user_organName'], 'Strain': ['strain'], 'Stage': ['stage'], 
+            'Genotype':['genotype'], 'Manipulation': ['manipulation'],'Date Created': ['date_created'], 'Notes': ['user_organNotes'], }
     if blind:
         keys.pop('Genotype', None); keys.pop('Manipulation', None) 
-    if not notes: 
-        keys.pop('Notes', None)
+    for cbk in all_cB.keys(): 
+        if cbk != 'mH': 
+            if not all_cB[cbk]:
+                keys.pop(cbk, None)
+
     name_keys = list(range(len(keys)))
 
     keys_wf = {}
@@ -4130,7 +4192,7 @@ def fill_table_with_organs(win, proj, table, blind_cB, notes_cB, mH_cB=False):
     # - Get morphoHeart Labels
     mH_keys = [num+len(name_keys) for num, key in enumerate(list(keys_wf.keys())) if 'morphoHeart' in keys_wf[key]]
     # - Get morphoCell Labels
-    mC_keys = []; print(len(name_keys)); print(len(mH_keys))
+    mC_keys = []; #print(len(name_keys)); print(len(mH_keys))
     num = 1
     for _, key in enumerate(list(keys_wf.keys())):
         # print(num); 
@@ -4239,9 +4301,10 @@ def add_organ_to_multi_analysis(win, proj, add, single_proj):
                 stage = get_by_path(proj.organs[org],['stage'])
                 genotype = get_by_path(proj.organs[org],['genotype'])
                 manip = get_by_path(proj.organs[org],['manipulation'])
+                date_created = get_by_path(proj.organs[org],['date_created'])
                 org_proj = {'user_projName': proj_name, 'proj_path': proj_path, 'user_organName': org, 
                             'user_organNotes': notes, 'strain': strain, 'stage': stage, 
-                            'genotype': genotype, 'manipulation': manip}
+                            'genotype': genotype, 'manipulation': manip, 'date_created': date_created}
                 win.multi_organs_added.append(org_proj)
 
     else: #remove 
@@ -4267,9 +4330,15 @@ def add_organ_to_multi_analysis(win, proj, add, single_proj):
                         break
                 for item in n2del: 
                     win.multi_organs_added.remove(item)
-        
+
+    all_cB = {'Strain': 'Strain' in win.filter_cB_comb.lineEdit().text(),
+                'Stage': 'Stage' in win.filter_cB_comb.lineEdit().text(),
+                'Date Created': 'Date Created' in win.filter_cB_comb.lineEdit().text(),
+                'Notes': 'Notes' in win.filter_cB_comb.lineEdit().text(),
+                'mH' : 'morphoHeart' in win.filter_cB_comb.lineEdit().text()}
+    
     cBs = fill_table_selected_organs(win=win, table = win.tabW_organs_final, 
-                                        blind_cB=win.cB_blind_comb, notes_cB=win.cB_notes, 
+                                        blind_cB=win.cB_blind_comb, all_cB=all_cB, 
                                         single_proj=single_proj)
     win.added_organs_checkboxes = cBs
 
@@ -4285,20 +4354,22 @@ def add_organ_to_multi_analysis(win, proj, add, single_proj):
     if len(win.added_organs_checkboxes)> 0: 
         win.go_to_analysis_window.setEnabled(True)
 
-def fill_table_selected_organs(win, table, blind_cB, notes_cB, single_proj): 
+def fill_table_selected_organs(win, table, blind_cB, all_cB, single_proj): 
 
     cBs = []
     table.clear()
     blind = blind_cB.isChecked()
-    notes = notes_cB.isChecked()
     table.setRowCount(2)
     keys = {'-':['select'],'Project': ['user_projName'],'Name': ['user_organName'], 
-            'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
-            'Genotype':['genotype'], 'Manipulation': ['manipulation']}
+            'Strain': ['strain'], 'Stage': ['stage'], 'Date Created': ['date_created'],
+            'Genotype':['genotype'], 'Manipulation': ['manipulation'], 'Notes': ['user_organNotes'], }
     if blind:
         keys.pop('Genotype', None); keys.pop('Manipulation', None) 
-    if not notes: 
-        keys.pop('Notes', None)
+    for cbk in all_cB.keys(): 
+        if cbk != 'mH': 
+            if not all_cB[cbk]:
+                keys.pop(cbk, None)
+
     if single_proj: 
         keys.pop('Project', None)
     name_keys = list(range(len(keys)))
@@ -4898,7 +4969,8 @@ class MainWindow(QMainWindow):
             self.init_segment_tab()
             self.init_pandq_tab()
         if self.organ.analysis['morphoCell']:
-            self.init_morphoCell_tab()
+            if len(self.organ.mC_settings['setup'])>0: 
+                self.init_morphoCell_tab()
 
         # Init Tabs
         self.init_tabs()
@@ -4998,7 +5070,10 @@ class MainWindow(QMainWindow):
                 self.tabWidget.setCurrentIndex(2)
         
         if self.organ.analysis['morphoCell']:
-            pass
+            if len(self.organ.mC_settings['setup'])>0: 
+                pass
+            else: 
+                self.tabWidget.setTabVisible(2, False)
         else: 
             self.tabWidget.setTabVisible(2, False)
 
@@ -13887,6 +13962,12 @@ class MultipAnalysisWindow(QMainWindow):
         #Blind analysis
         self.cB_blind.stateChanged.connect(lambda: fill_organs_table(win = self, table = self.organs_analysis_widget, 
                                                                          df_pando = self.df_pando, single_proj = True))
+        filter_opt = {'Strain': True, 'Stage':True, 'Date Created':True, 'Notes':False}
+        self.filter_cB = Checkable_ComboBox()
+        self.filter_cB.addItems(filter_opt)
+        self.hlayout_filter.addWidget(self.filter_cB)
+        self.filter_cB.model().dataChanged.connect(lambda: self.reload_table())
+
         #Fill Organs Table
         fill_organs_table(win = self, table = self.organs_analysis_widget, 
                           df_pando = self.df_pando, single_proj = True)
@@ -13904,6 +13985,11 @@ class MultipAnalysisWindow(QMainWindow):
         layout = self.hL_sound_on_off 
         add_sound_bar(self, layout)
         sound_toggled(win=self)
+    
+    def reload_table(self): 
+        self.filter_cB.updateLineEditField()
+        fill_organs_table(win = self, table = self.organs_analysis_widget, 
+                            df_pando = self.df_pando, single_proj = True)
 
     def init_plot_meshes(self): 
 
@@ -13995,17 +14081,49 @@ class MultipAnalysisWindow(QMainWindow):
 
         #Initialise comboBoxes
         strain = list(set(self.df_pando['strain']))
-        self.comboBox_strain.addItems(strain)
+        strain_opt = {}
+        for st in strain: 
+            strain_opt[st] = False
+        self.comboBox_strain = Checkable_ComboBox()
+        self.comboBox_strain.addItems(strain_opt)
+        self.hL_strain.addWidget(self.comboBox_strain)
         self.num_strain.setText('/'+str(len(strain)))
+        self.comboBox_strain.model().dataChanged.connect(lambda: self.comboBox_strain.updateLineEditField())
+        self.comboBox_strain.setEnabled(False)
+
         stage = list(set(self.df_pando['stage']))
-        self.comboBox_stage.addItems(stage)
+        stage_opt = {}
+        for sg in stage: 
+            stage_opt[sg] = False
+        self.comboBox_stage = Checkable_ComboBox()
+        self.comboBox_stage.addItems(stage_opt)
+        self.hL_stage.addWidget(self.comboBox_stage)
         self.num_stage.setText('/'+str(len(stage)))
+        self.comboBox_stage.model().dataChanged.connect(lambda: self.comboBox_stage.updateLineEditField())
+        self.comboBox_stage.setEnabled(False)
+
         genot = list(set(self.df_pando['genotype']))
-        self.comboBox_genotype.addItems(genot)
+        genot_opt = {}
+        for gt in genot: 
+            genot_opt[gt] = False
+        self.comboBox_genotype = Checkable_ComboBox()
+        self.comboBox_genotype.addItems(genot_opt)
+        self.hL_genot.addWidget(self.comboBox_genotype) 
         self.num_genot.setText('/'+str(len(genot)))
+        self.comboBox_genotype.model().dataChanged.connect(lambda: self.comboBox_genotype.updateLineEditField())
+        self.comboBox_genotype.setEnabled(False)
+        
         manip = list(set(self.df_pando['manipulation']))
-        self.comboBox_manipulation.addItems(manip)
+        manip_opt = {}
+        for mp in manip: 
+            manip_opt[mp] = False
+        self.comboBox_manipulation = Checkable_ComboBox()
+        self.comboBox_manipulation.addItems(manip_opt)
+        self.hL_manip.addWidget(self.comboBox_manipulation) 
         self.num_manip.setText('/'+str(len(manip)))
+        self.comboBox_manipulation.model().dataChanged.connect(lambda: self.comboBox_manipulation.updateLineEditField())
+        self.comboBox_manipulation.setEnabled(False)
+
         cmaps = ['turbo','viridis','jet','magma','inferno','plasma']
         self.colormap.clear()
         self.colormap.addItems(cmaps)
@@ -14035,17 +14153,24 @@ class MultipAnalysisWindow(QMainWindow):
                                 for name in organ.mH_settings['wf_info']['heatmaps'][hm]['hm2d_dirs'].keys(): 
                                     dir_name = str(organ.mH_settings['wf_info']['heatmaps'][hm]['hm2d_dirs'][name]).split('_')[-1]
                                     opts.append(dir_name.split('.csv')[0])
-                                if hm not in self.hm2d.keys(): 
+                                if name_hm not in self.hm2d.keys(): 
                                     self.hm2d[name_hm] = [add]
-                                    self.hm2d_opts[name_hm] = opts
+                                    self.hm2d_opts[name_hm] = [opts]
                                 else: 
                                     self.hm2d[name_hm].append(add)
                                     self.hm2d_opts[name_hm].append(opts)
+
+        for hmm in self.hm2d_opts: 
+            opt_lists = self.hm2d_opts[hmm]
+            opts_all = sum(opt_lists, [])
+            self.hm2d_opts[hmm] = list(set(opts_all))
 
         self.comboBox_hm2d_all.addItems(list(self.hm2d.keys()))
         self.comboBox_hm2d_all.currentTextChanged.connect(lambda: update_div(win=self))
         self.set_filters.clicked.connect(lambda: set_aveHM(win=self))
         self.create_avehm.clicked.connect(lambda: create_average_hm(win=self))
+        self.select_avehm_path.clicked.connect(lambda: select_path_avehm(win=self, proj=self.projs))
+        self.btn_save_avehm.clicked.connect(lambda: save_avehm(win=self))
 
         #Initialise div
         update_div(win=self)
@@ -14111,16 +14236,28 @@ class MultipAnalysisWindow(QMainWindow):
 
 def fill_organs_table(win, table, df_pando, single_proj): 
 
+    all_cB = {'Strain': 'Strain' in win.filter_cB.lineEdit().text(),
+                'Stage': 'Stage' in win.filter_cB.lineEdit().text(),
+                'Date Created': 'Date Created' in win.filter_cB.lineEdit().text(),
+                'Notes': 'Notes' in win.filter_cB.lineEdit().text(),
+                'mH' : 'morphoHeart' in win.filter_cB.lineEdit().text()}
+
     table.clear()
+    table.setRowCount(0)
     blind = win.cB_blind.isChecked()
     table.setRowCount(2)
     keys = {'#':['select'],'Project': ['user_projName'], 'Name': ['user_organName'], 
-            'Notes': ['user_organNotes'], 'Strain': ['strain'], 'Stage': ['stage'], 
-            'Genotype':['genotype'], 'Manipulation': ['manipulation']}
+            'Strain': ['strain'], 'Stage': ['stage'], 'Date Created': ['date_created'],
+            'Genotype':['genotype'], 'Manipulation': ['manipulation'],'Notes': ['user_organNotes']}
     if blind:
         keys.pop('Genotype', None); keys.pop('Manipulation', None) 
     if single_proj: 
         keys.pop('Project', None)
+    for cbk in all_cB.keys(): 
+        if cbk != 'mH': 
+            if not all_cB[cbk]:
+                keys.pop(cbk, None)
+
     name_keys = list(range(len(keys)))
     
     #Changing big and small labels: 
@@ -14169,6 +14306,9 @@ def fill_organs_table(win, table, df_pando, single_proj):
     for col in range(len(all_labels.keys())):   
         headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
 
+    if not table.horizontalScrollBar().isVisible(): 
+        headerc.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)   
+    
     table.resizeColumnsToContents()
     table.resizeRowsToContents()
 
@@ -14494,7 +14634,27 @@ def set_aveHM(win):
     win.create_avehm.setEnabled(True)
 
 def create_average_hm(win): 
-    
+
+    df_concat, num_filthm, hm_sel, div_sel, opt_sel, min_max, cmap = set_avehm(win)
+    win.win_msg('Creating average heatmap...')
+    if len(win.projs)==1: 
+        obj_proj = win.projs[0]['proj']
+        rtype, ch_cont = hm_sel.split(': ')
+        if 'Ball' in rtype:
+            ch_cont, cl = ch_cont.split('(')
+            ch, cont = ch_cont.split('-')
+            name_ch = obj_proj.mH_settings['setup']['name_chs'][ch]
+            cl = cl.replace('.',':')
+            opt_sel = name_ch+'_'+cont+' - '+cl[:-1]+' - '+opt_sel
+        else: 
+            ch, cont = ch_cont.split('-')
+            name_ch = obj_proj.mH_settings['setup']['name_chs'][ch]
+            opt_sel = name_ch+'_'+cont+' - '+opt_sel
+
+    plot_average_heatmap(win, df_concat, num_filthm, hm_sel, div_sel, opt_sel, min_max, cmap)
+    win.create_avehm.setChecked(True)
+
+def set_avehm(win):
     #Get values selected for each filter
     param_values = {'strain': win.comboBox_strain.currentText(), 
                     'stage': win.comboBox_stage.currentText(),
@@ -14512,29 +14672,38 @@ def create_average_hm(win):
             div_sel = divs
             opt_sel = win.opts[divs]
 
-    organs_included = []
-    for item in win.hm2d[hm_sel]:
-        organs_included.append(item['organ'])
-    organs_f = ', '.join(organs_included)
-
-    win.organs_included_analysis.setHtml(html_txt[0]+html_txt[1]+organs_f+html_txt[2])# setText(organs_f)
-
     filters = []; group = []
     for filt, value in win.aveHM_settings.items(): 
         if value: 
             filters.append(filt)
-            group.append(param_values[filt])
-    group = tuple(group)
+            if ' & ' in param_values[filt]: 
+                split = param_values[filt].split(' & ')
+                group.append(split)
+            else: 
+                group.append([param_values[filt]])
 
-    print('\n >> hm: ', hm_sel,' - Group: ', group, '- max:', max_val)
-    organs_out = filter_df(df_input = win.df_pando, filters = filters, group = group)
+    if len(group) == 1: 
+        all_tuples = [(x) for x in group[0]]
+    elif len(group) == 2: 
+        all_tuples = [(x,y) for x in group[0] for y in group[1]]
+    elif len(group) == 3: 
+        all_tuples = [(x,y,z) for x in group[0] for y in group[1] for z in group[2]]
+    elif len(group) == 4: 
+        all_tuples = [(x,y,z,a) for x in group[0] for y in group[1] for z in group[2] for a in group[3]]
+
+    print('\n >> hm: ', hm_sel,' - Tuples: ', all_tuples, '- max:', max_val)
+    organs_out = filter_df(df_input = win.df_pando, filters = filters, all_tuples = all_tuples)
     all_organs = list(organs_out['user_organName'])
+    organs_f = ', '.join(all_organs)+' (N='+str(len(all_organs))+')'
+
+    win.organs_included_analysis.setHtml(html_txt[0]+html_txt[1]+organs_f+html_txt[2])# setText(organs_f)
+    win.organs_included = organs_out
 
     hm2d_sel = copy.deepcopy(win.hm2d[hm_sel])
     to_remove = []; 
     for org_info in hm2d_sel: 
         found = False
-        print(org_info)
+
         organ = org_info['organ']
         if organ in all_organs:
             for div in org_info['hm2d_dirs']:
@@ -14545,8 +14714,9 @@ def create_average_hm(win):
                     div_sel = div
                     break
             if not found:
-                print('remove organ: ', organ)
                 to_remove.append(org_info)
+        else:
+            to_remove.append(org_info)
 
     if len(to_remove)> 0:
         for item in to_remove: 
@@ -14556,9 +14726,119 @@ def create_average_hm(win):
     # print(len(filt_hm_all)); print(hm2d_sel, hm_sel, div_sel, opt_sel)
     win.win_msg('Averaging heatmaps...')
     df_concat = pd.concat(filt_hm_all).groupby(level=0).mean()
-    win.win_msg('Creating average heatmap...')
-    plot_average_heatmap(win, df_concat, len(filt_hm_all), hm_sel, div_sel, opt_sel, (min_val, max_val), cmap)
 
+    return  df_concat, len(filt_hm_all), hm_sel, div_sel, opt_sel, (min_val, max_val), cmap
+
+def save_avehm(win):
+
+    #Check details have been filled 
+    if win.select_avehm_path.isChecked() and hasattr(win, 'aveHM_dir'): 
+        #Get Filename
+        filename = win.ave_hm_filename.text()
+        if len(filename)<8:
+            win.win_msg('*The filename of the average heatmap needs to have at least 8 characters.')
+            return
+        if not win.create_avehm.isChecked():
+            win.win_msg('*Please create an average heatmap first to then proceed and save it.')
+            return
+        
+        dpi = int(win.combo_dpi.currentText())
+        ext = win.cB_avehm_extension.currentText()
+        filenamef = filename+ext
+        dir_hm = win.aveHM_dir / filenamef
+
+        df_concat, num_filthm, hm_sel, div_sel, opt_sel, min_max, cmap = set_avehm(win)
+        win.win_msg('Creating average heatmap...')
+
+        #Create the figure
+        if len(win.projs)==1: 
+            obj_proj = win.projs[0]['proj']
+            rtype, ch_cont = hm_sel.split(': ')
+            if 'Ball' in rtype:
+                ch_cont, cl = ch_cont.split('(')
+                ch, cont = ch_cont.split('-')
+                name_ch = obj_proj.mH_settings['setup']['name_chs'][ch]
+                cl = cl.replace('.',':')
+                opt_sel = name_ch+'_'+cont+' - '+cl[:-1]+' - '+opt_sel
+            else: 
+                ch, cont = ch_cont.split('-')
+                name_ch = obj_proj.mH_settings['setup']['name_chs'][ch]
+                opt_sel = name_ch+'_'+cont+' - '+opt_sel
+
+        title = 'Average heatmap for '+hm_sel+' - '+opt_sel+' (N='+str(num_filthm)+') [um]'
+        print('- title:', title)
+
+        #Get all construction settings
+        vmin, vmax = min_max
+
+        # Make figure
+        gridkw = dict(height_ratios=[1,0.2])
+        fig, axes = plt.subplots(2,1, figsize=(16, 12), gridspec_kw=gridkw)
+        axes_fl = axes.flatten()
+        for n, ax in enumerate(axes):
+            if n == 0:
+                c = ax.pcolor(df_concat, cmap=cmap, vmin = vmin, vmax = vmax)
+                cb = fig.colorbar(c, ax=ax)
+                cb.outline.set_visible(False)
+                cb.ax.tick_params(labelsize=10)
+                ax.invert_yaxis()
+                # b = sns.heatmap(heatmap, cmap=cmap, vmin = vmin, vmax = vmax, ax=ax)
+
+                # set the xticks
+                x_pos = ax.get_xticks()
+                # x_pos_new = np.linspace(x_pos[0], x_pos[-1], 19)
+                # x_lab_new = np.arange(-180,200,20)
+                # ax.set_xticks(x_pos_new) 
+                
+                # xlabels=np.linspace(df_concat.columns.min(), df_concat.columns.max(), len(x_pos)).round(3)
+                # ax.set_xticklabels(xlabels, rotation=30, fontsize=10)#, fontname='Arial')
+                # print('xlabels:', xlabels)
+
+                # set the yticks
+                y_pos = ax.get_yticks()
+                # y_pos_new = np.linspace(y_pos[0], y_pos[-1], 11)
+                # y_labels = sorted(list(kspl_data['y_axis']))
+                # y_lab_new = np.linspace(y_labels[0],y_labels[1],11)
+                # y_lab_new = [format(y,'.2f') for y in y_lab_new]
+                # ax.set_yticks(y_pos_new) 
+                # ax.set_yticklabels(y_lab_new, rotation=0, fontsize=10)#, fontname='Arial')
+
+                ylabels=np.linspace(df_concat.index.min(), df_concat.index.max(), len(y_pos)).round(2)
+                ax.set_yticks(ticks=y_pos, labels=ylabels)
+                ax.set_yticklabels(ylabels, rotation=0, fontsize=10)#, fontname='Arial')
+                print('ylabels:', ylabels)
+                
+                plt.xlabel('Angle (\N{DEGREE SIGN})', fontsize=10)
+                plt.title(title, fontsize = 12)
+
+                for pos in ['top', 'right', 'bottom', 'left']:
+                    ax.spines[pos].set_visible(False)
+
+            else: 
+                ax.set_title('Organs Included in Average Heatmap:')
+                print(win.organs_included)
+                font_size=6
+                bbox=[0, 0, 1, 1]
+                ax.axis('off')
+                mpl_table = ax.table(cellText = win.organs_included.values, 
+                                     rowLabels = win.organs_included.index, 
+                                     bbox=bbox, colLabels=win.organs_included.columns, 
+                                     loc='center',)
+                                    #  rowColours =[(245,245,245)]*len(win.organs_included.index),
+                                    #  colColours =[(245,245,245)]*len(win.organs_included.columns))
+                mpl_table.auto_set_font_size(False)
+                mpl_table.set_fontsize(font_size)
+                mpl_table.auto_set_column_width(col=list(range(len(win.organs_included.columns))))
+                mpl_table.scale(1,1)
+
+        #Save figure and heatmap dataframe
+        plt.savefig(dir_hm, dpi=dpi, bbox_inches='tight', transparent=True)
+        win.win_msg('Average Heatmap "'+filenamef+'" was succesfully saved!')
+        alert('clown')
+    
+    else: 
+        win.win_msg('*Please select a directory where to save the average heatmap created.', win.btn_save_avehm)
+    
 def get_all_filtered_hms(win, hm2d_sel, hm_sel, div_sel, opt_sel):
     
     setup_hm2d = {'Thickness (int>ext)': 'th_i2e', 
@@ -14581,11 +14861,9 @@ def get_all_filtered_hms(win, hm2d_sel, hm_sel, div_sel, opt_sel):
         dir_df = organ.dir_res(dir='csv_all') / title_df
         if dir_df.is_file(): 
             #load it
-            print('loading hm')
             win.win_msg('Loading filtered heatmap -'+mtype+'- from '+organ_name+'...')
             filt_hm = pd.read_csv(dir_df, index_col=0)
         else: 
-            print('creating and saving df')
             win.win_msg('Creating filtered heatmap -'+mtype+'- for '+organ_name+'...')
             filt_hm = get_filtered_hms(win, hm2d, hm_sel, div_sel, opt_sel)
             filt_hm.to_csv(dir_df)
@@ -14655,10 +14933,29 @@ def get_filtered_hms(win, hm2d_sel:dict, hm_name:str, div:str, opt:str, save=Fal
     
     return heatmap
         
-def filter_df(df_input, filters, group):
-        
+def filter_df(df_input, filters, all_tuples):
+
     df_pivot = df_input.groupby(filters)
-    df_out = df_pivot.get_group(group)
+    if len(all_tuples)>1: 
+        df_out_list = []
+        for tup in all_tuples: 
+            df_tup = df_pivot.get_group(tup)
+            df_out_list.append(df_tup)
+        df_out = pd.concat(df_out_list)
+    else: 
+        if len(all_tuples)>1:
+            df_out = df_pivot.get_group(all_tuples)
+        else: 
+            df_out = df_pivot.get_group(all_tuples[0])
+
+    # df_input.group_by(['strain','stage'])
+    # print(df_input.group_by(['strain','stage']).groups
+
+    # grp = df.groupby('Name')
+    # for name, group in grp:
+    #     print(name)
+    #     print(group)
+    #     print()
     
     return df_out
 
@@ -14682,17 +14979,17 @@ def plot_average_heatmap(win, df_concat, num_ave, hm_name, div, opt, min_max, cm
     ax.invert_yaxis()
 
     y_pos = ax.get_yticks()
-    ylabels=np.linspace(df_concat.index.min(), df_concat.index.max(), len(y_pos)).round(2)
-    ax.set_yticks(ticks=y_pos, labels=ylabels)
-    ax.set_yticklabels(ylabels, rotation=0, fontsize=fontsize)#, fontname='Arial')
+    # ylabels=np.linspace(df_concat.index.min(), df_concat.index.max(), len(y_pos)).round(2)
+    # ax.set_yticks(ticks=y_pos, labels=ylabels)
+    # ax.set_yticklabels(ylabels, rotation=0, fontsize=fontsize)#, fontname='Arial')
     ax.yaxis.set_tick_params(labelsize=fontsize, width = width, length = length, 
                                 labelrotation = 0, labelcolor='#696969', direction='out', which='major')
     
     x_pos = ax.get_xticks()
     x_pos_new = np.linspace(x_pos[0], x_pos[-1], 7)
-    ax.set_xticks(x_pos_new) 
-    x_lab_new = np.arange(-180,200,60)
-    ax.set_xticklabels(x_lab_new, rotation=30, fontsize=fontsize)#, fontname='Arial')
+    # ax.set_xticks(x_pos_new) 
+    # x_lab_new = np.arange(-180,200,60)
+    # ax.set_xticklabels(x_lab_new, rotation=30, fontsize=fontsize)#, fontname='Arial')
     ax.xaxis.set_tick_params(labelsize=fontsize, width = width, length = length, 
                                 labelcolor='#696969', direction='out', which='major')
     
@@ -14713,6 +15010,21 @@ def plot_average_heatmap(win, df_concat, num_ave, hm_name, div, opt, min_max, cm
 
     #Draw and show window
     win.canvas_plot.draw()
+
+def select_path_avehm(win, proj=None):
+
+    if proj != None and len(proj)==1: 
+        cwd = str(proj[0]['proj_path'])
+    else: 
+        cwd = str(Path().absolute().home())
+
+    path_folder = QFileDialog.getExistingDirectory(win, directory=cwd, caption="Select the directory where you would like to save the created Average Heatmap")
+    if Path(path_folder).is_dir():
+        win.lineEdit_avehm_dir.setText(str(path_folder))
+        win.aveHM_dir = Path(path_folder)
+    else: 
+        win.win_msg('*Something happened when selecting the directory to save the average heatmap. Please select it again.', win.select_avehm_path)
+        return 
 
 class PlotWindow(QDialog):
 
@@ -14779,6 +15091,77 @@ class MyToggle(QtWidgets.QPushButton):
         font.setBold(True)
         font.setPointSize(10)
         painter.setFont(font)
+
+class Checkable_ComboBox(QtWidgets.QComboBox): 
+    #https://www.youtube.com/watch?v=WnHkx-AvTBA
+    def __init__(self): 
+        super().__init__()
+        self.setEditable(True)
+        self.lineEdit().setReadOnly(True)
+        self.closeOnLineEditClick = False
+        self.lineEdit().installEventFilter(self)
+        self.view().viewport().installEventFilter(self)
+        # self.model().dataChanged.connect(self.updateLineEditField)
+        #Default values
+        self.lineEdit().setText('')
+
+    def eventFilter(self, widget, event): 
+        if widget == self.lineEdit(): 
+            if event.type() == QEvent.Type.MouseButtonRelease: 
+                if self.closeOnLineEditClick: 
+                    self.hidePopup()
+                else: 
+                    self.showPopup()
+                return True
+            return super().eventFilter(widget, event)
+        
+        if widget == self.view().viewport(): 
+            if event.type() == QEvent.Type.MouseButtonRelease: 
+                indx = self.view().indexAt(event.pos())
+                item = self.model().item(indx.row())
+
+                if item.checkState() == Qt.CheckState.Checked:
+                    item.setCheckState(Qt.CheckState.Unchecked)
+                else: 
+                    item.setCheckState(Qt.CheckState.Checked)
+                return True
+            return super().eventFilter(widget, event)
+    
+    def hidePopup(self): 
+        super().hidePopup()
+        self.startTimer(100)
+    
+    def addItems(self, items, itemList=None):
+        for key, value in items.items():
+            try: 
+                data = itemList[key]
+            except (TypeError, IndexError): 
+                data = None
+
+            self.addItem(key, value, data)
+            self.updateLineEditField()
+
+    def addItem(self, text, checked, userData=None): 
+        item = QStandardItem()
+        item.setText(text)
+        if userData != None: 
+            item.setData(userData)
+
+        #enable checkbox setting
+        item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsUserCheckable)
+        if checked: 
+            item.setData(Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
+        else: 
+            item.setData(Qt.CheckState.Unchecked, Qt.ItemDataRole.CheckStateRole)
+        self.model().appendRow(item)
+
+    def updateLineEditField(self): 
+        text_container = []
+        for i in range(self.model().rowCount()):
+            if self.model().item(i).checkState() == Qt.CheckState.Checked: 
+                text_container.append(self.model().item(i).text())
+        text_string = ' & '.join(text_container)
+        self.lineEdit().setText(text_string)
 
 #%% SOUNDS - ########################################################
 # Sound functions
