@@ -1268,8 +1268,7 @@ def run_heatmaps3D(controller, btn):
                 cl_info = cl_info[:-1].split('.')[1]
                 cl_ch, cl_cont = cl_info.split('-')
                 mesh2ball = controller.organ.obj_meshes[ch+'_'+cont].legend
-                print('\n>> Extracting ballooning information for '+mesh2ball+'... \nNOTE: it takes about 10-15 to process each mesh... just be patient :) ')
-                controller.main_win.win_msg('Extracting ballooning information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
+                controller.main_win.win_msg('Extracting centreline>tissue information for '+mesh2ball+'... NOTE: it takes about 10-15 to process each mesh... just be patient :)')
                 setup = controller.main_win.gui_thickness_ballooning[hmitem]
 
                 fcM.extract_ballooning(organ = controller.organ, name = (ch, cont),
@@ -1492,6 +1491,7 @@ def run_heatmaps2D(controller, btn):
                                                                 gui_heatmaps2d = gui_heatmaps2d, 
                                                                 kspl_data=ordered_kspl[div])
                     dirs[div] = Path(title_df)
+                    
                     fcM.heatmap_unlooped(organ = controller.organ, kspl_data = ordered_kspl[div], 
                                                 df_unloopedf = df_unloopedf, hmitem= hmitem, ch = ch,
                                                 gui_thball = controller.main_win.gui_thickness_ballooning)

@@ -10103,7 +10103,7 @@ border-color: #672146
              <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
             </property>
             <property name="text">
-             <string>Select the centreline that will be used to extract each ballooning group: </string>
+             <string>Select the centreline that will be used to extract each CL&gt;Tissue group: </string>
             </property>
            </widget>
           </item>
@@ -10166,7 +10166,7 @@ border-color: #672146
                  <string notr="true">font: 25 10pt &quot;Calibri Light&quot;;</string>
                 </property>
                 <property name="text">
-                 <string>Ballooning Group:</string>
+                 <string>CL&gt;Tissue Group:</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>

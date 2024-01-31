@@ -1007,10 +1007,10 @@ def get_distance_to(mesh_to, mesh_from, from_name, range, color_map='turbo'):#
     mesh_to = ext - the one that has the colors
     """
     if isinstance(mesh_from,vedo.shapes.Spheres): 
-        name = 'Ballooning'
+        name = 'CL to Tissue'
         multip = 1
         mesh_name = mesh_to.legend
-        suffix = '_Ballooning'
+        suffix = '_CL_to_Tissue'
         title = mesh_name+'\n'+name+' [um]\n'+from_name
     else: 
         name = 'Thickness'
@@ -2098,7 +2098,19 @@ def get_extCL_on_surf(mesh, kspl_ext, direction):
     u = np.cumsum(dist)
     u = np.hstack([[0],u])
     t = np.linspace(0, u[-1],1000)
-    resamp_pts = interpn((u,), kspl_ext.points(), t)
+    try: 
+        resamp_pts = interpn((u,), kspl_ext.points(), t)
+        print('Created resampled KSpline using interpn')
+    except: 
+        # Christian K Answer
+        # https://stackoverflow.com/questions/19117660/how-to-generate-equispaced-interpolating-values/19122075#19122075
+        xn = np.interp(t, u, kspl_ext.points()[:,0])
+        yn = np.interp(t, u, kspl_ext.points()[:,1])
+        zn = np.interp(t, u, kspl_ext.points()[:,2])
+        resamp_pts = np.vstack((xn,yn,zn))
+        resamp_pts = resamp_pts.T
+        print('Created resampled KSpline using np.interp')
+
     kspl_ext = vedo.KSpline(resamp_pts, res = 1000).lw(5).color('deeppink').legend('kspl_extHR')
     
     #Find the points that intersect with the ribbon
@@ -2632,7 +2644,12 @@ def heatmap_unlooped(organ, kspl_data, df_unloopedf, hmitem, ch, gui_thball):
         else: 
             title = organ_name +' - '+tissue_name.title()+' Thickness (ext2int) [um] - '+kspl_data['name'].title()
     else: 
-        title = organ_name +' - Myocardium ballooning [um] - '+kspl_data['name'].title()
+        #Get cl info
+        _, infoo = hmitem.split('[')
+        ch_cont, cl_info = infoo.split('(')
+        _, cont = ch_cont.split('-')
+        from_cl, from_cl_type = cl_info[3:-2].split('-')
+        title = organ_name +' - CL > Tissue ('+tissue_name.title()+'_'+cont+') - CL: '+from_cl+'_'+from_cl_type+' [um] - '+kspl_data['name'].title()
     print('- title:', title)
 
     #Get all construction settings

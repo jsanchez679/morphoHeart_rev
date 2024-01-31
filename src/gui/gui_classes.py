@@ -1317,14 +1317,23 @@ class CreateNewProj(QDialog):
             if stype == 'chNS': 
                 if 'chNS' in self.ch_selected: 
                     self.ch_selected.remove('chNS')
-            if stype in list(self.mH_settings.keys()):
-                self.mH_settings.pop(stype, None)
-                getattr(self, 'button_set_'+stype).setChecked(False)
-            if stype in list(self.mC_settings.keys()):
-                self.mC_settings.pop(stype, None)
-                getattr(self, 'button_set_'+stype).setChecked(False)
-            if stype in self.mH_settings['name_chs']: 
-                self.mH_settings['name_chs'].pop('chNS', None)
+            try: 
+                if stype in list(self.mH_settings.keys()):
+                    self.mH_settings.pop(stype, None)
+                    getattr(self, 'button_set_'+stype).setChecked(False)
+            except: 
+                pass
+            try:
+                if stype in list(self.mC_settings.keys()):
+                    self.mC_settings.pop(stype, None)
+                    getattr(self, 'button_set_'+stype).setChecked(False)
+            except: 
+                pass
+            try: 
+                if stype in self.mH_settings['name_chs']: 
+                    self.mH_settings['name_chs'].pop('chNS', None)
+            except: 
+                pass
             s_set.setVisible(False)
             s_set.setEnabled(False)
             if 'mC' in stype:
@@ -2787,10 +2796,10 @@ class SetMeasParam(QDialog):
 
         self.params = {0: {'s': 'SA', 'l':'Surface Area'},
                         1: {'s': 'Vol', 'l':'Volume'},
-                        2: {'s': 'CL', 'l':'Centreline'},
+                        2: {'s': 'CL', 'l':'Centreline (CL)'},
                         3: {'s': 'th_i2e', 'l':'Thickness Heatmap (int>ext*)'},
                         4: {'s': 'th_e2i','l':'Thickness Heatmap (ext>int*)'}, 
-                        5: {'s': 'ball','l':'Centreline>Tissue (Ballooning)'}}
+                        5: {'s': 'ball','l':'Centreline>Tissue'}}
         self.ball_param = 5
                 
         ch_all = mH_settings['name_chs']
@@ -8098,7 +8107,7 @@ class MainWindow(QMainWindow):
         self.hm_btns = {}
         setup = {'th_i2e': {'proc': ['measure','th_i2e'], 'name': 'Thickness (int>ext)', 'min_val': 0, 'max_val': 20}, 
                  'th_e2i': {'proc': ['measure','th_e2i'], 'name': 'Thickness (ext>int)', 'min_val': 0, 'max_val': 20},
-                 'ball': {'proc': ['measure','ball'], 'name': 'Ballooning', 'min_val': 0, 'max_val': 60}}
+                 'ball': {'proc': ['measure','ball'], 'name': 'CL>Tissue', 'min_val': 0, 'max_val': 60}}
 
         nn = 0
         cmaps = ['turbo','viridis','jet','magma','inferno','plasma']
@@ -12696,8 +12705,8 @@ class MainWindow(QMainWindow):
                 label = 'Thickness (ext2int) [um]'
                 title = organ_name +' - '+tissue_name.title()+' '+label
         else: 
-            label = 'Ballooning - CL > Tissue [um]'
-            title = organ_name +' - '+label
+            label = 'CL > Tissue [um]'
+            title = organ_name +' - CL > Tissue ('+tissue_name.title()+'_'+cont+') - CL: '+from_cl+'_'+from_cl_type
         print('- title:', title)
 
         # Make figure
@@ -12884,10 +12893,10 @@ class MainWindow(QMainWindow):
             m_type = 'ballCL('+from_cl+'_'+from_cl_type+')'
             mesh_ball = mesh2ball.mesh_meas[m_type]
 
-            title = mesh2ball.legend+'\nBallooning [um]\nCL('+from_cl+'_'+from_cl_type+')'
+            title = mesh2ball.legend+'\nCL to Tissue [um]\nCL:'+from_cl+'_'+from_cl_type
             mesh_ball = self.set_scalebar(mesh=mesh_ball, name = hm_name, proc = short, title = title)
 
-            txt = [(0, self.organ.user_organName +' - Ballooning Measurement Setup')]
+            txt = [(0, self.organ.user_organName +' - CL>Tissue Measurement Setup')]
             obj = [(mesh2ball.mesh, cl4ball, sph4ball), (mesh_ball, cl4ball, sph4ball)]
 
         plot_grid(obj=obj, txt=txt, axes=5, sc_side=max(self.organ.get_maj_bounds()))
