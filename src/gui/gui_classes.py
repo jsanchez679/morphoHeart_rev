@@ -14694,16 +14694,13 @@ def set_avehm(win):
     print('\n >> hm: ', hm_sel,' - Tuples: ', all_tuples, '- max:', max_val)
     organs_out = filter_df(df_input = win.df_pando, filters = filters, all_tuples = all_tuples)
     all_organs = list(organs_out['user_organName'])
-    organs_f = ', '.join(all_organs)+' (N='+str(len(all_organs))+')'
-
-    win.organs_included_analysis.setHtml(html_txt[0]+html_txt[1]+organs_f+html_txt[2])# setText(organs_f)
-    win.organs_included = organs_out
+    
 
     hm2d_sel = copy.deepcopy(win.hm2d[hm_sel])
-    to_remove = []; 
+    to_remove = []
+    organs_hm2d = []
     for org_info in hm2d_sel: 
         found = False
-
         organ = org_info['organ']
         if organ in all_organs:
             for div in org_info['hm2d_dirs']:
@@ -14712,11 +14709,26 @@ def set_avehm(win):
                 if opt_sel in str(dir_hm): 
                     found = True
                     div_sel = div
+                    organs_hm2d.append(org_info['organ'])
                     break
             if not found:
                 to_remove.append(org_info)
         else:
             to_remove.append(org_info)
+
+    all_organsf = list(set(organs_hm2d) & set(all_organs))
+    organs_f = ', '.join(all_organsf)+' (N='+str(len(all_organsf))+')'
+    win.organs_included_analysis.setHtml(html_txt[0]+html_txt[1]+organs_f+html_txt[2])# setText(organs_f)
+    
+    #Clean organs_out
+    indx_to_remove = []
+    for index, row in organs_out.iterrows(): 
+        if row['user_organName'] not in all_organsf: 
+            indx_to_remove.append(index)
+    for idx in indx_to_remove: 
+        organs_out = organs_out.drop(index=idx)
+
+    win.organs_included = organs_out
 
     if len(to_remove)> 0:
         for item in to_remove: 
@@ -14809,7 +14821,7 @@ def save_avehm(win):
                 print('ylabels:', ylabels)
                 
                 plt.xlabel('Angle (\N{DEGREE SIGN})', fontsize=10)
-                plt.title(title, fontsize = 12)
+                ax.set_title(title, fontsize = 12)
 
                 for pos in ['top', 'right', 'bottom', 'left']:
                     ax.spines[pos].set_visible(False)
