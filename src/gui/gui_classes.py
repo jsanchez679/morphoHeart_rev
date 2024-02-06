@@ -3402,6 +3402,8 @@ class NewOrgan(QDialog):
         #Initialise variables 
         self.img_dirs = {}
         self.set_project_info(proj)
+        # Init Tabs
+        self.init_tabs(proj)
 
         self.cB_strain.currentIndexChanged.connect(lambda: self.custom_data(name='strain', gui_name='Strain'))
         self.cB_stage.currentIndexChanged.connect(lambda: self.custom_data(name='stage', gui_name='Stage'))
@@ -3564,6 +3566,22 @@ class NewOrgan(QDialog):
                     self.img_dirs[ch] = {}
         print('self.img_dirs:',self.img_dirs)
         
+    def init_tabs(self, proj): 
+        #Activate tab depending on process running and hide non-working tabs
+        if proj.analysis['morphoHeart']:
+            pass
+        else: 
+            #Hide morphoHeart Tabs
+            self.tabWidget.setTabVisible(0, False)
+        
+        if proj.analysis['morphoCell']:
+            if len(self.organ.mC_settings['setup'])>0: 
+                pass
+            else: 
+                self.tabWidget.setTabVisible(1, False)
+        else: 
+            self.tabWidget.setTabVisible(1, False)
+
     def custom_data(self, name:str, gui_name:str):
         user_data = getattr(self,'cB_'+name).currentText()
         if name == 'stack_orient': 
