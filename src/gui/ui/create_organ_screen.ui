@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>821</width>
-    <height>845</height>
+    <height>856</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -412,12 +412,11 @@ color: rgb(234, 234, 234);
       </sizepolicy>
      </property>
      <property name="styleSheet">
-      <string notr="true">QGroupBox#set_organ{font: 25 italic 10pt &quot;Calibri Light&quot;;}
-
+      <string notr="true">QGroupBox#set_organ{text-decoration: underline; font: 80 10pt &quot;Calibri Light&quot;;}
 </string>
      </property>
      <property name="title">
-      <string>Load or Create New Organ/ROI</string>
+      <string>New Organ/ROI</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_8">
       <item>
@@ -954,7 +953,7 @@ QComboBox QAbstractItemView {
 </string>
           </property>
           <property name="title">
-           <string>Organ's General Information</string>
+           <string>General Information</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
            <item>
@@ -1568,7 +1567,7 @@ QComboBox QAbstractItemView {
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideNone</enum>
@@ -3891,32 +3890,6 @@ color: rgb(100, 100, 100);</string>
              </layout>
             </item>
            </layout>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </widget>

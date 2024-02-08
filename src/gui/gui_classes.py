@@ -3784,53 +3784,55 @@ class NewOrgan(QDialog):
         paths_chs = []
         paths = []
         txt = '('
-        for ch in proj.mH_channels.keys():
-            txt = txt+'morphoHeart'
-            if len(self.img_dirs[ch]) < 1: 
-                error_txt = "*Please load the images (and masks) for all the organ's channels (morphoHeart)."
-                self.win_msg(error_txt, self.button_create_new_organ)
-                return False
-            
-            if ch != 'chNS': 
-                paths_chs.append(self.img_dirs[ch]['image']['dir'])
-                paths.append(self.img_dirs[ch]['image']['dir'])
-                if proj.mH_settings['setup']['mask_ch'][ch]: 
-                    paths.append(self.img_dirs[ch]['mask']['dir'])
-            else: 
-                pass
-        
-        mH_ch = proj.mC_settings['setup']['mH_channel']
-        for ch in proj.mC_channels.keys(): 
-            if len(self.img_dirs[ch]) < 1: 
-                if ch != 'chA':
-                    if mH_ch[ch] != False:
-                        mH_ch2use = mH_ch[ch].split(' (')[0]
-                        dir2use = self.img_dirs[mH_ch2use]
-                        self.img_dirs[ch] = dir2use
-                    else: 
-                        error_txt = "*Please load the images (and masks) for all the organ's channels (morphoCell)."
+        if proj.analysis['morphoHeart']: 
+            for ch in proj.mH_channels.keys():
+                if ch != 'chNS':
+                    txt = txt+'morphoHeart'
+                    if len(self.img_dirs[ch]) < 1: 
+                        error_txt = "*Please load the images (and masks) for all the organ's channels (morphoHeart)."
                         self.win_msg(error_txt, self.button_create_new_organ)
                         return False
-                else: 
-                    error_txt = "*Please load the cell positions data file for chA (morphoCell)."
-                    self.win_msg(error_txt, self.button_create_new_organ)
-                    return False
-            
-            if 'morphoCell' not in txt: 
-                if len(txt) > 1: 
-                    txt = txt + ' & morphoCell)'
-                else: 
-                    txt = txt + 'morphoCell'
+                    
 
-            if ch != 'chA':
-                if mH_ch[ch] != False: #ABC
-                    pass
-                else:  # == False
                     paths_chs.append(self.img_dirs[ch]['image']['dir'])
                     paths.append(self.img_dirs[ch]['image']['dir'])
-            else:  # ch == chA
-                paths_chs.append(self.img_dirs[ch]['image']['dir'])
-                paths.append(self.img_dirs[ch]['image']['dir'])
+                    if proj.mH_settings['setup']['mask_ch'][ch]: 
+                        paths.append(self.img_dirs[ch]['mask']['dir'])
+
+        
+        if proj.analysis['morphoCell']: 
+            mH_ch = proj.mC_settings['setup']['mH_channel']
+            for ch in proj.mC_channels.keys(): 
+                if len(self.img_dirs[ch]) < 1: 
+                    if ch != 'chA':
+                        if mH_ch[ch] != False:
+                            mH_ch2use = mH_ch[ch].split(' (')[0]
+                            dir2use = self.img_dirs[mH_ch2use]
+                            self.img_dirs[ch] = dir2use
+                        else: 
+                            error_txt = "*Please load the images (and masks) for all the organ's channels (morphoCell)."
+                            self.win_msg(error_txt, self.button_create_new_organ)
+                            return False
+                    else: 
+                        error_txt = "*Please load the cell positions data file for chA (morphoCell)."
+                        self.win_msg(error_txt, self.button_create_new_organ)
+                        return False
+                
+                if 'morphoCell' not in txt: 
+                    if len(txt) > 1: 
+                        txt = txt + ' & morphoCell)'
+                    else: 
+                        txt = txt + 'morphoCell'
+
+                if ch != 'chA':
+                    if mH_ch[ch] != False: #ABC
+                        pass
+                    else:  # == False
+                        paths_chs.append(self.img_dirs[ch]['image']['dir'])
+                        paths.append(self.img_dirs[ch]['image']['dir'])
+                else:  # ch == chA
+                    paths_chs.append(self.img_dirs[ch]['image']['dir'])
+                    paths.append(self.img_dirs[ch]['image']['dir'])
 
         txt = txt + ').'
         valid = [val.is_file() for val in paths]
@@ -13356,9 +13358,8 @@ class MainWindow(QMainWindow):
             found = False
             if 'mC_segm' in self.organ.ind:
                 if cut.title() in self.organ.ind['mC_segm']:
-                    for ss in self.organ.ind['mC_segm'][cut.title()]: 
-                        sphs = self.organ.ind['mC_segm'][cut.title()][ss][0]
-                        sils = self.organ.ind['mC_segm'][cut.title()][ss][1]
+                    sphs = self.organ.ind['mC_segm'][cut.title()][segm][0]
+                    sils = self.organ.ind['mC_segm'][cut.title()][segm][1]
         else: 
             print('Load values!')
 
@@ -13366,7 +13367,7 @@ class MainWindow(QMainWindow):
         bkgd = self.organ.mC_settings['wf_info']['ind_segments_cells']['background']
         vp = vedo.Plotter(N=1, axes = 4, bg=bkgd)
         vp.add_icon(logo, pos=(0.1,1), size=0.25)
-        text = 'Clustering for '+cut.title()+' - '+ss.title()
+        text = 'Clustering for '+cut.title()+' - '+segm.title()
         txt = vedo.Text2D(text, c=txt_color, font=txt_font) 
         vp.show(vols, sphs, sils, txt, at=0, zoom = 1, interactive = True) 
     
@@ -13555,19 +13556,25 @@ class MainWindow(QMainWindow):
                 setattr(self, 'items_plot'+str(plot), [])
             
             if self.plot_settings['reorient']: 
-                roi_cube = self.organ.mH_settings['wf_info']['orientation']['roi']['roi_cube']
                 rotX = 0; rotY = 0; rotZ = 0
-                if 'rotate_x' in roi_cube.keys(): 
-                    rotX = roi_cube['rotate_x']
-                if 'rotate_y' in roi_cube.keys(): 
-                    rotY = roi_cube['rotate_y']
-                if 'rotate_z' in roi_cube.keys(): 
-                    rotZ = roi_cube['rotate_z']
-                print(rotX, rotY, rotZ)
-                if 'rotate_user' in roi_cube.keys(): 
-                    rotX = rotX + roi_cube['rotate_user']['rotX']
-                    rotY = rotY + roi_cube['rotate_user']['rotY']
-                    rotZ = rotZ + roi_cube['rotate_user']['rotZ']
+                if 'orientation' not in self.organ.mH_settings['wf_info'].keys(): 
+                    pass
+                else: 
+                    try: 
+                        roi_cube = self.organ.mH_settings['wf_info']['orientation']['roi']['roi_cube']
+                        if 'rotate_x' in roi_cube.keys(): 
+                            rotX = roi_cube['rotate_x']
+                        if 'rotate_y' in roi_cube.keys(): 
+                            rotY = roi_cube['rotate_y']
+                        if 'rotate_z' in roi_cube.keys(): 
+                            rotZ = roi_cube['rotate_z']
+                        print(rotX, rotY, rotZ)
+                        if 'rotate_user' in roi_cube.keys(): 
+                            rotX = rotX + roi_cube['rotate_user']['rotX']
+                            rotY = rotY + roi_cube['rotate_user']['rotY']
+                            rotZ = rotZ + roi_cube['rotate_user']['rotZ']
+                    except: 
+                        pass
 
             # print('self.all_meshes:', self.all_meshes)
             # print('self.plot_meshes_user:', self.plot_meshes_user)

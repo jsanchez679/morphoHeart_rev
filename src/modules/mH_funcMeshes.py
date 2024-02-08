@@ -1750,7 +1750,8 @@ def create_iso_volume(organ, ch, plot=True):
     # Invert stack
     if organ.mC_settings['wf_info']['isosurface']['invert']: 
         res_copy = copy.deepcopy(res)
-        res_copy[1] = -res_copy[1]
+        if res_copy[1] > 0:
+            res_copy[1] = -res_copy[1]
         print('res_copy:', res_copy)
 
     try: 
