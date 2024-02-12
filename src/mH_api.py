@@ -349,7 +349,12 @@ def select_contours(controller, ch_name):
             controller.main_win.prog_bar_update(getattr(controller.main_win, 'index_active_'+ch_name))
 
         while not at_least_one: 
-            initial_index = controller.main_win.tuples_out[getattr(controller.main_win, 'index_active_'+ch_name)]
+            try: 
+                initial_index = controller.main_win.tuples_out[getattr(controller.main_win, 'index_active_'+ch_name)]
+            except: 
+                set_index_active(controller, ch_name, 0); print('Index_active_'+ch_name+' was reset to 0')
+                initial_index = controller.main_win.tuples_out[getattr(controller.main_win, 'index_active_'+ch_name)]
+
             if initial_index['int_cont']+initial_index['ext_cont'] > 0:
                 plot_props_to_select(controller, ch_name, getattr(controller.main_win, 'index_active_'+ch_name))
                 at_least_one = True

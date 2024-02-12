@@ -6089,6 +6089,28 @@ class MainWindow(QMainWindow):
         self.plot_final_s3s_ch3.setVisible(False)
         self.plot_final_s3s_ch4.setVisible(False)
 
+        self.select_tableW_ch1.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch1'))
+        self.select_tableW_ch2.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch2'))
+        self.select_tableW_ch3.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch3'))
+        self.select_tableW_ch4.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch4'))
+
+        #Re-select button
+        self.re_select_ch1.clicked.connect(lambda: self.enable_re_select(ch_name='ch1'))
+        self.re_select_ch2.clicked.connect(lambda: self.enable_re_select(ch_name='ch2'))
+        self.re_select_ch3.clicked.connect(lambda: self.enable_re_select(ch_name='ch3'))
+        self.re_select_ch4.clicked.connect(lambda: self.enable_re_select(ch_name='ch4'))
+
+        self.re_select_ch1.setEnabled(False)
+        self.re_select_ch2.setEnabled(False)
+        self.re_select_ch3.setEnabled(False)
+        self.re_select_ch4.setEnabled(False)
+
+        #Reset
+        self.reset_select_ch1.clicked.connect(lambda: self.reset_values(ch ='ch1', proc='select'))
+        self.reset_select_ch2.clicked.connect(lambda: self.reset_values(ch ='ch2', proc='select'))
+        self.reset_select_ch3.clicked.connect(lambda: self.reset_values(ch ='ch3', proc='select'))
+        self.reset_select_ch4.clicked.connect(lambda: self.reset_values(ch ='ch4', proc='select'))
+
         #Tuple table
         for ch in ['ch1', 'ch2', 'ch3', 'ch4']:
             if ch in self.channels.keys(): 
@@ -6114,28 +6136,7 @@ class MainWindow(QMainWindow):
             proc_set = ['wf_info']
             update = self.gui_select_contours
             self.organ.update_settings(proc_set, update, 'mH', add='select_contours')
-        
-        self.select_tableW_ch1.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch1'))
-        self.select_tableW_ch2.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch2'))
-        self.select_tableW_ch3.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch3'))
-        self.select_tableW_ch4.verticalScrollBar().rangeChanged.connect(lambda: self.scroll_table_to_bottom(ch_name='ch4'))
-
-        #Re-select button
-        self.re_select_ch1.clicked.connect(lambda: self.enable_re_select(ch_name='ch1'))
-        self.re_select_ch2.clicked.connect(lambda: self.enable_re_select(ch_name='ch2'))
-        self.re_select_ch3.clicked.connect(lambda: self.enable_re_select(ch_name='ch3'))
-        self.re_select_ch4.clicked.connect(lambda: self.enable_re_select(ch_name='ch4'))
-
-        self.re_select_ch1.setEnabled(False)
-        self.re_select_ch2.setEnabled(False)
-        self.re_select_ch3.setEnabled(False)
-        self.re_select_ch4.setEnabled(False)
-
-        #Reset
-        self.reset_select_ch1.clicked.connect(lambda: self.reset_values(ch ='ch1', proc='select'))
-        self.reset_select_ch2.clicked.connect(lambda: self.reset_values(ch ='ch2', proc='select'))
-        self.reset_select_ch3.clicked.connect(lambda: self.reset_values(ch ='ch3', proc='select'))
-        self.reset_select_ch4.clicked.connect(lambda: self.reset_values(ch ='ch4', proc='select'))
+     
 
     def init_plot_widget(self): 
 
@@ -6213,6 +6214,10 @@ class MainWindow(QMainWindow):
                 getattr(self, 'plot_final_s3s_'+ch_name).setEnabled(True)
                 scroll_tabch = getattr(self, 'scrollArea_'+ch_name)
                 scroll_tabch.verticalScrollBar().setValue(scroll_tabch.verticalScrollBar().maximum())
+                #Set state to Finished 
+                proc_set = ['wf_info', 'select_contours', ch_name, 'select_state']
+                self.organ.update_settings(proc_set, 'Finished', 'mH')
+                setattr(self, 'select_state_'+ch_name, 'Finished')
             self.win_msg(msg)
 
             #Save channel, organ and project
