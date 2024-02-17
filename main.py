@@ -9,6 +9,7 @@ import sys
 from PyQt6 import QtWidgets#, QtCore
 
 #%% morphoHeart Imports - ##################################################
+print('Welcome to morphoHeart!')
 from src.gui.config import mH_config 
 from src.gui.gui_classes import *
 from src.modules import mH_classes_new as mHC

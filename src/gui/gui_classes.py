@@ -88,9 +88,9 @@ class WelcomeScreen(QDialog):
         
 
         # self.btn_link2paper
-        # self.btn_link2paper.clicked.connect(lambda: self.get_file())#webbrowser.open('https://github.com/jsanchez679/morphoHeart'))
+        # self.btn_link2paper.clicked.connect(lambda: webbrowser.open('https://github.com/jsanchez679/morphoHeart'))
         # self.btn_link2docs
-        # self.btn_link2docs.clicked.connect(lambda: webbrowser.open('https://github.com/jsanchez679/morphoHeart'))
+        self.btn_link2docs.clicked.connect(lambda: webbrowser.open('https://www.dropbox.com/scl/fi/jrgrks26c63s2h3kma3ba/User-Manual-vR.pdf?rlkey=0iv94mkpkp4hng25t2562mmgh&dl=0'))
         # self.btn_link2github.setIcon(qta.icon("fa5b.github"))
         self.btn_link2github.clicked.connect(lambda: webbrowser.open('https://github.com/jsanchez679/morphoHeart'))
 
@@ -99,7 +99,7 @@ class WelcomeScreen(QDialog):
         add_sound_bar(self, layout)
         sound_toggled(win=self)
 
-        # Theme 
+            # Theme 
         mH_config.theme = self.cB_theme.currentText()
         self.on_cB_theme_currentIndexChanged(mH_config.theme)
 
